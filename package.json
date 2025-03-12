@@ -1,5 +1,5 @@
 {
-  "name": "my-turborepo",
+  "name": "vue-godot",
   "private": true,
   "scripts": {
     "build": "turbo run build",
