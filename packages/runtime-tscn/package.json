@@ -1,0 +1,39 @@
+{
+  "name": "@vue-godot/runtime-tscn",
+  "version": "0.0.1",
+  "description": "Vue runtime renderer for Godot TSCN files",
+  "main": "index.js",
+  "module": "dist/runtime-tscn.esm-bundler.js",
+  "types": "dist/runtime-tscn.d.ts",
+  "files": [
+    "index.js",
+    "dist"
+  ],
+  "sideEffects": false,
+  "buildOptions": {
+    "name": "VueRuntimeTSCN",
+    "formats": [
+      "esm-bundler",
+      "cjs"
+    ]
+  },
+  "dependencies": {
+    "@vue/runtime-core": "^3.3.0",
+    "@vue/shared": "^3.3.0"
+  },
+  "peerDependencies": {
+    "vue": "3.3.0"
+  },
+  "keywords": [
+    "vue",
+    "godot",
+    "tscn",
+    "renderer"
+  ],
+  "author": "Portwatcher",
+  "license": "MIT",
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  }
+}
