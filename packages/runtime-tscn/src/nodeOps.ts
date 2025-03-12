@@ -1,4 +1,5 @@
 import type { RendererOptions } from '@vue/runtime-core'
+import { Control } from 'godot'
 
 // Define types for Godot node virtual representation
 export interface TSCNNode {
@@ -34,7 +35,7 @@ export const nodeOps: Omit<RendererOptions<TSCNNode, TSCNNode>, 'patchProp'> = {
     child.parent = parent
   },
 
-  remove: child => {
+  remove: (child) => {
     const parent = child.parent
     if (parent && parent.children) {
       const index = parent.children.indexOf(child)
@@ -46,11 +47,10 @@ export const nodeOps: Omit<RendererOptions<TSCNNode, TSCNNode>, 'patchProp'> = {
   },
 
   createElement: (tag, isSVG, isCustomElement, vnodeProps): TSCNNode => {
-    // Map Vue component tags to Godot node types
-    const nodeType = mapTagToNodeType(tag, vnodeProps)
+    const node = new Control()
 
     return {
-      type: nodeType,
+      type: node.get_class(),
       id: vnodeProps?.id || tag,
       props: {},
     }
@@ -95,9 +95,9 @@ export const nodeOps: Omit<RendererOptions<TSCNNode, TSCNNode>, 'patchProp'> = {
     ]
   },
 
-  parentNode: node => node.parent || null,
+  parentNode: (node) => node.parent || null,
 
-  nextSibling: node => {
+  nextSibling: (node) => {
     const parent = node.parent
     if (!parent || !parent.children) return null
 
@@ -109,7 +109,7 @@ export const nodeOps: Omit<RendererOptions<TSCNNode, TSCNNode>, 'patchProp'> = {
     return null
   },
 
-  querySelector: selector => {
+  querySelector: (selector) => {
     // Not really applicable for TSCN, but we can provide a stub
     console.warn('querySelector not fully implemented in TSCN renderer')
     return null
@@ -140,50 +140,4 @@ export const nodeOps: Omit<RendererOptions<TSCNNode, TSCNNode>, 'patchProp'> = {
 
     return [dummyNode, dummyNode]
   },
-}
-
-// Helper function to map Vue component tags to Godot node types
-function mapTagToNodeType(tag: string, props?: Record<string, any>): string {
-  // Map common HTML elements to appropriate Godot nodes
-  switch (tag.toLowerCase()) {
-    case 'div':
-    case 'span':
-      return 'Control'
-    case 'img':
-      return 'TextureRect'
-    case 'p':
-    case 'h1':
-    case 'h2':
-    case 'h3':
-    case 'h4':
-    case 'h5':
-    case 'h6':
-      return 'Label'
-    case 'button':
-      return 'Button'
-    case 'input':
-      if (props?.type === 'checkbox') return 'CheckBox'
-      if (props?.type === 'radio') return 'CheckBox'
-      return 'LineEdit'
-    case 'textarea':
-      return 'TextEdit'
-    case 'select':
-      return 'OptionButton'
-    case 'ul':
-    case 'ol':
-      return 'VBoxContainer'
-    case 'li':
-      return 'HBoxContainer'
-    case 'a':
-      return 'LinkButton'
-    case 'form':
-      return 'PanelContainer'
-    // Add more mappings as needed
-    default:
-      // Check if it's a custom component (starting with uppercase)
-      if (tag[0] === tag[0].toUpperCase()) {
-        return 'Node2D' // Default for custom components
-      }
-      return 'Control' // Default fallback
-  }
 }
