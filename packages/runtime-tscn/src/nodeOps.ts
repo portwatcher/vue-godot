@@ -24,7 +24,7 @@ export const nodeOps: Omit<RendererOptions<Node, Node>, 'patchProp'> = {
   },
 
   createElement: (tag, isSVG, isCustomElement, vnodeProps): Node => {
-    return (ClassDB.instantiate(tag) as Node) ?? new Node()
+    return ClassDB.can_instantiate(tag) ? ClassDB.instantiate(tag) : new Node()
   },
 
   createText: (text): Node => {
