@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev:example": "turbo run dev --filter=example"
+    "build:runtime": "turbo run build --filter=@vue-godot/runtime-tscn",
+    "build:demo": "turbo run build --filter=demoapp"
   },
   "devDependencies": {
     "prettier": "^3.5.3",

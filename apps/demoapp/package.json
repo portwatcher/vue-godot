@@ -1,0 +1,17 @@
+{
+  "name": "demoapp",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "@vue-godot/runtime-tscn": "*",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "vite": "^6.3.5"
+  }
+}

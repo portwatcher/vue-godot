@@ -2,20 +2,22 @@
   "name": "@vue-godot/runtime-tscn",
   "version": "0.0.1",
   "description": "Vue runtime renderer for Godot TSCN files",
-  "main": "index.js",
-  "module": "dist/runtime-tscn.esm-bundler.js",
-  "types": "dist/runtime-tscn.d.ts",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
   "files": [
-    "index.js",
     "dist"
   ],
-  "sideEffects": false,
-  "buildOptions": {
-    "name": "VueRuntimeTSCN",
-    "formats": [
-      "esm-bundler",
-      "cjs"
-    ]
+  "scripts": {
+    "build": "npx tsc -p ."
   },
   "dependencies": {
     "@vue/runtime-core": "^3.3.0",
