@@ -1,15 +1,16 @@
 <template>
-  <Control>
-    <Label :text="text"></Label>
-  </Control>
+  <HBoxContainer>
+    <Button :text="'Click me'" @pressed="handleClick"></Button>
+    <Label :text="count"></Label>
+  </HBoxContainer>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from 'vue'
 
-const text = ref('Hello, World!')
+const count = ref(1)
 
-setTimeout(() => {
-  text.value = 'Hello, World! 2'
-}, 5000)
+const handleClick = () => {
+  count.value = count.value + 1
+}
 </script>

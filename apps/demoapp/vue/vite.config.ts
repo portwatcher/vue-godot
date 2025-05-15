@@ -2,7 +2,16 @@ import vue from '@vitejs/plugin-vue'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue({
+      template: {
+        compilerOptions: {
+          // treat all tags with uppercase letters as custom elements
+          isCustomElement: (tag) => tag[0] === tag[0].toUpperCase(),
+        },
+      },
+    }),
+  ],
   define: {
     'process.env': {},
   },
