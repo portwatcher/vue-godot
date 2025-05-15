@@ -1,12 +1,16 @@
 {
   "name": "vue-godot",
-  "private": true,
   "scripts": {
     "build": "turbo run build",
     "build:runtime": "turbo run build --filter=@vue-godot/runtime-tscn",
     "build:demo": "turbo run build --filter=demoapp"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/portwatcher/vue-godot"
+  },
   "devDependencies": {
+    "@types/node": "^22.15.18",
     "prettier": "^3.5.3",
     "turbo": "^2.4.4",
     "typescript": "5.8.2"
@@ -14,6 +18,11 @@
   "engines": {
     "node": ">=18"
   },
+  "author": {
+    "name": "portwatcher",
+    "url": "https://juryquinn.com"
+  },
+  "license": "MIT",
   "packageManager": "npm@10.9.0",
   "workspaces": [
     "apps/*",
