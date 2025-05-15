@@ -3,19 +3,25 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [vue()],
+  define: {
+    'process.env': {},
+  },
   resolve: {
     // `vue` → `@vue/runtime-core` so the DOM renderer is tree-shaken
     alias: { vue: '@vue/runtime-core' },
   },
   build: {
     lib: {
-      entry: 'src/main.ts',
-      formats: ['es'],
+      entry: 'vue/src/main.ts',
+      formats: ['cjs'],
       fileName: () => 'app.js',
     },
     // everything provided by the engine/runtime stays external
     rollupOptions: {
-      external: ['@vue/runtime-core', 'godot'],
+      external: ['godot'],
+      output: {
+        exports: 'named',
+      },
     },
     target: 'es2020',
   },

@@ -12,7 +12,9 @@
 
     /* Language and Environment */
     "target": "es2016" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
-    // "lib": [],                                        /* Specify a set of bundled library declaration files that describe the target runtime environment. */
+    "lib": [
+      "es2020"
+    ] /* Specify a set of bundled library declaration files that describe the target runtime environment. */,
     // "jsx": "preserve",                                /* Specify what JSX code is generated. */
     "experimentalDecorators": true /* Enable experimental support for legacy experimental decorators. */,
     // "emitDecoratorMetadata": true,                    /* Emit design-type metadata for decorated declarations in source files. */
@@ -25,20 +27,19 @@
     // "moduleDetection": "auto",                        /* Control what method is used to detect module-format JS files. */
 
     /* Modules */
-    "module": "CommonJS" /* Specify what module code is generated. */,
+    "module": "ESNext" /* Specify what module code is generated. */,
     "rootDir": "./" /* Specify the root folder within your source files. */,
-    // "moduleResolution": "node10",                     /* Specify how TypeScript looks up a file from a given module specifier. */
-    // "baseUrl": "./",                                  /* Specify the base directory to resolve non-relative module names. */
-    // "paths": {},                                      /* Specify a set of entries that re-map imports to additional lookup locations. */
+    "moduleResolution": "bundler" /* Specify how TypeScript looks up a file from a given module specifier. */,
+    "baseUrl": "./",
+    "paths": {
+      "godot": ["./typings/godot.minimal.d.ts"]
+    },
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     "typeRoots": [
       /* Specify multiple folders that act like './node_modules/@types'. */
-      "./node_modules/@types",
-      "./typings"
+      "./node_modules/@types"
     ],
-    "types": [
-      "node"
-    ] /* Specify type package names to be included without being referenced in a source file. */,
+    // "types": [], /* Specify type package names to be included without being referenced in a source file. */
     // "allowUmdGlobalAccess": true,                     /* Allow accessing UMD globals from modules. */
     // "moduleSuffixes": [],                             /* List of file name suffixes to search when resolving a module. */
     // "allowImportingTsExtensions": true,               /* Allow imports to include TypeScript file extensions. Requires '--moduleResolution bundler' and either '--noEmit' or '--emitDeclarationOnly' to be set. */
@@ -111,5 +112,12 @@
     /* Completeness */
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true /* Skip type checking all .d.ts files. */
-  }
+  },
+  "include": [
+    "vue/src/**/*.ts",
+    "vue/src/**/*.d.ts",
+    "vue/src/**/*.vue",
+    "typings/**/*.d.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
 }

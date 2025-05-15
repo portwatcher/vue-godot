@@ -8,4 +8,8 @@
 import { ref } from 'vue';
 
 const text = ref('Hello, World!')
+
+setTimeout(() => {
+  text.value = 'Hello, World! 2'
+}, 5000)
 </script>

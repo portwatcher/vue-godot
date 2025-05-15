@@ -1,6 +1,715 @@
 // AUTO-GENERATED
 /// <reference no-default-lib="true"/>
 declare module "godot" {
+    // _singleton_class_: PhysicsServer2D
+    namespace PhysicsServer2D {
+        enum SpaceParameter {
+            /** Constant to set/get the maximum distance a pair of bodies has to move before their collision status has to be recalculated. The default value of this parameter is [member ProjectSettings.physics/2d/solver/contact_recycle_radius]. */
+            SPACE_PARAM_CONTACT_RECYCLE_RADIUS = 0,
+            
+            /** Constant to set/get the maximum distance a shape can be from another before they are considered separated and the contact is discarded. The default value of this parameter is [member ProjectSettings.physics/2d/solver/contact_max_separation]. */
+            SPACE_PARAM_CONTACT_MAX_SEPARATION = 1,
+            
+            /** Constant to set/get the maximum distance a shape can penetrate another shape before it is considered a collision. The default value of this parameter is [member ProjectSettings.physics/2d/solver/contact_max_allowed_penetration]. */
+            SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION = 2,
+            
+            /** Constant to set/get the default solver bias for all physics contacts. A solver bias is a factor controlling how much two objects "rebound", after overlapping, to avoid leaving them in that state because of numerical imprecision. The default value of this parameter is [member ProjectSettings.physics/2d/solver/default_contact_bias]. */
+            SPACE_PARAM_CONTACT_DEFAULT_BIAS = 3,
+            
+            /** Constant to set/get the threshold linear velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given. The default value of this parameter is [member ProjectSettings.physics/2d/sleep_threshold_linear]. */
+            SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD = 4,
+            
+            /** Constant to set/get the threshold angular velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given. The default value of this parameter is [member ProjectSettings.physics/2d/sleep_threshold_angular]. */
+            SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD = 5,
+            
+            /** Constant to set/get the maximum time of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after this time. The default value of this parameter is [member ProjectSettings.physics/2d/time_before_sleep]. */
+            SPACE_PARAM_BODY_TIME_TO_SLEEP = 6,
+            
+            /** Constant to set/get the default solver bias for all physics constraints. A solver bias is a factor controlling how much two objects "rebound", after violating a constraint, to avoid leaving them in that state because of numerical imprecision. The default value of this parameter is [member ProjectSettings.physics/2d/solver/default_constraint_bias]. */
+            SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS = 7,
+            
+            /** Constant to set/get the number of solver iterations for all contacts and constraints. The greater the number of iterations, the more accurate the collisions will be. However, a greater number of iterations requires more CPU power, which can decrease performance. The default value of this parameter is [member ProjectSettings.physics/2d/solver/solver_iterations]. */
+            SPACE_PARAM_SOLVER_ITERATIONS = 8,
+        }
+        enum ShapeType {
+            /** This is the constant for creating world boundary shapes. A world boundary shape is an  *infinite*  line with an origin point, and a normal. Thus, it can be used for front/behind checks. */
+            SHAPE_WORLD_BOUNDARY = 0,
+            
+            /** This is the constant for creating separation ray shapes. A separation ray is defined by a length and separates itself from what is touching its far endpoint. Useful for character controllers. */
+            SHAPE_SEPARATION_RAY = 1,
+            
+            /** This is the constant for creating segment shapes. A segment shape is a  *finite*  line from a point A to a point B. It can be checked for intersections. */
+            SHAPE_SEGMENT = 2,
+            
+            /** This is the constant for creating circle shapes. A circle shape only has a radius. It can be used for intersections and inside/outside checks. */
+            SHAPE_CIRCLE = 3,
+            
+            /** This is the constant for creating rectangle shapes. A rectangle shape is defined by a width and a height. It can be used for intersections and inside/outside checks. */
+            SHAPE_RECTANGLE = 4,
+            
+            /** This is the constant for creating capsule shapes. A capsule shape is defined by a radius and a length. It can be used for intersections and inside/outside checks. */
+            SHAPE_CAPSULE = 5,
+            
+            /** This is the constant for creating convex polygon shapes. A polygon is defined by a list of points. It can be used for intersections and inside/outside checks. */
+            SHAPE_CONVEX_POLYGON = 6,
+            
+            /** This is the constant for creating concave polygon shapes. A polygon is defined by a list of points. It can be used for intersections checks, but not for inside/outside checks. */
+            SHAPE_CONCAVE_POLYGON = 7,
+            
+            /** This constant is used internally by the engine. Any attempt to create this kind of shape results in an error. */
+            SHAPE_CUSTOM = 8,
+        }
+        enum AreaParameter {
+            /** Constant to set/get gravity override mode in an area. See [enum AreaSpaceOverrideMode] for possible values. The default value of this parameter is [constant AREA_SPACE_OVERRIDE_DISABLED]. */
+            AREA_PARAM_GRAVITY_OVERRIDE_MODE = 0,
+            
+            /** Constant to set/get gravity strength in an area. The default value of this parameter is `9.80665`. */
+            AREA_PARAM_GRAVITY = 1,
+            
+            /** Constant to set/get gravity vector/center in an area. The default value of this parameter is `Vector2(0, -1)`. */
+            AREA_PARAM_GRAVITY_VECTOR = 2,
+            
+            /** Constant to set/get whether the gravity vector of an area is a direction, or a center point. The default value of this parameter is `false`. */
+            AREA_PARAM_GRAVITY_IS_POINT = 3,
+            
+            /** Constant to set/get the distance at which the gravity strength is equal to the gravity controlled by [constant AREA_PARAM_GRAVITY]. For example, on a planet 100 pixels in radius with a surface gravity of 4.0 px/s², set the gravity to 4.0 and the unit distance to 100.0. The gravity will have falloff according to the inverse square law, so in the example, at 200 pixels from the center the gravity will be 1.0 px/s² (twice the distance, 1/4th the gravity), at 50 pixels it will be 16.0 px/s² (half the distance, 4x the gravity), and so on.  
+             *  The above is true only when the unit distance is a positive number. When the unit distance is set to 0.0, the gravity will be constant regardless of distance. The default value of this parameter is `0.0`.  
+             */
+            AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE = 4,
+            
+            /** Constant to set/get linear damping override mode in an area. See [enum AreaSpaceOverrideMode] for possible values. The default value of this parameter is [constant AREA_SPACE_OVERRIDE_DISABLED]. */
+            AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE = 5,
+            
+            /** Constant to set/get the linear damping factor of an area. The default value of this parameter is `0.1`. */
+            AREA_PARAM_LINEAR_DAMP = 6,
+            
+            /** Constant to set/get angular damping override mode in an area. See [enum AreaSpaceOverrideMode] for possible values. The default value of this parameter is [constant AREA_SPACE_OVERRIDE_DISABLED]. */
+            AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE = 7,
+            
+            /** Constant to set/get the angular damping factor of an area. The default value of this parameter is `1.0`. */
+            AREA_PARAM_ANGULAR_DAMP = 8,
+            
+            /** Constant to set/get the priority (order of processing) of an area. The default value of this parameter is `0`. */
+            AREA_PARAM_PRIORITY = 9,
+        }
+        enum AreaSpaceOverrideMode {
+            /** This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them. */
+            AREA_SPACE_OVERRIDE_DISABLED = 0,
+            
+            /** This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects. */
+            AREA_SPACE_OVERRIDE_COMBINE = 1,
+            
+            /** This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one. */
+            AREA_SPACE_OVERRIDE_COMBINE_REPLACE = 2,
+            
+            /** This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas. */
+            AREA_SPACE_OVERRIDE_REPLACE = 3,
+            
+            /** This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one. */
+            AREA_SPACE_OVERRIDE_REPLACE_COMBINE = 4,
+        }
+        enum BodyMode {
+            /** Constant for static bodies. In this mode, a body can be only moved by user code and doesn't collide with other bodies along its path when moved. */
+            BODY_MODE_STATIC = 0,
+            
+            /** Constant for kinematic bodies. In this mode, a body can be only moved by user code and collides with other bodies along its path. */
+            BODY_MODE_KINEMATIC = 1,
+            
+            /** Constant for rigid bodies. In this mode, a body can be pushed by other bodies and has forces applied. */
+            BODY_MODE_RIGID = 2,
+            
+            /** Constant for linear rigid bodies. In this mode, a body can not rotate, and only its linear velocity is affected by external forces. */
+            BODY_MODE_RIGID_LINEAR = 3,
+        }
+        enum BodyParameter {
+            /** Constant to set/get a body's bounce factor. The default value of this parameter is `0.0`. */
+            BODY_PARAM_BOUNCE = 0,
+            
+            /** Constant to set/get a body's friction. The default value of this parameter is `1.0`. */
+            BODY_PARAM_FRICTION = 1,
+            
+            /** Constant to set/get a body's mass. The default value of this parameter is `1.0`. If the body's mode is set to [constant BODY_MODE_RIGID], then setting this parameter will have the following additional effects:  
+             *  - If the parameter [constant BODY_PARAM_CENTER_OF_MASS] has never been set explicitly, then the value of that parameter will be recalculated based on the body's shapes.  
+             *  - If the parameter [constant BODY_PARAM_INERTIA] is set to a value `<= 0.0`, then the value of that parameter will be recalculated based on the body's shapes, mass, and center of mass.  
+             */
+            BODY_PARAM_MASS = 2,
+            
+            /** Constant to set/get a body's inertia. The default value of this parameter is `0.0`. If the body's inertia is set to a value `<= 0.0`, then the inertia will be recalculated based on the body's shapes, mass, and center of mass. */
+            BODY_PARAM_INERTIA = 3,
+            
+            /** Constant to set/get a body's center of mass position in the body's local coordinate system. The default value of this parameter is `Vector2(0,0)`. If this parameter is never set explicitly, then it is recalculated based on the body's shapes when setting the parameter [constant BODY_PARAM_MASS] or when calling [method body_set_space]. */
+            BODY_PARAM_CENTER_OF_MASS = 4,
+            
+            /** Constant to set/get a body's gravity multiplier. The default value of this parameter is `1.0`. */
+            BODY_PARAM_GRAVITY_SCALE = 5,
+            
+            /** Constant to set/get a body's linear damping mode. See [enum BodyDampMode] for possible values. The default value of this parameter is [constant BODY_DAMP_MODE_COMBINE]. */
+            BODY_PARAM_LINEAR_DAMP_MODE = 6,
+            
+            /** Constant to set/get a body's angular damping mode. See [enum BodyDampMode] for possible values. The default value of this parameter is [constant BODY_DAMP_MODE_COMBINE]. */
+            BODY_PARAM_ANGULAR_DAMP_MODE = 7,
+            
+            /** Constant to set/get a body's linear damping factor. The default value of this parameter is `0.0`. */
+            BODY_PARAM_LINEAR_DAMP = 8,
+            
+            /** Constant to set/get a body's angular damping factor. The default value of this parameter is `0.0`. */
+            BODY_PARAM_ANGULAR_DAMP = 9,
+            
+            /** Represents the size of the [enum BodyParameter] enum. */
+            BODY_PARAM_MAX = 10,
+        }
+        enum BodyDampMode {
+            /** The body's damping value is added to any value set in areas or the default value. */
+            BODY_DAMP_MODE_COMBINE = 0,
+            
+            /** The body's damping value replaces any value set in areas or the default value. */
+            BODY_DAMP_MODE_REPLACE = 1,
+        }
+        enum BodyState {
+            /** Constant to set/get the current transform matrix of the body. */
+            BODY_STATE_TRANSFORM = 0,
+            
+            /** Constant to set/get the current linear velocity of the body. */
+            BODY_STATE_LINEAR_VELOCITY = 1,
+            
+            /** Constant to set/get the current angular velocity of the body. */
+            BODY_STATE_ANGULAR_VELOCITY = 2,
+            
+            /** Constant to sleep/wake up a body, or to get whether it is sleeping. */
+            BODY_STATE_SLEEPING = 3,
+            
+            /** Constant to set/get whether the body can sleep. */
+            BODY_STATE_CAN_SLEEP = 4,
+        }
+        enum JointType {
+            /** Constant to create pin joints. */
+            JOINT_TYPE_PIN = 0,
+            
+            /** Constant to create groove joints. */
+            JOINT_TYPE_GROOVE = 1,
+            
+            /** Constant to create damped spring joints. */
+            JOINT_TYPE_DAMPED_SPRING = 2,
+            
+            /** Represents the size of the [enum JointType] enum. */
+            JOINT_TYPE_MAX = 3,
+        }
+        enum JointParam {
+            /** Constant to set/get how fast the joint pulls the bodies back to satisfy the joint constraint. The lower the value, the more the two bodies can pull on the joint. The default value of this parameter is `0.0`.  
+             *      
+             *  **Note:** In Godot Physics, this parameter is only used for pin joints and groove joints.  
+             */
+            JOINT_PARAM_BIAS = 0,
+            
+            /** Constant to set/get the maximum speed with which the joint can apply corrections. The default value of this parameter is `3.40282e+38`.  
+             *      
+             *  **Note:** In Godot Physics, this parameter is only used for groove joints.  
+             */
+            JOINT_PARAM_MAX_BIAS = 1,
+            
+            /** Constant to set/get the maximum force that the joint can use to act on the two bodies. The default value of this parameter is `3.40282e+38`.  
+             *      
+             *  **Note:** In Godot Physics, this parameter is only used for groove joints.  
+             */
+            JOINT_PARAM_MAX_FORCE = 2,
+        }
+        enum PinJointParam {
+            /** Constant to set/get a how much the bond of the pin joint can flex. The default value of this parameter is `0.0`. */
+            PIN_JOINT_SOFTNESS = 0,
+            
+            /** The maximum rotation around the pin. */
+            PIN_JOINT_LIMIT_UPPER = 1,
+            
+            /** The minimum rotation around the pin. */
+            PIN_JOINT_LIMIT_LOWER = 2,
+            
+            /** Target speed for the motor. In radians per second. */
+            PIN_JOINT_MOTOR_TARGET_VELOCITY = 3,
+        }
+        enum PinJointFlag {
+            /** If `true`, the pin has a maximum and a minimum rotation. */
+            PIN_JOINT_FLAG_ANGULAR_LIMIT_ENABLED = 0,
+            
+            /** If `true`, a motor turns the pin. */
+            PIN_JOINT_FLAG_MOTOR_ENABLED = 1,
+        }
+        enum DampedSpringParam {
+            /** Sets the resting length of the spring joint. The joint will always try to go to back this length when pulled apart. The default value of this parameter is the distance between the joint's anchor points. */
+            DAMPED_SPRING_REST_LENGTH = 0,
+            
+            /** Sets the stiffness of the spring joint. The joint applies a force equal to the stiffness times the distance from its resting length. The default value of this parameter is `20.0`. */
+            DAMPED_SPRING_STIFFNESS = 1,
+            
+            /** Sets the damping ratio of the spring joint. A value of 0 indicates an undamped spring, while 1 causes the system to reach equilibrium as fast as possible (critical damping). The default value of this parameter is `1.5`. */
+            DAMPED_SPRING_DAMPING = 2,
+        }
+        enum CCDMode {
+            /** Disables continuous collision detection. This is the fastest way to detect body collisions, but it can miss small and/or fast-moving objects. */
+            CCD_MODE_DISABLED = 0,
+            
+            /** Enables continuous collision detection by raycasting. It is faster than shapecasting, but less precise. */
+            CCD_MODE_CAST_RAY = 1,
+            
+            /** Enables continuous collision detection by shapecasting. It is the slowest CCD method, and the most precise. */
+            CCD_MODE_CAST_SHAPE = 2,
+        }
+        enum AreaBodyStatus {
+            /** The value of the first parameter and area callback function receives, when an object enters one of its shapes. */
+            AREA_BODY_ADDED = 0,
+            
+            /** The value of the first parameter and area callback function receives, when an object exits one of its shapes. */
+            AREA_BODY_REMOVED = 1,
+        }
+        enum ProcessInfo {
+            /** Constant to get the number of objects that are not sleeping. */
+            INFO_ACTIVE_OBJECTS = 0,
+            
+            /** Constant to get the number of possible collisions. */
+            INFO_COLLISION_PAIRS = 1,
+            
+            /** Constant to get the number of space regions where a collision could occur. */
+            INFO_ISLAND_COUNT = 2,
+        }
+    }
+    /** A server interface for low-level 2D physics access.  
+     *  	  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_physicsserver2d.html  
+     */
+    class PhysicsServer2D extends Object {
+        /** Creates a 2D world boundary shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the shape's normal direction and distance properties. */
+        static world_boundary_shape_create(): RID
+        
+        /** Creates a 2D separation ray shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the shape's `length` and `slide_on_slope` properties. */
+        static separation_ray_shape_create(): RID
+        
+        /** Creates a 2D segment shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the segment's start and end points. */
+        static segment_shape_create(): RID
+        
+        /** Creates a 2D circle shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the circle's radius. */
+        static circle_shape_create(): RID
+        
+        /** Creates a 2D rectangle shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the rectangle's half-extents. */
+        static rectangle_shape_create(): RID
+        
+        /** Creates a 2D capsule shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the capsule's height and radius. */
+        static capsule_shape_create(): RID
+        
+        /** Creates a 2D convex polygon shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the convex polygon's points. */
+        static convex_polygon_shape_create(): RID
+        
+        /** Creates a 2D concave polygon shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the concave polygon's segments. */
+        static concave_polygon_shape_create(): RID
+        
+        /** Sets the shape data that defines the configuration of the shape. The [param data] to be passed depends on the shape's type (see [method shape_get_type]):  
+         *  - [constant SHAPE_WORLD_BOUNDARY]: an array of length two containing a [Vector2] `normal` direction and a [float] distance `d`,  
+         *  - [constant SHAPE_SEPARATION_RAY]: a dictionary containing the key `length` with a [float] value and the key `slide_on_slope` with a [bool] value,  
+         *  - [constant SHAPE_SEGMENT]: a [Rect2] `rect` containing the first point of the segment in `rect.position` and the second point of the segment in `rect.size`,  
+         *  - [constant SHAPE_CIRCLE]: a [float] `radius`,  
+         *  - [constant SHAPE_RECTANGLE]: a [Vector2] `half_extents`,  
+         *  - [constant SHAPE_CAPSULE]: an array of length two (or a [Vector2]) containing a [float] `height` and a [float] `radius`,  
+         *  - [constant SHAPE_CONVEX_POLYGON]: either a [PackedVector2Array] of points defining a convex polygon in counterclockwise order (the clockwise outward normal of each segment formed by consecutive points is calculated internally), or a [PackedFloat32Array] of length divisible by four so that every 4-tuple of [float]s contains the coordinates of a point followed by the coordinates of the clockwise outward normal vector to the segment between the current point and the next point,  
+         *  - [constant SHAPE_CONCAVE_POLYGON]: a [PackedVector2Array] of length divisible by two (each pair of points forms one segment).  
+         *  **Warning:** In the case of [constant SHAPE_CONVEX_POLYGON], this method does not check if the points supplied actually form a convex polygon (unlike the [member CollisionPolygon2D.polygon] property).  
+         */
+        static shape_set_data(shape: RID, data: any): void
+        
+        /** Returns the shape's type (see [enum ShapeType]). */
+        static shape_get_type(shape: RID): PhysicsServer2D.ShapeType
+        
+        /** Returns the shape data that defines the configuration of the shape, such as the half-extents of a rectangle or the segments of a concave shape. See [method shape_set_data] for the precise format of this data in each case. */
+        static shape_get_data(shape: RID): any
+        
+        /** Creates a 2D space in the physics server, and returns the [RID] that identifies it. A space contains bodies and areas, and controls the stepping of the physics simulation of the objects in it. */
+        static space_create(): RID
+        
+        /** Activates or deactivates the space. If [param active] is `false`, then the physics server will not do anything with this space in its physics step. */
+        static space_set_active(space: RID, active: boolean): void
+        
+        /** Returns `true` if the space is active. */
+        static space_is_active(space: RID): boolean
+        
+        /** Sets the value of the given space parameter. See [enum SpaceParameter] for the list of available parameters. */
+        static space_set_param(space: RID, param: PhysicsServer2D.SpaceParameter, value: float64): void
+        
+        /** Returns the value of the given space parameter. See [enum SpaceParameter] for the list of available parameters. */
+        static space_get_param(space: RID, param: PhysicsServer2D.SpaceParameter): float64
+        
+        /** Returns the state of a space, a [PhysicsDirectSpaceState2D]. This object can be used for collision/intersection queries. */
+        static space_get_direct_state(space: RID): PhysicsDirectSpaceState2D
+        
+        /** Creates a 2D area object in the physics server, and returns the [RID] that identifies it. The default settings for the created area include a collision layer and mask set to `1`, and `monitorable` set to `false`.  
+         *  Use [method area_add_shape] to add shapes to it, use [method area_set_transform] to set its transform, and use [method area_set_space] to add the area to a space. If you want the area to be detectable use [method area_set_monitorable].  
+         */
+        static area_create(): RID
+        
+        /** Adds the area to the given space, after removing the area from the previously assigned space (if any).  
+         *      
+         *  **Note:** To remove an area from a space without immediately adding it back elsewhere, use `PhysicsServer2D.area_set_space(area, RID())`.  
+         */
+        static area_set_space(area: RID, space: RID): void
+        
+        /** Returns the [RID] of the space assigned to the area. Returns an empty [RID] if no space is assigned. */
+        static area_get_space(area: RID): RID
+        
+        /** Adds a shape to the area, with the given local transform. The shape (together with its [param transform] and [param disabled] properties) is added to an array of shapes, and the shapes of an area are usually referenced by their index in this array. */
+        static area_add_shape(area: RID, shape: RID, transform: Transform2D = new Transform2D(), disabled: boolean = false): void
+        
+        /** Replaces the area's shape at the given index by another shape, while not affecting the `transform` and `disabled` properties at the same index. */
+        static area_set_shape(area: RID, shape_idx: int64, shape: RID): void
+        
+        /** Sets the local transform matrix of the area's shape with the given index. */
+        static area_set_shape_transform(area: RID, shape_idx: int64, transform: Transform2D): void
+        
+        /** Sets the disabled property of the area's shape with the given index. If [param disabled] is `true`, then the shape will not detect any other shapes entering or exiting it. */
+        static area_set_shape_disabled(area: RID, shape_idx: int64, disabled: boolean): void
+        
+        /** Returns the number of shapes added to the area. */
+        static area_get_shape_count(area: RID): int64
+        
+        /** Returns the [RID] of the shape with the given index in the area's array of shapes. */
+        static area_get_shape(area: RID, shape_idx: int64): RID
+        
+        /** Returns the local transform matrix of the shape with the given index in the area's array of shapes. */
+        static area_get_shape_transform(area: RID, shape_idx: int64): Transform2D
+        
+        /** Removes the shape with the given index from the area's array of shapes. The shape itself is not deleted, so it can continue to be used elsewhere or added back later. As a result of this operation, the area's shapes which used to have indices higher than [param shape_idx] will have their index decreased by one. */
+        static area_remove_shape(area: RID, shape_idx: int64): void
+        
+        /** Removes all shapes from the area. This does not delete the shapes themselves, so they can continue to be used elsewhere or added back later. */
+        static area_clear_shapes(area: RID): void
+        
+        /** Assigns the area to one or many physics layers, via a bitmask. */
+        static area_set_collision_layer(area: RID, layer: int64): void
+        
+        /** Returns the physics layer or layers the area belongs to, as a bitmask. */
+        static area_get_collision_layer(area: RID): int64
+        
+        /** Sets which physics layers the area will monitor, via a bitmask. */
+        static area_set_collision_mask(area: RID, mask: int64): void
+        
+        /** Returns the physics layer or layers the area can contact with, as a bitmask. */
+        static area_get_collision_mask(area: RID): int64
+        
+        /** Sets the value of the given area parameter. See [enum AreaParameter] for the list of available parameters. */
+        static area_set_param(area: RID, param: PhysicsServer2D.AreaParameter, value: any): void
+        
+        /** Sets the transform matrix of the area. */
+        static area_set_transform(area: RID, transform: Transform2D): void
+        
+        /** Returns the value of the given area parameter. See [enum AreaParameter] for the list of available parameters. */
+        static area_get_param(area: RID, param: PhysicsServer2D.AreaParameter): any
+        
+        /** Returns the transform matrix of the area. */
+        static area_get_transform(area: RID): Transform2D
+        
+        /** Attaches the `ObjectID` of an [Object] to the area. Use [method Object.get_instance_id] to get the `ObjectID` of a [CollisionObject2D]. */
+        static area_attach_object_instance_id(area: RID, id: int64): void
+        
+        /** Returns the `ObjectID` attached to the area. Use [method @GlobalScope.instance_from_id] to retrieve an [Object] from a nonzero `ObjectID`. */
+        static area_get_object_instance_id(area: RID): int64
+        
+        /** Attaches the `ObjectID` of a canvas to the area. Use [method Object.get_instance_id] to get the `ObjectID` of a [CanvasLayer]. */
+        static area_attach_canvas_instance_id(area: RID, id: int64): void
+        
+        /** Returns the `ObjectID` of the canvas attached to the area. Use [method @GlobalScope.instance_from_id] to retrieve a [CanvasLayer] from a nonzero `ObjectID`. */
+        static area_get_canvas_instance_id(area: RID): int64
+        
+        /** Sets the area's body monitor callback. This callback will be called when any other (shape of a) body enters or exits (a shape of) the given area, and must take the following five parameters:  
+         *  1. an integer `status`: either [constant AREA_BODY_ADDED] or [constant AREA_BODY_REMOVED] depending on whether the other body shape entered or exited the area,  
+         *  2. an [RID] `body_rid`: the [RID] of the body that entered or exited the area,  
+         *  3. an integer `instance_id`: the `ObjectID` attached to the body,  
+         *  4. an integer `body_shape_idx`: the index of the shape of the body that entered or exited the area,  
+         *  5. an integer `self_shape_idx`: the index of the shape of the area where the body entered or exited.  
+         *  By counting (or keeping track of) the shapes that enter and exit, it can be determined if a body (with all its shapes) is entering for the first time or exiting for the last time.  
+         */
+        static area_set_monitor_callback(area: RID, callback: Callable): void
+        
+        /** Sets the area's area monitor callback. This callback will be called when any other (shape of an) area enters or exits (a shape of) the given area, and must take the following five parameters:  
+         *  1. an integer `status`: either [constant AREA_BODY_ADDED] or [constant AREA_BODY_REMOVED] depending on whether the other area's shape entered or exited the area,  
+         *  2. an [RID] `area_rid`: the [RID] of the other area that entered or exited the area,  
+         *  3. an integer `instance_id`: the `ObjectID` attached to the other area,  
+         *  4. an integer `area_shape_idx`: the index of the shape of the other area that entered or exited the area,  
+         *  5. an integer `self_shape_idx`: the index of the shape of the area where the other area entered or exited.  
+         *  By counting (or keeping track of) the shapes that enter and exit, it can be determined if an area (with all its shapes) is entering for the first time or exiting for the last time.  
+         */
+        static area_set_area_monitor_callback(area: RID, callback: Callable): void
+        
+        /** Sets whether the area is monitorable or not. If [param monitorable] is `true`, the area monitoring callback of other areas will be called when this area enters or exits them. */
+        static area_set_monitorable(area: RID, monitorable: boolean): void
+        
+        /** Creates a 2D body object in the physics server, and returns the [RID] that identifies it. The default settings for the created area include a collision layer and mask set to `1`, and body mode set to [constant BODY_MODE_RIGID].  
+         *  Use [method body_add_shape] to add shapes to it, use [method body_set_state] to set its transform, and use [method body_set_space] to add the body to a space.  
+         */
+        static body_create(): RID
+        
+        /** Adds the body to the given space, after removing the body from the previously assigned space (if any). If the body's mode is set to [constant BODY_MODE_RIGID], then adding the body to a space will have the following additional effects:  
+         *  - If the parameter [constant BODY_PARAM_CENTER_OF_MASS] has never been set explicitly, then the value of that parameter will be recalculated based on the body's shapes.  
+         *  - If the parameter [constant BODY_PARAM_INERTIA] is set to a value `<= 0.0`, then the value of that parameter will be recalculated based on the body's shapes, mass, and center of mass.  
+         *      
+         *  **Note:** To remove a body from a space without immediately adding it back elsewhere, use `PhysicsServer2D.body_set_space(body, RID())`.  
+         */
+        static body_set_space(body: RID, space: RID): void
+        
+        /** Returns the [RID] of the space assigned to the body. Returns an empty [RID] if no space is assigned. */
+        static body_get_space(body: RID): RID
+        
+        /** Sets the body's mode. See [enum BodyMode] for the list of available modes. */
+        static body_set_mode(body: RID, mode: PhysicsServer2D.BodyMode): void
+        
+        /** Returns the body's mode (see [enum BodyMode]). */
+        static body_get_mode(body: RID): PhysicsServer2D.BodyMode
+        
+        /** Adds a shape to the area, with the given local transform. The shape (together with its [param transform] and [param disabled] properties) is added to an array of shapes, and the shapes of a body are usually referenced by their index in this array. */
+        static body_add_shape(body: RID, shape: RID, transform: Transform2D = new Transform2D(), disabled: boolean = false): void
+        
+        /** Replaces the body's shape at the given index by another shape, while not affecting the `transform`, `disabled`, and one-way collision properties at the same index. */
+        static body_set_shape(body: RID, shape_idx: int64, shape: RID): void
+        
+        /** Sets the local transform matrix of the body's shape with the given index. */
+        static body_set_shape_transform(body: RID, shape_idx: int64, transform: Transform2D): void
+        
+        /** Returns the number of shapes added to the body. */
+        static body_get_shape_count(body: RID): int64
+        
+        /** Returns the [RID] of the shape with the given index in the body's array of shapes. */
+        static body_get_shape(body: RID, shape_idx: int64): RID
+        
+        /** Returns the local transform matrix of the shape with the given index in the area's array of shapes. */
+        static body_get_shape_transform(body: RID, shape_idx: int64): Transform2D
+        
+        /** Removes the shape with the given index from the body's array of shapes. The shape itself is not deleted, so it can continue to be used elsewhere or added back later. As a result of this operation, the body's shapes which used to have indices higher than [param shape_idx] will have their index decreased by one. */
+        static body_remove_shape(body: RID, shape_idx: int64): void
+        
+        /** Removes all shapes from the body. This does not delete the shapes themselves, so they can continue to be used elsewhere or added back later. */
+        static body_clear_shapes(body: RID): void
+        
+        /** Sets the disabled property of the body's shape with the given index. If [param disabled] is `true`, then the shape will be ignored in all collision detection. */
+        static body_set_shape_disabled(body: RID, shape_idx: int64, disabled: boolean): void
+        
+        /** Sets the one-way collision properties of the body's shape with the given index. If [param enable] is `true`, the one-way collision direction given by the shape's local upward axis `body_get_shape_transform(body, shape_idx).y` will be used to ignore collisions with the shape in the opposite direction, and to ensure depenetration of kinematic bodies happens in this direction. */
+        static body_set_shape_as_one_way_collision(body: RID, shape_idx: int64, enable: boolean, margin: float64): void
+        
+        /** Attaches the `ObjectID` of an [Object] to the body. Use [method Object.get_instance_id] to get the `ObjectID` of a [CollisionObject2D]. */
+        static body_attach_object_instance_id(body: RID, id: int64): void
+        
+        /** Returns the `ObjectID` attached to the body. Use [method @GlobalScope.instance_from_id] to retrieve an [Object] from a nonzero `ObjectID`. */
+        static body_get_object_instance_id(body: RID): int64
+        
+        /** Attaches the `ObjectID` of a canvas to the body. Use [method Object.get_instance_id] to get the `ObjectID` of a [CanvasLayer]. */
+        static body_attach_canvas_instance_id(body: RID, id: int64): void
+        
+        /** Returns the `ObjectID` of the canvas attached to the body. Use [method @GlobalScope.instance_from_id] to retrieve a [CanvasLayer] from a nonzero `ObjectID`. */
+        static body_get_canvas_instance_id(body: RID): int64
+        
+        /** Sets the continuous collision detection mode using one of the [enum CCDMode] constants.  
+         *  Continuous collision detection tries to predict where a moving body would collide in between physics updates, instead of moving it and correcting its movement if it collided.  
+         */
+        static body_set_continuous_collision_detection_mode(body: RID, mode: PhysicsServer2D.CCDMode): void
+        
+        /** Returns the body's continuous collision detection mode (see [enum CCDMode]). */
+        static body_get_continuous_collision_detection_mode(body: RID): PhysicsServer2D.CCDMode
+        
+        /** Sets the physics layer or layers the body belongs to, via a bitmask. */
+        static body_set_collision_layer(body: RID, layer: int64): void
+        
+        /** Returns the physics layer or layers the body belongs to, as a bitmask. */
+        static body_get_collision_layer(body: RID): int64
+        
+        /** Sets the physics layer or layers the body can collide with, via a bitmask. */
+        static body_set_collision_mask(body: RID, mask: int64): void
+        
+        /** Returns the physics layer or layers the body can collide with, as a bitmask. */
+        static body_get_collision_mask(body: RID): int64
+        
+        /** Sets the body's collision priority. This is used in the depenetration phase of [method body_test_motion]. The higher the priority is, the lower the penetration into the body will be. */
+        static body_set_collision_priority(body: RID, priority: float64): void
+        
+        /** Returns the body's collision priority. This is used in the depenetration phase of [method body_test_motion]. The higher the priority is, the lower the penetration into the body will be. */
+        static body_get_collision_priority(body: RID): float64
+        
+        /** Sets the value of the given body parameter. See [enum BodyParameter] for the list of available parameters. */
+        static body_set_param(body: RID, param: PhysicsServer2D.BodyParameter, value: any): void
+        
+        /** Returns the value of the given body parameter. See [enum BodyParameter] for the list of available parameters. */
+        static body_get_param(body: RID, param: PhysicsServer2D.BodyParameter): any
+        
+        /** Restores the default inertia and center of mass of the body based on its shapes. This undoes any custom values previously set using [method body_set_param]. */
+        static body_reset_mass_properties(body: RID): void
+        
+        /** Sets the value of a body's state. See [enum BodyState] for the list of available states.  
+         *      
+         *  **Note:** The state change doesn't take effect immediately. The state will change on the next physics frame.  
+         */
+        static body_set_state(body: RID, state: PhysicsServer2D.BodyState, value: any): void
+        
+        /** Returns the value of the given state of the body. See [enum BodyState] for the list of available states. */
+        static body_get_state(body: RID, state: PhysicsServer2D.BodyState): any
+        
+        /** Applies a directional impulse to the body, at the body's center of mass. The impulse does not affect rotation.  
+         *  An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).  
+         *  This is equivalent to using [method body_apply_impulse] at the body's center of mass.  
+         */
+        static body_apply_central_impulse(body: RID, impulse: Vector2): void
+        
+        /** Applies a rotational impulse to the body. The impulse does not affect position.  
+         *  An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).  
+         */
+        static body_apply_torque_impulse(body: RID, impulse: float64): void
+        
+        /** Applies a positioned impulse to the body. The impulse can affect rotation if [param position] is different from the body's center of mass.  
+         *  An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).  
+         *  [param position] is the offset from the body origin in global coordinates.  
+         */
+        static body_apply_impulse(body: RID, impulse: Vector2, position: Vector2 = Vector2.ZERO): void
+        
+        /** Applies a directional force to the body, at the body's center of mass. The force does not affect rotation. A force is time dependent and meant to be applied every physics update.  
+         *  This is equivalent to using [method body_apply_force] at the body's center of mass.  
+         */
+        static body_apply_central_force(body: RID, force: Vector2): void
+        
+        /** Applies a positioned force to the body. The force can affect rotation if [param position] is different from the body's center of mass. A force is time dependent and meant to be applied every physics update.  
+         *  [param position] is the offset from the body origin in global coordinates.  
+         */
+        static body_apply_force(body: RID, force: Vector2, position: Vector2 = Vector2.ZERO): void
+        
+        /** Applies a rotational force to the body. The force does not affect position. A force is time dependent and meant to be applied every physics update. */
+        static body_apply_torque(body: RID, torque: float64): void
+        
+        /** Adds a constant directional force to the body. The force does not affect rotation. The force remains applied over time until cleared with `PhysicsServer2D.body_set_constant_force(body, Vector2(0, 0))`.  
+         *  This is equivalent to using [method body_add_constant_force] at the body's center of mass.  
+         */
+        static body_add_constant_central_force(body: RID, force: Vector2): void
+        
+        /** Adds a constant positioned force to the body. The force can affect rotation if [param position] is different from the body's center of mass. The force remains applied over time until cleared with `PhysicsServer2D.body_set_constant_force(body, Vector2(0, 0))`.  
+         *  [param position] is the offset from the body origin in global coordinates.  
+         */
+        static body_add_constant_force(body: RID, force: Vector2, position: Vector2 = Vector2.ZERO): void
+        
+        /** Adds a constant rotational force to the body. The force does not affect position. The force remains applied over time until cleared with `PhysicsServer2D.body_set_constant_torque(body, 0)`. */
+        static body_add_constant_torque(body: RID, torque: float64): void
+        
+        /** Sets the body's total constant positional force applied during each physics update.  
+         *  See [method body_add_constant_force] and [method body_add_constant_central_force].  
+         */
+        static body_set_constant_force(body: RID, force: Vector2): void
+        
+        /** Returns the body's total constant positional force applied during each physics update.  
+         *  See [method body_add_constant_force] and [method body_add_constant_central_force].  
+         */
+        static body_get_constant_force(body: RID): Vector2
+        
+        /** Sets the body's total constant rotational force applied during each physics update.  
+         *  See [method body_add_constant_torque].  
+         */
+        static body_set_constant_torque(body: RID, torque: float64): void
+        
+        /** Returns the body's total constant rotational force applied during each physics update.  
+         *  See [method body_add_constant_torque].  
+         */
+        static body_get_constant_torque(body: RID): float64
+        
+        /** Modifies the body's linear velocity so that its projection to the axis `axis_velocity.normalized()` is exactly `axis_velocity.length()`. This is useful for jumping behavior. */
+        static body_set_axis_velocity(body: RID, axis_velocity: Vector2): void
+        
+        /** Adds [param excepted_body] to the body's list of collision exceptions, so that collisions with it are ignored. */
+        static body_add_collision_exception(body: RID, excepted_body: RID): void
+        
+        /** Removes [param excepted_body] from the body's list of collision exceptions, so that collisions with it are no longer ignored. */
+        static body_remove_collision_exception(body: RID, excepted_body: RID): void
+        
+        /** Sets the maximum number of contacts that the body can report. If [param amount] is greater than zero, then the body will keep track of at most this many contacts with other bodies. */
+        static body_set_max_contacts_reported(body: RID, amount: int64): void
+        
+        /** Returns the maximum number of contacts that the body can report. See [method body_set_max_contacts_reported]. */
+        static body_get_max_contacts_reported(body: RID): int64
+        
+        /** Sets whether the body omits the standard force integration. If [param enable] is `true`, the body will not automatically use applied forces, torques, and damping to update the body's linear and angular velocity. In this case, [method body_set_force_integration_callback] can be used to manually update the linear and angular velocity instead.  
+         *  This method is called when the property [member RigidBody2D.custom_integrator] is set.  
+         */
+        static body_set_omit_force_integration(body: RID, enable: boolean): void
+        
+        /** Returns `true` if the body is omitting the standard force integration. See [method body_set_omit_force_integration]. */
+        static body_is_omitting_force_integration(body: RID): boolean
+        
+        /** Sets the body's state synchronization callback function to [param callable]. Use an empty [Callable] ([code skip-lint]Callable()`) to clear the callback.  
+         *  The function [param callable] will be called every physics frame, assuming that the body was active during the previous physics tick, and can be used to fetch the latest state from the physics server.  
+         *  The function [param callable] must take the following parameters:  
+         *  1. `state`: a [PhysicsDirectBodyState2D], used to retrieve the body's state.  
+         */
+        static body_set_state_sync_callback(body: RID, callable: Callable): void
+        
+        /** Sets the body's custom force integration callback function to [param callable]. Use an empty [Callable] ([code skip-lint]Callable()`) to clear the custom callback.  
+         *  The function [param callable] will be called every physics tick, before the standard force integration (see [method body_set_omit_force_integration]). It can be used for example to update the body's linear and angular velocity based on contact with other bodies.  
+         *  If [param userdata] is not `null`, the function [param callable] must take the following two parameters:  
+         *  1. `state`: a [PhysicsDirectBodyState2D] used to retrieve and modify the body's state,  
+         *  2. [code skip-lint]userdata`: a [Variant]; its value will be the [param userdata] passed into this method.  
+         *  If [param userdata] is `null`, then [param callable] must take only the `state` parameter.  
+         */
+        static body_set_force_integration_callback(body: RID, callable: Callable, userdata: any = <any> {}): void
+        
+        /** Returns `true` if a collision would result from moving the body along a motion vector from a given point in space. See [PhysicsTestMotionParameters2D] for the available motion parameters. Optionally a [PhysicsTestMotionResult2D] object can be passed, which will be used to store the information about the resulting collision. */
+        static body_test_motion(body: RID, parameters: PhysicsTestMotionParameters2D, result: PhysicsTestMotionResult2D = undefined): boolean
+        
+        /** Returns the [PhysicsDirectBodyState2D] of the body. Returns `null` if the body is destroyed or not assigned to a space. */
+        static body_get_direct_state(body: RID): PhysicsDirectBodyState2D
+        
+        /** Creates a 2D joint in the physics server, and returns the [RID] that identifies it. To set the joint type, use [method joint_make_damped_spring], [method joint_make_groove] or [method joint_make_pin]. Use [method joint_set_param] to set generic joint parameters. */
+        static joint_create(): RID
+        
+        /** Destroys the joint with the given [RID], creates a new uninitialized joint, and makes the [RID] refer to this new joint. */
+        static joint_clear(joint: RID): void
+        
+        /** Sets the value of the given joint parameter. See [enum JointParam] for the list of available parameters. */
+        static joint_set_param(joint: RID, param: PhysicsServer2D.JointParam, value: float64): void
+        
+        /** Returns the value of the given joint parameter. See [enum JointParam] for the list of available parameters. */
+        static joint_get_param(joint: RID, param: PhysicsServer2D.JointParam): float64
+        
+        /** Sets whether the bodies attached to the [Joint2D] will collide with each other. */
+        static joint_disable_collisions_between_bodies(joint: RID, disable: boolean): void
+        
+        /** Returns whether the bodies attached to the [Joint2D] will collide with each other. */
+        static joint_is_disabled_collisions_between_bodies(joint: RID): boolean
+        
+        /** Makes the joint a pin joint. If [param body_b] is an empty [RID], then [param body_a] is pinned to the point [param anchor] (given in global coordinates); otherwise, [param body_a] is pinned to [param body_b] at the point [param anchor] (given in global coordinates). To set the parameters which are specific to the pin joint, see [method pin_joint_set_param]. */
+        static joint_make_pin(joint: RID, anchor: Vector2, body_a: RID, body_b: RID = new RID()): void
+        
+        /** Makes the joint a groove joint. */
+        static joint_make_groove(joint: RID, groove1_a: Vector2, groove2_a: Vector2, anchor_b: Vector2, body_a: RID = new RID(), body_b: RID = new RID()): void
+        
+        /** Makes the joint a damped spring joint, attached at the point [param anchor_a] (given in global coordinates) on the body [param body_a] and at the point [param anchor_b] (given in global coordinates) on the body [param body_b]. To set the parameters which are specific to the damped spring, see [method damped_spring_joint_set_param]. */
+        static joint_make_damped_spring(joint: RID, anchor_a: Vector2, anchor_b: Vector2, body_a: RID, body_b: RID = new RID()): void
+        
+        /** Sets a pin joint flag (see [enum PinJointFlag] constants). */
+        static pin_joint_set_flag(joint: RID, flag: PhysicsServer2D.PinJointFlag, enabled: boolean): void
+        
+        /** Gets a pin joint flag (see [enum PinJointFlag] constants). */
+        static pin_joint_get_flag(joint: RID, flag: PhysicsServer2D.PinJointFlag): boolean
+        
+        /** Sets a pin joint parameter. See [enum PinJointParam] for a list of available parameters. */
+        static pin_joint_set_param(joint: RID, param: PhysicsServer2D.PinJointParam, value: float64): void
+        
+        /** Returns the value of a pin joint parameter. See [enum PinJointParam] for a list of available parameters. */
+        static pin_joint_get_param(joint: RID, param: PhysicsServer2D.PinJointParam): float64
+        
+        /** Sets the value of the given damped spring joint parameter. See [enum DampedSpringParam] for the list of available parameters. */
+        static damped_spring_joint_set_param(joint: RID, param: PhysicsServer2D.DampedSpringParam, value: float64): void
+        
+        /** Returns the value of the given damped spring joint parameter. See [enum DampedSpringParam] for the list of available parameters. */
+        static damped_spring_joint_get_param(joint: RID, param: PhysicsServer2D.DampedSpringParam): float64
+        
+        /** Returns the joint's type (see [enum JointType]). */
+        static joint_get_type(joint: RID): PhysicsServer2D.JointType
+        
+        /** Destroys any of the objects created by PhysicsServer2D. If the [RID] passed is not one of the objects that can be created by PhysicsServer2D, an error will be printed to the console. */
+        static free_rid(rid: RID): void
+        
+        /** Activates or deactivates the 2D physics server. If [param active] is `false`, then the physics server will not do anything in its physics step. */
+        static set_active(active: boolean): void
+        
+        /** Returns information about the current state of the 2D physics engine. See [enum ProcessInfo] for the list of available states. */
+        static get_process_info(process_info: PhysicsServer2D.ProcessInfo): int64
+    }
     // _singleton_class_: PhysicsServer3D
     namespace PhysicsServer3D {
         enum JointType {
@@ -454,7 +1163,7 @@ declare module "godot" {
     }
     /** A server interface for low-level 3D physics access.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_physicsserver3d.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_physicsserver3d.html  
      */
     class PhysicsServer3D extends Object {
         static world_boundary_shape_create(): RID
@@ -1045,7 +1754,7 @@ declare module "godot" {
     }
     /** Server for AR and VR features.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_xrserver.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_xrserver.html  
      */
     class XRServer extends Object {
         /** Returns the reference frame transform. Mostly used internally and exposed for GDExtension build interfaces. */
@@ -1107,6 +1816,13 @@ declare module "godot" {
         get world_origin(): Vector3
         set world_origin(value: Vector3)
         
+        /** If set to `true`, the scene will be rendered as if the camera is locked to the [XROrigin3D].  
+         *      
+         *  **Note:** This doesn't provide a very comfortable experience for users. This setting exists for doing benchmarking or automated testing, where you want to control what is rendered via code.  
+         */
+        get camera_locked_to_origin(): boolean
+        set camera_locked_to_origin(value: boolean)
+        
         /** The primary [XRInterface] currently bound to the [XRServer]. */
         get primary_interface(): Object
         set primary_interface(value: Object)
@@ -1129,6 +1845,19 @@ declare module "godot" {
         /** Emitted when a tracker is removed. You should remove any [XRController3D] or [XRAnchor3D] points if applicable. This is not mandatory, the nodes simply become inactive and will be made active again when a new tracker becomes available (i.e. a new controller is switched on that takes the place of the previous one). */
         static readonly tracker_removed: Signal2<StringName, int64>
     }
+    // _singleton_class_: GDScriptLanguageProtocol
+    /** @link https://docs.godotengine.org/en/4.4/classes/class_gdscriptlanguageprotocol.html */
+    class GDScriptLanguageProtocol extends JSONRPC {
+        static initialize(params: GDictionary): GDictionary
+        static initialized(params: any): void
+        static on_client_connected(): GError
+        static on_client_disconnected(_unnamed_arg0: int64): void
+        static notify_client(method: string, params: any = <any> {}, client_id: int64 = -1): void
+        static is_smart_resolve_enabled(): boolean
+        static get_text_document(): GDScriptTextDocument
+        static get_workspace(): GDScriptWorkspace
+        static is_initialized(): boolean
+    }
     namespace AESContext {
         enum Mode {
             /** AES electronic codebook encryption mode. */
@@ -1149,7 +1878,7 @@ declare module "godot" {
     }
     /** Provides access to AES encryption/decryption of raw data.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_aescontext.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_aescontext.html  
      */
     class AESContext extends RefCounted {
         constructor(identifier?: any)
@@ -1173,14 +1902,14 @@ declare module "godot" {
     }
     /** An implementation of A* for finding the shortest path between two vertices on a connected graph in 2D space.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_astar2d.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_astar2d.html  
      */
     class AStar2D extends RefCounted {
         constructor(identifier?: any)
         /** Called when estimating the cost between a point and the path's ending point.  
          *  Note that this function is hidden in the default [AStar2D] class.  
          */
-        /* gdvirtual */ _estimate_cost(from_id: int64, to_id: int64): float64
+        /* gdvirtual */ _estimate_cost(from_id: int64, end_id: int64): float64
         
         /** Called when computing the cost between two connected points.  
          *  Note that this function is hidden in the default [AStar2D] class.  
@@ -1246,7 +1975,7 @@ declare module "godot" {
         /** Returns the capacity of the structure backing the points, useful in conjunction with [method reserve_space]. */
         get_point_capacity(): int64
         
-        /** Reserves space internally for [param num_nodes] points, useful if you're adding a known large number of points at once, such as points on a grid. New capacity must be greater or equals to old capacity. */
+        /** Reserves space internally for [param num_nodes] points. Useful if you're adding a known large number of points at once, such as points on a grid. The new capacity must be greater or equal to the old capacity. */
         reserve_space(num_nodes: int64): void
         
         /** Clears all the points and segments. */
@@ -1268,11 +1997,14 @@ declare module "godot" {
          *  If there is no valid path to the target, and [param allow_partial_path] is `true`, returns a path to the point closest to the target that can be reached.  
          *      
          *  **Note:** This method is not thread-safe. If called from a [Thread], it will return an empty array and will print an error message.  
+         *  Additionally, when [param allow_partial_path] is `true` and [param to_id] is disabled the search may take an unusually long time to finish.  
          */
         get_point_path(from_id: int64, to_id: int64, allow_partial_path: boolean = false): PackedVector2Array
         
         /** Returns an array with the IDs of the points that form the path found by AStar2D between the given points. The array is ordered from the starting point to the ending point of the path.  
          *  If there is no valid path to the target, and [param allow_partial_path] is `true`, returns a path to the point closest to the target that can be reached.  
+         *      
+         *  **Note:** When [param allow_partial_path] is `true` and [param to_id] is disabled the search may take an unusually long time to finish.  
          *    
          *  If you change the 2nd point's weight to 3, then the result will be `[1, 4, 3]` instead, because now even though the distance is longer, it's "easier" to get through point 4 than through point 2.  
          */
@@ -1280,14 +2012,14 @@ declare module "godot" {
     }
     /** An implementation of A* for finding the shortest path between two vertices on a connected graph in 3D space.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_astar3d.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_astar3d.html  
      */
     class AStar3D extends RefCounted {
         constructor(identifier?: any)
         /** Called when estimating the cost between a point and the path's ending point.  
          *  Note that this function is hidden in the default [AStar3D] class.  
          */
-        /* gdvirtual */ _estimate_cost(from_id: int64, to_id: int64): float64
+        /* gdvirtual */ _estimate_cost(from_id: int64, end_id: int64): float64
         
         /** Called when computing the cost between two connected points.  
          *  Note that this function is hidden in the default [AStar3D] class.  
@@ -1375,11 +2107,14 @@ declare module "godot" {
          *  If there is no valid path to the target, and [param allow_partial_path] is `true`, returns a path to the point closest to the target that can be reached.  
          *      
          *  **Note:** This method is not thread-safe. If called from a [Thread], it will return an empty array and will print an error message.  
+         *  Additionally, when [param allow_partial_path] is `true` and [param to_id] is disabled the search may take an unusually long time to finish.  
          */
         get_point_path(from_id: int64, to_id: int64, allow_partial_path: boolean = false): PackedVector3Array
         
         /** Returns an array with the IDs of the points that form the path found by AStar3D between the given points. The array is ordered from the starting point to the ending point of the path.  
          *  If there is no valid path to the target, and [param allow_partial_path] is `true`, returns a path to the point closest to the target that can be reached.  
+         *      
+         *  **Note:** When [param allow_partial_path] is `true` and [param to_id] is disabled the search may take an unusually long time to finish.  
          *    
          *  If you change the 2nd point's weight to 3, then the result will be `[1, 4, 3]` instead, because now even though the distance is longer, it's "easier" to get through point 4 than through point 2.  
          */
@@ -1446,14 +2181,14 @@ declare module "godot" {
     }
     /** An implementation of A* for finding the shortest path between two points on a partial 2D grid.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_astargrid2d.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_astargrid2d.html  
      */
     class AStarGrid2D extends RefCounted {
         constructor(identifier?: any)
         /** Called when estimating the cost between a point and the path's ending point.  
          *  Note that this function is hidden in the default [AStarGrid2D] class.  
          */
-        /* gdvirtual */ _estimate_cost(from_id: Vector2i, to_id: Vector2i): float64
+        /* gdvirtual */ _estimate_cost(from_id: Vector2i, end_id: Vector2i): float64
         
         /** Called when computing the cost between two connected points.  
          *  Note that this function is hidden in the default [AStarGrid2D] class.  
@@ -1511,15 +2246,21 @@ declare module "godot" {
         /** Returns the position of the point associated with the given [param id]. */
         get_point_position(id: Vector2i): Vector2
         
+        /** Returns an array of dictionaries with point data (`id`: [Vector2i], `position`: [Vector2], `solid`: [bool], `weight_scale`: [float]) within a [param region]. */
+        get_point_data_in_region(region: Rect2i): GArray
+        
         /** Returns an array with the points that are in the path found by [AStarGrid2D] between the given points. The array is ordered from the starting point to the ending point of the path.  
          *  If there is no valid path to the target, and [param allow_partial_path] is `true`, returns a path to the point closest to the target that can be reached.  
          *      
          *  **Note:** This method is not thread-safe. If called from a [Thread], it will return an empty array and will print an error message.  
+         *  Additionally, when [param allow_partial_path] is `true` and [param to_id] is solid the search may take an unusually long time to finish.  
          */
         get_point_path(from_id: Vector2i, to_id: Vector2i, allow_partial_path: boolean = false): PackedVector2Array
         
         /** Returns an array with the IDs of the points that form the path found by AStar2D between the given points. The array is ordered from the starting point to the ending point of the path.  
          *  If there is no valid path to the target, and [param allow_partial_path] is `true`, returns a path to the point closest to the target that can be reached.  
+         *      
+         *  **Note:** When [param allow_partial_path] is `true` and [param to_id] is solid the search may take an unusually long time to finish.  
          */
         get_id_path(from_id: Vector2i, to_id: Vector2i, allow_partial_path: boolean = false): GArray
         
@@ -1562,17 +2303,17 @@ declare module "godot" {
         get diagonal_mode(): int64
         set diagonal_mode(value: int64)
     }
-    class AbstractPolygon2DEditor extends HBoxContainer {
+    class AbstractPolygon2DEditor<Map extends Record<string, Node> = Record<string, Node>> extends HBoxContainer<Map> {
         constructor(identifier?: any)
     }
-    class AbstractPolygon2DEditorPlugin extends EditorPlugin {
+    class AbstractPolygon2DEditorPlugin<Map extends Record<string, Node> = Record<string, Node>> extends EditorPlugin<Map> {
         constructor(identifier?: any)
     }
     /** A base dialog used for user notification.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_acceptdialog.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_acceptdialog.html  
      */
-    class AcceptDialog extends Window {
+    class AcceptDialog<Map extends Record<string, Node> = Record<string, Node>> extends Window<Map> {
         constructor(identifier?: any)
         /** Returns the OK [Button] instance.  
          *  **Warning:** This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.  
@@ -1633,7 +2374,7 @@ declare module "godot" {
         /** Emitted when a custom button is pressed. See [method add_button]. */
         readonly custom_action: Signal1<StringName>
     }
-    class ActionMapEditor extends Control {
+    class ActionMapEditor<Map extends Record<string, Node> = Record<string, Node>> extends Control<Map> {
         constructor(identifier?: any)
         readonly action_added: Signal1<string>
         readonly action_edited: Signal2<string, GDictionary>
@@ -1643,15 +2384,15 @@ declare module "godot" {
         readonly filter_focused: Signal0
         readonly filter_unfocused: Signal0
     }
-    class AnchorPresetPicker extends ControlEditorPresetPicker {
+    class AnchorPresetPicker<Map extends Record<string, Node> = Record<string, Node>> extends ControlEditorPresetPicker<Map> {
         constructor(identifier?: any)
         readonly anchors_preset_selected: Signal1<int64>
     }
     /** A 2D physics body that can't be moved by external forces. When moved manually, it affects other bodies in its path.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animatablebody2d.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animatablebody2d.html  
      */
-    class AnimatableBody2D extends StaticBody2D {
+    class AnimatableBody2D<Map extends Record<string, Node> = Record<string, Node>> extends StaticBody2D<Map> {
         constructor(identifier?: any)
         /** If `true`, the body's movement will be synchronized to the physics frame. This is useful when animating movement via [AnimationPlayer], for example on moving platforms. Do **not** use together with [method PhysicsBody2D.move_and_collide]. */
         get sync_to_physics(): boolean
@@ -1659,9 +2400,9 @@ declare module "godot" {
     }
     /** A 3D physics body that can't be moved by external forces. When moved manually, it affects other bodies in its path.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animatablebody3d.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animatablebody3d.html  
      */
-    class AnimatableBody3D extends StaticBody3D {
+    class AnimatableBody3D<Map extends Record<string, Node> = Record<string, Node>> extends StaticBody3D<Map> {
         constructor(identifier?: any)
         /** If `true`, the body's movement will be synchronized to the physics frame. This is useful when animating movement via [AnimationPlayer], for example on moving platforms. Do **not** use together with [method PhysicsBody3D.move_and_collide]. */
         get sync_to_physics(): boolean
@@ -1669,9 +2410,9 @@ declare module "godot" {
     }
     /** Sprite node that contains multiple textures as frames to play for animation.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animatedsprite2d.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animatedsprite2d.html  
      */
-    class AnimatedSprite2D extends Node2D {
+    class AnimatedSprite2D<Map extends Record<string, Node> = Record<string, Node>> extends Node2D<Map> {
         constructor(identifier?: any)
         /** Returns `true` if an animation is currently playing (even if [member speed_scale] and/or `custom_speed` are `0`). */
         is_playing(): boolean
@@ -1694,9 +2435,8 @@ declare module "godot" {
         /** Stops the currently playing animation. The animation position is reset to `0` and the `custom_speed` is reset to `1.0`. See also [method pause]. */
         stop(): void
         
-        /** The setter of [member frame] resets the [member frame_progress] to `0.0` implicitly, but this method avoids that.  
-         *  This is useful when you want to carry over the current [member frame_progress] to another [member frame].  
-         *  **Example:**  
+        /** Sets [member frame] the [member frame_progress] to the given values. Unlike setting [member frame], this method does not reset the [member frame_progress] to `0.0` implicitly.  
+         *  **Example:** Change the animation while keeping the same [member frame] and [member frame_progress]:  
          *    
          */
         set_frame_and_progress(frame: int64, progress: float64): void
@@ -1771,9 +2511,9 @@ declare module "godot" {
     }
     /** 2D sprite node in 3D world, that can use multiple 2D textures for animation.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animatedsprite3d.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animatedsprite3d.html  
      */
-    class AnimatedSprite3D extends SpriteBase3D {
+    class AnimatedSprite3D<Map extends Record<string, Node> = Record<string, Node>> extends SpriteBase3D<Map> {
         constructor(identifier?: any)
         /** Returns `true` if an animation is currently playing (even if [member speed_scale] and/or `custom_speed` are `0`). */
         is_playing(): boolean
@@ -1796,9 +2536,8 @@ declare module "godot" {
         /** Stops the currently playing animation. The animation position is reset to `0` and the `custom_speed` is reset to `1.0`. See also [method pause]. */
         stop(): void
         
-        /** The setter of [member frame] resets the [member frame_progress] to `0.0` implicitly, but this method avoids that.  
-         *  This is useful when you want to carry over the current [member frame_progress] to another [member frame].  
-         *  **Example:**  
+        /** Sets [member frame] the [member frame_progress] to the given values. Unlike setting [member frame], this method does not reset the [member frame_progress] to `0.0` implicitly.  
+         *  **Example:** Change the animation while keeping the same [member frame] and [member frame_progress]:  
          *    
          */
         set_frame_and_progress(frame: int64, progress: float64): void
@@ -1855,7 +2594,7 @@ declare module "godot" {
     }
     /** Proxy texture for simple frame-based animations.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animatedtexture.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animatedtexture.html  
      */
     class AnimatedTexture extends Texture2D {
         /** The maximum number of frames supported by [AnimatedTexture]. If you need more frames in your animation, use [AnimationPlayer] or [AnimatedSprite2D]. */
@@ -1895,6 +2634,1030 @@ declare module "godot" {
         /** The animation speed is multiplied by this value. If set to a negative value, the animation is played in reverse. */
         get speed_scale(): float64
         set speed_scale(value: float64)
+        get "frame_0/texture"(): Texture2D
+        set "frame_0/texture"(value: Texture2D)
+        get "frame_0/duration"(): float64
+        set "frame_0/duration"(value: float64)
+        get "frame_1/texture"(): Texture2D
+        set "frame_1/texture"(value: Texture2D)
+        get "frame_1/duration"(): float64
+        set "frame_1/duration"(value: float64)
+        get "frame_2/texture"(): Texture2D
+        set "frame_2/texture"(value: Texture2D)
+        get "frame_2/duration"(): float64
+        set "frame_2/duration"(value: float64)
+        get "frame_3/texture"(): Texture2D
+        set "frame_3/texture"(value: Texture2D)
+        get "frame_3/duration"(): float64
+        set "frame_3/duration"(value: float64)
+        get "frame_4/texture"(): Texture2D
+        set "frame_4/texture"(value: Texture2D)
+        get "frame_4/duration"(): float64
+        set "frame_4/duration"(value: float64)
+        get "frame_5/texture"(): Texture2D
+        set "frame_5/texture"(value: Texture2D)
+        get "frame_5/duration"(): float64
+        set "frame_5/duration"(value: float64)
+        get "frame_6/texture"(): Texture2D
+        set "frame_6/texture"(value: Texture2D)
+        get "frame_6/duration"(): float64
+        set "frame_6/duration"(value: float64)
+        get "frame_7/texture"(): Texture2D
+        set "frame_7/texture"(value: Texture2D)
+        get "frame_7/duration"(): float64
+        set "frame_7/duration"(value: float64)
+        get "frame_8/texture"(): Texture2D
+        set "frame_8/texture"(value: Texture2D)
+        get "frame_8/duration"(): float64
+        set "frame_8/duration"(value: float64)
+        get "frame_9/texture"(): Texture2D
+        set "frame_9/texture"(value: Texture2D)
+        get "frame_9/duration"(): float64
+        set "frame_9/duration"(value: float64)
+        get "frame_10/texture"(): Texture2D
+        set "frame_10/texture"(value: Texture2D)
+        get "frame_10/duration"(): float64
+        set "frame_10/duration"(value: float64)
+        get "frame_11/texture"(): Texture2D
+        set "frame_11/texture"(value: Texture2D)
+        get "frame_11/duration"(): float64
+        set "frame_11/duration"(value: float64)
+        get "frame_12/texture"(): Texture2D
+        set "frame_12/texture"(value: Texture2D)
+        get "frame_12/duration"(): float64
+        set "frame_12/duration"(value: float64)
+        get "frame_13/texture"(): Texture2D
+        set "frame_13/texture"(value: Texture2D)
+        get "frame_13/duration"(): float64
+        set "frame_13/duration"(value: float64)
+        get "frame_14/texture"(): Texture2D
+        set "frame_14/texture"(value: Texture2D)
+        get "frame_14/duration"(): float64
+        set "frame_14/duration"(value: float64)
+        get "frame_15/texture"(): Texture2D
+        set "frame_15/texture"(value: Texture2D)
+        get "frame_15/duration"(): float64
+        set "frame_15/duration"(value: float64)
+        get "frame_16/texture"(): Texture2D
+        set "frame_16/texture"(value: Texture2D)
+        get "frame_16/duration"(): float64
+        set "frame_16/duration"(value: float64)
+        get "frame_17/texture"(): Texture2D
+        set "frame_17/texture"(value: Texture2D)
+        get "frame_17/duration"(): float64
+        set "frame_17/duration"(value: float64)
+        get "frame_18/texture"(): Texture2D
+        set "frame_18/texture"(value: Texture2D)
+        get "frame_18/duration"(): float64
+        set "frame_18/duration"(value: float64)
+        get "frame_19/texture"(): Texture2D
+        set "frame_19/texture"(value: Texture2D)
+        get "frame_19/duration"(): float64
+        set "frame_19/duration"(value: float64)
+        get "frame_20/texture"(): Texture2D
+        set "frame_20/texture"(value: Texture2D)
+        get "frame_20/duration"(): float64
+        set "frame_20/duration"(value: float64)
+        get "frame_21/texture"(): Texture2D
+        set "frame_21/texture"(value: Texture2D)
+        get "frame_21/duration"(): float64
+        set "frame_21/duration"(value: float64)
+        get "frame_22/texture"(): Texture2D
+        set "frame_22/texture"(value: Texture2D)
+        get "frame_22/duration"(): float64
+        set "frame_22/duration"(value: float64)
+        get "frame_23/texture"(): Texture2D
+        set "frame_23/texture"(value: Texture2D)
+        get "frame_23/duration"(): float64
+        set "frame_23/duration"(value: float64)
+        get "frame_24/texture"(): Texture2D
+        set "frame_24/texture"(value: Texture2D)
+        get "frame_24/duration"(): float64
+        set "frame_24/duration"(value: float64)
+        get "frame_25/texture"(): Texture2D
+        set "frame_25/texture"(value: Texture2D)
+        get "frame_25/duration"(): float64
+        set "frame_25/duration"(value: float64)
+        get "frame_26/texture"(): Texture2D
+        set "frame_26/texture"(value: Texture2D)
+        get "frame_26/duration"(): float64
+        set "frame_26/duration"(value: float64)
+        get "frame_27/texture"(): Texture2D
+        set "frame_27/texture"(value: Texture2D)
+        get "frame_27/duration"(): float64
+        set "frame_27/duration"(value: float64)
+        get "frame_28/texture"(): Texture2D
+        set "frame_28/texture"(value: Texture2D)
+        get "frame_28/duration"(): float64
+        set "frame_28/duration"(value: float64)
+        get "frame_29/texture"(): Texture2D
+        set "frame_29/texture"(value: Texture2D)
+        get "frame_29/duration"(): float64
+        set "frame_29/duration"(value: float64)
+        get "frame_30/texture"(): Texture2D
+        set "frame_30/texture"(value: Texture2D)
+        get "frame_30/duration"(): float64
+        set "frame_30/duration"(value: float64)
+        get "frame_31/texture"(): Texture2D
+        set "frame_31/texture"(value: Texture2D)
+        get "frame_31/duration"(): float64
+        set "frame_31/duration"(value: float64)
+        get "frame_32/texture"(): Texture2D
+        set "frame_32/texture"(value: Texture2D)
+        get "frame_32/duration"(): float64
+        set "frame_32/duration"(value: float64)
+        get "frame_33/texture"(): Texture2D
+        set "frame_33/texture"(value: Texture2D)
+        get "frame_33/duration"(): float64
+        set "frame_33/duration"(value: float64)
+        get "frame_34/texture"(): Texture2D
+        set "frame_34/texture"(value: Texture2D)
+        get "frame_34/duration"(): float64
+        set "frame_34/duration"(value: float64)
+        get "frame_35/texture"(): Texture2D
+        set "frame_35/texture"(value: Texture2D)
+        get "frame_35/duration"(): float64
+        set "frame_35/duration"(value: float64)
+        get "frame_36/texture"(): Texture2D
+        set "frame_36/texture"(value: Texture2D)
+        get "frame_36/duration"(): float64
+        set "frame_36/duration"(value: float64)
+        get "frame_37/texture"(): Texture2D
+        set "frame_37/texture"(value: Texture2D)
+        get "frame_37/duration"(): float64
+        set "frame_37/duration"(value: float64)
+        get "frame_38/texture"(): Texture2D
+        set "frame_38/texture"(value: Texture2D)
+        get "frame_38/duration"(): float64
+        set "frame_38/duration"(value: float64)
+        get "frame_39/texture"(): Texture2D
+        set "frame_39/texture"(value: Texture2D)
+        get "frame_39/duration"(): float64
+        set "frame_39/duration"(value: float64)
+        get "frame_40/texture"(): Texture2D
+        set "frame_40/texture"(value: Texture2D)
+        get "frame_40/duration"(): float64
+        set "frame_40/duration"(value: float64)
+        get "frame_41/texture"(): Texture2D
+        set "frame_41/texture"(value: Texture2D)
+        get "frame_41/duration"(): float64
+        set "frame_41/duration"(value: float64)
+        get "frame_42/texture"(): Texture2D
+        set "frame_42/texture"(value: Texture2D)
+        get "frame_42/duration"(): float64
+        set "frame_42/duration"(value: float64)
+        get "frame_43/texture"(): Texture2D
+        set "frame_43/texture"(value: Texture2D)
+        get "frame_43/duration"(): float64
+        set "frame_43/duration"(value: float64)
+        get "frame_44/texture"(): Texture2D
+        set "frame_44/texture"(value: Texture2D)
+        get "frame_44/duration"(): float64
+        set "frame_44/duration"(value: float64)
+        get "frame_45/texture"(): Texture2D
+        set "frame_45/texture"(value: Texture2D)
+        get "frame_45/duration"(): float64
+        set "frame_45/duration"(value: float64)
+        get "frame_46/texture"(): Texture2D
+        set "frame_46/texture"(value: Texture2D)
+        get "frame_46/duration"(): float64
+        set "frame_46/duration"(value: float64)
+        get "frame_47/texture"(): Texture2D
+        set "frame_47/texture"(value: Texture2D)
+        get "frame_47/duration"(): float64
+        set "frame_47/duration"(value: float64)
+        get "frame_48/texture"(): Texture2D
+        set "frame_48/texture"(value: Texture2D)
+        get "frame_48/duration"(): float64
+        set "frame_48/duration"(value: float64)
+        get "frame_49/texture"(): Texture2D
+        set "frame_49/texture"(value: Texture2D)
+        get "frame_49/duration"(): float64
+        set "frame_49/duration"(value: float64)
+        get "frame_50/texture"(): Texture2D
+        set "frame_50/texture"(value: Texture2D)
+        get "frame_50/duration"(): float64
+        set "frame_50/duration"(value: float64)
+        get "frame_51/texture"(): Texture2D
+        set "frame_51/texture"(value: Texture2D)
+        get "frame_51/duration"(): float64
+        set "frame_51/duration"(value: float64)
+        get "frame_52/texture"(): Texture2D
+        set "frame_52/texture"(value: Texture2D)
+        get "frame_52/duration"(): float64
+        set "frame_52/duration"(value: float64)
+        get "frame_53/texture"(): Texture2D
+        set "frame_53/texture"(value: Texture2D)
+        get "frame_53/duration"(): float64
+        set "frame_53/duration"(value: float64)
+        get "frame_54/texture"(): Texture2D
+        set "frame_54/texture"(value: Texture2D)
+        get "frame_54/duration"(): float64
+        set "frame_54/duration"(value: float64)
+        get "frame_55/texture"(): Texture2D
+        set "frame_55/texture"(value: Texture2D)
+        get "frame_55/duration"(): float64
+        set "frame_55/duration"(value: float64)
+        get "frame_56/texture"(): Texture2D
+        set "frame_56/texture"(value: Texture2D)
+        get "frame_56/duration"(): float64
+        set "frame_56/duration"(value: float64)
+        get "frame_57/texture"(): Texture2D
+        set "frame_57/texture"(value: Texture2D)
+        get "frame_57/duration"(): float64
+        set "frame_57/duration"(value: float64)
+        get "frame_58/texture"(): Texture2D
+        set "frame_58/texture"(value: Texture2D)
+        get "frame_58/duration"(): float64
+        set "frame_58/duration"(value: float64)
+        get "frame_59/texture"(): Texture2D
+        set "frame_59/texture"(value: Texture2D)
+        get "frame_59/duration"(): float64
+        set "frame_59/duration"(value: float64)
+        get "frame_60/texture"(): Texture2D
+        set "frame_60/texture"(value: Texture2D)
+        get "frame_60/duration"(): float64
+        set "frame_60/duration"(value: float64)
+        get "frame_61/texture"(): Texture2D
+        set "frame_61/texture"(value: Texture2D)
+        get "frame_61/duration"(): float64
+        set "frame_61/duration"(value: float64)
+        get "frame_62/texture"(): Texture2D
+        set "frame_62/texture"(value: Texture2D)
+        get "frame_62/duration"(): float64
+        set "frame_62/duration"(value: float64)
+        get "frame_63/texture"(): Texture2D
+        set "frame_63/texture"(value: Texture2D)
+        get "frame_63/duration"(): float64
+        set "frame_63/duration"(value: float64)
+        get "frame_64/texture"(): Texture2D
+        set "frame_64/texture"(value: Texture2D)
+        get "frame_64/duration"(): float64
+        set "frame_64/duration"(value: float64)
+        get "frame_65/texture"(): Texture2D
+        set "frame_65/texture"(value: Texture2D)
+        get "frame_65/duration"(): float64
+        set "frame_65/duration"(value: float64)
+        get "frame_66/texture"(): Texture2D
+        set "frame_66/texture"(value: Texture2D)
+        get "frame_66/duration"(): float64
+        set "frame_66/duration"(value: float64)
+        get "frame_67/texture"(): Texture2D
+        set "frame_67/texture"(value: Texture2D)
+        get "frame_67/duration"(): float64
+        set "frame_67/duration"(value: float64)
+        get "frame_68/texture"(): Texture2D
+        set "frame_68/texture"(value: Texture2D)
+        get "frame_68/duration"(): float64
+        set "frame_68/duration"(value: float64)
+        get "frame_69/texture"(): Texture2D
+        set "frame_69/texture"(value: Texture2D)
+        get "frame_69/duration"(): float64
+        set "frame_69/duration"(value: float64)
+        get "frame_70/texture"(): Texture2D
+        set "frame_70/texture"(value: Texture2D)
+        get "frame_70/duration"(): float64
+        set "frame_70/duration"(value: float64)
+        get "frame_71/texture"(): Texture2D
+        set "frame_71/texture"(value: Texture2D)
+        get "frame_71/duration"(): float64
+        set "frame_71/duration"(value: float64)
+        get "frame_72/texture"(): Texture2D
+        set "frame_72/texture"(value: Texture2D)
+        get "frame_72/duration"(): float64
+        set "frame_72/duration"(value: float64)
+        get "frame_73/texture"(): Texture2D
+        set "frame_73/texture"(value: Texture2D)
+        get "frame_73/duration"(): float64
+        set "frame_73/duration"(value: float64)
+        get "frame_74/texture"(): Texture2D
+        set "frame_74/texture"(value: Texture2D)
+        get "frame_74/duration"(): float64
+        set "frame_74/duration"(value: float64)
+        get "frame_75/texture"(): Texture2D
+        set "frame_75/texture"(value: Texture2D)
+        get "frame_75/duration"(): float64
+        set "frame_75/duration"(value: float64)
+        get "frame_76/texture"(): Texture2D
+        set "frame_76/texture"(value: Texture2D)
+        get "frame_76/duration"(): float64
+        set "frame_76/duration"(value: float64)
+        get "frame_77/texture"(): Texture2D
+        set "frame_77/texture"(value: Texture2D)
+        get "frame_77/duration"(): float64
+        set "frame_77/duration"(value: float64)
+        get "frame_78/texture"(): Texture2D
+        set "frame_78/texture"(value: Texture2D)
+        get "frame_78/duration"(): float64
+        set "frame_78/duration"(value: float64)
+        get "frame_79/texture"(): Texture2D
+        set "frame_79/texture"(value: Texture2D)
+        get "frame_79/duration"(): float64
+        set "frame_79/duration"(value: float64)
+        get "frame_80/texture"(): Texture2D
+        set "frame_80/texture"(value: Texture2D)
+        get "frame_80/duration"(): float64
+        set "frame_80/duration"(value: float64)
+        get "frame_81/texture"(): Texture2D
+        set "frame_81/texture"(value: Texture2D)
+        get "frame_81/duration"(): float64
+        set "frame_81/duration"(value: float64)
+        get "frame_82/texture"(): Texture2D
+        set "frame_82/texture"(value: Texture2D)
+        get "frame_82/duration"(): float64
+        set "frame_82/duration"(value: float64)
+        get "frame_83/texture"(): Texture2D
+        set "frame_83/texture"(value: Texture2D)
+        get "frame_83/duration"(): float64
+        set "frame_83/duration"(value: float64)
+        get "frame_84/texture"(): Texture2D
+        set "frame_84/texture"(value: Texture2D)
+        get "frame_84/duration"(): float64
+        set "frame_84/duration"(value: float64)
+        get "frame_85/texture"(): Texture2D
+        set "frame_85/texture"(value: Texture2D)
+        get "frame_85/duration"(): float64
+        set "frame_85/duration"(value: float64)
+        get "frame_86/texture"(): Texture2D
+        set "frame_86/texture"(value: Texture2D)
+        get "frame_86/duration"(): float64
+        set "frame_86/duration"(value: float64)
+        get "frame_87/texture"(): Texture2D
+        set "frame_87/texture"(value: Texture2D)
+        get "frame_87/duration"(): float64
+        set "frame_87/duration"(value: float64)
+        get "frame_88/texture"(): Texture2D
+        set "frame_88/texture"(value: Texture2D)
+        get "frame_88/duration"(): float64
+        set "frame_88/duration"(value: float64)
+        get "frame_89/texture"(): Texture2D
+        set "frame_89/texture"(value: Texture2D)
+        get "frame_89/duration"(): float64
+        set "frame_89/duration"(value: float64)
+        get "frame_90/texture"(): Texture2D
+        set "frame_90/texture"(value: Texture2D)
+        get "frame_90/duration"(): float64
+        set "frame_90/duration"(value: float64)
+        get "frame_91/texture"(): Texture2D
+        set "frame_91/texture"(value: Texture2D)
+        get "frame_91/duration"(): float64
+        set "frame_91/duration"(value: float64)
+        get "frame_92/texture"(): Texture2D
+        set "frame_92/texture"(value: Texture2D)
+        get "frame_92/duration"(): float64
+        set "frame_92/duration"(value: float64)
+        get "frame_93/texture"(): Texture2D
+        set "frame_93/texture"(value: Texture2D)
+        get "frame_93/duration"(): float64
+        set "frame_93/duration"(value: float64)
+        get "frame_94/texture"(): Texture2D
+        set "frame_94/texture"(value: Texture2D)
+        get "frame_94/duration"(): float64
+        set "frame_94/duration"(value: float64)
+        get "frame_95/texture"(): Texture2D
+        set "frame_95/texture"(value: Texture2D)
+        get "frame_95/duration"(): float64
+        set "frame_95/duration"(value: float64)
+        get "frame_96/texture"(): Texture2D
+        set "frame_96/texture"(value: Texture2D)
+        get "frame_96/duration"(): float64
+        set "frame_96/duration"(value: float64)
+        get "frame_97/texture"(): Texture2D
+        set "frame_97/texture"(value: Texture2D)
+        get "frame_97/duration"(): float64
+        set "frame_97/duration"(value: float64)
+        get "frame_98/texture"(): Texture2D
+        set "frame_98/texture"(value: Texture2D)
+        get "frame_98/duration"(): float64
+        set "frame_98/duration"(value: float64)
+        get "frame_99/texture"(): Texture2D
+        set "frame_99/texture"(value: Texture2D)
+        get "frame_99/duration"(): float64
+        set "frame_99/duration"(value: float64)
+        get "frame_100/texture"(): Texture2D
+        set "frame_100/texture"(value: Texture2D)
+        get "frame_100/duration"(): float64
+        set "frame_100/duration"(value: float64)
+        get "frame_101/texture"(): Texture2D
+        set "frame_101/texture"(value: Texture2D)
+        get "frame_101/duration"(): float64
+        set "frame_101/duration"(value: float64)
+        get "frame_102/texture"(): Texture2D
+        set "frame_102/texture"(value: Texture2D)
+        get "frame_102/duration"(): float64
+        set "frame_102/duration"(value: float64)
+        get "frame_103/texture"(): Texture2D
+        set "frame_103/texture"(value: Texture2D)
+        get "frame_103/duration"(): float64
+        set "frame_103/duration"(value: float64)
+        get "frame_104/texture"(): Texture2D
+        set "frame_104/texture"(value: Texture2D)
+        get "frame_104/duration"(): float64
+        set "frame_104/duration"(value: float64)
+        get "frame_105/texture"(): Texture2D
+        set "frame_105/texture"(value: Texture2D)
+        get "frame_105/duration"(): float64
+        set "frame_105/duration"(value: float64)
+        get "frame_106/texture"(): Texture2D
+        set "frame_106/texture"(value: Texture2D)
+        get "frame_106/duration"(): float64
+        set "frame_106/duration"(value: float64)
+        get "frame_107/texture"(): Texture2D
+        set "frame_107/texture"(value: Texture2D)
+        get "frame_107/duration"(): float64
+        set "frame_107/duration"(value: float64)
+        get "frame_108/texture"(): Texture2D
+        set "frame_108/texture"(value: Texture2D)
+        get "frame_108/duration"(): float64
+        set "frame_108/duration"(value: float64)
+        get "frame_109/texture"(): Texture2D
+        set "frame_109/texture"(value: Texture2D)
+        get "frame_109/duration"(): float64
+        set "frame_109/duration"(value: float64)
+        get "frame_110/texture"(): Texture2D
+        set "frame_110/texture"(value: Texture2D)
+        get "frame_110/duration"(): float64
+        set "frame_110/duration"(value: float64)
+        get "frame_111/texture"(): Texture2D
+        set "frame_111/texture"(value: Texture2D)
+        get "frame_111/duration"(): float64
+        set "frame_111/duration"(value: float64)
+        get "frame_112/texture"(): Texture2D
+        set "frame_112/texture"(value: Texture2D)
+        get "frame_112/duration"(): float64
+        set "frame_112/duration"(value: float64)
+        get "frame_113/texture"(): Texture2D
+        set "frame_113/texture"(value: Texture2D)
+        get "frame_113/duration"(): float64
+        set "frame_113/duration"(value: float64)
+        get "frame_114/texture"(): Texture2D
+        set "frame_114/texture"(value: Texture2D)
+        get "frame_114/duration"(): float64
+        set "frame_114/duration"(value: float64)
+        get "frame_115/texture"(): Texture2D
+        set "frame_115/texture"(value: Texture2D)
+        get "frame_115/duration"(): float64
+        set "frame_115/duration"(value: float64)
+        get "frame_116/texture"(): Texture2D
+        set "frame_116/texture"(value: Texture2D)
+        get "frame_116/duration"(): float64
+        set "frame_116/duration"(value: float64)
+        get "frame_117/texture"(): Texture2D
+        set "frame_117/texture"(value: Texture2D)
+        get "frame_117/duration"(): float64
+        set "frame_117/duration"(value: float64)
+        get "frame_118/texture"(): Texture2D
+        set "frame_118/texture"(value: Texture2D)
+        get "frame_118/duration"(): float64
+        set "frame_118/duration"(value: float64)
+        get "frame_119/texture"(): Texture2D
+        set "frame_119/texture"(value: Texture2D)
+        get "frame_119/duration"(): float64
+        set "frame_119/duration"(value: float64)
+        get "frame_120/texture"(): Texture2D
+        set "frame_120/texture"(value: Texture2D)
+        get "frame_120/duration"(): float64
+        set "frame_120/duration"(value: float64)
+        get "frame_121/texture"(): Texture2D
+        set "frame_121/texture"(value: Texture2D)
+        get "frame_121/duration"(): float64
+        set "frame_121/duration"(value: float64)
+        get "frame_122/texture"(): Texture2D
+        set "frame_122/texture"(value: Texture2D)
+        get "frame_122/duration"(): float64
+        set "frame_122/duration"(value: float64)
+        get "frame_123/texture"(): Texture2D
+        set "frame_123/texture"(value: Texture2D)
+        get "frame_123/duration"(): float64
+        set "frame_123/duration"(value: float64)
+        get "frame_124/texture"(): Texture2D
+        set "frame_124/texture"(value: Texture2D)
+        get "frame_124/duration"(): float64
+        set "frame_124/duration"(value: float64)
+        get "frame_125/texture"(): Texture2D
+        set "frame_125/texture"(value: Texture2D)
+        get "frame_125/duration"(): float64
+        set "frame_125/duration"(value: float64)
+        get "frame_126/texture"(): Texture2D
+        set "frame_126/texture"(value: Texture2D)
+        get "frame_126/duration"(): float64
+        set "frame_126/duration"(value: float64)
+        get "frame_127/texture"(): Texture2D
+        set "frame_127/texture"(value: Texture2D)
+        get "frame_127/duration"(): float64
+        set "frame_127/duration"(value: float64)
+        get "frame_128/texture"(): Texture2D
+        set "frame_128/texture"(value: Texture2D)
+        get "frame_128/duration"(): float64
+        set "frame_128/duration"(value: float64)
+        get "frame_129/texture"(): Texture2D
+        set "frame_129/texture"(value: Texture2D)
+        get "frame_129/duration"(): float64
+        set "frame_129/duration"(value: float64)
+        get "frame_130/texture"(): Texture2D
+        set "frame_130/texture"(value: Texture2D)
+        get "frame_130/duration"(): float64
+        set "frame_130/duration"(value: float64)
+        get "frame_131/texture"(): Texture2D
+        set "frame_131/texture"(value: Texture2D)
+        get "frame_131/duration"(): float64
+        set "frame_131/duration"(value: float64)
+        get "frame_132/texture"(): Texture2D
+        set "frame_132/texture"(value: Texture2D)
+        get "frame_132/duration"(): float64
+        set "frame_132/duration"(value: float64)
+        get "frame_133/texture"(): Texture2D
+        set "frame_133/texture"(value: Texture2D)
+        get "frame_133/duration"(): float64
+        set "frame_133/duration"(value: float64)
+        get "frame_134/texture"(): Texture2D
+        set "frame_134/texture"(value: Texture2D)
+        get "frame_134/duration"(): float64
+        set "frame_134/duration"(value: float64)
+        get "frame_135/texture"(): Texture2D
+        set "frame_135/texture"(value: Texture2D)
+        get "frame_135/duration"(): float64
+        set "frame_135/duration"(value: float64)
+        get "frame_136/texture"(): Texture2D
+        set "frame_136/texture"(value: Texture2D)
+        get "frame_136/duration"(): float64
+        set "frame_136/duration"(value: float64)
+        get "frame_137/texture"(): Texture2D
+        set "frame_137/texture"(value: Texture2D)
+        get "frame_137/duration"(): float64
+        set "frame_137/duration"(value: float64)
+        get "frame_138/texture"(): Texture2D
+        set "frame_138/texture"(value: Texture2D)
+        get "frame_138/duration"(): float64
+        set "frame_138/duration"(value: float64)
+        get "frame_139/texture"(): Texture2D
+        set "frame_139/texture"(value: Texture2D)
+        get "frame_139/duration"(): float64
+        set "frame_139/duration"(value: float64)
+        get "frame_140/texture"(): Texture2D
+        set "frame_140/texture"(value: Texture2D)
+        get "frame_140/duration"(): float64
+        set "frame_140/duration"(value: float64)
+        get "frame_141/texture"(): Texture2D
+        set "frame_141/texture"(value: Texture2D)
+        get "frame_141/duration"(): float64
+        set "frame_141/duration"(value: float64)
+        get "frame_142/texture"(): Texture2D
+        set "frame_142/texture"(value: Texture2D)
+        get "frame_142/duration"(): float64
+        set "frame_142/duration"(value: float64)
+        get "frame_143/texture"(): Texture2D
+        set "frame_143/texture"(value: Texture2D)
+        get "frame_143/duration"(): float64
+        set "frame_143/duration"(value: float64)
+        get "frame_144/texture"(): Texture2D
+        set "frame_144/texture"(value: Texture2D)
+        get "frame_144/duration"(): float64
+        set "frame_144/duration"(value: float64)
+        get "frame_145/texture"(): Texture2D
+        set "frame_145/texture"(value: Texture2D)
+        get "frame_145/duration"(): float64
+        set "frame_145/duration"(value: float64)
+        get "frame_146/texture"(): Texture2D
+        set "frame_146/texture"(value: Texture2D)
+        get "frame_146/duration"(): float64
+        set "frame_146/duration"(value: float64)
+        get "frame_147/texture"(): Texture2D
+        set "frame_147/texture"(value: Texture2D)
+        get "frame_147/duration"(): float64
+        set "frame_147/duration"(value: float64)
+        get "frame_148/texture"(): Texture2D
+        set "frame_148/texture"(value: Texture2D)
+        get "frame_148/duration"(): float64
+        set "frame_148/duration"(value: float64)
+        get "frame_149/texture"(): Texture2D
+        set "frame_149/texture"(value: Texture2D)
+        get "frame_149/duration"(): float64
+        set "frame_149/duration"(value: float64)
+        get "frame_150/texture"(): Texture2D
+        set "frame_150/texture"(value: Texture2D)
+        get "frame_150/duration"(): float64
+        set "frame_150/duration"(value: float64)
+        get "frame_151/texture"(): Texture2D
+        set "frame_151/texture"(value: Texture2D)
+        get "frame_151/duration"(): float64
+        set "frame_151/duration"(value: float64)
+        get "frame_152/texture"(): Texture2D
+        set "frame_152/texture"(value: Texture2D)
+        get "frame_152/duration"(): float64
+        set "frame_152/duration"(value: float64)
+        get "frame_153/texture"(): Texture2D
+        set "frame_153/texture"(value: Texture2D)
+        get "frame_153/duration"(): float64
+        set "frame_153/duration"(value: float64)
+        get "frame_154/texture"(): Texture2D
+        set "frame_154/texture"(value: Texture2D)
+        get "frame_154/duration"(): float64
+        set "frame_154/duration"(value: float64)
+        get "frame_155/texture"(): Texture2D
+        set "frame_155/texture"(value: Texture2D)
+        get "frame_155/duration"(): float64
+        set "frame_155/duration"(value: float64)
+        get "frame_156/texture"(): Texture2D
+        set "frame_156/texture"(value: Texture2D)
+        get "frame_156/duration"(): float64
+        set "frame_156/duration"(value: float64)
+        get "frame_157/texture"(): Texture2D
+        set "frame_157/texture"(value: Texture2D)
+        get "frame_157/duration"(): float64
+        set "frame_157/duration"(value: float64)
+        get "frame_158/texture"(): Texture2D
+        set "frame_158/texture"(value: Texture2D)
+        get "frame_158/duration"(): float64
+        set "frame_158/duration"(value: float64)
+        get "frame_159/texture"(): Texture2D
+        set "frame_159/texture"(value: Texture2D)
+        get "frame_159/duration"(): float64
+        set "frame_159/duration"(value: float64)
+        get "frame_160/texture"(): Texture2D
+        set "frame_160/texture"(value: Texture2D)
+        get "frame_160/duration"(): float64
+        set "frame_160/duration"(value: float64)
+        get "frame_161/texture"(): Texture2D
+        set "frame_161/texture"(value: Texture2D)
+        get "frame_161/duration"(): float64
+        set "frame_161/duration"(value: float64)
+        get "frame_162/texture"(): Texture2D
+        set "frame_162/texture"(value: Texture2D)
+        get "frame_162/duration"(): float64
+        set "frame_162/duration"(value: float64)
+        get "frame_163/texture"(): Texture2D
+        set "frame_163/texture"(value: Texture2D)
+        get "frame_163/duration"(): float64
+        set "frame_163/duration"(value: float64)
+        get "frame_164/texture"(): Texture2D
+        set "frame_164/texture"(value: Texture2D)
+        get "frame_164/duration"(): float64
+        set "frame_164/duration"(value: float64)
+        get "frame_165/texture"(): Texture2D
+        set "frame_165/texture"(value: Texture2D)
+        get "frame_165/duration"(): float64
+        set "frame_165/duration"(value: float64)
+        get "frame_166/texture"(): Texture2D
+        set "frame_166/texture"(value: Texture2D)
+        get "frame_166/duration"(): float64
+        set "frame_166/duration"(value: float64)
+        get "frame_167/texture"(): Texture2D
+        set "frame_167/texture"(value: Texture2D)
+        get "frame_167/duration"(): float64
+        set "frame_167/duration"(value: float64)
+        get "frame_168/texture"(): Texture2D
+        set "frame_168/texture"(value: Texture2D)
+        get "frame_168/duration"(): float64
+        set "frame_168/duration"(value: float64)
+        get "frame_169/texture"(): Texture2D
+        set "frame_169/texture"(value: Texture2D)
+        get "frame_169/duration"(): float64
+        set "frame_169/duration"(value: float64)
+        get "frame_170/texture"(): Texture2D
+        set "frame_170/texture"(value: Texture2D)
+        get "frame_170/duration"(): float64
+        set "frame_170/duration"(value: float64)
+        get "frame_171/texture"(): Texture2D
+        set "frame_171/texture"(value: Texture2D)
+        get "frame_171/duration"(): float64
+        set "frame_171/duration"(value: float64)
+        get "frame_172/texture"(): Texture2D
+        set "frame_172/texture"(value: Texture2D)
+        get "frame_172/duration"(): float64
+        set "frame_172/duration"(value: float64)
+        get "frame_173/texture"(): Texture2D
+        set "frame_173/texture"(value: Texture2D)
+        get "frame_173/duration"(): float64
+        set "frame_173/duration"(value: float64)
+        get "frame_174/texture"(): Texture2D
+        set "frame_174/texture"(value: Texture2D)
+        get "frame_174/duration"(): float64
+        set "frame_174/duration"(value: float64)
+        get "frame_175/texture"(): Texture2D
+        set "frame_175/texture"(value: Texture2D)
+        get "frame_175/duration"(): float64
+        set "frame_175/duration"(value: float64)
+        get "frame_176/texture"(): Texture2D
+        set "frame_176/texture"(value: Texture2D)
+        get "frame_176/duration"(): float64
+        set "frame_176/duration"(value: float64)
+        get "frame_177/texture"(): Texture2D
+        set "frame_177/texture"(value: Texture2D)
+        get "frame_177/duration"(): float64
+        set "frame_177/duration"(value: float64)
+        get "frame_178/texture"(): Texture2D
+        set "frame_178/texture"(value: Texture2D)
+        get "frame_178/duration"(): float64
+        set "frame_178/duration"(value: float64)
+        get "frame_179/texture"(): Texture2D
+        set "frame_179/texture"(value: Texture2D)
+        get "frame_179/duration"(): float64
+        set "frame_179/duration"(value: float64)
+        get "frame_180/texture"(): Texture2D
+        set "frame_180/texture"(value: Texture2D)
+        get "frame_180/duration"(): float64
+        set "frame_180/duration"(value: float64)
+        get "frame_181/texture"(): Texture2D
+        set "frame_181/texture"(value: Texture2D)
+        get "frame_181/duration"(): float64
+        set "frame_181/duration"(value: float64)
+        get "frame_182/texture"(): Texture2D
+        set "frame_182/texture"(value: Texture2D)
+        get "frame_182/duration"(): float64
+        set "frame_182/duration"(value: float64)
+        get "frame_183/texture"(): Texture2D
+        set "frame_183/texture"(value: Texture2D)
+        get "frame_183/duration"(): float64
+        set "frame_183/duration"(value: float64)
+        get "frame_184/texture"(): Texture2D
+        set "frame_184/texture"(value: Texture2D)
+        get "frame_184/duration"(): float64
+        set "frame_184/duration"(value: float64)
+        get "frame_185/texture"(): Texture2D
+        set "frame_185/texture"(value: Texture2D)
+        get "frame_185/duration"(): float64
+        set "frame_185/duration"(value: float64)
+        get "frame_186/texture"(): Texture2D
+        set "frame_186/texture"(value: Texture2D)
+        get "frame_186/duration"(): float64
+        set "frame_186/duration"(value: float64)
+        get "frame_187/texture"(): Texture2D
+        set "frame_187/texture"(value: Texture2D)
+        get "frame_187/duration"(): float64
+        set "frame_187/duration"(value: float64)
+        get "frame_188/texture"(): Texture2D
+        set "frame_188/texture"(value: Texture2D)
+        get "frame_188/duration"(): float64
+        set "frame_188/duration"(value: float64)
+        get "frame_189/texture"(): Texture2D
+        set "frame_189/texture"(value: Texture2D)
+        get "frame_189/duration"(): float64
+        set "frame_189/duration"(value: float64)
+        get "frame_190/texture"(): Texture2D
+        set "frame_190/texture"(value: Texture2D)
+        get "frame_190/duration"(): float64
+        set "frame_190/duration"(value: float64)
+        get "frame_191/texture"(): Texture2D
+        set "frame_191/texture"(value: Texture2D)
+        get "frame_191/duration"(): float64
+        set "frame_191/duration"(value: float64)
+        get "frame_192/texture"(): Texture2D
+        set "frame_192/texture"(value: Texture2D)
+        get "frame_192/duration"(): float64
+        set "frame_192/duration"(value: float64)
+        get "frame_193/texture"(): Texture2D
+        set "frame_193/texture"(value: Texture2D)
+        get "frame_193/duration"(): float64
+        set "frame_193/duration"(value: float64)
+        get "frame_194/texture"(): Texture2D
+        set "frame_194/texture"(value: Texture2D)
+        get "frame_194/duration"(): float64
+        set "frame_194/duration"(value: float64)
+        get "frame_195/texture"(): Texture2D
+        set "frame_195/texture"(value: Texture2D)
+        get "frame_195/duration"(): float64
+        set "frame_195/duration"(value: float64)
+        get "frame_196/texture"(): Texture2D
+        set "frame_196/texture"(value: Texture2D)
+        get "frame_196/duration"(): float64
+        set "frame_196/duration"(value: float64)
+        get "frame_197/texture"(): Texture2D
+        set "frame_197/texture"(value: Texture2D)
+        get "frame_197/duration"(): float64
+        set "frame_197/duration"(value: float64)
+        get "frame_198/texture"(): Texture2D
+        set "frame_198/texture"(value: Texture2D)
+        get "frame_198/duration"(): float64
+        set "frame_198/duration"(value: float64)
+        get "frame_199/texture"(): Texture2D
+        set "frame_199/texture"(value: Texture2D)
+        get "frame_199/duration"(): float64
+        set "frame_199/duration"(value: float64)
+        get "frame_200/texture"(): Texture2D
+        set "frame_200/texture"(value: Texture2D)
+        get "frame_200/duration"(): float64
+        set "frame_200/duration"(value: float64)
+        get "frame_201/texture"(): Texture2D
+        set "frame_201/texture"(value: Texture2D)
+        get "frame_201/duration"(): float64
+        set "frame_201/duration"(value: float64)
+        get "frame_202/texture"(): Texture2D
+        set "frame_202/texture"(value: Texture2D)
+        get "frame_202/duration"(): float64
+        set "frame_202/duration"(value: float64)
+        get "frame_203/texture"(): Texture2D
+        set "frame_203/texture"(value: Texture2D)
+        get "frame_203/duration"(): float64
+        set "frame_203/duration"(value: float64)
+        get "frame_204/texture"(): Texture2D
+        set "frame_204/texture"(value: Texture2D)
+        get "frame_204/duration"(): float64
+        set "frame_204/duration"(value: float64)
+        get "frame_205/texture"(): Texture2D
+        set "frame_205/texture"(value: Texture2D)
+        get "frame_205/duration"(): float64
+        set "frame_205/duration"(value: float64)
+        get "frame_206/texture"(): Texture2D
+        set "frame_206/texture"(value: Texture2D)
+        get "frame_206/duration"(): float64
+        set "frame_206/duration"(value: float64)
+        get "frame_207/texture"(): Texture2D
+        set "frame_207/texture"(value: Texture2D)
+        get "frame_207/duration"(): float64
+        set "frame_207/duration"(value: float64)
+        get "frame_208/texture"(): Texture2D
+        set "frame_208/texture"(value: Texture2D)
+        get "frame_208/duration"(): float64
+        set "frame_208/duration"(value: float64)
+        get "frame_209/texture"(): Texture2D
+        set "frame_209/texture"(value: Texture2D)
+        get "frame_209/duration"(): float64
+        set "frame_209/duration"(value: float64)
+        get "frame_210/texture"(): Texture2D
+        set "frame_210/texture"(value: Texture2D)
+        get "frame_210/duration"(): float64
+        set "frame_210/duration"(value: float64)
+        get "frame_211/texture"(): Texture2D
+        set "frame_211/texture"(value: Texture2D)
+        get "frame_211/duration"(): float64
+        set "frame_211/duration"(value: float64)
+        get "frame_212/texture"(): Texture2D
+        set "frame_212/texture"(value: Texture2D)
+        get "frame_212/duration"(): float64
+        set "frame_212/duration"(value: float64)
+        get "frame_213/texture"(): Texture2D
+        set "frame_213/texture"(value: Texture2D)
+        get "frame_213/duration"(): float64
+        set "frame_213/duration"(value: float64)
+        get "frame_214/texture"(): Texture2D
+        set "frame_214/texture"(value: Texture2D)
+        get "frame_214/duration"(): float64
+        set "frame_214/duration"(value: float64)
+        get "frame_215/texture"(): Texture2D
+        set "frame_215/texture"(value: Texture2D)
+        get "frame_215/duration"(): float64
+        set "frame_215/duration"(value: float64)
+        get "frame_216/texture"(): Texture2D
+        set "frame_216/texture"(value: Texture2D)
+        get "frame_216/duration"(): float64
+        set "frame_216/duration"(value: float64)
+        get "frame_217/texture"(): Texture2D
+        set "frame_217/texture"(value: Texture2D)
+        get "frame_217/duration"(): float64
+        set "frame_217/duration"(value: float64)
+        get "frame_218/texture"(): Texture2D
+        set "frame_218/texture"(value: Texture2D)
+        get "frame_218/duration"(): float64
+        set "frame_218/duration"(value: float64)
+        get "frame_219/texture"(): Texture2D
+        set "frame_219/texture"(value: Texture2D)
+        get "frame_219/duration"(): float64
+        set "frame_219/duration"(value: float64)
+        get "frame_220/texture"(): Texture2D
+        set "frame_220/texture"(value: Texture2D)
+        get "frame_220/duration"(): float64
+        set "frame_220/duration"(value: float64)
+        get "frame_221/texture"(): Texture2D
+        set "frame_221/texture"(value: Texture2D)
+        get "frame_221/duration"(): float64
+        set "frame_221/duration"(value: float64)
+        get "frame_222/texture"(): Texture2D
+        set "frame_222/texture"(value: Texture2D)
+        get "frame_222/duration"(): float64
+        set "frame_222/duration"(value: float64)
+        get "frame_223/texture"(): Texture2D
+        set "frame_223/texture"(value: Texture2D)
+        get "frame_223/duration"(): float64
+        set "frame_223/duration"(value: float64)
+        get "frame_224/texture"(): Texture2D
+        set "frame_224/texture"(value: Texture2D)
+        get "frame_224/duration"(): float64
+        set "frame_224/duration"(value: float64)
+        get "frame_225/texture"(): Texture2D
+        set "frame_225/texture"(value: Texture2D)
+        get "frame_225/duration"(): float64
+        set "frame_225/duration"(value: float64)
+        get "frame_226/texture"(): Texture2D
+        set "frame_226/texture"(value: Texture2D)
+        get "frame_226/duration"(): float64
+        set "frame_226/duration"(value: float64)
+        get "frame_227/texture"(): Texture2D
+        set "frame_227/texture"(value: Texture2D)
+        get "frame_227/duration"(): float64
+        set "frame_227/duration"(value: float64)
+        get "frame_228/texture"(): Texture2D
+        set "frame_228/texture"(value: Texture2D)
+        get "frame_228/duration"(): float64
+        set "frame_228/duration"(value: float64)
+        get "frame_229/texture"(): Texture2D
+        set "frame_229/texture"(value: Texture2D)
+        get "frame_229/duration"(): float64
+        set "frame_229/duration"(value: float64)
+        get "frame_230/texture"(): Texture2D
+        set "frame_230/texture"(value: Texture2D)
+        get "frame_230/duration"(): float64
+        set "frame_230/duration"(value: float64)
+        get "frame_231/texture"(): Texture2D
+        set "frame_231/texture"(value: Texture2D)
+        get "frame_231/duration"(): float64
+        set "frame_231/duration"(value: float64)
+        get "frame_232/texture"(): Texture2D
+        set "frame_232/texture"(value: Texture2D)
+        get "frame_232/duration"(): float64
+        set "frame_232/duration"(value: float64)
+        get "frame_233/texture"(): Texture2D
+        set "frame_233/texture"(value: Texture2D)
+        get "frame_233/duration"(): float64
+        set "frame_233/duration"(value: float64)
+        get "frame_234/texture"(): Texture2D
+        set "frame_234/texture"(value: Texture2D)
+        get "frame_234/duration"(): float64
+        set "frame_234/duration"(value: float64)
+        get "frame_235/texture"(): Texture2D
+        set "frame_235/texture"(value: Texture2D)
+        get "frame_235/duration"(): float64
+        set "frame_235/duration"(value: float64)
+        get "frame_236/texture"(): Texture2D
+        set "frame_236/texture"(value: Texture2D)
+        get "frame_236/duration"(): float64
+        set "frame_236/duration"(value: float64)
+        get "frame_237/texture"(): Texture2D
+        set "frame_237/texture"(value: Texture2D)
+        get "frame_237/duration"(): float64
+        set "frame_237/duration"(value: float64)
+        get "frame_238/texture"(): Texture2D
+        set "frame_238/texture"(value: Texture2D)
+        get "frame_238/duration"(): float64
+        set "frame_238/duration"(value: float64)
+        get "frame_239/texture"(): Texture2D
+        set "frame_239/texture"(value: Texture2D)
+        get "frame_239/duration"(): float64
+        set "frame_239/duration"(value: float64)
+        get "frame_240/texture"(): Texture2D
+        set "frame_240/texture"(value: Texture2D)
+        get "frame_240/duration"(): float64
+        set "frame_240/duration"(value: float64)
+        get "frame_241/texture"(): Texture2D
+        set "frame_241/texture"(value: Texture2D)
+        get "frame_241/duration"(): float64
+        set "frame_241/duration"(value: float64)
+        get "frame_242/texture"(): Texture2D
+        set "frame_242/texture"(value: Texture2D)
+        get "frame_242/duration"(): float64
+        set "frame_242/duration"(value: float64)
+        get "frame_243/texture"(): Texture2D
+        set "frame_243/texture"(value: Texture2D)
+        get "frame_243/duration"(): float64
+        set "frame_243/duration"(value: float64)
+        get "frame_244/texture"(): Texture2D
+        set "frame_244/texture"(value: Texture2D)
+        get "frame_244/duration"(): float64
+        set "frame_244/duration"(value: float64)
+        get "frame_245/texture"(): Texture2D
+        set "frame_245/texture"(value: Texture2D)
+        get "frame_245/duration"(): float64
+        set "frame_245/duration"(value: float64)
+        get "frame_246/texture"(): Texture2D
+        set "frame_246/texture"(value: Texture2D)
+        get "frame_246/duration"(): float64
+        set "frame_246/duration"(value: float64)
+        get "frame_247/texture"(): Texture2D
+        set "frame_247/texture"(value: Texture2D)
+        get "frame_247/duration"(): float64
+        set "frame_247/duration"(value: float64)
+        get "frame_248/texture"(): Texture2D
+        set "frame_248/texture"(value: Texture2D)
+        get "frame_248/duration"(): float64
+        set "frame_248/duration"(value: float64)
+        get "frame_249/texture"(): Texture2D
+        set "frame_249/texture"(value: Texture2D)
+        get "frame_249/duration"(): float64
+        set "frame_249/duration"(value: float64)
+        get "frame_250/texture"(): Texture2D
+        set "frame_250/texture"(value: Texture2D)
+        get "frame_250/duration"(): float64
+        set "frame_250/duration"(value: float64)
+        get "frame_251/texture"(): Texture2D
+        set "frame_251/texture"(value: Texture2D)
+        get "frame_251/duration"(): float64
+        set "frame_251/duration"(value: float64)
+        get "frame_252/texture"(): Texture2D
+        set "frame_252/texture"(value: Texture2D)
+        get "frame_252/duration"(): float64
+        set "frame_252/duration"(value: float64)
+        get "frame_253/texture"(): Texture2D
+        set "frame_253/texture"(value: Texture2D)
+        get "frame_253/duration"(): float64
+        set "frame_253/duration"(value: float64)
+        get "frame_254/texture"(): Texture2D
+        set "frame_254/texture"(value: Texture2D)
+        get "frame_254/duration"(): float64
+        set "frame_254/duration"(value: float64)
+        get "frame_255/texture"(): Texture2D
+        set "frame_255/texture"(value: Texture2D)
+        get "frame_255/duration"(): float64
+        set "frame_255/duration"(value: float64)
     }
     namespace Animation {
         enum TrackType {
@@ -1990,7 +3753,7 @@ declare module "godot" {
     }
     /** Holds data that can be used to animate anything in the engine.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animation.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animation.html  
      */
     class Animation extends Resource {
         constructor(identifier?: any)
@@ -2202,11 +3965,44 @@ declare module "godot" {
         /** Returns the animation name at the key identified by [param key_idx]. The [param track_idx] must be the index of an Animation Track. */
         animation_track_get_key_animation(track_idx: int64, key_idx: int64): StringName
         
+        /** Adds a marker to this Animation. */
+        add_marker(name: StringName, time: float64): void
+        
+        /** Removes the marker with the given name from this Animation. */
+        remove_marker(name: StringName): void
+        
+        /** Returns `true` if this Animation contains a marker with the given name. */
+        has_marker(name: StringName): boolean
+        
+        /** Returns the name of the marker located at the given time. */
+        get_marker_at_time(time: float64): StringName
+        
+        /** Returns the closest marker that comes after the given time. If no such marker exists, an empty string is returned. */
+        get_next_marker(time: float64): StringName
+        
+        /** Returns the closest marker that comes before the given time. If no such marker exists, an empty string is returned. */
+        get_prev_marker(time: float64): StringName
+        
+        /** Returns the given marker's time. */
+        get_marker_time(name: StringName): float64
+        
+        /** Returns every marker in this Animation, sorted ascending by time. */
+        get_marker_names(): PackedStringArray
+        
+        /** Returns the given marker's color. */
+        get_marker_color(name: StringName): Color
+        
+        /** Sets the given marker's color. */
+        set_marker_color(name: StringName, color: Color): void
+        
         /** Clear the animation (clear all tracks and reset all). */
         clear(): void
         
         /** Adds a new track to [param to_animation] that is a copy of the given track from this animation. */
         copy_track(track_idx: int64, to_animation: Animation): void
+        
+        /** Optimize the animation and all its tracks in-place. This will preserve only as many keys as are necessary to keep the animation within the specified bounds. */
+        optimize(allowed_velocity_err: float64 = 0.01, allowed_angular_err: float64 = 0.01, precision: int64 = 3): void
         
         /** Compress the animation and all its tracks in-place. This will make [method track_is_compressed] return `true` once called on this [Animation]. Compressed tracks require less memory to be played, and are designed to be used for complex 3D animations (such as cutscenes) imported from external 3D software. Compression is lossy, but the difference is usually not noticeable in real world conditions.  
          *      
@@ -2232,7 +4028,7 @@ declare module "godot" {
         /** Returns `true` if the capture track is included. This is a cached readonly value for performance. */
         get capture_included(): boolean
     }
-    class AnimationBezierTrackEdit extends Control {
+    class AnimationBezierTrackEdit<Map extends Record<string, Node> = Record<string, Node>> extends Control<Map> {
         constructor(identifier?: any)
         _clear_selection(): void
         _clear_selection_for_anim(_unnamed_arg0: Animation): void
@@ -2246,7 +4042,7 @@ declare module "godot" {
     }
     /** Container for [Animation] resources.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationlibrary.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationlibrary.html  
      */
     class AnimationLibrary extends Resource {
         constructor(identifier?: any)
@@ -2267,6 +4063,9 @@ declare module "godot" {
         
         /** Returns the keys for the [Animation]s stored in the library. */
         get_animation_list(): GArray
+        
+        /** Returns the key count for the [Animation]s stored in the library. */
+        get_animation_list_size(): int64
         get _data(): GDictionary
         set _data(value: GDictionary)
         
@@ -2284,10 +4083,19 @@ declare module "godot" {
          */
         readonly animation_changed: Signal1<StringName>
     }
-    class AnimationLibraryEditor extends AcceptDialog {
+    class AnimationLibraryEditor<Map extends Record<string, Node> = Record<string, Node>> extends AcceptDialog<Map> {
         constructor(identifier?: any)
         _update_editor(mixer: Object): void
         readonly update_editor: Signal0
+    }
+    class AnimationMarkerEdit<Map extends Record<string, Node> = Record<string, Node>> extends Control<Map> {
+        constructor(identifier?: any)
+        _clear_selection_for_anim(_unnamed_arg0: Animation): void
+        _select_key(_unnamed_arg0: StringName, _unnamed_arg1: boolean): void
+        _deselect_key(_unnamed_arg0: StringName): void
+    }
+    class AnimationMarkerKeyEditEditorPlugin<Map extends Record<string, Node> = Record<string, Node>> extends EditorPlugin<Map> {
+        constructor(identifier?: any)
     }
     namespace AnimationMixer {
         enum AnimationCallbackModeProcess {
@@ -2315,16 +4123,28 @@ declare module "godot" {
             ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE = 1,
             
             /** Always treat the [constant Animation.UPDATE_DISCRETE] track value as [constant Animation.UPDATE_CONTINUOUS] with [constant Animation.INTERPOLATION_NEAREST]. This is the default behavior for [AnimationTree].  
-             *  If a value track has non-numeric type key values, it is internally converted to use [constant ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE] with [constant Animation.UPDATE_DISCRETE].  
+             *  If a value track has un-interpolatable type key values, it is internally converted to use [constant ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE] with [constant Animation.UPDATE_DISCRETE].  
+             *  Un-interpolatable type list:  
+             *  - [constant @GlobalScope.TYPE_NIL]  
+             *  - [constant @GlobalScope.TYPE_NODE_PATH]  
+             *  - [constant @GlobalScope.TYPE_RID]  
+             *  - [constant @GlobalScope.TYPE_OBJECT]  
+             *  - [constant @GlobalScope.TYPE_CALLABLE]  
+             *  - [constant @GlobalScope.TYPE_SIGNAL]  
+             *  - [constant @GlobalScope.TYPE_DICTIONARY]  
+             *  - [constant @GlobalScope.TYPE_PACKED_BYTE_ARRAY]  
+             *  [constant @GlobalScope.TYPE_BOOL] and [constant @GlobalScope.TYPE_INT] are treated as [constant @GlobalScope.TYPE_FLOAT] during blending and rounded when the result is retrieved.  
+             *  It is same for arrays and vectors with them such as [constant @GlobalScope.TYPE_PACKED_INT32_ARRAY] or [constant @GlobalScope.TYPE_VECTOR2I], they are treated as [constant @GlobalScope.TYPE_PACKED_FLOAT32_ARRAY] or [constant @GlobalScope.TYPE_VECTOR2]. Also note that for arrays, the size is also interpolated.  
+             *  [constant @GlobalScope.TYPE_STRING] and [constant @GlobalScope.TYPE_STRING_NAME] are interpolated between character codes and lengths, but note that there is a difference in algorithm between interpolation between keys and interpolation by blending.  
              */
             ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS = 2,
         }
     }
     /** Base class for [AnimationPlayer] and [AnimationTree].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationmixer.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationmixer.html  
      */
-    class AnimationMixer extends Node {
+    class AnimationMixer<Map extends Record<string, Node> = Record<string, Node>> extends Node<Map> {
         constructor(identifier?: any)
         /** A virtual function for processing after getting a key during playback. */
         /* gdvirtual */ _post_process_key_value(animation: Animation, track: int64, value: any, object_id: int64, object_sub_idx: int64): any
@@ -2367,6 +4187,9 @@ declare module "godot" {
          *  The most basic example is applying position to [CharacterBody3D]:  
          *    
          *  By using this in combination with [method get_root_motion_rotation_accumulator], you can apply the root motion position more correctly to account for the rotation of the node.  
+         *    
+         *  If [member root_motion_local] is `true`, return the pre-multiplied translation value with the inverted rotation.  
+         *  In this case, the code can be written as follows:  
          *    
          */
         get_root_motion_position(): Vector3
@@ -2462,6 +4285,10 @@ declare module "godot" {
         get root_motion_track(): NodePath
         set root_motion_track(value: NodePath | string)
         
+        /** If `true`, [method get_root_motion_position] value is extracted as a local translation value before blending. In other words, it is treated like the translation is done after the rotation. */
+        get root_motion_local(): boolean
+        set root_motion_local(value: boolean)
+        
         /** The number of possible simultaneous sounds for each of the assigned AudioStreamPlayers.  
          *  For example, if this value is `32` and the animation has two audio tracks, the two [AudioStreamPlayer]s assigned can play simultaneously up to `32` voices each.  
          */
@@ -2524,7 +4351,7 @@ declare module "godot" {
     }
     /** Base class for [AnimationTree] nodes. Not related to scene nodes.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnode.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnode.html  
      */
     class AnimationNode extends Resource {
         constructor(identifier?: any)
@@ -2576,8 +4403,17 @@ declare module "godot" {
         /** Adds or removes a path for the filter. */
         set_filter_path(path: NodePath | string, enable: boolean): void
         
-        /** Returns whether the given path is filtered. */
+        /** Returns `true` if the given path is filtered. */
         is_path_filtered(path: NodePath | string): boolean
+        
+        /** Returns the object id of the [AnimationTree] that owns this node.  
+         *      
+         *  **Note:** This method should only be called from within the [method AnimationNodeExtension._process_animation_node] method, and will return an invalid id otherwise.  
+         */
+        get_processing_animation_tree_instance_id(): int64
+        
+        /** Returns `true` if this animation node is being processed in test-only mode. */
+        is_process_testing(): boolean
         
         /** Blend an animation by [param blend] amount (name must be valid in the linked [AnimationPlayer]). A [param time] and [param delta] may be passed, as well as whether [param seeked] happened.  
          *  A [param looped_flag] is used by internal processing immediately after the loop. See also [enum Animation.LoopedFlag].  
@@ -2613,14 +4449,14 @@ declare module "godot" {
     }
     /** Blends two animations additively inside of an [AnimationNodeBlendTree].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnodeadd2.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodeadd2.html  
      */
     class AnimationNodeAdd2 extends AnimationNodeSync {
         constructor(identifier?: any)
     }
     /** Blends two of three animations additively inside of an [AnimationNodeBlendTree].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnodeadd3.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodeadd3.html  
      */
     class AnimationNodeAdd3 extends AnimationNodeSync {
         constructor(identifier?: any)
@@ -2636,7 +4472,7 @@ declare module "godot" {
     }
     /** An input animation for an [AnimationNodeBlendTree].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnodeanimation.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodeanimation.html  
      */
     class AnimationNodeAnimation extends AnimationRootNode {
         constructor(identifier?: any)
@@ -2647,6 +4483,12 @@ declare module "godot" {
         /** Determines the playback direction of the animation. */
         get play_mode(): int64
         set play_mode(value: int64)
+        
+        /** If `true`, on receiving a request to play an animation from the start, the first frame is not drawn, but only processed, and playback starts from the next frame.  
+         *  See also the notes of [method AnimationPlayer.play].  
+         */
+        get advance_on_start(): boolean
+        set advance_on_start(value: boolean)
         
         /** If `true`, [AnimationNode] provides an animation based on the [Animation] resource with some parameters adjusted. */
         get use_custom_timeline(): boolean
@@ -2678,14 +4520,14 @@ declare module "godot" {
     }
     /** Blends two animations linearly inside of an [AnimationNodeBlendTree].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnodeblend2.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodeblend2.html  
      */
     class AnimationNodeBlend2 extends AnimationNodeSync {
         constructor(identifier?: any)
     }
     /** Blends two of three animations linearly inside of an [AnimationNodeBlendTree].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnodeblend3.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodeblend3.html  
      */
     class AnimationNodeBlend3 extends AnimationNodeSync {
         constructor(identifier?: any)
@@ -2704,7 +4546,7 @@ declare module "godot" {
     }
     /** A set of [AnimationRootNode]s placed on a virtual axis, crossfading between the two adjacent ones. Used by [AnimationTree].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnodeblendspace1d.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodeblendspace1d.html  
      */
     class AnimationNodeBlendSpace1D extends AnimationRootNode {
         constructor(identifier?: any)
@@ -2729,6 +4571,262 @@ declare module "godot" {
         /** Returns the number of points on the blend axis. */
         get_blend_point_count(): int64
         _add_blend_point(index: int64, node: AnimationRootNode): void
+        get "blend_point_0/node"(): AnimationRootNode
+        set "blend_point_0/node"(value: AnimationRootNode)
+        get "blend_point_0/pos"(): float64
+        set "blend_point_0/pos"(value: float64)
+        get "blend_point_1/node"(): AnimationRootNode
+        set "blend_point_1/node"(value: AnimationRootNode)
+        get "blend_point_1/pos"(): float64
+        set "blend_point_1/pos"(value: float64)
+        get "blend_point_2/node"(): AnimationRootNode
+        set "blend_point_2/node"(value: AnimationRootNode)
+        get "blend_point_2/pos"(): float64
+        set "blend_point_2/pos"(value: float64)
+        get "blend_point_3/node"(): AnimationRootNode
+        set "blend_point_3/node"(value: AnimationRootNode)
+        get "blend_point_3/pos"(): float64
+        set "blend_point_3/pos"(value: float64)
+        get "blend_point_4/node"(): AnimationRootNode
+        set "blend_point_4/node"(value: AnimationRootNode)
+        get "blend_point_4/pos"(): float64
+        set "blend_point_4/pos"(value: float64)
+        get "blend_point_5/node"(): AnimationRootNode
+        set "blend_point_5/node"(value: AnimationRootNode)
+        get "blend_point_5/pos"(): float64
+        set "blend_point_5/pos"(value: float64)
+        get "blend_point_6/node"(): AnimationRootNode
+        set "blend_point_6/node"(value: AnimationRootNode)
+        get "blend_point_6/pos"(): float64
+        set "blend_point_6/pos"(value: float64)
+        get "blend_point_7/node"(): AnimationRootNode
+        set "blend_point_7/node"(value: AnimationRootNode)
+        get "blend_point_7/pos"(): float64
+        set "blend_point_7/pos"(value: float64)
+        get "blend_point_8/node"(): AnimationRootNode
+        set "blend_point_8/node"(value: AnimationRootNode)
+        get "blend_point_8/pos"(): float64
+        set "blend_point_8/pos"(value: float64)
+        get "blend_point_9/node"(): AnimationRootNode
+        set "blend_point_9/node"(value: AnimationRootNode)
+        get "blend_point_9/pos"(): float64
+        set "blend_point_9/pos"(value: float64)
+        get "blend_point_10/node"(): AnimationRootNode
+        set "blend_point_10/node"(value: AnimationRootNode)
+        get "blend_point_10/pos"(): float64
+        set "blend_point_10/pos"(value: float64)
+        get "blend_point_11/node"(): AnimationRootNode
+        set "blend_point_11/node"(value: AnimationRootNode)
+        get "blend_point_11/pos"(): float64
+        set "blend_point_11/pos"(value: float64)
+        get "blend_point_12/node"(): AnimationRootNode
+        set "blend_point_12/node"(value: AnimationRootNode)
+        get "blend_point_12/pos"(): float64
+        set "blend_point_12/pos"(value: float64)
+        get "blend_point_13/node"(): AnimationRootNode
+        set "blend_point_13/node"(value: AnimationRootNode)
+        get "blend_point_13/pos"(): float64
+        set "blend_point_13/pos"(value: float64)
+        get "blend_point_14/node"(): AnimationRootNode
+        set "blend_point_14/node"(value: AnimationRootNode)
+        get "blend_point_14/pos"(): float64
+        set "blend_point_14/pos"(value: float64)
+        get "blend_point_15/node"(): AnimationRootNode
+        set "blend_point_15/node"(value: AnimationRootNode)
+        get "blend_point_15/pos"(): float64
+        set "blend_point_15/pos"(value: float64)
+        get "blend_point_16/node"(): AnimationRootNode
+        set "blend_point_16/node"(value: AnimationRootNode)
+        get "blend_point_16/pos"(): float64
+        set "blend_point_16/pos"(value: float64)
+        get "blend_point_17/node"(): AnimationRootNode
+        set "blend_point_17/node"(value: AnimationRootNode)
+        get "blend_point_17/pos"(): float64
+        set "blend_point_17/pos"(value: float64)
+        get "blend_point_18/node"(): AnimationRootNode
+        set "blend_point_18/node"(value: AnimationRootNode)
+        get "blend_point_18/pos"(): float64
+        set "blend_point_18/pos"(value: float64)
+        get "blend_point_19/node"(): AnimationRootNode
+        set "blend_point_19/node"(value: AnimationRootNode)
+        get "blend_point_19/pos"(): float64
+        set "blend_point_19/pos"(value: float64)
+        get "blend_point_20/node"(): AnimationRootNode
+        set "blend_point_20/node"(value: AnimationRootNode)
+        get "blend_point_20/pos"(): float64
+        set "blend_point_20/pos"(value: float64)
+        get "blend_point_21/node"(): AnimationRootNode
+        set "blend_point_21/node"(value: AnimationRootNode)
+        get "blend_point_21/pos"(): float64
+        set "blend_point_21/pos"(value: float64)
+        get "blend_point_22/node"(): AnimationRootNode
+        set "blend_point_22/node"(value: AnimationRootNode)
+        get "blend_point_22/pos"(): float64
+        set "blend_point_22/pos"(value: float64)
+        get "blend_point_23/node"(): AnimationRootNode
+        set "blend_point_23/node"(value: AnimationRootNode)
+        get "blend_point_23/pos"(): float64
+        set "blend_point_23/pos"(value: float64)
+        get "blend_point_24/node"(): AnimationRootNode
+        set "blend_point_24/node"(value: AnimationRootNode)
+        get "blend_point_24/pos"(): float64
+        set "blend_point_24/pos"(value: float64)
+        get "blend_point_25/node"(): AnimationRootNode
+        set "blend_point_25/node"(value: AnimationRootNode)
+        get "blend_point_25/pos"(): float64
+        set "blend_point_25/pos"(value: float64)
+        get "blend_point_26/node"(): AnimationRootNode
+        set "blend_point_26/node"(value: AnimationRootNode)
+        get "blend_point_26/pos"(): float64
+        set "blend_point_26/pos"(value: float64)
+        get "blend_point_27/node"(): AnimationRootNode
+        set "blend_point_27/node"(value: AnimationRootNode)
+        get "blend_point_27/pos"(): float64
+        set "blend_point_27/pos"(value: float64)
+        get "blend_point_28/node"(): AnimationRootNode
+        set "blend_point_28/node"(value: AnimationRootNode)
+        get "blend_point_28/pos"(): float64
+        set "blend_point_28/pos"(value: float64)
+        get "blend_point_29/node"(): AnimationRootNode
+        set "blend_point_29/node"(value: AnimationRootNode)
+        get "blend_point_29/pos"(): float64
+        set "blend_point_29/pos"(value: float64)
+        get "blend_point_30/node"(): AnimationRootNode
+        set "blend_point_30/node"(value: AnimationRootNode)
+        get "blend_point_30/pos"(): float64
+        set "blend_point_30/pos"(value: float64)
+        get "blend_point_31/node"(): AnimationRootNode
+        set "blend_point_31/node"(value: AnimationRootNode)
+        get "blend_point_31/pos"(): float64
+        set "blend_point_31/pos"(value: float64)
+        get "blend_point_32/node"(): AnimationRootNode
+        set "blend_point_32/node"(value: AnimationRootNode)
+        get "blend_point_32/pos"(): float64
+        set "blend_point_32/pos"(value: float64)
+        get "blend_point_33/node"(): AnimationRootNode
+        set "blend_point_33/node"(value: AnimationRootNode)
+        get "blend_point_33/pos"(): float64
+        set "blend_point_33/pos"(value: float64)
+        get "blend_point_34/node"(): AnimationRootNode
+        set "blend_point_34/node"(value: AnimationRootNode)
+        get "blend_point_34/pos"(): float64
+        set "blend_point_34/pos"(value: float64)
+        get "blend_point_35/node"(): AnimationRootNode
+        set "blend_point_35/node"(value: AnimationRootNode)
+        get "blend_point_35/pos"(): float64
+        set "blend_point_35/pos"(value: float64)
+        get "blend_point_36/node"(): AnimationRootNode
+        set "blend_point_36/node"(value: AnimationRootNode)
+        get "blend_point_36/pos"(): float64
+        set "blend_point_36/pos"(value: float64)
+        get "blend_point_37/node"(): AnimationRootNode
+        set "blend_point_37/node"(value: AnimationRootNode)
+        get "blend_point_37/pos"(): float64
+        set "blend_point_37/pos"(value: float64)
+        get "blend_point_38/node"(): AnimationRootNode
+        set "blend_point_38/node"(value: AnimationRootNode)
+        get "blend_point_38/pos"(): float64
+        set "blend_point_38/pos"(value: float64)
+        get "blend_point_39/node"(): AnimationRootNode
+        set "blend_point_39/node"(value: AnimationRootNode)
+        get "blend_point_39/pos"(): float64
+        set "blend_point_39/pos"(value: float64)
+        get "blend_point_40/node"(): AnimationRootNode
+        set "blend_point_40/node"(value: AnimationRootNode)
+        get "blend_point_40/pos"(): float64
+        set "blend_point_40/pos"(value: float64)
+        get "blend_point_41/node"(): AnimationRootNode
+        set "blend_point_41/node"(value: AnimationRootNode)
+        get "blend_point_41/pos"(): float64
+        set "blend_point_41/pos"(value: float64)
+        get "blend_point_42/node"(): AnimationRootNode
+        set "blend_point_42/node"(value: AnimationRootNode)
+        get "blend_point_42/pos"(): float64
+        set "blend_point_42/pos"(value: float64)
+        get "blend_point_43/node"(): AnimationRootNode
+        set "blend_point_43/node"(value: AnimationRootNode)
+        get "blend_point_43/pos"(): float64
+        set "blend_point_43/pos"(value: float64)
+        get "blend_point_44/node"(): AnimationRootNode
+        set "blend_point_44/node"(value: AnimationRootNode)
+        get "blend_point_44/pos"(): float64
+        set "blend_point_44/pos"(value: float64)
+        get "blend_point_45/node"(): AnimationRootNode
+        set "blend_point_45/node"(value: AnimationRootNode)
+        get "blend_point_45/pos"(): float64
+        set "blend_point_45/pos"(value: float64)
+        get "blend_point_46/node"(): AnimationRootNode
+        set "blend_point_46/node"(value: AnimationRootNode)
+        get "blend_point_46/pos"(): float64
+        set "blend_point_46/pos"(value: float64)
+        get "blend_point_47/node"(): AnimationRootNode
+        set "blend_point_47/node"(value: AnimationRootNode)
+        get "blend_point_47/pos"(): float64
+        set "blend_point_47/pos"(value: float64)
+        get "blend_point_48/node"(): AnimationRootNode
+        set "blend_point_48/node"(value: AnimationRootNode)
+        get "blend_point_48/pos"(): float64
+        set "blend_point_48/pos"(value: float64)
+        get "blend_point_49/node"(): AnimationRootNode
+        set "blend_point_49/node"(value: AnimationRootNode)
+        get "blend_point_49/pos"(): float64
+        set "blend_point_49/pos"(value: float64)
+        get "blend_point_50/node"(): AnimationRootNode
+        set "blend_point_50/node"(value: AnimationRootNode)
+        get "blend_point_50/pos"(): float64
+        set "blend_point_50/pos"(value: float64)
+        get "blend_point_51/node"(): AnimationRootNode
+        set "blend_point_51/node"(value: AnimationRootNode)
+        get "blend_point_51/pos"(): float64
+        set "blend_point_51/pos"(value: float64)
+        get "blend_point_52/node"(): AnimationRootNode
+        set "blend_point_52/node"(value: AnimationRootNode)
+        get "blend_point_52/pos"(): float64
+        set "blend_point_52/pos"(value: float64)
+        get "blend_point_53/node"(): AnimationRootNode
+        set "blend_point_53/node"(value: AnimationRootNode)
+        get "blend_point_53/pos"(): float64
+        set "blend_point_53/pos"(value: float64)
+        get "blend_point_54/node"(): AnimationRootNode
+        set "blend_point_54/node"(value: AnimationRootNode)
+        get "blend_point_54/pos"(): float64
+        set "blend_point_54/pos"(value: float64)
+        get "blend_point_55/node"(): AnimationRootNode
+        set "blend_point_55/node"(value: AnimationRootNode)
+        get "blend_point_55/pos"(): float64
+        set "blend_point_55/pos"(value: float64)
+        get "blend_point_56/node"(): AnimationRootNode
+        set "blend_point_56/node"(value: AnimationRootNode)
+        get "blend_point_56/pos"(): float64
+        set "blend_point_56/pos"(value: float64)
+        get "blend_point_57/node"(): AnimationRootNode
+        set "blend_point_57/node"(value: AnimationRootNode)
+        get "blend_point_57/pos"(): float64
+        set "blend_point_57/pos"(value: float64)
+        get "blend_point_58/node"(): AnimationRootNode
+        set "blend_point_58/node"(value: AnimationRootNode)
+        get "blend_point_58/pos"(): float64
+        set "blend_point_58/pos"(value: float64)
+        get "blend_point_59/node"(): AnimationRootNode
+        set "blend_point_59/node"(value: AnimationRootNode)
+        get "blend_point_59/pos"(): float64
+        set "blend_point_59/pos"(value: float64)
+        get "blend_point_60/node"(): AnimationRootNode
+        set "blend_point_60/node"(value: AnimationRootNode)
+        get "blend_point_60/pos"(): float64
+        set "blend_point_60/pos"(value: float64)
+        get "blend_point_61/node"(): AnimationRootNode
+        set "blend_point_61/node"(value: AnimationRootNode)
+        get "blend_point_61/pos"(): float64
+        set "blend_point_61/pos"(value: float64)
+        get "blend_point_62/node"(): AnimationRootNode
+        set "blend_point_62/node"(value: AnimationRootNode)
+        get "blend_point_62/pos"(): float64
+        set "blend_point_62/pos"(value: float64)
+        get "blend_point_63/node"(): AnimationRootNode
+        set "blend_point_63/node"(value: AnimationRootNode)
+        get "blend_point_63/pos"(): float64
+        set "blend_point_63/pos"(value: float64)
         
         /** The blend space's axis's lower limit for the points' position. See [method add_blend_point]. */
         get min_space(): float64
@@ -2756,7 +4854,7 @@ declare module "godot" {
         get sync(): boolean
         set sync(value: boolean)
     }
-    class AnimationNodeBlendSpace1DEditor extends AnimationTreeNodeEditorPlugin {
+    class AnimationNodeBlendSpace1DEditor<Map extends Record<string, Node> = Record<string, Node>> extends AnimationTreeNodeEditorPlugin<Map> {
         constructor(identifier?: any)
         _update_space(): void
         _update_tool_erase(): void
@@ -2776,7 +4874,7 @@ declare module "godot" {
     }
     /** A set of [AnimationRootNode]s placed on 2D coordinates, crossfading between the three adjacent ones. Used by [AnimationTree].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnodeblendspace2d.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodeblendspace2d.html  
      */
     class AnimationNodeBlendSpace2D extends AnimationRootNode {
         constructor(identifier?: any)
@@ -2817,6 +4915,262 @@ declare module "godot" {
         /** If `true`, the blend space is triangulated automatically. The mesh updates every time you add or remove points with [method add_blend_point] and [method remove_blend_point]. */
         get auto_triangles(): boolean
         set auto_triangles(value: boolean)
+        get "blend_point_0/node"(): AnimationRootNode
+        set "blend_point_0/node"(value: AnimationRootNode)
+        get "blend_point_0/pos"(): Vector2
+        set "blend_point_0/pos"(value: Vector2)
+        get "blend_point_1/node"(): AnimationRootNode
+        set "blend_point_1/node"(value: AnimationRootNode)
+        get "blend_point_1/pos"(): Vector2
+        set "blend_point_1/pos"(value: Vector2)
+        get "blend_point_2/node"(): AnimationRootNode
+        set "blend_point_2/node"(value: AnimationRootNode)
+        get "blend_point_2/pos"(): Vector2
+        set "blend_point_2/pos"(value: Vector2)
+        get "blend_point_3/node"(): AnimationRootNode
+        set "blend_point_3/node"(value: AnimationRootNode)
+        get "blend_point_3/pos"(): Vector2
+        set "blend_point_3/pos"(value: Vector2)
+        get "blend_point_4/node"(): AnimationRootNode
+        set "blend_point_4/node"(value: AnimationRootNode)
+        get "blend_point_4/pos"(): Vector2
+        set "blend_point_4/pos"(value: Vector2)
+        get "blend_point_5/node"(): AnimationRootNode
+        set "blend_point_5/node"(value: AnimationRootNode)
+        get "blend_point_5/pos"(): Vector2
+        set "blend_point_5/pos"(value: Vector2)
+        get "blend_point_6/node"(): AnimationRootNode
+        set "blend_point_6/node"(value: AnimationRootNode)
+        get "blend_point_6/pos"(): Vector2
+        set "blend_point_6/pos"(value: Vector2)
+        get "blend_point_7/node"(): AnimationRootNode
+        set "blend_point_7/node"(value: AnimationRootNode)
+        get "blend_point_7/pos"(): Vector2
+        set "blend_point_7/pos"(value: Vector2)
+        get "blend_point_8/node"(): AnimationRootNode
+        set "blend_point_8/node"(value: AnimationRootNode)
+        get "blend_point_8/pos"(): Vector2
+        set "blend_point_8/pos"(value: Vector2)
+        get "blend_point_9/node"(): AnimationRootNode
+        set "blend_point_9/node"(value: AnimationRootNode)
+        get "blend_point_9/pos"(): Vector2
+        set "blend_point_9/pos"(value: Vector2)
+        get "blend_point_10/node"(): AnimationRootNode
+        set "blend_point_10/node"(value: AnimationRootNode)
+        get "blend_point_10/pos"(): Vector2
+        set "blend_point_10/pos"(value: Vector2)
+        get "blend_point_11/node"(): AnimationRootNode
+        set "blend_point_11/node"(value: AnimationRootNode)
+        get "blend_point_11/pos"(): Vector2
+        set "blend_point_11/pos"(value: Vector2)
+        get "blend_point_12/node"(): AnimationRootNode
+        set "blend_point_12/node"(value: AnimationRootNode)
+        get "blend_point_12/pos"(): Vector2
+        set "blend_point_12/pos"(value: Vector2)
+        get "blend_point_13/node"(): AnimationRootNode
+        set "blend_point_13/node"(value: AnimationRootNode)
+        get "blend_point_13/pos"(): Vector2
+        set "blend_point_13/pos"(value: Vector2)
+        get "blend_point_14/node"(): AnimationRootNode
+        set "blend_point_14/node"(value: AnimationRootNode)
+        get "blend_point_14/pos"(): Vector2
+        set "blend_point_14/pos"(value: Vector2)
+        get "blend_point_15/node"(): AnimationRootNode
+        set "blend_point_15/node"(value: AnimationRootNode)
+        get "blend_point_15/pos"(): Vector2
+        set "blend_point_15/pos"(value: Vector2)
+        get "blend_point_16/node"(): AnimationRootNode
+        set "blend_point_16/node"(value: AnimationRootNode)
+        get "blend_point_16/pos"(): Vector2
+        set "blend_point_16/pos"(value: Vector2)
+        get "blend_point_17/node"(): AnimationRootNode
+        set "blend_point_17/node"(value: AnimationRootNode)
+        get "blend_point_17/pos"(): Vector2
+        set "blend_point_17/pos"(value: Vector2)
+        get "blend_point_18/node"(): AnimationRootNode
+        set "blend_point_18/node"(value: AnimationRootNode)
+        get "blend_point_18/pos"(): Vector2
+        set "blend_point_18/pos"(value: Vector2)
+        get "blend_point_19/node"(): AnimationRootNode
+        set "blend_point_19/node"(value: AnimationRootNode)
+        get "blend_point_19/pos"(): Vector2
+        set "blend_point_19/pos"(value: Vector2)
+        get "blend_point_20/node"(): AnimationRootNode
+        set "blend_point_20/node"(value: AnimationRootNode)
+        get "blend_point_20/pos"(): Vector2
+        set "blend_point_20/pos"(value: Vector2)
+        get "blend_point_21/node"(): AnimationRootNode
+        set "blend_point_21/node"(value: AnimationRootNode)
+        get "blend_point_21/pos"(): Vector2
+        set "blend_point_21/pos"(value: Vector2)
+        get "blend_point_22/node"(): AnimationRootNode
+        set "blend_point_22/node"(value: AnimationRootNode)
+        get "blend_point_22/pos"(): Vector2
+        set "blend_point_22/pos"(value: Vector2)
+        get "blend_point_23/node"(): AnimationRootNode
+        set "blend_point_23/node"(value: AnimationRootNode)
+        get "blend_point_23/pos"(): Vector2
+        set "blend_point_23/pos"(value: Vector2)
+        get "blend_point_24/node"(): AnimationRootNode
+        set "blend_point_24/node"(value: AnimationRootNode)
+        get "blend_point_24/pos"(): Vector2
+        set "blend_point_24/pos"(value: Vector2)
+        get "blend_point_25/node"(): AnimationRootNode
+        set "blend_point_25/node"(value: AnimationRootNode)
+        get "blend_point_25/pos"(): Vector2
+        set "blend_point_25/pos"(value: Vector2)
+        get "blend_point_26/node"(): AnimationRootNode
+        set "blend_point_26/node"(value: AnimationRootNode)
+        get "blend_point_26/pos"(): Vector2
+        set "blend_point_26/pos"(value: Vector2)
+        get "blend_point_27/node"(): AnimationRootNode
+        set "blend_point_27/node"(value: AnimationRootNode)
+        get "blend_point_27/pos"(): Vector2
+        set "blend_point_27/pos"(value: Vector2)
+        get "blend_point_28/node"(): AnimationRootNode
+        set "blend_point_28/node"(value: AnimationRootNode)
+        get "blend_point_28/pos"(): Vector2
+        set "blend_point_28/pos"(value: Vector2)
+        get "blend_point_29/node"(): AnimationRootNode
+        set "blend_point_29/node"(value: AnimationRootNode)
+        get "blend_point_29/pos"(): Vector2
+        set "blend_point_29/pos"(value: Vector2)
+        get "blend_point_30/node"(): AnimationRootNode
+        set "blend_point_30/node"(value: AnimationRootNode)
+        get "blend_point_30/pos"(): Vector2
+        set "blend_point_30/pos"(value: Vector2)
+        get "blend_point_31/node"(): AnimationRootNode
+        set "blend_point_31/node"(value: AnimationRootNode)
+        get "blend_point_31/pos"(): Vector2
+        set "blend_point_31/pos"(value: Vector2)
+        get "blend_point_32/node"(): AnimationRootNode
+        set "blend_point_32/node"(value: AnimationRootNode)
+        get "blend_point_32/pos"(): Vector2
+        set "blend_point_32/pos"(value: Vector2)
+        get "blend_point_33/node"(): AnimationRootNode
+        set "blend_point_33/node"(value: AnimationRootNode)
+        get "blend_point_33/pos"(): Vector2
+        set "blend_point_33/pos"(value: Vector2)
+        get "blend_point_34/node"(): AnimationRootNode
+        set "blend_point_34/node"(value: AnimationRootNode)
+        get "blend_point_34/pos"(): Vector2
+        set "blend_point_34/pos"(value: Vector2)
+        get "blend_point_35/node"(): AnimationRootNode
+        set "blend_point_35/node"(value: AnimationRootNode)
+        get "blend_point_35/pos"(): Vector2
+        set "blend_point_35/pos"(value: Vector2)
+        get "blend_point_36/node"(): AnimationRootNode
+        set "blend_point_36/node"(value: AnimationRootNode)
+        get "blend_point_36/pos"(): Vector2
+        set "blend_point_36/pos"(value: Vector2)
+        get "blend_point_37/node"(): AnimationRootNode
+        set "blend_point_37/node"(value: AnimationRootNode)
+        get "blend_point_37/pos"(): Vector2
+        set "blend_point_37/pos"(value: Vector2)
+        get "blend_point_38/node"(): AnimationRootNode
+        set "blend_point_38/node"(value: AnimationRootNode)
+        get "blend_point_38/pos"(): Vector2
+        set "blend_point_38/pos"(value: Vector2)
+        get "blend_point_39/node"(): AnimationRootNode
+        set "blend_point_39/node"(value: AnimationRootNode)
+        get "blend_point_39/pos"(): Vector2
+        set "blend_point_39/pos"(value: Vector2)
+        get "blend_point_40/node"(): AnimationRootNode
+        set "blend_point_40/node"(value: AnimationRootNode)
+        get "blend_point_40/pos"(): Vector2
+        set "blend_point_40/pos"(value: Vector2)
+        get "blend_point_41/node"(): AnimationRootNode
+        set "blend_point_41/node"(value: AnimationRootNode)
+        get "blend_point_41/pos"(): Vector2
+        set "blend_point_41/pos"(value: Vector2)
+        get "blend_point_42/node"(): AnimationRootNode
+        set "blend_point_42/node"(value: AnimationRootNode)
+        get "blend_point_42/pos"(): Vector2
+        set "blend_point_42/pos"(value: Vector2)
+        get "blend_point_43/node"(): AnimationRootNode
+        set "blend_point_43/node"(value: AnimationRootNode)
+        get "blend_point_43/pos"(): Vector2
+        set "blend_point_43/pos"(value: Vector2)
+        get "blend_point_44/node"(): AnimationRootNode
+        set "blend_point_44/node"(value: AnimationRootNode)
+        get "blend_point_44/pos"(): Vector2
+        set "blend_point_44/pos"(value: Vector2)
+        get "blend_point_45/node"(): AnimationRootNode
+        set "blend_point_45/node"(value: AnimationRootNode)
+        get "blend_point_45/pos"(): Vector2
+        set "blend_point_45/pos"(value: Vector2)
+        get "blend_point_46/node"(): AnimationRootNode
+        set "blend_point_46/node"(value: AnimationRootNode)
+        get "blend_point_46/pos"(): Vector2
+        set "blend_point_46/pos"(value: Vector2)
+        get "blend_point_47/node"(): AnimationRootNode
+        set "blend_point_47/node"(value: AnimationRootNode)
+        get "blend_point_47/pos"(): Vector2
+        set "blend_point_47/pos"(value: Vector2)
+        get "blend_point_48/node"(): AnimationRootNode
+        set "blend_point_48/node"(value: AnimationRootNode)
+        get "blend_point_48/pos"(): Vector2
+        set "blend_point_48/pos"(value: Vector2)
+        get "blend_point_49/node"(): AnimationRootNode
+        set "blend_point_49/node"(value: AnimationRootNode)
+        get "blend_point_49/pos"(): Vector2
+        set "blend_point_49/pos"(value: Vector2)
+        get "blend_point_50/node"(): AnimationRootNode
+        set "blend_point_50/node"(value: AnimationRootNode)
+        get "blend_point_50/pos"(): Vector2
+        set "blend_point_50/pos"(value: Vector2)
+        get "blend_point_51/node"(): AnimationRootNode
+        set "blend_point_51/node"(value: AnimationRootNode)
+        get "blend_point_51/pos"(): Vector2
+        set "blend_point_51/pos"(value: Vector2)
+        get "blend_point_52/node"(): AnimationRootNode
+        set "blend_point_52/node"(value: AnimationRootNode)
+        get "blend_point_52/pos"(): Vector2
+        set "blend_point_52/pos"(value: Vector2)
+        get "blend_point_53/node"(): AnimationRootNode
+        set "blend_point_53/node"(value: AnimationRootNode)
+        get "blend_point_53/pos"(): Vector2
+        set "blend_point_53/pos"(value: Vector2)
+        get "blend_point_54/node"(): AnimationRootNode
+        set "blend_point_54/node"(value: AnimationRootNode)
+        get "blend_point_54/pos"(): Vector2
+        set "blend_point_54/pos"(value: Vector2)
+        get "blend_point_55/node"(): AnimationRootNode
+        set "blend_point_55/node"(value: AnimationRootNode)
+        get "blend_point_55/pos"(): Vector2
+        set "blend_point_55/pos"(value: Vector2)
+        get "blend_point_56/node"(): AnimationRootNode
+        set "blend_point_56/node"(value: AnimationRootNode)
+        get "blend_point_56/pos"(): Vector2
+        set "blend_point_56/pos"(value: Vector2)
+        get "blend_point_57/node"(): AnimationRootNode
+        set "blend_point_57/node"(value: AnimationRootNode)
+        get "blend_point_57/pos"(): Vector2
+        set "blend_point_57/pos"(value: Vector2)
+        get "blend_point_58/node"(): AnimationRootNode
+        set "blend_point_58/node"(value: AnimationRootNode)
+        get "blend_point_58/pos"(): Vector2
+        set "blend_point_58/pos"(value: Vector2)
+        get "blend_point_59/node"(): AnimationRootNode
+        set "blend_point_59/node"(value: AnimationRootNode)
+        get "blend_point_59/pos"(): Vector2
+        set "blend_point_59/pos"(value: Vector2)
+        get "blend_point_60/node"(): AnimationRootNode
+        set "blend_point_60/node"(value: AnimationRootNode)
+        get "blend_point_60/pos"(): Vector2
+        set "blend_point_60/pos"(value: Vector2)
+        get "blend_point_61/node"(): AnimationRootNode
+        set "blend_point_61/node"(value: AnimationRootNode)
+        get "blend_point_61/pos"(): Vector2
+        set "blend_point_61/pos"(value: Vector2)
+        get "blend_point_62/node"(): AnimationRootNode
+        set "blend_point_62/node"(value: AnimationRootNode)
+        get "blend_point_62/pos"(): Vector2
+        set "blend_point_62/pos"(value: Vector2)
+        get "blend_point_63/node"(): AnimationRootNode
+        set "blend_point_63/node"(value: AnimationRootNode)
+        get "blend_point_63/pos"(): Vector2
+        set "blend_point_63/pos"(value: Vector2)
         get triangles(): PackedInt32Array
         set triangles(value: PackedInt32Array | int32[])
         
@@ -2853,7 +5207,7 @@ declare module "godot" {
         /** Emitted every time the blend space's triangles are created, removed, or when one of their vertices changes position. */
         readonly triangles_updated: Signal0
     }
-    class AnimationNodeBlendSpace2DEditor extends AnimationTreeNodeEditorPlugin {
+    class AnimationNodeBlendSpace2DEditor<Map extends Record<string, Node> = Record<string, Node>> extends AnimationTreeNodeEditorPlugin<Map> {
         constructor(identifier?: any)
         _update_space(): void
         _update_tool_erase(): void
@@ -2861,7 +5215,7 @@ declare module "godot" {
     }
     /** A sub-tree of many type [AnimationNode]s used for complex animations. Used by [AnimationTree].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnodeblendtree.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodeblendtree.html  
      */
     class AnimationNodeBlendTree extends AnimationRootNode {
         /** The connection was successful. */
@@ -2917,13 +5271,28 @@ declare module "godot" {
         /** Emitted when the input port information is changed. */
         readonly node_changed: Signal1<StringName>
     }
-    class AnimationNodeBlendTreeEditor extends AnimationTreeNodeEditorPlugin {
+    class AnimationNodeBlendTreeEditor<Map extends Record<string, Node> = Record<string, Node>> extends AnimationTreeNodeEditorPlugin<Map> {
         constructor(identifier?: any)
         update_graph(): void
         _update_filters(_unnamed_arg0: AnimationNode): boolean
     }
-    class AnimationNodeEndState extends AnimationRootNode {
+    /** Base class for extending [AnimationRootNode]s from GDScript, C#, or C++.  
+     *  	  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodeextension.html  
+     */
+    class AnimationNodeExtension extends AnimationNode {
         constructor(identifier?: any)
+        /** A version of the [method AnimationNode._process] method that is meant to be overridden by custom nodes. It returns a [PackedFloat32Array] with the processed animation data.  
+         *  The [PackedFloat64Array] parameter contains the playback information, containing the following values encoded as floating point numbers (in order): playback time and delta, start and end times, whether a seek was requested (encoded as a float greater than `0`), whether the seek request was externally requested (encoded as a float greater than `0`), the current [enum Animation.LoopedFlag] (encoded as a float), and the current blend weight.  
+         *  The function must return a [PackedFloat32Array] of the node's time info, containing the following values (in order): animation length, time position, delta, [enum Animation.LoopMode] (encoded as a float), whether the animation is about to end (encoded as a float greater than `0`) and whether the animation is infinite (encoded as a float greater than `0`). All values must be included in the returned array.  
+         */
+        /* gdvirtual */ _process_animation_node(playback_info: PackedFloat64Array | float64[], test_only: boolean): PackedFloat32Array
+        
+        /** Returns `true` if the animation for the given [param node_info] is looping. */
+        static is_looping(node_info: PackedFloat32Array | float32[]): boolean
+        
+        /** Returns the animation's remaining time for the given node info. For looping animations, it will only return the remaining time if [param break_loop] is `true`, a large integer value will be returned otherwise. */
+        static get_remaining_time(node_info: PackedFloat32Array | float32[], break_loop: boolean): float64
     }
     namespace AnimationNodeOneShot {
         enum OneShotRequest {
@@ -2949,7 +5318,7 @@ declare module "godot" {
     }
     /** Plays an animation once in an [AnimationNodeBlendTree].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnodeoneshot.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodeoneshot.html  
      */
     class AnimationNodeOneShot extends AnimationNodeSync {
         constructor(identifier?: any)
@@ -2964,7 +5333,7 @@ declare module "godot" {
         get fadein_time(): float64
         set fadein_time(value: float64)
         
-        /** Determines how cross-fading between animations is eased. If empty, the transition will be linear. */
+        /** Determines how cross-fading between animations is eased. If empty, the transition will be linear. Should be a unit [Curve]. */
         get fadein_curve(): Curve
         set fadein_curve(value: Curve)
         
@@ -2975,7 +5344,7 @@ declare module "godot" {
         get fadeout_time(): float64
         set fadeout_time(value: float64)
         
-        /** Determines how cross-fading between animations is eased. If empty, the transition will be linear. */
+        /** Determines how cross-fading between animations is eased. If empty, the transition will be linear. Should be a unit [Curve]. */
         get fadeout_curve(): Curve
         set fadeout_curve(value: Curve)
         
@@ -2999,12 +5368,9 @@ declare module "godot" {
     }
     /** The animation output node of an [AnimationNodeBlendTree].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnodeoutput.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodeoutput.html  
      */
     class AnimationNodeOutput extends AnimationNode {
-        constructor(identifier?: any)
-    }
-    class AnimationNodeStartState extends AnimationRootNode {
         constructor(identifier?: any)
     }
     namespace AnimationNodeStateMachine {
@@ -3021,7 +5387,7 @@ declare module "godot" {
     }
     /** A state machine with multiple [AnimationRootNode]s, used by [AnimationTree].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnodestatemachine.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodestatemachine.html  
      */
     class AnimationNodeStateMachine extends AnimationRootNode {
         constructor(identifier?: any)
@@ -3096,13 +5462,13 @@ declare module "godot" {
         get reset_ends(): boolean
         set reset_ends(value: boolean)
     }
-    class AnimationNodeStateMachineEditor extends AnimationTreeNodeEditorPlugin {
+    class AnimationNodeStateMachineEditor<Map extends Record<string, Node> = Record<string, Node>> extends AnimationTreeNodeEditorPlugin<Map> {
         constructor(identifier?: any)
         _update_graph(): void
     }
     /** Provides playback control for an [AnimationNodeStateMachine].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnodestatemachineplayback.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodestatemachineplayback.html  
      */
     class AnimationNodeStateMachinePlayback extends Resource {
         constructor(identifier?: any)
@@ -3165,13 +5531,13 @@ declare module "godot" {
             /** Only use this transition during [method AnimationNodeStateMachinePlayback.travel]. */
             ADVANCE_MODE_ENABLED = 1,
             
-            /** Automatically use this transition if the [member advance_condition] and [member advance_expression] checks are true (if assigned). */
+            /** Automatically use this transition if the [member advance_condition] and [member advance_expression] checks are `true` (if assigned). */
             ADVANCE_MODE_AUTO = 2,
         }
     }
     /** A transition within an [AnimationNodeStateMachine] connecting two [AnimationRootNode]s.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnodestatemachinetransition.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodestatemachinetransition.html  
      */
     class AnimationNodeStateMachineTransition extends Resource {
         constructor(identifier?: any)
@@ -3182,7 +5548,7 @@ declare module "godot" {
         get xfade_time(): float64
         set xfade_time(value: float64)
         
-        /** Ease curve for better control over cross-fade between this state and the next. */
+        /** Ease curve for better control over cross-fade between this state and the next. Should be a unit [Curve]. */
         get xfade_curve(): Curve
         set xfade_curve(value: Curve)
         
@@ -3202,11 +5568,11 @@ declare module "godot" {
         get switch_mode(): int64
         set switch_mode(value: int64)
         
-        /** Determines whether the transition should disabled, enabled when using [method AnimationNodeStateMachinePlayback.travel], or traversed automatically if the [member advance_condition] and [member advance_expression] checks are true (if assigned). */
+        /** Determines whether the transition should be disabled, enabled when using [method AnimationNodeStateMachinePlayback.travel], or traversed automatically if the [member advance_condition] and [member advance_expression] checks are `true` (if assigned). */
         get advance_mode(): int64
         set advance_mode(value: int64)
         
-        /** Turn on auto advance when this condition is set. The provided name will become a boolean parameter on the [AnimationTree] that can be controlled from code (see [url=https://docs.godotengine.org/en/4.3/tutorials/animation/animation_tree.html#controlling-from-code]Using AnimationTree[/url]). For example, if [member AnimationTree.tree_root] is an [AnimationNodeStateMachine] and [member advance_condition] is set to `"idle"`:  
+        /** Turn on auto advance when this condition is set. The provided name will become a boolean parameter on the [AnimationTree] that can be controlled from code (see [url=https://docs.godotengine.org/en/4.4/tutorials/animation/animation_tree.html#controlling-from-code]Using AnimationTree[/url]). For example, if [member AnimationTree.tree_root] is an [AnimationNodeStateMachine] and [member advance_condition] is set to `"idle"`:  
          *    
          */
         get advance_condition(): StringName
@@ -3221,14 +5587,14 @@ declare module "godot" {
     }
     /** Blends two animations subtractively inside of an [AnimationNodeBlendTree].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnodesub2.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodesub2.html  
      */
     class AnimationNodeSub2 extends AnimationNodeSync {
         constructor(identifier?: any)
     }
     /** Base class for [AnimationNode]s with multiple input ports that must be synchronized.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnodesync.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodesync.html  
      */
     class AnimationNodeSync extends AnimationNode {
         constructor(identifier?: any)
@@ -3240,21 +5606,24 @@ declare module "godot" {
     }
     /** A time-scaling animation node used in [AnimationTree].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnodetimescale.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodetimescale.html  
      */
     class AnimationNodeTimeScale extends AnimationNode {
         constructor(identifier?: any)
     }
     /** A time-seeking animation node used in [AnimationTree].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnodetimeseek.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodetimeseek.html  
      */
     class AnimationNodeTimeSeek extends AnimationNode {
         constructor(identifier?: any)
+        /** If `true`, some processes are executed to handle keys between seeks, such as calculating root motion and finding the nearest discrete key. */
+        get explicit_elapse(): boolean
+        set explicit_elapse(value: boolean)
     }
     /** A transition within an [AnimationTree] connecting two [AnimationNode]s.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationnodetransition.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationnodetransition.html  
      */
     class AnimationNodeTransition extends AnimationNodeSync {
         constructor(identifier?: any)
@@ -3283,7 +5652,7 @@ declare module "godot" {
         get xfade_time(): float64
         set xfade_time(value: float64)
         
-        /** Determines how cross-fading between animations is eased. If empty, the transition will be linear. */
+        /** Determines how cross-fading between animations is eased. If empty, the transition will be linear. Should be a unit [Curve]. */
         get xfade_curve(): Curve
         set xfade_curve(value: Curve)
         
@@ -3295,11 +5664,22 @@ declare module "godot" {
         get input_count(): any /*Inputs,input_*/
         set input_count(value: any /*Inputs,input_*/)
     }
+    namespace AnimationPlayer {
+        enum AnimationProcessCallback {
+            ANIMATION_PROCESS_PHYSICS = 0,
+            ANIMATION_PROCESS_IDLE = 1,
+            ANIMATION_PROCESS_MANUAL = 2,
+        }
+        enum AnimationMethodCallMode {
+            ANIMATION_METHOD_CALL_DEFERRED = 0,
+            ANIMATION_METHOD_CALL_IMMEDIATE = 1,
+        }
+    }
     /** A node used for animation playback.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationplayer.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationplayer.html  
      */
-    class AnimationPlayer extends AnimationMixer {
+    class AnimationPlayer<Map extends Record<string, Node> = Record<string, Node>> extends AnimationMixer<Map> {
         constructor(identifier?: any)
         /** Triggers the [param animation_to] animation when the [param animation_from] animation completes. */
         animation_set_next(animation_from: StringName, animation_to: StringName): void
@@ -3321,10 +5701,30 @@ declare module "godot" {
          */
         play(name: StringName = '', custom_blend: float64 = -1, custom_speed: float64 = 1, from_end: boolean = false): void
         
+        /** Plays the animation with key [param name] and the section starting from [param start_marker] and ending on [param end_marker].  
+         *  If the start marker is empty, the section starts from the beginning of the animation. If the end marker is empty, the section ends on the end of the animation. See also [method play].  
+         */
+        play_section_with_markers(name: StringName = '', start_marker: StringName = '', end_marker: StringName = '', custom_blend: float64 = -1, custom_speed: float64 = 1, from_end: boolean = false): void
+        
+        /** Plays the animation with key [param name] and the section starting from [param start_time] and ending on [param end_time]. See also [method play].  
+         *  Setting [param start_time] to a value outside the range of the animation means the start of the animation will be used instead, and setting [param end_time] to a value outside the range of the animation means the end of the animation will be used instead. [param start_time] cannot be equal to [param end_time].  
+         */
+        play_section(name: StringName = '', start_time: float64 = -1, end_time: float64 = -1, custom_blend: float64 = -1, custom_speed: float64 = 1, from_end: boolean = false): void
+        
         /** Plays the animation with key [param name] in reverse.  
          *  This method is a shorthand for [method play] with `custom_speed = -1.0` and `from_end = true`, so see its description for more information.  
          */
         play_backwards(name: StringName = '', custom_blend: float64 = -1): void
+        
+        /** Plays the animation with key [param name] and the section starting from [param start_marker] and ending on [param end_marker] in reverse.  
+         *  This method is a shorthand for [method play_section_with_markers] with `custom_speed = -1.0` and `from_end = true`, see its description for more information.  
+         */
+        play_section_with_markers_backwards(name: StringName = '', start_marker: StringName = '', end_marker: StringName = '', custom_blend: float64 = -1): void
+        
+        /** Plays the animation with key [param name] and the section starting from [param start_time] and ending on [param end_time] in reverse.  
+         *  This method is a shorthand for [method play_section] with `custom_speed = -1.0` and `from_end = true`, see its description for more information.  
+         */
+        play_section_backwards(name: StringName = '', start_time: float64 = -1, end_time: float64 = -1, custom_blend: float64 = -1): void
         
         /** See also [method AnimationMixer.capture].  
          *  You can use this method to use more detailed options for capture than those performed by [member playback_auto_capture]. When [member playback_auto_capture] is `false`, this method is almost the same as the following:  
@@ -3368,12 +5768,50 @@ declare module "godot" {
          */
         get_playing_speed(): float64
         
+        /** Changes the start and end markers of the section being played. The current playback position will be clamped within the new section. See also [method play_section_with_markers].  
+         *  If the argument is empty, the section uses the beginning or end of the animation. If both are empty, it means that the section is not set.  
+         */
+        set_section_with_markers(start_marker: StringName = '', end_marker: StringName = ''): void
+        
+        /** Changes the start and end times of the section being played. The current playback position will be clamped within the new section. See also [method play_section]. */
+        set_section(start_time: float64 = -1, end_time: float64 = -1): void
+        
+        /** Resets the current section if section is set. */
+        reset_section(): void
+        
+        /** Returns the start time of the section currently being played. */
+        get_section_start_time(): float64
+        
+        /** Returns the end time of the section currently being played. */
+        get_section_end_time(): float64
+        
+        /** Returns `true` if an animation is currently playing with section. */
+        has_section(): boolean
+        
         /** Seeks the animation to the [param seconds] point in time (in seconds). If [param update] is `true`, the animation updates too, otherwise it updates at process time. Events between the current frame and [param seconds] are skipped.  
          *  If [param update_only] is `true`, the method / audio / animation playback tracks will not be processed.  
          *      
          *  **Note:** Seeking to the end of the animation doesn't emit [signal AnimationMixer.animation_finished]. If you want to skip animation and emit the signal, use [method AnimationMixer.advance].  
          */
         seek(seconds: float64, update: boolean = false, update_only: boolean = false): void
+        
+        /** Sets the process notification in which to update animations. */
+        set_process_callback(mode: AnimationPlayer.AnimationProcessCallback): void
+        
+        /** Returns the process notification in which to update animations. */
+        get_process_callback(): AnimationPlayer.AnimationProcessCallback
+        
+        /** Sets the call mode used for "Call Method" tracks. */
+        set_method_call_mode(mode: AnimationPlayer.AnimationMethodCallMode): void
+        
+        /** Returns the call mode used for "Call Method" tracks. */
+        get_method_call_mode(): AnimationPlayer.AnimationMethodCallMode
+        
+        /** Sets the node which node path references will travel from. */
+        set_root(path: NodePath | string): void
+        
+        /** Returns the node which node path references will travel from. */
+        get_root(): NodePath
         
         /** The key of the currently playing animation. If no animation is playing, the property's value is an empty string. Changing this value does not restart the animation. See [method play] for more information on playing animations.  
          *      
@@ -3443,24 +5881,25 @@ declare module "godot" {
          */
         readonly animation_changed: Signal2<StringName, StringName>
     }
-    class AnimationPlayerEditor extends VBoxContainer {
+    class AnimationPlayerEditor<Map extends Record<string, Node> = Record<string, Node>> extends VBoxContainer<Map> {
         constructor(identifier?: any)
         _animation_player_changed(_unnamed_arg0: Object): void
+        _animation_update_key_frame(): void
         _start_onion_skinning(): void
         _stop_onion_skinning(): void
         readonly animation_selected: Signal1<string>
     }
-    class AnimationPlayerEditorPlugin extends EditorPlugin {
+    class AnimationPlayerEditorPlugin<Map extends Record<string, Node> = Record<string, Node>> extends EditorPlugin<Map> {
         constructor(identifier?: any)
     }
     /** Base class for [AnimationNode]s that hold one or multiple composite animations. Usually used for [member AnimationTree.tree_root].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationrootnode.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationrootnode.html  
      */
     class AnimationRootNode extends AnimationNode {
         constructor(identifier?: any)
     }
-    class AnimationTimelineEdit extends Range {
+    class AnimationTimelineEdit<Map extends Record<string, Node> = Record<string, Node>> extends Range<Map> {
         constructor(identifier?: any)
         update_values(): void
         readonly zoom_changed: Signal0
@@ -3475,7 +5914,7 @@ declare module "godot" {
     class AnimationTrackEditPlugin extends RefCounted {
         constructor(identifier?: any)
     }
-    class AnimationTrackEditor extends VBoxContainer {
+    class AnimationTrackEditor<Map extends Record<string, Node> = Record<string, Node>> extends VBoxContainer<Map> {
         constructor(identifier?: any)
         _track_grab_focus(_unnamed_arg0: int64): void
         _redraw_tracks(): void
@@ -3488,15 +5927,28 @@ declare module "godot" {
         readonly animation_len_changed: Signal1<float64>
         readonly animation_step_changed: Signal1<float64>
     }
-    class AnimationTrackKeyEditEditorPlugin extends EditorPlugin {
+    class AnimationTrackKeyEditEditorPlugin<Map extends Record<string, Node> = Record<string, Node>> extends EditorPlugin<Map> {
         constructor(identifier?: any)
+    }
+    namespace AnimationTree {
+        enum AnimationProcessCallback {
+            ANIMATION_PROCESS_PHYSICS = 0,
+            ANIMATION_PROCESS_IDLE = 1,
+            ANIMATION_PROCESS_MANUAL = 2,
+        }
     }
     /** A node used for advanced animation transitions in an [AnimationPlayer].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_animationtree.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_animationtree.html  
      */
-    class AnimationTree extends AnimationMixer {
+    class AnimationTree<Map extends Record<string, Node> = Record<string, Node>> extends AnimationMixer<Map> {
         constructor(identifier?: any)
+        /** Sets the process notification in which to update animations. */
+        set_process_callback(mode: AnimationTree.AnimationProcessCallback): void
+        
+        /** Returns the process notification in which to update animations. */
+        get_process_callback(): AnimationTree.AnimationProcessCallback
+        
         /** The root animation node of this [AnimationTree]. See [AnimationRootNode]. */
         get tree_root(): AnimationRootNode
         set tree_root(value: AnimationRootNode)
@@ -3512,13 +5964,13 @@ declare module "godot" {
         /** Emitted when the [member anim_player] is changed. */
         readonly animation_player_changed: Signal0
     }
-    class AnimationTreeEditor extends VBoxContainer {
+    class AnimationTreeEditor<Map extends Record<string, Node> = Record<string, Node>> extends VBoxContainer<Map> {
         constructor(identifier?: any)
     }
-    class AnimationTreeEditorPlugin extends EditorPlugin {
+    class AnimationTreeEditorPlugin<Map extends Record<string, Node> = Record<string, Node>> extends EditorPlugin<Map> {
         constructor(identifier?: any)
     }
-    class AnimationTreeNodeEditorPlugin extends VBoxContainer {
+    class AnimationTreeNodeEditorPlugin<Map extends Record<string, Node> = Record<string, Node>> extends VBoxContainer<Map> {
         constructor(identifier?: any)
     }
     namespace Area2D {
@@ -3541,9 +5993,9 @@ declare module "godot" {
     }
     /** A region of 2D space that detects other [CollisionObject2D]s entering or exiting it.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_area2d.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_area2d.html  
      */
-    class Area2D extends CollisionObject2D {
+    class Area2D<Map extends Record<string, Node> = Record<string, Node>> extends CollisionObject2D<Map> {
         constructor(identifier?: any)
         /** Returns a list of intersecting [PhysicsBody2D]s and [TileMap]s. The overlapping body's [member CollisionObject2D.collision_layer] must be part of this area's [member CollisionObject2D.collision_mask] in order to be detected.  
          *  For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.  
@@ -3646,7 +6098,7 @@ declare module "godot" {
         
         /** Emitted when a [Shape2D] of the received [param body] enters a shape of this area. [param body] can be a [PhysicsBody2D] or a [TileMap]. [TileMap]s are detected if their [TileSet] has collision shapes configured. Requires [member monitoring] to be set to `true`.  
          *  [param local_shape_index] and [param body_shape_index] contain indices of the interacting shapes from this area and the interacting body, respectively. [param body_rid] contains the [RID] of the body. These values can be used with the [PhysicsServer2D].  
-         *  **Example of getting the** [CollisionShape2D] **node from the shape index:**  
+         *  **Example:** Get the [CollisionShape2D] node from the shape index:  
          *    
          */
         readonly body_shape_entered: Signal4<RID, Node2D, int64, int64>
@@ -3664,7 +6116,7 @@ declare module "godot" {
         
         /** Emitted when a [Shape2D] of the received [param area] enters a shape of this area. Requires [member monitoring] to be set to `true`.  
          *  [param local_shape_index] and [param area_shape_index] contain indices of the interacting shapes from this area and the other area, respectively. [param area_rid] contains the [RID] of the other area. These values can be used with the [PhysicsServer2D].  
-         *  **Example of getting the** [CollisionShape2D] **node from the shape index:**  
+         *  **Example:** Get the [CollisionShape2D] node from the shape index:  
          *    
          */
         readonly area_shape_entered: Signal4<RID, Area2D, int64, int64>
@@ -3700,9 +6152,9 @@ declare module "godot" {
     }
     /** A region of 3D space that detects other [CollisionObject3D]s entering or exiting it.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_area3d.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_area3d.html  
      */
-    class Area3D extends CollisionObject3D {
+    class Area3D<Map extends Record<string, Node> = Record<string, Node>> extends CollisionObject3D<Map> {
         constructor(identifier?: any)
         /** Returns a list of intersecting [PhysicsBody3D]s and [GridMap]s. The overlapping body's [member CollisionObject3D.collision_layer] must be part of this area's [member CollisionObject3D.collision_mask] in order to be detected.  
          *  For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.  
@@ -3842,7 +6294,7 @@ declare module "godot" {
         
         /** Emitted when a [Shape3D] of the received [param body] enters a shape of this area. [param body] can be a [PhysicsBody3D] or a [GridMap]. [GridMap]s are detected if their [MeshLibrary] has collision shapes configured. Requires [member monitoring] to be set to `true`.  
          *  [param local_shape_index] and [param body_shape_index] contain indices of the interacting shapes from this area and the interacting body, respectively. [param body_rid] contains the [RID] of the body. These values can be used with the [PhysicsServer3D].  
-         *  **Example of getting the** [CollisionShape3D] **node from the shape index:**  
+         *  **Example:** Get the [CollisionShape3D] node from the shape index:  
          *    
          */
         readonly body_shape_entered: Signal4<RID, Node3D, int64, int64>
@@ -3860,7 +6312,7 @@ declare module "godot" {
         
         /** Emitted when a [Shape3D] of the received [param area] enters a shape of this area. Requires [member monitoring] to be set to `true`.  
          *  [param local_shape_index] and [param area_shape_index] contain indices of the interacting shapes from this area and the other area, respectively. [param area_rid] contains the [RID] of the other area. These values can be used with the [PhysicsServer3D].  
-         *  **Example of getting the** [CollisionShape3D] **node from the shape index:**  
+         *  **Example:** Get the [CollisionShape3D] node from the shape index:  
          *    
          */
         readonly area_shape_entered: Signal4<RID, Area3D, int64, int64>
@@ -3878,7 +6330,7 @@ declare module "godot" {
     }
     /** [Mesh] type that provides utility for constructing a surface from arrays.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_arraymesh.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_arraymesh.html  
      */
     class ArrayMesh extends Mesh {
         constructor(identifier?: any)
@@ -3902,7 +6354,7 @@ declare module "godot" {
          *  The [param arrays] argument is an array of arrays. Each of the [constant Mesh.ARRAY_MAX] elements contains an array with some of the mesh data for this surface as described by the corresponding member of [enum Mesh.ArrayType] or `null` if it is not used by the surface. For example, `arrays[0]` is the array of vertices. That first vertex sub-array is always required; the others are optional. Adding an index array puts this surface into "index mode" where the vertex and other arrays become the sources of data and the index array defines the vertex order. All sub-arrays must have the same length as the vertex array (or be an exact multiple of the vertex array's length, when multiple elements of a sub-array correspond to a single vertex) or be empty, except for [constant Mesh.ARRAY_INDEX] if it is used.  
          *  The [param blend_shapes] argument is an array of vertex data for each blend shape. Each element is an array of the same structure as [param arrays], but [constant Mesh.ARRAY_VERTEX], [constant Mesh.ARRAY_NORMAL], and [constant Mesh.ARRAY_TANGENT] are set if and only if they are set in [param arrays] and all other entries are `null`.  
          *  The [param lods] argument is a dictionary with [float] keys and [PackedInt32Array] values. Each entry in the dictionary represents an LOD level of the surface, where the value is the [constant Mesh.ARRAY_INDEX] array to use for the LOD level and the key is roughly proportional to the distance at which the LOD stats being used. I.e., increasing the key of an LOD also increases the distance that the objects has to be from the camera before the LOD is used.  
-         *  The [param flags] argument is the bitwise or of, as required: One value of [enum Mesh.ArrayCustomFormat] left shifted by `ARRAY_FORMAT_CUSTOMn_SHIFT` for each custom channel in use, [constant Mesh.ARRAY_FLAG_USE_DYNAMIC_UPDATE], [constant Mesh.ARRAY_FLAG_USE_8_BONE_WEIGHTS], or [constant Mesh.ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY].  
+         *  The [param flags] argument is the bitwise OR of, as required: One value of [enum Mesh.ArrayCustomFormat] left shifted by `ARRAY_FORMAT_CUSTOMn_SHIFT` for each custom channel in use, [constant Mesh.ARRAY_FLAG_USE_DYNAMIC_UPDATE], [constant Mesh.ARRAY_FLAG_USE_8_BONE_WEIGHTS], or [constant Mesh.ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY].  
          *      
          *  **Note:** When using indices, it is recommended to only use points, lines, or triangles.  
          */
@@ -3910,6 +6362,9 @@ declare module "godot" {
         
         /** Removes all surfaces from this [ArrayMesh]. */
         clear_surfaces(): void
+        
+        /** Removes the surface at the given index from the Mesh, shifting surfaces with higher index down by one. */
+        surface_remove(surf_idx: int64): void
         surface_update_vertex_region(surf_idx: int64, offset: int64, data: PackedByteArray | byte[] | ArrayBuffer): void
         surface_update_attribute_region(surf_idx: int64, offset: int64, data: PackedByteArray | byte[] | ArrayBuffer): void
         surface_update_skin_region(surf_idx: int64, offset: int64, data: PackedByteArray | byte[] | ArrayBuffer): void
@@ -3962,7 +6417,7 @@ declare module "godot" {
     }
     /** 3D polygon shape for use with occlusion culling in [OccluderInstance3D].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_arrayoccluder3d.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_arrayoccluder3d.html  
      */
     class ArrayOccluder3D extends Occluder3D {
         constructor(identifier?: any)
@@ -4012,9 +6467,9 @@ declare module "godot" {
     }
     /** A container that preserves the proportions of its child controls.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_aspectratiocontainer.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_aspectratiocontainer.html  
      */
-    class AspectRatioContainer extends Container {
+    class AspectRatioContainer<Map extends Record<string, Node> = Record<string, Node>> extends Container<Map> {
         constructor(identifier?: any)
         /** The aspect ratio to enforce on child controls. This is the width divided by the height. The ratio depends on the [member stretch_mode]. */
         get ratio(): float64
@@ -4032,15 +6487,15 @@ declare module "godot" {
         get alignment_vertical(): int64
         set alignment_vertical(value: int64)
     }
-    class AssetLibraryEditorPlugin extends EditorPlugin {
+    class AssetLibraryEditorPlugin<Map extends Record<string, Node> = Record<string, Node>> extends EditorPlugin<Map> {
         constructor(identifier?: any)
     }
-    class AtlasMergingDialog extends ConfirmationDialog {
+    class AtlasMergingDialog<Map extends Record<string, Node> = Record<string, Node>> extends ConfirmationDialog<Map> {
         constructor(identifier?: any)
     }
     /** A texture that crops out part of another Texture2D.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_atlastexture.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_atlastexture.html  
      */
     class AtlasTexture extends Texture2D {
         constructor(identifier?: any)
@@ -4066,17 +6521,17 @@ declare module "godot" {
     }
     /** Stores information about the audio buses.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiobuslayout.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiobuslayout.html  
      */
     class AudioBusLayout extends Resource {
         constructor(identifier?: any)
     }
-    class AudioBusesEditorPlugin extends EditorPlugin {
+    class AudioBusesEditorPlugin<Map extends Record<string, Node> = Record<string, Node>> extends EditorPlugin<Map> {
         constructor(identifier?: any)
     }
     /** Base class for audio effect resources.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffect.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffect.html  
      */
     class AudioEffect extends Resource {
         constructor(identifier?: any)
@@ -4089,31 +6544,38 @@ declare module "godot" {
     }
     /** Adds an amplifying audio effect to an audio bus.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectamplify.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectamplify.html  
      */
     class AudioEffectAmplify extends AudioEffect {
         constructor(identifier?: any)
         /** Amount of amplification in decibels. Positive values make the sound louder, negative values make it quieter. Value can range from -80 to 24. */
         get volume_db(): float64
         set volume_db(value: float64)
+        
+        /** Amount of amplification as a linear value.  
+         *      
+         *  **Note:** This member modifies [member volume_db] for convenience. The returned value is equivalent to the result of [method @GlobalScope.db_to_linear] on [member volume_db]. Setting this member is equivalent to setting [member volume_db] to the result of [method @GlobalScope.linear_to_db] on a value.  
+         */
+        get volume_linear(): float64
+        set volume_linear(value: float64)
     }
     /** Adds a band limit filter to the audio bus.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectbandlimitfilter.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectbandlimitfilter.html  
      */
     class AudioEffectBandLimitFilter extends AudioEffectFilter {
         constructor(identifier?: any)
     }
     /** Adds a band pass filter to the audio bus.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectbandpassfilter.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectbandpassfilter.html  
      */
     class AudioEffectBandPassFilter extends AudioEffectFilter {
         constructor(identifier?: any)
     }
     /** Captures audio from an audio bus in real-time.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectcapture.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectcapture.html  
      */
     class AudioEffectCapture extends AudioEffect {
         constructor(identifier?: any)
@@ -4150,7 +6612,7 @@ declare module "godot" {
     }
     /** Adds a chorus audio effect.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectchorus.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectchorus.html  
      */
     class AudioEffectChorus extends AudioEffect {
         constructor(identifier?: any)
@@ -4178,11 +6640,107 @@ declare module "godot" {
         /** The effect's processed signal. */
         get wet(): float64
         set wet(value: float64)
+        
+        /** The voice's signal delay. */
+        get "voice/1/delay_ms"(): float64
+        set "voice/1/delay_ms"(value: float64)
+        
+        /** The voice's filter rate. */
+        get "voice/1/rate_hz"(): float64
+        set "voice/1/rate_hz"(value: float64)
+        
+        /** The voice filter's depth. */
+        get "voice/1/depth_ms"(): float64
+        set "voice/1/depth_ms"(value: float64)
+        
+        /** The voice's volume. */
+        get "voice/1/level_db"(): float64
+        set "voice/1/level_db"(value: float64)
+        
+        /** The voice's cutoff frequency. */
+        get "voice/1/cutoff_hz"(): float64
+        set "voice/1/cutoff_hz"(value: float64)
+        
+        /** The voice's pan level. */
+        get "voice/1/pan"(): float64
+        set "voice/1/pan"(value: float64)
+        
+        /** The voice's signal delay. */
+        get "voice/2/delay_ms"(): float64
+        set "voice/2/delay_ms"(value: float64)
+        
+        /** The voice's filter rate. */
+        get "voice/2/rate_hz"(): float64
+        set "voice/2/rate_hz"(value: float64)
+        
+        /** The voice filter's depth. */
+        get "voice/2/depth_ms"(): float64
+        set "voice/2/depth_ms"(value: float64)
+        
+        /** The voice's volume. */
+        get "voice/2/level_db"(): float64
+        set "voice/2/level_db"(value: float64)
+        
+        /** The voice's cutoff frequency. */
+        get "voice/2/cutoff_hz"(): float64
+        set "voice/2/cutoff_hz"(value: float64)
+        
+        /** The voice's pan level. */
+        get "voice/2/pan"(): float64
+        set "voice/2/pan"(value: float64)
+        
+        /** The voice's signal delay. */
+        get "voice/3/delay_ms"(): float64
+        set "voice/3/delay_ms"(value: float64)
+        
+        /** The voice's filter rate. */
+        get "voice/3/rate_hz"(): float64
+        set "voice/3/rate_hz"(value: float64)
+        
+        /** The voice filter's depth. */
+        get "voice/3/depth_ms"(): float64
+        set "voice/3/depth_ms"(value: float64)
+        
+        /** The voice's volume. */
+        get "voice/3/level_db"(): float64
+        set "voice/3/level_db"(value: float64)
+        
+        /** The voice's cutoff frequency. */
+        get "voice/3/cutoff_hz"(): float64
+        set "voice/3/cutoff_hz"(value: float64)
+        
+        /** The voice's pan level. */
+        get "voice/3/pan"(): float64
+        set "voice/3/pan"(value: float64)
+        
+        /** The voice's signal delay. */
+        get "voice/4/delay_ms"(): float64
+        set "voice/4/delay_ms"(value: float64)
+        
+        /** The voice's filter rate. */
+        get "voice/4/rate_hz"(): float64
+        set "voice/4/rate_hz"(value: float64)
+        
+        /** The voice filter's depth. */
+        get "voice/4/depth_ms"(): float64
+        set "voice/4/depth_ms"(value: float64)
+        
+        /** The voice's volume. */
+        get "voice/4/level_db"(): float64
+        set "voice/4/level_db"(value: float64)
+        
+        /** The voice's cutoff frequency. */
+        get "voice/4/cutoff_hz"(): float64
+        set "voice/4/cutoff_hz"(value: float64)
+        
+        /** The voice's pan level. */
+        get "voice/4/pan"(): float64
+        set "voice/4/pan"(value: float64)
     }
     /** Adds a compressor audio effect to an audio bus.  
      *  Reduces sounds that exceed a certain threshold level, smooths out the dynamics and increases the overall volume.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectcompressor.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectcompressor.html  
      */
     class AudioEffectCompressor extends AudioEffect {
         constructor(identifier?: any)
@@ -4217,7 +6775,7 @@ declare module "godot" {
     /** Adds a delay audio effect to an audio bus. Plays input signal back after a period of time.  
      *  Two tap delay and feedback options.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectdelay.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectdelay.html  
      */
     class AudioEffectDelay extends AudioEffect {
         constructor(identifier?: any)
@@ -4292,7 +6850,7 @@ declare module "godot" {
     /** Adds a distortion audio effect to an Audio bus.  
      *  Modifies the sound to make it distorted.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectdistortion.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectdistortion.html  
      */
     class AudioEffectDistortion extends AudioEffect {
         constructor(identifier?: any)
@@ -4319,7 +6877,7 @@ declare module "godot" {
     /** Base class for audio equalizers. Gives you control over frequencies.  
      *  Use it to create a custom equalizer if [AudioEffectEQ6], [AudioEffectEQ10] or [AudioEffectEQ21] don't fit your needs.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffecteq.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffecteq.html  
      */
     class AudioEffectEQ extends AudioEffect {
         constructor(identifier?: any)
@@ -4335,7 +6893,7 @@ declare module "godot" {
     /** Adds a 10-band equalizer audio effect to an Audio bus. Gives you control over frequencies from 31 Hz to 16000 Hz.  
      *  Each frequency can be modulated between -60/+24 dB.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffecteq10.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffecteq10.html  
      */
     class AudioEffectEQ10 extends AudioEffectEQ {
         constructor(identifier?: any)
@@ -4343,7 +6901,7 @@ declare module "godot" {
     /** Adds a 21-band equalizer audio effect to an Audio bus. Gives you control over frequencies from 22 Hz to 22000 Hz.  
      *  Each frequency can be modulated between -60/+24 dB.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffecteq21.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffecteq21.html  
      */
     class AudioEffectEQ21 extends AudioEffectEQ {
         constructor(identifier?: any)
@@ -4351,22 +6909,29 @@ declare module "godot" {
     /** Adds a 6-band equalizer audio effect to an audio bus. Gives you control over frequencies from 32 Hz to 10000 Hz.  
      *  Each frequency can be modulated between -60/+24 dB.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffecteq6.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffecteq6.html  
      */
     class AudioEffectEQ6 extends AudioEffectEQ {
         constructor(identifier?: any)
     }
     namespace AudioEffectFilter {
         enum FilterDB {
+            /** Cutting off at 6dB per octave. */
             FILTER_6DB = 0,
+            
+            /** Cutting off at 12dB per octave. */
             FILTER_12DB = 1,
+            
+            /** Cutting off at 18dB per octave. */
             FILTER_18DB = 2,
+            
+            /** Cutting off at 24dB per octave. */
             FILTER_24DB = 3,
         }
     }
     /** Adds a filter to the audio bus.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectfilter.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectfilter.html  
      */
     class AudioEffectFilter extends AudioEffect {
         constructor(identifier?: any)
@@ -4381,12 +6946,14 @@ declare module "godot" {
         /** Gain amount of the frequencies after the filter. */
         get gain(): float64
         set gain(value: float64)
+        
+        /** Steepness of the cutoff curve in dB per octave, also known as the order of the filter. Higher orders have a more aggressive cutoff. */
         get db(): int64
         set db(value: int64)
     }
     /** Adds a hard limiter audio effect to an Audio bus.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffecthardlimiter.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffecthardlimiter.html  
      */
     class AudioEffectHardLimiter extends AudioEffect {
         constructor(identifier?: any)
@@ -4406,21 +6973,21 @@ declare module "godot" {
     }
     /** Adds a high-pass filter to the audio bus.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffecthighpassfilter.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffecthighpassfilter.html  
      */
     class AudioEffectHighPassFilter extends AudioEffectFilter {
         constructor(identifier?: any)
     }
     /** Adds a high-shelf filter to the audio bus.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffecthighshelffilter.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffecthighshelffilter.html  
      */
     class AudioEffectHighShelfFilter extends AudioEffectFilter {
         constructor(identifier?: any)
     }
     /** Manipulates the audio it receives for a given effect.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectinstance.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectinstance.html  
      */
     class AudioEffectInstance extends RefCounted {
         constructor(identifier?: any)
@@ -4437,7 +7004,7 @@ declare module "godot" {
     }
     /** Adds a soft-clip limiter audio effect to an Audio bus.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectlimiter.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectlimiter.html  
      */
     class AudioEffectLimiter extends AudioEffect {
         constructor(identifier?: any)
@@ -4457,28 +7024,28 @@ declare module "godot" {
     }
     /** Adds a low-pass filter to the audio bus.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectlowpassfilter.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectlowpassfilter.html  
      */
     class AudioEffectLowPassFilter extends AudioEffectFilter {
         constructor(identifier?: any)
     }
     /** Adds a low-shelf filter to the audio bus.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectlowshelffilter.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectlowshelffilter.html  
      */
     class AudioEffectLowShelfFilter extends AudioEffectFilter {
         constructor(identifier?: any)
     }
     /** Adds a notch filter to the Audio bus.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectnotchfilter.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectnotchfilter.html  
      */
     class AudioEffectNotchFilter extends AudioEffectFilter {
         constructor(identifier?: any)
     }
     /** Adds a panner audio effect to an audio bus. Pans sound left or right.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectpanner.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectpanner.html  
      */
     class AudioEffectPanner extends AudioEffect {
         constructor(identifier?: any)
@@ -4489,7 +7056,7 @@ declare module "godot" {
     /** Adds a phaser audio effect to an audio bus.  
      *  Combines the original signal with a copy that is slightly out of phase with the original.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectphaser.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectphaser.html  
      */
     class AudioEffectPhaser extends AudioEffect {
         constructor(identifier?: any)
@@ -4537,7 +7104,7 @@ declare module "godot" {
     /** Adds a pitch-shifting audio effect to an audio bus.  
      *  Raises or lowers the pitch of original sound.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectpitchshift.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectpitchshift.html  
      */
     class AudioEffectPitchShift extends AudioEffect {
         constructor(identifier?: any)
@@ -4555,7 +7122,7 @@ declare module "godot" {
     }
     /** Audio effect used for recording the sound from an audio bus.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectrecord.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectrecord.html  
      */
     class AudioEffectRecord extends AudioEffect {
         constructor(identifier?: any)
@@ -4574,7 +7141,7 @@ declare module "godot" {
     }
     /** Adds a reverberation audio effect to an Audio bus.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectreverb.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectreverb.html  
      */
     class AudioEffectReverb extends AudioEffect {
         constructor(identifier?: any)
@@ -4633,7 +7200,7 @@ declare module "godot" {
     }
     /** Audio effect that can be used for real-time audio visualizations.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectspectrumanalyzer.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectspectrumanalyzer.html  
      */
     class AudioEffectSpectrumAnalyzer extends AudioEffect {
         constructor(identifier?: any)
@@ -4658,7 +7225,7 @@ declare module "godot" {
     }
     /** Queryable instance of an [AudioEffectSpectrumAnalyzer].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectspectrumanalyzerinstance.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectspectrumanalyzerinstance.html  
      */
     class AudioEffectSpectrumAnalyzerInstance extends AudioEffectInstance {
         constructor(identifier?: any)
@@ -4669,23 +7236,27 @@ declare module "godot" {
     }
     /** An audio effect that can be used to adjust the intensity of stereo panning.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audioeffectstereoenhance.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audioeffectstereoenhance.html  
      */
     class AudioEffectStereoEnhance extends AudioEffect {
         constructor(identifier?: any)
-        /** Values greater than 1.0 increase intensity of any panning on audio passing through this effect, whereas values less than 1.0 will decrease the panning intensity. A value of 0.0 will downmix audio to mono. */
+        /** Amplifies the difference between stereo channels, increasing or decreasing existing panning. A value of 0.0 will downmix stereo to mono. Does not affect a mono signal. */
         get pan_pullout(): float64
         set pan_pullout(value: float64)
+        
+        /** Widens sound stage through phase shifting in conjunction with [member surround]. Just delays the right channel if [member surround] is 0. */
         get time_pullout_ms(): float64
         set time_pullout_ms(value: float64)
+        
+        /** Widens sound stage through phase shifting in conjunction with [member time_pullout_ms]. Just pans sound to the left channel if [member time_pullout_ms] is 0. */
         get surround(): float64
         set surround(value: float64)
     }
     /** Overrides the location sounds are heard from.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiolistener2d.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiolistener2d.html  
      */
-    class AudioListener2D extends Node2D {
+    class AudioListener2D<Map extends Record<string, Node> = Record<string, Node>> extends Node2D<Map> {
         constructor(identifier?: any)
         /** Makes the [AudioListener2D] active, setting it as the hearing point for the sounds. If there is already another active [AudioListener2D], it will be disabled.  
          *  This method will have no effect if the [AudioListener2D] is not added to [SceneTree].  
@@ -4700,9 +7271,9 @@ declare module "godot" {
     }
     /** Overrides the location sounds are heard from.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiolistener3d.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiolistener3d.html  
      */
-    class AudioListener3D extends Node3D {
+    class AudioListener3D<Map extends Record<string, Node> = Record<string, Node>> extends Node3D<Map> {
         constructor(identifier?: any)
         /** Enables the listener. This will override the current camera's listener. */
         make_current(): void
@@ -4724,25 +7295,25 @@ declare module "godot" {
     }
     /** Base class for audio samples.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiosample.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiosample.html  
      */
     class AudioSample extends RefCounted {
         constructor(identifier?: any)
     }
     /** Meta class for playing back audio samples.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiosampleplayback.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiosampleplayback.html  
      */
     class AudioSamplePlayback extends RefCounted {
         constructor(identifier?: any)
     }
     /** Base class for audio streams.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostream.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostream.html  
      */
     class AudioStream extends Resource {
         constructor(identifier?: any)
-        /** Override this method to customize the returned value of [method instantiate_playback]. Should returned a new [AudioStreamPlayback] created when the stream is played (such as by an [AudioStreamPlayer]).. */
+        /** Override this method to customize the returned value of [method instantiate_playback]. Should return a new [AudioStreamPlayback] created when the stream is played (such as by an [AudioStreamPlayer]). */
         /* gdvirtual */ _instantiate_playback(): AudioStreamPlayback
         
         /** Override this method to customize the name assigned to this audio stream. Unused by the engine. */
@@ -4767,6 +7338,12 @@ declare module "godot" {
         /** Return the controllable parameters of this stream. This array contains dictionaries with a property info description format (see [method Object.get_property_list]). Additionally, the default value for this parameter must be added tho each dictionary in "default_value" field. */
         /* gdvirtual */ _get_parameter_list(): GArray
         
+        /** Override this method to return `true` if this stream has a loop. */
+        /* gdvirtual */ _has_loop(): boolean
+        
+        /** Override this method to return the bar beats of this stream. */
+        /* gdvirtual */ _get_bar_beats(): int64
+        
         /** Returns the length of the audio stream in seconds. */
         get_length(): float64
         
@@ -4788,18 +7365,41 @@ declare module "godot" {
         /** Signal to be emitted to notify when the parameter list changed. */
         readonly parameter_list_changed: Signal0
     }
-    class AudioStreamEditorPlugin extends EditorPlugin {
+    class AudioStreamEditorPlugin<Map extends Record<string, Node> = Record<string, Node>> extends EditorPlugin<Map> {
         constructor(identifier?: any)
+    }
+    namespace AudioStreamGenerator {
+        enum AudioStreamGeneratorMixRate {
+            /** Current [AudioServer] output mixing rate. */
+            MIX_RATE_OUTPUT = 0,
+            
+            /** Current [AudioServer] input mixing rate. */
+            MIX_RATE_INPUT = 1,
+            
+            /** Custom mixing rate, specified by [member mix_rate]. */
+            MIX_RATE_CUSTOM = 2,
+            
+            /** Maximum value for the mixing rate mode enum. */
+            MIX_RATE_MAX = 3,
+        }
     }
     /** An audio stream with utilities for procedural sound generation.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostreamgenerator.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostreamgenerator.html  
      */
     class AudioStreamGenerator extends AudioStream {
         constructor(identifier?: any)
+        /** Mixing rate mode. If set to [constant MIX_RATE_CUSTOM], [member mix_rate] is used, otherwise current [AudioServer] mixing rate is used. */
+        get mix_rate_mode(): int64
+        set mix_rate_mode(value: int64)
+        
         /** The sample rate to use (in Hz). Higher values are more demanding for the CPU to generate, but result in better quality.  
          *  In games, common sample rates in use are `11025`, `16000`, `22050`, `32000`, `44100`, and `48000`.  
          *  According to the [url=https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem]Nyquist-Shannon sampling theorem[/url], there is no quality difference to human hearing when going past 40,000 Hz (since most humans can only hear up to ~20,000 Hz, often less). If you are generating lower-pitched sounds such as voices, lower sample rates such as `32000` or `22050` may be usable with no loss in quality.  
+         *      
+         *  **Note:** [AudioStreamGenerator] is not automatically resampling input data, to produce expected result [member mix_rate_mode] should match the sampling rate of input data.  
+         *      
+         *  **Note:** If you are using [AudioEffectCapture] as the source of your data, set [member mix_rate_mode] to [constant MIX_RATE_INPUT] or [constant MIX_RATE_OUTPUT] to automatically match current [AudioServer] mixing rate.  
          */
         get mix_rate(): float64
         set mix_rate(value: float64)
@@ -4810,7 +7410,7 @@ declare module "godot" {
     }
     /** Plays back audio generated using [AudioStreamGenerator].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostreamgeneratorplayback.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostreamgeneratorplayback.html  
      */
     class AudioStreamGeneratorPlayback extends AudioStreamPlaybackResampled {
         constructor(identifier?: any)
@@ -4832,7 +7432,7 @@ declare module "godot" {
         /** Clears the audio sample data buffer. */
         clear_buffer(): void
     }
-    class AudioStreamImportSettingsDialog extends ConfirmationDialog {
+    class AudioStreamImportSettingsDialog<Map extends Record<string, Node> = Record<string, Node>> extends ConfirmationDialog<Map> {
         constructor(identifier?: any)
     }
     namespace AudioStreamInteractive {
@@ -4885,7 +7485,7 @@ declare module "godot" {
     }
     /** Audio stream that can playback music interactively, combining clips and a transition table.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostreaminteractive.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostreaminteractive.html  
      */
     class AudioStreamInteractive extends AudioStream {
         /** This constant describes that any clip is valid for a specific transition as either source or destination. */
@@ -4929,7 +7529,7 @@ declare module "godot" {
          */
         add_transition(from_clip: int64, to_clip: int64, from_time: AudioStreamInteractive.TransitionFromTime, to_time: AudioStreamInteractive.TransitionToTime, fade_mode: AudioStreamInteractive.FadeMode, fade_beats: float64, use_filler_clip: boolean = false, filler_clip: int64 = -1, hold_previous: boolean = false): void
         
-        /** Return true if a given transition exists (was added via [method add_transition]). */
+        /** Returns `true` if a given transition exists (was added via [method add_transition]). */
         has_transition(from_clip: int64, to_clip: int64): boolean
         
         /** Erase a transition by providing [param from_clip] and [param to_clip] clip indices. [constant CLIP_ANY] can be used for either argument or both. */
@@ -4959,29 +7559,539 @@ declare module "godot" {
         /** Return whether a transition uses the  *hold previous*  functionality (see [method add_transition]). */
         is_transition_holding_previous(from_clip: int64, to_clip: int64): boolean
         
-        /** Index of the initial clip, which will be played first when this stream is played. */
-        get initial_clip(): int64
-        set initial_clip(value: int64)
-        
         /** Amount of clips contained in this interactive player. */
         get clip_count(): any /*Clips,clip_,page_size=999,unfoldable,numbered,swap_method=_inspector_array_swap_clip,add_button_text=Add Clip*/
         set clip_count(value: any /*Clips,clip_,page_size=999,unfoldable,numbered,swap_method=_inspector_array_swap_clip,add_button_text=Add Clip*/)
+        get "clip_0/name"(): StringName
+        set "clip_0/name"(value: StringName)
+        get "clip_0/stream"(): AudioStream
+        set "clip_0/stream"(value: AudioStream)
+        get "clip_0/auto_advance"(): int64
+        set "clip_0/auto_advance"(value: int64)
+        get "clip_0/next_clip"(): int64
+        set "clip_0/next_clip"(value: int64)
+        get "clip_1/name"(): StringName
+        set "clip_1/name"(value: StringName)
+        get "clip_1/stream"(): AudioStream
+        set "clip_1/stream"(value: AudioStream)
+        get "clip_1/auto_advance"(): int64
+        set "clip_1/auto_advance"(value: int64)
+        get "clip_1/next_clip"(): int64
+        set "clip_1/next_clip"(value: int64)
+        get "clip_2/name"(): StringName
+        set "clip_2/name"(value: StringName)
+        get "clip_2/stream"(): AudioStream
+        set "clip_2/stream"(value: AudioStream)
+        get "clip_2/auto_advance"(): int64
+        set "clip_2/auto_advance"(value: int64)
+        get "clip_2/next_clip"(): int64
+        set "clip_2/next_clip"(value: int64)
+        get "clip_3/name"(): StringName
+        set "clip_3/name"(value: StringName)
+        get "clip_3/stream"(): AudioStream
+        set "clip_3/stream"(value: AudioStream)
+        get "clip_3/auto_advance"(): int64
+        set "clip_3/auto_advance"(value: int64)
+        get "clip_3/next_clip"(): int64
+        set "clip_3/next_clip"(value: int64)
+        get "clip_4/name"(): StringName
+        set "clip_4/name"(value: StringName)
+        get "clip_4/stream"(): AudioStream
+        set "clip_4/stream"(value: AudioStream)
+        get "clip_4/auto_advance"(): int64
+        set "clip_4/auto_advance"(value: int64)
+        get "clip_4/next_clip"(): int64
+        set "clip_4/next_clip"(value: int64)
+        get "clip_5/name"(): StringName
+        set "clip_5/name"(value: StringName)
+        get "clip_5/stream"(): AudioStream
+        set "clip_5/stream"(value: AudioStream)
+        get "clip_5/auto_advance"(): int64
+        set "clip_5/auto_advance"(value: int64)
+        get "clip_5/next_clip"(): int64
+        set "clip_5/next_clip"(value: int64)
+        get "clip_6/name"(): StringName
+        set "clip_6/name"(value: StringName)
+        get "clip_6/stream"(): AudioStream
+        set "clip_6/stream"(value: AudioStream)
+        get "clip_6/auto_advance"(): int64
+        set "clip_6/auto_advance"(value: int64)
+        get "clip_6/next_clip"(): int64
+        set "clip_6/next_clip"(value: int64)
+        get "clip_7/name"(): StringName
+        set "clip_7/name"(value: StringName)
+        get "clip_7/stream"(): AudioStream
+        set "clip_7/stream"(value: AudioStream)
+        get "clip_7/auto_advance"(): int64
+        set "clip_7/auto_advance"(value: int64)
+        get "clip_7/next_clip"(): int64
+        set "clip_7/next_clip"(value: int64)
+        get "clip_8/name"(): StringName
+        set "clip_8/name"(value: StringName)
+        get "clip_8/stream"(): AudioStream
+        set "clip_8/stream"(value: AudioStream)
+        get "clip_8/auto_advance"(): int64
+        set "clip_8/auto_advance"(value: int64)
+        get "clip_8/next_clip"(): int64
+        set "clip_8/next_clip"(value: int64)
+        get "clip_9/name"(): StringName
+        set "clip_9/name"(value: StringName)
+        get "clip_9/stream"(): AudioStream
+        set "clip_9/stream"(value: AudioStream)
+        get "clip_9/auto_advance"(): int64
+        set "clip_9/auto_advance"(value: int64)
+        get "clip_9/next_clip"(): int64
+        set "clip_9/next_clip"(value: int64)
+        get "clip_10/name"(): StringName
+        set "clip_10/name"(value: StringName)
+        get "clip_10/stream"(): AudioStream
+        set "clip_10/stream"(value: AudioStream)
+        get "clip_10/auto_advance"(): int64
+        set "clip_10/auto_advance"(value: int64)
+        get "clip_10/next_clip"(): int64
+        set "clip_10/next_clip"(value: int64)
+        get "clip_11/name"(): StringName
+        set "clip_11/name"(value: StringName)
+        get "clip_11/stream"(): AudioStream
+        set "clip_11/stream"(value: AudioStream)
+        get "clip_11/auto_advance"(): int64
+        set "clip_11/auto_advance"(value: int64)
+        get "clip_11/next_clip"(): int64
+        set "clip_11/next_clip"(value: int64)
+        get "clip_12/name"(): StringName
+        set "clip_12/name"(value: StringName)
+        get "clip_12/stream"(): AudioStream
+        set "clip_12/stream"(value: AudioStream)
+        get "clip_12/auto_advance"(): int64
+        set "clip_12/auto_advance"(value: int64)
+        get "clip_12/next_clip"(): int64
+        set "clip_12/next_clip"(value: int64)
+        get "clip_13/name"(): StringName
+        set "clip_13/name"(value: StringName)
+        get "clip_13/stream"(): AudioStream
+        set "clip_13/stream"(value: AudioStream)
+        get "clip_13/auto_advance"(): int64
+        set "clip_13/auto_advance"(value: int64)
+        get "clip_13/next_clip"(): int64
+        set "clip_13/next_clip"(value: int64)
+        get "clip_14/name"(): StringName
+        set "clip_14/name"(value: StringName)
+        get "clip_14/stream"(): AudioStream
+        set "clip_14/stream"(value: AudioStream)
+        get "clip_14/auto_advance"(): int64
+        set "clip_14/auto_advance"(value: int64)
+        get "clip_14/next_clip"(): int64
+        set "clip_14/next_clip"(value: int64)
+        get "clip_15/name"(): StringName
+        set "clip_15/name"(value: StringName)
+        get "clip_15/stream"(): AudioStream
+        set "clip_15/stream"(value: AudioStream)
+        get "clip_15/auto_advance"(): int64
+        set "clip_15/auto_advance"(value: int64)
+        get "clip_15/next_clip"(): int64
+        set "clip_15/next_clip"(value: int64)
+        get "clip_16/name"(): StringName
+        set "clip_16/name"(value: StringName)
+        get "clip_16/stream"(): AudioStream
+        set "clip_16/stream"(value: AudioStream)
+        get "clip_16/auto_advance"(): int64
+        set "clip_16/auto_advance"(value: int64)
+        get "clip_16/next_clip"(): int64
+        set "clip_16/next_clip"(value: int64)
+        get "clip_17/name"(): StringName
+        set "clip_17/name"(value: StringName)
+        get "clip_17/stream"(): AudioStream
+        set "clip_17/stream"(value: AudioStream)
+        get "clip_17/auto_advance"(): int64
+        set "clip_17/auto_advance"(value: int64)
+        get "clip_17/next_clip"(): int64
+        set "clip_17/next_clip"(value: int64)
+        get "clip_18/name"(): StringName
+        set "clip_18/name"(value: StringName)
+        get "clip_18/stream"(): AudioStream
+        set "clip_18/stream"(value: AudioStream)
+        get "clip_18/auto_advance"(): int64
+        set "clip_18/auto_advance"(value: int64)
+        get "clip_18/next_clip"(): int64
+        set "clip_18/next_clip"(value: int64)
+        get "clip_19/name"(): StringName
+        set "clip_19/name"(value: StringName)
+        get "clip_19/stream"(): AudioStream
+        set "clip_19/stream"(value: AudioStream)
+        get "clip_19/auto_advance"(): int64
+        set "clip_19/auto_advance"(value: int64)
+        get "clip_19/next_clip"(): int64
+        set "clip_19/next_clip"(value: int64)
+        get "clip_20/name"(): StringName
+        set "clip_20/name"(value: StringName)
+        get "clip_20/stream"(): AudioStream
+        set "clip_20/stream"(value: AudioStream)
+        get "clip_20/auto_advance"(): int64
+        set "clip_20/auto_advance"(value: int64)
+        get "clip_20/next_clip"(): int64
+        set "clip_20/next_clip"(value: int64)
+        get "clip_21/name"(): StringName
+        set "clip_21/name"(value: StringName)
+        get "clip_21/stream"(): AudioStream
+        set "clip_21/stream"(value: AudioStream)
+        get "clip_21/auto_advance"(): int64
+        set "clip_21/auto_advance"(value: int64)
+        get "clip_21/next_clip"(): int64
+        set "clip_21/next_clip"(value: int64)
+        get "clip_22/name"(): StringName
+        set "clip_22/name"(value: StringName)
+        get "clip_22/stream"(): AudioStream
+        set "clip_22/stream"(value: AudioStream)
+        get "clip_22/auto_advance"(): int64
+        set "clip_22/auto_advance"(value: int64)
+        get "clip_22/next_clip"(): int64
+        set "clip_22/next_clip"(value: int64)
+        get "clip_23/name"(): StringName
+        set "clip_23/name"(value: StringName)
+        get "clip_23/stream"(): AudioStream
+        set "clip_23/stream"(value: AudioStream)
+        get "clip_23/auto_advance"(): int64
+        set "clip_23/auto_advance"(value: int64)
+        get "clip_23/next_clip"(): int64
+        set "clip_23/next_clip"(value: int64)
+        get "clip_24/name"(): StringName
+        set "clip_24/name"(value: StringName)
+        get "clip_24/stream"(): AudioStream
+        set "clip_24/stream"(value: AudioStream)
+        get "clip_24/auto_advance"(): int64
+        set "clip_24/auto_advance"(value: int64)
+        get "clip_24/next_clip"(): int64
+        set "clip_24/next_clip"(value: int64)
+        get "clip_25/name"(): StringName
+        set "clip_25/name"(value: StringName)
+        get "clip_25/stream"(): AudioStream
+        set "clip_25/stream"(value: AudioStream)
+        get "clip_25/auto_advance"(): int64
+        set "clip_25/auto_advance"(value: int64)
+        get "clip_25/next_clip"(): int64
+        set "clip_25/next_clip"(value: int64)
+        get "clip_26/name"(): StringName
+        set "clip_26/name"(value: StringName)
+        get "clip_26/stream"(): AudioStream
+        set "clip_26/stream"(value: AudioStream)
+        get "clip_26/auto_advance"(): int64
+        set "clip_26/auto_advance"(value: int64)
+        get "clip_26/next_clip"(): int64
+        set "clip_26/next_clip"(value: int64)
+        get "clip_27/name"(): StringName
+        set "clip_27/name"(value: StringName)
+        get "clip_27/stream"(): AudioStream
+        set "clip_27/stream"(value: AudioStream)
+        get "clip_27/auto_advance"(): int64
+        set "clip_27/auto_advance"(value: int64)
+        get "clip_27/next_clip"(): int64
+        set "clip_27/next_clip"(value: int64)
+        get "clip_28/name"(): StringName
+        set "clip_28/name"(value: StringName)
+        get "clip_28/stream"(): AudioStream
+        set "clip_28/stream"(value: AudioStream)
+        get "clip_28/auto_advance"(): int64
+        set "clip_28/auto_advance"(value: int64)
+        get "clip_28/next_clip"(): int64
+        set "clip_28/next_clip"(value: int64)
+        get "clip_29/name"(): StringName
+        set "clip_29/name"(value: StringName)
+        get "clip_29/stream"(): AudioStream
+        set "clip_29/stream"(value: AudioStream)
+        get "clip_29/auto_advance"(): int64
+        set "clip_29/auto_advance"(value: int64)
+        get "clip_29/next_clip"(): int64
+        set "clip_29/next_clip"(value: int64)
+        get "clip_30/name"(): StringName
+        set "clip_30/name"(value: StringName)
+        get "clip_30/stream"(): AudioStream
+        set "clip_30/stream"(value: AudioStream)
+        get "clip_30/auto_advance"(): int64
+        set "clip_30/auto_advance"(value: int64)
+        get "clip_30/next_clip"(): int64
+        set "clip_30/next_clip"(value: int64)
+        get "clip_31/name"(): StringName
+        set "clip_31/name"(value: StringName)
+        get "clip_31/stream"(): AudioStream
+        set "clip_31/stream"(value: AudioStream)
+        get "clip_31/auto_advance"(): int64
+        set "clip_31/auto_advance"(value: int64)
+        get "clip_31/next_clip"(): int64
+        set "clip_31/next_clip"(value: int64)
+        get "clip_32/name"(): StringName
+        set "clip_32/name"(value: StringName)
+        get "clip_32/stream"(): AudioStream
+        set "clip_32/stream"(value: AudioStream)
+        get "clip_32/auto_advance"(): int64
+        set "clip_32/auto_advance"(value: int64)
+        get "clip_32/next_clip"(): int64
+        set "clip_32/next_clip"(value: int64)
+        get "clip_33/name"(): StringName
+        set "clip_33/name"(value: StringName)
+        get "clip_33/stream"(): AudioStream
+        set "clip_33/stream"(value: AudioStream)
+        get "clip_33/auto_advance"(): int64
+        set "clip_33/auto_advance"(value: int64)
+        get "clip_33/next_clip"(): int64
+        set "clip_33/next_clip"(value: int64)
+        get "clip_34/name"(): StringName
+        set "clip_34/name"(value: StringName)
+        get "clip_34/stream"(): AudioStream
+        set "clip_34/stream"(value: AudioStream)
+        get "clip_34/auto_advance"(): int64
+        set "clip_34/auto_advance"(value: int64)
+        get "clip_34/next_clip"(): int64
+        set "clip_34/next_clip"(value: int64)
+        get "clip_35/name"(): StringName
+        set "clip_35/name"(value: StringName)
+        get "clip_35/stream"(): AudioStream
+        set "clip_35/stream"(value: AudioStream)
+        get "clip_35/auto_advance"(): int64
+        set "clip_35/auto_advance"(value: int64)
+        get "clip_35/next_clip"(): int64
+        set "clip_35/next_clip"(value: int64)
+        get "clip_36/name"(): StringName
+        set "clip_36/name"(value: StringName)
+        get "clip_36/stream"(): AudioStream
+        set "clip_36/stream"(value: AudioStream)
+        get "clip_36/auto_advance"(): int64
+        set "clip_36/auto_advance"(value: int64)
+        get "clip_36/next_clip"(): int64
+        set "clip_36/next_clip"(value: int64)
+        get "clip_37/name"(): StringName
+        set "clip_37/name"(value: StringName)
+        get "clip_37/stream"(): AudioStream
+        set "clip_37/stream"(value: AudioStream)
+        get "clip_37/auto_advance"(): int64
+        set "clip_37/auto_advance"(value: int64)
+        get "clip_37/next_clip"(): int64
+        set "clip_37/next_clip"(value: int64)
+        get "clip_38/name"(): StringName
+        set "clip_38/name"(value: StringName)
+        get "clip_38/stream"(): AudioStream
+        set "clip_38/stream"(value: AudioStream)
+        get "clip_38/auto_advance"(): int64
+        set "clip_38/auto_advance"(value: int64)
+        get "clip_38/next_clip"(): int64
+        set "clip_38/next_clip"(value: int64)
+        get "clip_39/name"(): StringName
+        set "clip_39/name"(value: StringName)
+        get "clip_39/stream"(): AudioStream
+        set "clip_39/stream"(value: AudioStream)
+        get "clip_39/auto_advance"(): int64
+        set "clip_39/auto_advance"(value: int64)
+        get "clip_39/next_clip"(): int64
+        set "clip_39/next_clip"(value: int64)
+        get "clip_40/name"(): StringName
+        set "clip_40/name"(value: StringName)
+        get "clip_40/stream"(): AudioStream
+        set "clip_40/stream"(value: AudioStream)
+        get "clip_40/auto_advance"(): int64
+        set "clip_40/auto_advance"(value: int64)
+        get "clip_40/next_clip"(): int64
+        set "clip_40/next_clip"(value: int64)
+        get "clip_41/name"(): StringName
+        set "clip_41/name"(value: StringName)
+        get "clip_41/stream"(): AudioStream
+        set "clip_41/stream"(value: AudioStream)
+        get "clip_41/auto_advance"(): int64
+        set "clip_41/auto_advance"(value: int64)
+        get "clip_41/next_clip"(): int64
+        set "clip_41/next_clip"(value: int64)
+        get "clip_42/name"(): StringName
+        set "clip_42/name"(value: StringName)
+        get "clip_42/stream"(): AudioStream
+        set "clip_42/stream"(value: AudioStream)
+        get "clip_42/auto_advance"(): int64
+        set "clip_42/auto_advance"(value: int64)
+        get "clip_42/next_clip"(): int64
+        set "clip_42/next_clip"(value: int64)
+        get "clip_43/name"(): StringName
+        set "clip_43/name"(value: StringName)
+        get "clip_43/stream"(): AudioStream
+        set "clip_43/stream"(value: AudioStream)
+        get "clip_43/auto_advance"(): int64
+        set "clip_43/auto_advance"(value: int64)
+        get "clip_43/next_clip"(): int64
+        set "clip_43/next_clip"(value: int64)
+        get "clip_44/name"(): StringName
+        set "clip_44/name"(value: StringName)
+        get "clip_44/stream"(): AudioStream
+        set "clip_44/stream"(value: AudioStream)
+        get "clip_44/auto_advance"(): int64
+        set "clip_44/auto_advance"(value: int64)
+        get "clip_44/next_clip"(): int64
+        set "clip_44/next_clip"(value: int64)
+        get "clip_45/name"(): StringName
+        set "clip_45/name"(value: StringName)
+        get "clip_45/stream"(): AudioStream
+        set "clip_45/stream"(value: AudioStream)
+        get "clip_45/auto_advance"(): int64
+        set "clip_45/auto_advance"(value: int64)
+        get "clip_45/next_clip"(): int64
+        set "clip_45/next_clip"(value: int64)
+        get "clip_46/name"(): StringName
+        set "clip_46/name"(value: StringName)
+        get "clip_46/stream"(): AudioStream
+        set "clip_46/stream"(value: AudioStream)
+        get "clip_46/auto_advance"(): int64
+        set "clip_46/auto_advance"(value: int64)
+        get "clip_46/next_clip"(): int64
+        set "clip_46/next_clip"(value: int64)
+        get "clip_47/name"(): StringName
+        set "clip_47/name"(value: StringName)
+        get "clip_47/stream"(): AudioStream
+        set "clip_47/stream"(value: AudioStream)
+        get "clip_47/auto_advance"(): int64
+        set "clip_47/auto_advance"(value: int64)
+        get "clip_47/next_clip"(): int64
+        set "clip_47/next_clip"(value: int64)
+        get "clip_48/name"(): StringName
+        set "clip_48/name"(value: StringName)
+        get "clip_48/stream"(): AudioStream
+        set "clip_48/stream"(value: AudioStream)
+        get "clip_48/auto_advance"(): int64
+        set "clip_48/auto_advance"(value: int64)
+        get "clip_48/next_clip"(): int64
+        set "clip_48/next_clip"(value: int64)
+        get "clip_49/name"(): StringName
+        set "clip_49/name"(value: StringName)
+        get "clip_49/stream"(): AudioStream
+        set "clip_49/stream"(value: AudioStream)
+        get "clip_49/auto_advance"(): int64
+        set "clip_49/auto_advance"(value: int64)
+        get "clip_49/next_clip"(): int64
+        set "clip_49/next_clip"(value: int64)
+        get "clip_50/name"(): StringName
+        set "clip_50/name"(value: StringName)
+        get "clip_50/stream"(): AudioStream
+        set "clip_50/stream"(value: AudioStream)
+        get "clip_50/auto_advance"(): int64
+        set "clip_50/auto_advance"(value: int64)
+        get "clip_50/next_clip"(): int64
+        set "clip_50/next_clip"(value: int64)
+        get "clip_51/name"(): StringName
+        set "clip_51/name"(value: StringName)
+        get "clip_51/stream"(): AudioStream
+        set "clip_51/stream"(value: AudioStream)
+        get "clip_51/auto_advance"(): int64
+        set "clip_51/auto_advance"(value: int64)
+        get "clip_51/next_clip"(): int64
+        set "clip_51/next_clip"(value: int64)
+        get "clip_52/name"(): StringName
+        set "clip_52/name"(value: StringName)
+        get "clip_52/stream"(): AudioStream
+        set "clip_52/stream"(value: AudioStream)
+        get "clip_52/auto_advance"(): int64
+        set "clip_52/auto_advance"(value: int64)
+        get "clip_52/next_clip"(): int64
+        set "clip_52/next_clip"(value: int64)
+        get "clip_53/name"(): StringName
+        set "clip_53/name"(value: StringName)
+        get "clip_53/stream"(): AudioStream
+        set "clip_53/stream"(value: AudioStream)
+        get "clip_53/auto_advance"(): int64
+        set "clip_53/auto_advance"(value: int64)
+        get "clip_53/next_clip"(): int64
+        set "clip_53/next_clip"(value: int64)
+        get "clip_54/name"(): StringName
+        set "clip_54/name"(value: StringName)
+        get "clip_54/stream"(): AudioStream
+        set "clip_54/stream"(value: AudioStream)
+        get "clip_54/auto_advance"(): int64
+        set "clip_54/auto_advance"(value: int64)
+        get "clip_54/next_clip"(): int64
+        set "clip_54/next_clip"(value: int64)
+        get "clip_55/name"(): StringName
+        set "clip_55/name"(value: StringName)
+        get "clip_55/stream"(): AudioStream
+        set "clip_55/stream"(value: AudioStream)
+        get "clip_55/auto_advance"(): int64
+        set "clip_55/auto_advance"(value: int64)
+        get "clip_55/next_clip"(): int64
+        set "clip_55/next_clip"(value: int64)
+        get "clip_56/name"(): StringName
+        set "clip_56/name"(value: StringName)
+        get "clip_56/stream"(): AudioStream
+        set "clip_56/stream"(value: AudioStream)
+        get "clip_56/auto_advance"(): int64
+        set "clip_56/auto_advance"(value: int64)
+        get "clip_56/next_clip"(): int64
+        set "clip_56/next_clip"(value: int64)
+        get "clip_57/name"(): StringName
+        set "clip_57/name"(value: StringName)
+        get "clip_57/stream"(): AudioStream
+        set "clip_57/stream"(value: AudioStream)
+        get "clip_57/auto_advance"(): int64
+        set "clip_57/auto_advance"(value: int64)
+        get "clip_57/next_clip"(): int64
+        set "clip_57/next_clip"(value: int64)
+        get "clip_58/name"(): StringName
+        set "clip_58/name"(value: StringName)
+        get "clip_58/stream"(): AudioStream
+        set "clip_58/stream"(value: AudioStream)
+        get "clip_58/auto_advance"(): int64
+        set "clip_58/auto_advance"(value: int64)
+        get "clip_58/next_clip"(): int64
+        set "clip_58/next_clip"(value: int64)
+        get "clip_59/name"(): StringName
+        set "clip_59/name"(value: StringName)
+        get "clip_59/stream"(): AudioStream
+        set "clip_59/stream"(value: AudioStream)
+        get "clip_59/auto_advance"(): int64
+        set "clip_59/auto_advance"(value: int64)
+        get "clip_59/next_clip"(): int64
+        set "clip_59/next_clip"(value: int64)
+        get "clip_60/name"(): StringName
+        set "clip_60/name"(value: StringName)
+        get "clip_60/stream"(): AudioStream
+        set "clip_60/stream"(value: AudioStream)
+        get "clip_60/auto_advance"(): int64
+        set "clip_60/auto_advance"(value: int64)
+        get "clip_60/next_clip"(): int64
+        set "clip_60/next_clip"(value: int64)
+        get "clip_61/name"(): StringName
+        set "clip_61/name"(value: StringName)
+        get "clip_61/stream"(): AudioStream
+        set "clip_61/stream"(value: AudioStream)
+        get "clip_61/auto_advance"(): int64
+        set "clip_61/auto_advance"(value: int64)
+        get "clip_61/next_clip"(): int64
+        set "clip_61/next_clip"(value: int64)
+        get "clip_62/name"(): StringName
+        set "clip_62/name"(value: StringName)
+        get "clip_62/stream"(): AudioStream
+        set "clip_62/stream"(value: AudioStream)
+        get "clip_62/auto_advance"(): int64
+        set "clip_62/auto_advance"(value: int64)
+        get "clip_62/next_clip"(): int64
+        set "clip_62/next_clip"(value: int64)
+        
+        /** Index of the initial clip, which will be played first when this stream is played. */
+        get initial_clip(): int64
+        set initial_clip(value: int64)
         get _transitions(): GDictionary
         set _transitions(value: GDictionary)
     }
-    class AudioStreamInteractiveEditorPlugin extends EditorPlugin {
+    class AudioStreamInteractiveEditorPlugin<Map extends Record<string, Node> = Record<string, Node>> extends EditorPlugin<Map> {
         constructor(identifier?: any)
     }
-    class AudioStreamInteractiveTransitionEditor extends AcceptDialog {
+    class AudioStreamInteractiveTransitionEditor<Map extends Record<string, Node> = Record<string, Node>> extends AcceptDialog<Map> {
         constructor(identifier?: any)
         _update_transitions(): void
     }
     /** MP3 audio stream driver.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostreammp3.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostreammp3.html  
      */
     class AudioStreamMP3 extends AudioStream {
         constructor(identifier?: any)
+        /** Creates a new [AudioStreamMP3] instance from the given buffer. The buffer must contain MP3 data. */
+        static load_from_buffer(stream_data: PackedByteArray | byte[] | ArrayBuffer): AudioStreamMP3
+        
+        /** Creates a new [AudioStreamMP3] instance from the given file path. The file must be in MP3 format. */
+        static load_from_file(path: string): AudioStreamMP3
+        
         /** Contains the audio data in bytes.  
          *  You can load a file without having to import it beforehand using the code snippet below. Keep in mind that this snippet loads the whole file into memory and may not be ideal for huge files (hundreds of megabytes or more).  
          *    
@@ -5005,21 +8115,21 @@ declare module "godot" {
     }
     /** Plays real-time audio input data.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostreammicrophone.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostreammicrophone.html  
      */
     class AudioStreamMicrophone extends AudioStream {
         constructor(identifier?: any)
     }
     /** A class representing an Ogg Vorbis audio stream.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostreamoggvorbis.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostreamoggvorbis.html  
      */
     class AudioStreamOggVorbis extends AudioStream {
         constructor(identifier?: any)
-        /** Creates a new AudioStreamOggVorbis instance from the given buffer. The buffer must contain Ogg Vorbis data. */
-        static load_from_buffer(buffer: PackedByteArray | byte[] | ArrayBuffer): AudioStreamOggVorbis
+        /** Creates a new [AudioStreamOggVorbis] instance from the given buffer. The buffer must contain Ogg Vorbis data. */
+        static load_from_buffer(stream_data: PackedByteArray | byte[] | ArrayBuffer): AudioStreamOggVorbis
         
-        /** Creates a new AudioStreamOggVorbis instance from the given file path. The file must be in Ogg Vorbis format. */
+        /** Creates a new [AudioStreamOggVorbis] instance from the given file path. The file must be in Ogg Vorbis format. */
         static load_from_file(path: string): AudioStreamOggVorbis
         
         /** Contains the raw Ogg data for this stream. */
@@ -5042,7 +8152,7 @@ declare module "godot" {
     }
     /** Meta class for playing back audio.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostreamplayback.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostreamplayback.html  
      */
     class AudioStreamPlayback extends RefCounted {
         constructor(identifier?: any)
@@ -5084,10 +8194,35 @@ declare module "godot" {
         
         /** Returns the [AudioSamplePlayback] associated with this [AudioStreamPlayback] for playing back the audio sample of this stream. */
         get_sample_playback(): AudioSamplePlayback
+        
+        /** Mixes up to [param frames] of audio from the stream from the current position, at a rate of [param rate_scale], advancing the stream.  
+         *  Returns a [PackedVector2Array] where each element holds the left and right channel volume levels of each frame.  
+         *      
+         *  **Note:** Can return fewer frames than requested, make sure to use the size of the return value.  
+         */
+        mix_audio(rate_scale: float64, frames: int64): PackedVector2Array
+        
+        /** Starts the stream from the given [param from_pos], in seconds. */
+        start(from_pos: float64 = 0): void
+        
+        /** Seeks the stream at the given [param time], in seconds. */
+        seek(time: float64 = 0): void
+        
+        /** Stops the stream. */
+        stop(): void
+        
+        /** Returns the number of times the stream has looped. */
+        get_loop_count(): int64
+        
+        /** Returns the current position in the stream, in seconds. */
+        get_playback_position(): float64
+        
+        /** Returns `true` if the stream is playing. */
+        is_playing(): boolean
     }
     /** Playback component of [AudioStreamInteractive].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostreamplaybackinteractive.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostreamplaybackinteractive.html  
      */
     class AudioStreamPlaybackInteractive extends AudioStreamPlayback {
         constructor(identifier?: any)
@@ -5096,21 +8231,27 @@ declare module "godot" {
         
         /** Switch to a clip (by index). */
         switch_to_clip(clip_index: int64): void
+        
+        /** Return the index of the currently playing clip. You can use this to get the name of the currently playing clip with [method AudioStreamInteractive.get_clip_name].  
+         *  **Example:** Get the currently playing clip name from inside an [AudioStreamPlayer] node.  
+         *    
+         */
+        get_current_clip_index(): int64
     }
-    /** @link https://docs.godotengine.org/en/4.3/classes/class_audiostreamplaybackoggvorbis.html */
+    /** @link https://docs.godotengine.org/en/4.4/classes/class_audiostreamplaybackoggvorbis.html */
     class AudioStreamPlaybackOggVorbis extends AudioStreamPlaybackResampled {
         constructor(identifier?: any)
     }
     /** Playback class used for [AudioStreamPlaylist].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostreamplaybackplaylist.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostreamplaybackplaylist.html  
      */
     class AudioStreamPlaybackPlaylist extends AudioStreamPlayback {
         constructor(identifier?: any)
     }
     /** Playback instance for [AudioStreamPolyphonic].  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostreamplaybackpolyphonic.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostreamplaybackpolyphonic.html  
      */
     class AudioStreamPlaybackPolyphonic extends AudioStreamPlayback {
         /** Returned by [method play_stream] in case it could not allocate a stream for playback. */
@@ -5130,20 +8271,20 @@ declare module "godot" {
         /** Change the stream pitch scale. The [param stream] argument is an integer ID returned by [method play_stream]. */
         set_stream_pitch_scale(stream: int64, pitch_scale: float64): void
         
-        /** Return true whether the stream associated with an integer ID is still playing. Check [method play_stream] for information on when this ID becomes invalid. */
+        /** Returns `true` if the stream associated with the given integer ID is still playing. Check [method play_stream] for information on when this ID becomes invalid. */
         is_stream_playing(stream: int64): boolean
         
         /** Stop a stream. The [param stream] argument is an integer ID returned by [method play_stream], which becomes invalid after calling this function. */
         stop_stream(stream: int64): void
     }
-    /** @link https://docs.godotengine.org/en/4.3/classes/class_audiostreamplaybackresampled.html */
+    /** @link https://docs.godotengine.org/en/4.4/classes/class_audiostreamplaybackresampled.html */
     class AudioStreamPlaybackResampled extends AudioStreamPlayback {
         constructor(identifier?: any)
         /* gdvirtual */ _mix_resampled(dst_buffer: int64, frame_count: int64): int64
         /* gdvirtual */ _get_stream_sampling_rate(): float64
         begin_resample(): void
     }
-    /** @link https://docs.godotengine.org/en/4.3/classes/class_audiostreamplaybacksynchronized.html */
+    /** @link https://docs.godotengine.org/en/4.4/classes/class_audiostreamplaybacksynchronized.html */
     class AudioStreamPlaybackSynchronized extends AudioStreamPlayback {
         constructor(identifier?: any)
     }
@@ -5161,9 +8302,9 @@ declare module "godot" {
     }
     /** A node for audio playback.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostreamplayer.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostreamplayer.html  
      */
-    class AudioStreamPlayer extends Node {
+    class AudioStreamPlayer<Map extends Record<string, Node> = Record<string, Node>> extends Node<Map> {
         constructor(identifier?: any)
         /** Plays a sound from the beginning, or the given [param from_position] in seconds. */
         play(from_position: float64 = 0): void
@@ -5177,9 +8318,10 @@ declare module "godot" {
         /** Returns the position in the [AudioStream] of the latest sound, in seconds. Returns `0.0` if no sounds are playing.  
          *      
          *  **Note:** The position is not always accurate, as the [AudioServer] does not mix audio every processed frame. To get more accurate results, add [method AudioServer.get_time_since_last_mix] to the returned position.  
+         *      
+         *  **Note:** This method always returns `0.0` if the [member stream] is an [AudioStreamInteractive], since it can have multiple clips playing at once.  
          */
         get_playback_position(): float64
-        _is_active(): boolean
         
         /** Returns `true` if any sound is active, even if [member stream_paused] is set to `true`. See also [member playing] and [method get_stream_playback]. */
         has_stream_playback(): boolean
@@ -5191,12 +8333,19 @@ declare module "godot" {
         get stream(): AudioStream
         set stream(value: AudioStream)
         
-        /** Volume of sound, in decibel. This is an offset of the [member stream]'s volume.  
+        /** Volume of sound, in decibels. This is an offset of the [member stream]'s volume.  
          *      
-         *  **Note:** To convert between decibel and linear energy (like most volume sliders do), use [method @GlobalScope.db_to_linear] and [method @GlobalScope.linear_to_db].  
+         *  **Note:** To convert between decibel and linear energy (like most volume sliders do), use [member volume_linear], or [method @GlobalScope.db_to_linear] and [method @GlobalScope.linear_to_db].  
          */
         get volume_db(): float64
         set volume_db(value: float64)
+        
+        /** Volume of sound, as a linear value.  
+         *      
+         *  **Note:** This member modifies [member volume_db] for convenience. The returned value is equivalent to the result of [method @GlobalScope.db_to_linear] on [member volume_db]. Setting this member is equivalent to setting [member volume_db] to the result of [method @GlobalScope.linear_to_db] on a value.  
+         */
+        get volume_linear(): float64
+        set volume_linear(value: float64)
         
         /** The audio's pitch and tempo, as a multiplier of the [member stream]'s sample rate. A value of `2.0` doubles the audio's pitch, while a value of `0.5` halves the pitch. */
         get pitch_scale(): float64
@@ -5241,9 +8390,9 @@ declare module "godot" {
     }
     /** Plays positional sound in 2D space.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostreamplayer2d.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostreamplayer2d.html  
      */
-    class AudioStreamPlayer2D extends Node2D {
+    class AudioStreamPlayer2D<Map extends Record<string, Node> = Record<string, Node>> extends Node2D<Map> {
         constructor(identifier?: any)
         /** Queues the audio to play on the next physics frame, from the given position [param from_position], in seconds. */
         play(from_position: float64 = 0): void
@@ -5256,7 +8405,6 @@ declare module "godot" {
         
         /** Returns the position in the [AudioStream]. */
         get_playback_position(): float64
-        _is_active(): boolean
         
         /** Returns whether the [AudioStreamPlayer] can return the [AudioStreamPlayback] object or not. */
         has_stream_playback(): boolean
@@ -5268,9 +8416,16 @@ declare module "godot" {
         get stream(): AudioStream
         set stream(value: AudioStream)
         
-        /** Base volume before attenuation. */
+        /** Base volume before attenuation, in decibels. */
         get volume_db(): float64
         set volume_db(value: float64)
+        
+        /** Base volume before attenuation, as a linear value.  
+         *      
+         *  **Note:** This member modifies [member volume_db] for convenience. The returned value is equivalent to the result of [method @GlobalScope.db_to_linear] on [member volume_db]. Setting this member is equivalent to setting [member volume_db] to the result of [method @GlobalScope.linear_to_db] on a value.  
+         */
+        get volume_linear(): float64
+        set volume_linear(value: float64)
         
         /** The pitch and the tempo of the audio, as a multiplier of the audio sample's sample rate. */
         get pitch_scale(): float64
@@ -5349,9 +8504,9 @@ declare module "godot" {
     }
     /** Plays positional sound in 3D space.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostreamplayer3d.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostreamplayer3d.html  
      */
-    class AudioStreamPlayer3D extends Node3D {
+    class AudioStreamPlayer3D<Map extends Record<string, Node> = Record<string, Node>> extends Node3D<Map> {
         constructor(identifier?: any)
         /** Queues the audio to play on the next physics frame, from the given position [param from_position], in seconds. */
         play(from_position: float64 = 0): void
@@ -5364,7 +8519,6 @@ declare module "godot" {
         
         /** Returns the position in the [AudioStream]. */
         get_playback_position(): float64
-        _is_active(): boolean
         
         /** Returns whether the [AudioStreamPlayer] can return the [AudioStreamPlayback] object or not. */
         has_stream_playback(): boolean
@@ -5383,6 +8537,13 @@ declare module "godot" {
         /** The base sound level before attenuation, in decibels. */
         get volume_db(): float64
         set volume_db(value: float64)
+        
+        /** The base sound level before attenuation, as a linear value.  
+         *      
+         *  **Note:** This member modifies [member volume_db] for convenience. The returned value is equivalent to the result of [method @GlobalScope.db_to_linear] on [member volume_db]. Setting this member is equivalent to setting [member volume_db] to the result of [method @GlobalScope.linear_to_db] on a value.  
+         */
+        get volume_linear(): float64
+        set volume_linear(value: float64)
         
         /** The factor for the attenuation effect. Higher values make the sound audible over a larger distance. */
         get unit_size(): float64
@@ -5470,7 +8631,7 @@ declare module "godot" {
     }
     /** [AudioStream] that includes sub-streams and plays them back like a playlist.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostreamplaylist.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostreamplaylist.html  
      */
     class AudioStreamPlaylist extends AudioStream {
         /** Maximum amount of streams supported in the playlist. */
@@ -5632,7 +8793,7 @@ declare module "godot" {
     }
     /** AudioStream that lets the user play custom streams at any time from code, simultaneously using a single player.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostreampolyphonic.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostreampolyphonic.html  
      */
     class AudioStreamPolyphonic extends AudioStream {
         constructor(identifier?: any)
@@ -5640,7 +8801,7 @@ declare module "godot" {
         get polyphony(): int64
         set polyphony(value: int64)
     }
-    class AudioStreamPreviewGenerator extends Node {
+    class AudioStreamPreviewGenerator<Map extends Record<string, Node> = Record<string, Node>> extends Node<Map> {
         constructor(identifier?: any)
         generate_preview(stream: AudioStream): any /*AudioStreamPreview*/
         readonly preview_updated: Signal1<int64>
@@ -5659,7 +8820,7 @@ declare module "godot" {
     }
     /** Wraps a pool of audio streams with pitch and volume shifting.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostreamrandomizer.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostreamrandomizer.html  
      */
     class AudioStreamRandomizer extends AudioStream {
         constructor(identifier?: any)
@@ -5700,12 +8861,12 @@ declare module "godot" {
         get streams_count(): int64
         set streams_count(value: int64)
     }
-    class AudioStreamRandomizerEditorPlugin extends EditorPlugin {
+    class AudioStreamRandomizerEditorPlugin<Map extends Record<string, Node> = Record<string, Node>> extends EditorPlugin<Map> {
         constructor(identifier?: any)
     }
     /** Stream that can be fitted with sub-streams, which will be played in-sync.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostreamsynchronized.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostreamsynchronized.html  
      */
     class AudioStreamSynchronized extends AudioStream {
         /** Maximum amount of streams that can be synchronized. */
@@ -5727,19 +8888,147 @@ declare module "godot" {
         /** Set the total amount of streams that will be played back synchronized. */
         get stream_count(): any /*Streams,stream_,unfoldable,page_size=999,add_button_text=Add Stream*/
         set stream_count(value: any /*Streams,stream_,unfoldable,page_size=999,add_button_text=Add Stream*/)
+        get "stream_0/stream"(): AudioStream
+        set "stream_0/stream"(value: AudioStream)
+        get "stream_0/volume"(): float64
+        set "stream_0/volume"(value: float64)
+        get "stream_1/stream"(): AudioStream
+        set "stream_1/stream"(value: AudioStream)
+        get "stream_1/volume"(): float64
+        set "stream_1/volume"(value: float64)
+        get "stream_2/stream"(): AudioStream
+        set "stream_2/stream"(value: AudioStream)
+        get "stream_2/volume"(): float64
+        set "stream_2/volume"(value: float64)
+        get "stream_3/stream"(): AudioStream
+        set "stream_3/stream"(value: AudioStream)
+        get "stream_3/volume"(): float64
+        set "stream_3/volume"(value: float64)
+        get "stream_4/stream"(): AudioStream
+        set "stream_4/stream"(value: AudioStream)
+        get "stream_4/volume"(): float64
+        set "stream_4/volume"(value: float64)
+        get "stream_5/stream"(): AudioStream
+        set "stream_5/stream"(value: AudioStream)
+        get "stream_5/volume"(): float64
+        set "stream_5/volume"(value: float64)
+        get "stream_6/stream"(): AudioStream
+        set "stream_6/stream"(value: AudioStream)
+        get "stream_6/volume"(): float64
+        set "stream_6/volume"(value: float64)
+        get "stream_7/stream"(): AudioStream
+        set "stream_7/stream"(value: AudioStream)
+        get "stream_7/volume"(): float64
+        set "stream_7/volume"(value: float64)
+        get "stream_8/stream"(): AudioStream
+        set "stream_8/stream"(value: AudioStream)
+        get "stream_8/volume"(): float64
+        set "stream_8/volume"(value: float64)
+        get "stream_9/stream"(): AudioStream
+        set "stream_9/stream"(value: AudioStream)
+        get "stream_9/volume"(): float64
+        set "stream_9/volume"(value: float64)
+        get "stream_10/stream"(): AudioStream
+        set "stream_10/stream"(value: AudioStream)
+        get "stream_10/volume"(): float64
+        set "stream_10/volume"(value: float64)
+        get "stream_11/stream"(): AudioStream
+        set "stream_11/stream"(value: AudioStream)
+        get "stream_11/volume"(): float64
+        set "stream_11/volume"(value: float64)
+        get "stream_12/stream"(): AudioStream
+        set "stream_12/stream"(value: AudioStream)
+        get "stream_12/volume"(): float64
+        set "stream_12/volume"(value: float64)
+        get "stream_13/stream"(): AudioStream
+        set "stream_13/stream"(value: AudioStream)
+        get "stream_13/volume"(): float64
+        set "stream_13/volume"(value: float64)
+        get "stream_14/stream"(): AudioStream
+        set "stream_14/stream"(value: AudioStream)
+        get "stream_14/volume"(): float64
+        set "stream_14/volume"(value: float64)
+        get "stream_15/stream"(): AudioStream
+        set "stream_15/stream"(value: AudioStream)
+        get "stream_15/volume"(): float64
+        set "stream_15/volume"(value: float64)
+        get "stream_16/stream"(): AudioStream
+        set "stream_16/stream"(value: AudioStream)
+        get "stream_16/volume"(): float64
+        set "stream_16/volume"(value: float64)
+        get "stream_17/stream"(): AudioStream
+        set "stream_17/stream"(value: AudioStream)
+        get "stream_17/volume"(): float64
+        set "stream_17/volume"(value: float64)
+        get "stream_18/stream"(): AudioStream
+        set "stream_18/stream"(value: AudioStream)
+        get "stream_18/volume"(): float64
+        set "stream_18/volume"(value: float64)
+        get "stream_19/stream"(): AudioStream
+        set "stream_19/stream"(value: AudioStream)
+        get "stream_19/volume"(): float64
+        set "stream_19/volume"(value: float64)
+        get "stream_20/stream"(): AudioStream
+        set "stream_20/stream"(value: AudioStream)
+        get "stream_20/volume"(): float64
+        set "stream_20/volume"(value: float64)
+        get "stream_21/stream"(): AudioStream
+        set "stream_21/stream"(value: AudioStream)
+        get "stream_21/volume"(): float64
+        set "stream_21/volume"(value: float64)
+        get "stream_22/stream"(): AudioStream
+        set "stream_22/stream"(value: AudioStream)
+        get "stream_22/volume"(): float64
+        set "stream_22/volume"(value: float64)
+        get "stream_23/stream"(): AudioStream
+        set "stream_23/stream"(value: AudioStream)
+        get "stream_23/volume"(): float64
+        set "stream_23/volume"(value: float64)
+        get "stream_24/stream"(): AudioStream
+        set "stream_24/stream"(value: AudioStream)
+        get "stream_24/volume"(): float64
+        set "stream_24/volume"(value: float64)
+        get "stream_25/stream"(): AudioStream
+        set "stream_25/stream"(value: AudioStream)
+        get "stream_25/volume"(): float64
+        set "stream_25/volume"(value: float64)
+        get "stream_26/stream"(): AudioStream
+        set "stream_26/stream"(value: AudioStream)
+        get "stream_26/volume"(): float64
+        set "stream_26/volume"(value: float64)
+        get "stream_27/stream"(): AudioStream
+        set "stream_27/stream"(value: AudioStream)
+        get "stream_27/volume"(): float64
+        set "stream_27/volume"(value: float64)
+        get "stream_28/stream"(): AudioStream
+        set "stream_28/stream"(value: AudioStream)
+        get "stream_28/volume"(): float64
+        set "stream_28/volume"(value: float64)
+        get "stream_29/stream"(): AudioStream
+        set "stream_29/stream"(value: AudioStream)
+        get "stream_29/volume"(): float64
+        set "stream_29/volume"(value: float64)
+        get "stream_30/stream"(): AudioStream
+        set "stream_30/stream"(value: AudioStream)
+        get "stream_30/volume"(): float64
+        set "stream_30/volume"(value: float64)
+        get "stream_31/stream"(): AudioStream
+        set "stream_31/stream"(value: AudioStream)
+        get "stream_31/volume"(): float64
+        set "stream_31/volume"(value: float64)
     }
     namespace AudioStreamWAV {
         enum Format {
-            /** 8-bit audio codec. */
+            /** 8-bit PCM audio codec. */
             FORMAT_8_BITS = 0,
             
-            /** 16-bit audio codec. */
+            /** 16-bit PCM audio codec. */
             FORMAT_16_BITS = 1,
             
-            /** Audio is compressed using IMA ADPCM. */
+            /** Audio is lossily compressed as IMA ADPCM. */
             FORMAT_IMA_ADPCM = 2,
             
-            /** Audio is compressed as QOA ([url=https://qoaformat.org/]Quite OK Audio[/url]). */
+            /** Audio is lossily compressed as [url=https://qoaformat.org/]Quite OK Audio[/url]. */
             FORMAT_QOA = 3,
         }
         enum LoopMode {
@@ -5758,11 +9047,23 @@ declare module "godot" {
     }
     /** Stores audio data loaded from WAV files.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_audiostreamwav.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_audiostreamwav.html  
      */
     class AudioStreamWAV extends AudioStream {
         constructor(identifier?: any)
-        /** Saves the AudioStreamWAV as a WAV file to [param path]. Samples with IMA ADPCM or QOA formats can't be saved.  
+        /** Creates a new [AudioStreamWAV] instance from the given buffer. The buffer must contain WAV data.  
+         *  The keys and values of [param options] match the properties of [ResourceImporterWAV]. The usage of [param options] is identical to [method AudioStreamWAV.load_from_file].  
+         */
+        static load_from_buffer(stream_data: PackedByteArray | byte[] | ArrayBuffer, options: GDictionary = new GDictionary()): AudioStreamWAV
+        
+        /** Creates a new [AudioStreamWAV] instance from the given file path. The file must be in WAV format.  
+         *  The keys and values of [param options] match the properties of [ResourceImporterWAV].  
+         *  **Example:** Load the first file dropped as a WAV and play it:  
+         *    
+         */
+        static load_from_file(path: string, options: GDictionary = new GDictionary()): AudioStreamWAV
+        
+        /** Saves the AudioStreamWAV as a WAV file to [param path]. Samples with IMA ADPCM or Quite OK Audio formats can't be saved.  
          *      
          *  **Note:** A `.wav` extension is automatically appended to [param path] if it is missing.  
          */
@@ -5770,7 +9071,9 @@ declare module "godot" {
         
         /** Contains the audio data in bytes.  
          *      
-         *  **Note:** This property expects signed PCM8 data. To convert unsigned PCM8 to signed PCM8, subtract 128 from each byte.  
+         *  **Note:** If [member format] is set to [constant FORMAT_8_BITS], this property expects signed 8-bit PCM data. To convert from unsigned 8-bit PCM, subtract 128 from each byte.  
+         *      
+         *  **Note:** If [member format] is set to [constant FORMAT_QOA], this property expects data from a full QOA file.  
          */
         get data(): PackedByteArray
         set data(value: PackedByteArray | byte[] | ArrayBuffer)
@@ -5779,15 +9082,15 @@ declare module "godot" {
         get format(): int64
         set format(value: int64)
         
-        /** The loop mode. This information will be imported automatically from the WAV file if present. See [enum LoopMode] constants for values. */
+        /** The loop mode. See [enum LoopMode] constants for values. */
         get loop_mode(): int64
         set loop_mode(value: int64)
         
-        /** The loop start point (in number of samples, relative to the beginning of the stream). This information will be imported automatically from the WAV file if present. */
+        /** The loop start point (in number of samples, relative to the beginning of the stream). */
         get loop_begin(): int64
         set loop_begin(value: int64)
         
-        /** The loop end point (in number of samples, relative to the beginning of the stream). This information will be imported automatically from the WAV file if present. */
+        /** The loop end point (in number of samples, relative to the beginning of the stream). */
         get loop_end(): int64
         set loop_end(value: int64)
         
@@ -5816,9 +9119,9 @@ declare module "godot" {
     }
     /** A node that copies a region of the screen to a buffer for access in shader code.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_backbuffercopy.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_backbuffercopy.html  
      */
-    class BackBufferCopy extends Node2D {
+    class BackBufferCopy<Map extends Record<string, Node> = Record<string, Node>> extends Node2D<Map> {
         constructor(identifier?: any)
         /** Buffer mode. See [enum CopyMode] constants. */
         get copy_mode(): int64
@@ -5828,7 +9131,7 @@ declare module "godot" {
         get rect(): Rect2
         set rect(value: Rect2)
     }
-    class BackgroundProgress extends HBoxContainer {
+    class BackgroundProgress<Map extends Record<string, Node> = Record<string, Node>> extends HBoxContainer<Map> {
         constructor(identifier?: any)
     }
     namespace BaseButton {
@@ -5858,9 +9161,9 @@ declare module "godot" {
     }
     /** Abstract base class for GUI buttons.  
      *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_basebutton.html  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_basebutton.html  
      */
-    class BaseButton extends Control {
+    class BaseButton<Map extends Record<string, Node> = Record<string, Node>> extends Control<Map> {
         constructor(identifier?: any)
         /** Called when the button is pressed. If you need to know the button's pressed state (and [member toggle_mode] is active), use [method _toggled] instead. */
         /* gdvirtual */ _pressed(): void
@@ -5890,7 +9193,7 @@ declare module "godot" {
         
         /** If `true`, the button's state is pressed. Means the button is pressed down or toggled (if [member toggle_mode] is active). Only works if [member toggle_mode] is `true`.  
          *      
-         *  **Note:** Setting [member button_pressed] will result in [signal toggled] to be emitted. If you want to change the pressed state without emitting that signal, use [method set_pressed_no_signal].  
+         *  **Note:** Changing the value of [member button_pressed] will result in [signal toggled] to be emitted. If you want to change the pressed state without emitting that signal, use [method set_pressed_no_signal].  
          */
         get button_pressed(): boolean
         set button_pressed(value: boolean)
@@ -5927,7 +9230,10 @@ declare module "godot" {
         get shortcut_feedback(): boolean
         set shortcut_feedback(value: boolean)
         
-        /** If `true`, the button will add information about its shortcut in the tooltip. */
+        /** If `true`, the button will add information about its shortcut in the tooltip.  
+         *      
+         *  **Note:** This property does nothing when the tooltip control is customized using [method Control._make_custom_tooltip].  
+         */
         get shortcut_in_tooltip(): boolean
         set shortcut_in_tooltip(value: boolean)
         
@@ -5944,3279 +9250,5 @@ declare module "godot" {
         
         /** Emitted when the button was just toggled between pressed and normal states (only if [member toggle_mode] is active). The new state is contained in the [param toggled_on] argument. */
         readonly toggled: Signal1<boolean>
-    }
-    namespace BaseMaterial3D {
-        enum TextureParam {
-            /** Texture specifying per-pixel color. */
-            TEXTURE_ALBEDO = 0,
-            
-            /** Texture specifying per-pixel metallic value. */
-            TEXTURE_METALLIC = 1,
-            
-            /** Texture specifying per-pixel roughness value. */
-            TEXTURE_ROUGHNESS = 2,
-            
-            /** Texture specifying per-pixel emission color. */
-            TEXTURE_EMISSION = 3,
-            
-            /** Texture specifying per-pixel normal vector. */
-            TEXTURE_NORMAL = 4,
-            
-            /** Texture specifying per-pixel rim value. */
-            TEXTURE_RIM = 5,
-            
-            /** Texture specifying per-pixel clearcoat value. */
-            TEXTURE_CLEARCOAT = 6,
-            
-            /** Texture specifying per-pixel flowmap direction for use with [member anisotropy]. */
-            TEXTURE_FLOWMAP = 7,
-            
-            /** Texture specifying per-pixel ambient occlusion value. */
-            TEXTURE_AMBIENT_OCCLUSION = 8,
-            
-            /** Texture specifying per-pixel height. */
-            TEXTURE_HEIGHTMAP = 9,
-            
-            /** Texture specifying per-pixel subsurface scattering. */
-            TEXTURE_SUBSURFACE_SCATTERING = 10,
-            
-            /** Texture specifying per-pixel transmittance for subsurface scattering. */
-            TEXTURE_SUBSURFACE_TRANSMITTANCE = 11,
-            
-            /** Texture specifying per-pixel backlight color. */
-            TEXTURE_BACKLIGHT = 12,
-            
-            /** Texture specifying per-pixel refraction strength. */
-            TEXTURE_REFRACTION = 13,
-            
-            /** Texture specifying per-pixel detail mask blending value. */
-            TEXTURE_DETAIL_MASK = 14,
-            
-            /** Texture specifying per-pixel detail color. */
-            TEXTURE_DETAIL_ALBEDO = 15,
-            
-            /** Texture specifying per-pixel detail normal. */
-            TEXTURE_DETAIL_NORMAL = 16,
-            
-            /** Texture holding ambient occlusion, roughness, and metallic. */
-            TEXTURE_ORM = 17,
-            
-            /** Represents the size of the [enum TextureParam] enum. */
-            TEXTURE_MAX = 18,
-        }
-        enum TextureFilter {
-            /** The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled). */
-            TEXTURE_FILTER_NEAREST = 0,
-            
-            /** The texture filter blends between the nearest 4 pixels. This makes the texture look smooth from up close, and grainy from a distance (due to mipmaps not being sampled). */
-            TEXTURE_FILTER_LINEAR = 1,
-            
-            /** The texture filter reads from the nearest pixel and blends between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is `true`). This makes the texture look pixelated from up close, and smooth from a distance. */
-            TEXTURE_FILTER_NEAREST_WITH_MIPMAPS = 2,
-            
-            /** The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is `true`). This makes the texture look smooth from up close, and smooth from a distance. */
-            TEXTURE_FILTER_LINEAR_WITH_MIPMAPS = 3,
-            
-            /** The texture filter reads from the nearest pixel and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is `true`) based on the angle between the surface and the camera view. This makes the texture look pixelated from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level]. */
-            TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC = 4,
-            
-            /** The texture filter blends between the nearest 4 pixels and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is `true`) based on the angle between the surface and the camera view. This makes the texture look smooth from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level]. */
-            TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC = 5,
-            
-            /** Represents the size of the [enum TextureFilter] enum. */
-            TEXTURE_FILTER_MAX = 6,
-        }
-        enum DetailUV {
-            /** Use `UV` with the detail texture. */
-            DETAIL_UV_1 = 0,
-            
-            /** Use `UV2` with the detail texture. */
-            DETAIL_UV_2 = 1,
-        }
-        enum Transparency {
-            /** The material will not use transparency. This is the fastest to render. */
-            TRANSPARENCY_DISABLED = 0,
-            
-            /** The material will use the texture's alpha values for transparency. This is the slowest to render, and disables shadow casting. */
-            TRANSPARENCY_ALPHA = 1,
-            
-            /** The material will cut off all values below a threshold, the rest will remain opaque. The opaque portions will be rendered in the depth prepass. This is faster to render than alpha blending, but slower than opaque rendering. This also supports casting shadows. */
-            TRANSPARENCY_ALPHA_SCISSOR = 2,
-            
-            /** The material will cut off all values below a spatially-deterministic threshold, the rest will remain opaque. This is faster to render than alpha blending, but slower than opaque rendering. This also supports casting shadows. Alpha hashing is suited for hair rendering. */
-            TRANSPARENCY_ALPHA_HASH = 3,
-            
-            /** The material will use the texture's alpha value for transparency, but will discard fragments with an alpha of less than 0.99 during the depth prepass and fragments with an alpha less than 0.1 during the shadow pass. This also supports casting shadows. */
-            TRANSPARENCY_ALPHA_DEPTH_PRE_PASS = 4,
-            
-            /** Represents the size of the [enum Transparency] enum. */
-            TRANSPARENCY_MAX = 5,
-        }
-        enum ShadingMode {
-            /** The object will not receive shadows. This is the fastest to render, but it disables all interactions with lights. */
-            SHADING_MODE_UNSHADED = 0,
-            
-            /** The object will be shaded per pixel. Useful for realistic shading effects. */
-            SHADING_MODE_PER_PIXEL = 1,
-            
-            /** The object will be shaded per vertex. Useful when you want cheaper shaders and do not care about visual quality. Not implemented yet (this mode will act like [constant SHADING_MODE_PER_PIXEL]). */
-            SHADING_MODE_PER_VERTEX = 2,
-            
-            /** Represents the size of the [enum ShadingMode] enum. */
-            SHADING_MODE_MAX = 3,
-        }
-        enum Feature {
-            /** Constant for setting [member emission_enabled]. */
-            FEATURE_EMISSION = 0,
-            
-            /** Constant for setting [member normal_enabled]. */
-            FEATURE_NORMAL_MAPPING = 1,
-            
-            /** Constant for setting [member rim_enabled]. */
-            FEATURE_RIM = 2,
-            
-            /** Constant for setting [member clearcoat_enabled]. */
-            FEATURE_CLEARCOAT = 3,
-            
-            /** Constant for setting [member anisotropy_enabled]. */
-            FEATURE_ANISOTROPY = 4,
-            
-            /** Constant for setting [member ao_enabled]. */
-            FEATURE_AMBIENT_OCCLUSION = 5,
-            
-            /** Constant for setting [member heightmap_enabled]. */
-            FEATURE_HEIGHT_MAPPING = 6,
-            
-            /** Constant for setting [member subsurf_scatter_enabled]. */
-            FEATURE_SUBSURFACE_SCATTERING = 7,
-            
-            /** Constant for setting [member subsurf_scatter_transmittance_enabled]. */
-            FEATURE_SUBSURFACE_TRANSMITTANCE = 8,
-            
-            /** Constant for setting [member backlight_enabled]. */
-            FEATURE_BACKLIGHT = 9,
-            
-            /** Constant for setting [member refraction_enabled]. */
-            FEATURE_REFRACTION = 10,
-            
-            /** Constant for setting [member detail_enabled]. */
-            FEATURE_DETAIL = 11,
-            
-            /** Represents the size of the [enum Feature] enum. */
-            FEATURE_MAX = 12,
-        }
-        enum BlendMode {
-            /** Default blend mode. The color of the object is blended over the background based on the object's alpha value. */
-            BLEND_MODE_MIX = 0,
-            
-            /** The color of the object is added to the background. */
-            BLEND_MODE_ADD = 1,
-            
-            /** The color of the object is subtracted from the background. */
-            BLEND_MODE_SUB = 2,
-            
-            /** The color of the object is multiplied by the background. */
-            BLEND_MODE_MUL = 3,
-            
-            /** The color of the object is added to the background and the alpha channel is used to mask out the background. This is effectively a hybrid of the blend mix and add modes, useful for effects like fire where you want the flame to add but the smoke to mix. By default, this works with unshaded materials using premultiplied textures. For shaded materials, use the `PREMUL_ALPHA_FACTOR` built-in so that lighting can be modulated as well. */
-            BLEND_MODE_PREMULT_ALPHA = 4,
-        }
-        enum AlphaAntiAliasing {
-            /** Disables Alpha AntiAliasing for the material. */
-            ALPHA_ANTIALIASING_OFF = 0,
-            
-            /** Enables AlphaToCoverage. Alpha values in the material are passed to the AntiAliasing sample mask. */
-            ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE = 1,
-            
-            /** Enables AlphaToCoverage and forces all non-zero alpha values to `1`. Alpha values in the material are passed to the AntiAliasing sample mask. */
-            ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE = 2,
-        }
-        enum DepthDrawMode {
-            /** Default depth draw mode. Depth is drawn only for opaque objects during the opaque prepass (if any) and during the opaque pass. */
-            DEPTH_DRAW_OPAQUE_ONLY = 0,
-            
-            /** Objects will write to depth during the opaque and the transparent passes. Transparent objects that are close to the camera may obscure other transparent objects behind them.  
-             *      
-             *  **Note:** This does not influence whether transparent objects are included in the depth prepass or not. For that, see [enum Transparency].  
-             */
-            DEPTH_DRAW_ALWAYS = 1,
-            
-            /** Objects will not write their depth to the depth buffer, even during the depth prepass (if enabled). */
-            DEPTH_DRAW_DISABLED = 2,
-        }
-        enum CullMode {
-            /** Default cull mode. The back of the object is culled when not visible. Back face triangles will be culled when facing the camera. This results in only the front side of triangles being drawn. For closed-surface meshes, this means that only the exterior of the mesh will be visible. */
-            CULL_BACK = 0,
-            
-            /** Front face triangles will be culled when facing the camera. This results in only the back side of triangles being drawn. For closed-surface meshes, this means that the interior of the mesh will be drawn instead of the exterior. */
-            CULL_FRONT = 1,
-            
-            /** No face culling is performed; both the front face and back face will be visible. */
-            CULL_DISABLED = 2,
-        }
-        enum Flags {
-            /** Disables the depth test, so this object is drawn on top of all others drawn before it. This puts the object in the transparent draw pass where it is sorted based on distance to camera. Objects drawn after it in the draw order may cover it. This also disables writing to depth. */
-            FLAG_DISABLE_DEPTH_TEST = 0,
-            
-            /** Set `ALBEDO` to the per-vertex color specified in the mesh. */
-            FLAG_ALBEDO_FROM_VERTEX_COLOR = 1,
-            
-            /** Vertex colors are considered to be stored in sRGB color space and are converted to linear color space during rendering. See also [member vertex_color_is_srgb].  
-             *      
-             *  **Note:** Only effective when using the Forward+ and Mobile rendering methods.  
-             */
-            FLAG_SRGB_VERTEX_COLOR = 2,
-            
-            /** Uses point size to alter the size of primitive points. Also changes the albedo texture lookup to use `POINT_COORD` instead of `UV`. */
-            FLAG_USE_POINT_SIZE = 3,
-            
-            /** Object is scaled by depth so that it always appears the same size on screen. */
-            FLAG_FIXED_SIZE = 4,
-            
-            /** Shader will keep the scale set for the mesh. Otherwise the scale is lost when billboarding. Only applies when [member billboard_mode] is [constant BILLBOARD_ENABLED]. */
-            FLAG_BILLBOARD_KEEP_SCALE = 5,
-            
-            /** Use triplanar texture lookup for all texture lookups that would normally use `UV`. */
-            FLAG_UV1_USE_TRIPLANAR = 6,
-            
-            /** Use triplanar texture lookup for all texture lookups that would normally use `UV2`. */
-            FLAG_UV2_USE_TRIPLANAR = 7,
-            
-            /** Use triplanar texture lookup for all texture lookups that would normally use `UV`. */
-            FLAG_UV1_USE_WORLD_TRIPLANAR = 8,
-            
-            /** Use triplanar texture lookup for all texture lookups that would normally use `UV2`. */
-            FLAG_UV2_USE_WORLD_TRIPLANAR = 9,
-            
-            /** Use `UV2` coordinates to look up from the [member ao_texture]. */
-            FLAG_AO_ON_UV2 = 10,
-            
-            /** Use `UV2` coordinates to look up from the [member emission_texture]. */
-            FLAG_EMISSION_ON_UV2 = 11,
-            
-            /** Forces the shader to convert albedo from sRGB space to linear space. See also [member albedo_texture_force_srgb]. */
-            FLAG_ALBEDO_TEXTURE_FORCE_SRGB = 12,
-            
-            /** Disables receiving shadows from other objects. */
-            FLAG_DONT_RECEIVE_SHADOWS = 13,
-            
-            /** Disables receiving ambient light. */
-            FLAG_DISABLE_AMBIENT_LIGHT = 14,
-            
-            /** Enables the shadow to opacity feature. */
-            FLAG_USE_SHADOW_TO_OPACITY = 15,
-            
-            /** Enables the texture to repeat when UV coordinates are outside the 0-1 range. If using one of the linear filtering modes, this can result in artifacts at the edges of a texture when the sampler filters across the edges of the texture. */
-            FLAG_USE_TEXTURE_REPEAT = 16,
-            
-            /** Invert values read from a depth texture to convert them to height values (heightmap). */
-            FLAG_INVERT_HEIGHTMAP = 17,
-            
-            /** Enables the skin mode for subsurface scattering which is used to improve the look of subsurface scattering when used for human skin. */
-            FLAG_SUBSURFACE_MODE_SKIN = 18,
-            
-            /** Enables parts of the shader required for [GPUParticles3D] trails to function. This also requires using a mesh with appropriate skinning, such as [RibbonTrailMesh] or [TubeTrailMesh]. Enabling this feature outside of materials used in [GPUParticles3D] meshes will break material rendering. */
-            FLAG_PARTICLE_TRAILS_MODE = 19,
-            
-            /** Enables multichannel signed distance field rendering shader. */
-            FLAG_ALBEDO_TEXTURE_MSDF = 20,
-            
-            /** Disables receiving depth-based or volumetric fog. */
-            FLAG_DISABLE_FOG = 21,
-            
-            /** Represents the size of the [enum Flags] enum. */
-            FLAG_MAX = 22,
-        }
-        enum DiffuseMode {
-            /** Default diffuse scattering algorithm. */
-            DIFFUSE_BURLEY = 0,
-            
-            /** Diffuse scattering ignores roughness. */
-            DIFFUSE_LAMBERT = 1,
-            
-            /** Extends Lambert to cover more than 90 degrees when roughness increases. */
-            DIFFUSE_LAMBERT_WRAP = 2,
-            
-            /** Uses a hard cut for lighting, with smoothing affected by roughness. */
-            DIFFUSE_TOON = 3,
-        }
-        enum SpecularMode {
-            /** Default specular blob. */
-            SPECULAR_SCHLICK_GGX = 0,
-            
-            /** Toon blob which changes size based on roughness. */
-            SPECULAR_TOON = 1,
-            
-            /** No specular blob. This is slightly faster to render than other specular modes. */
-            SPECULAR_DISABLED = 2,
-        }
-        enum BillboardMode {
-            /** Billboard mode is disabled. */
-            BILLBOARD_DISABLED = 0,
-            
-            /** The object's Z axis will always face the camera. */
-            BILLBOARD_ENABLED = 1,
-            
-            /** The object's X axis will always face the camera. */
-            BILLBOARD_FIXED_Y = 2,
-            
-            /** Used for particle systems when assigned to [GPUParticles3D] and [CPUParticles3D] nodes (flipbook animation). Enables `particles_anim_*` properties.  
-             *  The [member ParticleProcessMaterial.anim_speed_min] or [member CPUParticles3D.anim_speed_min] should also be set to a value bigger than zero for the animation to play.  
-             */
-            BILLBOARD_PARTICLES = 3,
-        }
-        enum TextureChannel {
-            /** Used to read from the red channel of a texture. */
-            TEXTURE_CHANNEL_RED = 0,
-            
-            /** Used to read from the green channel of a texture. */
-            TEXTURE_CHANNEL_GREEN = 1,
-            
-            /** Used to read from the blue channel of a texture. */
-            TEXTURE_CHANNEL_BLUE = 2,
-            
-            /** Used to read from the alpha channel of a texture. */
-            TEXTURE_CHANNEL_ALPHA = 3,
-            
-            /** Used to read from the linear (non-perceptual) average of the red, green and blue channels of a texture. */
-            TEXTURE_CHANNEL_GRAYSCALE = 4,
-        }
-        enum EmissionOperator {
-            /** Adds the emission color to the color from the emission texture. */
-            EMISSION_OP_ADD = 0,
-            
-            /** Multiplies the emission color by the color from the emission texture. */
-            EMISSION_OP_MULTIPLY = 1,
-        }
-        enum DistanceFadeMode {
-            /** Do not use distance fade. */
-            DISTANCE_FADE_DISABLED = 0,
-            
-            /** Smoothly fades the object out based on each pixel's distance from the camera using the alpha channel. */
-            DISTANCE_FADE_PIXEL_ALPHA = 1,
-            
-            /** Smoothly fades the object out based on each pixel's distance from the camera using a dithering approach. Dithering discards pixels based on a set pattern to smoothly fade without enabling transparency. On certain hardware, this can be faster than [constant DISTANCE_FADE_PIXEL_ALPHA]. */
-            DISTANCE_FADE_PIXEL_DITHER = 2,
-            
-            /** Smoothly fades the object out based on the object's distance from the camera using a dithering approach. Dithering discards pixels based on a set pattern to smoothly fade without enabling transparency. On certain hardware, this can be faster than [constant DISTANCE_FADE_PIXEL_ALPHA] and [constant DISTANCE_FADE_PIXEL_DITHER]. */
-            DISTANCE_FADE_OBJECT_DITHER = 3,
-        }
-    }
-    /** Abstract base class for defining the 3D rendering properties of meshes.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_basematerial3d.html  
-     */
-    class BaseMaterial3D extends Material {
-        constructor(identifier?: any)
-        /** If `true`, enables the specified flag. Flags are optional behavior that can be turned on and off. Only one flag can be enabled at a time with this function, the flag enumerators cannot be bit-masked together to enable or disable multiple flags at once. Flags can also be enabled by setting the corresponding member to `true`. See [enum Flags] enumerator for options. */
-        set_flag(flag: BaseMaterial3D.Flags, enable: boolean): void
-        
-        /** Returns `true`, if the specified flag is enabled. See [enum Flags] enumerator for options. */
-        get_flag(flag: BaseMaterial3D.Flags): boolean
-        
-        /** If `true`, enables the specified [enum Feature]. Many features that are available in [BaseMaterial3D]s need to be enabled before use. This way the cost for using the feature is only incurred when specified. Features can also be enabled by setting the corresponding member to `true`. */
-        set_feature(feature: BaseMaterial3D.Feature, enable: boolean): void
-        
-        /** Returns `true`, if the specified [enum Feature] is enabled. */
-        get_feature(feature: BaseMaterial3D.Feature): boolean
-        
-        /** Sets the texture for the slot specified by [param param]. See [enum TextureParam] for available slots. */
-        set_texture(param: BaseMaterial3D.TextureParam, texture: Texture2D): void
-        
-        /** Returns the [Texture2D] associated with the specified [enum TextureParam]. */
-        get_texture(param: BaseMaterial3D.TextureParam): Texture2D
-        
-        /** The material's transparency mode. Some transparency modes will disable shadow casting. Any transparency mode other than [constant TRANSPARENCY_DISABLED] has a greater performance impact compared to opaque rendering. See also [member blend_mode]. */
-        get transparency(): int64
-        set transparency(value: int64)
-        
-        /** Threshold at which the alpha scissor will discard values. Higher values will result in more pixels being discarded. If the material becomes too opaque at a distance, try increasing [member alpha_scissor_threshold]. If the material disappears at a distance, try decreasing [member alpha_scissor_threshold]. */
-        get alpha_scissor_threshold(): float64
-        set alpha_scissor_threshold(value: float64)
-        
-        /** The hashing scale for Alpha Hash. Recommended values between `0` and `2`. */
-        get alpha_hash_scale(): float64
-        set alpha_hash_scale(value: float64)
-        
-        /** The type of alpha antialiasing to apply. See [enum AlphaAntiAliasing]. */
-        get alpha_antialiasing_mode(): int64
-        set alpha_antialiasing_mode(value: int64)
-        
-        /** Threshold at which antialiasing will be applied on the alpha channel. */
-        get alpha_antialiasing_edge(): float64
-        set alpha_antialiasing_edge(value: float64)
-        
-        /** The material's blend mode.  
-         *      
-         *  **Note:** Values other than `Mix` force the object into the transparent pipeline. See [enum BlendMode].  
-         */
-        get blend_mode(): int64
-        set blend_mode(value: int64)
-        
-        /** Determines which side of the triangle to cull depending on whether the triangle faces towards or away from the camera. See [enum CullMode]. */
-        get cull_mode(): int64
-        set cull_mode(value: int64)
-        
-        /** Determines when depth rendering takes place. See [enum DepthDrawMode]. See also [member transparency]. */
-        get depth_draw_mode(): int64
-        set depth_draw_mode(value: int64)
-        
-        /** If `true`, depth testing is disabled and the object will be drawn in render order. */
-        get no_depth_test(): boolean
-        set no_depth_test(value: boolean)
-        
-        /** Sets whether the shading takes place, per-pixel, per-vertex or unshaded. Per-vertex lighting is faster, making it the best choice for mobile applications, however it looks considerably worse than per-pixel. Unshaded rendering is the fastest, but disables all interactions with lights.  
-         *      
-         *  **Note:** Setting the shading mode vertex shading currently has no effect, as vertex shading is not implemented yet.  
-         */
-        get shading_mode(): int64
-        set shading_mode(value: int64)
-        
-        /** The algorithm used for diffuse light scattering. See [enum DiffuseMode]. */
-        get diffuse_mode(): int64
-        set diffuse_mode(value: int64)
-        
-        /** The method for rendering the specular blob. See [enum SpecularMode].  
-         *      
-         *  **Note:** [member specular_mode] only applies to the specular blob. It does not affect specular reflections from the sky, screen-space reflections, [VoxelGI], SDFGI or [ReflectionProbe]s. To disable reflections from these sources as well, set [member metallic_specular] to `0.0` instead.  
-         */
-        get specular_mode(): int64
-        set specular_mode(value: int64)
-        
-        /** If `true`, the object receives no ambient light. */
-        get disable_ambient_light(): boolean
-        set disable_ambient_light(value: boolean)
-        
-        /** If `true`, the object will not be affected by fog (neither volumetric nor depth fog). This is useful for unshaded or transparent materials (e.g. particles), which without this setting will be affected even if fully transparent. */
-        get disable_fog(): boolean
-        set disable_fog(value: boolean)
-        
-        /** If `true`, the vertex color is used as albedo color. */
-        get vertex_color_use_as_albedo(): boolean
-        set vertex_color_use_as_albedo(value: boolean)
-        
-        /** If `true`, vertex colors are considered to be stored in sRGB color space and are converted to linear color space during rendering. If `false`, vertex colors are considered to be stored in linear color space and are rendered as-is. See also [member albedo_texture_force_srgb].  
-         *      
-         *  **Note:** Only effective when using the Forward+ and Mobile rendering methods, not Compatibility.  
-         */
-        get vertex_color_is_srgb(): boolean
-        set vertex_color_is_srgb(value: boolean)
-        
-        /** The material's base color.  
-         *      
-         *  **Note:** If [member detail_enabled] is `true` and a [member detail_albedo] texture is specified, [member albedo_color] will  *not*  modulate the detail texture. This can be used to color partial areas of a material by not specifying an albedo texture and using a transparent [member detail_albedo] texture instead.  
-         */
-        get albedo_color(): Color
-        set albedo_color(value: Color)
-        
-        /** Texture to multiply by [member albedo_color]. Used for basic texturing of objects.  
-         *  If the texture appears unexpectedly too dark or too bright, check [member albedo_texture_force_srgb].  
-         */
-        get albedo_texture(): Texture2D
-        set albedo_texture(value: Texture2D)
-        
-        /** If `true`, forces a conversion of the [member albedo_texture] from sRGB color space to linear color space. See also [member vertex_color_is_srgb].  
-         *  This should only be enabled when needed (typically when using a [ViewportTexture] as [member albedo_texture]). If [member albedo_texture_force_srgb] is `true` when it shouldn't be, the texture will appear to be too dark. If [member albedo_texture_force_srgb] is `false` when it shouldn't be, the texture will appear to be too bright.  
-         */
-        get albedo_texture_force_srgb(): boolean
-        set albedo_texture_force_srgb(value: boolean)
-        
-        /** Enables multichannel signed distance field rendering shader. Use [member msdf_pixel_range] and [member msdf_outline_size] to configure MSDF parameters. */
-        get albedo_texture_msdf(): boolean
-        set albedo_texture_msdf(value: boolean)
-        
-        /** The Occlusion/Roughness/Metallic texture to use. This is a more efficient replacement of [member ao_texture], [member roughness_texture] and [member metallic_texture] in [ORMMaterial3D]. Ambient occlusion is stored in the red channel. Roughness map is stored in the green channel. Metallic map is stored in the blue channel. The alpha channel is ignored. */
-        get orm_texture(): Texture2D
-        set orm_texture(value: Texture2D)
-        
-        /** A high value makes the material appear more like a metal. Non-metals use their albedo as the diffuse color and add diffuse to the specular reflection. With non-metals, the reflection appears on top of the albedo color. Metals use their albedo as a multiplier to the specular reflection and set the diffuse color to black resulting in a tinted reflection. Materials work better when fully metal or fully non-metal, values between `0` and `1` should only be used for blending between metal and non-metal sections. To alter the amount of reflection use [member roughness]. */
-        get metallic(): float64
-        set metallic(value: float64)
-        
-        /** Adjusts the strength of specular reflections. Specular reflections are composed of scene reflections and the specular lobe which is the bright spot that is reflected from light sources. When set to `0.0`, no specular reflections will be visible. This differs from the [constant SPECULAR_DISABLED] [enum SpecularMode] as [constant SPECULAR_DISABLED] only applies to the specular lobe from the light source.  
-         *      
-         *  **Note:** Unlike [member metallic], this is not energy-conserving, so it should be left at `0.5` in most cases. See also [member roughness].  
-         */
-        get metallic_specular(): float64
-        set metallic_specular(value: float64)
-        
-        /** Texture used to specify metallic for an object. This is multiplied by [member metallic]. */
-        get metallic_texture(): Texture2D
-        set metallic_texture(value: Texture2D)
-        
-        /** Specifies the channel of the [member metallic_texture] in which the metallic information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use. */
-        get metallic_texture_channel(): int64
-        set metallic_texture_channel(value: int64)
-        
-        /** Surface reflection. A value of `0` represents a perfect mirror while a value of `1` completely blurs the reflection. See also [member metallic]. */
-        get roughness(): float64
-        set roughness(value: float64)
-        
-        /** Texture used to control the roughness per-pixel. Multiplied by [member roughness]. */
-        get roughness_texture(): Texture2D
-        set roughness_texture(value: Texture2D)
-        
-        /** Specifies the channel of the [member roughness_texture] in which the roughness information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use. */
-        get roughness_texture_channel(): int64
-        set roughness_texture_channel(value: int64)
-        
-        /** If `true`, the body emits light. Emitting light makes the object appear brighter. The object can also cast light on other objects if a [VoxelGI], SDFGI, or [LightmapGI] is used and this object is used in baked lighting. */
-        get emission_enabled(): boolean
-        set emission_enabled(value: boolean)
-        
-        /** The emitted light's color. See [member emission_enabled]. */
-        get emission(): Color
-        set emission(value: Color)
-        
-        /** Multiplier for emitted light. See [member emission_enabled]. */
-        get emission_energy_multiplier(): float64
-        set emission_energy_multiplier(value: float64)
-        
-        /** Luminance of emitted light, measured in nits (candela per square meter). Only available when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is enabled. The default is roughly equivalent to an indoor lightbulb. */
-        get emission_intensity(): float64
-        set emission_intensity(value: float64)
-        
-        /** Sets how [member emission] interacts with [member emission_texture]. Can either add or multiply. See [enum EmissionOperator] for options. */
-        get emission_operator(): int64
-        set emission_operator(value: int64)
-        
-        /** Use `UV2` to read from the [member emission_texture]. */
-        get emission_on_uv2(): boolean
-        set emission_on_uv2(value: boolean)
-        
-        /** Texture that specifies how much surface emits light at a given point. */
-        get emission_texture(): Texture2D
-        set emission_texture(value: Texture2D)
-        
-        /** If `true`, normal mapping is enabled. This has a slight performance cost, especially on mobile GPUs. */
-        get normal_enabled(): boolean
-        set normal_enabled(value: boolean)
-        
-        /** The strength of the normal map's effect. */
-        get normal_scale(): float64
-        set normal_scale(value: float64)
-        
-        /** Texture used to specify the normal at a given pixel. The [member normal_texture] only uses the red and green channels; the blue and alpha channels are ignored. The normal read from [member normal_texture] is oriented around the surface normal provided by the [Mesh].  
-         *      
-         *  **Note:** The mesh must have both normals and tangents defined in its vertex data. Otherwise, the normal map won't render correctly and will only appear to darken the whole surface. If creating geometry with [SurfaceTool], you can use [method SurfaceTool.generate_normals] and [method SurfaceTool.generate_tangents] to automatically generate normals and tangents respectively.  
-         *      
-         *  **Note:** Godot expects the normal map to use X+, Y+, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.  
-         *      
-         *  **Note:** If [member detail_enabled] is `true`, the [member detail_albedo] texture is drawn  *below*  the [member normal_texture]. To display a normal map  *above*  the [member detail_albedo] texture, use [member detail_normal] instead.  
-         */
-        get normal_texture(): Texture2D
-        set normal_texture(value: Texture2D)
-        
-        /** If `true`, rim effect is enabled. Rim lighting increases the brightness at glancing angles on an object.  
-         *      
-         *  **Note:** Rim lighting is not visible if the material's [member shading_mode] is [constant SHADING_MODE_UNSHADED].  
-         */
-        get rim_enabled(): boolean
-        set rim_enabled(value: boolean)
-        
-        /** Sets the strength of the rim lighting effect. */
-        get rim(): float64
-        set rim(value: float64)
-        
-        /** The amount of to blend light and albedo color when rendering rim effect. If `0` the light color is used, while `1` means albedo color is used. An intermediate value generally works best. */
-        get rim_tint(): float64
-        set rim_tint(value: float64)
-        
-        /** Texture used to set the strength of the rim lighting effect per-pixel. Multiplied by [member rim]. */
-        get rim_texture(): Texture2D
-        set rim_texture(value: Texture2D)
-        
-        /** If `true`, clearcoat rendering is enabled. Adds a secondary transparent pass to the lighting calculation resulting in an added specular blob. This makes materials appear as if they have a clear layer on them that can be either glossy or rough.  
-         *      
-         *  **Note:** Clearcoat rendering is not visible if the material's [member shading_mode] is [constant SHADING_MODE_UNSHADED].  
-         */
-        get clearcoat_enabled(): boolean
-        set clearcoat_enabled(value: boolean)
-        
-        /** Sets the strength of the clearcoat effect. Setting to `0` looks the same as disabling the clearcoat effect. */
-        get clearcoat(): float64
-        set clearcoat(value: float64)
-        
-        /** Sets the roughness of the clearcoat pass. A higher value results in a rougher clearcoat while a lower value results in a smoother clearcoat. */
-        get clearcoat_roughness(): float64
-        set clearcoat_roughness(value: float64)
-        
-        /** Texture that defines the strength of the clearcoat effect and the glossiness of the clearcoat. Strength is specified in the red channel while glossiness is specified in the green channel. */
-        get clearcoat_texture(): Texture2D
-        set clearcoat_texture(value: Texture2D)
-        
-        /** If `true`, anisotropy is enabled. Anisotropy changes the shape of the specular blob and aligns it to tangent space. This is useful for brushed aluminium and hair reflections.  
-         *      
-         *  **Note:** Mesh tangents are needed for anisotropy to work. If the mesh does not contain tangents, the anisotropy effect will appear broken.  
-         *      
-         *  **Note:** Material anisotropy should not to be confused with anisotropic texture filtering, which can be enabled by setting [member texture_filter] to [constant TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC].  
-         */
-        get anisotropy_enabled(): boolean
-        set anisotropy_enabled(value: boolean)
-        
-        /** The strength of the anisotropy effect. This is multiplied by [member anisotropy_flowmap]'s alpha channel if a texture is defined there and the texture contains an alpha channel. */
-        get anisotropy(): float64
-        set anisotropy(value: float64)
-        
-        /** Texture that offsets the tangent map for anisotropy calculations and optionally controls the anisotropy effect (if an alpha channel is present). The flowmap texture is expected to be a derivative map, with the red channel representing distortion on the X axis and green channel representing distortion on the Y axis. Values below 0.5 will result in negative distortion, whereas values above 0.5 will result in positive distortion.  
-         *  If present, the texture's alpha channel will be used to multiply the strength of the [member anisotropy] effect. Fully opaque pixels will keep the anisotropy effect's original strength while fully transparent pixels will disable the anisotropy effect entirely. The flowmap texture's blue channel is ignored.  
-         */
-        get anisotropy_flowmap(): Texture2D
-        set anisotropy_flowmap(value: Texture2D)
-        
-        /** If `true`, ambient occlusion is enabled. Ambient occlusion darkens areas based on the [member ao_texture]. */
-        get ao_enabled(): boolean
-        set ao_enabled(value: boolean)
-        
-        /** Amount that ambient occlusion affects lighting from lights. If `0`, ambient occlusion only affects ambient light. If `1`, ambient occlusion affects lights just as much as it affects ambient light. This can be used to impact the strength of the ambient occlusion effect, but typically looks unrealistic. */
-        get ao_light_affect(): float64
-        set ao_light_affect(value: float64)
-        
-        /** Texture that defines the amount of ambient occlusion for a given point on the object. */
-        get ao_texture(): Texture2D
-        set ao_texture(value: Texture2D)
-        
-        /** If `true`, use `UV2` coordinates to look up from the [member ao_texture]. */
-        get ao_on_uv2(): boolean
-        set ao_on_uv2(value: boolean)
-        
-        /** Specifies the channel of the [member ao_texture] in which the ambient occlusion information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use. */
-        get ao_texture_channel(): int64
-        set ao_texture_channel(value: int64)
-        
-        /** If `true`, height mapping is enabled (also called "parallax mapping" or "depth mapping"). See also [member normal_enabled]. Height mapping is a demanding feature on the GPU, so it should only be used on materials where it makes a significant visual difference.  
-         *      
-         *  **Note:** Height mapping is not supported if triplanar mapping is used on the same material. The value of [member heightmap_enabled] will be ignored if [member uv1_triplanar] is enabled.  
-         */
-        get heightmap_enabled(): boolean
-        set heightmap_enabled(value: boolean)
-        
-        /** The heightmap scale to use for the parallax effect (see [member heightmap_enabled]). The default value is tuned so that the highest point (value = 255) appears to be 5 cm higher than the lowest point (value = 0). Higher values result in a deeper appearance, but may result in artifacts appearing when looking at the material from oblique angles, especially when the camera moves. Negative values can be used to invert the parallax effect, but this is different from inverting the texture using [member heightmap_flip_texture] as the material will also appear to be "closer" to the camera. In most cases, [member heightmap_scale] should be kept to a positive value.  
-         *      
-         *  **Note:** If the height map effect looks strange regardless of this value, try adjusting [member heightmap_flip_binormal] and [member heightmap_flip_tangent]. See also [member heightmap_texture] for recommendations on authoring heightmap textures, as the way the heightmap texture is authored affects how [member heightmap_scale] behaves.  
-         */
-        get heightmap_scale(): float64
-        set heightmap_scale(value: float64)
-        
-        /** If `true`, uses parallax occlusion mapping to represent depth in the material instead of simple offset mapping (see [member heightmap_enabled]). This results in a more convincing depth effect, but is much more expensive on the GPU. Only enable this on materials where it makes a significant visual difference. */
-        get heightmap_deep_parallax(): boolean
-        set heightmap_deep_parallax(value: boolean)
-        
-        /** The number of layers to use for parallax occlusion mapping when the camera is far away from the material. Higher values result in a more convincing depth effect, especially in materials that have steep height changes. Higher values have a significant cost on the GPU, so it should only be increased on materials where it makes a significant visual difference.  
-         *      
-         *  **Note:** Only effective if [member heightmap_deep_parallax] is `true`.  
-         */
-        get heightmap_min_layers(): int64
-        set heightmap_min_layers(value: int64)
-        
-        /** The number of layers to use for parallax occlusion mapping when the camera is up close to the material. Higher values result in a more convincing depth effect, especially in materials that have steep height changes. Higher values have a significant cost on the GPU, so it should only be increased on materials where it makes a significant visual difference.  
-         *      
-         *  **Note:** Only effective if [member heightmap_deep_parallax] is `true`.  
-         */
-        get heightmap_max_layers(): int64
-        set heightmap_max_layers(value: int64)
-        
-        /** If `true`, flips the mesh's tangent vectors when interpreting the height map. If the heightmap effect looks strange when the camera moves (even with a reasonable [member heightmap_scale]), try setting this to `true`. */
-        get heightmap_flip_tangent(): boolean
-        set heightmap_flip_tangent(value: boolean)
-        
-        /** If `true`, flips the mesh's binormal vectors when interpreting the height map. If the heightmap effect looks strange when the camera moves (even with a reasonable [member heightmap_scale]), try setting this to `true`. */
-        get heightmap_flip_binormal(): boolean
-        set heightmap_flip_binormal(value: boolean)
-        
-        /** The texture to use as a height map. See also [member heightmap_enabled].  
-         *  For best results, the texture should be normalized (with [member heightmap_scale] reduced to compensate). In [url=https://gimp.org]GIMP[/url], this can be done using **Colors > Auto > Equalize**. If the texture only uses a small part of its available range, the parallax effect may look strange, especially when the camera moves.  
-         *      
-         *  **Note:** To reduce memory usage and improve loading times, you may be able to use a lower-resolution heightmap texture as most heightmaps are only comprised of low-frequency data.  
-         */
-        get heightmap_texture(): Texture2D
-        set heightmap_texture(value: Texture2D)
-        
-        /** If `true`, interprets the height map texture as a depth map, with brighter values appearing to be "lower" in altitude compared to darker values.  
-         *  This can be enabled for compatibility with some materials authored for Godot 3.x. This is not necessary if the Invert import option was used to invert the depth map in Godot 3.x, in which case [member heightmap_flip_texture] should remain `false`.  
-         */
-        get heightmap_flip_texture(): boolean
-        set heightmap_flip_texture(value: boolean)
-        
-        /** If `true`, subsurface scattering is enabled. Emulates light that penetrates an object's surface, is scattered, and then emerges. Subsurface scattering quality is controlled by [member ProjectSettings.rendering/environment/subsurface_scattering/subsurface_scattering_quality]. */
-        get subsurf_scatter_enabled(): boolean
-        set subsurf_scatter_enabled(value: boolean)
-        
-        /** The strength of the subsurface scattering effect. The depth of the effect is also controlled by [member ProjectSettings.rendering/environment/subsurface_scattering/subsurface_scattering_scale], which is set globally. */
-        get subsurf_scatter_strength(): float64
-        set subsurf_scatter_strength(value: float64)
-        
-        /** If `true`, subsurface scattering will use a special mode optimized for the color and density of human skin, such as boosting the intensity of the red channel in subsurface scattering. */
-        get subsurf_scatter_skin_mode(): boolean
-        set subsurf_scatter_skin_mode(value: boolean)
-        
-        /** Texture used to control the subsurface scattering strength. Stored in the red texture channel. Multiplied by [member subsurf_scatter_strength]. */
-        get subsurf_scatter_texture(): Texture2D
-        set subsurf_scatter_texture(value: Texture2D)
-        
-        /** If `true`, enables subsurface scattering transmittance. Only effective if [member subsurf_scatter_enabled] is `true`. See also [member backlight_enabled]. */
-        get subsurf_scatter_transmittance_enabled(): boolean
-        set subsurf_scatter_transmittance_enabled(value: boolean)
-        
-        /** The color to multiply the subsurface scattering transmittance effect with. Ignored if [member subsurf_scatter_skin_mode] is `true`. */
-        get subsurf_scatter_transmittance_color(): Color
-        set subsurf_scatter_transmittance_color(value: Color)
-        
-        /** The texture to use for multiplying the intensity of the subsurface scattering transmittance intensity. See also [member subsurf_scatter_texture]. Ignored if [member subsurf_scatter_skin_mode] is `true`. */
-        get subsurf_scatter_transmittance_texture(): Texture2D
-        set subsurf_scatter_transmittance_texture(value: Texture2D)
-        
-        /** The depth of the subsurface scattering transmittance effect. */
-        get subsurf_scatter_transmittance_depth(): float64
-        set subsurf_scatter_transmittance_depth(value: float64)
-        
-        /** The intensity of the subsurface scattering transmittance effect. */
-        get subsurf_scatter_transmittance_boost(): float64
-        set subsurf_scatter_transmittance_boost(value: float64)
-        
-        /** If `true`, the backlight effect is enabled. See also [member subsurf_scatter_transmittance_enabled]. */
-        get backlight_enabled(): boolean
-        set backlight_enabled(value: boolean)
-        
-        /** The color used by the backlight effect. Represents the light passing through an object. */
-        get backlight(): Color
-        set backlight(value: Color)
-        
-        /** Texture used to control the backlight effect per-pixel. Added to [member backlight]. */
-        get backlight_texture(): Texture2D
-        set backlight_texture(value: Texture2D)
-        
-        /** If `true`, the refraction effect is enabled. Distorts transparency based on light from behind the object. */
-        get refraction_enabled(): boolean
-        set refraction_enabled(value: boolean)
-        
-        /** The strength of the refraction effect. */
-        get refraction_scale(): float64
-        set refraction_scale(value: float64)
-        
-        /** Texture that controls the strength of the refraction per-pixel. Multiplied by [member refraction_scale]. */
-        get refraction_texture(): Texture2D
-        set refraction_texture(value: Texture2D)
-        
-        /** Specifies the channel of the [member refraction_texture] in which the refraction information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored refraction in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use. */
-        get refraction_texture_channel(): int64
-        set refraction_texture_channel(value: int64)
-        
-        /** If `true`, enables the detail overlay. Detail is a second texture that gets mixed over the surface of the object based on [member detail_mask] and [member detail_albedo]'s alpha channel. This can be used to add variation to objects, or to blend between two different albedo/normal textures. */
-        get detail_enabled(): boolean
-        set detail_enabled(value: boolean)
-        
-        /** Texture used to specify how the detail textures get blended with the base textures. [member detail_mask] can be used together with [member detail_albedo]'s alpha channel (if any). */
-        get detail_mask(): Texture2D
-        set detail_mask(value: Texture2D)
-        
-        /** Specifies how the [member detail_albedo] should blend with the current `ALBEDO`. See [enum BlendMode] for options. */
-        get detail_blend_mode(): int64
-        set detail_blend_mode(value: int64)
-        
-        /** Specifies whether to use `UV` or `UV2` for the detail layer. See [enum DetailUV] for options. */
-        get detail_uv_layer(): int64
-        set detail_uv_layer(value: int64)
-        
-        /** Texture that specifies the color of the detail overlay. [member detail_albedo]'s alpha channel is used as a mask, even when the material is opaque. To use a dedicated texture as a mask, see [member detail_mask].  
-         *      
-         *  **Note:** [member detail_albedo] is  *not*  modulated by [member albedo_color].  
-         */
-        get detail_albedo(): Texture2D
-        set detail_albedo(value: Texture2D)
-        
-        /** Texture that specifies the per-pixel normal of the detail overlay. The [member detail_normal] texture only uses the red and green channels; the blue and alpha channels are ignored. The normal read from [member detail_normal] is oriented around the surface normal provided by the [Mesh].  
-         *      
-         *  **Note:** Godot expects the normal map to use X+, Y+, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.  
-         */
-        get detail_normal(): Texture2D
-        set detail_normal(value: Texture2D)
-        
-        /** How much to scale the `UV` coordinates. This is multiplied by `UV` in the vertex function. The Z component is used when [member uv1_triplanar] is enabled, but it is not used anywhere else. */
-        get uv1_scale(): Vector3
-        set uv1_scale(value: Vector3)
-        
-        /** How much to offset the `UV` coordinates. This amount will be added to `UV` in the vertex function. This can be used to offset a texture. The Z component is used when [member uv1_triplanar] is enabled, but it is not used anywhere else. */
-        get uv1_offset(): Vector3
-        set uv1_offset(value: Vector3)
-        
-        /** If `true`, instead of using `UV` textures will use a triplanar texture lookup to determine how to apply textures. Triplanar uses the orientation of the object's surface to blend between texture coordinates. It reads from the source texture 3 times, once for each axis and then blends between the results based on how closely the pixel aligns with each axis. This is often used for natural features to get a realistic blend of materials. Because triplanar texturing requires many more texture reads per-pixel it is much slower than normal UV texturing. Additionally, because it is blending the texture between the three axes, it is unsuitable when you are trying to achieve crisp texturing. */
-        get uv1_triplanar(): boolean
-        set uv1_triplanar(value: boolean)
-        
-        /** A lower number blends the texture more softly while a higher number blends the texture more sharply.  
-         *      
-         *  **Note:** [member uv1_triplanar_sharpness] is clamped between `0.0` and `150.0` (inclusive) as values outside that range can look broken depending on the mesh.  
-         */
-        get uv1_triplanar_sharpness(): float64
-        set uv1_triplanar_sharpness(value: float64)
-        
-        /** If `true`, triplanar mapping for `UV` is calculated in world space rather than object local space. See also [member uv1_triplanar]. */
-        get uv1_world_triplanar(): boolean
-        set uv1_world_triplanar(value: boolean)
-        
-        /** How much to scale the `UV2` coordinates. This is multiplied by `UV2` in the vertex function. The Z component is used when [member uv2_triplanar] is enabled, but it is not used anywhere else. */
-        get uv2_scale(): Vector3
-        set uv2_scale(value: Vector3)
-        
-        /** How much to offset the `UV2` coordinates. This amount will be added to `UV2` in the vertex function. This can be used to offset a texture. The Z component is used when [member uv2_triplanar] is enabled, but it is not used anywhere else. */
-        get uv2_offset(): Vector3
-        set uv2_offset(value: Vector3)
-        
-        /** If `true`, instead of using `UV2` textures will use a triplanar texture lookup to determine how to apply textures. Triplanar uses the orientation of the object's surface to blend between texture coordinates. It reads from the source texture 3 times, once for each axis and then blends between the results based on how closely the pixel aligns with each axis. This is often used for natural features to get a realistic blend of materials. Because triplanar texturing requires many more texture reads per-pixel it is much slower than normal UV texturing. Additionally, because it is blending the texture between the three axes, it is unsuitable when you are trying to achieve crisp texturing. */
-        get uv2_triplanar(): boolean
-        set uv2_triplanar(value: boolean)
-        
-        /** A lower number blends the texture more softly while a higher number blends the texture more sharply.  
-         *      
-         *  **Note:** [member uv2_triplanar_sharpness] is clamped between `0.0` and `150.0` (inclusive) as values outside that range can look broken depending on the mesh.  
-         */
-        get uv2_triplanar_sharpness(): float64
-        set uv2_triplanar_sharpness(value: float64)
-        
-        /** If `true`, triplanar mapping for `UV2` is calculated in world space rather than object local space. See also [member uv2_triplanar]. */
-        get uv2_world_triplanar(): boolean
-        set uv2_world_triplanar(value: boolean)
-        
-        /** Filter flags for the texture. See [enum TextureFilter] for options.  
-         *      
-         *  **Note:** [member heightmap_texture] is always sampled with linear filtering, even if nearest-neighbor filtering is selected here. This is to ensure the heightmap effect looks as intended. If you need sharper height transitions between pixels, resize the heightmap texture in an image editor with nearest-neighbor filtering.  
-         */
-        get texture_filter(): int64
-        set texture_filter(value: int64)
-        
-        /** Repeat flags for the texture. See [enum TextureFilter] for options. */
-        get texture_repeat(): boolean
-        set texture_repeat(value: boolean)
-        
-        /** If `true`, the object receives no shadow that would otherwise be cast onto it. */
-        get disable_receive_shadows(): boolean
-        set disable_receive_shadows(value: boolean)
-        
-        /** If `true`, enables the "shadow to opacity" render mode where lighting modifies the alpha so shadowed areas are opaque and non-shadowed areas are transparent. Useful for overlaying shadows onto a camera feed in AR. */
-        get shadow_to_opacity(): boolean
-        set shadow_to_opacity(value: boolean)
-        
-        /** Controls how the object faces the camera. See [enum BillboardMode].  
-         *      
-         *  **Note:** When billboarding is enabled and the material also casts shadows, billboards will face **the** camera in the scene when rendering shadows. In scenes with multiple cameras, the intended shadow cannot be determined and this will result in undefined behavior. See [url=https://github.com/godotengine/godot/pull/72638]GitHub Pull Request #72638[/url] for details.  
-         *      
-         *  **Note:** Billboard mode is not suitable for VR because the left-right vector of the camera is not horizontal when the screen is attached to your head instead of on the table. See [url=https://github.com/godotengine/godot/issues/41567]GitHub issue #41567[/url] for details.  
-         */
-        get billboard_mode(): int64
-        set billboard_mode(value: int64)
-        
-        /** If `true`, the shader will keep the scale set for the mesh. Otherwise, the scale is lost when billboarding. Only applies when [member billboard_mode] is not [constant BILLBOARD_DISABLED]. */
-        get billboard_keep_scale(): boolean
-        set billboard_keep_scale(value: boolean)
-        
-        /** The number of horizontal frames in the particle sprite sheet. Only enabled when using [constant BILLBOARD_PARTICLES]. See [member billboard_mode]. */
-        get particles_anim_h_frames(): int64
-        set particles_anim_h_frames(value: int64)
-        
-        /** The number of vertical frames in the particle sprite sheet. Only enabled when using [constant BILLBOARD_PARTICLES]. See [member billboard_mode]. */
-        get particles_anim_v_frames(): int64
-        set particles_anim_v_frames(value: int64)
-        
-        /** If `true`, particle animations are looped. Only enabled when using [constant BILLBOARD_PARTICLES]. See [member billboard_mode]. */
-        get particles_anim_loop(): boolean
-        set particles_anim_loop(value: boolean)
-        
-        /** If `true`, enables the vertex grow setting. This can be used to create mesh-based outlines using a second material pass and its [member cull_mode] set to [constant CULL_FRONT]. See also [member grow_amount].  
-         *      
-         *  **Note:** Vertex growth cannot create new vertices, which means that visible gaps may occur in sharp corners. This can be alleviated by designing the mesh to use smooth normals exclusively using [url=https://wiki.polycount.com/wiki/Face_weighted_normals]face weighted normals[/url] in the 3D authoring software. In this case, grow will be able to join every outline together, just like in the original mesh.  
-         */
-        get grow(): boolean
-        set grow(value: boolean)
-        
-        /** Grows object vertices in the direction of their normals. Only effective if [member grow] is `true`. */
-        get grow_amount(): float64
-        set grow_amount(value: float64)
-        
-        /** If `true`, the object is rendered at the same size regardless of distance. */
-        get fixed_size(): boolean
-        set fixed_size(value: boolean)
-        
-        /** If `true`, render point size can be changed.  
-         *      
-         *  **Note:** This is only effective for objects whose geometry is point-based rather than triangle-based. See also [member point_size].  
-         */
-        get use_point_size(): boolean
-        set use_point_size(value: boolean)
-        
-        /** The point size in pixels. See [member use_point_size]. */
-        get point_size(): float64
-        set point_size(value: float64)
-        
-        /** If `true`, enables parts of the shader required for [GPUParticles3D] trails to function. This also requires using a mesh with appropriate skinning, such as [RibbonTrailMesh] or [TubeTrailMesh]. Enabling this feature outside of materials used in [GPUParticles3D] meshes will break material rendering. */
-        get use_particle_trails(): boolean
-        set use_particle_trails(value: boolean)
-        
-        /** If `true`, the proximity fade effect is enabled. The proximity fade effect fades out each pixel based on its distance to another object. */
-        get proximity_fade_enabled(): boolean
-        set proximity_fade_enabled(value: boolean)
-        
-        /** Distance over which the fade effect takes place. The larger the distance the longer it takes for an object to fade. */
-        get proximity_fade_distance(): float64
-        set proximity_fade_distance(value: float64)
-        
-        /** The width of the range around the shape between the minimum and maximum representable signed distance. */
-        get msdf_pixel_range(): float64
-        set msdf_pixel_range(value: float64)
-        
-        /** The width of the shape outline. */
-        get msdf_outline_size(): float64
-        set msdf_outline_size(value: float64)
-        
-        /** Specifies which type of fade to use. Can be any of the [enum DistanceFadeMode]s. */
-        get distance_fade_mode(): int64
-        set distance_fade_mode(value: int64)
-        
-        /** Distance at which the object starts to become visible. If the object is less than this distance away, it will be invisible.  
-         *      
-         *  **Note:** If [member distance_fade_min_distance] is greater than [member distance_fade_max_distance], the behavior will be reversed. The object will start to fade away at [member distance_fade_max_distance] and will fully disappear once it reaches [member distance_fade_min_distance].  
-         */
-        get distance_fade_min_distance(): float64
-        set distance_fade_min_distance(value: float64)
-        
-        /** Distance at which the object appears fully opaque.  
-         *      
-         *  **Note:** If [member distance_fade_max_distance] is less than [member distance_fade_min_distance], the behavior will be reversed. The object will start to fade away at [member distance_fade_max_distance] and will fully disappear once it reaches [member distance_fade_min_distance].  
-         */
-        get distance_fade_max_distance(): float64
-        set distance_fade_max_distance(value: float64)
-    }
-    /** Boolean matrix.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_bitmap.html  
-     */
-    class BitMap extends Resource {
-        constructor(identifier?: any)
-        /** Creates a bitmap with the specified size, filled with `false`. */
-        create(size: Vector2i): void
-        
-        /** Creates a bitmap that matches the given image dimensions, every element of the bitmap is set to `false` if the alpha value of the image at that position is equal to [param threshold] or less, and `true` in other case. */
-        create_from_image_alpha(image: Image, threshold: float64 = 0.1): void
-        
-        /** Sets the bitmap's element at the specified position, to the specified value. */
-        set_bitv(position: Vector2i, bit: boolean): void
-        
-        /** Sets the bitmap's element at the specified position, to the specified value. */
-        set_bit(x: int64, y: int64, bit: boolean): void
-        
-        /** Returns bitmap's value at the specified position. */
-        get_bitv(position: Vector2i): boolean
-        
-        /** Returns bitmap's value at the specified position. */
-        get_bit(x: int64, y: int64): boolean
-        
-        /** Sets a rectangular portion of the bitmap to the specified value. */
-        set_bit_rect(rect: Rect2i, bit: boolean): void
-        
-        /** Returns the number of bitmap elements that are set to `true`. */
-        get_true_bit_count(): int64
-        
-        /** Returns bitmap's dimensions. */
-        get_size(): Vector2i
-        
-        /** Resizes the image to [param new_size]. */
-        resize(new_size: Vector2i): void
-        
-        /** Applies morphological dilation or erosion to the bitmap. If [param pixels] is positive, dilation is applied to the bitmap. If [param pixels] is negative, erosion is applied to the bitmap. [param rect] defines the area where the morphological operation is applied. Pixels located outside the [param rect] are unaffected by [method grow_mask]. */
-        grow_mask(pixels: int64, rect: Rect2i): void
-        
-        /** Returns an image of the same size as the bitmap and with a [enum Image.Format] of type [constant Image.FORMAT_L8]. `true` bits of the bitmap are being converted into white pixels, and `false` bits into black. */
-        convert_to_image(): Image
-        
-        /** Creates an [Array] of polygons covering a rectangular portion of the bitmap. It uses a marching squares algorithm, followed by Ramer-Douglas-Peucker (RDP) reduction of the number of vertices. Each polygon is described as a [PackedVector2Array] of its vertices.  
-         *  To get polygons covering the whole bitmap, pass:  
-         *    
-         *  [param epsilon] is passed to RDP to control how accurately the polygons cover the bitmap: a lower [param epsilon] corresponds to more points in the polygons.  
-         */
-        opaque_to_polygons(rect: Rect2i, epsilon: float64 = 2): GArray
-        get data(): GDictionary
-        set data(value: GDictionary)
-    }
-    class BitMapEditorPlugin extends EditorPlugin {
-        constructor(identifier?: any)
-    }
-    /** A joint used with [Skeleton2D] to control and animate other nodes.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_bone2d.html  
-     */
-    class Bone2D extends Node2D {
-        constructor(identifier?: any)
-        /** Resets the bone to the rest pose. This is equivalent to setting [member Node2D.transform] to [member rest]. */
-        apply_rest(): void
-        
-        /** Returns the node's [member rest] [Transform2D] if it doesn't have a parent, or its rest pose relative to its parent. */
-        get_skeleton_rest(): Transform2D
-        
-        /** Returns the node's index as part of the entire skeleton. See [Skeleton2D]. */
-        get_index_in_skeleton(): int64
-        
-        /** When set to `true`, the [Bone2D] node will attempt to automatically calculate the bone angle and length using the first child [Bone2D] node, if one exists. If none exist, the [Bone2D] cannot automatically calculate these values and will print a warning. */
-        set_autocalculate_length_and_angle(auto_calculate: boolean): void
-        
-        /** Returns whether this [Bone2D] is going to autocalculate its length and bone angle using its first [Bone2D] child node, if one exists. If there are no [Bone2D] children, then it cannot autocalculate these values and will print a warning. */
-        get_autocalculate_length_and_angle(): boolean
-        
-        /** Sets the length of the bone in the [Bone2D]. */
-        set_length(length: float64): void
-        
-        /** Returns the length of the bone in the [Bone2D] node. */
-        get_length(): float64
-        
-        /** Sets the bone angle for the [Bone2D]. This is typically set to the rotation from the [Bone2D] to a child [Bone2D] node.  
-         *      
-         *  **Note:** This is different from the [Bone2D]'s rotation. The bone's angle is the rotation of the bone shown by the gizmo, which is unaffected by the [Bone2D]'s [member Node2D.transform].  
-         */
-        set_bone_angle(angle: float64): void
-        
-        /** Returns the angle of the bone in the [Bone2D].  
-         *      
-         *  **Note:** This is different from the [Bone2D]'s rotation. The bone's angle is the rotation of the bone shown by the gizmo, which is unaffected by the [Bone2D]'s [member Node2D.transform].  
-         */
-        get_bone_angle(): float64
-        
-        /** Rest transform of the bone. You can reset the node's transforms to this value using [method apply_rest]. */
-        get rest(): Transform2D
-        set rest(value: Transform2D)
-    }
-    /** А node that dynamically copies or overrides the 3D transform of a bone in its parent [Skeleton3D].  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_boneattachment3d.html  
-     */
-    class BoneAttachment3D extends Node3D {
-        constructor(identifier?: any)
-        /** A function that is called automatically when the [Skeleton3D] is updated. This function is where the [BoneAttachment3D] node updates its position so it is correctly bound when it is  *not*  set to override the bone pose. */
-        on_skeleton_update(): void
-        
-        /** Sets whether the BoneAttachment3D node will use an external [Skeleton3D] node rather than attempting to use its parent node as the [Skeleton3D]. When set to `true`, the BoneAttachment3D node will use the external [Skeleton3D] node set in [method set_external_skeleton]. */
-        set_use_external_skeleton(use_external_skeleton: boolean): void
-        
-        /** Returns whether the BoneAttachment3D node is using an external [Skeleton3D] rather than attempting to use its parent node as the [Skeleton3D]. */
-        get_use_external_skeleton(): boolean
-        
-        /** Sets the [NodePath] to the external skeleton that the BoneAttachment3D node should use. See [method set_use_external_skeleton] to enable the external [Skeleton3D] node. */
-        set_external_skeleton(external_skeleton: NodePath | string): void
-        
-        /** Returns the [NodePath] to the external [Skeleton3D] node, if one has been set. */
-        get_external_skeleton(): NodePath
-        
-        /** The name of the attached bone. */
-        get bone_name(): StringName
-        set bone_name(value: StringName)
-        
-        /** The index of the attached bone. */
-        get bone_idx(): int64
-        set bone_idx(value: int64)
-        
-        /** Whether the BoneAttachment3D node will override the bone pose of the bone it is attached to. When set to `true`, the BoneAttachment3D node can change the pose of the bone. When set to `false`, the BoneAttachment3D will always be set to the bone's transform.  
-         *      
-         *  **Note:** This override performs interruptively in the skeleton update process using signals due to the old design. It may cause unintended behavior when used at the same time with [SkeletonModifier3D].  
-         */
-        get override_pose(): boolean
-        set override_pose(value: boolean)
-    }
-    /** Describes a mapping of bone names for retargeting [Skeleton3D] into common names defined by a [SkeletonProfile].  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_bonemap.html  
-     */
-    class BoneMap extends Resource {
-        constructor(identifier?: any)
-        /** Returns a skeleton bone name is mapped to [param profile_bone_name].  
-         *  In the retargeting process, the returned bone name is the bone name of the source skeleton.  
-         */
-        get_skeleton_bone_name(profile_bone_name: StringName): StringName
-        
-        /** Maps a skeleton bone name to [param profile_bone_name].  
-         *  In the retargeting process, the setting bone name is the bone name of the source skeleton.  
-         */
-        set_skeleton_bone_name(profile_bone_name: StringName, skeleton_bone_name: StringName): void
-        
-        /** Returns a profile bone name having [param skeleton_bone_name]. If not found, an empty [StringName] will be returned.  
-         *  In the retargeting process, the returned bone name is the bone name of the target skeleton.  
-         */
-        find_profile_bone_name(skeleton_bone_name: StringName): StringName
-        
-        /** A [SkeletonProfile] of the mapping target. Key names in the [BoneMap] are synchronized with it. */
-        get profile(): SkeletonProfile
-        set profile(value: SkeletonProfile)
-        
-        /** This signal is emitted when change the key value in the [BoneMap]. This is used to validate mapping and to update [BoneMap] editor. */
-        readonly bone_map_updated: Signal0
-        
-        /** This signal is emitted when change the value in profile or change the reference of profile. This is used to update key names in the [BoneMap] and to redraw the [BoneMap] editor. */
-        readonly profile_updated: Signal0
-    }
-    class BoneMapEditorPlugin extends EditorPlugin {
-        constructor(identifier?: any)
-    }
-    namespace BoxContainer {
-        enum AlignmentMode {
-            /** The child controls will be arranged at the beginning of the container, i.e. top if orientation is vertical, left if orientation is horizontal (right for RTL layout). */
-            ALIGNMENT_BEGIN = 0,
-            
-            /** The child controls will be centered in the container. */
-            ALIGNMENT_CENTER = 1,
-            
-            /** The child controls will be arranged at the end of the container, i.e. bottom if orientation is vertical, right if orientation is horizontal (left for RTL layout). */
-            ALIGNMENT_END = 2,
-        }
-    }
-    /** A container that arranges its child controls horizontally or vertically.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_boxcontainer.html  
-     */
-    class BoxContainer extends Container {
-        constructor(identifier?: any)
-        /** Adds a [Control] node to the box as a spacer. If [param begin] is `true`, it will insert the [Control] node in front of all other children. */
-        add_spacer(begin: boolean): Control
-        
-        /** The alignment of the container's children (must be one of [constant ALIGNMENT_BEGIN], [constant ALIGNMENT_CENTER], or [constant ALIGNMENT_END]). */
-        get alignment(): int64
-        set alignment(value: int64)
-        
-        /** If `true`, the [BoxContainer] will arrange its children vertically, rather than horizontally.  
-         *  Can't be changed when using [HBoxContainer] and [VBoxContainer].  
-         */
-        get vertical(): boolean
-        set vertical(value: boolean)
-    }
-    /** Generate an axis-aligned box [PrimitiveMesh].  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_boxmesh.html  
-     */
-    class BoxMesh extends PrimitiveMesh {
-        constructor(identifier?: any)
-        /** The box's width, height and depth. */
-        get size(): Vector3
-        set size(value: Vector3)
-        
-        /** Number of extra edge loops inserted along the X axis. */
-        get subdivide_width(): int64
-        set subdivide_width(value: int64)
-        
-        /** Number of extra edge loops inserted along the Y axis. */
-        get subdivide_height(): int64
-        set subdivide_height(value: int64)
-        
-        /** Number of extra edge loops inserted along the Z axis. */
-        get subdivide_depth(): int64
-        set subdivide_depth(value: int64)
-    }
-    /** Cuboid shape for use with occlusion culling in [OccluderInstance3D].  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_boxoccluder3d.html  
-     */
-    class BoxOccluder3D extends Occluder3D {
-        constructor(identifier?: any)
-        /** The box's size in 3D units. */
-        get size(): Vector3
-        set size(value: Vector3)
-    }
-    /** A 3D box shape used for physics collision.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_boxshape3d.html  
-     */
-    class BoxShape3D extends Shape3D {
-        constructor(identifier?: any)
-        /** The box's width, height and depth. */
-        get size(): Vector3
-        set size(value: Vector3)
-    }
-    /** A themed button that can contain text and an icon.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_button.html  
-     */
-    class Button extends BaseButton {
-        constructor(identifier?: any)
-        /** The button's text that will be displayed inside the button's area. */
-        get text(): string
-        set text(value: string)
-        
-        /** Button's icon, if text is present the icon will be placed before the text.  
-         *  To edit margin and spacing of the icon, use [theme_item h_separation] theme property and `content_margin_*` properties of the used [StyleBox]es.  
-         */
-        get icon(): Texture2D
-        set icon(value: Texture2D)
-        
-        /** Flat buttons don't display decoration. */
-        get flat(): boolean
-        set flat(value: boolean)
-        
-        /** Text alignment policy for the button's text, use one of the [enum HorizontalAlignment] constants. */
-        get alignment(): int64
-        set alignment(value: int64)
-        
-        /** Sets the clipping behavior when the text exceeds the node's bounding rectangle. See [enum TextServer.OverrunBehavior] for a description of all modes. */
-        get text_overrun_behavior(): int64
-        set text_overrun_behavior(value: int64)
-        
-        /** If set to something other than [constant TextServer.AUTOWRAP_OFF], the text gets wrapped inside the node's bounding rectangle. */
-        get autowrap_mode(): int64
-        set autowrap_mode(value: int64)
-        
-        /** When this property is enabled, text that is too large to fit the button is clipped, when disabled the Button will always be wide enough to hold the text. */
-        get clip_text(): boolean
-        set clip_text(value: boolean)
-        
-        /** Specifies if the icon should be aligned horizontally to the left, right, or center of a button. Uses the same [enum HorizontalAlignment] constants as the text alignment. If centered horizontally and vertically, text will draw on top of the icon. */
-        get icon_alignment(): int64
-        set icon_alignment(value: int64)
-        
-        /** Specifies if the icon should be aligned vertically to the top, bottom, or center of a button. Uses the same [enum VerticalAlignment] constants as the text alignment. If centered horizontally and vertically, text will draw on top of the icon. */
-        get vertical_icon_alignment(): int64
-        set vertical_icon_alignment(value: int64)
-        
-        /** When enabled, the button's icon will expand/shrink to fit the button's size while keeping its aspect. See also [theme_item icon_max_width]. */
-        get expand_icon(): boolean
-        set expand_icon(value: boolean)
-        
-        /** Base text writing direction. */
-        get text_direction(): int64
-        set text_direction(value: int64)
-        
-        /** Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead. */
-        get language(): string
-        set language(value: string)
-    }
-    /** A group of buttons that doesn't allow more than one button to be pressed at a time.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_buttongroup.html  
-     */
-    class ButtonGroup extends Resource {
-        constructor(identifier?: any)
-        /** Returns the current pressed button. */
-        get_pressed_button(): BaseButton
-        
-        /** Returns an [Array] of [Button]s who have this as their [ButtonGroup] (see [member BaseButton.button_group]). */
-        get_buttons(): GArray
-        
-        /** If `true`, it is possible to unpress all buttons in this [ButtonGroup]. */
-        get allow_unpress(): boolean
-        set allow_unpress(value: boolean)
-        
-        /** Emitted when one of the buttons of the group is pressed. */
-        readonly pressed: Signal1<BaseButton>
-    }
-    namespace CPUParticles2D {
-        enum DrawOrder {
-            /** Particles are drawn in the order emitted. */
-            DRAW_ORDER_INDEX = 0,
-            
-            /** Particles are drawn in order of remaining lifetime. In other words, the particle with the highest lifetime is drawn at the front. */
-            DRAW_ORDER_LIFETIME = 1,
-        }
-        enum Parameter {
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set initial velocity properties. */
-            PARAM_INITIAL_LINEAR_VELOCITY = 0,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set angular velocity properties. */
-            PARAM_ANGULAR_VELOCITY = 1,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set orbital velocity properties. */
-            PARAM_ORBIT_VELOCITY = 2,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set linear acceleration properties. */
-            PARAM_LINEAR_ACCEL = 3,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set radial acceleration properties. */
-            PARAM_RADIAL_ACCEL = 4,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set tangential acceleration properties. */
-            PARAM_TANGENTIAL_ACCEL = 5,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set damping properties. */
-            PARAM_DAMPING = 6,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set angle properties. */
-            PARAM_ANGLE = 7,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set scale properties. */
-            PARAM_SCALE = 8,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set hue variation properties. */
-            PARAM_HUE_VARIATION = 9,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set animation speed properties. */
-            PARAM_ANIM_SPEED = 10,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set animation offset properties. */
-            PARAM_ANIM_OFFSET = 11,
-            
-            /** Represents the size of the [enum Parameter] enum. */
-            PARAM_MAX = 12,
-        }
-        enum ParticleFlags {
-            /** Use with [method set_particle_flag] to set [member particle_flag_align_y]. */
-            PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY = 0,
-            
-            /** Present for consistency with 3D particle nodes, not used in 2D. */
-            PARTICLE_FLAG_ROTATE_Y = 1,
-            
-            /** Present for consistency with 3D particle nodes, not used in 2D. */
-            PARTICLE_FLAG_DISABLE_Z = 2,
-            
-            /** Represents the size of the [enum ParticleFlags] enum. */
-            PARTICLE_FLAG_MAX = 3,
-        }
-        enum EmissionShape {
-            /** All particles will be emitted from a single point. */
-            EMISSION_SHAPE_POINT = 0,
-            
-            /** Particles will be emitted in the volume of a sphere flattened to two dimensions. */
-            EMISSION_SHAPE_SPHERE = 1,
-            
-            /** Particles will be emitted on the surface of a sphere flattened to two dimensions. */
-            EMISSION_SHAPE_SPHERE_SURFACE = 2,
-            
-            /** Particles will be emitted in the area of a rectangle. */
-            EMISSION_SHAPE_RECTANGLE = 3,
-            
-            /** Particles will be emitted at a position chosen randomly among [member emission_points]. Particle color will be modulated by [member emission_colors]. */
-            EMISSION_SHAPE_POINTS = 4,
-            
-            /** Particles will be emitted at a position chosen randomly among [member emission_points]. Particle velocity and rotation will be set based on [member emission_normals]. Particle color will be modulated by [member emission_colors]. */
-            EMISSION_SHAPE_DIRECTED_POINTS = 5,
-            
-            /** Represents the size of the [enum EmissionShape] enum. */
-            EMISSION_SHAPE_MAX = 6,
-        }
-    }
-    /** A CPU-based 2D particle emitter.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_cpuparticles2d.html  
-     */
-    class CPUParticles2D extends Node2D {
-        constructor(identifier?: any)
-        /** Restarts the particle emitter. */
-        restart(): void
-        
-        /** Sets the minimum value for the given parameter. */
-        set_param_min(param: CPUParticles2D.Parameter, value: float64): void
-        
-        /** Returns the minimum value range for the given parameter. */
-        get_param_min(param: CPUParticles2D.Parameter): float64
-        
-        /** Sets the maximum value for the given parameter. */
-        set_param_max(param: CPUParticles2D.Parameter, value: float64): void
-        
-        /** Returns the maximum value range for the given parameter. */
-        get_param_max(param: CPUParticles2D.Parameter): float64
-        
-        /** Sets the [Curve] of the parameter specified by [enum Parameter]. */
-        set_param_curve(param: CPUParticles2D.Parameter, curve: Curve): void
-        
-        /** Returns the [Curve] of the parameter specified by [enum Parameter]. */
-        get_param_curve(param: CPUParticles2D.Parameter): Curve
-        
-        /** Enables or disables the given flag (see [enum ParticleFlags] for options). */
-        set_particle_flag(particle_flag: CPUParticles2D.ParticleFlags, enable: boolean): void
-        
-        /** Returns the enabled state of the given flag (see [enum ParticleFlags] for options). */
-        get_particle_flag(particle_flag: CPUParticles2D.ParticleFlags): boolean
-        
-        /** Sets this node's properties to match a given [GPUParticles2D] node with an assigned [ParticleProcessMaterial]. */
-        convert_from_particles(particles: Node): void
-        
-        /** If `true`, particles are being emitted. [member emitting] can be used to start and stop particles from emitting. However, if [member one_shot] is `true` setting [member emitting] to `true` will not restart the emission cycle until after all active particles finish processing. You can use the [signal finished] signal to be notified once all active particles finish processing. */
-        get emitting(): boolean
-        set emitting(value: boolean)
-        
-        /** Number of particles emitted in one emission cycle. */
-        get amount(): int64
-        set amount(value: int64)
-        
-        /** Amount of time each particle will exist. */
-        get lifetime(): float64
-        set lifetime(value: float64)
-        
-        /** If `true`, only one emission cycle occurs. If set `true` during a cycle, emission will stop at the cycle's end. */
-        get one_shot(): boolean
-        set one_shot(value: boolean)
-        
-        /** Particle system starts as if it had already run for this many seconds. */
-        get preprocess(): float64
-        set preprocess(value: float64)
-        
-        /** Particle system's running speed scaling ratio. A value of `0` can be used to pause the particles. */
-        get speed_scale(): float64
-        set speed_scale(value: float64)
-        
-        /** How rapidly particles in an emission cycle are emitted. If greater than `0`, there will be a gap in emissions before the next cycle begins. */
-        get explosiveness(): float64
-        set explosiveness(value: float64)
-        
-        /** Emission lifetime randomness ratio. */
-        get randomness(): float64
-        set randomness(value: float64)
-        
-        /** Particle lifetime randomness ratio. */
-        get lifetime_randomness(): float64
-        set lifetime_randomness(value: float64)
-        
-        /** The particle system's frame rate is fixed to a value. For example, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the simulation of the particle system itself. */
-        get fixed_fps(): int64
-        set fixed_fps(value: int64)
-        
-        /** If `true`, results in fractional delta calculation which has a smoother particles display effect. */
-        get fract_delta(): boolean
-        set fract_delta(value: boolean)
-        
-        /** If `true`, particles use the parent node's coordinate space (known as local coordinates). This will cause particles to move and rotate along the [CPUParticles2D] node (and its parents) when it is moved or rotated. If `false`, particles use global coordinates; they will not move or rotate along the [CPUParticles2D] node (and its parents) when it is moved or rotated. */
-        get local_coords(): boolean
-        set local_coords(value: boolean)
-        
-        /** Particle draw order. Uses [enum DrawOrder] values. */
-        get draw_order(): int64
-        set draw_order(value: int64)
-        
-        /** Particle texture. If `null`, particles will be squares. */
-        get texture(): Texture2D
-        set texture(value: Texture2D)
-        
-        /** Particles will be emitted inside this region. See [enum EmissionShape] for possible values. */
-        get emission_shape(): int64
-        set emission_shape(value: int64)
-        
-        /** The sphere's radius if [member emission_shape] is set to [constant EMISSION_SHAPE_SPHERE]. */
-        get emission_sphere_radius(): float64
-        set emission_sphere_radius(value: float64)
-        
-        /** The rectangle's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_RECTANGLE]. */
-        get emission_rect_extents(): Vector2
-        set emission_rect_extents(value: Vector2)
-        
-        /** Sets the initial positions to spawn particles when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS]. */
-        get emission_points(): PackedVector2Array
-        set emission_points(value: PackedVector2Array | Vector2[])
-        
-        /** Sets the direction the particles will be emitted in when using [constant EMISSION_SHAPE_DIRECTED_POINTS]. */
-        get emission_normals(): PackedVector2Array
-        set emission_normals(value: PackedVector2Array | Vector2[])
-        
-        /** Sets the [Color]s to modulate particles by when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS]. */
-        get emission_colors(): PackedColorArray
-        set emission_colors(value: PackedColorArray | Color[])
-        
-        /** Align Y axis of particle with the direction of its velocity. */
-        get particle_flag_align_y(): boolean
-        set particle_flag_align_y(value: boolean)
-        
-        /** Unit vector specifying the particles' emission direction. */
-        get direction(): Vector2
-        set direction(value: Vector2)
-        
-        /** Each particle's initial direction range from `+spread` to `-spread` degrees. */
-        get spread(): float64
-        set spread(value: float64)
-        
-        /** Gravity applied to every particle. */
-        get gravity(): Vector2
-        set gravity(value: Vector2)
-        
-        /** Minimum equivalent of [member initial_velocity_max]. */
-        get initial_velocity_min(): float64
-        set initial_velocity_min(value: float64)
-        
-        /** Maximum initial velocity magnitude for each particle. Direction comes from [member direction] and [member spread]. */
-        get initial_velocity_max(): float64
-        set initial_velocity_max(value: float64)
-        
-        /** Minimum equivalent of [member angular_velocity_max]. */
-        get angular_velocity_min(): float64
-        set angular_velocity_min(value: float64)
-        
-        /** Maximum initial angular velocity (rotation speed) applied to each particle in  *degrees*  per second. */
-        get angular_velocity_max(): float64
-        set angular_velocity_max(value: float64)
-        
-        /** Each particle's angular velocity will vary along this [Curve]. */
-        get angular_velocity_curve(): Curve
-        set angular_velocity_curve(value: Curve)
-        
-        /** Minimum equivalent of [member orbit_velocity_max]. */
-        get orbit_velocity_min(): float64
-        set orbit_velocity_min(value: float64)
-        
-        /** Maximum orbital velocity applied to each particle. Makes the particles circle around origin. Specified in number of full rotations around origin per second. */
-        get orbit_velocity_max(): float64
-        set orbit_velocity_max(value: float64)
-        
-        /** Each particle's orbital velocity will vary along this [Curve]. */
-        get orbit_velocity_curve(): Curve
-        set orbit_velocity_curve(value: Curve)
-        
-        /** Minimum equivalent of [member linear_accel_max]. */
-        get linear_accel_min(): float64
-        set linear_accel_min(value: float64)
-        
-        /** Maximum linear acceleration applied to each particle in the direction of motion. */
-        get linear_accel_max(): float64
-        set linear_accel_max(value: float64)
-        
-        /** Each particle's linear acceleration will vary along this [Curve]. */
-        get linear_accel_curve(): Curve
-        set linear_accel_curve(value: Curve)
-        
-        /** Minimum equivalent of [member radial_accel_max]. */
-        get radial_accel_min(): float64
-        set radial_accel_min(value: float64)
-        
-        /** Maximum radial acceleration applied to each particle. Makes particle accelerate away from the origin or towards it if negative. */
-        get radial_accel_max(): float64
-        set radial_accel_max(value: float64)
-        
-        /** Each particle's radial acceleration will vary along this [Curve]. */
-        get radial_accel_curve(): Curve
-        set radial_accel_curve(value: Curve)
-        
-        /** Minimum equivalent of [member tangential_accel_max]. */
-        get tangential_accel_min(): float64
-        set tangential_accel_min(value: float64)
-        
-        /** Maximum tangential acceleration applied to each particle. Tangential acceleration is perpendicular to the particle's velocity giving the particles a swirling motion. */
-        get tangential_accel_max(): float64
-        set tangential_accel_max(value: float64)
-        
-        /** Each particle's tangential acceleration will vary along this [Curve]. */
-        get tangential_accel_curve(): Curve
-        set tangential_accel_curve(value: Curve)
-        
-        /** Minimum equivalent of [member damping_max]. */
-        get damping_min(): float64
-        set damping_min(value: float64)
-        
-        /** The maximum rate at which particles lose velocity. For example value of `100` means that the particle will go from `100` velocity to `0` in `1` second. */
-        get damping_max(): float64
-        set damping_max(value: float64)
-        
-        /** Damping will vary along this [Curve]. */
-        get damping_curve(): Curve
-        set damping_curve(value: Curve)
-        
-        /** Minimum equivalent of [member angle_max]. */
-        get angle_min(): float64
-        set angle_min(value: float64)
-        
-        /** Maximum initial rotation applied to each particle, in degrees. */
-        get angle_max(): float64
-        set angle_max(value: float64)
-        
-        /** Each particle's rotation will be animated along this [Curve]. */
-        get angle_curve(): Curve
-        set angle_curve(value: Curve)
-        
-        /** Minimum equivalent of [member scale_amount_max]. */
-        get scale_amount_min(): float64
-        set scale_amount_min(value: float64)
-        
-        /** Maximum initial scale applied to each particle. */
-        get scale_amount_max(): float64
-        set scale_amount_max(value: float64)
-        
-        /** Each particle's scale will vary along this [Curve]. */
-        get scale_amount_curve(): Curve
-        set scale_amount_curve(value: Curve)
-        
-        /** If `true`, the scale curve will be split into x and y components. See [member scale_curve_x] and [member scale_curve_y]. */
-        get split_scale(): boolean
-        set split_scale(value: boolean)
-        
-        /** Each particle's horizontal scale will vary along this [Curve].  
-         *  [member split_scale] must be enabled.  
-         */
-        get scale_curve_x(): Curve
-        set scale_curve_x(value: Curve)
-        
-        /** Each particle's vertical scale will vary along this [Curve].  
-         *  [member split_scale] must be enabled.  
-         */
-        get scale_curve_y(): Curve
-        set scale_curve_y(value: Curve)
-        
-        /** Each particle's initial color. If [member texture] is defined, it will be multiplied by this color. */
-        get color(): Color
-        set color(value: Color)
-        
-        /** Each particle's color will vary along this [Gradient] (multiplied with [member color]). */
-        get color_ramp(): Gradient
-        set color_ramp(value: Gradient)
-        
-        /** Each particle's initial color will vary along this [GradientTexture1D] (multiplied with [member color]). */
-        get color_initial_ramp(): Gradient
-        set color_initial_ramp(value: Gradient)
-        
-        /** Minimum equivalent of [member hue_variation_max]. */
-        get hue_variation_min(): float64
-        set hue_variation_min(value: float64)
-        
-        /** Maximum initial hue variation applied to each particle. It will shift the particle color's hue. */
-        get hue_variation_max(): float64
-        set hue_variation_max(value: float64)
-        
-        /** Each particle's hue will vary along this [Curve]. */
-        get hue_variation_curve(): Curve
-        set hue_variation_curve(value: Curve)
-        
-        /** Minimum equivalent of [member anim_speed_max]. */
-        get anim_speed_min(): float64
-        set anim_speed_min(value: float64)
-        
-        /** Maximum particle animation speed. Animation speed of `1` means that the particles will make full `0` to `1` offset cycle during lifetime, `2` means `2` cycles etc.  
-         *  With animation speed greater than `1`, remember to enable [member CanvasItemMaterial.particles_anim_loop] property if you want the animation to repeat.  
-         */
-        get anim_speed_max(): float64
-        set anim_speed_max(value: float64)
-        
-        /** Each particle's animation speed will vary along this [Curve]. */
-        get anim_speed_curve(): Curve
-        set anim_speed_curve(value: Curve)
-        
-        /** Minimum equivalent of [member anim_offset_max]. */
-        get anim_offset_min(): float64
-        set anim_offset_min(value: float64)
-        
-        /** Maximum animation offset that corresponds to frame index in the texture. `0` is the first frame, `1` is the last one. See [member CanvasItemMaterial.particles_animation]. */
-        get anim_offset_max(): float64
-        set anim_offset_max(value: float64)
-        
-        /** Each particle's animation offset will vary along this [Curve]. */
-        get anim_offset_curve(): Curve
-        set anim_offset_curve(value: Curve)
-        
-        /** Emitted when all active particles have finished processing. When [member one_shot] is disabled, particles will process continuously, so this is never emitted. */
-        readonly finished: Signal0
-    }
-    class CPUParticles2DEditorPlugin extends EditorPlugin {
-        constructor(identifier?: any)
-    }
-    namespace CPUParticles3D {
-        enum DrawOrder {
-            /** Particles are drawn in the order emitted. */
-            DRAW_ORDER_INDEX = 0,
-            
-            /** Particles are drawn in order of remaining lifetime. In other words, the particle with the highest lifetime is drawn at the front. */
-            DRAW_ORDER_LIFETIME = 1,
-            
-            /** Particles are drawn in order of depth. */
-            DRAW_ORDER_VIEW_DEPTH = 2,
-        }
-        enum Parameter {
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set initial velocity properties. */
-            PARAM_INITIAL_LINEAR_VELOCITY = 0,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set angular velocity properties. */
-            PARAM_ANGULAR_VELOCITY = 1,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set orbital velocity properties. */
-            PARAM_ORBIT_VELOCITY = 2,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set linear acceleration properties. */
-            PARAM_LINEAR_ACCEL = 3,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set radial acceleration properties. */
-            PARAM_RADIAL_ACCEL = 4,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set tangential acceleration properties. */
-            PARAM_TANGENTIAL_ACCEL = 5,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set damping properties. */
-            PARAM_DAMPING = 6,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set angle properties. */
-            PARAM_ANGLE = 7,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set scale properties. */
-            PARAM_SCALE = 8,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set hue variation properties. */
-            PARAM_HUE_VARIATION = 9,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set animation speed properties. */
-            PARAM_ANIM_SPEED = 10,
-            
-            /** Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set animation offset properties. */
-            PARAM_ANIM_OFFSET = 11,
-            
-            /** Represents the size of the [enum Parameter] enum. */
-            PARAM_MAX = 12,
-        }
-        enum ParticleFlags {
-            /** Use with [method set_particle_flag] to set [member particle_flag_align_y]. */
-            PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY = 0,
-            
-            /** Use with [method set_particle_flag] to set [member particle_flag_rotate_y]. */
-            PARTICLE_FLAG_ROTATE_Y = 1,
-            
-            /** Use with [method set_particle_flag] to set [member particle_flag_disable_z]. */
-            PARTICLE_FLAG_DISABLE_Z = 2,
-            
-            /** Represents the size of the [enum ParticleFlags] enum. */
-            PARTICLE_FLAG_MAX = 3,
-        }
-        enum EmissionShape {
-            /** All particles will be emitted from a single point. */
-            EMISSION_SHAPE_POINT = 0,
-            
-            /** Particles will be emitted in the volume of a sphere. */
-            EMISSION_SHAPE_SPHERE = 1,
-            
-            /** Particles will be emitted on the surface of a sphere. */
-            EMISSION_SHAPE_SPHERE_SURFACE = 2,
-            
-            /** Particles will be emitted in the volume of a box. */
-            EMISSION_SHAPE_BOX = 3,
-            
-            /** Particles will be emitted at a position chosen randomly among [member emission_points]. Particle color will be modulated by [member emission_colors]. */
-            EMISSION_SHAPE_POINTS = 4,
-            
-            /** Particles will be emitted at a position chosen randomly among [member emission_points]. Particle velocity and rotation will be set based on [member emission_normals]. Particle color will be modulated by [member emission_colors]. */
-            EMISSION_SHAPE_DIRECTED_POINTS = 5,
-            
-            /** Particles will be emitted in a ring or cylinder. */
-            EMISSION_SHAPE_RING = 6,
-            
-            /** Represents the size of the [enum EmissionShape] enum. */
-            EMISSION_SHAPE_MAX = 7,
-        }
-    }
-    /** A CPU-based 3D particle emitter.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_cpuparticles3d.html  
-     */
-    class CPUParticles3D extends GeometryInstance3D {
-        constructor(identifier?: any)
-        /** Restarts the particle emitter. */
-        restart(): void
-        
-        /** Sets the minimum value for the given parameter. */
-        set_param_min(param: CPUParticles3D.Parameter, value: float64): void
-        
-        /** Returns the minimum value range for the given parameter. */
-        get_param_min(param: CPUParticles3D.Parameter): float64
-        
-        /** Sets the maximum value for the given parameter. */
-        set_param_max(param: CPUParticles3D.Parameter, value: float64): void
-        
-        /** Returns the maximum value range for the given parameter. */
-        get_param_max(param: CPUParticles3D.Parameter): float64
-        
-        /** Sets the [Curve] of the parameter specified by [enum Parameter]. */
-        set_param_curve(param: CPUParticles3D.Parameter, curve: Curve): void
-        
-        /** Returns the [Curve] of the parameter specified by [enum Parameter]. */
-        get_param_curve(param: CPUParticles3D.Parameter): Curve
-        
-        /** Enables or disables the given particle flag (see [enum ParticleFlags] for options). */
-        set_particle_flag(particle_flag: CPUParticles3D.ParticleFlags, enable: boolean): void
-        
-        /** Returns the enabled state of the given particle flag (see [enum ParticleFlags] for options). */
-        get_particle_flag(particle_flag: CPUParticles3D.ParticleFlags): boolean
-        
-        /** Sets this node's properties to match a given [GPUParticles3D] node with an assigned [ParticleProcessMaterial]. */
-        convert_from_particles(particles: Node): void
-        
-        /** If `true`, particles are being emitted. [member emitting] can be used to start and stop particles from emitting. However, if [member one_shot] is `true` setting [member emitting] to `true` will not restart the emission cycle until after all active particles finish processing. You can use the [signal finished] signal to be notified once all active particles finish processing. */
-        get emitting(): boolean
-        set emitting(value: boolean)
-        
-        /** Number of particles emitted in one emission cycle. */
-        get amount(): int64
-        set amount(value: int64)
-        
-        /** Amount of time each particle will exist. */
-        get lifetime(): float64
-        set lifetime(value: float64)
-        
-        /** If `true`, only one emission cycle occurs. If set `true` during a cycle, emission will stop at the cycle's end. */
-        get one_shot(): boolean
-        set one_shot(value: boolean)
-        
-        /** Particle system starts as if it had already run for this many seconds. */
-        get preprocess(): float64
-        set preprocess(value: float64)
-        
-        /** Particle system's running speed scaling ratio. A value of `0` can be used to pause the particles. */
-        get speed_scale(): float64
-        set speed_scale(value: float64)
-        
-        /** How rapidly particles in an emission cycle are emitted. If greater than `0`, there will be a gap in emissions before the next cycle begins. */
-        get explosiveness(): float64
-        set explosiveness(value: float64)
-        
-        /** Emission lifetime randomness ratio. */
-        get randomness(): float64
-        set randomness(value: float64)
-        
-        /** Particle lifetime randomness ratio. */
-        get lifetime_randomness(): float64
-        set lifetime_randomness(value: float64)
-        
-        /** The particle system's frame rate is fixed to a value. For example, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the particle system itself. */
-        get fixed_fps(): int64
-        set fixed_fps(value: int64)
-        
-        /** If `true`, results in fractional delta calculation which has a smoother particles display effect. */
-        get fract_delta(): boolean
-        set fract_delta(value: boolean)
-        
-        /** The [AABB] that determines the node's region which needs to be visible on screen for the particle system to be active.  
-         *  Grow the box if particles suddenly appear/disappear when the node enters/exits the screen. The [AABB] can be grown via code or with the **Particles → Generate AABB** editor tool.  
-         */
-        get visibility_aabb(): AABB
-        set visibility_aabb(value: AABB)
-        
-        /** If `true`, particles use the parent node's coordinate space (known as local coordinates). This will cause particles to move and rotate along the [CPUParticles3D] node (and its parents) when it is moved or rotated. If `false`, particles use global coordinates; they will not move or rotate along the [CPUParticles3D] node (and its parents) when it is moved or rotated. */
-        get local_coords(): boolean
-        set local_coords(value: boolean)
-        
-        /** Particle draw order. Uses [enum DrawOrder] values. */
-        get draw_order(): int64
-        set draw_order(value: int64)
-        
-        /** The [Mesh] used for each particle. If `null`, particles will be spheres. */
-        get mesh(): Mesh
-        set mesh(value: Mesh)
-        
-        /** Particles will be emitted inside this region. See [enum EmissionShape] for possible values. */
-        get emission_shape(): int64
-        set emission_shape(value: int64)
-        
-        /** The sphere's radius if [enum EmissionShape] is set to [constant EMISSION_SHAPE_SPHERE]. */
-        get emission_sphere_radius(): float64
-        set emission_sphere_radius(value: float64)
-        
-        /** The rectangle's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_BOX]. */
-        get emission_box_extents(): Vector3
-        set emission_box_extents(value: Vector3)
-        
-        /** Sets the initial positions to spawn particles when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS]. */
-        get emission_points(): PackedVector3Array
-        set emission_points(value: PackedVector3Array | Vector3[])
-        
-        /** Sets the direction the particles will be emitted in when using [constant EMISSION_SHAPE_DIRECTED_POINTS]. */
-        get emission_normals(): PackedVector3Array
-        set emission_normals(value: PackedVector3Array | Vector3[])
-        
-        /** Sets the [Color]s to modulate particles by when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].  
-         *      
-         *  **Note:** [member emission_colors] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo]  *must*  be `true`. For a [ShaderMaterial], `ALBEDO *= COLOR.rgb;` must be inserted in the shader's `fragment()` function. Otherwise, [member emission_colors] will have no visible effect.  
-         */
-        get emission_colors(): PackedColorArray
-        set emission_colors(value: PackedColorArray | Color[])
-        
-        /** The axis of the ring when using the emitter [constant EMISSION_SHAPE_RING]. */
-        get emission_ring_axis(): Vector3
-        set emission_ring_axis(value: Vector3)
-        
-        /** The height of the ring when using the emitter [constant EMISSION_SHAPE_RING]. */
-        get emission_ring_height(): float64
-        set emission_ring_height(value: float64)
-        
-        /** The radius of the ring when using the emitter [constant EMISSION_SHAPE_RING]. */
-        get emission_ring_radius(): float64
-        set emission_ring_radius(value: float64)
-        
-        /** The inner radius of the ring when using the emitter [constant EMISSION_SHAPE_RING]. */
-        get emission_ring_inner_radius(): float64
-        set emission_ring_inner_radius(value: float64)
-        
-        /** Align Y axis of particle with the direction of its velocity. */
-        get particle_flag_align_y(): boolean
-        set particle_flag_align_y(value: boolean)
-        
-        /** If `true`, particles rotate around Y axis by [member angle_min]. */
-        get particle_flag_rotate_y(): boolean
-        set particle_flag_rotate_y(value: boolean)
-        
-        /** If `true`, particles will not move on the Z axis. */
-        get particle_flag_disable_z(): boolean
-        set particle_flag_disable_z(value: boolean)
-        
-        /** Unit vector specifying the particles' emission direction. */
-        get direction(): Vector3
-        set direction(value: Vector3)
-        
-        /** Each particle's initial direction range from `+spread` to `-spread` degrees. Applied to X/Z plane and Y/Z planes. */
-        get spread(): float64
-        set spread(value: float64)
-        
-        /** Amount of [member spread] in Y/Z plane. A value of `1` restricts particles to X/Z plane. */
-        get flatness(): float64
-        set flatness(value: float64)
-        
-        /** Gravity applied to every particle. */
-        get gravity(): Vector3
-        set gravity(value: Vector3)
-        
-        /** Minimum value of the initial velocity. */
-        get initial_velocity_min(): float64
-        set initial_velocity_min(value: float64)
-        
-        /** Maximum value of the initial velocity. */
-        get initial_velocity_max(): float64
-        set initial_velocity_max(value: float64)
-        
-        /** Minimum initial angular velocity (rotation speed) applied to each particle in  *degrees*  per second. */
-        get angular_velocity_min(): float64
-        set angular_velocity_min(value: float64)
-        
-        /** Maximum initial angular velocity (rotation speed) applied to each particle in  *degrees*  per second. */
-        get angular_velocity_max(): float64
-        set angular_velocity_max(value: float64)
-        
-        /** Each particle's angular velocity (rotation speed) will vary along this [Curve] over its lifetime. */
-        get angular_velocity_curve(): Curve
-        set angular_velocity_curve(value: Curve)
-        
-        /** Minimum orbit velocity. */
-        get orbit_velocity_min(): float64
-        set orbit_velocity_min(value: float64)
-        
-        /** Maximum orbit velocity. */
-        get orbit_velocity_max(): float64
-        set orbit_velocity_max(value: float64)
-        
-        /** Each particle's orbital velocity will vary along this [Curve]. */
-        get orbit_velocity_curve(): Curve
-        set orbit_velocity_curve(value: Curve)
-        
-        /** Minimum linear acceleration. */
-        get linear_accel_min(): float64
-        set linear_accel_min(value: float64)
-        
-        /** Maximum linear acceleration. */
-        get linear_accel_max(): float64
-        set linear_accel_max(value: float64)
-        
-        /** Each particle's linear acceleration will vary along this [Curve]. */
-        get linear_accel_curve(): Curve
-        set linear_accel_curve(value: Curve)
-        
-        /** Minimum radial acceleration. */
-        get radial_accel_min(): float64
-        set radial_accel_min(value: float64)
-        
-        /** Maximum radial acceleration. */
-        get radial_accel_max(): float64
-        set radial_accel_max(value: float64)
-        
-        /** Each particle's radial acceleration will vary along this [Curve]. */
-        get radial_accel_curve(): Curve
-        set radial_accel_curve(value: Curve)
-        
-        /** Minimum tangent acceleration. */
-        get tangential_accel_min(): float64
-        set tangential_accel_min(value: float64)
-        
-        /** Maximum tangent acceleration. */
-        get tangential_accel_max(): float64
-        set tangential_accel_max(value: float64)
-        
-        /** Each particle's tangential acceleration will vary along this [Curve]. */
-        get tangential_accel_curve(): Curve
-        set tangential_accel_curve(value: Curve)
-        
-        /** Minimum damping. */
-        get damping_min(): float64
-        set damping_min(value: float64)
-        
-        /** Maximum damping. */
-        get damping_max(): float64
-        set damping_max(value: float64)
-        
-        /** Damping will vary along this [Curve]. */
-        get damping_curve(): Curve
-        set damping_curve(value: Curve)
-        
-        /** Minimum angle. */
-        get angle_min(): float64
-        set angle_min(value: float64)
-        
-        /** Maximum angle. */
-        get angle_max(): float64
-        set angle_max(value: float64)
-        
-        /** Each particle's rotation will be animated along this [Curve]. */
-        get angle_curve(): Curve
-        set angle_curve(value: Curve)
-        
-        /** Minimum scale. */
-        get scale_amount_min(): float64
-        set scale_amount_min(value: float64)
-        
-        /** Maximum scale. */
-        get scale_amount_max(): float64
-        set scale_amount_max(value: float64)
-        
-        /** Each particle's scale will vary along this [Curve]. */
-        get scale_amount_curve(): Curve
-        set scale_amount_curve(value: Curve)
-        
-        /** If set to `true`, three different scale curves can be specified, one per scale axis. */
-        get split_scale(): boolean
-        set split_scale(value: boolean)
-        
-        /** Curve for the scale over life, along the x axis. */
-        get scale_curve_x(): Curve
-        set scale_curve_x(value: Curve)
-        
-        /** Curve for the scale over life, along the y axis. */
-        get scale_curve_y(): Curve
-        set scale_curve_y(value: Curve)
-        
-        /** Curve for the scale over life, along the z axis. */
-        get scale_curve_z(): Curve
-        set scale_curve_z(value: Curve)
-        
-        /** Each particle's initial color.  
-         *      
-         *  **Note:** [member color] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo]  *must*  be `true`. For a [ShaderMaterial], `ALBEDO *= COLOR.rgb;` must be inserted in the shader's `fragment()` function. Otherwise, [member color] will have no visible effect.  
-         */
-        get color(): Color
-        set color(value: Color)
-        
-        /** Each particle's color will vary along this [GradientTexture1D] over its lifetime (multiplied with [member color]).  
-         *      
-         *  **Note:** [member color_ramp] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo]  *must*  be `true`. For a [ShaderMaterial], `ALBEDO *= COLOR.rgb;` must be inserted in the shader's `fragment()` function. Otherwise, [member color_ramp] will have no visible effect.  
-         */
-        get color_ramp(): Gradient
-        set color_ramp(value: Gradient)
-        
-        /** Each particle's initial color will vary along this [GradientTexture1D] (multiplied with [member color]).  
-         *      
-         *  **Note:** [member color_initial_ramp] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo]  *must*  be `true`. For a [ShaderMaterial], `ALBEDO *= COLOR.rgb;` must be inserted in the shader's `fragment()` function. Otherwise, [member color_initial_ramp] will have no visible effect.  
-         */
-        get color_initial_ramp(): Gradient
-        set color_initial_ramp(value: Gradient)
-        
-        /** Minimum hue variation. */
-        get hue_variation_min(): float64
-        set hue_variation_min(value: float64)
-        
-        /** Maximum hue variation. */
-        get hue_variation_max(): float64
-        set hue_variation_max(value: float64)
-        
-        /** Each particle's hue will vary along this [Curve]. */
-        get hue_variation_curve(): Curve
-        set hue_variation_curve(value: Curve)
-        
-        /** Minimum particle animation speed. */
-        get anim_speed_min(): float64
-        set anim_speed_min(value: float64)
-        
-        /** Maximum particle animation speed. */
-        get anim_speed_max(): float64
-        set anim_speed_max(value: float64)
-        
-        /** Each particle's animation speed will vary along this [Curve]. */
-        get anim_speed_curve(): Curve
-        set anim_speed_curve(value: Curve)
-        
-        /** Minimum animation offset. */
-        get anim_offset_min(): float64
-        set anim_offset_min(value: float64)
-        
-        /** Maximum animation offset. */
-        get anim_offset_max(): float64
-        set anim_offset_max(value: float64)
-        
-        /** Each particle's animation offset will vary along this [Curve]. */
-        get anim_offset_curve(): Curve
-        set anim_offset_curve(value: Curve)
-        
-        /** Emitted when all active particles have finished processing. When [member one_shot] is disabled, particles will process continuously, so this is never emitted. */
-        readonly finished: Signal0
-    }
-    class CPUParticles3DEditor extends GPUParticles3DEditorBase {
-        constructor(identifier?: any)
-    }
-    class CPUParticles3DEditorPlugin extends EditorPlugin {
-        constructor(identifier?: any)
-    }
-    class CPUParticles3DGizmoPlugin extends EditorNode3DGizmoPlugin {
-        constructor(identifier?: any)
-    }
-    /** Calls the specified method after optional delay.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_callbacktweener.html  
-     */
-    class CallbackTweener extends Tweener {
-        constructor(identifier?: any)
-        /** Makes the callback call delayed by given time in seconds.  
-         *  **Example:**  
-         *    
-         */
-        set_delay(delay: float64): CallbackTweener
-    }
-    namespace Camera2D {
-        enum AnchorMode {
-            /** The camera's position is fixed so that the top-left corner is always at the origin. */
-            ANCHOR_MODE_FIXED_TOP_LEFT = 0,
-            
-            /** The camera's position takes into account vertical/horizontal offsets and the screen size. */
-            ANCHOR_MODE_DRAG_CENTER = 1,
-        }
-        enum Camera2DProcessCallback {
-            /** The camera updates during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]). */
-            CAMERA2D_PROCESS_PHYSICS = 0,
-            
-            /** The camera updates during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]). */
-            CAMERA2D_PROCESS_IDLE = 1,
-        }
-    }
-    /** Camera node for 2D scenes.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_camera2d.html  
-     */
-    class Camera2D extends Node2D {
-        constructor(identifier?: any)
-        _update_scroll(): void
-        
-        /** Forces this [Camera2D] to become the current active one. [member enabled] must be `true`. */
-        make_current(): void
-        
-        /** Returns `true` if this [Camera2D] is the active camera (see [method Viewport.get_camera_2d]). */
-        is_current(): boolean
-        _make_current(_unnamed_arg0: Object): void
-        
-        /** Sets the camera limit for the specified [enum Side]. See also [member limit_bottom], [member limit_top], [member limit_left], and [member limit_right]. */
-        set_limit(margin: Side, limit: int64): void
-        
-        /** Returns the camera limit for the specified [enum Side]. See also [member limit_bottom], [member limit_top], [member limit_left], and [member limit_right]. */
-        get_limit(margin: Side): int64
-        
-        /** Sets the specified [enum Side]'s margin. See also [member drag_bottom_margin], [member drag_top_margin], [member drag_left_margin], and [member drag_right_margin]. */
-        set_drag_margin(margin: Side, drag_margin: float64): void
-        
-        /** Returns the specified [enum Side]'s margin. See also [member drag_bottom_margin], [member drag_top_margin], [member drag_left_margin], and [member drag_right_margin]. */
-        get_drag_margin(margin: Side): float64
-        
-        /** Returns this camera's target position, in global coordinates.  
-         *      
-         *  **Note:** The returned value is not the same as [member Node2D.global_position], as it is affected by the drag properties. It is also not the same as the current position if [member position_smoothing_enabled] is `true` (see [method get_screen_center_position]).  
-         */
-        get_target_position(): Vector2
-        
-        /** Returns the center of the screen from this camera's point of view, in global coordinates.  
-         *      
-         *  **Note:** The exact targeted position of the camera may be different. See [method get_target_position].  
-         */
-        get_screen_center_position(): Vector2
-        
-        /** Forces the camera to update scroll immediately. */
-        force_update_scroll(): void
-        
-        /** Sets the camera's position immediately to its current smoothing destination.  
-         *  This method has no effect if [member position_smoothing_enabled] is `false`.  
-         */
-        reset_smoothing(): void
-        
-        /** Aligns the camera to the tracked node. */
-        align(): void
-        _set_old_smoothing(follow_smoothing: float64): void
-        
-        /** The camera's relative offset. Useful for looking around or camera shake animations. The offsetted camera can go past the limits defined in [member limit_top], [member limit_bottom], [member limit_left] and [member limit_right]. */
-        get offset(): Vector2
-        set offset(value: Vector2)
-        
-        /** The Camera2D's anchor point. See [enum AnchorMode] constants. */
-        get anchor_mode(): int64
-        set anchor_mode(value: int64)
-        
-        /** If `true`, the camera's rendered view is not affected by its [member Node2D.rotation] and [member Node2D.global_rotation]. */
-        get ignore_rotation(): boolean
-        set ignore_rotation(value: boolean)
-        
-        /** Controls whether the camera can be active or not. If `true`, the [Camera2D] will become the main camera when it enters the scene tree and there is no active camera currently (see [method Viewport.get_camera_2d]).  
-         *  When the camera is currently active and [member enabled] is set to `false`, the next enabled [Camera2D] in the scene tree will become active.  
-         */
-        get enabled(): boolean
-        set enabled(value: boolean)
-        
-        /** The camera's zoom. A zoom of `Vector(2, 2)` doubles the size seen in the viewport. A zoom of `Vector(0.5, 0.5)` halves the size seen in the viewport.  
-         *      
-         *  **Note:** [member FontFile.oversampling] does  *not*  take [Camera2D] zoom into account. This means that zooming in/out will cause bitmap fonts and rasterized (non-MSDF) dynamic fonts to appear blurry or pixelated unless the font is part of a [CanvasLayer] that makes it ignore camera zoom. To ensure text remains crisp regardless of zoom, you can enable MSDF font rendering by enabling [member ProjectSettings.gui/theme/default_font_multichannel_signed_distance_field] (applies to the default project font only), or enabling **Multichannel Signed Distance Field** in the import options of a DynamicFont for custom fonts. On system fonts, [member SystemFont.multichannel_signed_distance_field] can be enabled in the inspector.  
-         */
-        get zoom(): Vector2
-        set zoom(value: Vector2)
-        
-        /** The custom [Viewport] node attached to the [Camera2D]. If `null` or not a [Viewport], uses the default viewport instead. */
-        get custom_viewport(): Viewport
-        set custom_viewport(value: Viewport)
-        
-        /** The camera's process callback. See [enum Camera2DProcessCallback]. */
-        get process_callback(): int64
-        set process_callback(value: int64)
-        
-        /** Left scroll limit in pixels. The camera stops moving when reaching this value, but [member offset] can push the view past the limit. */
-        get limit_left(): int64
-        set limit_left(value: int64)
-        
-        /** Top scroll limit in pixels. The camera stops moving when reaching this value, but [member offset] can push the view past the limit. */
-        get limit_top(): int64
-        set limit_top(value: int64)
-        
-        /** Right scroll limit in pixels. The camera stops moving when reaching this value, but [member offset] can push the view past the limit. */
-        get limit_right(): int64
-        set limit_right(value: int64)
-        
-        /** Bottom scroll limit in pixels. The camera stops moving when reaching this value, but [member offset] can push the view past the limit. */
-        get limit_bottom(): int64
-        set limit_bottom(value: int64)
-        
-        /** If `true`, the camera smoothly stops when reaches its limits.  
-         *  This property has no effect if [member position_smoothing_enabled] is `false`.  
-         *      
-         *  **Note:** To immediately update the camera's position to be within limits without smoothing, even with this setting enabled, invoke [method reset_smoothing].  
-         */
-        get limit_smoothed(): boolean
-        set limit_smoothed(value: boolean)
-        
-        /** If `true`, the camera's view smoothly moves towards its target position at [member position_smoothing_speed]. */
-        get position_smoothing_enabled(): boolean
-        set position_smoothing_enabled(value: boolean)
-        
-        /** Speed in pixels per second of the camera's smoothing effect when [member position_smoothing_enabled] is `true`. */
-        get position_smoothing_speed(): float64
-        set position_smoothing_speed(value: float64)
-        
-        /** If `true`, the camera's view smoothly rotates, via asymptotic smoothing, to align with its target rotation at [member rotation_smoothing_speed].  
-         *      
-         *  **Note:** This property has no effect if [member ignore_rotation] is `true`.  
-         */
-        get rotation_smoothing_enabled(): boolean
-        set rotation_smoothing_enabled(value: boolean)
-        
-        /** The angular, asymptotic speed of the camera's rotation smoothing effect when [member rotation_smoothing_enabled] is `true`. */
-        get rotation_smoothing_speed(): float64
-        set rotation_smoothing_speed(value: float64)
-        
-        /** If `true`, the camera only moves when reaching the horizontal (left and right) drag margins. If `false`, the camera moves horizontally regardless of margins. */
-        get drag_horizontal_enabled(): boolean
-        set drag_horizontal_enabled(value: boolean)
-        
-        /** If `true`, the camera only moves when reaching the vertical (top and bottom) drag margins. If `false`, the camera moves vertically regardless of the drag margins. */
-        get drag_vertical_enabled(): boolean
-        set drag_vertical_enabled(value: boolean)
-        
-        /** The relative horizontal drag offset of the camera between the right (`-1`) and left (`1`) drag margins.  
-         *      
-         *  **Note:** Used to set the initial horizontal drag offset; determine the current offset; or force the current offset. It's not automatically updated when [member drag_horizontal_enabled] is `true` or the drag margins are changed.  
-         */
-        get drag_horizontal_offset(): float64
-        set drag_horizontal_offset(value: float64)
-        
-        /** The relative vertical drag offset of the camera between the bottom (`-1`) and top (`1`) drag margins.  
-         *      
-         *  **Note:** Used to set the initial vertical drag offset; determine the current offset; or force the current offset. It's not automatically updated when [member drag_vertical_enabled] is `true` or the drag margins are changed.  
-         */
-        get drag_vertical_offset(): float64
-        set drag_vertical_offset(value: float64)
-        
-        /** Left margin needed to drag the camera. A value of `1` makes the camera move only when reaching the left edge of the screen. */
-        get drag_left_margin(): float64
-        set drag_left_margin(value: float64)
-        
-        /** Top margin needed to drag the camera. A value of `1` makes the camera move only when reaching the top edge of the screen. */
-        get drag_top_margin(): float64
-        set drag_top_margin(value: float64)
-        
-        /** Right margin needed to drag the camera. A value of `1` makes the camera move only when reaching the right edge of the screen. */
-        get drag_right_margin(): float64
-        set drag_right_margin(value: float64)
-        
-        /** Bottom margin needed to drag the camera. A value of `1` makes the camera move only when reaching the bottom edge of the screen. */
-        get drag_bottom_margin(): float64
-        set drag_bottom_margin(value: float64)
-        
-        /** If `true`, draws the camera's screen rectangle in the editor. */
-        get editor_draw_screen(): boolean
-        set editor_draw_screen(value: boolean)
-        
-        /** If `true`, draws the camera's limits rectangle in the editor. */
-        get editor_draw_limits(): boolean
-        set editor_draw_limits(value: boolean)
-        
-        /** If `true`, draws the camera's drag margin rectangle in the editor. */
-        get editor_draw_drag_margin(): boolean
-        set editor_draw_drag_margin(value: boolean)
-    }
-    namespace Camera3D {
-        enum ProjectionType {
-            /** Perspective projection. Objects on the screen becomes smaller when they are far away. */
-            PROJECTION_PERSPECTIVE = 0,
-            
-            /** Orthogonal projection, also known as orthographic projection. Objects remain the same size on the screen no matter how far away they are. */
-            PROJECTION_ORTHOGONAL = 1,
-            
-            /** Frustum projection. This mode allows adjusting [member frustum_offset] to create "tilted frustum" effects. */
-            PROJECTION_FRUSTUM = 2,
-        }
-        enum KeepAspect {
-            /** Preserves the horizontal aspect ratio; also known as Vert- scaling. This is usually the best option for projects running in portrait mode, as taller aspect ratios will benefit from a wider vertical FOV. */
-            KEEP_WIDTH = 0,
-            
-            /** Preserves the vertical aspect ratio; also known as Hor+ scaling. This is usually the best option for projects running in landscape mode, as wider aspect ratios will automatically benefit from a wider horizontal FOV. */
-            KEEP_HEIGHT = 1,
-        }
-        enum DopplerTracking {
-            /** Disables [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] simulation (default). */
-            DOPPLER_TRACKING_DISABLED = 0,
-            
-            /** Simulate [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] by tracking positions of objects that are changed in `_process`. Changes in the relative velocity of this camera compared to those objects affect how audio is perceived (changing the audio's [member AudioStreamPlayer3D.pitch_scale]). */
-            DOPPLER_TRACKING_IDLE_STEP = 1,
-            
-            /** Simulate [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] by tracking positions of objects that are changed in `_physics_process`. Changes in the relative velocity of this camera compared to those objects affect how audio is perceived (changing the audio's [member AudioStreamPlayer3D.pitch_scale]). */
-            DOPPLER_TRACKING_PHYSICS_STEP = 2,
-        }
-    }
-    /** Camera node, displays from a point of view.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_camera3d.html  
-     */
-    class Camera3D extends Node3D {
-        constructor(identifier?: any)
-        /** Returns a normal vector in world space, that is the result of projecting a point on the [Viewport] rectangle by the inverse camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking. */
-        project_ray_normal(screen_point: Vector2): Vector3
-        
-        /** Returns a normal vector from the screen point location directed along the camera. Orthogonal cameras are normalized. Perspective cameras account for perspective, screen width/height, etc. */
-        project_local_ray_normal(screen_point: Vector2): Vector3
-        
-        /** Returns a 3D position in world space, that is the result of projecting a point on the [Viewport] rectangle by the inverse camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking. */
-        project_ray_origin(screen_point: Vector2): Vector3
-        
-        /** Returns the 2D coordinate in the [Viewport] rectangle that maps to the given 3D point in world space.  
-         *      
-         *  **Note:** When using this to position GUI elements over a 3D viewport, use [method is_position_behind] to prevent them from appearing if the 3D point is behind the camera:  
-         *    
-         */
-        unproject_position(world_point: Vector3): Vector2
-        
-        /** Returns `true` if the given position is behind the camera (the blue part of the linked diagram). [url=https://raw.githubusercontent.com/godotengine/godot-docs/4.1/img/camera3d_position_frustum.png]See this diagram[/url] for an overview of position query methods.  
-         *      
-         *  **Note:** A position which returns `false` may still be outside the camera's field of view.  
-         */
-        is_position_behind(world_point: Vector3): boolean
-        
-        /** Returns the 3D point in world space that maps to the given 2D coordinate in the [Viewport] rectangle on a plane that is the given [param z_depth] distance into the scene away from the camera. */
-        project_position(screen_point: Vector2, z_depth: float64): Vector3
-        
-        /** Sets the camera projection to perspective mode (see [constant PROJECTION_PERSPECTIVE]), by specifying a [param fov] (field of view) angle in degrees, and the [param z_near] and [param z_far] clip planes in world space units. */
-        set_perspective(fov: float64, z_near: float64, z_far: float64): void
-        
-        /** Sets the camera projection to orthogonal mode (see [constant PROJECTION_ORTHOGONAL]), by specifying a [param size], and the [param z_near] and [param z_far] clip planes in world space units. (As a hint, 2D games often use this projection, with values specified in pixels.) */
-        set_orthogonal(size: float64, z_near: float64, z_far: float64): void
-        
-        /** Sets the camera projection to frustum mode (see [constant PROJECTION_FRUSTUM]), by specifying a [param size], an [param offset], and the [param z_near] and [param z_far] clip planes in world space units. See also [member frustum_offset]. */
-        set_frustum(size: float64, offset: Vector2, z_near: float64, z_far: float64): void
-        
-        /** Makes this camera the current camera for the [Viewport] (see class description). If the camera node is outside the scene tree, it will attempt to become current once it's added. */
-        make_current(): void
-        
-        /** If this is the current camera, remove it from being current. If [param enable_next] is `true`, request to make the next camera current, if any. */
-        clear_current(enable_next: boolean = true): void
-        
-        /** Returns the transform of the camera plus the vertical ([member v_offset]) and horizontal ([member h_offset]) offsets; and any other adjustments made to the position and orientation of the camera by subclassed cameras such as [XRCamera3D]. */
-        get_camera_transform(): Transform3D
-        
-        /** Returns the projection matrix that this camera uses to render to its associated viewport. The camera must be part of the scene tree to function. */
-        get_camera_projection(): Projection
-        
-        /** Returns the camera's frustum planes in world space units as an array of [Plane]s in the following order: near, far, left, top, right, bottom. Not to be confused with [member frustum_offset]. */
-        get_frustum(): GArray
-        
-        /** Returns `true` if the given position is inside the camera's frustum (the green part of the linked diagram). [url=https://raw.githubusercontent.com/godotengine/godot-docs/4.1/img/camera3d_position_frustum.png]See this diagram[/url] for an overview of position query methods. */
-        is_position_in_frustum(world_point: Vector3): boolean
-        
-        /** Returns the camera's RID from the [RenderingServer]. */
-        get_camera_rid(): RID
-        
-        /** Returns the RID of a pyramid shape encompassing the camera's view frustum, ignoring the camera's near plane. The tip of the pyramid represents the position of the camera. */
-        get_pyramid_shape_rid(): RID
-        
-        /** Based on [param value], enables or disables the specified layer in the [member cull_mask], given a [param layer_number] between 1 and 20. */
-        set_cull_mask_value(layer_number: int64, value: boolean): void
-        
-        /** Returns whether or not the specified layer of the [member cull_mask] is enabled, given a [param layer_number] between 1 and 20. */
-        get_cull_mask_value(layer_number: int64): boolean
-        
-        /** The axis to lock during [member fov]/[member size] adjustments. Can be either [constant KEEP_WIDTH] or [constant KEEP_HEIGHT]. */
-        get keep_aspect(): int64
-        set keep_aspect(value: int64)
-        
-        /** The culling mask that describes which [member VisualInstance3D.layers] are rendered by this camera. By default, all 20 user-visible layers are rendered.  
-         *      
-         *  **Note:** Since the [member cull_mask] allows for 32 layers to be stored in total, there are an additional 12 layers that are only used internally by the engine and aren't exposed in the editor. Setting [member cull_mask] using a script allows you to toggle those reserved layers, which can be useful for editor plugins.  
-         *  To adjust [member cull_mask] more easily using a script, use [method get_cull_mask_value] and [method set_cull_mask_value].  
-         *      
-         *  **Note:** [VoxelGI], SDFGI and [LightmapGI] will always take all layers into account to determine what contributes to global illumination. If this is an issue, set [member GeometryInstance3D.gi_mode] to [constant GeometryInstance3D.GI_MODE_DISABLED] for meshes and [member Light3D.light_bake_mode] to [constant Light3D.BAKE_DISABLED] for lights to exclude them from global illumination.  
-         */
-        get cull_mask(): int64
-        set cull_mask(value: int64)
-        
-        /** The [Environment] to use for this camera. */
-        get environment(): Environment
-        set environment(value: Environment)
-        
-        /** The [CameraAttributes] to use for this camera. */
-        get attributes(): CameraAttributesPractical | CameraAttributesPhysical
-        set attributes(value: CameraAttributesPractical | CameraAttributesPhysical)
-        
-        /** The [Compositor] to use for this camera. */
-        get compositor(): Compositor
-        set compositor(value: Compositor)
-        
-        /** The horizontal (X) offset of the camera viewport. */
-        get h_offset(): float64
-        set h_offset(value: float64)
-        
-        /** The vertical (Y) offset of the camera viewport. */
-        get v_offset(): float64
-        set v_offset(value: float64)
-        
-        /** If not [constant DOPPLER_TRACKING_DISABLED], this camera will simulate the [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] for objects changed in particular `_process` methods. See [enum DopplerTracking] for possible values. */
-        get doppler_tracking(): int64
-        set doppler_tracking(value: int64)
-        
-        /** The camera's projection mode. In [constant PROJECTION_PERSPECTIVE] mode, objects' Z distance from the camera's local space scales their perceived size. */
-        get projection(): int64
-        set projection(value: int64)
-        
-        /** If `true`, the ancestor [Viewport] is currently using this camera.  
-         *  If multiple cameras are in the scene, one will always be made current. For example, if two [Camera3D] nodes are present in the scene and only one is current, setting one camera's [member current] to `false` will cause the other camera to be made current.  
-         */
-        get current(): boolean
-        set current(value: boolean)
-        
-        /** The camera's field of view angle (in degrees). Only applicable in perspective mode. Since [member keep_aspect] locks one axis, [member fov] sets the other axis' field of view angle.  
-         *  For reference, the default vertical field of view value (`75.0`) is equivalent to a horizontal FOV of:  
-         *  - ~91.31 degrees in a 4:3 viewport  
-         *  - ~101.67 degrees in a 16:10 viewport  
-         *  - ~107.51 degrees in a 16:9 viewport  
-         *  - ~121.63 degrees in a 21:9 viewport  
-         */
-        get fov(): float64
-        set fov(value: float64)
-        
-        /** The camera's size in meters measured as the diameter of the width or height, depending on [member keep_aspect]. Only applicable in orthogonal and frustum modes. */
-        get size(): float64
-        set size(value: float64)
-        
-        /** The camera's frustum offset. This can be changed from the default to create "tilted frustum" effects such as [url=https://zdoom.org/wiki/Y-shearing]Y-shearing[/url].  
-         *      
-         *  **Note:** Only effective if [member projection] is [constant PROJECTION_FRUSTUM].  
-         */
-        get frustum_offset(): Vector2
-        set frustum_offset(value: Vector2)
-        
-        /** The distance to the near culling boundary for this camera relative to its local Z axis. Lower values allow the camera to see objects more up close to its origin, at the cost of lower precision across the  *entire*  range. Values lower than the default can lead to increased Z-fighting. */
-        get near(): float64
-        set near(value: float64)
-        
-        /** The distance to the far culling boundary for this camera relative to its local Z axis. Higher values allow the camera to see further away, while decreasing [member far] can improve performance if it results in objects being partially or fully culled. */
-        get far(): float64
-        set far(value: float64)
-    }
-    class Camera3DEditorPlugin extends EditorPlugin {
-        constructor(identifier?: any)
-    }
-    class Camera3DGizmoPlugin extends EditorNode3DGizmoPlugin {
-        constructor(identifier?: any)
-    }
-    /** Parent class for camera settings.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_cameraattributes.html  
-     */
-    class CameraAttributes extends Resource {
-        constructor(identifier?: any)
-        /** Sensitivity of camera sensors, measured in ISO. A higher sensitivity results in a brighter image. Only available when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is enabled. When [member auto_exposure_enabled] this can be used as a method of exposure compensation, doubling the value will increase the exposure value (measured in EV100) by 1 stop. */
-        get exposure_sensitivity(): float64
-        set exposure_sensitivity(value: float64)
-        
-        /** Multiplier for the exposure amount. A higher value results in a brighter image. */
-        get exposure_multiplier(): float64
-        set exposure_multiplier(value: float64)
-        
-        /** If `true`, enables the tonemapping auto exposure mode of the scene renderer. If `true`, the renderer will automatically determine the exposure setting to adapt to the scene's illumination and the observed light. */
-        get auto_exposure_enabled(): boolean
-        set auto_exposure_enabled(value: boolean)
-        
-        /** The scale of the auto exposure effect. Affects the intensity of auto exposure. */
-        get auto_exposure_scale(): float64
-        set auto_exposure_scale(value: float64)
-        
-        /** The speed of the auto exposure effect. Affects the time needed for the camera to perform auto exposure. */
-        get auto_exposure_speed(): float64
-        set auto_exposure_speed(value: float64)
-    }
-    /** Physically-based camera settings.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_cameraattributesphysical.html  
-     */
-    class CameraAttributesPhysical extends CameraAttributes {
-        constructor(identifier?: any)
-        /** Returns the vertical field of view that corresponds to the [member frustum_focal_length]. This value is calculated internally whenever [member frustum_focal_length] is changed. */
-        get_fov(): float64
-        
-        /** Distance from camera of object that will be in focus, measured in meters. Internally this will be clamped to be at least 1 millimeter larger than [member frustum_focal_length]. */
-        get frustum_focus_distance(): float64
-        set frustum_focus_distance(value: float64)
-        
-        /** Distance between camera lens and camera aperture, measured in millimeters. Controls field of view and depth of field. A larger focal length will result in a smaller field of view and a narrower depth of field meaning fewer objects will be in focus. A smaller focal length will result in a wider field of view and a larger depth of field meaning more objects will be in focus. When attached to a [Camera3D] as its [member Camera3D.attributes], it will override the [member Camera3D.fov] property and the [member Camera3D.keep_aspect] property. */
-        get frustum_focal_length(): float64
-        set frustum_focal_length(value: float64)
-        
-        /** Override value for [member Camera3D.near]. Used internally when calculating depth of field. When attached to a [Camera3D] as its [member Camera3D.attributes], it will override the [member Camera3D.near] property. */
-        get frustum_near(): float64
-        set frustum_near(value: float64)
-        
-        /** Override value for [member Camera3D.far]. Used internally when calculating depth of field. When attached to a [Camera3D] as its [member Camera3D.attributes], it will override the [member Camera3D.far] property. */
-        get frustum_far(): float64
-        set frustum_far(value: float64)
-        
-        /** Size of the aperture of the camera, measured in f-stops. An f-stop is a unitless ratio between the focal length of the camera and the diameter of the aperture. A high aperture setting will result in a smaller aperture which leads to a dimmer image and sharper focus. A low aperture results in a wide aperture which lets in more light resulting in a brighter, less-focused image. Default is appropriate for outdoors at daytime (i.e. for use with a default [DirectionalLight3D]), for indoor lighting, a value between 2 and 4 is more appropriate.  
-         *  Only available when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is enabled.  
-         */
-        get exposure_aperture(): float64
-        set exposure_aperture(value: float64)
-        
-        /** Time for shutter to open and close, evaluated as `1 / shutter_speed` seconds. A higher value will allow less light (leading to a darker image), while a lower value will allow more light (leading to a brighter image).  
-         *  Only available when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is enabled.  
-         */
-        get exposure_shutter_speed(): float64
-        set exposure_shutter_speed(value: float64)
-        
-        /** The minimum luminance luminance (in EV100) used when calculating auto exposure. When calculating scene average luminance, color values will be clamped to at least this value. This limits the auto-exposure from exposing above a certain brightness, resulting in a cut off point where the scene will remain dark. */
-        get auto_exposure_min_exposure_value(): float64
-        set auto_exposure_min_exposure_value(value: float64)
-        
-        /** The maximum luminance (in EV100) used when calculating auto exposure. When calculating scene average luminance, color values will be clamped to at least this value. This limits the auto-exposure from exposing below a certain brightness, resulting in a cut off point where the scene will remain bright. */
-        get auto_exposure_max_exposure_value(): float64
-        set auto_exposure_max_exposure_value(value: float64)
-    }
-    /** Camera settings in an easy to use format.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_cameraattributespractical.html  
-     */
-    class CameraAttributesPractical extends CameraAttributes {
-        constructor(identifier?: any)
-        /** Enables depth of field blur for objects further than [member dof_blur_far_distance]. Strength of blur is controlled by [member dof_blur_amount] and modulated by [member dof_blur_far_transition].  
-         *      
-         *  **Note:** Depth of field blur is only supported in the Forward+ and Mobile rendering methods, not Compatibility.  
-         */
-        get dof_blur_far_enabled(): boolean
-        set dof_blur_far_enabled(value: boolean)
-        
-        /** Objects further from the [Camera3D] by this amount will be blurred by the depth of field effect. Measured in meters. */
-        get dof_blur_far_distance(): float64
-        set dof_blur_far_distance(value: float64)
-        
-        /** When positive, distance over which (starting from [member dof_blur_far_distance]) blur effect will scale from 0 to [member dof_blur_amount]. When negative, uses physically-based scaling so depth of field effect will scale from 0 at [member dof_blur_far_distance] and will increase in a physically accurate way as objects get further from the [Camera3D]. */
-        get dof_blur_far_transition(): float64
-        set dof_blur_far_transition(value: float64)
-        
-        /** Enables depth of field blur for objects closer than [member dof_blur_near_distance]. Strength of blur is controlled by [member dof_blur_amount] and modulated by [member dof_blur_near_transition].  
-         *      
-         *  **Note:** Depth of field blur is only supported in the Forward+ and Mobile rendering methods, not Compatibility.  
-         */
-        get dof_blur_near_enabled(): boolean
-        set dof_blur_near_enabled(value: boolean)
-        
-        /** Objects closer from the [Camera3D] by this amount will be blurred by the depth of field effect. Measured in meters. */
-        get dof_blur_near_distance(): float64
-        set dof_blur_near_distance(value: float64)
-        
-        /** When positive, distance over which blur effect will scale from 0 to [member dof_blur_amount], ending at [member dof_blur_near_distance]. When negative, uses physically-based scaling so depth of field effect will scale from 0 at [member dof_blur_near_distance] and will increase in a physically accurate way as objects get closer to the [Camera3D]. */
-        get dof_blur_near_transition(): float64
-        set dof_blur_near_transition(value: float64)
-        
-        /** Sets the maximum amount of blur. When using physically-based blur amounts, will instead act as a multiplier. High values lead to an increased amount of blurriness, but can be much more expensive to calculate. It is best to keep this as low as possible for a given art style. */
-        get dof_blur_amount(): float64
-        set dof_blur_amount(value: float64)
-        
-        /** The minimum sensitivity (in ISO) used when calculating auto exposure. When calculating scene average luminance, color values will be clamped to at least this value. This limits the auto-exposure from exposing above a certain brightness, resulting in a cut off point where the scene will remain dark. */
-        get auto_exposure_min_sensitivity(): float64
-        set auto_exposure_min_sensitivity(value: float64)
-        
-        /** The maximum sensitivity (in ISO) used when calculating auto exposure. When calculating scene average luminance, color values will be clamped to at least this value. This limits the auto-exposure from exposing below a certain brightness, resulting in a cut off point where the scene will remain bright. */
-        get auto_exposure_max_sensitivity(): float64
-        set auto_exposure_max_sensitivity(value: float64)
-    }
-    namespace CameraFeed {
-        enum FeedDataType {
-            /** No image set for the feed. */
-            FEED_NOIMAGE = 0,
-            
-            /** Feed supplies RGB images. */
-            FEED_RGB = 1,
-            
-            /** Feed supplies YCbCr images that need to be converted to RGB. */
-            FEED_YCBCR = 2,
-            
-            /** Feed supplies separate Y and CbCr images that need to be combined and converted to RGB. */
-            FEED_YCBCR_SEP = 3,
-        }
-        enum FeedPosition {
-            /** Unspecified position. */
-            FEED_UNSPECIFIED = 0,
-            
-            /** Camera is mounted at the front of the device. */
-            FEED_FRONT = 1,
-            
-            /** Camera is mounted at the back of the device. */
-            FEED_BACK = 2,
-        }
-    }
-    /** A camera feed gives you access to a single physical camera attached to your device.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_camerafeed.html  
-     */
-    class CameraFeed extends RefCounted {
-        constructor(identifier?: any)
-        /** Returns the unique ID for this feed. */
-        get_id(): int64
-        
-        /** Returns the camera's name. */
-        get_name(): string
-        _set_name(name: string): void
-        
-        /** Returns the position of camera on the device. */
-        get_position(): CameraFeed.FeedPosition
-        _set_position(position: CameraFeed.FeedPosition): void
-        _set_RGB_img(rgb_img: Image): void
-        _set_YCbCr_img(ycbcr_img: Image): void
-        
-        /** Returns feed image data type. */
-        get_datatype(): CameraFeed.FeedDataType
-        
-        /** If `true`, the feed is active. */
-        get feed_is_active(): boolean
-        set feed_is_active(value: boolean)
-        
-        /** The transform applied to the camera's image. */
-        get feed_transform(): Transform2D
-        set feed_transform(value: Transform2D)
-    }
-    /** Texture provided by a [CameraFeed].  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_cameratexture.html  
-     */
-    class CameraTexture extends Texture2D {
-        constructor(identifier?: any)
-        /** The ID of the [CameraFeed] for which we want to display the image. */
-        get camera_feed_id(): int64
-        set camera_feed_id(value: int64)
-        
-        /** Which image within the [CameraFeed] we want access to, important if the camera image is split in a Y and CbCr component. */
-        get which_feed(): int64
-        set which_feed(value: int64)
-        
-        /** Convenience property that gives access to the active property of the [CameraFeed]. */
-        get camera_is_active(): boolean
-        set camera_is_active(value: boolean)
-    }
-    /** Merges several 2D nodes into a single draw operation.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_canvasgroup.html  
-     */
-    class CanvasGroup extends Node2D {
-        constructor(identifier?: any)
-        /** Sets the size of a margin used to expand the drawable rect of this [CanvasGroup]. The size of the [CanvasGroup] is determined by fitting a rect around its children then expanding that rect by [member fit_margin]. This increases both the backbuffer area used and the area covered by the [CanvasGroup] both of which can reduce performance. This should be kept as small as possible and should only be expanded when an increased size is needed (e.g. for custom shader effects). */
-        get fit_margin(): float64
-        set fit_margin(value: float64)
-        
-        /** Sets the size of the margin used to expand the clearing rect of this [CanvasGroup]. This expands the area of the backbuffer that will be used by the [CanvasGroup]. A smaller margin will reduce the area of the backbuffer used which can increase performance, however if [member use_mipmaps] is enabled, a small margin may result in mipmap errors at the edge of the [CanvasGroup]. Accordingly, this should be left as small as possible, but should be increased if artifacts appear along the edges of the canvas group. */
-        get clear_margin(): float64
-        set clear_margin(value: float64)
-        
-        /** If `true`, calculates mipmaps for the backbuffer before drawing the [CanvasGroup] so that mipmaps can be used in a custom [ShaderMaterial] attached to the [CanvasGroup]. Generating mipmaps has a performance cost so this should not be enabled unless required. */
-        get use_mipmaps(): boolean
-        set use_mipmaps(value: boolean)
-    }
-    namespace CanvasItem {
-        enum TextureFilter {
-            /** The [CanvasItem] will inherit the filter from its parent. */
-            TEXTURE_FILTER_PARENT_NODE = 0,
-            
-            /** The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled). */
-            TEXTURE_FILTER_NEAREST = 1,
-            
-            /** The texture filter blends between the nearest 4 pixels. This makes the texture look smooth from up close, and grainy from a distance (due to mipmaps not being sampled). */
-            TEXTURE_FILTER_LINEAR = 2,
-            
-            /** The texture filter reads from the nearest pixel and blends between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is `true`). This makes the texture look pixelated from up close, and smooth from a distance.  
-             *  Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.  
-             */
-            TEXTURE_FILTER_NEAREST_WITH_MIPMAPS = 3,
-            
-            /** The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is `true`). This makes the texture look smooth from up close, and smooth from a distance.  
-             *  Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.  
-             */
-            TEXTURE_FILTER_LINEAR_WITH_MIPMAPS = 4,
-            
-            /** The texture filter reads from the nearest pixel and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is `true`) based on the angle between the surface and the camera view. This makes the texture look pixelated from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].  
-             *      
-             *  **Note:** This texture filter is rarely useful in 2D projects. [constant TEXTURE_FILTER_NEAREST_WITH_MIPMAPS] is usually more appropriate in this case.  
-             */
-            TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC = 5,
-            
-            /** The texture filter blends between the nearest 4 pixels and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is `true`) based on the angle between the surface and the camera view. This makes the texture look smooth from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].  
-             *      
-             *  **Note:** This texture filter is rarely useful in 2D projects. [constant TEXTURE_FILTER_LINEAR_WITH_MIPMAPS] is usually more appropriate in this case.  
-             */
-            TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC = 6,
-            
-            /** Represents the size of the [enum TextureFilter] enum. */
-            TEXTURE_FILTER_MAX = 7,
-        }
-        enum TextureRepeat {
-            /** The [CanvasItem] will inherit the filter from its parent. */
-            TEXTURE_REPEAT_PARENT_NODE = 0,
-            
-            /** Texture will not repeat. */
-            TEXTURE_REPEAT_DISABLED = 1,
-            
-            /** Texture will repeat normally. */
-            TEXTURE_REPEAT_ENABLED = 2,
-            
-            /** Texture will repeat in a 2×2 tiled mode, where elements at even positions are mirrored. */
-            TEXTURE_REPEAT_MIRROR = 3,
-            
-            /** Represents the size of the [enum TextureRepeat] enum. */
-            TEXTURE_REPEAT_MAX = 4,
-        }
-        enum ClipChildrenMode {
-            /** Child draws over parent and is not clipped. */
-            CLIP_CHILDREN_DISABLED = 0,
-            
-            /** Parent is used for the purposes of clipping only. Child is clipped to the parent's visible area, parent is not drawn. */
-            CLIP_CHILDREN_ONLY = 1,
-            
-            /** Parent is used for clipping child, but parent is also drawn underneath child as normal before clipping child to its visible area. */
-            CLIP_CHILDREN_AND_DRAW = 2,
-            
-            /** Represents the size of the [enum ClipChildrenMode] enum. */
-            CLIP_CHILDREN_MAX = 3,
-        }
-    }
-    /** Abstract base class for everything in 2D space.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_canvasitem.html  
-     */
-    class CanvasItem extends Node {
-        /** The [CanvasItem]'s global transform has changed. This notification is only received if enabled by [method set_notify_transform]. */
-        static readonly NOTIFICATION_TRANSFORM_CHANGED = 2000
-        
-        /** The [CanvasItem]'s local transform has changed. This notification is only received if enabled by [method set_notify_local_transform]. */
-        static readonly NOTIFICATION_LOCAL_TRANSFORM_CHANGED = 35
-        
-        /** The [CanvasItem] is requested to draw (see [method _draw]). */
-        static readonly NOTIFICATION_DRAW = 30
-        
-        /** The [CanvasItem]'s visibility has changed. */
-        static readonly NOTIFICATION_VISIBILITY_CHANGED = 31
-        
-        /** The [CanvasItem] has entered the canvas. */
-        static readonly NOTIFICATION_ENTER_CANVAS = 32
-        
-        /** The [CanvasItem] has exited the canvas. */
-        static readonly NOTIFICATION_EXIT_CANVAS = 33
-        
-        /** The [CanvasItem]'s active [World2D] changed. */
-        static readonly NOTIFICATION_WORLD_2D_CHANGED = 36
-        constructor(identifier?: any)
-        
-        /** Called when [CanvasItem] has been requested to redraw (after [method queue_redraw] is called, either manually or by the engine).  
-         *  Corresponds to the [constant NOTIFICATION_DRAW] notification in [method Object._notification].  
-         */
-        /* gdvirtual */ _draw(): void
-        _top_level_raise_self(): void
-        _edit_set_state(state: GDictionary): void
-        _edit_get_state(): GDictionary
-        _edit_set_position(position: Vector2): void
-        _edit_get_position(): Vector2
-        _edit_set_scale(scale: Vector2): void
-        _edit_get_scale(): Vector2
-        _edit_set_rect(rect: Rect2): void
-        _edit_get_rect(): Rect2
-        _edit_use_rect(): boolean
-        _edit_set_rotation(degrees: float64): void
-        _edit_get_rotation(): float64
-        _edit_use_rotation(): boolean
-        _edit_set_pivot(pivot: Vector2): void
-        _edit_get_pivot(): Vector2
-        _edit_use_pivot(): boolean
-        _edit_get_transform(): Transform2D
-        
-        /** Returns the canvas item RID used by [RenderingServer] for this item. */
-        get_canvas_item(): RID
-        
-        /** Returns `true` if the node is present in the [SceneTree], its [member visible] property is `true` and all its ancestors are also visible. If any ancestor is hidden, this node will not be visible in the scene tree, and is therefore not drawn (see [method _draw]).  
-         *  Visibility is checked only in parent nodes that inherit from [CanvasItem], [CanvasLayer], and [Window]. If the parent is of any other type (such as [Node], [AnimationPlayer], or [Node3D]), it is assumed to be visible.  
-         */
-        is_visible_in_tree(): boolean
-        
-        /** Show the [CanvasItem] if it's currently hidden. This is equivalent to setting [member visible] to `true`. For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple `popup*()` functions instead. */
-        show(): void
-        
-        /** Hide the [CanvasItem] if it's currently visible. This is equivalent to setting [member visible] to `false`. */
-        hide(): void
-        
-        /** Queues the [CanvasItem] to redraw. During idle time, if [CanvasItem] is visible, [constant NOTIFICATION_DRAW] is sent and [method _draw] is called. This only occurs **once** per frame, even if this method has been called multiple times. */
-        queue_redraw(): void
-        
-        /** Moves this node to display on top of its siblings.  
-         *  Internally, the node is moved to the bottom of parent's child list. The method has no effect on nodes without a parent.  
-         */
-        move_to_front(): void
-        
-        /** Draws a line from a 2D point to another, with a given color and width. It can be optionally antialiased. See also [method draw_multiline] and [method draw_polyline].  
-         *  If [param width] is negative, then a two-point primitive will be drawn instead of a four-point one. This means that when the CanvasItem is scaled, the line will remain thin. If this behavior is not desired, then pass a positive [param width] like `1.0`.  
-         */
-        draw_line(from: Vector2, to: Vector2, color: Color, width: float64 = -1, antialiased: boolean = false): void
-        
-        /** Draws a dashed line from a 2D point to another, with a given color and width. See also [method draw_multiline] and [method draw_polyline].  
-         *  If [param width] is negative, then a two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the line parts will remain thin. If this behavior is not desired, then pass a positive [param width] like `1.0`.  
-         *  If [param antialiased] is `true`, half transparent "feathers" will be attached to the boundary, making outlines smooth.  
-         *      
-         *  **Note:** [param antialiased] is only effective if [param width] is greater than `0.0`.  
-         */
-        draw_dashed_line(from: Vector2, to: Vector2, color: Color, width: float64 = -1, dash: float64 = 2, aligned: boolean = true, antialiased: boolean = false): void
-        
-        /** Draws interconnected line segments with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline] instead. See also [method draw_polygon].  
-         *  If [param width] is negative, it will be ignored and the polyline will be drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the polyline will remain thin. If this behavior is not desired, then pass a positive [param width] like `1.0`.  
-         */
-        draw_polyline(points: PackedVector2Array | Vector2[], color: Color, width: float64 = -1, antialiased: boolean = false): void
-        
-        /** Draws interconnected line segments with a uniform [param width], point-by-point coloring, and optional antialiasing (supported only for positive [param width]). Colors assigned to line points match by index between [param points] and [param colors], i.e. each line segment is filled with a gradient between the colors of the endpoints. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline_colors] instead. See also [method draw_polygon].  
-         *  If [param width] is negative, it will be ignored and the polyline will be drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the polyline will remain thin. If this behavior is not desired, then pass a positive [param width] like `1.0`.  
-         */
-        draw_polyline_colors(points: PackedVector2Array | Vector2[], colors: PackedColorArray | Color[], width: float64 = -1, antialiased: boolean = false): void
-        
-        /** Draws an unfilled arc between the given angles with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). The larger the value of [param point_count], the smoother the curve. See also [method draw_circle].  
-         *  If [param width] is negative, it will be ignored and the arc will be drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the arc will remain thin. If this behavior is not desired, then pass a positive [param width] like `1.0`.  
-         *  The arc is drawn from [param start_angle] towards the value of [param end_angle] so in clockwise direction if `start_angle < end_angle` and counter-clockwise otherwise. Passing the same angles but in reversed order will produce the same arc. If absolute difference of [param start_angle] and [param end_angle] is greater than [constant @GDScript.TAU] radians, then a full circle arc is drawn (i.e. arc will not overlap itself).  
-         */
-        draw_arc(center: Vector2, radius: float64, start_angle: float64, end_angle: float64, point_count: int64, color: Color, width: float64 = -1, antialiased: boolean = false): void
-        
-        /** Draws multiple disconnected lines with a uniform [param width] and [param color]. Each line is defined by two consecutive points from [param points] array, i.e. i-th segment consists of `points[2 * i]`, `points[2 * i + 1]` endpoints. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline] instead.  
-         *  If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like `1.0`.  
-         *      
-         *  **Note:** [param antialiased] is only effective if [param width] is greater than `0.0`.  
-         */
-        draw_multiline(points: PackedVector2Array | Vector2[], color: Color, width: float64 = -1, antialiased: boolean = false): void
-        
-        /** Draws multiple disconnected lines with a uniform [param width] and segment-by-segment coloring. Each segment is defined by two consecutive points from [param points] array and a corresponding color from [param colors] array, i.e. i-th segment consists of `points[2 * i]`, `points[2 * i + 1]` endpoints and has `colors *` color. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline_colors] instead.  
-         *  If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like `1.0`.  
-         *      
-         *  **Note:** [param antialiased] is only effective if [param width] is greater than `0.0`.  
-         */
-        draw_multiline_colors(points: PackedVector2Array | Vector2[], colors: PackedColorArray | Color[], width: float64 = -1, antialiased: boolean = false): void
-        
-        /** Draws a rectangle. If [param filled] is `true`, the rectangle will be filled with the [param color] specified. If [param filled] is `false`, the rectangle will be drawn as a stroke with the [param color] and [param width] specified. See also [method draw_texture_rect].  
-         *  If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like `1.0`.  
-         *  If [param antialiased] is `true`, half transparent "feathers" will be attached to the boundary, making outlines smooth.  
-         *      
-         *  **Note:** [param width] is only effective if [param filled] is `false`.  
-         *      
-         *  **Note:** Unfilled rectangles drawn with a negative [param width] may not display perfectly. For example, corners may be missing or brighter due to overlapping lines (for a translucent [param color]).  
-         */
-        draw_rect(rect: Rect2, color: Color, filled: boolean = true, width: float64 = -1, antialiased: boolean = false): void
-        
-        /** Draws a circle. See also [method draw_arc], [method draw_polyline], and [method draw_polygon].  
-         *  If [param filled] is `true`, the circle will be filled with the [param color] specified. If [param filled] is `false`, the circle will be drawn as a stroke with the [param color] and [param width] specified.  
-         *  If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like `1.0`.  
-         *  If [param antialiased] is `true`, half transparent "feathers" will be attached to the boundary, making outlines smooth.  
-         *      
-         *  **Note:** [param width] is only effective if [param filled] is `false`.  
-         */
-        draw_circle(position: Vector2, radius: float64, color: Color, filled: boolean = true, width: float64 = -1, antialiased: boolean = false): void
-        
-        /** Draws a texture at a given position. */
-        draw_texture(texture: Texture2D, position: Vector2, modulate: Color = new Color(1, 1, 1, 1)): void
-        
-        /** Draws a textured rectangle at a given position, optionally modulated by a color. If [param transpose] is `true`, the texture will have its X and Y coordinates swapped. See also [method draw_rect] and [method draw_texture_rect_region]. */
-        draw_texture_rect(texture: Texture2D, rect: Rect2, tile: boolean, modulate: Color = new Color(1, 1, 1, 1), transpose: boolean = false): void
-        
-        /** Draws a textured rectangle from a texture's region (specified by [param src_rect]) at a given position, optionally modulated by a color. If [param transpose] is `true`, the texture will have its X and Y coordinates swapped. See also [method draw_texture_rect]. */
-        draw_texture_rect_region(texture: Texture2D, rect: Rect2, src_rect: Rect2, modulate: Color = new Color(1, 1, 1, 1), transpose: boolean = false, clip_uv: boolean = true): void
-        
-        /** Draws a textured rectangle region of the multi-channel signed distance field texture at a given position, optionally modulated by a color. See [member FontFile.multichannel_signed_distance_field] for more information and caveats about MSDF font rendering.  
-         *  If [param outline] is positive, each alpha channel value of pixel in region is set to maximum value of true distance in the [param outline] radius.  
-         *  Value of the [param pixel_range] should the same that was used during distance field texture generation.  
-         */
-        draw_msdf_texture_rect_region(texture: Texture2D, rect: Rect2, src_rect: Rect2, modulate: Color = new Color(1, 1, 1, 1), outline: float64 = 0, pixel_range: float64 = 4, scale: float64 = 1): void
-        
-        /** Draws a textured rectangle region of the font texture with LCD subpixel anti-aliasing at a given position, optionally modulated by a color.  
-         *  Texture is drawn using the following blend operation, blend mode of the [CanvasItemMaterial] is ignored:  
-         *    
-         */
-        draw_lcd_texture_rect_region(texture: Texture2D, rect: Rect2, src_rect: Rect2, modulate: Color = new Color(1, 1, 1, 1)): void
-        
-        /** Draws a styled rectangle. */
-        draw_style_box(style_box: StyleBox, rect: Rect2): void
-        
-        /** Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points for a triangle, and 4 points for a quad. If 0 points or more than 4 points are specified, nothing will be drawn and an error message will be printed. See also [method draw_line], [method draw_polyline], [method draw_polygon], and [method draw_rect]. */
-        draw_primitive(points: PackedVector2Array | Vector2[], colors: PackedColorArray | Color[], uvs: PackedVector2Array | Vector2[], texture: Texture2D = undefined): void
-        
-        /** Draws a solid polygon of any number of points, convex or concave. Unlike [method draw_colored_polygon], each point's color can be changed individually. See also [method draw_polyline] and [method draw_polyline_colors]. If you need more flexibility (such as being able to use bones), use [method RenderingServer.canvas_item_add_triangle_array] instead. */
-        draw_polygon(points: PackedVector2Array | Vector2[], colors: PackedColorArray | Color[], uvs: PackedVector2Array | Vector2[] = [], texture: Texture2D = undefined): void
-        
-        /** Draws a colored polygon of any number of points, convex or concave. Unlike [method draw_polygon], a single color must be specified for the whole polygon. */
-        draw_colored_polygon(points: PackedVector2Array | Vector2[], color: Color, uvs: PackedVector2Array | Vector2[] = [], texture: Texture2D = undefined): void
-        
-        /** Draws [param text] using the specified [param font] at the [param pos] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.  
-         *  **Example using the default project font:**  
-         *    
-         *  See also [method Font.draw_string].  
-         */
-        draw_string(font: Font, pos: Vector2, text: string, alignment: HorizontalAlignment = 0, width: float64 = -1, font_size: int64 = 16, modulate: Color = new Color(1, 1, 1, 1), justification_flags: TextServer.JustificationFlag = 3, direction: TextServer.Direction = 0, orientation: TextServer.Orientation = 0): void
-        
-        /** Breaks [param text] into lines and draws it using the specified [param font] at the [param pos] (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. */
-        draw_multiline_string(font: Font, pos: Vector2, text: string, alignment: HorizontalAlignment = 0, width: float64 = -1, font_size: int64 = 16, max_lines: int64 = -1, modulate: Color = new Color(1, 1, 1, 1), brk_flags: TextServer.LineBreakFlag = 3, justification_flags: TextServer.JustificationFlag = 3, direction: TextServer.Direction = 0, orientation: TextServer.Orientation = 0): void
-        
-        /** Draws [param text] outline using the specified [param font] at the [param pos] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. */
-        draw_string_outline(font: Font, pos: Vector2, text: string, alignment: HorizontalAlignment = 0, width: float64 = -1, font_size: int64 = 16, size: int64 = 1, modulate: Color = new Color(1, 1, 1, 1), justification_flags: TextServer.JustificationFlag = 3, direction: TextServer.Direction = 0, orientation: TextServer.Orientation = 0): void
-        
-        /** Breaks [param text] to the lines and draws text outline using the specified [param font] at the [param pos] (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. */
-        draw_multiline_string_outline(font: Font, pos: Vector2, text: string, alignment: HorizontalAlignment = 0, width: float64 = -1, font_size: int64 = 16, max_lines: int64 = -1, size: int64 = 1, modulate: Color = new Color(1, 1, 1, 1), brk_flags: TextServer.LineBreakFlag = 3, justification_flags: TextServer.JustificationFlag = 3, direction: TextServer.Direction = 0, orientation: TextServer.Orientation = 0): void
-        
-        /** Draws a string first character using a custom font. */
-        draw_char(font: Font, pos: Vector2, char: string, font_size: int64 = 16, modulate: Color = new Color(1, 1, 1, 1)): void
-        
-        /** Draws a string first character outline using a custom font. */
-        draw_char_outline(font: Font, pos: Vector2, char: string, font_size: int64 = 16, size: int64 = -1, modulate: Color = new Color(1, 1, 1, 1)): void
-        
-        /** Draws a [Mesh] in 2D, using the provided texture. See [MeshInstance2D] for related documentation. */
-        draw_mesh(mesh: Mesh, texture: Texture2D, transform: Transform2D = new Transform2D(), modulate: Color = new Color(1, 1, 1, 1)): void
-        
-        /** Draws a [MultiMesh] in 2D with the provided texture. See [MultiMeshInstance2D] for related documentation. */
-        draw_multimesh(multimesh: MultiMesh, texture: Texture2D): void
-        
-        /** Sets a custom transform for drawing via components. Anything drawn afterwards will be transformed by this.  
-         *      
-         *  **Note:** [member FontFile.oversampling] does  *not*  take [param scale] into account. This means that scaling up/down will cause bitmap fonts and rasterized (non-MSDF) dynamic fonts to appear blurry or pixelated. To ensure text remains crisp regardless of scale, you can enable MSDF font rendering by enabling [member ProjectSettings.gui/theme/default_font_multichannel_signed_distance_field] (applies to the default project font only), or enabling **Multichannel Signed Distance Field** in the import options of a DynamicFont for custom fonts. On system fonts, [member SystemFont.multichannel_signed_distance_field] can be enabled in the inspector.  
-         */
-        draw_set_transform(position: Vector2, rotation: float64 = 0, scale: Vector2 = Vector2.ONE): void
-        
-        /** Sets a custom transform for drawing via matrix. Anything drawn afterwards will be transformed by this. */
-        draw_set_transform_matrix(xform: Transform2D): void
-        
-        /** Subsequent drawing commands will be ignored unless they fall within the specified animation slice. This is a faster way to implement animations that loop on background rather than redrawing constantly. */
-        draw_animation_slice(animation_length: float64, slice_begin: float64, slice_end: float64, offset: float64 = 0): void
-        
-        /** After submitting all animations slices via [method draw_animation_slice], this function can be used to revert drawing to its default state (all subsequent drawing commands will be visible). If you don't care about this particular use case, usage of this function after submitting the slices is not required. */
-        draw_end_animation(): void
-        
-        /** Returns the transform matrix of this item. */
-        get_transform(): Transform2D
-        
-        /** Returns the global transform matrix of this item, i.e. the combined transform up to the topmost [CanvasItem] node. The topmost item is a [CanvasItem] that either has no parent, has non-[CanvasItem] parent or it has [member top_level] enabled. */
-        get_global_transform(): Transform2D
-        
-        /** Returns the transform from the local coordinate system of this [CanvasItem] to the [Viewport]s coordinate system. */
-        get_global_transform_with_canvas(): Transform2D
-        
-        /** Returns the transform from the coordinate system of the canvas, this item is in, to the [Viewport]s embedders coordinate system. */
-        get_viewport_transform(): Transform2D
-        
-        /** Returns the viewport's boundaries as a [Rect2]. */
-        get_viewport_rect(): Rect2
-        
-        /** Returns the transform from the coordinate system of the canvas, this item is in, to the [Viewport]s coordinate system. */
-        get_canvas_transform(): Transform2D
-        
-        /** Returns the transform of this [CanvasItem] in global screen coordinates (i.e. taking window position into account). Mostly useful for editor plugins.  
-         *  Equals to [method get_global_transform] if the window is embedded (see [member Viewport.gui_embed_subwindows]).  
-         */
-        get_screen_transform(): Transform2D
-        
-        /** Returns the mouse's position in this [CanvasItem] using the local coordinate system of this [CanvasItem]. */
-        get_local_mouse_position(): Vector2
-        
-        /** Returns the mouse's position in the [CanvasLayer] that this [CanvasItem] is in using the coordinate system of the [CanvasLayer].  
-         *      
-         *  **Note:** For screen-space coordinates (e.g. when using a non-embedded [Popup]), you can use [method DisplayServer.mouse_get_position].  
-         */
-        get_global_mouse_position(): Vector2
-        
-        /** Returns the [RID] of the [World2D] canvas where this item is in. */
-        get_canvas(): RID
-        
-        /** Returns the [CanvasLayer] that contains this node, or `null` if the node is not in any [CanvasLayer]. */
-        get_canvas_layer_node(): CanvasLayer
-        
-        /** Returns the [World2D] where this item is in. */
-        get_world_2d(): World2D
-        
-        /** If [param enable] is `true`, this node will receive [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] when its local transform changes. */
-        set_notify_local_transform(enable: boolean): void
-        
-        /** Returns `true` if local transform notifications are communicated to children. */
-        is_local_transform_notification_enabled(): boolean
-        
-        /** If [param enable] is `true`, this node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] when its global transform changes. */
-        set_notify_transform(enable: boolean): void
-        
-        /** Returns `true` if global transform notifications are communicated to children. */
-        is_transform_notification_enabled(): boolean
-        
-        /** Forces the transform to update. Transform changes in physics are not instant for performance reasons. Transforms are accumulated and then set. Use this if you need an up-to-date transform when doing physics operations. */
-        force_update_transform(): void
-        
-        /** Assigns [param screen_point] as this node's new local transform. */
-        make_canvas_position_local(screen_point: Vector2): Vector2
-        
-        /** Transformations issued by [param event]'s inputs are applied in local space instead of global space. */
-        make_input_local(event: InputEvent): InputEvent
-        
-        /** Set/clear individual bits on the rendering visibility layer. This simplifies editing this [CanvasItem]'s visibility layer. */
-        set_visibility_layer_bit(layer: int64, enabled: boolean): void
-        
-        /** Returns an individual bit on the rendering visibility layer. */
-        get_visibility_layer_bit(layer: int64): boolean
-        
-        /** If `true`, this [CanvasItem] is drawn. The node is only visible if all of its ancestors are visible as well (in other words, [method is_visible_in_tree] must return `true`).  
-         *      
-         *  **Note:** For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple `popup*()` functions instead.  
-         */
-        get visible(): boolean
-        set visible(value: boolean)
-        
-        /** The color applied to this [CanvasItem]. This property does affect child [CanvasItem]s, unlike [member self_modulate] which only affects the node itself. */
-        get modulate(): Color
-        set modulate(value: Color)
-        
-        /** The color applied to this [CanvasItem]. This property does **not** affect child [CanvasItem]s, unlike [member modulate] which affects both the node itself and its children.  
-         *      
-         *  **Note:** Internal children (e.g. sliders in [ColorPicker] or tab bar in [TabContainer]) are also not affected by this property (see `include_internal` parameter of [method Node.get_child] and other similar methods).  
-         */
-        get self_modulate(): Color
-        set self_modulate(value: Color)
-        
-        /** If `true`, the object draws behind its parent. */
-        get show_behind_parent(): boolean
-        set show_behind_parent(value: boolean)
-        
-        /** If `true`, this [CanvasItem] will  *not*  inherit its transform from parent [CanvasItem]s. Its draw order will also be changed to make it draw on top of other [CanvasItem]s that do not have [member top_level] set to `true`. The [CanvasItem] will effectively act as if it was placed as a child of a bare [Node]. */
-        get top_level(): boolean
-        set top_level(value: boolean)
-        
-        /** Allows the current node to clip child nodes, essentially acting as a mask. */
-        get clip_children(): int64
-        set clip_children(value: int64)
-        
-        /** The rendering layers in which this [CanvasItem] responds to [Light2D] nodes. */
-        get light_mask(): int64
-        set light_mask(value: int64)
-        
-        /** The rendering layer in which this [CanvasItem] is rendered by [Viewport] nodes. A [Viewport] will render a [CanvasItem] if it and all its parents share a layer with the [Viewport]'s canvas cull mask. */
-        get visibility_layer(): int64
-        set visibility_layer(value: int64)
-        
-        /** Controls the order in which the nodes render. A node with a higher Z index will display in front of others. Must be between [constant RenderingServer.CANVAS_ITEM_Z_MIN] and [constant RenderingServer.CANVAS_ITEM_Z_MAX] (inclusive).  
-         *      
-         *  **Note:** Changing the Z index of a [Control] only affects the drawing order, not the order in which input events are handled. This can be useful to implement certain UI animations, e.g. a menu where hovered items are scaled and should overlap others.  
-         */
-        get z_index(): int64
-        set z_index(value: int64)
-        
-        /** If `true`, the node's Z index is relative to its parent's Z index. If this node's Z index is 2 and its parent's effective Z index is 3, then this node's effective Z index will be 2 + 3 = 5. */
-        get z_as_relative(): boolean
-        set z_as_relative(value: boolean)
-        
-        /** If `true`, this and child [CanvasItem] nodes with a higher Y position are rendered in front of nodes with a lower Y position. If `false`, this and child [CanvasItem] nodes are rendered normally in scene tree order.  
-         *  With Y-sorting enabled on a parent node ('A') but disabled on a child node ('B'), the child node ('B') is sorted but its children ('C1', 'C2', etc) render together on the same Y position as the child node ('B'). This allows you to organize the render order of a scene without changing the scene tree.  
-         *  Nodes sort relative to each other only if they are on the same [member z_index].  
-         */
-        get y_sort_enabled(): boolean
-        set y_sort_enabled(value: boolean)
-        
-        /** The texture filtering mode to use on this [CanvasItem]. */
-        get texture_filter(): int64
-        set texture_filter(value: int64)
-        
-        /** The texture repeating mode to use on this [CanvasItem]. */
-        get texture_repeat(): int64
-        set texture_repeat(value: int64)
-        
-        /** The material applied to this [CanvasItem]. */
-        get material(): CanvasItemMaterial | ShaderMaterial
-        set material(value: CanvasItemMaterial | ShaderMaterial)
-        
-        /** If `true`, the parent [CanvasItem]'s [member material] property is used as this one's material. */
-        get use_parent_material(): boolean
-        set use_parent_material(value: boolean)
-        
-        /** Emitted when the [CanvasItem] must redraw,  *after*  the related [constant NOTIFICATION_DRAW] notification, and  *before*  [method _draw] is called.  
-         *      
-         *  **Note:** Deferred connections do not allow drawing through the `draw_*` methods.  
-         */
-        readonly draw: Signal0
-        
-        /** Emitted when the visibility (hidden/visible) changes. */
-        readonly visibility_changed: Signal0
-        
-        /** Emitted when becoming hidden. */
-        readonly hidden: Signal0
-        
-        /** Emitted when the item's [Rect2] boundaries (position or size) have changed, or when an action is taking place that may have impacted these boundaries (e.g. changing [member Sprite2D.texture]). */
-        readonly item_rect_changed: Signal0
-    }
-    class CanvasItemEditor extends VBoxContainer {
-        constructor(identifier?: any)
-        _get_editor_data(_unnamed_arg0: Object): Object
-        update_viewport(): void
-        center_at(position: Vector2): void
-        _set_owner_for_node_and_children(_unnamed_arg0: Node, _unnamed_arg1: Node): void
-        readonly item_lock_status_changed: Signal0
-        readonly item_group_status_changed: Signal0
-    }
-    class CanvasItemEditorPlugin extends EditorPlugin {
-        constructor(identifier?: any)
-    }
-    class CanvasItemEditorViewport extends Control {
-        constructor(identifier?: any)
-    }
-    namespace CanvasItemMaterial {
-        enum BlendMode {
-            /** Mix blending mode. Colors are assumed to be independent of the alpha (opacity) value. */
-            BLEND_MODE_MIX = 0,
-            
-            /** Additive blending mode. */
-            BLEND_MODE_ADD = 1,
-            
-            /** Subtractive blending mode. */
-            BLEND_MODE_SUB = 2,
-            
-            /** Multiplicative blending mode. */
-            BLEND_MODE_MUL = 3,
-            
-            /** Mix blending mode. Colors are assumed to be premultiplied by the alpha (opacity) value. */
-            BLEND_MODE_PREMULT_ALPHA = 4,
-        }
-        enum LightMode {
-            /** Render the material using both light and non-light sensitive material properties. */
-            LIGHT_MODE_NORMAL = 0,
-            
-            /** Render the material as if there were no light. */
-            LIGHT_MODE_UNSHADED = 1,
-            
-            /** Render the material as if there were only light. */
-            LIGHT_MODE_LIGHT_ONLY = 2,
-        }
-    }
-    /** A material for [CanvasItem]s.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_canvasitemmaterial.html  
-     */
-    class CanvasItemMaterial extends Material {
-        constructor(identifier?: any)
-        /** The manner in which a material's rendering is applied to underlying textures. */
-        get blend_mode(): int64
-        set blend_mode(value: int64)
-        
-        /** The manner in which material reacts to lighting. */
-        get light_mode(): int64
-        set light_mode(value: int64)
-        
-        /** If `true`, enable spritesheet-based animation features when assigned to [GPUParticles2D] and [CPUParticles2D] nodes. The [member ParticleProcessMaterial.anim_speed_max] or [member CPUParticles2D.anim_speed_max] should also be set to a positive value for the animation to play.  
-         *  This property (and other `particles_anim_*` properties that depend on it) has no effect on other types of nodes.  
-         */
-        get particles_animation(): boolean
-        set particles_animation(value: boolean)
-        
-        /** The number of columns in the spritesheet assigned as [Texture2D] for a [GPUParticles2D] or [CPUParticles2D].  
-         *      
-         *  **Note:** This property is only used and visible in the editor if [member particles_animation] is `true`.  
-         */
-        get particles_anim_h_frames(): int64
-        set particles_anim_h_frames(value: int64)
-        
-        /** The number of rows in the spritesheet assigned as [Texture2D] for a [GPUParticles2D] or [CPUParticles2D].  
-         *      
-         *  **Note:** This property is only used and visible in the editor if [member particles_animation] is `true`.  
-         */
-        get particles_anim_v_frames(): int64
-        set particles_anim_v_frames(value: int64)
-        
-        /** If `true`, the particles animation will loop.  
-         *      
-         *  **Note:** This property is only used and visible in the editor if [member particles_animation] is `true`.  
-         */
-        get particles_anim_loop(): boolean
-        set particles_anim_loop(value: boolean)
-    }
-    class CanvasItemMaterialConversionPlugin extends EditorResourceConversionPlugin {
-        constructor(identifier?: any)
-    }
-    /** A node used for independent rendering of objects within a 2D scene.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.3/classes/class_canvaslayer.html  
-     */
-    class CanvasLayer extends Node {
-        constructor(identifier?: any)
-        /** Shows any [CanvasItem] under this [CanvasLayer]. This is equivalent to setting [member visible] to `true`. */
-        show(): void
-        
-        /** Hides any [CanvasItem] under this [CanvasLayer]. This is equivalent to setting [member visible] to `false`. */
-        hide(): void
-        
-        /** Returns the transform from the [CanvasLayer]s coordinate system to the [Viewport]s coordinate system. */
-        get_final_transform(): Transform2D
-        
-        /** Returns the RID of the canvas used by this layer. */
-        get_canvas(): RID
-        
-        /** Layer index for draw order. Lower values are drawn behind higher values.  
-         *      
-         *  **Note:** If multiple CanvasLayers have the same layer index, [CanvasItem] children of one CanvasLayer are drawn behind the [CanvasItem] children of the other CanvasLayer. Which CanvasLayer is drawn in front is non-deterministic.  
-         */
-        get layer(): int64
-        set layer(value: int64)
-        
-        /** If `false`, any [CanvasItem] under this [CanvasLayer] will be hidden.  
-         *  Unlike [member CanvasItem.visible], visibility of a [CanvasLayer] isn't propagated to underlying layers.  
-         */
-        get visible(): boolean
-        set visible(value: boolean)
-        
-        /** The layer's base offset. */
-        get offset(): Vector2
-        set offset(value: Vector2)
-        
-        /** The layer's rotation in radians. */
-        get rotation(): float64
-        set rotation(value: float64)
-        
-        /** The layer's scale. */
-        get scale(): Vector2
-        set scale(value: Vector2)
-        
-        /** The layer's transform. */
-        get transform(): Transform2D
-        set transform(value: Transform2D)
-        
-        /** The custom [Viewport] node assigned to the [CanvasLayer]. If `null`, uses the default viewport instead. */
-        get custom_viewport(): Viewport
-        set custom_viewport(value: Viewport)
-        
-        /** If enabled, the [CanvasLayer] will use the viewport's transform, so it will move when camera moves instead of being anchored in a fixed position on the screen.  
-         *  Together with [member follow_viewport_scale] it can be used for a pseudo 3D effect.  
-         */
-        get follow_viewport_enabled(): boolean
-        set follow_viewport_enabled(value: boolean)
-        
-        /** Scales the layer when using [member follow_viewport_enabled]. Layers moving into the foreground should have increasing scales, while layers moving into the background should have decreasing scales. */
-        get follow_viewport_scale(): float64
-        set follow_viewport_scale(value: float64)
-        
-        /** Emitted when visibility of the layer is changed. See [member visible]. */
-        readonly visibility_changed: Signal0
     }
 }
