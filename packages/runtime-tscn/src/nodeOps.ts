@@ -61,7 +61,10 @@ export const nodeOps: Omit<RendererOptions<Node, Node>, 'patchProp'> = {
 
   nextSibling: (node) => {
     const index = node.get_index() + 1
-    return node.get_parent()?.get_child(index) || null
+    if (index >= node.get_parent()?.get_child_count()) {
+      return null
+    }
+    return node.get_parent()?.get_child(index)
   },
 
   querySelector: (selector) => {
