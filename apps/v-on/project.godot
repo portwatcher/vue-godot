@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="demoapp"
+config/name="v-on demo"
 run/main_scene="uid://75hgd8tc3add"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"

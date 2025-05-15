@@ -54,4 +54,4 @@ npm install
 npm run build:demo
 ```
 
-Open GodotJS editor and open `apps/demoapp/project.godot`
+Open GodotJS editor and open `apps/v-on/project.godot`

@@ -3,7 +3,7 @@
   "scripts": {
     "build": "turbo run build",
     "build:runtime": "turbo run build --filter=@vue-godot/runtime-tscn",
-    "build:demo": "turbo run build --filter=demoapp"
+    "build:demo": "turbo run build --filter=\"./apps/*\""
   },
   "repository": {
     "type": "git",
