@@ -1,10 +1,10 @@
-import { createApp, Node } from '@vue-godot/runtime-tscn'
+import { createApp } from '@vue-godot/runtime-tscn'
+import { Control } from 'godot'
 import Test from './Test.vue'
 
-/**
- * Called from Godot.
- * `root` must be a Godot Node that will become the component’s container.
- */
-export function mount(root: Node) {
-  return createApp(Test).mount(root)
+export default class App extends Control {
+  _ready() {
+    const app = createApp(Test)
+    app.mount(this)
+  }
 }

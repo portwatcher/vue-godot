@@ -10,14 +10,12 @@ export default defineConfig({
   build: {
     lib: {
       entry: 'src/main.ts',
-      name: 'VueGodotApp',
-      // an IIFE puts `VueGodotApp` on `globalThis`
-      formats: ['iife'],
-      fileName: () => 'vue-godot-app.js',
+      formats: ['es'],
+      fileName: () => 'app.js',
     },
     // everything provided by the engine/runtime stays external
     rollupOptions: {
-      external: ['@vue/runtime-core', 'vue-godot', 'godot'],
+      external: ['@vue/runtime-core', 'godot'],
     },
     target: 'es2020',
   },
