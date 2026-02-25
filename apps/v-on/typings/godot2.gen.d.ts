@@ -4742,15 +4742,6 @@ declare module "godot" {
         get color_regions(): GDictionary
         set color_regions(value: GDictionary)
     }
-    class CodeTextEditor<Map extends Record<string, Node> = Record<string, Node>> extends VBoxContainer<Map> {
-        constructor(identifier?: any)
-        readonly validate_script: Signal0
-        readonly load_theme_settings: Signal0
-        readonly show_errors_panel: Signal0
-        readonly show_warnings_panel: Signal0
-        readonly navigation_preview_ended: Signal0
-        readonly zoomed: Signal1<float64>
-    }
     namespace CollisionObject2D {
         enum DisableMode {
             /** When [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED], remove from the physics simulation to stop all physics interactions with this [CollisionObject2D].  
@@ -5700,9 +5691,6 @@ declare module "godot" {
         readonly connected: Signal0
     }
     class ConnectDialogBinds extends Object {
-        constructor(identifier?: any)
-    }
-    class ConnectionInfoDialog<Map extends Record<string, Node> = Record<string, Node>> extends AcceptDialog<Map> {
         constructor(identifier?: any)
     }
     class ConnectionsDock<Map extends Record<string, Node> = Record<string, Node>> extends VBoxContainer<Map> {

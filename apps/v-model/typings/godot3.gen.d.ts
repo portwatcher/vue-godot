@@ -387,6 +387,13 @@ declare module "godot" {
     class EditorInspectorRootMotionPlugin extends EditorInspectorPlugin {
         constructor(identifier?: any)
     }
+    class EditorInspectorSection<Map extends Record<string, Node> = Record<string, Node>> extends Container<Map> {
+        constructor(identifier?: any)
+        setup(section: string, label: string, object: Object, bg_color: Color, foldable: boolean, indent_depth: int64 = 0, level: int64 = 1): void
+        get_vbox(): VBoxContainer
+        unfold(): void
+        fold(): void
+    }
     class EditorInspectorToolButtonPlugin extends EditorInspectorPlugin {
         constructor(identifier?: any)
     }
@@ -1258,14 +1265,40 @@ declare module "godot" {
         /** Emitted when selected. Used internally. */
         readonly selected: Signal2<string, int64>
     }
+    class EditorPropertyAnchorsPreset<Map extends Record<string, Node> = Record<string, Node>> extends EditorProperty<Map> {
+        constructor(identifier?: any)
+    }
+    class EditorPropertyArray<Map extends Record<string, Node> = Record<string, Node>> extends EditorProperty<Map> {
+        constructor(identifier?: any)
+    }
+    class EditorPropertyArrayObject extends RefCounted {
+        constructor(identifier?: any)
+    }
     class EditorPropertyCheck<Map extends Record<string, Node> = Record<string, Node>> extends EditorProperty<Map> {
+        constructor(identifier?: any)
+    }
+    class EditorPropertyColor<Map extends Record<string, Node> = Record<string, Node>> extends EditorProperty<Map> {
         constructor(identifier?: any)
     }
     class EditorPropertyDictionaryObject extends RefCounted {
         constructor(identifier?: any)
     }
+    class EditorPropertyEnum<Map extends Record<string, Node> = Record<string, Node>> extends EditorProperty<Map> {
+        constructor(identifier?: any)
+    }
+    class EditorPropertyFloat<Map extends Record<string, Node> = Record<string, Node>> extends EditorProperty<Map> {
+        constructor(identifier?: any)
+    }
     class EditorPropertyInteger<Map extends Record<string, Node> = Record<string, Node>> extends EditorProperty<Map> {
         constructor(identifier?: any)
+    }
+    class EditorPropertyLayers<Map extends Record<string, Node> = Record<string, Node>> extends EditorProperty<Map> {
+        constructor(identifier?: any)
+    }
+    class EditorPropertyLayersGrid<Map extends Record<string, Node> = Record<string, Node>> extends Control<Map> {
+        constructor(identifier?: any)
+        readonly flag_changed: Signal1<int64>
+        readonly rename_confirmed: Signal2<int64, string>
     }
     class EditorPropertyLocalizableString<Map extends Record<string, Node> = Record<string, Node>> extends EditorProperty<Map> {
         constructor(identifier?: any)
@@ -1276,6 +1309,9 @@ declare module "godot" {
     class EditorPropertyNameProcessor<Map extends Record<string, Node> = Record<string, Node>> extends Node<Map> {
         constructor(identifier?: any)
     }
+    class EditorPropertyNodePath<Map extends Record<string, Node> = Record<string, Node>> extends EditorProperty<Map> {
+        constructor(identifier?: any)
+    }
     class EditorPropertyPath<Map extends Record<string, Node> = Record<string, Node>> extends EditorProperty<Map> {
         constructor(identifier?: any)
     }
@@ -1283,7 +1319,16 @@ declare module "godot" {
         constructor(identifier?: any)
         _should_stop_editing(): boolean
     }
+    class EditorPropertySizeFlags<Map extends Record<string, Node> = Record<string, Node>> extends EditorProperty<Map> {
+        constructor(identifier?: any)
+    }
     class EditorPropertyText<Map extends Record<string, Node> = Record<string, Node>> extends EditorProperty<Map> {
+        constructor(identifier?: any)
+    }
+    class EditorPropertyTextEnum<Map extends Record<string, Node> = Record<string, Node>> extends EditorProperty<Map> {
+        constructor(identifier?: any)
+    }
+    class EditorPropertyVector2<Map extends Record<string, Node> = Record<string, Node>> extends EditorPropertyVectorN<Map> {
         constructor(identifier?: any)
     }
     class EditorPropertyVector2i<Map extends Record<string, Node> = Record<string, Node>> extends EditorPropertyVectorN<Map> {
@@ -6639,7 +6684,7 @@ declare module "godot" {
         get_value_cached_string_names(): any
         get_value_persistent_objects(): any
         get_value_allocated_variants(): any
-        get_value_memory_used_size(): any
+        get_value_heap_size(): any
     }
     class GodotJSStatisticsViewer<Map extends Record<string, Node> = Record<string, Node>> extends VBoxContainer<Map> {
         constructor(identifier?: any)
@@ -8261,6 +8306,9 @@ declare module "godot" {
         _save_layout_to_config(_unnamed_arg0: ConfigFile, _unnamed_arg1: string): void
         _load_layout_from_config(_unnamed_arg0: ConfigFile, _unnamed_arg1: string): void
     }
+    class IPWindows extends IP {
+        constructor(identifier?: any)
+    }
     namespace Image {
         enum Format {
             /** Texture format with a single 8-bit depth representing luminance. */
@@ -9156,61 +9204,5 @@ declare module "godot" {
         /** The real event index in action this event corresponds to (from events defined for this action in the [InputMap]). If `-1`, a unique ID will be used and actions pressed with this ID will need to be released with another [InputEventAction]. */
         get event_index(): int64
         set event_index(value: int64)
-    }
-    class InputEventConfigurationDialog<Map extends Record<string, Node> = Record<string, Node>> extends ConfirmationDialog<Map> {
-        constructor(identifier?: any)
-    }
-    class InputEventEditorPlugin<Map extends Record<string, Node> = Record<string, Node>> extends EditorPlugin<Map> {
-        constructor(identifier?: any)
-    }
-    /** Abstract base class for [Viewport]-based input events.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.4/classes/class_inputeventfromwindow.html  
-     */
-    class InputEventFromWindow extends InputEvent {
-        constructor(identifier?: any)
-        /** The ID of a [Window] that received this event. */
-        get window_id(): int64
-        set window_id(value: int64)
-    }
-    /** Abstract base class for touch gestures.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.4/classes/class_inputeventgesture.html  
-     */
-    class InputEventGesture extends InputEventWithModifiers {
-        constructor(identifier?: any)
-        /** The local gesture position relative to the [Viewport]. If used in [method Control._gui_input], the position is relative to the current [Control] that received this gesture. */
-        get position(): Vector2
-        set position(value: Vector2)
-    }
-    /** Represents a gamepad button being pressed or released.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.4/classes/class_inputeventjoypadbutton.html  
-     */
-    class InputEventJoypadButton extends InputEvent {
-        constructor(identifier?: any)
-        /** Button identifier. One of the [enum JoyButton] button constants. */
-        get button_index(): int64
-        set button_index(value: int64)
-        get pressure(): float64
-        set pressure(value: float64)
-        
-        /** If `true`, the button's state is pressed. If `false`, the button's state is released. */
-        get pressed(): boolean
-        set pressed(value: boolean)
-    }
-    /** Represents axis motions (such as joystick or analog triggers) from a gamepad.  
-     *  	  
-     *  @link https://docs.godotengine.org/en/4.4/classes/class_inputeventjoypadmotion.html  
-     */
-    class InputEventJoypadMotion extends InputEvent {
-        constructor(identifier?: any)
-        /** Axis identifier. Use one of the [enum JoyAxis] axis constants. */
-        get axis(): int64
-        set axis(value: int64)
-        
-        /** Current position of the joystick on the given axis. The value ranges from `-1.0` to `1.0`. A value of `0` means the axis is in its resting position. */
-        get axis_value(): float64
-        set axis_value(value: float64)
     }
 }

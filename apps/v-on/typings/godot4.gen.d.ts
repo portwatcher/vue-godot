@@ -4429,7 +4429,7 @@ declare module "godot" {
          */
         unlock(): void
     }
-    class NativeMenuMacOS extends NativeMenu {
+    class NativeMenuWindows extends NativeMenu {
         constructor(identifier?: any)
     }
     /** A 2D agent used to pathfind to a position while avoiding obstacles.  

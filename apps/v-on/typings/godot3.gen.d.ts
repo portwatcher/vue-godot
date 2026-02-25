@@ -689,9 +689,6 @@ declare module "godot" {
     class EditorPerformanceProfiler<Map extends Record<string, Node> = Record<string, Node>> extends HSplitContainer<Map> {
         constructor(identifier?: any)
     }
-    class EditorPlainTextSyntaxHighlighter extends EditorSyntaxHighlighter {
-        constructor(identifier?: any)
-    }
     namespace EditorPlugin {
         enum CustomControlContainer {
             /** Main editor toolbar, next to play buttons. */
@@ -1767,9 +1764,6 @@ declare module "godot" {
         
         /** Emitted when the value form loses focus. */
         readonly value_focus_exited: Signal0
-    }
-    class EditorStandardSyntaxHighlighter extends EditorSyntaxHighlighter {
-        constructor(identifier?: any)
     }
     /** Base class for [SyntaxHighlighter] used by the [ScriptEditor].  
      *  	  
@@ -6639,7 +6633,7 @@ declare module "godot" {
         get_value_cached_string_names(): any
         get_value_persistent_objects(): any
         get_value_allocated_variants(): any
-        get_value_memory_used_size(): any
+        get_value_heap_size(): any
     }
     class GodotJSStatisticsViewer<Map extends Record<string, Node> = Record<string, Node>> extends VBoxContainer<Map> {
         constructor(identifier?: any)
@@ -6654,9 +6648,6 @@ declare module "godot" {
         constructor(identifier?: any)
     }
     class GodotPhysicsServer3D extends PhysicsServer3D {
-        constructor(identifier?: any)
-    }
-    class GotoLinePopup<Map extends Record<string, Node> = Record<string, Node>> extends PopupPanel<Map> {
         constructor(identifier?: any)
     }
     namespace Gradient {
@@ -8260,6 +8251,9 @@ declare module "godot" {
         constructor(identifier?: any)
         _save_layout_to_config(_unnamed_arg0: ConfigFile, _unnamed_arg1: string): void
         _load_layout_from_config(_unnamed_arg0: ConfigFile, _unnamed_arg1: string): void
+    }
+    class IPWindows extends IP {
+        constructor(identifier?: any)
     }
     namespace Image {
         enum Format {

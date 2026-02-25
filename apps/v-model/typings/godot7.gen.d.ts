@@ -2562,6 +2562,11 @@ declare module "godot" {
         get pseudolocalization_suffix(): string
         set pseudolocalization_suffix(value: string)
     }
+    class TranslationPO extends Translation {
+        constructor(identifier?: any)
+        get_plural_forms(): int64
+        get_plural_rule(): string
+    }
     namespace Tree {
         enum SelectMode {
             /** Allows selection of a single cell at a time. From the perspective of items, only a single item is allowed to be selected. And there is only one column selected in the selected item.  
@@ -3795,6 +3800,12 @@ declare module "godot" {
         /** IGD status. See [enum IGDStatus]. */
         get igd_status(): int64
         set igd_status(value: int64)
+    }
+    class UPNPDeviceMiniUPNP extends UPNPDevice {
+        constructor(identifier?: any)
+    }
+    class UPNPMiniUPNP extends UPNP {
+        constructor(identifier?: any)
     }
     namespace UndoRedo {
         enum MergeMode {
