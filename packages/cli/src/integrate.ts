@@ -16,7 +16,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 /** Resolve the bundled templates/ directory (lives next to dist/). */
-function getTemplatesDir(): string {
+export function getTemplatesDir(): string {
   // In the built package: dist/integrate.js → ../templates
   return path.resolve(__dirname, '..', 'templates')
 }
@@ -42,7 +42,7 @@ function findNodeModules(from: string): string | null {
  * Recursively copy a directory, applying placeholder replacements to every
  * text file. Binary files are copied as-is.
  */
-function copyTemplateDir(
+export function copyTemplateDir(
   srcDir: string,
   destDir: string,
   replacements: Record<string, string>,
@@ -67,7 +67,7 @@ function copyTemplateDir(
   }
 }
 
-function newPackageJson(name: string): Record<string, unknown> {
+export function newPackageJson(name: string): Record<string, unknown> {
   return {
     name,
     version: '1.0.0',

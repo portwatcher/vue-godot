@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 import * as path from 'node:path'
+import * as readline from 'node:readline/promises'
+import { create } from './create.js'
 import { generate } from './index.js'
 import { integrate } from './integrate.js'
 
@@ -12,8 +14,9 @@ function mainUsage(): never {
     `Usage: vue-godot <command> [options]
 
 Commands:
+  create      Create a new Godot project with vue-godot set up and ready to go
+  integrate   Scaffold a vue/ folder with Vite + Vue configs for an existing Godot project
   gen-types   Generate Vue GlobalComponents type augmentation from Godot typings
-  integrate   Scaffold a vue/ folder with Vite + Vue configs for a Godot project
 
 Run \`vue-godot <command> --help\` for command-specific options.
 `,
@@ -74,6 +77,52 @@ function parseGenTypesArgs(argv: string[]) {
   return { typingsDir, outFile, ancestor, vueSrcDir }
 }
 
+function createUsage(): never {
+  console.error(
+    `Usage: vue-godot create [name] [options]
+
+Create a new Godot project with vue-godot set up and ready to go.
+If no name is given you will be prompted for one.
+
+Arguments:
+  name        Project name (used as directory name)
+
+Options:
+  -f          Force overwrite if directory already exists
+`,
+  )
+  process.exit(1)
+}
+
+function parseCreateArgs(argv: string[]) {
+  let projectName: string | undefined
+  let force = false
+
+  for (let i = 0; i < argv.length; i++) {
+    switch (argv[i]) {
+      case '-f':
+        force = true
+        break
+      case '--help':
+      case '-h':
+        createUsage()
+      default:
+        if (argv[i].startsWith('-')) {
+          console.error(`Unknown option: ${argv[i]}`)
+          createUsage()
+        }
+        if (!projectName) {
+          projectName = argv[i]
+        } else {
+          console.error(`Unexpected argument: ${argv[i]}`)
+          createUsage()
+        }
+    }
+  }
+
+  return { projectName, force }
+}
+
 function integrateUsage(): never {
   console.error(
     `Usage: vue-godot integrate [dir] [options]
@@ -124,6 +173,24 @@ if (!command || command === '--help' || command === '-h') {
 }
 
 switch (command) {
+  case 'create': {
+    const parsed = parseCreateArgs(args.slice(1))
+    let { projectName } = parsed
+    if (!projectName) {
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      })
+      projectName = (await rl.question('Project name: ')).trim()
+      rl.close()
+      if (!projectName) {
+        console.error('Project name is required.')
+        process.exit(1)
+      }
+    }
+    await create({ projectName, force: parsed.force })
+    break
+  }
   case 'gen-types': {
     const parsed = parseGenTypesArgs(args.slice(1))
     const typingsDir = path.resolve(parsed.typingsDir ?? './typings')
