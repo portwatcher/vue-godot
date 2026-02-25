@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "vue": ["{{NODE_MODULES}}/@vue/runtime-core/dist/runtime-core.d.ts"],
+      "godot": ["../typings/godot.mix.d.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue", "../typings/**/*.d.ts"]
+}

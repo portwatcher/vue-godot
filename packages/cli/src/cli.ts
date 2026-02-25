@@ -2,6 +2,7 @@
 
 import * as path from 'node:path'
 import { generate } from './index.js'
+import { integrate } from './integrate.js'
 
 const args = process.argv.slice(2)
 const command = args[0]
@@ -12,6 +13,7 @@ function mainUsage(): never {
 
 Commands:
   gen-types   Generate Vue GlobalComponents type augmentation from Godot typings
+  integrate   Scaffold a vue/ folder with Vite + Vue configs for a Godot project
 
 Run \`vue-godot <command> --help\` for command-specific options.
 `,
@@ -72,6 +74,51 @@ function parseGenTypesArgs(argv: string[]) {
   return { typingsDir, outFile, ancestor, vueSrcDir }
 }
 
+function integrateUsage(): never {
+  console.error(
+    `Usage: vue-godot integrate [dir] [options]
+
+Scaffold a vue/ folder with Vite + Vue configuration for a Godot project.
+
+Arguments:
+  dir         Target directory (defaults to the current directory)
+
+Options:
+  -f          Force overwrite if vue/ already exists (no prompt)
+`,
+  )
+  process.exit(1)
+}
+
+function parseIntegrateArgs(argv: string[]) {
+  let targetDir: string | undefined
+  let force = false
+
+  for (let i = 0; i < argv.length; i++) {
+    switch (argv[i]) {
+      case '-f':
+        force = true
+        break
+      case '--help':
+      case '-h':
+        integrateUsage()
+      default:
+        if (argv[i].startsWith('-')) {
+          console.error(`Unknown option: ${argv[i]}`)
+          integrateUsage()
+        }
+        if (!targetDir) {
+          targetDir = argv[i]
+        } else {
+          console.error(`Unexpected argument: ${argv[i]}`)
+          integrateUsage()
+        }
+    }
+  }
+
+  return { targetDir: targetDir ?? '.', force }
+}
+
 if (!command || command === '--help' || command === '-h') {
   mainUsage()
 }
@@ -86,6 +133,11 @@ switch (command) {
     const ancestor = parsed.ancestor ?? 'Control'
     const vueSrcDir = path.resolve(parsed.vueSrcDir ?? './vue/src')
     generate({ typingsDir, outFile, ancestor, vueSrcDir })
+    break
+  }
+  case 'integrate': {
+    const parsed = parseIntegrateArgs(args.slice(1))
+    await integrate(parsed)
     break
   }
   default:
