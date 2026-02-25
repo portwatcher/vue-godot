@@ -49,9 +49,11 @@ export default class App extends Control {
 
 Download GodotJS editor from https://github.com/ialex32x/GodotJS-Build/releases
 
+> **Note:** GodotJS 1.0.0-2 has a scene codegen bug where `SceneTSDCodeGen.make_path` doesn't strip `res://` from scene paths, producing `ERROR: Could not create directory: './typings/res:/'`. This was fixed on the [main branch](https://github.com/godotjs/GodotJS/blob/main/scripts/jsb.editor/src/jsb.editor.codegen.ts) (method renamed to `make_scene_path` with `res://` stripping) but no Godot 4.4 build includes the fix yet. The errors are harmless and don't affect runtime. To suppress them, go to **Editor → Editor Settings → search `GodotJS`** and set `codegen/generate_scene_dts` to `false`.
+
 ```bash
 npm install
-npm run build:demo
+npm run build
 ```
 
 Open GodotJS editor and open `apps/v-on/project.godot`

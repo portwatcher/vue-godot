@@ -1,5 +1,5 @@
-declare module "godot" {
-    interface SceneNodes {
-        "app.tscn": {},
-    }
+declare module 'godot' {
+  interface SceneNodes {
+    'app.tscn': {}
+  }
 }

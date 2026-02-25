@@ -3579,6 +3579,9 @@ declare module "godot" {
     class CanvasItemEditorPlugin<Map extends Record<string, Node> = Record<string, Node>> extends EditorPlugin<Map> {
         constructor(identifier?: any)
     }
+    class CanvasItemEditorSelectedItem extends Object {
+        constructor(identifier?: any)
+    }
     class CanvasItemEditorViewport<Map extends Record<string, Node> = Record<string, Node>> extends Control<Map> {
         constructor(identifier?: any)
     }
@@ -6710,6 +6713,9 @@ declare module "godot" {
         constructor(identifier?: any)
     }
     class ControlEditorToolbar<Map extends Record<string, Node> = Record<string, Node>> extends HBoxContainer<Map> {
+        constructor(identifier?: any)
+    }
+    class ControlPositioningWarning<Map extends Record<string, Node> = Record<string, Node>> extends MarginContainer<Map> {
         constructor(identifier?: any)
     }
     /** A 2D convex polygon shape used for physics collision.  

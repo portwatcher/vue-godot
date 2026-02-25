@@ -1,6 +1,62 @@
 // AUTO-GENERATED
 /// <reference no-default-lib="true"/>
 declare module "godot" {
+    class InputEventConfigurationDialog<Map extends Record<string, Node> = Record<string, Node>> extends ConfirmationDialog<Map> {
+        constructor(identifier?: any)
+    }
+    class InputEventEditorPlugin<Map extends Record<string, Node> = Record<string, Node>> extends EditorPlugin<Map> {
+        constructor(identifier?: any)
+    }
+    /** Abstract base class for [Viewport]-based input events.  
+     *  	  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_inputeventfromwindow.html  
+     */
+    class InputEventFromWindow extends InputEvent {
+        constructor(identifier?: any)
+        /** The ID of a [Window] that received this event. */
+        get window_id(): int64
+        set window_id(value: int64)
+    }
+    /** Abstract base class for touch gestures.  
+     *  	  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_inputeventgesture.html  
+     */
+    class InputEventGesture extends InputEventWithModifiers {
+        constructor(identifier?: any)
+        /** The local gesture position relative to the [Viewport]. If used in [method Control._gui_input], the position is relative to the current [Control] that received this gesture. */
+        get position(): Vector2
+        set position(value: Vector2)
+    }
+    /** Represents a gamepad button being pressed or released.  
+     *  	  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_inputeventjoypadbutton.html  
+     */
+    class InputEventJoypadButton extends InputEvent {
+        constructor(identifier?: any)
+        /** Button identifier. One of the [enum JoyButton] button constants. */
+        get button_index(): int64
+        set button_index(value: int64)
+        get pressure(): float64
+        set pressure(value: float64)
+        
+        /** If `true`, the button's state is pressed. If `false`, the button's state is released. */
+        get pressed(): boolean
+        set pressed(value: boolean)
+    }
+    /** Represents axis motions (such as joystick or analog triggers) from a gamepad.  
+     *  	  
+     *  @link https://docs.godotengine.org/en/4.4/classes/class_inputeventjoypadmotion.html  
+     */
+    class InputEventJoypadMotion extends InputEvent {
+        constructor(identifier?: any)
+        /** Axis identifier. Use one of the [enum JoyAxis] axis constants. */
+        get axis(): int64
+        set axis(value: int64)
+        
+        /** Current position of the joystick on the given axis. The value ranges from `-1.0` to `1.0`. A value of `0` means the axis is in its resting position. */
+        get axis_value(): float64
+        set axis_value(value: float64)
+    }
     /** Represents a key on a keyboard being pressed or released.  
      *  	  
      *  @link https://docs.godotengine.org/en/4.4/classes/class_inputeventkey.html  
@@ -4429,7 +4485,7 @@ declare module "godot" {
          */
         unlock(): void
     }
-    class NativeMenuMacOS extends NativeMenu {
+    class NativeMenuWindows extends NativeMenu {
         constructor(identifier?: any)
     }
     /** A 2D agent used to pathfind to a position while avoiding obstacles.  
@@ -8463,6 +8519,11 @@ declare module "godot" {
         
         /** Signal emitted when the user presses the delete binding modifier button for this modifier. */
         readonly binding_modifier_removed: Signal1<Object>
+    }
+    class OpenXRBindingModifiersDialog<Map extends Record<string, Node> = Record<string, Node>> extends AcceptDialog<Map> {
+        constructor(identifier?: any)
+        _do_add_binding_modifier_editor(binding_modifier_editor: OpenXRBindingModifierEditor): void
+        _do_remove_binding_modifier_editor(binding_modifier_editor: OpenXRBindingModifierEditor): void
     }
     /** The parent class of all OpenXR composition layer nodes.  
      *  	  
