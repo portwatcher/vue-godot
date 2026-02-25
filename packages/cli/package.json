@@ -1,0 +1,36 @@
+{
+  "name": "@vue-godot/cli",
+  "version": "0.0.1",
+  "description": "CLI tool for vue-godot projects — generates types, scaffolds projects, and more",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "vue-godot": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npx tsc -p ."
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  },
+  "keywords": [
+    "vue",
+    "godot",
+    "cli"
+  ],
+  "author": "Portwatcher",
+  "license": "MIT"
+}
