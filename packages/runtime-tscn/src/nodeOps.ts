@@ -8,6 +8,20 @@ import {
 
 let didWarnUnsupportedStaticMarkup = false
 
+function hasTextProperty(node: Node): node is Node & { text: string } {
+  return 'text' in (node as object)
+}
+
+function setHostNodeText(node: Node, text: string, opName: 'setText' | 'setElementText') {
+  if (hasTextProperty(node)) {
+    node.text = text
+    return
+  }
+
+  const nodeType = (node as { constructor?: { name?: string } }).constructor?.name ?? 'Node'
+  console.warn(`vue-godot doesn't support ${opName} on ${nodeType} (no text property)`)
+}
+
 export const nodeOps: Omit<RendererOptions<Node, Node>, 'patchProp'> = {
   insert: (child, parent, anchor) => {
     if (!parent) {
@@ -43,21 +57,11 @@ export const nodeOps: Omit<RendererOptions<Node, Node>, 'patchProp'> = {
   },
 
   setText: (node, text) => {
-    if (node instanceof Label) {
-      node.text = text
-    } else {
-      console.warn("vue-godot doesn't support setText on non-Label nodes")
-    }
+    setHostNodeText(node, text, 'setText')
   },
 
   setElementText: (node, text) => {
-    if (node instanceof Label) {
-      node.text = text
-    } else {
-      console.warn(
-        "vue-godot doesn't support setElementText on non-Label nodes",
-      )
-    }
+    setHostNodeText(node, text, 'setElementText')
   },
 
   parentNode: (node) => node.get_parent() || null,
