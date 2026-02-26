@@ -1,8 +1,8 @@
 <template>
-  <HBoxContainer>
+  <VBoxContainer>
     <TextEdit :text="text"></TextEdit>
     <Label :text="text"></Label>
-  </HBoxContainer>
+  </VBoxContainer>
 </template>
 
 <script setup lang="ts">

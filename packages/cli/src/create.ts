@@ -77,6 +77,9 @@ export async function create(options: CreateOptions): Promise<void> {
   console.log(`\nNext steps:`)
   console.log(`  cd ${projectName}`)
   console.log(`  npm install`)
-  console.log(`  npm run build`)
+  console.log(`  npm run gen:types`)
+  console.log(
+    `  npm run dev          # rebuilds on change; Godot hot-reloads dist/app.js`,
+  )
   console.log(`  # Open the project in Godot and hit Play`)
 }
