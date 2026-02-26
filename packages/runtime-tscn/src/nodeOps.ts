@@ -1,5 +1,6 @@
 import type { RendererOptions } from '@vue/runtime-core'
 import { ClassDB, Label, Node } from 'godot'
+import { insertChildBeforeAnchor } from './insertChild'
 
 export const nodeOps: Omit<RendererOptions<Node, Node>, 'patchProp'> = {
   insert: (child, parent, anchor) => {
@@ -8,11 +9,7 @@ export const nodeOps: Omit<RendererOptions<Node, Node>, 'patchProp'> = {
       return
     }
 
-    if (anchor) {
-      child.add_sibling(anchor)
-    } else {
-      parent.add_child(child)
-    }
+    insertChildBeforeAnchor(child, parent, anchor ?? null)
   },
 
   remove: (child) => {
