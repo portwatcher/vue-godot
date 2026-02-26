@@ -2,8 +2,10 @@
   "name": "vue-godot",
   "scripts": {
     "build": "turbo run build",
+    "build:cli": "turbo run build --filter=@vue-godot/cli",
     "build:runtime": "turbo run build --filter=@vue-godot/runtime-tscn",
-    "build:demo": "turbo run build --filter=\"./apps/*\""
+    "build:demo": "turbo run build --filter=\"./apps/*\"",
+    "vue-godot": "vue-godot"
   },
   "repository": {
     "type": "git",
