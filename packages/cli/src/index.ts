@@ -97,13 +97,23 @@ export function generateSource(options: GenerateOptions): string {
     '  [K in keyof T as T[K] extends (...args: any[]) => any ? never : K]?: T[K]',
     '}',
     '',
+    'type VueGodotComponentProps<T> = GodotProps<T> & AllowedComponentProps & VNodeProps',
+    '',
     'declare module "@vue/runtime-core" {',
     '  interface GlobalComponents {',
   ]
 
   for (const node of nodes) {
     lines.push(
-      `    ${node}: new () => { $props: GodotProps<import("godot").${node}> & AllowedComponentProps & VNodeProps }`,
+      `    ${node}: new () => { $props: VueGodotComponentProps<import("godot").${node}> }`,
+    )
+  }
+
+  lines.push('  }', '}', '', 'declare module "vue" {', '  export interface GlobalComponents {')
+
+  for (const node of nodes) {
+    lines.push(
+      `    ${node}: new () => { $props: VueGodotComponentProps<import("godot").${node}> }`,
     )
   }
 
@@ -139,8 +149,14 @@ export function generate(options: GenerateOptions): void {
   }
   fs.writeFileSync(options.outFile, source, 'utf-8')
 
-  // Count components (lines starting with 4-space indent inside GlobalComponents)
-  const count = source.split('\n').filter((l) => /^\s{4}\w+:/.test(l)).length
+  // Count unique components (the source augments both "@vue/runtime-core" and "vue")
+  const count = new Set(
+    source
+      .split('\n')
+      .map((l) => l.match(/^\s{4}(\w+):/))
+      .filter((m): m is RegExpMatchArray => m !== null)
+      .map((m) => m[1]),
+  ).size
 
   console.log(
     `@vue-godot/cli: wrote ${count} ${options.ancestor ?? 'Control'}-derived component types → ${options.outFile}`,

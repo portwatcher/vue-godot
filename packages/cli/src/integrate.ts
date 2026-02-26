@@ -75,6 +75,7 @@ export function newPackageJson(name: string): Record<string, unknown> {
     scripts: {
       dev: 'vite build --watch -c vue/vite.config.ts',
       build: 'vite build -c vue/vite.config.ts',
+      postinstall: 'npm run build',
       'gen:types': 'vue-godot gen-types',
     },
     devDependencies: {
@@ -160,6 +161,7 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     existing.scripts = existing.scripts || {}
     existing.scripts.dev ??= 'vite build --watch -c vue/vite.config.ts'
     existing.scripts.build ??= 'vite build -c vue/vite.config.ts'
+    existing.scripts.postinstall ??= 'npm run build'
     existing.scripts['gen:types'] ??= 'vue-godot gen-types'
 
     existing.devDependencies = existing.devDependencies || {}
@@ -187,7 +189,7 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     `\n✔ Vue integration scaffolded in ${path.relative(process.cwd(), vueDir)}`,
   )
   console.log(`\nNext steps:`)
-  console.log(`  1. npm install`)
+  console.log(`  1. npm install        (runs initial build and creates dist/app.js)`)
   console.log(`  2. npm run gen:types`)
   console.log(
     `  3. npm run dev          (rebuilds on change; Godot hot-reloads dist/app.js)`,

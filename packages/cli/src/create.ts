@@ -1,5 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { spawn } from 'node:child_process'
 import { copyTemplateDir, getTemplatesDir, newPackageJson } from './integrate.js'
 
 export interface CreateOptions {
@@ -7,9 +8,37 @@ export interface CreateOptions {
   force: boolean
 }
 
+function runCommand(
+  command: string,
+  args: string[],
+  cwd: string,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd,
+      stdio: 'inherit',
+      shell: false,
+    })
+
+    child.on('error', reject)
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve()
+        return
+      }
+      reject(
+        new Error(
+          `Command failed (${code ?? 'unknown'}): ${command} ${args.join(' ')}`,
+        ),
+      )
+    })
+  })
+}
+
 export async function create(options: CreateOptions): Promise<void> {
   const { projectName, force } = options
   const absTarget = path.resolve(projectName)
+  const packageName = path.basename(absTarget)
 
   /* --- guard: directory already exists --- */
   if (fs.existsSync(absTarget)) {
@@ -64,20 +93,40 @@ export async function create(options: CreateOptions): Promise<void> {
   )
 
   /* --- package.json --- */
+  const typingsTplDir = path.join(templatesDir, 'typings')
+  const typingsDir = path.join(absTarget, 'typings')
+
+  if (!fs.existsSync(typingsTplDir)) {
+    console.error(
+      `Template directory not found: ${typingsTplDir}\nThe CLI package may not be installed correctly.`,
+    )
+    process.exit(1)
+  }
+
+  copyTemplateDir(typingsTplDir, typingsDir, {}, process.cwd())
+
   const pkgJsonPath = path.join(absTarget, 'package.json')
   fs.writeFileSync(
     pkgJsonPath,
-    JSON.stringify(newPackageJson(projectName), null, 2) + '\n',
+    JSON.stringify(newPackageJson(packageName), null, 2) + '\n',
   )
   console.log(`  created ${path.relative(process.cwd(), pkgJsonPath)}`)
 
-  console.log(
-    `\n✔ Project "${projectName}" created at ${path.relative(process.cwd(), absTarget)}`,
-  )
-  console.log(`\nNext steps:`)
-  console.log(`  cd ${projectName}`)
+  const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+
+  console.log(`\nRunning project setup...`)
   console.log(`  npm install`)
+  await runCommand(npmCmd, ['install'], absTarget)
   console.log(`  npm run gen:types`)
+  await runCommand(npmCmd, ['run', 'gen:types'], absTarget)
+
+  console.log(
+    `\n✔ Project "${packageName}" created at ${path.relative(process.cwd(), absTarget)}`,
+  )
+  console.log(`\nCompleted setup:`)
+  console.log(`  cd ${projectName}`)
+  console.log(`  npm install        (executed)`)
+  console.log(`  npm run gen:types  (executed)`)
   console.log(
     `  npm run dev          # rebuilds on change; Godot hot-reloads dist/app.js`,
   )
