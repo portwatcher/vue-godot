@@ -1,6 +1,12 @@
 import type { RendererOptions } from '@vue/runtime-core'
 import { ClassDB, Label, Node } from 'godot'
-import { insertChildBeforeAnchor } from './insertChild'
+import { insertChildBeforeAnchor } from './insertChild.js'
+import {
+  insertStaticContentNode,
+  supportsPlainTextStaticContent,
+} from './staticContent.js'
+
+let didWarnUnsupportedStaticMarkup = false
 
 export const nodeOps: Omit<RendererOptions<Node, Node>, 'patchProp'> = {
   insert: (child, parent, anchor) => {
@@ -74,7 +80,24 @@ export const nodeOps: Omit<RendererOptions<Node, Node>, 'patchProp'> = {
   },
 
   insertStaticContent(content, parent, anchor, isSVG) {
-    console.warn("vue-godot doesn't support insertStaticContent")
-    return [new Node(), new Node()]
+    if (!supportsPlainTextStaticContent(content) && !didWarnUnsupportedStaticMarkup) {
+      didWarnUnsupportedStaticMarkup = true
+      console.warn(
+        "[vue-godot] insertStaticContent only supports plain text static content; HTML-like static markup is inserted as a placeholder node.",
+      )
+    }
+
+    return insertStaticContentNode(content, parent, anchor ?? null, {
+      createTextNode(text) {
+        const label = new Label()
+        label.text = text
+        return label
+      },
+      createPlaceholderNode(staticContent) {
+        const node = new Node()
+        node.set_meta('static_content', staticContent)
+        return node
+      },
+    })
   },
 }
