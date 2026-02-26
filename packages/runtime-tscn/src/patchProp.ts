@@ -1,6 +1,7 @@
 import { RendererOptions } from '@vue/runtime-core'
 import { Callable, Node } from 'godot'
 import { patchSignalHandlers } from './signalEvents'
+import { patchGodotProperty } from './propertyPatch'
 
 type TSCNRendererOptions = RendererOptions<Node, Node>
 
@@ -27,10 +28,14 @@ export const patchProp: TSCNRendererOptions['patchProp'] = function (
         )
       },
     })
-  } else if (el.has_method('set')) {
-    el.set(key, next) // Universal Godot setter
   } else {
-    console.warn(`object ${el.get_path()} has no method "set"`)
-    ;(el as any)[key] = next
+    const targetName = el.get_path()?.toString() || el.get_name().toString()
+    patchGodotProperty(el, key, next, (message) => {
+      if (message === `object has no method "set"`) {
+        console.warn(`object ${targetName} has no method "set"`)
+        return
+      }
+      console.warn(`${message} on ${targetName}`)
+    })
   }
 }
