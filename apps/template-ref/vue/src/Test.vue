@@ -1,7 +1,7 @@
 <template>
   <HBoxContainer ref="hbox">
     <Button :text="'Click me'" @pressed="handleClick"></Button>
-    <Label :text="count"></Label>
+    <Label :text="String(count)"></Label>
   </HBoxContainer>
 </template>
 
