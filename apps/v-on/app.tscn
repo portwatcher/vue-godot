@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://75hgd8tc3add"]
+[gd_scene load_steps=2 format=3 uid="uid://dvfit3p5w8f24"]
 
-[ext_resource type="Script" uid="uid://dm832l01e8p4u" path="res://dist/app.js" id="1_j6dmo"]
+[ext_resource type="Script" uid="uid://cjty51ckhiy0t" path="res://dist/app.js" id="1_script"]
 
 [node name="app" type="Control"]
 layout_mode = 3
@@ -9,4 +9,4 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_j6dmo")
+script = ExtResource("1_script")

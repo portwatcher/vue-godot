@@ -1,15 +1,12 @@
 {
-  "name": "@vue-godot/example-v-on",
+  "name": "v-on",
   "version": "1.0.0",
-  "description": "",
-  "license": "ISC",
-  "author": "",
   "type": "commonjs",
-  "main": "index.js",
   "scripts": {
     "dev": "vite build --watch -c vue/vite.config.ts",
-    "gen:types": "vue-godot gen-types",
-    "build": "vite build -c vue/vite.config.ts"
+    "build": "vite build -c vue/vite.config.ts",
+    "postinstall": "npm run build",
+    "gen:types": "vue-godot gen-types"
   },
   "devDependencies": {
     "@vue-godot/cli": "*",

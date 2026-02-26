@@ -1,10 +1,10 @@
 import { createApp } from '@vue-godot/runtime-tscn'
 import { Control } from 'godot'
-import Test from './Test.vue'
+import App from './App.vue'
 
-export default class App extends Control {
+export default class Root extends Control {
   _ready() {
-    const app = createApp(Test)
+    const app = createApp(App)
     app.mount(this)
   }
 }

@@ -4,3 +4,9 @@
 
 # GodotJS auto-generated scene/resource types
 gen/
+
+# Node
+node_modules/
+
+# Build output
+dist/

@@ -33,5 +33,6 @@ export default defineConfig({
       },
     },
     target: 'es2020',
+    minify: false,
   },
 })
