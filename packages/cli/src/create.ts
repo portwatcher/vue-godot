@@ -1,11 +1,18 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { spawn } from 'node:child_process'
-import { copyTemplateDir, getTemplatesDir, newPackageJson } from './integrate.js'
+import {
+  copyTemplateDir,
+  generateHtmlMainTs,
+  generateHtmlViteConfig,
+  getTemplatesDir,
+  newPackageJson,
+} from './integrate.js'
 
 export interface CreateOptions {
   projectName: string
   force: boolean
+  html?: boolean
 }
 
 function runCommand(
@@ -36,7 +43,7 @@ function runCommand(
 }
 
 export async function create(options: CreateOptions): Promise<void> {
-  const { projectName, force } = options
+  const { projectName, force, html } = options
   const absTarget = path.resolve(projectName)
   const packageName = path.basename(absTarget)
 
@@ -92,6 +99,17 @@ export async function create(options: CreateOptions): Promise<void> {
     process.cwd(),
   )
 
+  /* --- apply HTML-mode overrides --- */
+  if (html) {
+    const viteConfigPath = path.join(vueDir, 'vite.config.ts')
+    fs.writeFileSync(viteConfigPath, generateHtmlViteConfig())
+    console.log(`  updated ${path.relative(process.cwd(), viteConfigPath)} (html mode)`)
+
+    const mainTsPath = path.join(vueDir, 'src', 'main.ts')
+    fs.writeFileSync(mainTsPath, generateHtmlMainTs())
+    console.log(`  updated ${path.relative(process.cwd(), mainTsPath)} (html mode)`)
+  }
+
   /* --- package.json --- */
   const typingsTplDir = path.join(templatesDir, 'typings')
   const typingsDir = path.join(absTarget, 'typings')
@@ -108,7 +126,7 @@ export async function create(options: CreateOptions): Promise<void> {
   const pkgJsonPath = path.join(absTarget, 'package.json')
   fs.writeFileSync(
     pkgJsonPath,
-    JSON.stringify(newPackageJson(packageName), null, 2) + '\n',
+    JSON.stringify(newPackageJson(packageName, html), null, 2) + '\n',
   )
   console.log(`  created ${path.relative(process.cwd(), pkgJsonPath)}`)
 

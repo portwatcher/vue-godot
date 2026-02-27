@@ -28,14 +28,20 @@ vue-godot create [name] [options]
 | -------- | ----------------------------------------------------- |
 | `name`   | Project name (used as dir name). Prompted if omitted. |
 
-| Option | Description                                 |
-| ------ | ------------------------------------------- |
-| `-f`   | Force overwrite if directory already exists |
+| Option   | Description                                                            |
+| -------- | ---------------------------------------------------------------------- |
+| `-f`     | Force overwrite if directory already exists                            |
+| `--html` | Enable `@vue-godot/html` — HTML-like components on Godot nodes        |
+
+When `--html` is set, the scaffolded project includes:
+- `@vue-godot/html` as a dependency
+- Vite compiler config (`isNativeTag`) so lowercase HTML tags like `<div>`, `<img>` resolve as components
+- `htmlPlugin` registered in `main.ts` for global component availability
 
 **Example:**
 
 ```bash
-npx vue-godot create my-game
+npx vue-godot create my-game --html
 cd my-game
 npm install
 npm run build
@@ -53,9 +59,10 @@ vue-godot integrate [dir] [options]
 | -------- | ---------------------------------- |
 | `dir`    | Target directory (defaults to `.`) |
 
-| Option | Description                              |
-| ------ | ---------------------------------------- |
-| `-f`   | Force overwrite if `vue/` already exists |
+| Option   | Description                                                            |
+| -------- | ---------------------------------------------------------------------- |
+| `-f`     | Force overwrite if `vue/` already exists                               |
+| `--html` | Enable `@vue-godot/html` — HTML-like components on Godot nodes        |
 
 This command:
 

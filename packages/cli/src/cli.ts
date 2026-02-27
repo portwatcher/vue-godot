@@ -89,6 +89,7 @@ Arguments:
 
 Options:
   -f          Force overwrite if directory already exists
+  --html      Enable @vue-godot/html support (HTML-like components on Godot nodes)
 `,
   )
   process.exit(1)
@@ -97,11 +98,15 @@ Options:
 function parseCreateArgs(argv: string[]) {
   let projectName: string | undefined
   let force = false
+  let html = false
 
   for (let i = 0; i < argv.length; i++) {
     switch (argv[i]) {
       case '-f':
         force = true
+        break
+      case '--html':
+        html = true
         break
       case '--help':
       case '-h':
@@ -120,7 +125,7 @@ function parseCreateArgs(argv: string[]) {
     }
   }
 
-  return { projectName, force }
+  return { projectName, force, html }
 }
 
 function integrateUsage(): never {
@@ -134,6 +139,7 @@ Arguments:
 
 Options:
   -f          Force overwrite if vue/ already exists (no prompt)
+  --html      Enable @vue-godot/html support (HTML-like components on Godot nodes)
 `,
   )
   process.exit(1)
@@ -142,11 +148,15 @@ Options:
 function parseIntegrateArgs(argv: string[]) {
   let targetDir: string | undefined
   let force = false
+  let html = false
 
   for (let i = 0; i < argv.length; i++) {
     switch (argv[i]) {
       case '-f':
         force = true
+        break
+      case '--html':
+        html = true
         break
       case '--help':
       case '-h':
@@ -165,7 +175,7 @@ function parseIntegrateArgs(argv: string[]) {
     }
   }
 
-  return { targetDir: targetDir ?? '.', force }
+  return { targetDir: targetDir ?? '.', force, html }
 }
 
 if (!command || command === '--help' || command === '-h') {
@@ -188,7 +198,7 @@ switch (command) {
         process.exit(1)
       }
     }
-    await create({ projectName, force: parsed.force })
+    await create({ projectName, force: parsed.force, html: parsed.html })
     break
   }
   case 'gen-types': {
@@ -204,7 +214,7 @@ switch (command) {
   }
   case 'integrate': {
     const parsed = parseIntegrateArgs(args.slice(1))
-    await integrate(parsed)
+    await integrate({ targetDir: parsed.targetDir, force: parsed.force, html: parsed.html })
     break
   }
   default:

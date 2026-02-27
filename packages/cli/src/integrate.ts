@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 export interface IntegrateOptions {
   targetDir: string
   force: boolean
+  html?: boolean
 }
 
 /* ------------------------------------------------------------------ */
@@ -67,7 +68,14 @@ export function copyTemplateDir(
   }
 }
 
-export function newPackageJson(name: string): Record<string, unknown> {
+export function newPackageJson(name: string, html?: boolean): Record<string, unknown> {
+  const deps: Record<string, string> = {
+    '@vue-godot/runtime-tscn': '^0.0.2',
+    '@vue/runtime-core': '^3.5.14',
+  }
+  if (html) {
+    deps['@vue-godot/html'] = '^0.0.1'
+  }
   return {
     name,
     version: '1.0.0',
@@ -84,11 +92,71 @@ export function newPackageJson(name: string): Record<string, unknown> {
       '@vitejs/plugin-vue': '^5.2.4',
       vite: '^6.3.5',
     },
-    dependencies: {
-      '@vue-godot/runtime-tscn': '^0.0.2',
-      '@vue/runtime-core': '^3.5.14',
-    },
+    dependencies: deps,
   }
+}
+
+/* ------------------------------------------------------------------ */
+/*  HTML-mode file generators                                         */
+/* ------------------------------------------------------------------ */
+
+export function generateHtmlViteConfig(): string {
+  return `import vue from '@vitejs/plugin-vue'
+import { htmlTags } from '@vue-godot/html'
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  plugins: [
+    vue({
+      template: {
+        compilerOptions: {
+          // Supported HTML tags → component resolution (via @vue-godot/html)
+          isNativeTag: (tag) => !htmlTags.includes(tag),
+          // Godot nodes (uppercase) → custom elements via ClassDB
+          isCustomElement: (tag) => tag[0] === tag[0].toUpperCase(),
+        },
+      },
+    }),
+  ],
+  define: {
+    'process.env': {},
+  },
+  resolve: {
+    alias: { vue: '@vue/runtime-core' },
+  },
+  build: {
+    lib: {
+      entry: 'vue/src/main.ts',
+      formats: ['cjs'],
+      fileName: () => 'app.js',
+    },
+    rollupOptions: {
+      external: ['godot'],
+      output: {
+        exports: 'named',
+      },
+    },
+    target: 'es2020',
+    minify: false,
+  },
+})
+`
+}
+
+export function generateHtmlMainTs(): string {
+  return `import { createApp } from '@vue-godot/runtime-tscn'
+import { htmlPlugin } from '@vue-godot/html'
+import { Control } from 'godot'
+import App from './App.vue'
+
+export default class Root extends Control {
+  _ready() {
+    const app = createApp(App)
+    app.use(htmlPlugin)
+    app.mount(this)
+  }
+}
+`
 }
 
 /* ------------------------------------------------------------------ */
@@ -96,7 +164,7 @@ export function newPackageJson(name: string): Record<string, unknown> {
 /* ------------------------------------------------------------------ */
 
 export async function integrate(options: IntegrateOptions): Promise<void> {
-  const { targetDir, force } = options
+  const { targetDir, force, html } = options
   const absTarget = path.resolve(targetDir)
   const vueDir = path.join(absTarget, 'vue')
 
@@ -153,6 +221,17 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     process.cwd(),
   )
 
+  /* --- apply HTML-mode overrides --- */
+  if (html) {
+    const viteConfigPath = path.join(vueDir, 'vite.config.ts')
+    fs.writeFileSync(viteConfigPath, generateHtmlViteConfig())
+    console.log(`  updated ${path.relative(process.cwd(), viteConfigPath)} (html mode)`)
+
+    const mainTsPath = path.join(vueDir, 'src', 'main.ts')
+    fs.writeFileSync(mainTsPath, generateHtmlMainTs())
+    console.log(`  updated ${path.relative(process.cwd(), mainTsPath)} (html mode)`)
+  }
+
   /* --- package.json --- */
   const pkgJsonPath = path.join(absTarget, 'package.json')
 
@@ -173,6 +252,9 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     existing.dependencies = existing.dependencies || {}
     existing.dependencies['@vue-godot/runtime-tscn'] ??= '^0.0.2'
     existing.dependencies['@vue/runtime-core'] ??= '^3.5.14'
+    if (html) {
+      existing.dependencies['@vue-godot/html'] ??= '^0.0.1'
+    }
 
     fs.writeFileSync(pkgJsonPath, JSON.stringify(existing, null, 2) + '\n')
     console.log(`  updated ${path.relative(process.cwd(), pkgJsonPath)}`)
@@ -180,7 +262,7 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     const name = path.basename(absTarget)
     fs.writeFileSync(
       pkgJsonPath,
-      JSON.stringify(newPackageJson(name), null, 2) + '\n',
+      JSON.stringify(newPackageJson(name, html), null, 2) + '\n',
     )
     console.log(`  created ${path.relative(process.cwd(), pkgJsonPath)}`)
   }

@@ -200,15 +200,25 @@ Edit .vue / .ts  →  npm run build  →  F5 in Godot  →  see changes
 
 ## Packages
 
-| Package                   | Description                              |
-| ------------------------- | ---------------------------------------- |
-| `@vue-godot/runtime-tscn` | Vue custom renderer for Godot scene tree |
-| `@vue-godot/cli`          | CLI tool for vue-godot projects          |
+| Package                   | Description                                          |
+| ------------------------- | ---------------------------------------------------- |
+| `@vue-godot/runtime-tscn` | Vue custom renderer for Godot scene tree             |
+| `@vue-godot/html`         | HTML-like Vue components built on Godot nodes        |
+| `@vue-godot/cli`          | CLI tool for vue-godot projects                      |
 
 ### `@vue-godot/cli`
 
 ```bash
 vue-godot <command> [options]
+```
+
+#### `create` / `integrate`
+
+Both `create` (new project) and `integrate` (existing Godot project) accept a `--html` flag that configures `@vue-godot/html` automatically — setting up the Vite compiler config and plugin registration so lowercase HTML tags (`<div>`, `<img>`, etc.) work as Godot-backed components with zero renaming.
+
+```bash
+vue-godot create my-app --html
+vue-godot integrate --html
 ```
 
 #### `gen-types`

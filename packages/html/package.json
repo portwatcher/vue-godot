@@ -1,0 +1,40 @@
+{
+  "name": "@vue-godot/html",
+  "version": "0.0.1",
+  "description": "HTML-like Vue components built on Godot nodes",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npx tsc -p ."
+  },
+  "dependencies": {
+    "@vue/runtime-core": "^3.3.0"
+  },
+  "peerDependencies": {
+    "@vue-godot/runtime-tscn": ">=0.0.1"
+  },
+  "keywords": [
+    "vue",
+    "godot",
+    "html",
+    "components"
+  ],
+  "author": "Portwatcher",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  }
+}
