@@ -1,6 +1,6 @@
 {
   "name": "@vue-godot/runtime-tscn",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Vue runtime renderer for Godot TSCN files",
   "type": "module",
   "main": "./dist/index.js",

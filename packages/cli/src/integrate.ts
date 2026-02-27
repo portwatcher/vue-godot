@@ -85,7 +85,7 @@ export function newPackageJson(name: string): Record<string, unknown> {
       vite: '^6.3.5',
     },
     dependencies: {
-      '@vue-godot/runtime-tscn': '*',
+      '@vue-godot/runtime-tscn': '^0.0.2',
       '@vue/runtime-core': '^3.5.14',
     },
   }
@@ -171,7 +171,7 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     existing.devDependencies['vite'] ??= '^6.3.5'
 
     existing.dependencies = existing.dependencies || {}
-    existing.dependencies['@vue-godot/runtime-tscn'] ??= '*'
+    existing.dependencies['@vue-godot/runtime-tscn'] ??= '^0.0.2'
     existing.dependencies['@vue/runtime-core'] ??= '^3.5.14'
 
     fs.writeFileSync(pkgJsonPath, JSON.stringify(existing, null, 2) + '\n')
