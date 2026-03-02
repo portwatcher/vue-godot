@@ -48,6 +48,7 @@ Components that load assets (images, video, audio) handle the loading internally
 Under the hood, `<Img>` resolves `./assets/photo.png` → `res://assets/photo.png` and calls `ResourceLoader.load()` to get a `Texture2D`, then passes it to the underlying `TextureRect` node.
 
 Path resolution:
+
 - `./relative/path.png` → `res://relative/path.png`
 - `/absolute/path.png` → `res://absolute/path.png`
 - `res://already/godot.png` → passthrough
@@ -57,19 +58,21 @@ Path resolution:
 
 Rather than embedding a layout engine like Yoga, we map a CSS flexbox subset to Godot's native container system. This gives us GPU-side layout computed in C++ and a scene tree that game developers can inspect in the Godot editor.
 
-| CSS | Godot Node |
-|---|---|
-| `display: flex; flex-direction: row` | `HBoxContainer` |
-| `display: flex; flex-direction: column` | `VBoxContainer` |
-| `flex-wrap: wrap` (row) | `HFlowContainer` |
-| `flex-wrap: wrap` (column) | `VFlowContainer` |
-| `display: grid` | `GridContainer` |
-| `gap: <n>` | Theme override `separation = n` |
-| `flex: 1` (on child) | Size flag `EXPAND_FILL` |
-| `align-self: center` (on child) | Size flag `SHRINK_CENTER` |
-| `padding: <n>` | `MarginContainer` wrapper or theme override |
-| `width` / `height` | `custom_minimum_size` |
-| `display: none` | `visible = false` |
+| CSS                                     | Godot Node                                  |
+| --------------------------------------- | ------------------------------------------- |
+| `display: flex; flex-direction: row`    | `HBoxContainer`                             |
+| `display: flex; flex-direction: column` | `VBoxContainer`                             |
+| `flex-wrap: wrap` (row)                 | `HFlowContainer`                            |
+| `flex-wrap: wrap` (column)              | `VFlowContainer`                            |
+| `display: grid`                         | `GridContainer`                             |
+| `gap: <n>`                              | Theme override (`separation` / `h_separation` + `v_separation`) |
+| `justify-content: flex-start/center/flex-end` | Container `alignment`                        |
+| `flex: 1` (on child)                    | Size flag `EXPAND_FILL`                     |
+| `align-items: *`                        | Default child cross-axis size flag          |
+| `align-self: center` (on child)         | Size flag `SHRINK_CENTER`                   |
+| `padding: <n>`                          | `MarginContainer` wrapper or theme override |
+| `width` / `height`                      | `custom_minimum_size`                       |
+| `display: none`                         | `visible = false`                           |
 
 Style objects (inline, React Native-style) are the primary styling API:
 
@@ -88,19 +91,19 @@ This is intentionally a subset — not full CSS. We cover the 80% of layouts tha
 
 ## Component Mapping
 
-| HTML-like Component | Godot Node | Key Props |
-|---|---|---|
-| `<Div>` | `HBoxContainer` / `VBoxContainer` / `*FlowContainer` / `GridContainer` | `style` (layout) |
-| `<Img>` | `TextureRect` | `src`, `fit` |
-| `<Span>` | `Label` | text content |
-| `<Button>` | `Button` | `@click` → `pressed` signal |
-| `<Input>` | `LineEdit` / `CheckBox` / `HSlider` | `type`, `v-model` |
-| `<Textarea>` | `TextEdit` | `v-model` |
-| `<Select>` | `OptionButton` | `<Option>` children |
-| `<Video>` | `VideoStreamPlayer` | `src` |
-| `<Audio>` | `AudioStreamPlayer` | `src` |
-| `<Svg>` | `TextureRect` (SVG resource) | `src` |
-| `<A>` | `LinkButton` / `RichTextLabel` | `href` |
+| HTML-like Component | Godot Node                                                             | Key Props                   |
+| ------------------- | ---------------------------------------------------------------------- | --------------------------- |
+| `<Div>`             | `HBoxContainer` / `VBoxContainer` / `*FlowContainer` / `GridContainer` | `style` (layout)            |
+| `<Img>`             | `TextureRect`                                                          | `src`, `fit`                |
+| `<Span>`            | `Label`                                                                | text content                |
+| `<Button>`          | `Button`                                                               | `@click` → `pressed` signal |
+| `<Input>`           | `LineEdit` / `CheckBox` / `HSlider`                                    | `type`, `v-model`           |
+| `<Textarea>`        | `TextEdit`                                                             | `v-model`                   |
+| `<Select>`          | `OptionButton`                                                         | `<Option>` children         |
+| `<Video>`           | `VideoStreamPlayer`                                                    | `src`                       |
+| `<Audio>`           | `AudioStreamPlayer`                                                    | `src`                       |
+| `<Svg>`             | `TextureRect` (SVG resource)                                           | `src`                       |
+| `<A>`               | `LinkButton` / `RichTextLabel`                                         | `href`                      |
 
 ### Lowercase tag compatibility (migrating existing SPAs)
 
@@ -122,10 +125,10 @@ export default {
           isNativeTag: (tag: string) => !htmlTags.includes(tag),
           // Godot nodes (uppercase) → custom elements via ClassDB
           isCustomElement: (tag: string) => /^[A-Z]/.test(tag),
-        }
-      }
-    })
-  ]
+        },
+      },
+    }),
+  ],
 }
 ```
 
@@ -149,10 +152,10 @@ export default {
         compilerOptions: {
           isNativeTag: (tag: string) => !htmlTags.includes(tag),
           isCustomElement: (tag: string) => /^[A-Z]/.test(tag),
-        }
-      }
-    })
-  ]
+        },
+      },
+    }),
+  ],
 }
 ```
 
@@ -227,6 +230,12 @@ This package is in early development. Currently scaffolded:
 - [ ] `<Video>` — video playback
 - [ ] `<Audio>` — audio playback
 - [ ] `<Svg>` — SVG display
-- [ ] Theme override application (gap, padding, colors)
-- [ ] Size flag mapping (flex, align-self)
+- [x] Theme override application (gap, padding)
+- [ ] Theme override application (colors)
+- [x] Size flag mapping (flex, align-self)
+- [x] Div renderer integration tests (nested fragment/array slot layouts)
 - [ ] `<style>` block support via Vite plugin (future)
+
+## Fixtures
+
+- `fixtures/div-layout/App.vue` — manual Godot scene fixture for validating `Div` layout behavior (gap, padding, justify/align, fragment children, flex flags).

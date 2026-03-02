@@ -1,6 +1,168 @@
-import { defineComponent, h } from '@vue/runtime-core'
-import type { HtmlStyle } from '../utils/styleMapping'
-import { resolveContainerTag } from '../utils/styleMapping'
+import { Fragment, cloneVNode, defineComponent, h, isVNode } from '@vue/runtime-core'
+import type { GodotContainerTag, HtmlStyle } from '../utils/styleMapping.js'
+import {
+  ControlSizeFlags,
+  resolveContainerTag,
+  resolvePadding,
+} from '../utils/styleMapping.js'
+
+type LayoutAxis = 'horizontal' | 'vertical'
+
+function containerAxes(tag: GodotContainerTag): {
+  main?: LayoutAxis
+  cross?: LayoutAxis
+} {
+  if (tag === 'HBoxContainer' || tag === 'HFlowContainer') {
+    return { main: 'horizontal', cross: 'vertical' }
+  }
+  if (tag === 'VBoxContainer' || tag === 'VFlowContainer') {
+    return { main: 'vertical', cross: 'horizontal' }
+  }
+  if (tag === 'GridContainer') {
+    return { main: 'horizontal', cross: 'vertical' }
+  }
+  return {}
+}
+
+function alignSelfToSizeFlag(alignSelf: HtmlStyle['alignSelf']): number | null {
+  if (alignSelf === 'center') {
+    return ControlSizeFlags.SHRINK_CENTER
+  }
+  if (alignSelf === 'flex-end') {
+    return ControlSizeFlags.SHRINK_END
+  }
+  if (alignSelf === 'flex-start') {
+    return ControlSizeFlags.SHRINK_BEGIN
+  }
+  if (alignSelf === 'stretch') {
+    return ControlSizeFlags.FILL
+  }
+  return null
+}
+
+function axisPropName(
+  axis: LayoutAxis,
+): 'size_flags_horizontal' | 'size_flags_vertical' {
+  return axis === 'horizontal' ? 'size_flags_horizontal' : 'size_flags_vertical'
+}
+
+function resolveChildLayoutProps(
+  childStyle: HtmlStyle | undefined,
+  containerTag: GodotContainerTag,
+  defaultAlignSelf: HtmlStyle['alignSelf'] | undefined,
+  existingProps: Record<string, any> | null,
+): Record<string, any> {
+  const alignValue = childStyle?.alignSelf ?? defaultAlignSelf
+  const hasFlex =
+    typeof childStyle?.flex === 'number' &&
+    Number.isFinite(childStyle.flex) &&
+    childStyle.flex > 0
+
+  if (!hasFlex && alignValue == null) {
+    return {}
+  }
+
+  const resolved: Record<string, any> = {}
+  const axes = containerAxes(containerTag)
+
+  if (hasFlex && axes.main) {
+    const axis = axisPropName(axes.main)
+    if (!existingProps || !(axis in existingProps)) {
+      resolved[axis] = ControlSizeFlags.EXPAND_FILL
+    }
+    if (!existingProps || !('size_flags_stretch_ratio' in existingProps)) {
+      resolved['size_flags_stretch_ratio'] = childStyle!.flex
+    }
+  }
+
+  const alignSelfFlag = alignSelfToSizeFlag(alignValue)
+  if (alignSelfFlag != null && axes.cross) {
+    const axis = axisPropName(axes.cross)
+    if (!existingProps || !(axis in existingProps)) {
+      resolved[axis] = alignSelfFlag
+    }
+  }
+
+  return resolved
+}
+
+function toChildArray(children: any): any[] {
+  if (Array.isArray(children)) {
+    return children
+  }
+  return children == null ? [] : [children]
+}
+
+function mapChildForContainerLayout(
+  child: any,
+  containerTag: GodotContainerTag,
+  defaultAlignSelf: HtmlStyle['alignSelf'] | undefined,
+): any[] {
+  if (Array.isArray(child)) {
+    return child.flatMap((entry) =>
+      mapChildForContainerLayout(entry, containerTag, defaultAlignSelf),
+    )
+  }
+
+  if (!isVNode(child)) {
+    return [child]
+  }
+
+  if (child.type === Fragment) {
+    const mappedFragmentChildren = mapChildrenForContainerLayout(
+      toChildArray(child.children),
+      containerTag,
+      defaultAlignSelf,
+    )
+    const fragmentProps =
+      child.key != null
+        ? { ...(child.props ?? {}), key: child.key }
+        : (child.props ?? undefined)
+
+    return [h(Fragment, fragmentProps, mappedFragmentChildren)]
+  }
+
+  const existingProps = (child.props ?? null) as Record<string, any> | null
+  const childStyle =
+    existingProps &&
+    typeof existingProps.style === 'object' &&
+    !Array.isArray(existingProps.style)
+      ? (existingProps.style as HtmlStyle)
+      : undefined
+  const layoutProps = resolveChildLayoutProps(
+    childStyle,
+    containerTag,
+    defaultAlignSelf,
+    existingProps,
+  )
+
+  if (Object.keys(layoutProps).length === 0) {
+    return [child]
+  }
+
+  return [cloneVNode(child, layoutProps)]
+}
+
+function mapChildrenForContainerLayout(
+  children: any[] | undefined,
+  containerTag: GodotContainerTag,
+  defaultAlignSelf: HtmlStyle['alignSelf'] | undefined,
+): any[] | undefined {
+  return children?.flatMap((child) =>
+    mapChildForContainerLayout(child, containerTag, defaultAlignSelf),
+  )
+}
+
+function withThemeConstantOverrides(
+  baseProps: Record<string, any>,
+  overrides: Record<string, number>,
+): Record<string, any> {
+  const props = { ...baseProps }
+  for (const name in overrides) {
+    props[`theme_override_constants/${name}`] = overrides[name]
+  }
+  return props
+}
 
 /**
  * <Div> — the general-purpose layout container.
@@ -28,15 +190,45 @@ export const Div = defineComponent({
   },
   setup(props, { slots }) {
     return () => {
-      const { tag, themeOverrides, props: godotProps } = resolveContainerTag(
-        props.style ?? {},
+      const style = props.style ?? {}
+      const {
+        tag,
+        themeOverrides,
+        props: godotProps,
+      } = resolveContainerTag(style)
+      const slotChildren = slots.default?.()
+      const childrenWithLayout = mapChildrenForContainerLayout(
+        slotChildren,
+        tag,
+        style.alignItems,
+      )
+      const content = h(
+        tag,
+        withThemeConstantOverrides(godotProps, themeOverrides),
+        childrenWithLayout,
       )
 
-      // TODO: apply themeOverrides via add_theme_constant_override
-      // TODO: apply size flags for flex, alignSelf on children
-      // TODO: handle padding (MarginContainer wrapper or theme override)
+      if (style.display === 'none') {
+        return content
+      }
 
-      return h(tag, godotProps, slots.default?.())
+      const padding = resolvePadding(style)
+      if (!padding) {
+        return content
+      }
+
+      const marginOverrides = {
+        margin_top: padding.top,
+        margin_right: padding.right,
+        margin_bottom: padding.bottom,
+        margin_left: padding.left,
+      }
+
+      return h(
+        'MarginContainer',
+        withThemeConstantOverrides({}, marginOverrides),
+        [content],
+      )
     }
   },
 })
