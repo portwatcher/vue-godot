@@ -1,7 +1,7 @@
 [gd_scene load_steps=2 format=3 uid="uid://75hgd8tc3add"]
 
-[ext_resource type="Script" uid="uid://cuutcxf7slqlw" path="res://dist/app.js" id="1_j6dmo"]
-
+[ext_resource type="Script" uid="uid://brcqw72xh66lp" path="res://dist/app.js" id="1_j6dmo"]
+ 
 [node name="app" type="Control"]
 layout_mode = 3
 anchors_preset = 15
