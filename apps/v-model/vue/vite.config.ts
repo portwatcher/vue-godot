@@ -6,7 +6,9 @@ export default defineConfig({
     vue({
       template: {
         compilerOptions: {
-          // treat all tags with uppercase letters as custom elements
+          // There are no browser-native HTML elements in Godot
+          isNativeTag: () => false,
+          // Uppercase tags → Godot nodes via ClassDB (custom elements)
           isCustomElement: (tag) => tag[0] === tag[0].toUpperCase(),
         },
       },

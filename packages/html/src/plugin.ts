@@ -37,7 +37,10 @@ const components: Record<string, Component> = {
  *   vue({
  *     template: {
  *       compilerOptions: {
- *         isNativeTag: (tag) => !htmlTags.includes(tag),
+ *         isNativeTag: () => false,
+ *         isCustomElement: (tag) =>
+ *           tag[0] === tag[0].toUpperCase() &&
+ *           !htmlTags.includes(tag.toLowerCase()),
  *       }
  *     }
  *   })

@@ -38,6 +38,35 @@ When deciding whether something counts as "non-trivial":
 
 If you spot existing duplication while working on a task, refactor it as part of the same change.
 
+## Vue Compiler Options (`isNativeTag` / `isCustomElement`)
+
+Vue's template compiler has two hooks that control how tags are classified:
+
+- **`isNativeTag`** — identifies browser-native HTML elements (`<div>`, `<span>`, …). When `true`, the tag emits a plain platform element with **no component resolution**.
+- **`isCustomElement`** — marks a tag as a custom element (passed through to the renderer as-is, no component lookup).
+
+Godot is **not a browser**. There are no native HTML elements. Every `vite.config.ts` in this repo **must** set:
+
+```ts
+isNativeTag: () => false,
+```
+
+Without this, Vue's default `isNativeTag` (which knows about real HTML tags like `div`, `button`, `select`, …) will short-circuit component resolution. Tags like `<div>` would be emitted as raw platform elements instead of resolving to `@vue-godot/html` components registered via `htmlPlugin`.
+
+For **`@vue-godot/html` apps**, `isCustomElement` must also exclude the HTML component names so they go through Vue's global component resolution:
+
+```ts
+isCustomElement: (tag) =>
+  tag[0] === tag[0].toUpperCase() &&
+  !htmlTags.includes(tag.toLowerCase()),
+```
+
+For **non-HTML apps** (pure Godot nodes), all uppercase tags are custom elements:
+
+```ts
+isCustomElement: (tag) => tag[0] === tag[0].toUpperCase(),
+```
+
 ## Documentation
 
 ### Keep READMEs up to date

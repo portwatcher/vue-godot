@@ -249,6 +249,6 @@ This package is in early development. Currently scaffolded:
 - [x] Div renderer integration tests (nested fragment/array slot layouts)
 - [ ] `<style>` block support via Vite plugin (future)
 
-## Fixtures
+## Demo Apps
 
-- `fixtures/div-layout/App.vue` — manual Godot scene fixture for validating `Div` layout behavior (gap, padding, justify/align, fragment children, flex flags).
+- `apps/div-layout` — manual Godot scene app for validating `Div` layout behavior (gap, padding, justify/align, fragment children, flex flags). Created with `@vue-godot/cli` and lives in the monorepo root `apps/` directory.

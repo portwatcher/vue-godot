@@ -33,7 +33,9 @@
     <Button :text="'Cycle Align'" @pressed="cycleAlign" />
   </HBoxContainer>
 
-  <Label :text="`direction=${direction} wrap=${wrap} justify=${justify} align=${align}`" />
+  <Label
+    :text="`direction=${direction} wrap=${wrap} justify=${justify} align=${align}`"
+  />
 </template>
 
 <script setup lang="ts">

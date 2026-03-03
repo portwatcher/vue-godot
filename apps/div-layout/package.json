@@ -1,0 +1,22 @@
+{
+  "name": "div-layout",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "vite build --watch -c vue/vite.config.ts",
+    "build": "vite build -c vue/vite.config.ts",
+    "postinstall": "npm run build",
+    "gen:types": "vue-godot gen-types"
+  },
+  "devDependencies": {
+    "@vue-godot/cli": "*",
+    "@types/node": "^20.11.18",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "vite": "^6.3.5"
+  },
+  "dependencies": {
+    "@vue-godot/html": "*",
+    "@vue-godot/runtime-tscn": "*",
+    "@vue/runtime-core": "^3.5.14"
+  }
+}

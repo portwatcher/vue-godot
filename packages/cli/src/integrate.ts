@@ -68,7 +68,10 @@ export function copyTemplateDir(
   }
 }
 
-export function newPackageJson(name: string, html?: boolean): Record<string, unknown> {
+export function newPackageJson(
+  name: string,
+  html?: boolean,
+): Record<string, unknown> {
   const deps: Record<string, string> = {
     '@vue-godot/runtime-tscn': '^0.0.2',
     '@vue/runtime-core': '^3.5.14',
@@ -102,18 +105,27 @@ export function newPackageJson(name: string, html?: boolean): Record<string, unk
 
 export function generateHtmlViteConfig(): string {
   return `import vue from '@vitejs/plugin-vue'
-import { htmlTags } from '@vue-godot/html'
 import { defineConfig } from 'vite'
+
+// Tags provided by @vue-godot/html — kept in sync with htmlTags from the package.
+// Listed here to avoid importing at config-load time (Node ESM resolution).
+const htmlTags = [
+  'audio', 'div', 'img', 'span', 'button',
+  'input', 'textarea', 'select', 'option', 'canvas', 'video', 'svg',
+]
 
 export default defineConfig({
   plugins: [
     vue({
       template: {
         compilerOptions: {
-          // Supported HTML tags → component resolution (via @vue-godot/html)
-          isNativeTag: (tag) => !htmlTags.includes(tag),
-          // Godot nodes (uppercase) → custom elements via ClassDB
-          isCustomElement: (tag) => tag[0] === tag[0].toUpperCase(),
+          // Nothing is a native platform element in Godot
+          isNativeTag: () => false,
+          // Uppercase tags are Godot nodes (custom elements) UNLESS
+          // @vue-godot/html provides a component for them
+          isCustomElement: (tag) =>
+            tag[0] === tag[0].toUpperCase() &&
+            !htmlTags.includes(tag.toLowerCase()),
         },
       },
     }),
@@ -225,11 +237,15 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
   if (html) {
     const viteConfigPath = path.join(vueDir, 'vite.config.ts')
     fs.writeFileSync(viteConfigPath, generateHtmlViteConfig())
-    console.log(`  updated ${path.relative(process.cwd(), viteConfigPath)} (html mode)`)
+    console.log(
+      `  updated ${path.relative(process.cwd(), viteConfigPath)} (html mode)`,
+    )
 
     const mainTsPath = path.join(vueDir, 'src', 'main.ts')
     fs.writeFileSync(mainTsPath, generateHtmlMainTs())
-    console.log(`  updated ${path.relative(process.cwd(), mainTsPath)} (html mode)`)
+    console.log(
+      `  updated ${path.relative(process.cwd(), mainTsPath)} (html mode)`,
+    )
   }
 
   /* --- package.json --- */
@@ -271,7 +287,9 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     `\n✔ Vue integration scaffolded in ${path.relative(process.cwd(), vueDir)}`,
   )
   console.log(`\nNext steps:`)
-  console.log(`  1. npm install        (runs initial build and creates dist/app.js)`)
+  console.log(
+    `  1. npm install        (runs initial build and creates dist/app.js)`,
+  )
   console.log(`  2. npm run gen:types`)
   console.log(
     `  3. npm run dev          (rebuilds on change; Godot hot-reloads dist/app.js)`,
