@@ -37,3 +37,18 @@ When deciding whether something counts as "non-trivial":
 - **OK to inline**: one-line expressions, simple boolean checks, framework boilerplate that cannot be meaningfully abstracted.
 
 If you spot existing duplication while working on a task, refactor it as part of the same change.
+
+## Documentation
+
+### Keep READMEs up to date
+
+Every package under `packages/` has a `README.md`. When you add, remove, rename, or change the public API surface of a package (exports, polyfilled globals, new modules, changed behaviour), you **must** update that package's `README.md` in the same change.
+
+Specifically:
+
+- **New API** — add a row to the "Provided APIs" table (or equivalent section) and, if the feature is non-trivial, add a dedicated subsection with usage examples and spec/behaviour notes.
+- **Removed / renamed API** — delete or update the corresponding table row, section, and any code examples that reference it.
+- **Changed behaviour** — update the description so it accurately reflects the new behaviour. Do not leave stale documentation.
+- **New package** — create a `README.md` following the same structure as existing packages (title, description, installation, quick start, API table, detailed sections, requirements, license).
+
+If you are unsure whether a change affects the README, err on the side of updating it.
