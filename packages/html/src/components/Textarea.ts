@@ -1,36 +1,10 @@
-import { defineComponent, h } from '@vue/runtime-core'
+import { defineComponent, h, ref } from '@vue/runtime-core'
+import { parseHexColor } from '../utils/colorParser.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 
-/**
- * Parse a hex color string (#RGB, #RRGGBB, #RRGGBBAA) into a Godot-compatible
- * `r,g,b,a` string.
- */
-function parseHexColor(color: string): string | null {
-  const hex = color.startsWith('#') ? color.slice(1) : null
-  if (!hex) return null
-
-  let r: number, g: number, b: number, a: number
-  if (hex.length === 3) {
-    r = parseInt(hex[0] + hex[0], 16) / 255
-    g = parseInt(hex[1] + hex[1], 16) / 255
-    b = parseInt(hex[2] + hex[2], 16) / 255
-    a = 1
-  } else if (hex.length === 6) {
-    r = parseInt(hex.slice(0, 2), 16) / 255
-    g = parseInt(hex.slice(2, 4), 16) / 255
-    b = parseInt(hex.slice(4, 6), 16) / 255
-    a = 1
-  } else if (hex.length === 8) {
-    r = parseInt(hex.slice(0, 2), 16) / 255
-    g = parseInt(hex.slice(2, 4), 16) / 255
-    b = parseInt(hex.slice(4, 6), 16) / 255
-    a = parseInt(hex.slice(6, 8), 16) / 255
-  } else {
-    return null
-  }
-
-  if ([r, g, b, a].some((v) => !Number.isFinite(v))) return null
-  return `${r},${g},${b},${a}`
+/** Type guard for Godot nodes that expose a `text` property. */
+function hasTextProperty(node: unknown): node is { text: string } {
+  return typeof node === 'object' && node !== null && 'text' in (node as object)
 }
 
 /** Default line height in pixels when no fontSize is specified. */
@@ -56,13 +30,6 @@ const DEFAULT_CHAR_WIDTH = 10
  *
  * Events:
  *   - `@update:modelValue` — v-model update
- *
- * **Limitation**: Godot's `TextEdit.text_changed` signal fires with no
- * arguments, so the component cannot read the new text from the signal
- * handler alone. The `text` property is set declaratively; `update:modelValue`
- * is emitted when `text_changed` fires, passing the current `modelValue`
- * to prompt a re-read. In practice, pair with the runtime's two-way prop
- * patching or use a `ref` that the runtime keeps in sync.
  *
  * Usage:
  *   <Textarea v-model="message" placeholder="Enter message..." />
@@ -103,6 +70,8 @@ export const Textarea = defineComponent({
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
+    const textEditRef = ref<unknown>(null)
+
     return () => {
       const style = props.style
       const nodeProps: Record<string, unknown> = {}
@@ -113,10 +82,13 @@ export const Textarea = defineComponent({
       }
 
       // text_changed signal → v-model update
-      // TextEdit's text_changed has no arguments; we emit the signal event
-      // so the runtime can reconcile the value from the node.
+      // Godot's TextEdit.text_changed fires with no arguments, so we read
+      // the current text directly from the underlying node via a template ref.
       nodeProps['onTextChanged'] = () => {
-        emit('update:modelValue', props.modelValue)
+        const node = textEditRef.value
+        if (hasTextProperty(node)) {
+          emit('update:modelValue', node.text)
+        }
       }
 
       // Placeholder
@@ -184,7 +156,7 @@ export const Textarea = defineComponent({
         nodeProps['modulate'] = `1,1,1,${style.opacity}`
       }
 
-      return h('TextEdit', nodeProps)
+      return h('TextEdit', { ref: textEditRef, ...nodeProps })
     }
   },
 })

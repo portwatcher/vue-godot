@@ -1,5 +1,23 @@
-import { defineComponent, h, type VNode } from '@vue/runtime-core'
+import { defineComponent, h, ref, type VNode } from '@vue/runtime-core'
 import type { HtmlStyle } from '../utils/styleMapping.js'
+
+/** Type guard for Godot OptionButton-like nodes. */
+interface OptionButtonLike {
+  clear(): void
+  add_item(label: string, id: number): void
+  select(idx: number): void
+  get_item_count(): number
+}
+
+function isOptionButton(node: unknown): node is OptionButtonLike {
+  return (
+    typeof node === 'object' &&
+    node !== null &&
+    'clear' in (node as object) &&
+    'add_item' in (node as object) &&
+    'select' in (node as object)
+  )
+}
 
 /**
  * Extract option entries from `<Option>` slot vnodes.
@@ -147,6 +165,34 @@ export const Select = defineComponent({
   },
   emits: ['update:modelValue', 'change'],
   setup(props, { slots, emit }) {
+    const optionBtnRef = ref<unknown>(null)
+
+    /**
+     * Imperatively sync the OptionButton's items with the extracted
+     * option list using clear() + add_item(). This avoids relying on
+     * Godot's `popup/item_N/text` property paths which are fragile
+     * through Vue's prop-diffing lifecycle.
+     */
+    function syncItems(options: Array<{ value: string; label: string }>): void {
+      const node = optionBtnRef.value
+      if (!isOptionButton(node)) return
+
+      node.clear()
+      for (let i = 0; i < options.length; i++) {
+        node.add_item(options[i].label, i)
+      }
+
+      // Restore selection
+      if (props.modelValue !== undefined) {
+        const selectedIdx = options.findIndex(
+          (opt) => opt.value === props.modelValue,
+        )
+        if (selectedIdx >= 0) {
+          node.select(selectedIdx)
+        }
+      }
+    }
+
     return () => {
       const style = props.style
       const nodeProps: Record<string, unknown> = {}
@@ -154,26 +200,6 @@ export const Select = defineComponent({
       // Extract options from <Option> children
       const slotContent = slots.default?.() ?? []
       const options = extractOptions(slotContent)
-
-      // Build item list for OptionButton
-      // OptionButton items are set via `items` prop (array) or imperatively.
-      // The runtime-tscn renderer handles `items` as a reconciled list.
-      // We pass individual item props using Godot's indexed item API pattern.
-      nodeProps['item_count'] = options.length
-      for (let i = 0; i < options.length; i++) {
-        nodeProps[`item_${i}/text`] = options[i].label
-        nodeProps[`item_${i}/id`] = i
-      }
-
-      // Select the item matching modelValue
-      if (props.modelValue !== undefined) {
-        const selectedIdx = options.findIndex(
-          (opt) => opt.value === props.modelValue,
-        )
-        if (selectedIdx >= 0) {
-          nodeProps['selected'] = selectedIdx
-        }
-      }
 
       // item_selected signal → v-model update + change event
       nodeProps['onItemSelected'] = (index: number) => {
@@ -218,7 +244,11 @@ export const Select = defineComponent({
         nodeProps['modulate'] = `1,1,1,${style.opacity}`
       }
 
-      return h('OptionButton', nodeProps)
+      // Sync items imperatively after the vnode is mounted/patched
+      nodeProps['onVnodeMounted'] = () => syncItems(options)
+      nodeProps['onVnodeUpdated'] = () => syncItems(options)
+
+      return h('OptionButton', { ref: optionBtnRef, ...nodeProps })
     }
   },
 })

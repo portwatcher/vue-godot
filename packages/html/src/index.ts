@@ -8,6 +8,7 @@ export { Span } from './components/Span'
 export { Textarea } from './components/Textarea'
 export { htmlPlugin, htmlTags } from './plugin'
 export { resolveAssetPath } from './utils/assetResolver'
+export { parseHexColor } from './utils/colorParser'
 export type { HtmlStyle } from './utils/styleMapping'
 export {
   createTextureFromBuffer,
