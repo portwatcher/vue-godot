@@ -101,17 +101,13 @@ const magicSignatures: Array<{
 ]
 
 // ---------------------------------------------------------------------------
-// Source-type detection
+// Source-type detection (re-exported from assetResolver for backward compat)
 // ---------------------------------------------------------------------------
 
-export type SourceKind = 'local' | 'data-uri' | 'remote' | 'blob'
+export { classifySource } from './assetResolver.js'
+export type { SourceKind } from './assetResolver.js'
 
-export function classifySource(src: string): SourceKind {
-  if (src.startsWith('data:')) return 'data-uri'
-  if (src.startsWith('blob:')) return 'blob'
-  if (src.startsWith('http://') || src.startsWith('https://')) return 'remote'
-  return 'local'
-}
+import { classifySource } from './assetResolver.js'
 
 // ---------------------------------------------------------------------------
 // Data-URI parsing

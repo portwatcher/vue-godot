@@ -239,7 +239,7 @@ This package is in early development. Currently scaffolded:
 - [x] `<Textarea>` — multiline text (`TextEdit`, `v-model`, `placeholder`, `rows`/`cols`)
 - [x] `<Select>` / `<Option>` — dropdown (`OptionButton`, `v-model`, `<Option>` children)
 - [x] `<Canvas>` — 2D drawing surface (`Control`, `width`/`height`, template ref for draw commands)
-- [ ] `<Video>` — video playback
+- [x] `<Video>` — video playback (`VideoStreamPlayer`, `src`, `autoplay`, `loop`, `muted`, `volume`, `@ended`)
 - [ ] `<Audio>` — audio playback
 - [ ] `<Svg>` — SVG display
 - [ ] `<A>` — link/anchor

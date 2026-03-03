@@ -13,9 +13,20 @@ export function resolveAssetPath(src: string): string {
     return src
   }
 
-  const normalized = src
-    .replace(/^\.\//, '')
-    .replace(/^\//, '')
+  const normalized = src.replace(/^\.\//, '').replace(/^\//, '')
 
   return `res://${normalized}`
+}
+
+// ---------------------------------------------------------------------------
+// Source-type detection
+// ---------------------------------------------------------------------------
+
+export type SourceKind = 'local' | 'data-uri' | 'remote' | 'blob'
+
+export function classifySource(src: string): SourceKind {
+  if (src.startsWith('data:')) return 'data-uri'
+  if (src.startsWith('blob:')) return 'blob'
+  if (src.startsWith('http://') || src.startsWith('https://')) return 'remote'
+  return 'local'
 }
