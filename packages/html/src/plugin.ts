@@ -6,6 +6,7 @@ import { Img } from './components/Img'
 import { Input } from './components/Input'
 import { Option, Select } from './components/Select'
 import { Span } from './components/Span'
+import { Svg } from './components/Svg'
 import { Textarea } from './components/Textarea'
 import { Video } from './components/Video'
 
@@ -20,7 +21,8 @@ const components: Record<string, Component> = {
   Option,
   Canvas,
   Video,
-  // TODO: Audio, Svg, ...
+  Svg,
+  // TODO: Audio, ...
 }
 
 /**
