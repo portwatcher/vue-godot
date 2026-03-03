@@ -52,3 +52,44 @@ Specifically:
 - **New package** — create a `README.md` following the same structure as existing packages (title, description, installation, quick start, API table, detailed sections, requirements, license).
 
 If you are unsure whether a change affects the README, err on the side of updating it.
+
+### Keep GitHub issues aligned with the codebase
+
+Open issues must accurately reflect the current state of the repository. When your work resolves, partially resolves, or invalidates an open issue, you **must** update that issue in the same session.
+
+#### Closing resolved issues
+
+Close an issue when **all** of its acceptance criteria are met in the codebase. The closing comment must include:
+
+- A brief statement of what was done.
+- The **commit hash(es)** that implement the resolution (e.g. `447fe2b`).
+- References to the key files added or changed.
+
+Example closing comment:
+
+> Closing — `<Video>` component implemented in `packages/html/src/components/Video.ts`. Supports src, autoplay, loop, muted, volume, @ended. Registered and tested.
+>
+> Commit: 22f6ad0
+
+#### Updating partially resolved issues
+
+When your work completes **some but not all** items in an issue, add a status-update comment that includes:
+
+- A clear list of what is **done** (with commit hashes).
+- A clear list of what **remains** open.
+- Updated checkbox state if the issue body uses a task list.
+
+Do not close a partially resolved issue.
+
+#### Superseded or duplicate issues
+
+If a newer issue fully covers an older one, or if two issues track the same work, close the redundant issue with a comment linking to the canonical issue.
+
+#### Tracker / meta issues
+
+When closing an issue that is referenced in a tracker or meta issue (e.g. a beta-readiness checklist), update the tracker's checklist in the same session — check off completed items and note the closing commit hashes.
+
+#### When to review issues
+
+- **After implementing a feature or fix** — scan open issues for any that your change resolves or advances.
+- **When explicitly asked** — use `gh issue list` to audit all open issues against the current codebase and close or update every stale entry.
