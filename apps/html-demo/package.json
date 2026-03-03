@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite build --watch -c vue/vite.config.ts",
     "build": "vite build -c vue/vite.config.ts",
-    "postinstall": "npm run build",
+    "build:deps": "npm run --workspace=@vue-godot/browser build",
+    "postinstall": "npm run build:deps && npm run build",
     "gen:types": "vue-godot gen-types"
   },
   "devDependencies": {
