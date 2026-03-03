@@ -1,4 +1,5 @@
 import type { App, Component } from '@vue/runtime-core'
+import { Audio } from './components/Audio'
 import { Button } from './components/Button'
 import { Canvas } from './components/Canvas'
 import { Div } from './components/Div'
@@ -11,6 +12,7 @@ import { Textarea } from './components/Textarea'
 import { Video } from './components/Video'
 
 const components: Record<string, Component> = {
+  Audio,
   Div,
   Img,
   Span,
@@ -22,7 +24,6 @@ const components: Record<string, Component> = {
   Canvas,
   Video,
   Svg,
-  // TODO: Audio, ...
 }
 
 /**

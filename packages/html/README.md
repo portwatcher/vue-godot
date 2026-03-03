@@ -240,7 +240,7 @@ This package is in early development. Currently scaffolded:
 - [x] `<Select>` / `<Option>` — dropdown (`OptionButton`, `v-model`, `<Option>` children)
 - [x] `<Canvas>` — 2D drawing surface (`Control`, `width`/`height`, template ref for draw commands)
 - [x] `<Video>` — video playback (`VideoStreamPlayer`, `src`, `autoplay`, `loop`, `muted`, `volume`, `@ended`)
-- [ ] `<Audio>` — audio playback
+- [x] `<Audio>` — audio playback (`AudioStreamPlayer`, `src`, `autoplay`, `loop`, `muted`, `volume`, `@ended`)
 - [x] `<Svg>` — SVG display (`TextureRect`, `src`, `scale` for rasterisation quality, `alt`)
 - [ ] `<A>` — link/anchor
 - [x] Theme override application (gap, padding)

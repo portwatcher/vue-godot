@@ -1,3 +1,4 @@
+export { Audio } from './components/Audio'
 export { Button } from './components/Button'
 export { Canvas } from './components/Canvas'
 export { Div } from './components/Div'
@@ -11,6 +12,11 @@ export { Video } from './components/Video'
 export { htmlPlugin, htmlTags } from './plugin'
 export { classifySource, resolveAssetPath } from './utils/assetResolver'
 export type { SourceKind } from './utils/assetResolver'
+export {
+  createAudioStreamFromBuffer,
+  fetchRemoteAudioStream,
+  loadAudioStream,
+} from './utils/audioStreamLoader'
 export { parseHexColor } from './utils/colorParser'
 export {
   createStreamFromBuffer,
