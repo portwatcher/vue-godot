@@ -18,6 +18,8 @@ export {
   loadAudioStream,
 } from './utils/audioStreamLoader'
 export { parseHexColor } from './utils/colorParser'
+export { parseDataUri } from './utils/dataUri'
+export type { DataUriParts } from './utils/dataUri'
 export {
   createStreamFromBuffer,
   fetchRemoteStream,

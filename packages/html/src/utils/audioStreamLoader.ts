@@ -1,9 +1,4 @@
-import {
-  atob as godotAtob,
-  fetch as godotFetch,
-  GodotTextEncoder,
-  resolveObjectURL,
-} from '@vue-godot/browser'
+import { fetch as godotFetch, resolveObjectURL } from '@vue-godot/browser'
 import {
   AudioStreamMP3,
   AudioStreamOggVorbis,
@@ -13,6 +8,7 @@ import {
   type AudioStream,
 } from 'godot'
 import { classifySource, resolveAssetPath } from './assetResolver.js'
+import { parseDataUri } from './dataUri.js'
 export { classifySource } from './assetResolver.js'
 export type { SourceKind } from './assetResolver.js'
 
@@ -87,36 +83,6 @@ function detectFormat(mime?: string, url?: string): AudioFormat | null {
     }
   }
   return null
-}
-
-// ---------------------------------------------------------------------------
-// Data-URI parsing
-// ---------------------------------------------------------------------------
-
-interface DataUriParts {
-  mime: string
-  buffer: ArrayBuffer
-}
-
-function parseDataUri(uri: string): DataUriParts | null {
-  const match = uri.match(/^data:([^;,]+)?(?:;base64)?,(.*)$/)
-  if (!match) return null
-
-  const mime = (match[1] ?? 'application/octet-stream').toLowerCase()
-  const raw = match[2]
-
-  if (uri.includes(';base64,')) {
-    const binaryStr = godotAtob(raw)
-    const bytes = new Uint8Array(binaryStr.length)
-    for (let i = 0; i < binaryStr.length; i++) {
-      bytes[i] = binaryStr.charCodeAt(i)
-    }
-    return { mime, buffer: bytes.buffer as ArrayBuffer }
-  }
-
-  const decoded = decodeURIComponent(raw)
-  const bytes = new GodotTextEncoder().encode(decoded)
-  return { mime, buffer: bytes.buffer as ArrayBuffer }
 }
 
 // ---------------------------------------------------------------------------

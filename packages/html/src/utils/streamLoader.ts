@@ -1,9 +1,4 @@
-import {
-  atob as godotAtob,
-  fetch as godotFetch,
-  GodotTextEncoder,
-  resolveObjectURL,
-} from '@vue-godot/browser'
+import { fetch as godotFetch, resolveObjectURL } from '@vue-godot/browser'
 import {
   DirAccess,
   FileAccess,
@@ -12,6 +7,7 @@ import {
   type VideoStream,
 } from 'godot'
 import { classifySource, resolveAssetPath } from './assetResolver.js'
+import { parseDataUri } from './dataUri.js'
 export { classifySource } from './assetResolver.js'
 export type { SourceKind } from './assetResolver.js'
 
@@ -31,36 +27,6 @@ let tempFileId = 0
 
 /** Directory under `user://` where temp video files are stored. */
 const TEMP_DIR = 'user://tmp/vue-godot-video'
-
-// ---------------------------------------------------------------------------
-// Data-URI parsing
-// ---------------------------------------------------------------------------
-
-interface DataUriParts {
-  mime: string
-  buffer: ArrayBuffer
-}
-
-function parseDataUri(uri: string): DataUriParts | null {
-  const match = uri.match(/^data:([^;,]+)?(?:;base64)?,(.*)$/)
-  if (!match) return null
-
-  const mime = (match[1] ?? 'application/octet-stream').toLowerCase()
-  const raw = match[2]
-
-  if (uri.includes(';base64,')) {
-    const binaryStr = godotAtob(raw)
-    const bytes = new Uint8Array(binaryStr.length)
-    for (let i = 0; i < binaryStr.length; i++) {
-      bytes[i] = binaryStr.charCodeAt(i)
-    }
-    return { mime, buffer: bytes.buffer as ArrayBuffer }
-  }
-
-  const decoded = decodeURIComponent(raw)
-  const bytes = new GodotTextEncoder().encode(decoded)
-  return { mime, buffer: bytes.buffer as ArrayBuffer }
-}
 
 // ---------------------------------------------------------------------------
 // MIME → file extension for temp files

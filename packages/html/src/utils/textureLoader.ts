@@ -1,11 +1,7 @@
-import {
-  atob as godotAtob,
-  fetch as godotFetch,
-  GodotTextEncoder,
-  resolveObjectURL,
-} from '@vue-godot/browser'
+import { fetch as godotFetch, resolveObjectURL } from '@vue-godot/browser'
 import { Image, ImageTexture, ResourceLoader, type Texture2D } from 'godot'
 import { resolveAssetPath } from './assetResolver.js'
+import { parseDataUri } from './dataUri.js'
 
 /**
  * Union of all `Image.load_*_from_buffer` method names.
@@ -108,39 +104,6 @@ export { classifySource } from './assetResolver.js'
 export type { SourceKind } from './assetResolver.js'
 
 import { classifySource } from './assetResolver.js'
-
-// ---------------------------------------------------------------------------
-// Data-URI parsing
-// ---------------------------------------------------------------------------
-
-interface DataUriParts {
-  mime: string
-  buffer: ArrayBuffer
-}
-
-function parseDataUri(uri: string): DataUriParts | null {
-  // data:[<mediatype>][;base64],<data>
-  const match = uri.match(/^data:([^;,]+)?(?:;base64)?,(.*)$/)
-  if (!match) return null
-
-  const mime = (match[1] ?? 'application/octet-stream').toLowerCase()
-  const raw = match[2]
-
-  // Base64-encoded
-  if (uri.includes(';base64,')) {
-    const binaryStr = godotAtob(raw)
-    const bytes = new Uint8Array(binaryStr.length)
-    for (let i = 0; i < binaryStr.length; i++) {
-      bytes[i] = binaryStr.charCodeAt(i)
-    }
-    return { mime, buffer: bytes.buffer as ArrayBuffer }
-  }
-
-  // Percent-encoded (rare for images, but spec-compliant)
-  const decoded = decodeURIComponent(raw)
-  const bytes = new GodotTextEncoder().encode(decoded)
-  return { mime, buffer: bytes.buffer as ArrayBuffer }
-}
 
 // ---------------------------------------------------------------------------
 // Buffer → ImageTexture
