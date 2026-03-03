@@ -30,9 +30,17 @@ export { GodotAbortController, GodotAbortSignal } from './abort.js'
 export { atob, btoa } from './base64.js'
 export { GodotBlob } from './blob.js'
 export { GodotTextDecoder, GodotTextEncoder } from './encoding.js'
+export { GodotEvent, GodotEventTarget } from './event-target.js'
 export { fetch } from './fetch.js'
 export type { GodotFetchInit } from './fetch.js'
 export { GodotHeaders } from './headers.js'
+export {
+  GodotHistory,
+  GodotLocation,
+  PopStateEvent,
+  createHistoryAndLocation,
+  getGlobalEventTarget,
+} from './history.js'
 export { GodotResponse } from './response.js'
 export {
   GodotURL,

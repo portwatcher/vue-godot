@@ -14,6 +14,13 @@ import { GodotBlob } from './blob.js'
 import { GodotTextDecoder, GodotTextEncoder } from './encoding.js'
 import { fetch } from './fetch.js'
 import { GodotHeaders } from './headers.js'
+import {
+  createHistoryAndLocation,
+  getGlobalEventTarget,
+  GodotHistory,
+  GodotLocation,
+  PopStateEvent,
+} from './history.js'
 import { GodotResponse } from './response.js'
 import { createObjectURL, GodotURL, revokeObjectURL } from './url.js'
 
@@ -56,6 +63,29 @@ export function installBrowserAPIs(): void {
   polyfill('TextDecoder', GodotTextDecoder)
   polyfill('AbortController', GodotAbortController)
   polyfill('AbortSignal', GodotAbortSignal)
+
+  // History API — history, location, PopStateEvent, and global event methods
+  polyfill('PopStateEvent', PopStateEvent)
+
+  if (
+    typeof g['history'] === 'undefined' ||
+    typeof g['location'] === 'undefined'
+  ) {
+    const pair = createHistoryAndLocation(
+      typeof g['location'] === 'object' && g['location'] !== null
+        ? String(g['location'])
+        : undefined,
+    )
+    polyfill('history', pair.history)
+    polyfill('location', pair.location)
+  }
+
+  // Global addEventListener / removeEventListener / dispatchEvent
+  // (required for libraries that do `window.addEventListener('popstate', …)`)
+  const target = getGlobalEventTarget()
+  polyfill('addEventListener', target.addEventListener.bind(target))
+  polyfill('removeEventListener', target.removeEventListener.bind(target))
+  polyfill('dispatchEvent', target.dispatchEvent.bind(target))
 }
 
 /**
@@ -80,6 +110,9 @@ export function installPolyfill(...names: string[]): void {
     TextDecoder: GodotTextDecoder,
     AbortController: GodotAbortController,
     AbortSignal: GodotAbortSignal,
+    PopStateEvent,
+    History: GodotHistory,
+    Location: GodotLocation,
   }
 
   for (const name of names) {
