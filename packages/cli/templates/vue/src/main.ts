@@ -1,8 +1,8 @@
 import { createApp } from '@vue-godot/runtime-tscn'
-import { Control } from 'godot'
+import { VBoxContainer } from 'godot'
 import App from './App.vue'
 
-export default class Root extends Control {
+export default class Root extends VBoxContainer {
   _ready() {
     const app = createApp(App)
     app.mount(this)
