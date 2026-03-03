@@ -1,7 +1,10 @@
-import test from 'node:test'
 import assert from 'node:assert/strict'
+import test from 'node:test'
 
-import { resolveContainerTag, resolvePadding } from '../dist/utils/styleMapping.js'
+import {
+  resolveContainerTag,
+  resolvePadding,
+} from '../dist/utils/styleMapping.js'
 
 test('maps gap to separation for non-wrapping row and column containers', () => {
   const row = resolveContainerTag({ gap: 12, flexDirection: 'row' })
@@ -15,7 +18,11 @@ test('maps gap to separation for non-wrapping row and column containers', () => 
 })
 
 test('maps gap to h/v separation for wrapping containers', () => {
-  const rowWrap = resolveContainerTag({ gap: 10, flexDirection: 'row', flexWrap: 'wrap' })
+  const rowWrap = resolveContainerTag({
+    gap: 10,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  })
   const columnWrap = resolveContainerTag({
     gap: 10,
     flexDirection: 'column',
@@ -43,6 +50,24 @@ test('maps gap to h/v separation for grid containers', () => {
     h_separation: 6,
     v_separation: 6,
   })
+})
+
+test('maps columns to GridContainer columns prop', () => {
+  const grid = resolveContainerTag({ display: 'grid', columns: 3, gap: 4 })
+
+  assert.equal(grid.tag, 'GridContainer')
+  assert.equal(grid.props.columns, 3)
+  assert.deepEqual(grid.themeOverrides, {
+    h_separation: 4,
+    v_separation: 4,
+  })
+})
+
+test('omits columns prop when not specified on grid', () => {
+  const grid = resolveContainerTag({ display: 'grid' })
+
+  assert.equal(grid.tag, 'GridContainer')
+  assert.equal('columns' in grid.props, false)
 })
 
 test('maps justifyContent to container alignment where supported', () => {

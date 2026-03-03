@@ -27,13 +27,14 @@
 
 export interface HtmlStyle {
   display?: 'flex' | 'grid' | 'none'
-  flexDirection?: 'row' | 'column' | 'row-reverse' | 'column-reverse'
-  flexWrap?: 'nowrap' | 'wrap' | 'wrap-reverse'
-  justifyContent?: 'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around'
+  flexDirection?: 'row' | 'column'
+  flexWrap?: 'nowrap' | 'wrap'
+  justifyContent?: 'flex-start' | 'center' | 'flex-end'
   alignItems?: 'flex-start' | 'center' | 'flex-end' | 'stretch'
   alignSelf?: 'flex-start' | 'center' | 'flex-end' | 'stretch'
   flex?: number
   gap?: number
+  columns?: number
   padding?: number
   paddingTop?: number
   paddingRight?: number
@@ -133,7 +134,11 @@ function resolveMinimumAxisSize(
   if (typeof minValue === 'number' && Number.isFinite(minValue)) {
     resolved = resolved == null ? minValue : Math.max(resolved, minValue)
   }
-  if (typeof maxValue === 'number' && Number.isFinite(maxValue) && resolved != null) {
+  if (
+    typeof maxValue === 'number' &&
+    Number.isFinite(maxValue) &&
+    resolved != null
+  ) {
     resolved = Math.min(resolved, maxValue)
   }
 
@@ -173,12 +178,9 @@ export function resolveContainerTag(style: HtmlStyle): ContainerMapping {
   if (style.display === 'grid') {
     tag = 'GridContainer'
   } else {
-    const isRow =
-      !style.flexDirection ||
-      style.flexDirection === 'row' ||
-      style.flexDirection === 'row-reverse'
+    const isRow = !style.flexDirection || style.flexDirection === 'row'
 
-    if (style.flexWrap === 'wrap' || style.flexWrap === 'wrap-reverse') {
+    if (style.flexWrap === 'wrap') {
       tag = isRow ? 'HFlowContainer' : 'VFlowContainer'
     } else {
       tag = isRow ? 'HBoxContainer' : 'VBoxContainer'
@@ -198,13 +200,25 @@ export function resolveContainerTag(style: HtmlStyle): ContainerMapping {
     }
   }
 
+  if (tag === 'GridContainer' && style.columns != null) {
+    props['columns'] = style.columns
+  }
+
   const alignment = resolveContainerAlignment(tag, style.justifyContent)
   if (alignment != null) {
     props['alignment'] = alignment
   }
 
-  const minWidth = resolveMinimumAxisSize(style.width, style.minWidth, style.maxWidth)
-  const minHeight = resolveMinimumAxisSize(style.height, style.minHeight, style.maxHeight)
+  const minWidth = resolveMinimumAxisSize(
+    style.width,
+    style.minWidth,
+    style.maxWidth,
+  )
+  const minHeight = resolveMinimumAxisSize(
+    style.height,
+    style.minHeight,
+    style.maxHeight,
+  )
 
   if (minWidth != null) {
     props['custom_minimum_size:x'] = minWidth
