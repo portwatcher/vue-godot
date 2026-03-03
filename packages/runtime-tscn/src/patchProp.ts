@@ -1,7 +1,7 @@
 import { RendererOptions } from '@vue/runtime-core'
 import { Callable, Node } from 'godot'
-import { patchSignalHandlers } from './signalEvents'
 import { patchGodotProperty } from './propertyPatch'
+import { patchSignalHandlers } from './signalEvents'
 
 type TSCNRendererOptions = RendererOptions<Node, Node>
 
@@ -14,11 +14,11 @@ export const patchProp: TSCNRendererOptions['patchProp'] = function (
   if (key.startsWith('on')) {
     patchSignalHandlers(el, key, next, {
       createCallable: (target, handler) =>
-        Callable.create(target, handler as (...args: any[]) => any),
+        Callable.create(target, handler as (...args: unknown[]) => unknown),
       connect: (target, signalName, callable) =>
-        target.connect(signalName, callable as any),
+        target.connect(signalName, new Callable(callable)),
       disconnect: (target, signalName, callable) =>
-        target.disconnect(signalName, callable as any),
+        target.disconnect(signalName, new Callable(callable)),
       onError: (phase, signalName, error) => {
         console.warn(
           `[vue-godot] Error trying to ${phase} signal "${signalName}" on ${

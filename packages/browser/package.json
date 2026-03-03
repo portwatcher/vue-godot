@@ -1,0 +1,36 @@
+{
+  "name": "@vue-godot/browser",
+  "version": "0.0.1",
+  "description": "Browser API polyfills for GodotJS (fetch, URL, Blob, atob/btoa, TextEncoder, etc.)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npx tsc -p .",
+    "test": "npm run build && node --test test/*.test.mjs"
+  },
+  "keywords": [
+    "vue",
+    "godot",
+    "browser",
+    "polyfill",
+    "fetch"
+  ],
+  "author": "Portwatcher",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  }
+}
