@@ -46,6 +46,7 @@ export interface HtmlStyle {
   minHeight?: number
   maxWidth?: number
   maxHeight?: number
+  objectFit?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down'
   backgroundColor?: string
   color?: string
   fontSize?: number

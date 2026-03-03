@@ -21,7 +21,8 @@
     "test": "npm run build && node --test test/*.test.mjs"
   },
   "dependencies": {
-    "@vue/runtime-core": "^3.3.0"
+    "@vue/runtime-core": "^3.3.0",
+    "@vue-godot/browser": ">=0.0.1"
   },
   "peerDependencies": {
     "@vue-godot/runtime-tscn": ">=0.0.1"
