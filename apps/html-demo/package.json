@@ -1,5 +1,5 @@
 {
-  "name": "div-layout",
+  "name": "html-demo",
   "version": "1.0.0",
   "type": "commonjs",
   "scripts": {
@@ -15,6 +15,7 @@
     "vite": "^6.3.5"
   },
   "dependencies": {
+    "@vue-godot/browser": "*",
     "@vue-godot/html": "*",
     "@vue-godot/runtime-tscn": "*",
     "@vue/runtime-core": "^3.5.14"

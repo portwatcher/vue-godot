@@ -122,3 +122,14 @@ When closing an issue that is referenced in a tracker or meta issue (e.g. a beta
 
 - **After implementing a feature or fix** — scan open issues for any that your change resolves or advances.
 - **When explicitly asked** — use `gh issue list` to audit all open issues against the current codebase and close or update every stale entry.
+
+### Keep `apps/html-demo` up to date
+
+`apps/html-demo` is the integration demo app that exercises **every** `@vue-godot/html` component and `@vue-godot/browser` API. When you add, remove, or rename a component in `@vue-godot/html` or a polyfilled API in `@vue-godot/browser`, you **must** update `apps/html-demo` in the same change:
+
+- **New `@vue-godot/html` component** — add a section in `App.vue` that renders the component with representative props, events, and reactive state. Use lowercase HTML tag names (e.g. `<div>`, `<button>`) since `htmlPlugin` registers both cases.
+- **New `@vue-godot/browser` API** — add a smoke test in the `runBrowserTests()` function that instantiates or calls the API and reports success/failure.
+- **Removed / renamed component or API** — remove or update the corresponding section in `App.vue`.
+- **New `htmlTags` entry** — also add the tag to the `htmlTags` array in `apps/html-demo/vue/vite.config.ts` and in `packages/cli/src/integrate.ts` (`generateHtmlViteConfig`).
+
+The demo must build successfully (`npm run build` from the app directory) after every change.

@@ -251,4 +251,4 @@ This package is in early development. Currently scaffolded:
 
 ## Demo Apps
 
-- `apps/div-layout` — manual Godot scene app for validating `Div` layout behavior (gap, padding, justify/align, fragment children, flex flags). Created with `@vue-godot/cli` and lives in the monorepo root `apps/` directory.
+- `apps/html-demo` — integration demo exercising every `@vue-godot/html` component and `@vue-godot/browser` API. Lives in the monorepo root `apps/` directory.
