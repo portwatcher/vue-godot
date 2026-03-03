@@ -1,0 +1,100 @@
+import { defineComponent, h } from '@vue/runtime-core'
+import type { HtmlStyle } from '../utils/styleMapping.js'
+
+/** Default canvas width matching the HTML `<canvas>` default. */
+const DEFAULT_WIDTH = 300
+
+/** Default canvas height matching the HTML `<canvas>` default. */
+const DEFAULT_HEIGHT = 150
+
+/**
+ * <Canvas> — 2D drawing surface component.
+ *
+ * Maps to a Godot `Control` node with `custom_minimum_size` set to the
+ * requested `width` × `height` (defaulting to 300×150, matching HTML
+ * `<canvas>` defaults).
+ *
+ * **MVP scope**: This component renders a bare `Control` node that can be
+ * accessed via a Vue template ref. Advanced users can call Godot draw methods
+ * (`_draw()` / `queue_redraw()`) on the underlying node directly.
+ *
+ * `getContext('2d')` is **not yet implemented** — a future version may
+ * provide a Canvas2D-like wrapper over Godot's `CanvasItem` draw commands.
+ *
+ * Props:
+ *   - `width`  — canvas width in pixels (default: 300)
+ *   - `height` — canvas height in pixels (default: 150)
+ *   - `style`  — subset of CSS styles
+ *
+ * Usage:
+ *   <Canvas ref="canvasRef" :width="400" :height="300" />
+ *
+ *   <!-- access the Godot Control node via template ref -->
+ *   <script setup>
+ *   import { ref, onMounted } from '@vue/runtime-core'
+ *   const canvasRef = ref(null)
+ *   onMounted(() => {
+ *     // canvasRef.value is the Godot Control node
+ *     canvasRef.value.queue_redraw()
+ *   })
+ *   </script>
+ */
+export const Canvas = defineComponent({
+  name: 'Canvas',
+  props: {
+    width: {
+      type: Number,
+      default: DEFAULT_WIDTH,
+    },
+    height: {
+      type: Number,
+      default: DEFAULT_HEIGHT,
+    },
+    style: {
+      type: Object as () => HtmlStyle,
+      default: undefined,
+    },
+  },
+  setup(props) {
+    return () => {
+      const style = props.style
+      const nodeProps: Record<string, unknown> = {}
+
+      // Width / height → custom_minimum_size
+      // Style width/height take precedence over the width/height props
+      const width =
+        typeof style?.width === 'number' && Number.isFinite(style.width)
+          ? style.width
+          : props.width
+      const height =
+        typeof style?.height === 'number' && Number.isFinite(style.height)
+          ? style.height
+          : props.height
+
+      if (typeof width === 'number' && Number.isFinite(width)) {
+        nodeProps['custom_minimum_size:x'] = width
+      }
+      if (typeof height === 'number' && Number.isFinite(height)) {
+        nodeProps['custom_minimum_size:y'] = height
+      }
+
+      // Clip drawing to the control bounds
+      nodeProps['clip_contents'] = true
+
+      // display: none
+      if (style?.display === 'none') {
+        nodeProps['visible'] = false
+      }
+
+      // opacity
+      if (
+        typeof style?.opacity === 'number' &&
+        Number.isFinite(style.opacity)
+      ) {
+        nodeProps['modulate'] = `1,1,1,${style.opacity}`
+      }
+
+      return h('Control', nodeProps)
+    }
+  },
+})

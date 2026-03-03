@@ -236,8 +236,9 @@ This package is in early development. Currently scaffolded:
 - [x] `<Span>` — text display with `fontSize`, `color`, `textAlign`, `textTransform`, `overflowWrap`
 - [x] `<Button>` — click handler with `@click`, `disabled`
 - [x] `<Input>` — text, password, checkbox, range inputs with `v-model`
-- [ ] `<Textarea>` — multiline text
-- [ ] `<Select>` / `<Option>` — dropdown
+- [x] `<Textarea>` — multiline text (`TextEdit`, `v-model`, `placeholder`, `rows`/`cols`)
+- [x] `<Select>` / `<Option>` — dropdown (`OptionButton`, `v-model`, `<Option>` children)
+- [x] `<Canvas>` — 2D drawing surface (`Control`, `width`/`height`, template ref for draw commands)
 - [ ] `<Video>` — video playback
 - [ ] `<Audio>` — audio playback
 - [ ] `<Svg>` — SVG display

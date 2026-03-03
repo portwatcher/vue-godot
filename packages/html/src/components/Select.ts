@@ -1,0 +1,224 @@
+import { defineComponent, h, type VNode } from '@vue/runtime-core'
+import type { HtmlStyle } from '../utils/styleMapping.js'
+
+/**
+ * Extract option entries from `<Option>` slot vnodes.
+ *
+ * Each `<Option>` child is expected to have:
+ *   - `value` prop — the option value string
+ *   - text slot children — the display label
+ *
+ * Returns an array of `{ value, label }` pairs in slot order.
+ */
+function extractOptions(
+  children: VNode[],
+): Array<{ value: string; label: string }> {
+  const result: Array<{ value: string; label: string }> = []
+
+  for (const vnode of children) {
+    // Skip non-element vnodes (text, comments, fragments)
+    if (vnode.type === Option) {
+      const vnodeProps = vnode.props as Record<string, unknown> | null
+      const value =
+        typeof vnodeProps?.['value'] === 'string'
+          ? vnodeProps['value']
+          : String(result.length)
+      const label = extractTextFromChildren(vnode)
+      result.push({ value, label })
+    } else if (Array.isArray(vnode.children)) {
+      // Fragment — recurse into children
+      result.push(...extractOptions(vnode.children as VNode[]))
+    }
+  }
+
+  return result
+}
+
+/**
+ * Extract flattened text content from a vnode's children.
+ */
+function extractTextFromChildren(vnode: VNode): string {
+  const children = vnode.children
+  if (typeof children === 'string') return children
+  if (Array.isArray(children)) {
+    return children
+      .map((child) => {
+        if (typeof child === 'string') return child
+        const childNode = child as VNode
+        if (typeof childNode.children === 'string') return childNode.children
+        return ''
+      })
+      .join('')
+  }
+  // Slots object — try default slot
+  if (children && typeof children === 'object' && 'default' in children) {
+    const slotFn = (children as Record<string, () => VNode[]>)['default']
+    if (typeof slotFn === 'function') {
+      const slotVnodes = slotFn()
+      return slotVnodes
+        .map((v) => (typeof v.children === 'string' ? v.children : ''))
+        .join('')
+    }
+  }
+  return ''
+}
+
+/**
+ * <Option> — individual option within a `<Select>`.
+ *
+ * This is a virtual component that does not render any Godot node on its own.
+ * It is used purely as a declarative child of `<Select>` to provide option
+ * `value` and display text, matching the HTML `<option>` element.
+ *
+ * Props:
+ *   - `value`    — the option value (string)
+ *   - `disabled` — marks the option as disabled (currently informational)
+ *   - `selected` — marks the option as initially selected (currently informational)
+ *
+ * Usage:
+ *   <Select v-model="choice">
+ *     <Option value="a">Alpha</Option>
+ *     <Option value="b">Bravo</Option>
+ *   </Select>
+ */
+export const Option = defineComponent({
+  name: 'Option',
+  props: {
+    value: {
+      type: String,
+      default: undefined,
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
+    selected: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  setup(_props, { slots }) {
+    // Option doesn't render anything on its own — Select reads its props.
+    // Return a comment node so it occupies no visual space.
+    return () => h('_comment', {}, slots.default?.())
+  },
+})
+
+/**
+ * <Select> — dropdown selection component.
+ *
+ * Maps to a Godot `OptionButton` node. Children should be `<Option>`
+ * components that define the available choices, matching HTML `<select>`
+ * semantics.
+ *
+ * Supports `v-model` via `modelValue` + `update:modelValue`.
+ *
+ * Props:
+ *   - `modelValue` — currently selected option value
+ *   - `disabled`   — disables interaction
+ *   - `style`      — subset of CSS styles
+ *
+ * Events:
+ *   - `@update:modelValue` — emits the `value` of the newly selected option
+ *   - `@change`            — emits the selected index (Godot `item_selected` signal)
+ *
+ * Usage:
+ *   <Select v-model="color">
+ *     <Option value="red">Red</Option>
+ *     <Option value="green">Green</Option>
+ *     <Option value="blue">Blue</Option>
+ *   </Select>
+ */
+export const Select = defineComponent({
+  name: 'Select',
+  props: {
+    modelValue: {
+      type: String,
+      default: undefined,
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
+    style: {
+      type: Object as () => HtmlStyle,
+      default: undefined,
+    },
+  },
+  emits: ['update:modelValue', 'change'],
+  setup(props, { slots, emit }) {
+    return () => {
+      const style = props.style
+      const nodeProps: Record<string, unknown> = {}
+
+      // Extract options from <Option> children
+      const slotContent = slots.default?.() ?? []
+      const options = extractOptions(slotContent)
+
+      // Build item list for OptionButton
+      // OptionButton items are set via `items` prop (array) or imperatively.
+      // The runtime-tscn renderer handles `items` as a reconciled list.
+      // We pass individual item props using Godot's indexed item API pattern.
+      nodeProps['item_count'] = options.length
+      for (let i = 0; i < options.length; i++) {
+        nodeProps[`item_${i}/text`] = options[i].label
+        nodeProps[`item_${i}/id`] = i
+      }
+
+      // Select the item matching modelValue
+      if (props.modelValue !== undefined) {
+        const selectedIdx = options.findIndex(
+          (opt) => opt.value === props.modelValue,
+        )
+        if (selectedIdx >= 0) {
+          nodeProps['selected'] = selectedIdx
+        }
+      }
+
+      // item_selected signal → v-model update + change event
+      nodeProps['onItemSelected'] = (index: number) => {
+        const selectedOption = options[index]
+        if (selectedOption) {
+          emit('update:modelValue', selectedOption.value)
+        }
+        emit('change', index)
+      }
+
+      // Disabled
+      if (props.disabled) {
+        nodeProps['disabled'] = true
+      }
+
+      // Width / height → custom_minimum_size
+      if (typeof style?.width === 'number' && Number.isFinite(style.width)) {
+        nodeProps['custom_minimum_size:x'] = style.width
+      }
+      if (typeof style?.height === 'number' && Number.isFinite(style.height)) {
+        nodeProps['custom_minimum_size:y'] = style.height
+      }
+
+      // fontSize → theme_override_font_sizes/font_size
+      if (
+        typeof style?.fontSize === 'number' &&
+        Number.isFinite(style.fontSize)
+      ) {
+        nodeProps['theme_override_font_sizes/font_size'] = style.fontSize
+      }
+
+      // display: none
+      if (style?.display === 'none') {
+        nodeProps['visible'] = false
+      }
+
+      // opacity
+      if (
+        typeof style?.opacity === 'number' &&
+        Number.isFinite(style.opacity)
+      ) {
+        nodeProps['modulate'] = `1,1,1,${style.opacity}`
+      }
+
+      return h('OptionButton', nodeProps)
+    }
+  },
+})
