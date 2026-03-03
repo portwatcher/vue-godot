@@ -58,21 +58,21 @@ Path resolution:
 
 Rather than embedding a layout engine like Yoga, we map a CSS flexbox subset to Godot's native container system. This gives us GPU-side layout computed in C++ and a scene tree that game developers can inspect in the Godot editor.
 
-| CSS                                     | Godot Node                                  |
-| --------------------------------------- | ------------------------------------------- |
-| `display: flex; flex-direction: row`    | `HBoxContainer`                             |
-| `display: flex; flex-direction: column` | `VBoxContainer`                             |
-| `flex-wrap: wrap` (row)                 | `HFlowContainer`                            |
-| `flex-wrap: wrap` (column)              | `VFlowContainer`                            |
-| `display: grid`                         | `GridContainer`                             |
-| `gap: <n>`                              | Theme override (`separation` / `h_separation` + `v_separation`) |
-| `justify-content: flex-start/center/flex-end` | Container `alignment`                        |
-| `flex: 1` (on child)                    | Size flag `EXPAND_FILL`                     |
-| `align-items: *`                        | Default child cross-axis size flag          |
-| `align-self: center` (on child)         | Size flag `SHRINK_CENTER`                   |
-| `padding: <n>`                          | `MarginContainer` wrapper or theme override |
-| `width` / `height`                      | `custom_minimum_size`                       |
-| `display: none`                         | `visible = false`                           |
+| CSS                                           | Godot Node                                                      |
+| --------------------------------------------- | --------------------------------------------------------------- |
+| `display: flex; flex-direction: row`          | `HBoxContainer`                                                 |
+| `display: flex; flex-direction: column`       | `VBoxContainer`                                                 |
+| `flex-wrap: wrap` (row)                       | `HFlowContainer`                                                |
+| `flex-wrap: wrap` (column)                    | `VFlowContainer`                                                |
+| `display: grid`                               | `GridContainer`                                                 |
+| `gap: <n>`                                    | Theme override (`separation` / `h_separation` + `v_separation`) |
+| `justify-content: flex-start/center/flex-end` | Container `alignment`                                           |
+| `flex: 1` (on child)                          | Size flag `EXPAND_FILL`                                         |
+| `align-items: *`                              | Default child cross-axis size flag                              |
+| `align-self: center` (on child)               | Size flag `SHRINK_CENTER`                                       |
+| `padding: <n>`                                | `MarginContainer` wrapper or theme override                     |
+| `width` / `height`                            | `custom_minimum_size`                                           |
+| `display: none`                               | `visible = false`                                               |
 
 Style objects (inline, React Native-style) are the primary styling API:
 
@@ -230,6 +230,7 @@ This package is in early development. Currently scaffolded:
 - [ ] `<Video>` — video playback
 - [ ] `<Audio>` — audio playback
 - [ ] `<Svg>` — SVG display
+- [ ] `<A>` — link/anchor
 - [x] Theme override application (gap, padding)
 - [ ] Theme override application (colors)
 - [x] Size flag mapping (flex, align-self)
