@@ -91,19 +91,19 @@ This is intentionally a subset — not full CSS. We cover the 80% of layouts tha
 
 ## Component Mapping
 
-| HTML-like Component | Godot Node                                                             | Key Props                   |
-| ------------------- | ---------------------------------------------------------------------- | --------------------------- |
-| `<Div>`             | `HBoxContainer` / `VBoxContainer` / `*FlowContainer` / `GridContainer` | `style` (layout)            |
-| `<Img>`             | `TextureRect`                                                          | `src`, `fit`                |
-| `<Span>`            | `Label`                                                                | text content                |
-| `<Button>`          | `Button`                                                               | `@click` → `pressed` signal |
-| `<Input>`           | `LineEdit` / `CheckBox` / `HSlider`                                    | `type`, `v-model`           |
-| `<Textarea>`        | `TextEdit`                                                             | `v-model`                   |
-| `<Select>`          | `OptionButton`                                                         | `<Option>` children         |
-| `<Video>`           | `VideoStreamPlayer`                                                    | `src`                       |
-| `<Audio>`           | `AudioStreamPlayer`                                                    | `src`                       |
-| `<Svg>`             | `TextureRect` (SVG resource)                                           | `src`                       |
-| `<A>`               | `LinkButton` / `RichTextLabel`                                         | `href`                      |
+| HTML-like Component | Godot Node                                                             | Key Props             |
+| ------------------- | ---------------------------------------------------------------------- | --------------------- |
+| `<Div>`             | `HBoxContainer` / `VBoxContainer` / `*FlowContainer` / `GridContainer` | `style` (layout)      |
+| `<Img>`             | `TextureRect`                                                          | `src`, `alt`, `style` |
+| `<Span>`            | `Label`                                                                | text content, `style` |
+| `<Button>`          | `Button`                                                               | `@click`, `disabled`  |
+| `<Input>`           | `LineEdit` / `CheckBox` / `HSlider`                                    | `type`, `v-model`     |
+| `<Textarea>`        | `TextEdit`                                                             | `v-model`             |
+| `<Select>`          | `OptionButton`                                                         | `<Option>` children   |
+| `<Video>`           | `VideoStreamPlayer`                                                    | `src`                 |
+| `<Audio>`           | `AudioStreamPlayer`                                                    | `src`                 |
+| `<Svg>`             | `TextureRect` (SVG resource)                                           | `src`                 |
+| `<A>`               | `LinkButton` / `RichTextLabel`                                         | `href`                |
 
 ### Lowercase tag compatibility (migrating existing SPAs)
 
@@ -189,12 +189,23 @@ export default class App extends Control {
 
 ```vue
 <script setup>
-import { Div, Img } from '@vue-godot/html'
+import { Div, Img, Span, Button, Input } from '@vue-godot/html'
+import { ref } from '@vue/runtime-core'
+
+const name = ref('')
+const agreed = ref(false)
+const volume = ref(50)
 </script>
 
 <template>
-  <Div :style="{ flexDirection: 'row' }">
+  <Div :style="{ flexDirection: 'column', gap: 10 }">
     <Img src="./logo.png" />
+    <Span :style="{ fontSize: 24, color: '#333' }">Welcome!</Span>
+    <Input v-model="name" placeholder="Your name" />
+    <Input type="password" v-model="password" placeholder="Password" />
+    <Input type="checkbox" v-model="agreed" />
+    <Input type="range" v-model="volume" :min="0" :max="100" />
+    <Button @click="save" :style="{ fontSize: 16 }">Save</Button>
   </Div>
 </template>
 ```
@@ -222,9 +233,9 @@ This package is in early development. Currently scaffolded:
 
 - [x] `<Div>` — layout container with style → Godot container mapping
 - [x] `<Img>` — image display with `src` → texture loading
-- [ ] `<Span>` — inline text
-- [ ] `<Button>` — click handler
-- [ ] `<Input>` — text, checkbox, range inputs
+- [x] `<Span>` — text display with `fontSize`, `color`, `textAlign`, `textTransform`, `overflowWrap`
+- [x] `<Button>` — click handler with `@click`, `disabled`
+- [x] `<Input>` — text, password, checkbox, range inputs with `v-model`
 - [ ] `<Textarea>` — multiline text
 - [ ] `<Select>` / `<Option>` — dropdown
 - [ ] `<Video>` — video playback

@@ -51,6 +51,11 @@ export interface HtmlStyle {
   color?: string
   fontSize?: number
   fontWeight?: 'normal' | 'bold'
+  textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize'
+  textAlign?: 'left' | 'center' | 'right'
+  overflowWrap?: 'normal' | 'break-word'
+  overflow?: 'visible' | 'hidden'
+  textOverflow?: 'clip' | 'ellipsis'
   opacity?: number
 }
 

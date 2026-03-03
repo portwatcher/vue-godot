@@ -2,6 +2,7 @@ import {
   atob as godotAtob,
   fetch as godotFetch,
   GodotTextEncoder,
+  resolveObjectURL,
 } from '@vue-godot/browser'
 import { Image, ImageTexture, ResourceLoader, type Texture2D } from 'godot'
 import { resolveAssetPath } from './assetResolver.js'
@@ -103,10 +104,11 @@ const magicSignatures: Array<{
 // Source-type detection
 // ---------------------------------------------------------------------------
 
-export type SourceKind = 'local' | 'data-uri' | 'remote' | 'binary'
+export type SourceKind = 'local' | 'data-uri' | 'remote' | 'blob'
 
 export function classifySource(src: string): SourceKind {
   if (src.startsWith('data:')) return 'data-uri'
+  if (src.startsWith('blob:')) return 'blob'
   if (src.startsWith('http://') || src.startsWith('https://')) return 'remote'
   return 'local'
 }
@@ -269,6 +271,13 @@ export async function loadTexture(
     const parsed = parseDataUri(src)
     if (!parsed) return null
     return createTextureFromBuffer(parsed.buffer, parsed.mime)
+  }
+
+  if (kind === 'blob') {
+    const blob = resolveObjectURL(src)
+    if (!blob) return null
+    const buffer = await blob.arrayBuffer()
+    return createTextureFromBuffer(buffer, blob.type || undefined)
   }
 
   if (kind === 'remote') {

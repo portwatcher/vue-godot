@@ -1,11 +1,7 @@
 import { defineComponent, h, ref, watch } from '@vue/runtime-core'
 import type { Texture2D } from 'godot'
 import type { HtmlStyle } from '../utils/styleMapping.js'
-import {
-  classifySource,
-  loadTexture,
-  loadTextureFromBinary,
-} from '../utils/textureLoader.js'
+import { classifySource, loadTexture } from '../utils/textureLoader.js'
 
 /**
  * TextureRect.ExpandMode enum values (Godot 4.x).
@@ -102,7 +98,6 @@ function toNumericPixels(value: number | string | undefined): number | null {
  *   - Relative / absolute paths: `./assets/logo.png`, `/textures/bg.png`
  *   - Data URIs: `data:image/png;base64,iVBOR…`
  *   - Remote URLs: `https://example.com/image.png`
- *   - Raw binary data via the `data` prop (ArrayBuffer / Uint8Array)
  *
  * Style support:
  *   - `width` / `height` → `custom_minimum_size`
@@ -113,22 +108,11 @@ function toNumericPixels(value: number | string | undefined): number | null {
  *   <Img src="res://icon.svg" :style="{ width: 64, height: 64, objectFit: 'contain' }" />
  *   <Img src="data:image/png;base64,iVBOR..." />
  *   <Img src="https://example.com/photo.jpg" />
- *   <Img :data="myArrayBuffer" />
  */
 export const Img = defineComponent({
   name: 'Img',
   props: {
     src: {
-      type: String,
-      default: undefined,
-    },
-    /** Raw binary image data — overrides `src` when provided. */
-    data: {
-      type: Object as () => ArrayBuffer | Uint8Array | null,
-      default: undefined,
-    },
-    /** MIME type hint for the `data` prop (e.g. `'image/png'`). */
-    dataMime: {
       type: String,
       default: undefined,
     },
@@ -140,36 +124,15 @@ export const Img = defineComponent({
       type: String,
       default: undefined,
     },
-    flipH: {
-      type: Boolean,
-      default: false,
-    },
-    flipV: {
-      type: Boolean,
-      default: false,
-    },
   },
   setup(props) {
     const texture = ref<Texture2D | null>(null)
     const loading = ref(false)
 
-    // Binary `data` prop takes priority over `src`.
-    watch(
-      () => props.data,
-      (data) => {
-        if (data == null) return
-        texture.value = loadTextureFromBinary(data, props.dataMime)
-      },
-      { immediate: true },
-    )
-
     // String `src` prop — handles local, data-URI, and remote sources.
     watch(
       () => props.src,
       async (src) => {
-        // Skip if binary data is provided.
-        if (props.data != null) return
-
         if (!src) {
           texture.value = null
           return
@@ -222,13 +185,8 @@ export const Img = defineComponent({
         nodeProps['stretch_mode'] = StretchMode.STRETCH_KEEP_ASPECT_CENTERED
       }
 
-      // Flip
-      if (props.flipH) {
-        nodeProps['flip_h'] = true
-      }
-      if (props.flipV) {
-        nodeProps['flip_v'] = true
-      }
+      // Flip — not supported; use CSS transform: scaleX(-1)/scaleY(-1)
+      // in a future style update if needed.
 
       // Alt → tooltip_text (accessibility hint)
       if (props.alt) {

@@ -4,6 +4,46 @@
 // Implements the subset of the WHATWG URL API needed by fetch and general use.
 // ---------------------------------------------------------------------------
 
+import type { GodotBlob } from './blob.js'
+
+// ---------------------------------------------------------------------------
+// Blob Object URL store — polyfills URL.createObjectURL / revokeObjectURL
+// ---------------------------------------------------------------------------
+
+let blobCounter = 0
+const blobStore = new Map<string, GodotBlob>()
+
+/**
+ * Create a `blob:` URL referencing the given Blob.
+ *
+ * Works like `URL.createObjectURL()` in browsers. The returned URL
+ * can be passed to `<Img src="...">` or resolved via `resolveObjectURL()`.
+ *
+ * The blob is held in memory until `revokeObjectURL()` is called.
+ */
+export function createObjectURL(blob: GodotBlob): string {
+  const id = `blob:godot/${++blobCounter}`
+  blobStore.set(id, blob)
+  return id
+}
+
+/**
+ * Release the in-memory reference for a blob URL created by `createObjectURL()`.
+ */
+export function revokeObjectURL(url: string): void {
+  blobStore.delete(url)
+}
+
+/**
+ * Resolve a `blob:` URL to the underlying `GodotBlob`.
+ *
+ * Returns `undefined` if the URL was never created or has been revoked.
+ * Used internally by the texture loader.
+ */
+export function resolveObjectURL(url: string): GodotBlob | undefined {
+  return blobStore.get(url)
+}
+
 /**
  * Lightweight URL implementation.
  *

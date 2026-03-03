@@ -1,11 +1,17 @@
 import type { App } from '@vue/runtime-core'
+import { Button } from './components/Button'
 import { Div } from './components/Div'
 import { Img } from './components/Img'
+import { Input } from './components/Input'
+import { Span } from './components/Span'
 
-const components: Record<string, any> = {
+const components: Record<string, unknown> = {
   Div,
   Img,
-  // TODO: Span, Button, Input, Textarea, Select, Video, Audio, Svg, ...
+  Span,
+  Button,
+  Input,
+  // TODO: Textarea, Select, Video, Audio, Svg, ...
 }
 
 /**
@@ -24,7 +30,9 @@ const components: Record<string, any> = {
  *     }
  *   })
  */
-export const htmlTags: string[] = Object.keys(components).map((k) => k.toLowerCase())
+export const htmlTags: string[] = Object.keys(components).map((k) =>
+  k.toLowerCase(),
+)
 
 /**
  * Vue plugin that globally registers all HTML-like components.

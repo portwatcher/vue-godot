@@ -34,7 +34,12 @@ export { fetch } from './fetch.js'
 export type { GodotFetchInit } from './fetch.js'
 export { GodotHeaders } from './headers.js'
 export { GodotResponse } from './response.js'
-export { GodotURL } from './url.js'
+export {
+  GodotURL,
+  createObjectURL,
+  resolveObjectURL,
+  revokeObjectURL,
+} from './url.js'
 
 // Batch installers
 export { installBrowserAPIs, installPolyfill } from './install.js'

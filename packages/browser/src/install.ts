@@ -15,7 +15,7 @@ import { GodotTextDecoder, GodotTextEncoder } from './encoding.js'
 import { fetch } from './fetch.js'
 import { GodotHeaders } from './headers.js'
 import { GodotResponse } from './response.js'
-import { GodotURL } from './url.js'
+import { createObjectURL, GodotURL, revokeObjectURL } from './url.js'
 
 const g: Record<string, unknown> = globalThis
 
@@ -38,6 +38,17 @@ export function installBrowserAPIs(): void {
   polyfill('Response', GodotResponse)
   polyfill('Request', undefined) // TODO: implement Request
   polyfill('URL', GodotURL)
+
+  // URL.createObjectURL / revokeObjectURL (static methods)
+  if (typeof g['URL'] === 'function') {
+    const UrlCtor = g['URL'] as unknown as Record<string, unknown>
+    if (typeof UrlCtor['createObjectURL'] === 'undefined') {
+      UrlCtor['createObjectURL'] = createObjectURL
+    }
+    if (typeof UrlCtor['revokeObjectURL'] === 'undefined') {
+      UrlCtor['revokeObjectURL'] = revokeObjectURL
+    }
+  }
   polyfill('Blob', GodotBlob)
   polyfill('atob', atob)
   polyfill('btoa', btoa)
@@ -60,6 +71,8 @@ export function installPolyfill(...names: string[]): void {
     Headers: GodotHeaders,
     Response: GodotResponse,
     URL: GodotURL,
+    'URL.createObjectURL': createObjectURL,
+    'URL.revokeObjectURL': revokeObjectURL,
     Blob: GodotBlob,
     atob,
     btoa,
