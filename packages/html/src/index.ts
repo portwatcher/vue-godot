@@ -1,3 +1,5 @@
+import './global'
+
 export { Audio } from './components/Audio'
 export { Button } from './components/Button'
 export { Canvas } from './components/Canvas'

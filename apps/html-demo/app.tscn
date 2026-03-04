@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://yww2uvo5voeo"]
 
-[ext_resource type="Script" uid="uid://dpxcg17l2rclm" path="res://dist/app.js" id="1_script"]
+[ext_resource type="Script" uid="uid://bryp6et7p7a4l" path="res://dist/app.js" id="1_script"]
 
 [node name="app" type="VBoxContainer"]
 anchors_preset = 15

@@ -1,6 +1,6 @@
 <template>
   <!-- ===== Section: Div layout ===== -->
-  <Label text="--- Div layout ---" />
+  <span>--- Div layout ---</span>
   <div
     :style="{
       flexDirection: direction,
@@ -25,18 +25,18 @@
       <span>flex:2 child</span>
     </div>
   </div>
-  <HBoxContainer>
+  <div :style="{ flexDirection: 'row', gap: 8 }">
     <button @click="toggleDirection">Toggle Direction</button>
     <button @click="toggleWrap">Toggle Wrap</button>
     <button @click="cycleJustify">Cycle Justify</button>
     <button @click="cycleAlign">Cycle Align</button>
-  </HBoxContainer>
-  <Label
-    :text="`direction=${direction} wrap=${wrap} justify=${justify} align=${align}`"
-  />
+  </div>
+  <span>
+    {{ `direction=${direction} wrap=${wrap} justify=${justify} align=${align}` }}
+  </span>
 
   <!-- ===== Section: Span (text styling) ===== -->
-  <Label text="--- Span ---" />
+  <span>--- Span ---</span>
   <span :style="{ fontSize: 24, color: '#ff6600', textAlign: 'center' }">
     Orange 24px centered
   </span>
@@ -51,85 +51,95 @@
   </span>
 
   <!-- ===== Section: Button ===== -->
-  <Label text="--- Button ---" />
-  <HBoxContainer>
+  <span>--- Button ---</span>
+  <div :style="{ flexDirection: 'row', gap: 8 }">
     <button @click="onButtonClick">Click me</button>
     <button :disabled="true">Disabled</button>
-  </HBoxContainer>
-  <Label :text="`Button clicks: ${buttonClicks}`" />
+  </div>
+  <span>{{ `Button clicks: ${buttonClicks}` }}</span>
 
   <!-- ===== Section: Input (text) ===== -->
-  <Label text="--- Input (text) ---" />
-  <input v-model="textValue" placeholder="Type something..." />
-  <Label :text="`Text input: ${textValue}`" />
+  <span>--- Input (text) ---</span>
+  <input v-model="textValue" placeholder="Type something..."></input>
+  <span>{{ `Text input: ${textValue}` }}</span>
 
   <!-- ===== Section: Input (password) ===== -->
-  <Label text="--- Input (password) ---" />
-  <input type="password" v-model="passwordValue" placeholder="Secret" />
-  <Label :text="`Password length: ${passwordValue.length}`" />
+  <span>--- Input (password) ---</span>
+  <input type="password" v-model="passwordValue" placeholder="Secret"></input>
+  <span>{{ `Password length: ${passwordValue.length}` }}</span>
 
   <!-- ===== Section: Input (checkbox) ===== -->
-  <Label text="--- Input (checkbox) ---" />
-  <input type="checkbox" v-model="checkboxValue" />
-  <Label :text="`Checked: ${checkboxValue}`" />
+  <span>--- Input (checkbox) ---</span>
+  <input type="checkbox" v-model="checkboxValue"></input>
+  <span>{{ `Checked: ${checkboxValue}` }}</span>
 
   <!-- ===== Section: Input (range) ===== -->
-  <Label text="--- Input (range) ---" />
-  <input type="range" v-model="rangeValue" :min="0" :max="100" :step="5" />
-  <Label :text="`Range: ${rangeValue}`" />
+  <span>--- Input (range) ---</span>
+  <input
+    type="range"
+    v-model="rangeValue"
+    :min="0"
+    :max="100"
+    :step="5"
+  ></input>
+  <span>{{ `Range: ${rangeValue}` }}</span>
 
   <!-- ===== Section: Textarea ===== -->
-  <Label text="--- Textarea ---" />
+  <span>--- Textarea ---</span>
   <textarea
     v-model="textareaValue"
     placeholder="Multi-line text..."
     :rows="3"
     :cols="40"
-  />
-  <Label :text="`Textarea lines: ${textareaValue.split('\n').length}`" />
+  ></textarea>
+  <span>{{ `Textarea lines: ${textareaValue.split('\n').length}` }}</span>
 
   <!-- ===== Section: Select ===== -->
-  <Label text="--- Select ---" />
+  <span>--- Select ---</span>
   <select v-model="selectedFruit">
     <option value="apple">Apple</option>
     <option value="banana">Banana</option>
     <option value="cherry">Cherry</option>
   </select>
-  <Label :text="`Selected: ${selectedFruit}`" />
+  <span>{{ `Selected: ${selectedFruit}` }}</span>
 
   <!-- ===== Section: Img ===== -->
-  <Label text="--- Img ---" />
+  <span>--- Img ---</span>
   <img
     src="res://icon.svg"
     alt="Godot icon"
     :style="{ width: 64, height: 64 }"
-  />
+  ></img>
 
   <!-- ===== Section: Svg ===== -->
-  <Label text="--- Svg ---" />
+  <span>--- Svg ---</span>
   <svg
     src="res://icon.svg"
     alt="SVG icon"
     :scale="2"
     :style="{ width: 64, height: 64 }"
-  />
+  ></svg>
 
   <!-- ===== Section: Canvas ===== -->
-  <Label text="--- Canvas ---" />
-  <canvas ref="canvasRef" :width="200" :height="80" />
+  <span>--- Canvas ---</span>
+  <canvas ref="canvasRef" :width="200" :height="80"></canvas>
 
   <!-- ===== Section: Audio ===== -->
-  <Label text="--- Audio (no src in demo) ---" />
-  <audio :volume="0.5" :loop="false" :muted="true" />
+  <span>--- Audio (no src in demo) ---</span>
+  <audio :volume="0.5" :loop="false" :muted="true"></audio>
 
   <!-- ===== Section: Video ===== -->
-  <Label text="--- Video (no src in demo) ---" />
-  <video :style="{ width: 320, height: 180 }" :volume="0.8" :muted="true" />
+  <span>--- Video (no src in demo) ---</span>
+  <video
+    :style="{ width: 320, height: 180 }"
+    :volume="0.8"
+    :muted="true"
+  ></video>
 
   <!-- ===== Section: Browser APIs ===== -->
-  <Label text="--- Browser API smoke tests ---" />
+  <span>--- Browser API smoke tests ---</span>
   <button @click="runBrowserTests">Run browser API tests</button>
-  <Label :text="browserTestResult" />
+  <span>{{ browserTestResult }}</span>
 </template>
 
 <script setup lang="ts">

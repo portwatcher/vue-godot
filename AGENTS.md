@@ -38,6 +38,24 @@ When deciding whether something counts as "non-trivial":
 
 If you spot existing duplication while working on a task, refactor it as part of the same change.
 
+## Vue Templates
+
+### No self-closing tags
+
+Never use self-closing syntax (`<Tag />`) in Vue templates. Always use an explicit closing tag:
+
+```vue
+<!-- Bad -->
+<Label text="hello" />
+<Input v-model="value" />
+
+<!-- Good -->
+<Label text="hello"></Label>
+<Input v-model="value"></Input>
+```
+
+This applies to **all** components — both Godot nodes and `@vue-godot/html` components — regardless of whether they have slot content. Self-closing tags can cause issues with Volar's type resolution and template parsing in non-browser renderers.
+
 ## Vue Compiler Options (`isNativeTag` / `isCustomElement`)
 
 Vue's template compiler has two hooks that control how tags are classified:
@@ -127,7 +145,7 @@ When closing an issue that is referenced in a tracker or meta issue (e.g. a beta
 
 `apps/html-demo` is the integration demo app that exercises **every** `@vue-godot/html` component and `@vue-godot/browser` API. When you add, remove, or rename a component in `@vue-godot/html` or a polyfilled API in `@vue-godot/browser`, you **must** update `apps/html-demo` in the same change:
 
-- **New `@vue-godot/html` component** — add a section in `App.vue` that renders the component with representative props, events, and reactive state. Use lowercase HTML tag names (e.g. `<div>`, `<button>`) since `htmlPlugin` registers both cases.
+- **New `@vue-godot/html` component** — add a section in `App.vue` that renders the component with representative props, events, and reactive state. Use PascalCase tag names (e.g. `<Div>`, `<Button>`) for proper IDE type resolution.
 - **New `@vue-godot/browser` API** — add a smoke test in the `runBrowserTests()` function that instantiates or calls the API and reports success/failure.
 - **Removed / renamed component or API** — remove or update the corresponding section in `App.vue`.
 - **New `htmlTags` entry** — also add the tag to the `htmlTags` array in `apps/html-demo/vue/vite.config.ts` and in `packages/cli/src/integrate.ts` (`generateHtmlViteConfig`).

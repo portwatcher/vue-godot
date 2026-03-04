@@ -9,7 +9,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "vue": ["../node_modules/@vue/runtime-core/dist/runtime-core.d.ts"],
+      "vue": ["../../../node_modules/@vue/runtime-core/dist/runtime-core.d.ts"],
       "godot": ["../typings/godot.mix.d.ts"]
     }
   },
