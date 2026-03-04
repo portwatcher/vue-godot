@@ -28,15 +28,17 @@ vue-godot create [name] [options]
 | -------- | ----------------------------------------------------- |
 | `name`   | Project name (used as dir name). Prompted if omitted. |
 
-| Option   | Description                                                            |
-| -------- | ---------------------------------------------------------------------- |
-| `-f`     | Force overwrite if directory already exists                            |
-| `--html` | Enable `@vue-godot/html` — HTML-like components on Godot nodes        |
+| Option   | Description                                                    |
+| -------- | -------------------------------------------------------------- |
+| `-f`     | Force overwrite if directory already exists                    |
+| `--html` | Enable `@vue-godot/html` — HTML-like components on Godot nodes |
 
 When `--html` is set, the scaffolded project includes:
+
 - `@vue-godot/html` as a dependency
 - Vite compiler config (`isNativeTag`) so lowercase HTML tags like `<div>`, `<img>` resolve as components
 - `htmlPlugin` registered in `main.ts` for global component availability
+- Volar plugin in `tsconfig.json` (`vueCompilerOptions.plugins`) so the IDE resolves lowercase tags as `@vue-godot/html` components with full type-checking and hover info
 
 **Example:**
 
@@ -59,10 +61,10 @@ vue-godot integrate [dir] [options]
 | -------- | ---------------------------------- |
 | `dir`    | Target directory (defaults to `.`) |
 
-| Option   | Description                                                            |
-| -------- | ---------------------------------------------------------------------- |
-| `-f`     | Force overwrite if `vue/` already exists                               |
-| `--html` | Enable `@vue-godot/html` — HTML-like components on Godot nodes        |
+| Option   | Description                                                    |
+| -------- | -------------------------------------------------------------- |
+| `-f`     | Force overwrite if `vue/` already exists                       |
+| `--html` | Enable `@vue-godot/html` — HTML-like components on Godot nodes |
 
 This command:
 

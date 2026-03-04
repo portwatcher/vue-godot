@@ -246,6 +246,23 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     console.log(
       `  updated ${path.relative(process.cwd(), mainTsPath)} (html mode)`,
     )
+
+    /* Add vueCompilerOptions with the Volar plugin so the IDE resolves
+       HTML tags as @vue-godot/html components instead of native elements. */
+    const tsconfigPath = path.join(vueDir, 'tsconfig.json')
+    if (fs.existsSync(tsconfigPath)) {
+      const tsconfig = JSON.parse(fs.readFileSync(tsconfigPath, 'utf-8'))
+      tsconfig.vueCompilerOptions = tsconfig.vueCompilerOptions || {}
+      const plugins: string[] = tsconfig.vueCompilerOptions.plugins || []
+      if (!plugins.includes('@vue-godot/html/volar-plugin')) {
+        plugins.push('@vue-godot/html/volar-plugin')
+      }
+      tsconfig.vueCompilerOptions.plugins = plugins
+      fs.writeFileSync(tsconfigPath, JSON.stringify(tsconfig, null, 2) + '\n')
+      console.log(
+        `  updated ${path.relative(process.cwd(), tsconfigPath)} (html volar plugin)`,
+      )
+    }
   }
 
   /* --- package.json --- */
