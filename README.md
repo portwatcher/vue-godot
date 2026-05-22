@@ -1,24 +1,74 @@
 # Vue Godot
 
-A small simple project that bridges Vue.js and Godot.
+Use Vue Single File Components to build UI for Godot.
 
-This project is for:
+Vue Godot renders Vue components into Godot's scene tree, so you can use Vue reactivity, templates, props, events, and TypeScript tooling while Godot still owns the runtime, nodes, resources, and editor workflow.
 
-- Write game UI using Vue.js
-- Write cross platform applications using Vue.js with Godot as the runtime
+This project is experimental and not production ready yet. Follow [@juryxiong](https://x.com/juryxiong) for updates.
 
-This project is far from production ready. follow me on [@juryxiong](https://x.com/juryxiong) for updates.
+![demo](./intro-medias/demo.gif)
+
+## Quick Start
+
+### Create a new Godot project
+
+```bash
+npx vue-godot create my-game
+cd my-game
+npm run dev
+```
+
+The `create` command runs the initial install and type generation for you. Open `project.godot` in the GodotJS editor, then press **F5**.
+
+Use `npm run build` instead of `npm run dev` when you want a one-time build.
+
+To start with HTML-like components such as `<Div>`, `<Img>`, `<Button>`, and `<Input>`, pass `--html`:
+
+```bash
+npx vue-godot create my-game --html
+```
+
+### Add Vue to an existing Godot project
+
+```bash
+cd my-existing-godot-project
+npx vue-godot integrate --html
+npm install
+npm run gen:types
+npm run dev
+```
+
+Open the project in the GodotJS editor and run the scene.
+
+### Try this repository
+
+```bash
+npm install
+npm run build
+```
+
+Then open one of the example projects in the GodotJS editor, for example `apps/v-on/project.godot`, and press **F5**.
+
+## Requirements
+
+- Node.js >= 18
+- [GodotJS editor](https://github.com/ialex32x/GodotJS-Build/releases)
+
+If GodotJS prints `ERROR: Could not create directory: './typings/res:/'`, it is a known scene codegen issue in GodotJS 1.0.0-2. The error is harmless for runtime. To suppress it, open **Editor > Editor Settings**, search for `GodotJS`, and set `codegen/generate_scene_dts` to `false`.
+
+## Basic Example
+
+Write a Vue component using Godot node class names as tags:
 
 ```vue
 <template>
   <HBoxContainer>
-    <Button :text="'Click me'" @pressed="handleClick"></Button>
-    <Label :text="count"></Label>
+    <Button text="Click me" @pressed="handleClick"></Button>
+    <Label :text="count.toString()"></Label>
   </HBoxContainer>
 </template>
 
 <script setup lang="ts">
-// Test.vue
 import { ref } from 'vue'
 
 const count = ref(1)
@@ -29,209 +79,131 @@ const handleClick = () => {
 </script>
 ```
 
+Mount it from a GodotJS script:
+
 ```ts
-// main.ts
 import { createApp } from '@vue-godot/runtime-tscn'
 import { Control } from 'godot'
-import Test from './Test.vue'
+import Counter from './Counter.vue'
 
 export default class App extends Control {
   _ready() {
-    const app = createApp(Test)
+    const app = createApp(Counter)
     app.mount(this)
   }
 }
 ```
 
-![demo](./intro-medias/demo.gif)
+## What You Can Build With
+
+| Need | Use |
+| ---- | --- |
+| Vue rendering into native Godot nodes | `@vue-godot/runtime-tscn` |
+| Familiar HTML-style components backed by Godot nodes | `@vue-godot/html` |
+| Browser-like APIs such as `fetch`, `URL`, `Blob`, `history`, and `TextEncoder` | `@vue-godot/browser` |
+| Project scaffolding, integration, and generated Vue component types | `@vue-godot/cli` |
+
+## Packages
+
+| Package | Description |
+| ------- | ----------- |
+| [`@vue-godot/runtime-tscn`](./packages/runtime-tscn/README.md) | Vue custom renderer for the Godot scene tree |
+| [`@vue-godot/html`](./packages/html/README.md) | HTML-like Vue components implemented with Godot nodes |
+| [`@vue-godot/browser`](./packages/browser/README.md) | Browser API polyfills for GodotJS |
+| [`@vue-godot/cli`](./packages/cli/README.md) | CLI for creating projects, integrating Vue, and generating types |
+
+## Examples
+
+| App | Demonstrates |
+| --- | ------------ |
+| [`apps/v-on`](./apps/v-on) | Godot signal handling with Vue events |
+| [`apps/v-model`](./apps/v-model) | Two-way binding with Godot controls |
+| [`apps/template-ref`](./apps/template-ref) | Vue template refs against Godot nodes |
+| [`apps/lifecycles`](./apps/lifecycles) | Component lifecycle behavior |
+| [`apps/anchor-ordering`](./apps/anchor-ordering) | Anchor and layout ordering behavior |
+| [`apps/html-demo`](./apps/html-demo) | `@vue-godot/html` components and `@vue-godot/browser` APIs |
 
 ## How It Works
 
-vue-godot is a custom Vue renderer that targets Godot's scene tree instead of the DOM. The key pieces:
+Vue Godot is a custom Vue renderer that targets Godot's scene tree instead of the DOM.
 
-- **`@vue-godot/runtime-tscn`** — A Vue custom renderer (`createRenderer` from `@vue/runtime-core`) that maps Vue operations to Godot node tree operations: `createElement` → `ClassDB.instantiate()`, `insert` → `add_child()`, `patchProp` → `el.set()` / signal `connect()`, etc.
-- **`@vue-godot/cli`** — A CLI tool (`vue-godot`) for vue-godot projects. Currently supports generating Vue `GlobalComponents` type augmentation from GodotJS typings so Volar provides autocomplete and type checking for Godot nodes in Vue templates.
-- **Vite** builds the Vue app as a CJS library (`dist/app.js`), with `godot` as an external. The Godot scene (`.tscn`) attaches this script to a `Control` node.
-- In the **Godot editor**, GodotJS runs `dist/app.js`. The `_ready()` method calls `createApp(Root).mount(this)`, and Vue takes over the subtree.
+- `createElement` instantiates Godot classes through `ClassDB.instantiate()`.
+- `insert` adds nodes with `add_child()`.
+- `patchProp` writes Godot properties with `set()` and connects signals for `v-on`.
+- Vite builds the Vue app as a CommonJS bundle with `godot` externalized.
+- A Godot scene attaches the generated script to a `Control` node.
+- In `_ready()`, the script calls `createApp(Root).mount(this)`, and Vue takes over that subtree.
 
-Upper-cased tags in templates (e.g. `<HBoxContainer>`, `<Label>`) are treated as custom elements and resolved at runtime via `ClassDB.instantiate(tag)`.
+Uppercase template tags such as `<HBoxContainer>` and `<Label>` are treated as Godot node classes. When using `@vue-godot/html`, HTML-like components such as `<Div>` and `<Button>` are registered as Vue components that render Godot nodes internally.
 
 ## Repository Structure
 
-```
+```text
 vue-godot/
 ├── packages/
 │   ├── runtime-tscn/       # Vue custom renderer for Godot
-│   └── cli/                # CLI tool: vue-godot gen-types, scaffolding, etc.
+│   ├── html/               # HTML-like Vue components
+│   ├── browser/            # Browser API polyfills for GodotJS
+│   └── cli/                # vue-godot command line tools
 ├── apps/
-│   ├── v-model/             # Example: two-way binding with TextEdit
-│   ├── v-on/                # Example: event handling with @pressed
-│   └── template-ref/        # Example: template refs
-└── turbo.json               # Turborepo config
+│   ├── v-on/               # Event handling example
+│   ├── v-model/            # Two-way binding example
+│   ├── template-ref/       # Template ref example
+│   ├── lifecycles/         # Lifecycle example
+│   ├── anchor-ordering/    # Layout ordering example
+│   └── html-demo/          # HTML/browser integration demo
+└── turbo.json              # Turborepo config
 ```
 
-Each app has the following layout:
+Each app uses this shape:
 
-```
+```text
 apps/<name>/
-├── project.godot            # Godot project file
-├── app.tscn                 # Main scene — attaches dist/app.js to a Control node
-├── typings/                 # GodotJS-generated type declarations (godot*.gen.d.ts)
-│   └── godot.vue-components.gen.d.ts   # Generated by @vue-godot/cli
+├── project.godot           # Godot project file
+├── app.tscn                # Main scene
+├── typings/                # GodotJS and generated Vue declarations
 ├── vue/
-│   ├── vite.config.ts       # Vite config — builds vue/src/main.ts → dist/app.js
-│   ├── tsconfig.json        # Vue/Volar tsconfig (separate from Godot root tsconfig)
+│   ├── vite.config.ts      # Builds vue/src/main.ts to dist/app.js
+│   ├── tsconfig.json       # Vue and Volar TypeScript config
 │   └── src/
-│       ├── main.ts          # Entry: createApp(Root).mount(this)
-│       ├── *.vue            # Vue SFC components
-│       └── env.d.ts         # *.vue module declaration for TypeScript
-├── tsconfig.json            # Godot root tsconfig (excludes vue/)
-├── dist/                    # Build output (loaded by Godot at runtime)
+│       ├── main.ts         # createApp(Root).mount(this)
+│       └── *.vue           # Vue SFC components
+├── dist/                   # Build output loaded by Godot
 └── package.json
 ```
 
-## Getting Started
+## Creating Another App In This Repo
 
-### Prerequisites
+1. Copy an existing app directory such as `apps/v-model` to `apps/<your-app>`.
+2. Update the `name` field in `package.json`.
+3. Update the project name in `project.godot`.
+4. Open `apps/<your-app>/project.godot` in the GodotJS editor so GodotJS can generate typings.
+5. Run `npm run gen:types` in the app directory.
+6. Edit Vue files under `vue/src/`.
+7. Run `npm run build`, then press **F5** in Godot.
 
-- **Node.js** >= 18
-- **GodotJS editor** — download from https://github.com/ialex32x/GodotJS-Build/releases
+## Contributing And Local Development
 
-> **Note:** GodotJS 1.0.0-2 has a scene codegen bug where `SceneTSDCodeGen.make_path` doesn't strip `res://` from scene paths, producing `ERROR: Could not create directory: './typings/res:/'`. This was fixed on the [main branch](https://github.com/godotjs/GodotJS/blob/main/scripts/jsb.editor/src/jsb.editor.codegen.ts) (method renamed to `make_scene_path` with `res://` stripping) but no Godot 4.4 build includes the fix yet. The errors are harmless and don't affect runtime. To suppress them, go to **Editor → Editor Settings → search `GodotJS`** and set `codegen/generate_scene_dts` to `false`.
-
-### Install & Build
+Install dependencies and build everything from the repository root:
 
 ```bash
 npm install
-npm run build          # builds all packages + apps via Turborepo
+npm run build
 ```
 
-### Run an example
+Most app work follows this loop:
 
-Open the GodotJS editor and open any app's `project.godot`, for example `apps/v-on/project.godot`. Press **F5** to run the scene.
+```text
+Edit .vue or .ts files
+npm run build
+Run the scene in Godot
+```
 
-## Development Workflow
-
-### 1. Open the Godot project
-
-Open one of the example apps (e.g. `apps/v-model/project.godot`) in the GodotJS editor. On first open, GodotJS auto-generates TypeScript declarations for all engine classes into the `typings/` directory (`godot0.gen.d.ts` … `godot8.gen.d.ts`, `godot.mix.d.ts`, etc.).
-
-### 2. Generate Vue component types
+When Godot typings change, regenerate Vue component types from the app directory:
 
 ```bash
 cd apps/v-model
 npm run gen:types
 ```
 
-This runs `vue-godot gen-types`, which reads the Godot typings and produces `typings/godot.vue-components.gen.d.ts` — a `GlobalComponents` augmentation that gives Volar full autocomplete and type checking for Godot node tags in `.vue` templates.
-
-Re-run this whenever Godot typings are regenerated (e.g. after a Godot version upgrade).
-
-### 3. Write Vue components
-
-Edit `.vue` files under `vue/src/`. Use Godot node class names as tags directly in templates:
-
-```vue
-<template>
-  <HBoxContainer>
-    <TextEdit :text="text"></TextEdit>
-    <Label :text="text"></Label>
-  </HBoxContainer>
-</template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-const text = ref('')
-</script>
-```
-
-- **Props** map to Godot node properties (`:text`, `:visible`, `:size`, etc.)
-- **Events** map to Godot signals (`@pressed`, `@text_changed`, etc. via `v-on`)
-- All standard Vue features work: `ref()`, `computed()`, `watch()`, `v-if`, `v-for`, template refs, etc.
-
-### 4. Write the entry point
-
-`vue/src/main.ts` is the entry point. It creates a Vue app and mounts it onto a Godot `Control` node:
-
-```ts
-import { createApp } from '@vue-godot/runtime-tscn'
-import { Control } from 'godot'
-import Test from './Test.vue'
-
-export default class App extends Control {
-  _ready() {
-    const app = createApp(Test)
-    app.mount(this)
-  }
-}
-```
-
-This class is attached to a `Control` node in the Godot scene (`.tscn` file).
-
-### 5. Build
-
-```bash
-npm run build          # from repo root — builds everything
-# or
-cd apps/v-model && npm run build   # build a single app
-```
-
-Vite compiles `vue/src/main.ts` into `dist/app.js` (CJS format, `godot` external). The Godot scene references this file.
-
-### 6. Run in Godot
-
-Press **F5** in the GodotJS editor. Godot loads `dist/app.js`, the `_ready()` method fires, and Vue renders its component tree into the Godot scene.
-
-### Iteration loop
-
-```
-Edit .vue / .ts  →  npm run build  →  F5 in Godot  →  see changes
-```
-
-## Creating a New App
-
-1. Copy an existing app directory (e.g. `apps/v-model`) to `apps/<your-app>`
-2. Update `package.json` name field
-3. Update `project.godot` project name
-4. Open `apps/<your-app>/project.godot` in the GodotJS editor to generate fresh typings
-5. Run `npm run gen:types` to generate Vue component types
-6. Edit `vue/src/` with your components
-7. `npm run build` and press **F5** in Godot
-
-## Packages
-
-| Package                   | Description                                          |
-| ------------------------- | ---------------------------------------------------- |
-| `@vue-godot/runtime-tscn` | Vue custom renderer for Godot scene tree             |
-| `@vue-godot/html`         | HTML-like Vue components built on Godot nodes        |
-| `@vue-godot/cli`          | CLI tool for vue-godot projects                      |
-
-### `@vue-godot/cli`
-
-```bash
-vue-godot <command> [options]
-```
-
-#### `create` / `integrate`
-
-Both `create` (new project) and `integrate` (existing Godot project) accept a `--html` flag that configures `@vue-godot/html` automatically — setting up the Vite compiler config and plugin registration so lowercase HTML tags (`<div>`, `<img>`, etc.) work as Godot-backed components with zero renaming.
-
-```bash
-vue-godot create my-app --html
-vue-godot integrate --html
-```
-
-#### `gen-types`
-
-Generate Vue `GlobalComponents` type augmentation from GodotJS typings.
-
-```bash
-vue-godot gen-types [--typings <dir>] [--out <file>] [--ancestor <class>] [--vue-src <dir>]
-```
-
-| Option       | Default                                   | Description                                      |
-| ------------ | ----------------------------------------- | ------------------------------------------------ |
-| `--typings`  | `./typings`                               | Directory containing `godot*.gen.d.ts` files     |
-| `--out`      | `<typings>/godot.vue-components.gen.d.ts` | Output file path                                 |
-| `--ancestor` | `Control`                                 | Base class — only descendants are included       |
-| `--vue-src`  | `./vue/src`                               | Vue source dir — generates `env.d.ts` shim there |
+The generated `typings/godot.vue-components.gen.d.ts` file gives Volar autocomplete and type checking for Godot node tags in Vue templates.
