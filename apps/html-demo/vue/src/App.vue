@@ -59,6 +59,14 @@
   </HBoxContainer>
   <Label :text="`Button clicks: ${buttonClicks}`" />
 
+  <!-- ===== Section: PascalCase HTML components ===== -->
+  <Label text="--- PascalCase HTML components ---" />
+  <Div :style="{ flexDirection: 'row', gap: 8, padding: 8 }">
+    <Span :style="{ color: '#a7f3d0' }">PascalCase registration works</Span>
+    <Button @click="onPascalButtonClick">Pascal button</Button>
+  </Div>
+  <Label :text="`Pascal button clicks: ${pascalButtonClicks}`" />
+
   <!-- ===== Section: Anchor ===== -->
   <Label text="--- Anchor ---" />
   <a
@@ -146,6 +154,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { formatBrowserSmokeResults, runBrowserSmokeTests } from './browserSmoke'
 
 // --- Div layout state ---
 const direction = ref<'row' | 'column'>('row')
@@ -184,6 +193,11 @@ function onButtonClick() {
   buttonClicks.value++
 }
 
+const pascalButtonClicks = ref(0)
+function onPascalButtonClick() {
+  pascalButtonClicks.value++
+}
+
 // --- Anchor ---
 const linkClicks = ref(0)
 function onLinkClick() {
@@ -216,93 +230,7 @@ onMounted(() => {
 const browserTestResult = ref('Not run yet')
 
 function runBrowserTests() {
-  const results: string[] = []
-
-  // URL
-  try {
-    const url = new URL('https://example.com/path?q=1#hash')
-    results.push(`URL: host=${url.host} ok`)
-  } catch (e) {
-    results.push(`URL: FAIL ${e}`)
-  }
-
-  // Blob
-  try {
-    const blob = new Blob(['hello'], { type: 'text/plain' })
-    results.push(`Blob: size=${blob.size} ok`)
-  } catch (e) {
-    results.push(`Blob: FAIL ${e}`)
-  }
-
-  // btoa / atob
-  try {
-    const encoded = btoa('hello')
-    const decoded = atob(encoded)
-    results.push(`base64: ${decoded === 'hello' ? 'ok' : 'MISMATCH'}`)
-  } catch (e) {
-    results.push(`base64: FAIL ${e}`)
-  }
-
-  // TextEncoder / TextDecoder
-  try {
-    const encoded = new TextEncoder().encode('test')
-    const decoded = new TextDecoder().decode(encoded)
-    results.push(`encoding: ${decoded === 'test' ? 'ok' : 'MISMATCH'}`)
-  } catch (e) {
-    results.push(`encoding: FAIL ${e}`)
-  }
-
-  // Headers
-  try {
-    const h = new Headers()
-    h.set('x-test', 'value')
-    results.push(`Headers: ${h.get('x-test') === 'value' ? 'ok' : 'FAIL'}`)
-  } catch (e) {
-    results.push(`Headers: FAIL ${e}`)
-  }
-
-  // AbortController
-  try {
-    const ac = new AbortController()
-    results.push(`AbortController: aborted=${ac.signal.aborted} ok`)
-  } catch (e) {
-    results.push(`AbortController: FAIL ${e}`)
-  }
-
-  // URL.createObjectURL / revokeObjectURL
-  try {
-    const blob = new Blob(['data'])
-    const objectUrl = URL.createObjectURL(blob)
-    URL.revokeObjectURL(objectUrl)
-    results.push(`ObjectURL: ok`)
-  } catch (e) {
-    results.push(`ObjectURL: FAIL ${e}`)
-  }
-
-  // Response
-  try {
-    const encoded = new TextEncoder().encode('ok').buffer
-    const response = new Response(encoded, {
-      status: 200,
-      headers: new Headers({ 'content-type': 'text/plain' }),
-    })
-    results.push(`Response: ${response.ok ? 'ok' : 'FAIL'}`)
-  } catch (e) {
-    results.push(`Response: FAIL ${e}`)
-  }
-
-  // History + Location
-  try {
-    const previousHref = location.href
-    history.pushState({ demo: true }, '', '/html-demo')
-    const moved = location.pathname === '/html-demo'
-    history.replaceState(null, '', previousHref)
-    results.push(`History: ${moved ? 'ok' : 'FAIL'}`)
-  } catch (e) {
-    results.push(`History: FAIL ${e}`)
-  }
-
-  browserTestResult.value = results.join(' | ')
+  browserTestResult.value = formatBrowserSmokeResults(runBrowserSmokeTests())
   console.log('[html-demo] Browser API results:', browserTestResult.value)
 }
 </script>

@@ -3,6 +3,11 @@ import { htmlPlugin } from '@vue-godot/html'
 import { createApp } from '@vue-godot/runtime-tscn'
 import { Node, OS, VBoxContainer } from 'godot'
 import App from './App.vue'
+import {
+  assertBrowserSmokeResults,
+  formatBrowserSmokeResults,
+  runBrowserSmokeTests,
+} from './browserSmoke'
 
 installBrowserAPIs()
 
@@ -121,8 +126,18 @@ export default class Root extends VBoxContainer {
 
     const result = buttons[0].emit_signal('pressed')
     if (result !== 0) {
-      throw new Error(`cycle ${cycle}: failed to emit pressed signal: ${result}`)
+      throw new Error(
+        `cycle ${cycle}: failed to emit pressed signal: ${result}`,
+      )
     }
+  }
+
+  private assertBrowserSmoke(): void {
+    const results = runBrowserSmokeTests()
+    console.log(
+      `[vue-godot-smoke] browser=${formatBrowserSmokeResults(results)}`,
+    )
+    assertBrowserSmokeResults(results)
   }
 
   private async runSmokeLifecycleCheck() {
@@ -134,6 +149,7 @@ export default class Root extends VBoxContainer {
 
     try {
       this.assertMountedTree(0, expectedChildCount)
+      this.assertBrowserSmoke()
 
       for (let cycle = 1; cycle <= reloads; cycle++) {
         await this.assertAfterUnmount(cycle)

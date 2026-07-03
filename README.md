@@ -272,7 +272,7 @@ npm run smoke:godot  # optional: runs apps/html-demo lifecycle smoke with GODOT_
 npm run check        # build + test + CLI smoke
 ```
 
-`npm run smoke:godot` skips when no Godot executable is available. Set `GODOT_BIN=/path/to/godot` to force a specific editor/runtime. When Godot is available, the script builds `apps/html-demo`, runs the scene headlessly with `VUE_GODOT_SMOKE=1`, and fails unless the app reports a completed lifecycle smoke. The smoke repeatedly unmounts/remounts the Vue app, checks that unmount leaves no stale children, and verifies each rendered `Button` has exactly one `pressed` signal connection. Set `VUE_GODOT_SMOKE_RELOADS=10` to change the repeat count, or `VUE_GODOT_SMOKE_OPEN_ONLY=1` to run the older project-open smoke.
+`npm run smoke:godot` skips when no Godot executable is available. Set `GODOT_BIN=/path/to/godot` to force a specific editor/runtime. When Godot is available, the script builds `apps/html-demo`, runs the scene headlessly with `VUE_GODOT_SMOKE=1`, and fails unless the app reports a completed lifecycle smoke. The smoke repeatedly unmounts/remounts the Vue app, checks that unmount leaves no stale children, verifies each rendered `Button` has exactly one `pressed` signal connection, and runs the demo browser API smoke checks. Set `VUE_GODOT_SMOKE_RELOADS=10` to change the repeat count, or `VUE_GODOT_SMOKE_OPEN_ONLY=1` to run the older project-open smoke.
 
 ## Release Checklist
 
