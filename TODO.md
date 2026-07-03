@@ -114,7 +114,7 @@ Current beta decisions and completed hardening:
 
 Needed:
 
-- Finish or explicitly defer all open beta tracker items.
+- Complete the remaining external beta tracker gates: publish/public smoke, remote workflow confirmation, and real editor hot reload verification.
 - Keep `apps/html-demo` aligned with every component/API.
 - Confirm the form, asset loading, and loopback `fetch` smoke remain green in the remote `Godot Smoke` workflow.
 
@@ -157,9 +157,7 @@ Acceptance criteria:
 1. Publish packages and verify public clean install.
 2. Confirm the `Godot Smoke` workflow is green after pushing.
 3. GodotJS editor hot reload smoke verification.
-4. Finish HTML beta tracker:
-   - More browser tests under real GodotJS, especially `fetch`.
-5. Documentation pass based on observed Godot editor behavior.
+4. Documentation pass based on observed Godot editor behavior.
 
 ## Production Readiness Estimate
 
