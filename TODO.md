@@ -36,7 +36,7 @@ The core renderer is real and both non-HTML and HTML CLI scaffolds now build fro
 - `npm run smoke:public-cli` now automates the post-publish public `create --html` verification, but it cannot pass until `@vue-godot/browser` and `@vue-godot/html` are public.
 - `npm run release:preflight -- --local` passes. It runs the local quality gate, verifies CLI-generated package specs, checks structured `npm pack --dry-run --json` contents, reads registry state, and reports missing npm auth / Godot as warnings in local mode.
 - No Godot/GodotJS executable was available in the assessment environment, so editor hot reload could not be verified directly. `npm run smoke:godot` now builds `apps/html-demo` and, when `GODOT_BIN`, `godot4`, or `godot` is available, runs a headless lifecycle smoke that repeatedly unmounts/remounts the Vue app, checks for stale children after unmount, checks rendered signal connection counts, drives form controls through Godot signals, checks image/SVG texture loading, and runs the demo browser API smoke helper against a loopback `fetch` endpoint. It skips cleanly otherwise.
-- A GitHub Actions workflow now runs `npm run check`.
+- GitHub Actions now runs `npm run check`, and the `Godot Smoke` workflow installs the pinned `GodotJS_1.0.0-2` Linux x64 V8 editor bundle before running `npm run smoke:godot` on relevant PRs and pushes.
 
 ## Major Blockers
 
@@ -69,9 +69,9 @@ Needed:
 - Run `npm run smoke:godot` with a real GodotJS executable and record the result.
 - Verify repeated editor reloads do not duplicate children or signal handlers.
 
-### 3. No automated Godot smoke test
+### 3. Godot smoke is headless, not full editor hot reload
 
-The most important user workflow depends on GodotJS behavior. The repo now has Node-side tests, CLI smoke tests, CI, and an optional headless Godot lifecycle smoke, but not a full editor hot reload assertion.
+The most important user workflow depends on GodotJS behavior. The repo now has Node-side tests, CLI smoke tests, CI, an optional local headless Godot lifecycle smoke, and a GitHub Actions `Godot Smoke` workflow that installs a pinned GodotJS executable before running that smoke. It still does not have a full editor hot reload assertion.
 
 Needed:
 
@@ -127,13 +127,13 @@ Needed:
 
 ### 6. Missing project-level quality gate
 
-Root scripts now include `test`, `smoke:cli`, `smoke:godot`, and `check`, and CI runs `npm run check`. `smoke:godot` now goes beyond project-open verification when Godot is available: it runs the HTML demo scene headlessly and requires the app's lifecycle smoke pass marker.
+Root scripts now include `test`, `smoke:cli`, `smoke:godot`, and `check`, and CI runs `npm run check`. A separate `Godot Smoke` workflow downloads and caches a pinned GodotJS Linux x64 V8 editor bundle, sets `GODOT_BIN`, and runs `npm run smoke:godot`. `smoke:godot` now goes beyond project-open verification when Godot is available: it runs the HTML demo scene headlessly and requires the app's lifecycle smoke pass marker.
 
 `release:preflight` now wraps the local quality gate, pack dry-runs, generated package-spec checks, npm registry/auth checks, and `smoke:godot`. Strict mode fails when npm credentials or Godot are missing; `--local` mode is for unauthenticated/local environments and reports those as warnings.
 
 Needed:
 
-- Add CI coverage with an installed GodotJS executable.
+- Confirm the `Godot Smoke` workflow is green after pushing.
 - Expand beyond headless lifecycle simulation to a real editor hot reload assertion when GodotJS CLI/editor support is available.
 
 ## Recommended Next-Session Goal
