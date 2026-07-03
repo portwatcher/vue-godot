@@ -29,6 +29,8 @@ export const releasePackageConfigs = [
     name: '@vue-godot/browser',
     dir: 'packages/browser',
     expectedFiles: [
+      'dist/body.js',
+      'dist/body.d.ts',
       'dist/index.js',
       'dist/index.d.ts',
       'dist/request.js',
