@@ -276,7 +276,7 @@ npm run release:preflight # release gate: check + pack dry-runs + registry/auth 
 
 `npm run smoke:godot` skips when no Godot executable is available. Set `GODOT_BIN=/path/to/godot` to force a specific editor/runtime. When Godot is available, the script builds `apps/html-demo`, imports project assets with Godot's `--import`, starts a loopback HTTP server for `fetch`, runs the scene headlessly with `VUE_GODOT_SMOKE=1`, and fails unless the app reports a completed lifecycle smoke. The smoke repeatedly unmounts/remounts the Vue app, checks that unmount leaves no stale children, verifies rendered signal connections, drives form controls through Godot signals, checks image/SVG texture loading, and runs the demo browser API smoke checks. Set `VUE_GODOT_SMOKE_RELOADS=10` to change the repeat count, or `VUE_GODOT_SMOKE_OPEN_ONLY=1` to run the older project-open smoke.
 
-`npm run smoke:cli` uses locally packed workspace packages, creates both basic and HTML projects in a temp directory, builds them, then starts the generated HTML app's `npm run dev` watcher, edits `vue/src/App.vue`, and fails unless the generated `dist` output changes.
+`npm run smoke:cli` uses locally packed workspace packages, creates both basic and HTML projects in a temp directory, builds them, then starts the generated HTML app's `npm run dev` watcher, edits `vue/src/App.vue`, and fails unless the generated `dist` output contains the edited marker.
 
 The `Godot Smoke` GitHub Actions workflow installs the pinned `GodotJS_1.0.0-2` Linux x64 V8 editor bundle, caches it, sets `GODOT_BIN`, and runs `npm run smoke:godot` on PRs and pushes that touch the HTML demo, package code, or smoke workflow.
 

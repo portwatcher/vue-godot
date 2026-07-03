@@ -74,6 +74,30 @@ function hashDirectory(dir) {
   return hash.digest('hex')
 }
 
+function directoryContainsText(dir, text) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true })
+
+  for (const entry of entries) {
+    const absolutePath = path.join(dir, entry.name)
+
+    if (entry.isDirectory()) {
+      if (directoryContainsText(absolutePath, text)) {
+        return true
+      }
+      continue
+    }
+
+    if (
+      entry.isFile() &&
+      fs.readFileSync(absolutePath, 'utf-8').includes(text)
+    ) {
+      return true
+    }
+  }
+
+  return false
+}
+
 function countMatches(value, pattern) {
   return [...value.matchAll(pattern)].length
 }
@@ -83,15 +107,19 @@ async function stopWatchProcess(child) {
     return
   }
 
+  const closed = new Promise((resolve) => child.once('close', resolve))
   child.kill('SIGTERM')
   await Promise.race([
-    new Promise((resolve) => child.once('close', resolve)),
+    closed,
     delay(3_000).then(() => {
       if (child.exitCode === null && child.signalCode === null) {
         child.kill('SIGKILL')
       }
     }),
   ])
+  if (child.exitCode === null && child.signalCode === null) {
+    await closed
+  }
 }
 
 async function waitForWatchCondition(state, description, predicate) {
@@ -129,11 +157,15 @@ async function smokeWatchRebuild(target, env) {
   const appVuePath = path.join(target, 'vue/src/App.vue')
   const distDir = path.join(target, 'dist')
   const source = fs.readFileSync(appVuePath, 'utf-8')
+  const initialMarker = 'Hello from Vue Godot HTML'
 
-  if (!source.includes('Hello from Vue Godot HTML')) {
+  if (!source.includes(initialMarker)) {
     throw new Error(
       `Unable to locate expected generated text in ${appVuePath}`,
     )
+  }
+  if (!directoryContainsText(distDir, initialMarker)) {
+    throw new Error(`Unable to locate initial generated text in ${distDir}`)
   }
 
   const state = {
@@ -170,16 +202,14 @@ async function smokeWatchRebuild(target, env) {
     )
     const beforeHash = hashDirectory(distDir)
     const replacement = `Hello from Vue Godot HTML smoke ${Date.now()}`
-    fs.writeFileSync(
-      appVuePath,
-      source.replace('Hello from Vue Godot HTML', replacement),
-    )
+    fs.writeFileSync(appVuePath, source.replace(initialMarker, replacement))
 
     await waitForWatchCondition(state, 'Vite watch rebuild output', () => {
       const output = state.stdout + state.stderr
       return (
         countMatches(output, /built in \d/g) > initialBuildCount &&
-        hashDirectory(distDir) !== beforeHash
+        hashDirectory(distDir) !== beforeHash &&
+        directoryContainsText(distDir, replacement)
       )
     })
 
