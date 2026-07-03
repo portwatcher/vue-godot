@@ -4,13 +4,14 @@ import test from 'node:test'
 
 register(new URL('./godot-loader.mjs', import.meta.url).href)
 
-const { GodotBlob, GodotURL, installBrowserAPIs, installPolyfill } =
+const { GodotBlob, GodotRequest, GodotURL, installBrowserAPIs, installPolyfill } =
   await import('../dist/index.js')
 
 const patchedGlobals = [
   'Blob',
   'URL',
   'fetch',
+  'Request',
   'TextDecoder',
   'TextEncoder',
   'history',
@@ -54,6 +55,7 @@ test('installBrowserAPIs installs missing browser globals', async () => {
     assert.equal(typeof globalThis.URL.createObjectURL, 'function')
     assert.equal(typeof globalThis.URL.revokeObjectURL, 'function')
     assert.equal(globalThis.Blob, GodotBlob)
+    assert.equal(globalThis.Request, GodotRequest)
     assert.equal(new globalThis.TextDecoder().decode(new Uint8Array([111, 107])), 'ok')
     assert.deepEqual([...new globalThis.TextEncoder().encode('ok')], [111, 107])
     assert.equal(typeof globalThis.fetch, 'function')
@@ -65,10 +67,11 @@ test('installBrowserAPIs installs missing browser globals', async () => {
 })
 
 test('installPolyfill installs named missing globals only', async () => {
-  await withClearedGlobals(['Blob', 'URL'], async () => {
-    installPolyfill('Blob')
+  await withClearedGlobals(['Blob', 'Request', 'URL'], async () => {
+    installPolyfill('Blob', 'Request')
 
     assert.equal(globalThis.Blob, GodotBlob)
+    assert.equal(globalThis.Request, GodotRequest)
     assert.equal(globalThis.URL, undefined)
   })
 })

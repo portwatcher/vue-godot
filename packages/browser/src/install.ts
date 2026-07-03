@@ -14,6 +14,7 @@ import { GodotBlob } from './blob.js'
 import { GodotTextDecoder, GodotTextEncoder } from './encoding.js'
 import { fetch } from './fetch.js'
 import { GodotHeaders } from './headers.js'
+import { GodotRequest } from './request.js'
 import {
   createHistoryAndLocation,
   getGlobalEventTarget,
@@ -46,7 +47,7 @@ export function installBrowserAPIs(): void {
   polyfill('fetch', fetch)
   polyfill('Headers', GodotHeaders)
   polyfill('Response', GodotResponse)
-  polyfill('Request', undefined) // TODO: implement Request
+  polyfill('Request', GodotRequest)
   polyfill('URL', GodotURL)
 
   // URL.createObjectURL / revokeObjectURL (static methods)
@@ -99,6 +100,7 @@ export function installPolyfill(...names: string[]): void {
   const registry: Record<string, unknown> = {
     fetch,
     Headers: GodotHeaders,
+    Request: GodotRequest,
     Response: GodotResponse,
     URL: GodotURL,
     'URL.createObjectURL': createObjectURL,

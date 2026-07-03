@@ -100,6 +100,22 @@ export async function runBrowserSmokeTests(
   }
 
   try {
+    const request = new Request('https://example.com/api', {
+      method: 'POST',
+      headers: { 'content-type': 'text/plain' },
+      body: 'ok',
+    })
+    const body = await request.text()
+    results.push(
+      request.method === 'POST' && body === 'ok'
+        ? pass('Request', 'ok')
+        : fail('Request', `${request.method} ${body}`),
+    )
+  } catch (error) {
+    results.push(failFromError('Request', error))
+  }
+
+  try {
     const controller = new AbortController()
     results.push(
       pass('AbortController', `aborted=${controller.signal.aborted} ok`),

@@ -13,9 +13,12 @@
 // ---------------------------------------------------------------------------
 
 import { Engine, HTTPClient, SceneTree, TLSOptions } from 'godot'
-import type { GodotAbortSignal } from './abort.js'
-import { GodotTextEncoder } from './encoding.js'
 import { GodotHeaders } from './headers.js'
+import {
+  GodotRequest,
+  type GodotRequestInit,
+  type GodotRequestInput,
+} from './request.js'
 import { GodotResponse } from './response.js'
 import { GodotURL } from './url.js'
 
@@ -23,13 +26,7 @@ import { GodotURL } from './url.js'
 // Types
 // ---------------------------------------------------------------------------
 
-export interface GodotFetchInit {
-  method?: string
-  headers?: Record<string, string> | [string, string][] | GodotHeaders
-  body?: string | ArrayBuffer | Uint8Array
-  signal?: GodotAbortSignal
-  redirect?: 'follow' | 'manual' | 'error'
-}
+export type GodotFetchInit = GodotRequestInit
 
 // HTTPClient.Status enum values (from typings — numeric constants)
 const Status = {
@@ -90,6 +87,16 @@ const STATUS_TEXT: Record<number, string> = {
 
 const MAX_REDIRECTS = 20
 
+function redirectMethodFor(responseCode: number, method: string): string {
+  if (responseCode === 303) {
+    return 'GET'
+  }
+  if ((responseCode === 301 || responseCode === 302) && method === 'POST') {
+    return 'GET'
+  }
+  return method
+}
+
 // ---------------------------------------------------------------------------
 // Async delay helper
 // ---------------------------------------------------------------------------
@@ -127,33 +134,24 @@ async function asyncDelay(ms: number): Promise<void> {
 // ---------------------------------------------------------------------------
 
 async function fetchInternal(
-  url: string,
-  init: GodotFetchInit,
+  request: GodotRequest,
   redirectCount: number,
 ): Promise<GodotResponse> {
-  const signal = init.signal
+  const signal = request.signal
 
   if (signal?.aborted) {
     throw signal.reason ?? new Error('The operation was aborted.')
   }
 
-  const parsed = new GodotURL(url)
+  const parsed = new GodotURL(request.url)
   const isHttps = parsed.protocol === 'https:'
   const defaultPort = isHttps ? 443 : 80
   const port = parsed.port ? parseInt(parsed.port, 10) : defaultPort
-  const method = (init.method ?? 'GET').toUpperCase()
+  const method = request.method
   const godotMethod = METHOD_MAP[method] ?? Method.GET
 
   // Build headers
-  const headers =
-    init.headers instanceof GodotHeaders
-      ? init.headers
-      : new GodotHeaders(
-          init.headers as
-            | Record<string, string>
-            | [string, string][]
-            | undefined,
-        )
+  const headers = new GodotHeaders(request.headers)
 
   if (!headers.has('host')) {
     headers.set('host', parsed.host)
@@ -197,19 +195,9 @@ async function fetchInternal(
   // Send request
   const requestPath = (parsed.pathname || '/') + parsed.search
   let requestErr: number
+  const bodyBytes = request.hasBody ? await request.arrayBuffer() : null
 
-  if (init.body != null) {
-    let bodyBytes: ArrayBuffer
-    if (typeof init.body === 'string') {
-      bodyBytes = new GodotTextEncoder().encode(init.body).buffer as ArrayBuffer
-    } else if (init.body instanceof Uint8Array) {
-      bodyBytes = init.body.buffer.slice(
-        init.body.byteOffset,
-        init.body.byteOffset + init.body.byteLength,
-      ) as ArrayBuffer
-    } else {
-      bodyBytes = init.body
-    }
+  if (bodyBytes !== null) {
     requestErr = client.request_raw(
       godotMethod,
       requestPath,
@@ -257,9 +245,9 @@ async function fetchInternal(
       responseCode === 303 ||
       responseCode === 307 ||
       responseCode === 308) &&
-    init.redirect !== 'manual'
+    request.redirect !== 'manual'
   ) {
-    if (init.redirect === 'error') {
+    if (request.redirect === 'error') {
       throw new TypeError('fetch: redirect response (redirect mode = error)')
     }
     if (redirectCount >= MAX_REDIRECTS) {
@@ -269,15 +257,22 @@ async function fetchInternal(
     const location = responseHeaders.get('location')
     if (location) {
       client.close()
-      const redirectUrl = new GodotURL(location, url).href
-      const redirectMethod = responseCode === 303 ? 'GET' : method
+      const redirectUrl = new GodotURL(location, request.url).href
+      const redirectMethod = redirectMethodFor(responseCode, method)
+      const redirectBody =
+        redirectMethod === 'GET' ||
+        redirectMethod === 'HEAD' ||
+        bodyBytes === null
+          ? undefined
+          : (bodyBytes.slice(0) as ArrayBuffer)
       return fetchInternal(
-        redirectUrl,
-        {
-          ...init,
+        new GodotRequest(redirectUrl, {
           method: redirectMethod,
-          body: responseCode === 303 ? undefined : init.body,
-        },
+          headers: request.headers,
+          body: redirectBody,
+          signal: request.signal,
+          redirect: request.redirect,
+        }),
         redirectCount + 1,
       )
     }
@@ -315,7 +310,7 @@ async function fetchInternal(
     status: responseCode,
     statusText: STATUS_TEXT[responseCode] ?? '',
     headers: responseHeaders,
-    url,
+    url: request.url,
     redirected: redirectCount > 0,
   })
 }
@@ -337,8 +332,8 @@ async function fetchInternal(
  *   const json = await res.json()
  */
 export async function fetch(
-  input: string,
+  input: GodotRequestInput,
   init?: GodotFetchInit,
 ): Promise<GodotResponse> {
-  return fetchInternal(input, init ?? {}, 0)
+  return fetchInternal(new GodotRequest(input, init), 0)
 }

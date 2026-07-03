@@ -3,7 +3,7 @@
 // ---------------------------------------------------------------------------
 
 import { GodotBlob } from './blob.js'
-import { GodotTextDecoder } from './encoding.js'
+import { cloneArrayBuffer, decodeBodyBuffer } from './body.js'
 import { GodotHeaders } from './headers.js'
 
 /**
@@ -46,13 +46,13 @@ export class GodotResponse {
   async arrayBuffer(): Promise<ArrayBuffer> {
     this._checkBodyUsed()
     this._bodyUsed = true
-    return this._body
+    return cloneArrayBuffer(this._body)
   }
 
   async text(): Promise<string> {
     this._checkBodyUsed()
     this._bodyUsed = true
-    return new GodotTextDecoder().decode(this._body)
+    return decodeBodyBuffer(this._body)
   }
 
   async json(): Promise<unknown> {
@@ -69,7 +69,7 @@ export class GodotResponse {
 
   clone(): GodotResponse {
     this._checkBodyUsed()
-    return new GodotResponse(this._body.slice(0), {
+    return new GodotResponse(cloneArrayBuffer(this._body), {
       status: this.status,
       statusText: this.statusText,
       headers: new GodotHeaders(this.headers),

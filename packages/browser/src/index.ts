@@ -8,6 +8,7 @@
 //
 // This package implements those APIs on top of Godot's native classes:
 //   • fetch()         → Godot HTTPClient
+//   • Request         → Fetch-compatible request metadata/body wrapper
 //   • URL             → Pure JS parser
 //   • Headers         → Map-backed, Godot-array interop
 //   • Response        → ArrayBuffer-backed, fetch-compatible
@@ -22,18 +23,26 @@
 //   installBrowserAPIs()   // patches globalThis once at startup
 //
 // Or import individual implementations:
-//   import { fetch, GodotURL, GodotHeaders } from '@vue-godot/browser'
+//   import { fetch, GodotRequest, GodotURL, GodotHeaders } from '@vue-godot/browser'
 // ---------------------------------------------------------------------------
 
 // Individual implementations
 export { GodotAbortController, GodotAbortSignal } from './abort.js'
 export { atob, btoa } from './base64.js'
 export { GodotBlob } from './blob.js'
+export type { GodotBodyInit } from './body.js'
 export { GodotTextDecoder, GodotTextEncoder } from './encoding.js'
 export { GodotEvent, GodotEventTarget } from './event-target.js'
 export { fetch } from './fetch.js'
 export type { GodotFetchInit } from './fetch.js'
 export { GodotHeaders } from './headers.js'
+export { GodotRequest } from './request.js'
+export type {
+  GodotHeadersInit,
+  GodotRequestInit,
+  GodotRequestInput,
+  GodotRequestRedirect,
+} from './request.js'
 export {
   GodotHistory,
   GodotLocation,

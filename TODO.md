@@ -22,7 +22,7 @@ The core renderer is real, both non-HTML and HTML CLI scaffolds now build from a
   - runs clean CLI scaffold smoke for `create` and `create --html` using packed local packages.
 - `@vue-godot/runtime-tscn` tests pass: 12 tests.
 - `@vue-godot/html` tests pass: 100 tests.
-- `@vue-godot/browser` tests pass: 10 tests.
+- `@vue-godot/browser` tests pass: 13 tests.
 - Basic `vue-godot create` works from a clean `/tmp` project:
   - `npm install` succeeds.
   - initial Vite build succeeds.
@@ -110,6 +110,7 @@ Current beta decisions and completed hardening:
 - Canvas `getContext('2d')` is explicitly deferred for beta; use a template ref to the underlying Godot `Control` and native draw/`queue_redraw()` methods.
 - Color parsing now supports hex, named CSS colors, `rgb()` / `rgba()`, and `hsl()` / `hsla()` for text `color` and Div `backgroundColor`.
 - `fontWeight: 'bold'` maps to a Godot `FontVariation` embolden override for text controls.
+- `Request` is implemented in `@vue-godot/browser`, installed by `installBrowserAPIs()`, accepted by `fetch()`, covered by package tests, and included in the html-demo browser smoke helper.
 
 Needed:
 

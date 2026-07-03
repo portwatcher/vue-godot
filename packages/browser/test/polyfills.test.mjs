@@ -8,6 +8,7 @@ const {
   GodotAbortController,
   GodotBlob,
   GodotHeaders,
+  GodotRequest,
   GodotResponse,
   GodotTextDecoder,
   GodotTextEncoder,
@@ -78,6 +79,85 @@ test('GodotHeaders stores case-insensitive values and serializes for Godot', () 
     'x-test: a',
     'x-test: b',
   ])
+})
+
+test('GodotRequest normalizes init and exposes body helpers', async () => {
+  const controller = new GodotAbortController()
+  const request = new GodotRequest('https://example.com/api', {
+    method: 'post',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{"ok":true}',
+    redirect: 'manual',
+    signal: controller.signal,
+  })
+
+  assert.equal(request.method, 'POST')
+  assert.equal(request.url, 'https://example.com/api')
+  assert.equal(request.headers.get('content-type'), 'application/json')
+  assert.equal(request.redirect, 'manual')
+  assert.equal(request.signal, controller.signal)
+  assert.equal(request.bodyUsed, false)
+  assert.deepEqual(await request.json(), { ok: true })
+  assert.equal(request.bodyUsed, true)
+  assert.throws(() => request.clone(), /already been consumed/)
+})
+
+test('GodotRequest clones request bodies before consumption', async () => {
+  const original = new GodotRequest('https://example.com/upload', {
+    method: 'PUT',
+    body: new Uint8Array([111, 107]),
+  })
+  const clone = original.clone()
+
+  assert.equal(await clone.text(), 'ok')
+  assert.equal(original.bodyUsed, false)
+  assert.equal(await original.text(), 'ok')
+})
+
+test('GodotRequest snapshots mutable init bodies', async () => {
+  const body = new Uint8Array([111, 107])
+  const request = new GodotRequest('https://example.com/upload', {
+    method: 'POST',
+    body,
+  })
+
+  body[0] = 120
+
+  assert.equal(await request.text(), 'ok')
+})
+
+test('GodotRequest clones an existing request with init overrides', async () => {
+  const original = new GodotRequest('https://example.com/upload', {
+    method: 'POST',
+    headers: { 'content-type': 'text/plain' },
+    body: 'ok',
+  })
+  const request = new GodotRequest(original, {
+    method: 'PUT',
+    headers: { 'x-request': 'copy' },
+  })
+
+  assert.equal(request.method, 'PUT')
+  assert.equal(request.url, original.url)
+  assert.equal(request.headers.get('content-type'), null)
+  assert.equal(request.headers.get('x-request'), 'copy')
+  assert.equal(await request.text(), 'ok')
+  assert.equal(original.bodyUsed, false)
+})
+
+test('GodotRequest rejects GET and HEAD bodies', () => {
+  assert.throws(
+    () => new GodotRequest('https://example.com', { body: 'nope' }),
+    /GET\/HEAD/,
+  )
+  assert.throws(
+    () =>
+      new GodotRequest('https://example.com', {
+        method: 'HEAD',
+        body: 'nope',
+      }),
+    /GET\/HEAD/,
+  )
 })
 
 test('GodotResponse exposes body helpers and enforces bodyUsed', async () => {

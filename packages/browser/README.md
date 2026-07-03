@@ -19,7 +19,7 @@ import { installBrowserAPIs } from '@vue-godot/browser'
 
 installBrowserAPIs()
 
-// Now you can use fetch(), URL, Blob, atob, TextEncoder, history, etc. globally
+// Now you can use fetch(), Request, URL, Blob, atob, TextEncoder, history, etc. globally
 const res = await fetch('https://example.com/data.json')
 const data = await res.json()
 ```
@@ -35,14 +35,15 @@ installPolyfill('fetch', 'URL', 'atob', 'btoa')
 You can also import individual implementations directly without patching globals:
 
 ```ts
-import { fetch, GodotURL, GodotHeaders } from '@vue-godot/browser'
+import { fetch, GodotRequest, GodotURL, GodotHeaders } from '@vue-godot/browser'
 ```
 
 ## Provided APIs
 
 | API                         | Implementation         | Notes                                                                                                        |
 | --------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `fetch()`                   | Godot `HTTPClient`     | Supports GET/POST/PUT/DELETE, redirects (up to 20), TLS, `AbortSignal`, string/ArrayBuffer/Uint8Array bodies |
+| `fetch()`                   | Godot `HTTPClient`     | Supports GET/POST/PUT/DELETE, `Request` input, redirects (up to 20), TLS, `AbortSignal`, string/ArrayBuffer/Uint8Array/Blob bodies |
+| `Request`                   | `GodotRequest`         | Fetch-compatible request metadata/body wrapper; `.text()`, `.json()`, `.arrayBuffer()`, `.blob()`, `.clone()` |
 | `Headers`                   | `GodotHeaders`         | Map-backed with `toGodotArray()` / `fromGodotArray()` interop                                                |
 | `Response`                  | `GodotResponse`        | ArrayBuffer-backed; `.json()`, `.text()`, `.arrayBuffer()`, `.blob()`, `.clone()`                            |
 | `Blob`                      | `GodotBlob`            | ArrayBuffer-backed; `.slice()`, `.text()`, `.arrayBuffer()`, `.size`, `.type`                                |
@@ -122,7 +123,25 @@ Under the hood, `fetch()` drives Godot's `HTTPClient` through its state machine 
 4. **Read** — Streams the response body in chunks, concatenating `PackedByteArray` buffers
 5. **Return** — Wraps the result in a `GodotResponse`
 
-Redirects (301, 302, 307, 308) are followed automatically up to 20 hops.
+Redirects (301, 302, 303, 307, 308) are followed automatically up to 20 hops.
+
+## Request API
+
+`GodotRequest` mirrors the fetch `Request` shape used by common libraries: it stores `url`, normalized uppercase `method`, `headers`, `signal`, `redirect`, `bodyUsed`, and exposes `.text()`, `.json()`, `.arrayBuffer()`, `.blob()`, and `.clone()`.
+
+```ts
+import { GodotRequest, fetch } from '@vue-godot/browser'
+
+const req = new GodotRequest('https://example.com/api', {
+  method: 'POST',
+  headers: { 'content-type': 'application/json' },
+  body: JSON.stringify({ ok: true }),
+})
+
+const res = await fetch(req)
+```
+
+As in browsers, `GET` and `HEAD` requests cannot have bodies, and body helper methods can only consume a request once.
 
 ## Requirements
 
