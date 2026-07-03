@@ -9,7 +9,9 @@
     "smoke:cli": "node scripts/smoke-cli.mjs",
     "smoke:public-cli": "node scripts/smoke-public-cli.mjs",
     "smoke:godot": "node scripts/smoke-godot.mjs",
+    "smoke:generated-godot": "node scripts/smoke-generated-godot.mjs",
     "release:preflight": "node scripts/release-preflight.mjs",
+    "release:publish": "node scripts/release-publish.mjs",
     "check": "npm run build && npm run test && npm run smoke:cli",
     "vue-godot": "vue-godot"
   },

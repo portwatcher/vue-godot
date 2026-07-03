@@ -1,45 +1,22 @@
-import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
-
-const __filename = fileURLToPath(import.meta.url)
-const repoRoot = path.resolve(path.dirname(__filename), '..')
-const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+import { pathToFileURL } from 'node:url'
+import {
+  compareVersions,
+  expectedRange,
+  formatCommandFailure,
+  npmCommand,
+  parseNpmJson as parseNpmJsonStrict,
+  readJson,
+  releasePackageConfigs as packageConfigs,
+  repoRoot,
+  run,
+} from './release-utils.mjs'
 
 const args = new Set(process.argv.slice(2))
 const localOnly = args.has('--local')
 const skipCheck = args.has('--skip-check')
 const skipGodot = args.has('--skip-godot')
-
-const packageConfigs = [
-  {
-    name: '@vue-godot/runtime-tscn',
-    dir: 'packages/runtime-tscn',
-    expectedFiles: ['dist/index.js', 'dist/index.d.ts'],
-  },
-  {
-    name: '@vue-godot/cli',
-    dir: 'packages/cli',
-    expectedFiles: [
-      'dist/index.js',
-      'dist/index.d.ts',
-      'dist/cli.js',
-      'templates/vue/vite.config.ts',
-      'templates/godot/project.godot',
-    ],
-  },
-  {
-    name: '@vue-godot/browser',
-    dir: 'packages/browser',
-    expectedFiles: ['dist/index.js', 'dist/index.d.ts'],
-  },
-  {
-    name: '@vue-godot/html',
-    dir: 'packages/html',
-    expectedFiles: ['dist/index.js', 'dist/index.d.ts'],
-  },
-]
 
 const failures = []
 const warnings = []
@@ -48,50 +25,12 @@ function logStep(title) {
   console.log(`\n[release-preflight] ${title}`)
 }
 
-function readJson(relativePath) {
-  return JSON.parse(fs.readFileSync(path.join(repoRoot, relativePath), 'utf-8'))
-}
-
-function run(command, commandArgs, options = {}) {
-  return spawnSync(command, commandArgs, {
-    cwd: options.cwd ?? repoRoot,
-    env: options.env ?? process.env,
-    encoding: 'utf-8',
-    stdio: options.stdio ?? 'pipe',
-  })
-}
-
 function runRequired(command, commandArgs, options = {}) {
   const result = run(command, commandArgs, options)
   if (result.status !== 0) {
-    const rendered = [command, ...commandArgs].join(' ')
-    failures.push(
-      [
-        `Command failed (${result.status ?? result.signal ?? 'unknown'}): ${rendered}`,
-        result.stdout,
-        result.stderr,
-      ]
-        .filter(Boolean)
-        .join('\n'),
-    )
+    failures.push(formatCommandFailure(command, commandArgs, result))
   }
   return result
-}
-
-function compareVersions(left, right) {
-  const leftParts = left.split('.').map((part) => Number(part))
-  const rightParts = right.split('.').map((part) => Number(part))
-  for (let index = 0; index < Math.max(leftParts.length, rightParts.length); index++) {
-    const leftValue = leftParts[index] ?? 0
-    const rightValue = rightParts[index] ?? 0
-    if (leftValue > rightValue) return 1
-    if (leftValue < rightValue) return -1
-  }
-  return 0
-}
-
-function expectedRange(version) {
-  return `^${version}`
 }
 
 function assertEqual(label, actual, expected) {
@@ -192,9 +131,9 @@ async function checkGeneratedPackageSpecs(packagesByName) {
 
 function parseNpmJson(stdout, label) {
   try {
-    return JSON.parse(stdout)
-  } catch {
-    failures.push(`${label}: npm did not return valid JSON\n${stdout}`)
+    return parseNpmJsonStrict(stdout, label)
+  } catch (error) {
+    failures.push(error instanceof Error ? error.message : String(error))
     return null
   }
 }
@@ -339,6 +278,35 @@ function checkGodotSmoke() {
 
   if (!output.includes('[smoke-godot] html-demo lifecycle smoke passed')) {
     failures.push('Godot smoke completed without the lifecycle pass marker')
+  }
+
+  const generatedResult = run(npmCommand, ['run', 'smoke:generated-godot'])
+  const generatedOutput = `${generatedResult.stdout ?? ''}\n${generatedResult.stderr ?? ''}`
+  process.stdout.write(generatedResult.stdout ?? '')
+  process.stderr.write(generatedResult.stderr ?? '')
+
+  if (generatedResult.status !== 0) {
+    failures.push(`npm run smoke:generated-godot failed\n${generatedOutput}`)
+    return
+  }
+
+  if (generatedOutput.includes('[smoke-generated-godot] skipped:')) {
+    const message =
+      'Generated Godot smoke skipped; set GODOT_BIN or install godot/godot4.'
+    if (localOnly) {
+      warnings.push(message)
+    } else {
+      failures.push(message)
+    }
+    return
+  }
+
+  if (
+    !generatedOutput.includes(
+      '[smoke-generated-godot] generated HTML app Godot smoke passed',
+    )
+  ) {
+    failures.push('Generated Godot smoke completed without the pass marker')
   }
 }
 

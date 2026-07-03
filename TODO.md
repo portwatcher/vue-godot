@@ -12,7 +12,7 @@ Goal for the product:
 
 This is alpha-quality, not production ready yet.
 
-The core renderer is real, both non-HTML and HTML CLI scaffolds now build from a clean project when verified against packed local packages, and the HTML demo lifecycle smoke passes under a real GodotJS executable. The remaining production-readiness gap is external verification: publish the packages to npm, confirm the remote Godot smoke workflow is green, and run repeated GodotJS editor hot reload tests.
+The core renderer is real, both non-HTML and HTML CLI scaffolds now build from a clean project when verified against packed local packages, the generated HTML scaffold loads under a real GodotJS executable before and after a watch rebuild, and the HTML demo lifecycle smoke passes under a real GodotJS executable. The remaining production-readiness gap is external verification: publish the packages to npm, confirm the remote Godot smoke workflow is green, and run repeated GodotJS editor hot reload tests.
 
 ## Verified Current State
 
@@ -34,9 +34,11 @@ The core renderer is real, both non-HTML and HTML CLI scaffolds now build from a
 - `npm whoami` returns 401 in the current environment, so publishing cannot be completed here without npm credentials.
 - `npm pack --dry-run` for packages looks sane: built `dist` files and CLI templates are included.
 - `npm run smoke:public-cli` now automates the post-publish public `create --html` verification, but it cannot pass until `@vue-godot/browser` and `@vue-godot/html` are public.
-- `npm run release:preflight -- --local` passes. It runs the local quality gate, verifies CLI-generated package specs, checks structured `npm pack --dry-run --json` contents, reads registry state, reports missing npm auth as a warning in local mode, and runs the Godot smoke when `GODOT_BIN` is set. After `npm run check` has already passed, `GODOT_BIN=... npm run release:preflight -- --local --skip-check` also passes.
+- `npm run release:publish` automates the package publish order and is dry-run by default. Real publishing requires `--yes`, a clean worktree, npm auth, release preflight, and then runs the public CLI smoke unless explicitly skipped.
+- `npm run release:preflight -- --local` passes. It runs the local quality gate, verifies CLI-generated package specs, checks structured `npm pack --dry-run --json` contents, reads registry state, reports missing npm auth as a warning in local mode, and runs the Godot smokes when `GODOT_BIN` is set. After `npm run check` has already passed, `GODOT_BIN=... npm run release:preflight -- --local --skip-check` also passes.
 - `npm run smoke:godot` passes locally with `GodotJS_1.0.0-2` macOS arm64 V8 (`Godot Engine v4.4.1.rc.custom_build.daa4b058e`) when `GODOT_BIN` points at the downloaded editor binary. The smoke builds `apps/html-demo`, imports project assets with Godot `--import`, starts a loopback HTTP server for `fetch`, runs the scene headlessly with `VUE_GODOT_SMOKE=1`, repeatedly unmounts/remounts the Vue app, checks for stale children after unmount, checks rendered signal connection counts, drives form controls through Godot signals, checks image/SVG texture loading, and runs the demo browser API smoke helper against the loopback `fetch` endpoint. The current local run reports `reloads=3`, `mounts=4`, and `unmounts=4`.
-- GitHub Actions now runs `npm run check`, and the `Godot Smoke` workflow installs the pinned `GodotJS_1.0.0-2` Linux x64 V8 editor bundle before running `npm run smoke:godot` on relevant PRs and pushes.
+- `npm run smoke:generated-godot` passes locally with the same GodotJS binary. It creates a clean `create --html` project from locally packed packages, builds and runs a marker app under Godot, starts the generated `npm run dev` watcher, edits `vue/src/App.vue`, verifies the rebuilt `dist` output contains the new marker, and runs the rebuilt app under Godot again.
+- GitHub Actions now runs `npm run check`, and the `Godot Smoke` workflow installs the pinned `GodotJS_1.0.0-2` Linux x64 V8 editor bundle before running `npm run smoke:godot` and `npm run smoke:generated-godot` on relevant PRs and pushes.
 
 ## Major Blockers
 
@@ -52,9 +54,7 @@ Both still need to be published to the public npm registry. Local clean-user sim
 Needed:
 
 - Run `npm run release:preflight` with npm credentials and `GODOT_BIN` available.
-- Publish `@vue-godot/cli@0.0.3`.
-- Publish `@vue-godot/browser`.
-- Publish `@vue-godot/html`.
+- Run `npm run release:publish -- --yes` to publish missing/newer packages in dependency-safe order.
 - Run `npm run smoke:public-cli` against the published packages.
 - Keep CLI-generated compatible package versions in sync before each release.
 
@@ -62,7 +62,7 @@ Needed:
 
 Generated root scripts now store the Vue app instance and call `app.unmount()` in `_exit_tree()`.
 
-The renderer does free nodes when Vue removes them, and `apps/html-demo` now has a headless lifecycle smoke mode that makes child and button-signal leaks visible under `npm run smoke:godot`. That smoke passes locally with a real GodotJS executable. Repeated Godot editor hot reload still needs direct proof that old Vue apps, nodes, timers, watchers, and signal connections do not accumulate in the real editor workflow.
+The renderer does free nodes when Vue removes them, `apps/html-demo` now has a headless lifecycle smoke mode that makes child and button-signal leaks visible under `npm run smoke:godot`, and the generated scaffold smoke proves a rebuilt `dist/app.js` still loads under Godot. Those smokes pass locally with a real GodotJS executable. Repeated Godot editor hot reload still needs direct proof that old Vue apps, nodes, timers, watchers, and signal connections do not accumulate in the real editor workflow.
 
 Needed:
 
@@ -71,7 +71,7 @@ Needed:
 
 ### 3. Godot smoke is headless, not full editor hot reload
 
-The most important user workflow depends on GodotJS behavior. The repo now has Node-side tests, CLI smoke tests, CI, a local headless Godot lifecycle smoke that passes with the pinned GodotJS release, and a GitHub Actions `Godot Smoke` workflow that installs a pinned GodotJS executable before running that smoke. It still does not have a full editor hot reload assertion.
+The most important user workflow depends on GodotJS behavior. The repo now has Node-side tests, CLI smoke tests, CI, a local headless Godot lifecycle smoke that passes with the pinned GodotJS release, a generated-scaffold Godot smoke that proves rebuilt output still runs, and a GitHub Actions `Godot Smoke` workflow that installs a pinned GodotJS executable before running both Godot smokes. It still does not have a full editor hot reload assertion.
 
 Needed:
 
@@ -127,9 +127,9 @@ Needed:
 
 ### 6. Missing project-level quality gate
 
-Root scripts now include `test`, `smoke:cli`, `smoke:godot`, and `check`, and CI runs `npm run check`. `smoke:cli` creates clean local-package projects and verifies the generated HTML `npm run dev` watcher rebuilds `dist` after a Vue source edit. A separate `Godot Smoke` workflow downloads and caches a pinned GodotJS Linux x64 V8 editor bundle, sets `GODOT_BIN`, and runs `npm run smoke:godot`. `smoke:godot` now goes beyond project-open verification when Godot is available: it imports project assets, runs the HTML demo scene headlessly, and requires the app's lifecycle smoke pass marker.
+Root scripts now include `test`, `smoke:cli`, `smoke:godot`, `smoke:generated-godot`, and `check`, and CI runs `npm run check`. `smoke:cli` creates clean local-package projects and verifies the generated HTML `npm run dev` watcher rebuilds `dist` after a Vue source edit. `smoke:generated-godot` creates a clean generated HTML project, verifies it runs under Godot, edits the app while the generated Vite watcher is running, checks the rebuilt output, and verifies the rebuilt bundle runs under Godot. A separate `Godot Smoke` workflow downloads and caches a pinned GodotJS Linux x64 V8 editor bundle, sets `GODOT_BIN`, and runs both Godot smokes. `smoke:godot` now goes beyond project-open verification when Godot is available: it imports project assets, runs the HTML demo scene headlessly, and requires the app's lifecycle smoke pass marker.
 
-`release:preflight` now wraps the local quality gate, pack dry-runs, generated package-spec checks, npm registry/auth checks, and `smoke:godot`. Strict mode fails when npm credentials or Godot are missing; `--local` mode is for unauthenticated/local environments and reports those as warnings.
+`release:preflight` now wraps the local quality gate, pack dry-runs, generated package-spec checks, npm registry/auth checks, `smoke:godot`, and `smoke:generated-godot`. Strict mode fails when npm credentials or Godot are missing; `--local` mode is for unauthenticated/local environments and reports those as warnings. `release:publish` provides the guarded publish flow and stays dry-run unless `--yes` is provided.
 
 Needed:
 

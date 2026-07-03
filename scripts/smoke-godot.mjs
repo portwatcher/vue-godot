@@ -1,61 +1,17 @@
-import { spawn, spawnSync } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import http from 'node:http'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import {
+  npmCommand,
+  repoRoot,
+  resolveGodotCommand,
+  run,
+} from './smoke-utils.mjs'
 
-const __filename = fileURLToPath(import.meta.url)
-const repoRoot = path.resolve(path.dirname(__filename), '..')
 const demoDir = path.join(repoRoot, 'apps/html-demo')
-const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 const SMOKE_PASS_MARKER = '[vue-godot-smoke] passed'
 const FETCH_SMOKE_PATH = '/vue-godot-fetch-smoke'
 const FETCH_SMOKE_TEXT = 'vue-godot fetch smoke ok'
-
-function commandExists(command) {
-  const probe = spawnSync(command, ['--version'], {
-    encoding: 'utf-8',
-    stdio: 'pipe',
-  })
-  return probe.status === 0
-}
-
-function resolveGodotCommand() {
-  if (process.env.GODOT_BIN) {
-    return process.env.GODOT_BIN
-  }
-  if (commandExists('godot4')) {
-    return 'godot4'
-  }
-  if (commandExists('godot')) {
-    return 'godot'
-  }
-  return null
-}
-
-function run(command, args, options = {}) {
-  const result = spawnSync(command, args, {
-    cwd: options.cwd ?? repoRoot,
-    env: options.env ?? process.env,
-    encoding: 'utf-8',
-    stdio: options.stdio ?? 'pipe',
-    timeout: options.timeout,
-  })
-
-  if (result.status !== 0) {
-    const rendered = [command, ...args].join(' ')
-    throw new Error(
-      [
-        `Command failed (${result.status ?? result.signal ?? 'unknown'}): ${rendered}`,
-        result.stdout,
-        result.stderr,
-      ]
-        .filter(Boolean)
-        .join('\n'),
-    )
-  }
-
-  return result
-}
 
 function runAsync(command, args, options = {}) {
   return new Promise((resolve, reject) => {
