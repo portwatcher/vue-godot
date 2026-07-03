@@ -96,12 +96,12 @@ Implemented MVP components:
 
 Still incomplete or externally unverified:
 
-- Canvas is only a bare `Control`; no `getContext('2d')`.
 - Browser polyfills now have a reusable demo smoke helper that can run under `npm run smoke:godot`, and the smoke script provisions a loopback `fetch` endpoint. Form v-model paths and image/SVG asset loading are also covered by the headless smoke. These still need to be run and recorded with a real GodotJS executable.
 
 Current beta decisions and completed hardening:
 
 - `<style>` block support is explicitly documented as a current beta non-goal in `packages/html/README.md`; use inline style objects until a CSS-to-Godot mapping exists.
+- Canvas `getContext('2d')` is explicitly deferred for beta; use a template ref to the underlying Godot `Control` and native draw/`queue_redraw()` methods.
 - Color parsing now supports hex, named CSS colors, `rgb()` / `rgba()`, and `hsl()` / `hsla()` for text `color` and Div `backgroundColor`.
 - `fontWeight: 'bold'` maps to a Godot `FontVariation` embolden override for text controls.
 
@@ -149,7 +149,6 @@ Acceptance criteria:
 2. Run and record the GodotJS headless lifecycle smoke on a real executable.
 3. GodotJS editor hot reload smoke verification.
 4. Finish HTML beta tracker:
-   - Canvas `getContext('2d')` or documented longer-term replacement.
    - More browser tests under real GodotJS, especially `fetch`.
 5. Documentation pass based on observed Godot editor behavior.
 

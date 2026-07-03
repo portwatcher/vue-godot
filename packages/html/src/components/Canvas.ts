@@ -18,8 +18,9 @@ const DEFAULT_HEIGHT = 150
  * accessed via a Vue template ref. Advanced users can call Godot draw methods
  * (`_draw()` / `queue_redraw()`) on the underlying node directly.
  *
- * `getContext('2d')` is **not yet implemented** — a future version may
- * provide a Canvas2D-like wrapper over Godot's `CanvasItem` draw commands.
+ * `getContext('2d')` is intentionally deferred for the current beta. A future
+ * Canvas2D adapter should wrap Godot's `CanvasItem` draw commands with clear
+ * lifecycle ownership for retained drawing state.
  *
  * Props:
  *   - `width`  — canvas width in pixels (default: 300)

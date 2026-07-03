@@ -231,6 +231,16 @@ const volume = ref(50)
 </template>
 ```
 
+### Canvas drawing scope
+
+`<Canvas>` maps to a Godot `Control` with `width` / `height` reflected as `custom_minimum_size` and `clip_contents` enabled. For the current beta, this is the supported drawing path:
+
+- access the underlying `Control` with a Vue template ref;
+- implement Godot-native draw behavior on that node or a custom `Control` subclass;
+- call `queue_redraw()` when reactive state changes.
+
+`canvas.getContext('2d')` is intentionally deferred. A future Canvas2D adapter should wrap Godot `CanvasItem` draw commands and define clear lifecycle ownership for retained drawing state, but that is not part of the beta surface.
+
 ### Global registration via plugin (new code)
 
 ```ts
@@ -271,7 +281,7 @@ This package is in early development. Currently scaffolded:
 - [x] `<Input>` — text, password, checkbox, range inputs with `v-model`
 - [x] `<Textarea>` — multiline text (`TextEdit`, `v-model`, `placeholder`, `rows`/`cols`)
 - [x] `<Select>` / `<Option>` — dropdown (`OptionButton`, `v-model`, `<Option>` children)
-- [x] `<Canvas>` — 2D drawing surface (`Control`, `width`/`height`, template ref for draw commands)
+- [x] `<Canvas>` — 2D drawing surface (`Control`, `width`/`height`, template ref for draw commands; `getContext('2d')` deferred)
 - [x] `<Video>` — video playback (`VideoStreamPlayer`, `src`, `autoplay`, `loop`, `muted`, `volume`, `@ended`)
 - [x] `<Audio>` — audio playback (`AudioStreamPlayer`, `src`, `autoplay`, `loop`, `muted`, `volume`, `@ended`)
 - [x] `<Svg>` — SVG display (`TextureRect`, `src`, `scale` for rasterisation quality, `alt`)
