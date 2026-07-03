@@ -2,6 +2,8 @@
 
 Rules and conventions that all AI coding agents **must** follow when contributing to this repository.
 
+You can update this doc if you found something important that should be persisted as baked system prompts. Always keep this doc and other docs inside monorepo up-to-date.
+
 ## TypeScript
 
 ### No `as any`
