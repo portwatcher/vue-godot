@@ -5,8 +5,13 @@ import {
   h,
   isVNode,
 } from '@vue/runtime-core'
-import { Color, StyleBoxFlat } from 'godot'
-import { parseColorChannels } from '../utils/colorParser.js'
+import type {
+  VNodeArrayChildren,
+  VNodeChild,
+  VNodeNormalizedChildren,
+} from '@vue/runtime-core'
+import { StyleBoxFlat } from 'godot'
+import { parseGodotColor } from '../utils/godotColor.js'
 import type { GodotContainerTag, HtmlStyle } from '../utils/styleMapping.js'
 import {
   ControlSizeFlags,
@@ -58,8 +63,8 @@ function resolveChildLayoutProps(
   childStyle: HtmlStyle | undefined,
   containerTag: GodotContainerTag,
   defaultAlignSelf: HtmlStyle['alignSelf'] | undefined,
-  existingProps: Record<string, any> | null,
-): Record<string, any> {
+  existingProps: Record<string, unknown> | null,
+): Record<string, unknown> {
   const alignValue = childStyle?.alignSelf ?? defaultAlignSelf
   const hasFlex =
     typeof childStyle?.flex === 'number' &&
@@ -70,7 +75,7 @@ function resolveChildLayoutProps(
     return {}
   }
 
-  const resolved: Record<string, any> = {}
+  const resolved: Record<string, unknown> = {}
   const axes = containerAxes(containerTag)
 
   if (hasFlex && axes.main) {
@@ -94,18 +99,21 @@ function resolveChildLayoutProps(
   return resolved
 }
 
-function toChildArray(children: any): any[] {
+function toChildArray(children: VNodeNormalizedChildren): VNodeArrayChildren {
   if (Array.isArray(children)) {
     return children
   }
-  return children == null ? [] : [children]
+  if (typeof children === 'string') {
+    return [children]
+  }
+  return []
 }
 
 function mapChildForContainerLayout(
-  child: any,
+  child: VNodeChild,
   containerTag: GodotContainerTag,
   defaultAlignSelf: HtmlStyle['alignSelf'] | undefined,
-): any[] {
+): VNodeArrayChildren {
   if (Array.isArray(child)) {
     return child.flatMap((entry) =>
       mapChildForContainerLayout(entry, containerTag, defaultAlignSelf),
@@ -130,7 +138,7 @@ function mapChildForContainerLayout(
     return [h(Fragment, fragmentProps, mappedFragmentChildren)]
   }
 
-  const existingProps = (child.props ?? null) as Record<string, any> | null
+  const existingProps = (child.props ?? null) as Record<string, unknown> | null
   const childStyle =
     existingProps &&
     typeof existingProps.style === 'object' &&
@@ -152,19 +160,19 @@ function mapChildForContainerLayout(
 }
 
 function mapChildrenForContainerLayout(
-  children: any[] | undefined,
+  children: VNodeArrayChildren | undefined,
   containerTag: GodotContainerTag,
   defaultAlignSelf: HtmlStyle['alignSelf'] | undefined,
-): any[] | undefined {
+): VNodeArrayChildren | undefined {
   return children?.flatMap((child) =>
     mapChildForContainerLayout(child, containerTag, defaultAlignSelf),
   )
 }
 
 function withThemeConstantOverrides(
-  baseProps: Record<string, any>,
+  baseProps: Record<string, unknown>,
   overrides: Record<string, number>,
-): Record<string, any> {
+): Record<string, unknown> {
   const props = { ...baseProps }
   for (const name in overrides) {
     props[`theme_override_constants/${name}`] = overrides[name]
@@ -179,11 +187,11 @@ function createBackgroundPanelStyle(
     return null
   }
 
-  const parsed = parseColorChannels(color)
+  const parsed = parseGodotColor(color)
   if (!parsed) return null
 
   const styleBox = new StyleBoxFlat()
-  styleBox.bg_color = new Color(parsed.r, parsed.g, parsed.b, parsed.a)
+  styleBox.bg_color = parsed
   styleBox.draw_center = true
   return styleBox
 }

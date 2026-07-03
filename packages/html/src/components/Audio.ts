@@ -1,4 +1,4 @@
-import { defineComponent, h, ref, watch } from '@vue/runtime-core'
+import { defineComponent, h, ref, shallowRef, watch } from '@vue/runtime-core'
 import type { AudioStream } from 'godot'
 import { classifySource, loadAudioStream } from '../utils/audioStreamLoader.js'
 
@@ -107,7 +107,7 @@ export const Audio = defineComponent({
   },
   emits: ['ended'],
   setup(props, { emit }) {
-    const stream = ref<AudioStream | null>(null)
+    const stream = shallowRef<AudioStream | null>(null)
     const loading = ref(false)
 
     watch(

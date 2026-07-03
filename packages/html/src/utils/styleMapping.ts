@@ -72,7 +72,7 @@ export type GodotContainerTag =
 export interface ContainerMapping {
   tag: GodotContainerTag
   themeOverrides: Record<string, number>
-  props: Record<string, any>
+  props: Record<string, unknown>
 }
 
 export const ControlSizeFlags = {
@@ -173,7 +173,7 @@ function resolveContainerAlignment(
 
 export function resolveContainerTag(style: HtmlStyle): ContainerMapping {
   const themeOverrides: Record<string, number> = {}
-  const props: Record<string, any> = {}
+  const props: Record<string, unknown> = {}
 
   if (style.display === 'none') {
     return { tag: 'Control', themeOverrides, props: { visible: false } }

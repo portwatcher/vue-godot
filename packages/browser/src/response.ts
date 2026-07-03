@@ -55,7 +55,7 @@ export class GodotResponse {
     return new GodotTextDecoder().decode(this._body)
   }
 
-  async json(): Promise<any> {
+  async json(): Promise<unknown> {
     const text = await this.text()
     return JSON.parse(text)
   }

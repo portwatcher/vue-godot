@@ -116,7 +116,13 @@ test('maps opacity to modulate alpha', async () => {
     src: './v.ogv',
     style: { opacity: 0.5 },
   })
-  assert.equal(vnode.props.modulate, '1,1,1,0.5')
+  const modulate = vnode.props.modulate
+  assert.equal(modulate.__mock, true)
+  assert.equal(modulate.__kind, 'color')
+  assert.equal(modulate.r, 1)
+  assert.equal(modulate.g, 1)
+  assert.equal(modulate.b, 1)
+  assert.equal(modulate.a, 0.5)
 })
 
 test('forwards Godot finished signal as @ended event', async () => {

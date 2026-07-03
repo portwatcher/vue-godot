@@ -64,8 +64,20 @@ test('maps common text control styles', () => {
   assert.equal(vnode.props['custom_minimum_size:x'], 120)
   assert.equal(vnode.props['custom_minimum_size:y'], 32)
   assert.equal(vnode.props['theme_override_font_sizes/font_size'], 18)
-  assert.equal(vnode.props['theme_override_colors/font_color'], '1,0,0,1')
-  assert.equal(vnode.props.modulate, '1,1,1,0.5')
+  const fontColor = vnode.props['theme_override_colors/font_color']
+  assert.equal(fontColor.__mock, true)
+  assert.equal(fontColor.__kind, 'color')
+  assert.equal(fontColor.r, 1)
+  assert.equal(fontColor.g, 0)
+  assert.equal(fontColor.b, 0)
+  assert.equal(fontColor.a, 1)
+  const modulate = vnode.props.modulate
+  assert.equal(modulate.__mock, true)
+  assert.equal(modulate.__kind, 'color')
+  assert.equal(modulate.r, 1)
+  assert.equal(modulate.g, 1)
+  assert.equal(modulate.b, 1)
+  assert.equal(modulate.a, 0.5)
 })
 
 test('accepts CSS color formats for text control color', () => {
@@ -78,10 +90,13 @@ test('accepts CSS color formats for text control color', () => {
     ['Styled'],
   )
 
-  assert.equal(
-    vnode.props['theme_override_colors/font_color'],
-    '0,0.5019607843137255,1,0.5',
-  )
+  const fontColor = vnode.props['theme_override_colors/font_color']
+  assert.equal(fontColor.__mock, true)
+  assert.equal(fontColor.__kind, 'color')
+  assert.equal(fontColor.r, 0)
+  assert.equal(fontColor.g, 0.5019607843137255)
+  assert.equal(fontColor.b, 1)
+  assert.equal(fontColor.a, 0.5)
 })
 
 test('maps bold fontWeight to a Godot FontVariation override', () => {

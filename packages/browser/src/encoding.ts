@@ -7,14 +7,26 @@
 /**
  * Minimal TextEncoder — encodes a JS string into a UTF-8 Uint8Array.
  */
+interface NativeTextEncoderLike {
+  encode(input?: string): Uint8Array
+}
+
+type NativeTextEncoderConstructor = new () => NativeTextEncoderLike
+
 export class GodotTextEncoder {
   readonly encoding = 'utf-8'
 
   encode(input: string = ''): Uint8Array {
     // Fast path: V8/QuickJS may have a native encoder hidden somewhere.
     const g: Record<string, unknown> = globalThis
-    if (typeof g['TextEncoder'] === 'function') {
-      return new (g['TextEncoder'] as typeof GodotTextEncoder)().encode(input)
+    const TextEncoderCtor = g['TextEncoder']
+    if (
+      typeof TextEncoderCtor === 'function' &&
+      TextEncoderCtor !== GodotTextEncoder
+    ) {
+      return new (TextEncoderCtor as NativeTextEncoderConstructor)().encode(
+        input,
+      )
     }
 
     const bytes: number[] = []
@@ -81,6 +93,15 @@ export class GodotTextEncoder {
 /**
  * Minimal TextDecoder — decodes a UTF-8 byte sequence into a JS string.
  */
+interface NativeTextDecoderLike {
+  decode(input?: ArrayBuffer | Uint8Array | ArrayBufferView): string
+}
+
+type NativeTextDecoderConstructor = new (
+  encoding?: string,
+  options?: { fatal?: boolean; ignoreBOM?: boolean },
+) => NativeTextDecoderLike
+
 export class GodotTextDecoder {
   readonly encoding = 'utf-8'
   readonly fatal: boolean
@@ -99,9 +120,14 @@ export class GodotTextDecoder {
 
     // Fast path
     const g: Record<string, unknown> = globalThis
-    if (typeof g['TextDecoder'] === 'function') {
-      return new (g['TextDecoder'] as typeof GodotTextDecoder)('utf-8', {
+    const TextDecoderCtor = g['TextDecoder']
+    if (
+      typeof TextDecoderCtor === 'function' &&
+      TextDecoderCtor !== GodotTextDecoder
+    ) {
+      return new (TextDecoderCtor as NativeTextDecoderConstructor)('utf-8', {
         fatal: this.fatal,
+        ignoreBOM: this.ignoreBOM,
       }).decode(input)
     }
 

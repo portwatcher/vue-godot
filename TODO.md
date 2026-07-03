@@ -12,7 +12,7 @@ Goal for the product:
 
 This is alpha-quality, not production ready yet.
 
-The core renderer is real and both non-HTML and HTML CLI scaffolds now build from a clean project when verified against packed local packages. The remaining production-readiness gap is external verification: publish the packages to npm and run repeated GodotJS editor hot reload tests with a real GodotJS executable.
+The core renderer is real, both non-HTML and HTML CLI scaffolds now build from a clean project when verified against packed local packages, and the HTML demo lifecycle smoke passes under a real GodotJS executable. The remaining production-readiness gap is external verification: publish the packages to npm, confirm the remote Godot smoke workflow is green, and run repeated GodotJS editor hot reload tests.
 
 ## Verified Current State
 
@@ -21,7 +21,7 @@ The core renderer is real and both non-HTML and HTML CLI scaffolds now build fro
   - runs package tests;
   - runs clean CLI scaffold smoke for `create` and `create --html` using packed local packages.
 - `@vue-godot/runtime-tscn` tests pass: 12 tests.
-- `@vue-godot/html` tests pass: 98 tests.
+- `@vue-godot/html` tests pass: 100 tests.
 - `@vue-godot/browser` tests pass: 10 tests.
 - Basic `vue-godot create` works from a clean `/tmp` project:
   - `npm install` succeeds.
@@ -34,8 +34,8 @@ The core renderer is real and both non-HTML and HTML CLI scaffolds now build fro
 - `npm whoami` returns 401 in the current environment, so publishing cannot be completed here without npm credentials.
 - `npm pack --dry-run` for packages looks sane: built `dist` files and CLI templates are included.
 - `npm run smoke:public-cli` now automates the post-publish public `create --html` verification, but it cannot pass until `@vue-godot/browser` and `@vue-godot/html` are public.
-- `npm run release:preflight -- --local` passes. It runs the local quality gate, verifies CLI-generated package specs, checks structured `npm pack --dry-run --json` contents, reads registry state, and reports missing npm auth / Godot as warnings in local mode.
-- No Godot/GodotJS executable was available in the assessment environment, so editor hot reload could not be verified directly. `npm run smoke:godot` now builds `apps/html-demo` and, when `GODOT_BIN`, `godot4`, or `godot` is available, runs a headless lifecycle smoke that repeatedly unmounts/remounts the Vue app, checks for stale children after unmount, checks rendered signal connection counts, drives form controls through Godot signals, checks image/SVG texture loading, and runs the demo browser API smoke helper against a loopback `fetch` endpoint. It skips cleanly otherwise.
+- `npm run release:preflight -- --local` passes. It runs the local quality gate, verifies CLI-generated package specs, checks structured `npm pack --dry-run --json` contents, reads registry state, reports missing npm auth as a warning in local mode, and runs the Godot smoke when `GODOT_BIN` is set. After `npm run check` has already passed, `GODOT_BIN=... npm run release:preflight -- --local --skip-check` also passes.
+- `npm run smoke:godot` passes locally with `GodotJS_1.0.0-2` macOS arm64 V8 (`Godot Engine v4.4.1.rc.custom_build.daa4b058e`) when `GODOT_BIN` points at the downloaded editor binary. The smoke builds `apps/html-demo`, imports project assets with Godot `--import`, starts a loopback HTTP server for `fetch`, runs the scene headlessly with `VUE_GODOT_SMOKE=1`, repeatedly unmounts/remounts the Vue app, checks for stale children after unmount, checks rendered signal connection counts, drives form controls through Godot signals, checks image/SVG texture loading, and runs the demo browser API smoke helper against the loopback `fetch` endpoint. The current local run reports `reloads=3`, `mounts=4`, and `unmounts=4`.
 - GitHub Actions now runs `npm run check`, and the `Godot Smoke` workflow installs the pinned `GodotJS_1.0.0-2` Linux x64 V8 editor bundle before running `npm run smoke:godot` on relevant PRs and pushes.
 
 ## Major Blockers
@@ -62,16 +62,16 @@ Needed:
 
 Generated root scripts now store the Vue app instance and call `app.unmount()` in `_exit_tree()`.
 
-The renderer does free nodes when Vue removes them, and `apps/html-demo` now has a headless lifecycle smoke mode that makes child and button-signal leaks visible under `npm run smoke:godot`. Repeated Godot editor hot reload still needs direct proof that old Vue apps, nodes, timers, watchers, and signal connections do not accumulate in the real editor workflow.
+The renderer does free nodes when Vue removes them, and `apps/html-demo` now has a headless lifecycle smoke mode that makes child and button-signal leaks visible under `npm run smoke:godot`. That smoke passes locally with a real GodotJS executable. Repeated Godot editor hot reload still needs direct proof that old Vue apps, nodes, timers, watchers, and signal connections do not accumulate in the real editor workflow.
 
 Needed:
 
-- Run `npm run smoke:godot` with a real GodotJS executable and record the result.
+- Confirm the remote `Godot Smoke` workflow is green after pushing.
 - Verify repeated editor reloads do not duplicate children or signal handlers.
 
 ### 3. Godot smoke is headless, not full editor hot reload
 
-The most important user workflow depends on GodotJS behavior. The repo now has Node-side tests, CLI smoke tests, CI, an optional local headless Godot lifecycle smoke, and a GitHub Actions `Godot Smoke` workflow that installs a pinned GodotJS executable before running that smoke. It still does not have a full editor hot reload assertion.
+The most important user workflow depends on GodotJS behavior. The repo now has Node-side tests, CLI smoke tests, CI, a local headless Godot lifecycle smoke that passes with the pinned GodotJS release, and a GitHub Actions `Godot Smoke` workflow that installs a pinned GodotJS executable before running that smoke. It still does not have a full editor hot reload assertion.
 
 Needed:
 
@@ -102,7 +102,7 @@ Implemented MVP components:
 
 Still incomplete or externally unverified:
 
-- Browser polyfills now have a reusable demo smoke helper that can run under `npm run smoke:godot`, and the smoke script provisions a loopback `fetch` endpoint. Form v-model paths and image/SVG asset loading are also covered by the headless smoke. These still need to be run and recorded with a real GodotJS executable.
+- Browser polyfills now have a reusable demo smoke helper that runs under `npm run smoke:godot`, and the smoke script provisions a loopback `fetch` endpoint. Form v-model paths and image/SVG asset loading are covered by the local headless GodotJS smoke. The remote `Godot Smoke` workflow still needs to be confirmed green after pushing.
 
 Current beta decisions and completed hardening:
 
@@ -115,7 +115,7 @@ Needed:
 
 - Finish or explicitly defer all open beta tracker items.
 - Keep `apps/html-demo` aligned with every component/API.
-- Run and record the form, asset loading, and loopback `fetch` smoke with a real GodotJS executable.
+- Confirm the form, asset loading, and loopback `fetch` smoke remain green in the remote `Godot Smoke` workflow.
 
 ### 5. Docs drift and copy-paste risk
 
@@ -127,7 +127,7 @@ Needed:
 
 ### 6. Missing project-level quality gate
 
-Root scripts now include `test`, `smoke:cli`, `smoke:godot`, and `check`, and CI runs `npm run check`. A separate `Godot Smoke` workflow downloads and caches a pinned GodotJS Linux x64 V8 editor bundle, sets `GODOT_BIN`, and runs `npm run smoke:godot`. `smoke:godot` now goes beyond project-open verification when Godot is available: it runs the HTML demo scene headlessly and requires the app's lifecycle smoke pass marker.
+Root scripts now include `test`, `smoke:cli`, `smoke:godot`, and `check`, and CI runs `npm run check`. A separate `Godot Smoke` workflow downloads and caches a pinned GodotJS Linux x64 V8 editor bundle, sets `GODOT_BIN`, and runs `npm run smoke:godot`. `smoke:godot` now goes beyond project-open verification when Godot is available: it imports project assets, runs the HTML demo scene headlessly, and requires the app's lifecycle smoke pass marker.
 
 `release:preflight` now wraps the local quality gate, pack dry-runs, generated package-spec checks, npm registry/auth checks, and `smoke:godot`. Strict mode fails when npm credentials or Godot are missing; `--local` mode is for unauthenticated/local environments and reports those as warnings.
 
@@ -154,7 +154,7 @@ Acceptance criteria:
 ## Suggested Priority Order
 
 1. Publish packages and verify public clean install.
-2. Run and record the GodotJS headless lifecycle smoke on a real executable.
+2. Confirm the `Godot Smoke` workflow is green after pushing.
 3. GodotJS editor hot reload smoke verification.
 4. Finish HTML beta tracker:
    - More browser tests under real GodotJS, especially `fetch`.

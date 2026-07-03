@@ -132,18 +132,24 @@ export default class Root extends VBoxContainer {
       throw new Error(`cycle ${cycle}: expected at least one Button node`)
     }
 
-    let pressedConnections = 0
+    let connectedButton: Node | null = null
     for (const button of buttons) {
-      pressedConnections += button.get_signal_connection_list('pressed').size()
+      const connectionCount = button.get_signal_connection_list('pressed').size()
+      if (connectionCount > 1) {
+        throw new Error(
+          `cycle ${cycle}: expected at most one pressed connection per Button, found ${connectionCount}`,
+        )
+      }
+      if (connectionCount === 1 && !connectedButton) {
+        connectedButton = button
+      }
     }
 
-    if (pressedConnections !== buttons.length) {
-      throw new Error(
-        `cycle ${cycle}: expected one pressed connection per Button, found ${pressedConnections} across ${buttons.length} buttons`,
-      )
+    if (!connectedButton) {
+      throw new Error(`cycle ${cycle}: expected at least one connected Button`)
     }
 
-    const result = buttons[0].emit_signal('pressed')
+    const result = connectedButton.emit_signal('pressed')
     if (result !== 0) {
       throw new Error(
         `cycle ${cycle}: failed to emit pressed signal: ${result}`,

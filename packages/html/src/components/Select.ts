@@ -1,4 +1,4 @@
-import { defineComponent, h, ref, type VNode } from '@vue/runtime-core'
+import { defineComponent, h, type VNode } from '@vue/runtime-core'
 import {
   applyControlSizeProps,
   applyDisplayAndOpacityProps,
@@ -9,20 +9,16 @@ import type { HtmlStyle } from '../utils/styleMapping.js'
 
 /** Type guard for Godot OptionButton-like nodes. */
 interface OptionButtonLike {
-  clear(): void
-  add_item(label: string, id: number): void
-  select(idx: number): void
-  get_item_count(): number
+  call(method: string, ...args: unknown[]): unknown
 }
 
 function isOptionButton(node: unknown): node is OptionButtonLike {
-  return (
-    typeof node === 'object' &&
-    node !== null &&
-    'clear' in (node as object) &&
-    'add_item' in (node as object) &&
-    'select' in (node as object)
-  )
+  if (typeof node !== 'object' || node === null) {
+    return false
+  }
+
+  const candidate = node as Record<string, unknown>
+  return typeof candidate['call'] === 'function'
 }
 
 /**
@@ -142,21 +138,21 @@ export const Select = defineComponent({
   },
   emits: ['update:modelValue', 'change'],
   setup(props, { slots, emit }) {
-    const optionBtnRef = ref<unknown>(null)
-
     /**
      * Imperatively sync the OptionButton's items with the extracted
      * option list using clear() + add_item(). This avoids relying on
      * Godot's `popup/item_N/text` property paths which are fragile
      * through Vue's prop-diffing lifecycle.
      */
-    function syncItems(options: Array<{ value: string; label: string }>): void {
-      const node = optionBtnRef.value
+    function syncItems(
+      node: unknown,
+      options: Array<{ value: string; label: string }>,
+    ): void {
       if (!isOptionButton(node)) return
 
-      node.clear()
+      node.call('clear')
       for (let i = 0; i < options.length; i++) {
-        node.add_item(options[i].label, i)
+        node.call('add_item', options[i].label, i)
       }
 
       // Restore selection
@@ -165,7 +161,7 @@ export const Select = defineComponent({
           (opt) => opt.value === props.modelValue,
         )
         if (selectedIdx >= 0) {
-          node.select(selectedIdx)
+          node.call('select', selectedIdx)
         }
       }
     }
@@ -197,10 +193,12 @@ export const Select = defineComponent({
       applyDisplayAndOpacityProps(nodeProps, style)
 
       // Sync items imperatively after the vnode is mounted/patched
-      nodeProps['onVnodeMounted'] = () => syncItems(options)
-      nodeProps['onVnodeUpdated'] = () => syncItems(options)
+      nodeProps['onVnodeMounted'] = (vnode: VNode) =>
+        syncItems(vnode.el, options)
+      nodeProps['onVnodeUpdated'] = (vnode: VNode) =>
+        syncItems(vnode.el, options)
 
-      return h('OptionButton', { ref: optionBtnRef, ...nodeProps })
+      return h('OptionButton', nodeProps)
     }
   },
 })

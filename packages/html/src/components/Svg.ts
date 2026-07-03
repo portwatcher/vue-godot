@@ -1,9 +1,9 @@
-import { defineComponent, h, ref, watch } from '@vue/runtime-core'
+import { defineComponent, h, ref, shallowRef, watch } from '@vue/runtime-core'
 import type { Texture2D } from 'godot'
 import { Image, ImageTexture, ResourceLoader } from 'godot'
 import { resolveAssetPath } from '../utils/assetResolver.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
-import { classifySource } from '../utils/textureLoader.js'
+import { classifySource, loadSvgTextureFromFile } from '../utils/textureLoader.js'
 
 /**
  * TextureRect.ExpandMode enum values (Godot 4.x).
@@ -191,7 +191,7 @@ export const Svg = defineComponent({
     },
   },
   setup(props) {
-    const texture = ref<Texture2D | null>(null)
+    const texture = shallowRef<Texture2D | null>(null)
     const loading = ref(false)
 
     watch(
@@ -212,7 +212,9 @@ export const Svg = defineComponent({
         if (kind === 'local') {
           // Godot handles SVG import — ResourceLoader returns the texture.
           const path = resolveAssetPath(src)
-          texture.value = ResourceLoader.load(path) as Texture2D | null
+          texture.value =
+            (ResourceLoader.load(path) as Texture2D | null) ??
+            loadSvgTextureFromFile(path, effectiveScale)
           return
         }
 
@@ -262,8 +264,10 @@ export const Svg = defineComponent({
 
     return () => {
       const style = props.style
-      const nodeProps: Record<string, unknown> = {
-        texture: texture.value,
+      const nodeProps: Record<string, unknown> = {}
+
+      if (texture.value) {
+        nodeProps['texture'] = texture.value
       }
 
       // Width / height → custom_minimum_size

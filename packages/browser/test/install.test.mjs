@@ -11,6 +11,8 @@ const patchedGlobals = [
   'Blob',
   'URL',
   'fetch',
+  'TextDecoder',
+  'TextEncoder',
   'history',
   'location',
   'PopStateEvent',
@@ -52,6 +54,8 @@ test('installBrowserAPIs installs missing browser globals', async () => {
     assert.equal(typeof globalThis.URL.createObjectURL, 'function')
     assert.equal(typeof globalThis.URL.revokeObjectURL, 'function')
     assert.equal(globalThis.Blob, GodotBlob)
+    assert.equal(new globalThis.TextDecoder().decode(new Uint8Array([111, 107])), 'ok')
+    assert.deepEqual([...new globalThis.TextEncoder().encode('ok')], [111, 107])
     assert.equal(typeof globalThis.fetch, 'function')
     assert.equal(typeof globalThis.history.pushState, 'function')
     assert.equal(String(globalThis.location), 'http://localhost/')

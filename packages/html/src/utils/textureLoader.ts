@@ -1,5 +1,11 @@
 import { fetch as godotFetch, resolveObjectURL } from '@vue-godot/browser'
-import { Image, ImageTexture, ResourceLoader, type Texture2D } from 'godot'
+import {
+  FileAccess,
+  Image,
+  ImageTexture,
+  ResourceLoader,
+  type Texture2D,
+} from 'godot'
 import { resolveAssetPath } from './assetResolver.js'
 import { parseDataUri } from './dataUri.js'
 
@@ -18,7 +24,7 @@ type ImageBufferLoaderMethod =
 
 /**
  * Call the appropriate `Image.load_*_from_buffer` method in a type-safe
- * manner without resorting to `as any`.
+ * manner without unsafe casts.
  */
 function callImageLoader(
   image: Image,
@@ -161,6 +167,31 @@ export function createTextureFromBuffer(
   return ImageTexture.create_from_image(image)
 }
 
+export function loadSvgTextureFromFile(
+  path: string,
+  scale = 1,
+): ImageTexture | null {
+  try {
+    const bytes = FileAccess.get_file_as_bytes(path)
+    const buffer = bytes.to_array_buffer()
+    if (buffer.byteLength === 0) {
+      return null
+    }
+
+    const image = new Image()
+    const err = image.load_svg_from_buffer(buffer, scale)
+    if (err !== 0) return null
+
+    return ImageTexture.create_from_image(image)
+  } catch (error) {
+    console.warn(
+      `[vue-godot] Unable to load SVG texture from ${path}:`,
+      error,
+    )
+    return null
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Remote fetching
 // ---------------------------------------------------------------------------
@@ -223,7 +254,14 @@ export async function loadTexture(
 
   if (kind === 'local') {
     const path = resolveAssetPath(src)
-    return ResourceLoader.load(path) as Texture2D | null
+    const loaded = ResourceLoader.load(path) as Texture2D | null
+    if (loaded) {
+      return loaded
+    }
+    if (path.toLowerCase().endsWith('.svg')) {
+      return loadSvgTextureFromFile(path)
+    }
+    return null
   }
 
   if (kind === 'data-uri') {

@@ -47,7 +47,7 @@ test('resolves src to a Godot resource path and loads texture', async () => {
 
 test('does not set texture when src is undefined', async () => {
   const vnode = await renderSvg({})
-  assert.equal(vnode.props.texture, null)
+  assert.equal(vnode.props.texture, undefined)
 })
 
 test('handles res:// paths as passthrough', async () => {

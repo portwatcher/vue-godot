@@ -1,4 +1,4 @@
-import { defineComponent, h, ref, watch } from '@vue/runtime-core'
+import { defineComponent, h, ref, shallowRef, watch } from '@vue/runtime-core'
 import type { Texture2D } from 'godot'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 import { classifySource, loadTexture } from '../utils/textureLoader.js'
@@ -126,7 +126,7 @@ export const Img = defineComponent({
     },
   },
   setup(props) {
-    const texture = ref<Texture2D | null>(null)
+    const texture = shallowRef<Texture2D | null>(null)
     const loading = ref(false)
 
     // String `src` prop — handles local, data-URI, and remote sources.
@@ -158,8 +158,10 @@ export const Img = defineComponent({
 
     return () => {
       const style = props.style
-      const nodeProps: Record<string, any> = {
-        texture: texture.value,
+      const nodeProps: Record<string, unknown> = {}
+
+      if (texture.value) {
+        nodeProps['texture'] = texture.value
       }
 
       // Width / height → custom_minimum_size

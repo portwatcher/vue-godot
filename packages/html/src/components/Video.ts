@@ -1,5 +1,6 @@
-import { defineComponent, h, ref, watch } from '@vue/runtime-core'
+import { defineComponent, h, ref, shallowRef, watch } from '@vue/runtime-core'
 import type { VideoStream } from 'godot'
+import { createOpacityModulate } from '../utils/godotColor.js'
 import { classifySource, loadStream } from '../utils/streamLoader.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 
@@ -95,7 +96,7 @@ export const Video = defineComponent({
   },
   emits: ['ended'],
   setup(props, { emit }) {
-    const stream = ref<VideoStream | null>(null)
+    const stream = shallowRef<VideoStream | null>(null)
     const loading = ref(false)
 
     watch(
@@ -175,7 +176,7 @@ export const Video = defineComponent({
         typeof style?.opacity === 'number' &&
         Number.isFinite(style.opacity)
       ) {
-        nodeProps['modulate'] = `1,1,1,${style.opacity}`
+        nodeProps['modulate'] = createOpacityModulate(style.opacity)
       }
 
       // Signal forwarding:

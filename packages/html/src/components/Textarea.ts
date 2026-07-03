@@ -1,4 +1,4 @@
-import { defineComponent, h, ref } from '@vue/runtime-core'
+import { defineComponent, h, type VNode } from '@vue/runtime-core'
 import {
   applyControlSizeProps,
   applyDisplayAndOpacityProps,
@@ -74,7 +74,7 @@ export const Textarea = defineComponent({
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
-    const textEditRef = ref<unknown>(null)
+    let textEditNode: unknown = null
 
     return () => {
       const style = props.style
@@ -87,11 +87,10 @@ export const Textarea = defineComponent({
 
       // text_changed signal → v-model update
       // Godot's TextEdit.text_changed fires with no arguments, so we read
-      // the current text directly from the underlying node via a template ref.
+      // the current text directly from the host node captured by vnode hooks.
       nodeProps['onTextChanged'] = () => {
-        const node = textEditRef.value
-        if (hasTextProperty(node)) {
-          emit('update:modelValue', node.text)
+        if (hasTextProperty(textEditNode)) {
+          emit('update:modelValue', textEditNode.text)
         }
       }
 
@@ -127,7 +126,17 @@ export const Textarea = defineComponent({
       applyFontStyleProps(nodeProps, style)
       applyDisplayAndOpacityProps(nodeProps, style)
 
-      return h('TextEdit', { ref: textEditRef, ...nodeProps })
+      nodeProps['onVnodeMounted'] = (vnode: VNode) => {
+        textEditNode = vnode.el
+      }
+      nodeProps['onVnodeUpdated'] = (vnode: VNode) => {
+        textEditNode = vnode.el
+      }
+      nodeProps['onVnodeUnmounted'] = () => {
+        textEditNode = null
+      }
+
+      return h('TextEdit', nodeProps)
     }
   },
 })

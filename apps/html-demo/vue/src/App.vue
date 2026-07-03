@@ -127,7 +127,7 @@
   <!-- ===== Section: Img ===== -->
   <Label text="--- Img ---" />
   <img
-    src="res://icon.svg"
+    :src="demoSvgDataUri"
     alt="Godot icon"
     :style="{ width: 64, height: 64 }"
   />
@@ -135,7 +135,7 @@
   <!-- ===== Section: Svg ===== -->
   <Label text="--- Svg ---" />
   <svg
-    src="res://icon.svg"
+    :src="demoSvgDataUri"
     alt="SVG icon"
     :scale="2"
     :style="{ width: 64, height: 64 }"
@@ -222,6 +222,10 @@ const textareaValue = ref('')
 
 // --- Select ---
 const selectedFruit = ref('apple')
+
+// --- Img / Svg ---
+const demoSvgDataUri =
+  'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2212%22%20fill%3D%22%23478cbf%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2218%22%20fill%3D%22%23ffffff%22%2F%3E%3C%2Fsvg%3E'
 
 // --- Canvas ---
 const canvasRef = ref<{ queue_redraw: () => void } | null>(null)

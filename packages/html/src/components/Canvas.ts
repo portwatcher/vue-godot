@@ -1,4 +1,5 @@
 import { defineComponent, h } from '@vue/runtime-core'
+import { createOpacityModulate } from '../utils/godotColor.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 
 /** Default canvas width matching the HTML `<canvas>` default. */
@@ -92,7 +93,7 @@ export const Canvas = defineComponent({
         typeof style?.opacity === 'number' &&
         Number.isFinite(style.opacity)
       ) {
-        nodeProps['modulate'] = `1,1,1,${style.opacity}`
+        nodeProps['modulate'] = createOpacityModulate(style.opacity)
       }
 
       return h('Control', nodeProps)

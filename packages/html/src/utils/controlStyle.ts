@@ -1,5 +1,5 @@
 import { FontVariation } from 'godot'
-import { parseHexColor } from './colorParser.js'
+import { createOpacityModulate, parseGodotColor } from './godotColor.js'
 import type { HtmlStyle } from './styleMapping.js'
 
 export type GodotPropBag = Record<string, unknown>
@@ -43,7 +43,7 @@ export function applyFontStyleProps(
   }
 
   if (typeof style?.color === 'string') {
-    const parsed = parseHexColor(style.color)
+    const parsed = parseGodotColor(style.color)
     if (parsed) {
       nodeProps['theme_override_colors/font_color'] = parsed
     }
@@ -59,7 +59,7 @@ export function applyDisplayAndOpacityProps(
   }
 
   if (typeof style?.opacity === 'number' && Number.isFinite(style.opacity)) {
-    nodeProps['modulate'] = `1,1,1,${style.opacity}`
+    nodeProps['modulate'] = createOpacityModulate(style.opacity)
   }
 }
 

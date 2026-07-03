@@ -40,6 +40,9 @@ function polyfill(name: string, impl: unknown): void {
  *   installBrowserAPIs()
  */
 export function installBrowserAPIs(): void {
+  polyfill('TextEncoder', GodotTextEncoder)
+  polyfill('TextDecoder', GodotTextDecoder)
+  polyfill('Blob', GodotBlob)
   polyfill('fetch', fetch)
   polyfill('Headers', GodotHeaders)
   polyfill('Response', GodotResponse)
@@ -56,11 +59,8 @@ export function installBrowserAPIs(): void {
       UrlCtor['revokeObjectURL'] = revokeObjectURL
     }
   }
-  polyfill('Blob', GodotBlob)
   polyfill('atob', atob)
   polyfill('btoa', btoa)
-  polyfill('TextEncoder', GodotTextEncoder)
-  polyfill('TextDecoder', GodotTextDecoder)
   polyfill('AbortController', GodotAbortController)
   polyfill('AbortSignal', GodotAbortSignal)
 

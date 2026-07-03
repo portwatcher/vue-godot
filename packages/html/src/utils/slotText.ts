@@ -33,6 +33,7 @@ export function extractTextFromVNode(vnode: VNode): string {
       if (Array.isArray(slotChildren)) {
         return slotChildren.map(extractTextFromUnknownChild).join('')
       }
+      return extractTextFromUnknownChild(slotChildren)
     }
   }
 

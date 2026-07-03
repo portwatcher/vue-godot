@@ -172,11 +172,20 @@ function runProjectOpenSmoke(godot) {
   console.log('[smoke-godot] html-demo opened successfully')
 }
 
+function importProjectAssets(godot) {
+  console.log('[smoke-godot] importing html-demo assets')
+  run(godot, ['--headless', '--path', demoDir, '--import'], {
+    stdio: 'inherit',
+  })
+}
+
 async function runLifecycleSmoke(godot) {
   console.log('[smoke-godot] building html-demo')
   run(npmCommand, ['run', 'build', '--workspace=html-demo'], {
     stdio: 'inherit',
   })
+
+  importProjectAssets(godot)
 
   const fetchSmokeServer = await startFetchSmokeServer()
 
