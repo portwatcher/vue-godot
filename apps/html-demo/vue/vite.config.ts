@@ -4,6 +4,7 @@ import { defineConfig } from 'vite'
 // Tags provided by @vue-godot/html — kept in sync with htmlTags from the package.
 // Listed here to avoid importing at config-load time (Node ESM resolution).
 const htmlTags = [
+  'a',
   'audio',
   'div',
   'img',

@@ -1,5 +1,9 @@
 import { defineComponent, h } from '@vue/runtime-core'
-import { parseHexColor } from '../utils/colorParser.js'
+import {
+  applyCommonControlStyleProps,
+  type GodotPropBag,
+} from '../utils/controlStyle.js'
+import { extractTextFromSlot } from '../utils/slotText.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 
 /**
@@ -63,41 +67,10 @@ export const Span = defineComponent({
   setup(props, { slots }) {
     return () => {
       const style = props.style
-      const nodeProps: Record<string, unknown> = {}
+      const nodeProps: GodotPropBag = {}
 
-      // Text from slot content (flattened strings)
-      const slotContent = slots.default?.()
-      const textValue =
-        slotContent
-          ?.map((vnode) =>
-            typeof vnode.children === 'string' ? vnode.children : '',
-          )
-          .join('') ?? ''
-      nodeProps['text'] = textValue
-
-      // Width / height → custom_minimum_size
-      if (typeof style?.width === 'number' && Number.isFinite(style.width)) {
-        nodeProps['custom_minimum_size:x'] = style.width
-      }
-      if (typeof style?.height === 'number' && Number.isFinite(style.height)) {
-        nodeProps['custom_minimum_size:y'] = style.height
-      }
-
-      // fontSize → theme_override_font_sizes/font_size
-      if (
-        typeof style?.fontSize === 'number' &&
-        Number.isFinite(style.fontSize)
-      ) {
-        nodeProps['theme_override_font_sizes/font_size'] = style.fontSize
-      }
-
-      // color → theme_override_colors/font_color (hex color as RGBA string)
-      if (typeof style?.color === 'string') {
-        const parsed = parseHexColor(style.color)
-        if (parsed) {
-          nodeProps['theme_override_colors/font_color'] = parsed
-        }
-      }
+      nodeProps['text'] = extractTextFromSlot(slots.default)
+      applyCommonControlStyleProps(nodeProps, style)
 
       // textAlign → horizontal_alignment
       const hAlign = resolveTextAlign(style?.textAlign)
@@ -118,19 +91,6 @@ export const Span = defineComponent({
       // overflow: 'hidden' → clip_text
       if (style?.overflow === 'hidden') {
         nodeProps['clip_text'] = true
-      }
-
-      // display: none
-      if (style?.display === 'none') {
-        nodeProps['visible'] = false
-      }
-
-      // opacity → modulate alpha
-      if (
-        typeof style?.opacity === 'number' &&
-        Number.isFinite(style.opacity)
-      ) {
-        nodeProps['modulate'] = `1,1,1,${style.opacity}`
       }
 
       return h('Label', nodeProps)

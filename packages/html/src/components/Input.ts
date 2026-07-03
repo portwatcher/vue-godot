@@ -1,5 +1,9 @@
 import { defineComponent, h } from '@vue/runtime-core'
-import { parseHexColor } from '../utils/colorParser.js'
+import {
+  applyControlSizeProps,
+  applyDisplayAndOpacityProps,
+  applyFontStyleProps,
+} from '../utils/controlStyle.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 
 /**
@@ -181,43 +185,11 @@ export const Input = defineComponent({
         }
       }
 
-      // Width / height → custom_minimum_size
-      if (typeof style?.width === 'number' && Number.isFinite(style.width)) {
-        nodeProps['custom_minimum_size:x'] = style.width
+      applyControlSizeProps(nodeProps, style)
+      if (mapping.tag === 'LineEdit') {
+        applyFontStyleProps(nodeProps, style)
       }
-      if (typeof style?.height === 'number' && Number.isFinite(style.height)) {
-        nodeProps['custom_minimum_size:y'] = style.height
-      }
-
-      // fontSize → theme_override_font_sizes/font_size (LineEdit)
-      if (
-        mapping.tag === 'LineEdit' &&
-        typeof style?.fontSize === 'number' &&
-        Number.isFinite(style.fontSize)
-      ) {
-        nodeProps['theme_override_font_sizes/font_size'] = style.fontSize
-      }
-
-      // color → theme_override_colors/font_color (LineEdit)
-      if (mapping.tag === 'LineEdit' && typeof style?.color === 'string') {
-        const parsed = parseHexColor(style.color)
-        if (parsed) {
-          nodeProps['theme_override_colors/font_color'] = parsed
-        }
-      }
-
-      // display: none
-      if (style?.display === 'none') {
-        nodeProps['visible'] = false
-      }
-
-      // opacity
-      if (
-        typeof style?.opacity === 'number' &&
-        Number.isFinite(style.opacity)
-      ) {
-        nodeProps['modulate'] = `1,1,1,${style.opacity}`
-      }
+      applyDisplayAndOpacityProps(nodeProps, style)
 
       return h(mapping.tag, nodeProps)
     }

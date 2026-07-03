@@ -11,6 +11,7 @@
       padding: 16,
       width: 560,
       minHeight: 120,
+      backgroundColor: '#172033',
     }"
   >
     <div :style="{ flex: 1, padding: 8 }">
@@ -57,6 +58,17 @@
     <button :disabled="true">Disabled</button>
   </HBoxContainer>
   <Label :text="`Button clicks: ${buttonClicks}`" />
+
+  <!-- ===== Section: Anchor ===== -->
+  <Label text="--- Anchor ---" />
+  <a
+    href="https://godotengine.org"
+    :style="{ fontSize: 18, color: '#44aaff' }"
+    @click="onLinkClick"
+  >
+    Open Godot site
+  </a>
+  <Label :text="`Anchor clicks: ${linkClicks}`" />
 
   <!-- ===== Section: Input (text) ===== -->
   <Label text="--- Input (text) ---" />
@@ -172,6 +184,12 @@ function onButtonClick() {
   buttonClicks.value++
 }
 
+// --- Anchor ---
+const linkClicks = ref(0)
+function onLinkClick() {
+  linkClicks.value++
+}
+
 // --- Input ---
 const textValue = ref('')
 const passwordValue = ref('')
@@ -259,6 +277,29 @@ function runBrowserTests() {
     results.push(`ObjectURL: ok`)
   } catch (e) {
     results.push(`ObjectURL: FAIL ${e}`)
+  }
+
+  // Response
+  try {
+    const encoded = new TextEncoder().encode('ok').buffer
+    const response = new Response(encoded, {
+      status: 200,
+      headers: new Headers({ 'content-type': 'text/plain' }),
+    })
+    results.push(`Response: ${response.ok ? 'ok' : 'FAIL'}`)
+  } catch (e) {
+    results.push(`Response: FAIL ${e}`)
+  }
+
+  // History + Location
+  try {
+    const previousHref = location.href
+    history.pushState({ demo: true }, '', '/html-demo')
+    const moved = location.pathname === '/html-demo'
+    history.replaceState(null, '', previousHref)
+    results.push(`History: ${moved ? 'ok' : 'FAIL'}`)
+  } catch (e) {
+    results.push(`History: FAIL ${e}`)
   }
 
   browserTestResult.value = results.join(' | ')

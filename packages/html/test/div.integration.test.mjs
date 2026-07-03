@@ -1,8 +1,11 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { register } from 'node:module'
 import { Fragment, createRenderer, h } from '@vue/runtime-core'
 
-import { Div } from '../dist/components/Div.js'
+register(new URL('./godot-browser-loader.mjs', import.meta.url).href)
+
+const { Div } = await import('../dist/components/Div.js')
 
 function createHostNode(type) {
   return {
@@ -79,7 +82,7 @@ const renderer = createRenderer({
       return null
     }
     const index = parent.children.indexOf(node)
-    return index >= 0 ? parent.children[index + 1] ?? null : null
+    return index >= 0 ? (parent.children[index + 1] ?? null) : null
   },
   querySelector() {
     return null

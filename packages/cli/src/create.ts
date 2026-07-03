@@ -3,6 +3,7 @@ import * as path from 'node:path'
 import { spawn } from 'node:child_process'
 import {
   copyTemplateDir,
+  generateHtmlAppVue,
   generateHtmlMainTs,
   generateHtmlViteConfig,
   getTemplatesDir,
@@ -103,11 +104,21 @@ export async function create(options: CreateOptions): Promise<void> {
   if (html) {
     const viteConfigPath = path.join(vueDir, 'vite.config.ts')
     fs.writeFileSync(viteConfigPath, generateHtmlViteConfig())
-    console.log(`  updated ${path.relative(process.cwd(), viteConfigPath)} (html mode)`)
+    console.log(
+      `  updated ${path.relative(process.cwd(), viteConfigPath)} (html mode)`,
+    )
 
     const mainTsPath = path.join(vueDir, 'src', 'main.ts')
     fs.writeFileSync(mainTsPath, generateHtmlMainTs())
-    console.log(`  updated ${path.relative(process.cwd(), mainTsPath)} (html mode)`)
+    console.log(
+      `  updated ${path.relative(process.cwd(), mainTsPath)} (html mode)`,
+    )
+
+    const appVuePath = path.join(vueDir, 'src', 'App.vue')
+    fs.writeFileSync(appVuePath, generateHtmlAppVue())
+    console.log(
+      `  updated ${path.relative(process.cwd(), appVuePath)} (html mode)`,
+    )
   }
 
   /* --- package.json --- */

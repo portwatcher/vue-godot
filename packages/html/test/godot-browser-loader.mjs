@@ -1,11 +1,3 @@
-/**
- * Custom ESM loader hook that intercepts `import ... from 'godot'` and
- * `import ... from '@vue-godot/browser'`, providing mocks for both.
- *
- * Used by audio.test.mjs to run Audio component tests in Node.js
- * without the real Godot runtime.
- */
-
 const GODOT_MOCK_URL = 'mock:godot'
 const BROWSER_MOCK_URL = 'mock:vue-godot-browser'
 
@@ -25,6 +17,21 @@ export function load(url, context, nextLoad) {
       format: 'module',
       shortCircuit: true,
       source: `
+        export class Color {
+          static html(rgba) {
+            return { __mock: true, __kind: 'color', rgba }
+          }
+        }
+
+        export class StyleBoxFlat {
+          constructor() {
+            this.__mock = true
+            this.__kind = 'style-box-flat'
+            this.bg_color = null
+            this.draw_center = false
+          }
+        }
+
         export const ResourceLoader = {
           load(path) {
             if (!path) return null
@@ -58,6 +65,38 @@ export function load(url, context, nextLoad) {
           }
 
           close() {}
+        }
+
+        export class Image {
+          _loaded = false
+          _scale = 1
+
+          load_svg_from_buffer(buffer, scale) {
+            this._loaded = true
+            this._scale = scale ?? 1
+            this._bufferByteLength = buffer.byteLength
+            return 0
+          }
+        }
+
+        export class ImageTexture {
+          __mock = true
+          __kind = 'buffer'
+
+          static create_from_image(image) {
+            const t = new ImageTexture()
+            t._scale = image._scale
+            t._bufferByteLength = image._bufferByteLength
+            return t
+          }
+        }
+
+        export class VideoStreamTheora {
+          constructor() {
+            this.__mock = true
+            this.__kind = 'theora'
+            this.file = ''
+          }
         }
 
         export class AudioStreamOggVorbis {
@@ -104,8 +143,8 @@ export function load(url, context, nextLoad) {
       format: 'module',
       shortCircuit: true,
       source: `
-        const _blobStore = new Map()
-        let _blobIdCounter = 0
+        const blobStore = new Map()
+        let blobIdCounter = 0
 
         export function atob(encoded) {
           return globalThis.atob(encoded)
@@ -117,14 +156,35 @@ export function load(url, context, nextLoad) {
           }
         }
 
+        export class GodotBlob {
+          constructor(parts = [], options = {}) {
+            this.parts = parts
+            this.type = options.type ?? ''
+            this.size = parts.reduce((total, part) => {
+              if (typeof part === 'string') return total + part.length
+              if (part instanceof ArrayBuffer) return total + part.byteLength
+              if (ArrayBuffer.isView(part)) return total + part.byteLength
+              return total
+            }, 0)
+          }
+          async arrayBuffer() {
+            const encoder = new TextEncoder()
+            return encoder.encode(this.parts.join('')).buffer
+          }
+        }
+
         export function resolveObjectURL(url) {
-          return _blobStore.get(url) ?? undefined
+          return blobStore.get(url) ?? undefined
         }
 
         export function createObjectURL(blob) {
-          const id = 'blob:mock-' + (++_blobIdCounter)
-          _blobStore.set(id, blob)
+          const id = 'blob:mock-' + (++blobIdCounter)
+          blobStore.set(id, blob)
           return id
+        }
+
+        export function revokeObjectURL(url) {
+          blobStore.delete(url)
         }
 
         class MockResponse {
@@ -138,18 +198,35 @@ export function load(url, context, nextLoad) {
           }
         }
 
-        // Global hook: tests can set __audioTestFetchHandler to control fetch behavior
         globalThis.__audioTestFetchHandler = null
+        globalThis.__videoTestFetchHandler = null
+
+        function contentTypeForUrl(url) {
+          const value = String(url)
+          if (value.endsWith('.mp3')) return 'audio/mpeg'
+          if (value.endsWith('.wav')) return 'audio/wav'
+          if (value.endsWith('.ogg')) return 'audio/ogg'
+          if (value.endsWith('.ogv')) return 'video/ogg'
+          if (value.endsWith('.svg')) return 'image/svg+xml'
+          return 'application/octet-stream'
+        }
 
         export async function fetch(url) {
           if (globalThis.__audioTestFetchHandler) {
             return globalThis.__audioTestFetchHandler(url)
           }
-          // Default: return a small buffer with ok=true, detecting format from URL
-          let mime = 'audio/ogg'
-          if (url.endsWith('.mp3')) mime = 'audio/mpeg'
-          else if (url.endsWith('.wav')) mime = 'audio/wav'
-          return new MockResponse(new ArrayBuffer(16), true, mime)
+          if (globalThis.__videoTestFetchHandler) {
+            return globalThis.__videoTestFetchHandler(url)
+          }
+
+          const contentType = contentTypeForUrl(url)
+          if (contentType === 'image/svg+xml') {
+            const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"></svg>'
+            const encoder = new TextEncoder()
+            return new MockResponse(encoder.encode(svg).buffer, true, contentType)
+          }
+
+          return new MockResponse(new ArrayBuffer(16), true, contentType)
         }
       `,
     }

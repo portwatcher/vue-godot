@@ -5,6 +5,10 @@
     "build:cli": "turbo run build --filter=@vue-godot/cli",
     "build:runtime": "turbo run build --filter=@vue-godot/runtime-tscn",
     "build:demo": "turbo run build --filter=\"./apps/*\"",
+    "test": "turbo run test --filter=\"./packages/*\"",
+    "smoke:cli": "node scripts/smoke-cli.mjs",
+    "smoke:godot": "node scripts/smoke-godot.mjs",
+    "check": "npm run build && npm run test && npm run smoke:cli",
     "vue-godot": "vue-godot"
   },
   "repository": {

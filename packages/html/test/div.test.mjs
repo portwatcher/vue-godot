@@ -1,8 +1,11 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { register } from 'node:module'
 import { Fragment, h } from '@vue/runtime-core'
 
-import { Div } from '../dist/components/Div.js'
+register(new URL('./godot-browser-loader.mjs', import.meta.url).href)
+
+const { Div } = await import('../dist/components/Div.js')
 
 function renderDiv(style = {}, slotChildren = []) {
   const render = Div.setup(
@@ -33,7 +36,11 @@ test('uses flow-theme override keys for wrapping Div containers', () => {
 })
 
 test('wraps Div content in MarginContainer when padding is set', () => {
-  const vnode = renderDiv({ flexDirection: 'row', padding: 12, paddingRight: 20 })
+  const vnode = renderDiv({
+    flexDirection: 'row',
+    padding: 12,
+    paddingRight: 20,
+  })
 
   assert.equal(vnode.type, 'MarginContainer')
   assert.equal(vnode.props['theme_override_constants/margin_top'], 12)
@@ -44,6 +51,38 @@ test('wraps Div content in MarginContainer when padding is set', () => {
   assert.ok(Array.isArray(vnode.children))
   assert.equal(vnode.children.length, 1)
   assert.equal(vnode.children[0].type, 'HBoxContainer')
+})
+
+test('wraps Div content in PanelContainer when backgroundColor is set', () => {
+  const vnode = renderDiv({
+    flexDirection: 'column',
+    backgroundColor: '#123456',
+  })
+
+  assert.equal(vnode.type, 'PanelContainer')
+  assert.equal(
+    vnode.props['theme_override_styles/panel'].__kind,
+    'style-box-flat',
+  )
+  assert.deepEqual(vnode.props['theme_override_styles/panel'].bg_color, {
+    __mock: true,
+    __kind: 'color',
+    rgba: '#123456',
+  })
+  assert.equal(vnode.props['theme_override_styles/panel'].draw_center, true)
+  assert.equal(vnode.children[0].type, 'VBoxContainer')
+})
+
+test('puts padding inside the background panel', () => {
+  const vnode = renderDiv({ padding: 8, backgroundColor: '#abc' })
+
+  assert.equal(vnode.type, 'PanelContainer')
+  assert.equal(vnode.children[0].type, 'MarginContainer')
+  assert.equal(
+    vnode.children[0].props['theme_override_constants/margin_left'],
+    8,
+  )
+  assert.equal(vnode.children[0].children[0].type, 'HBoxContainer')
 })
 
 test('does not create a padding wrapper for display:none', () => {
@@ -69,10 +108,9 @@ test('maps child flex and alignSelf to size flags in row layout', () => {
 
 test('applies container alignItems as default child cross-axis alignment', () => {
   const child = h('Control')
-  const vnode = renderDiv(
-    { flexDirection: 'row', alignItems: 'center' },
-    [child],
-  )
+  const vnode = renderDiv({ flexDirection: 'row', alignItems: 'center' }, [
+    child,
+  ])
   const mappedChild = vnode.children[0]
 
   assert.equal(mappedChild.props.size_flags_vertical, 4)
@@ -83,10 +121,9 @@ test('maps nested fragments and arrays recursively', () => {
     h('Control', { style: { flex: 1 } }),
     [h('Control', { style: { alignSelf: 'flex-end' } })],
   ])
-  const vnode = renderDiv(
-    { flexDirection: 'row', alignItems: 'center' },
-    [nested],
-  )
+  const vnode = renderDiv({ flexDirection: 'row', alignItems: 'center' }, [
+    nested,
+  ])
 
   assert.equal(vnode.type, 'HBoxContainer')
   assert.ok(Array.isArray(vnode.children))

@@ -12,23 +12,27 @@ Goal for the product:
 
 This is alpha-quality, not production ready yet.
 
-The core renderer is real and the non-HTML CLI scaffold works from a clean project. The HTML component package has broad MVP coverage and useful tests, but the full "CLI init -> write Vue -> watch build -> Godot editor hot reload -> inspect usable HTML components" workflow is not yet end-to-end reliable.
+The core renderer is real and both non-HTML and HTML CLI scaffolds now build from a clean project when verified against packed local packages. The remaining production-readiness gap is external verification: publish the packages to npm and run repeated GodotJS editor hot reload tests with a real GodotJS executable.
 
 ## Verified Current State
 
-- `npm run build` passes for all packages and demo apps.
+- `npm run check` passes:
+  - builds all packages and demo apps;
+  - runs package tests;
+  - runs clean CLI scaffold smoke for `create` and `create --html` using packed local packages.
 - `@vue-godot/runtime-tscn` tests pass: 12 tests.
-- `@vue-godot/html` tests pass: 80 tests.
-- `@vue-godot/browser` has a test script but currently runs 0 tests.
+- `@vue-godot/html` tests pass: 88 tests.
+- `@vue-godot/browser` tests pass: 10 tests.
 - Basic `vue-godot create` works from a clean `/tmp` project:
   - `npm install` succeeds.
   - initial Vite build succeeds.
   - `npm run gen:types` succeeds.
   - `npm run dev` enters Vite watch mode and rebuilds `dist/app.js`.
-- `vue-godot create --html` currently fails from a clean project because `@vue-godot/html` and `@vue-godot/browser` are not published to npm.
+- `vue-godot create --html` works from a clean temp project when package specs are overridden to locally packed tarballs.
+- Public `npx @vue-godot/cli create my-app --html` still requires publishing `@vue-godot/browser`, `@vue-godot/html`, and the compatible CLI/runtime packages to npm.
 - `npm pack --dry-run` for packages looks sane: built `dist` files and CLI templates are included.
-- No Godot/GodotJS executable was available in the assessment environment, so editor hot reload could not be verified directly.
-- There is no CI workflow or single root test/check command.
+- No Godot/GodotJS executable was available in the assessment environment, so editor hot reload could not be verified directly. `npm run smoke:godot` now runs a headless project-open smoke when `GODOT_BIN`, `godot4`, or `godot` is available, and skips cleanly otherwise.
+- A GitHub Actions workflow now runs `npm run check`.
 
 ## Major Blockers
 
@@ -39,35 +43,32 @@ The core renderer is real and the non-HTML CLI scaffold works from a clean proje
 - `@vue-godot/html`
 - `@vue-godot/browser`
 
-Both are currently missing from the public npm registry, so clean-user install fails with npm 404. This blocks the exact desired HTML-first CLI workflow.
+Both still need to be published to the public npm registry. Local clean-user simulation now passes through packed tarballs, but public install will fail until the packages are published.
 
 Needed:
 
 - Publish `@vue-godot/browser`.
 - Publish `@vue-godot/html`.
-- Verify `npx vue-godot create my-app --html && cd my-app && npm install && npm run build`.
-- Consider making CLI versions pin compatible package versions instead of using loose ranges.
+- Verify `npx @vue-godot/cli create my-app --html && cd my-app && npm run build` against the published packages.
+- Keep CLI-generated compatible package versions in sync before each release.
 
 ### 2. Hot reload lifecycle safety
 
-Generated root scripts call `createApp(App).mount(this)` inside `_ready()` but do not store the app instance or call `app.unmount()` in `_exit_tree()`.
+Generated root scripts now store the Vue app instance and call `app.unmount()` in `_exit_tree()`.
 
-The renderer does free nodes when Vue removes them, but repeated Godot editor hot reload needs explicit proof that old Vue apps, nodes, timers, watchers, and signal connections do not accumulate.
+The renderer does free nodes when Vue removes them, but repeated Godot editor hot reload still needs direct proof that old Vue apps, nodes, timers, watchers, and signal connections do not accumulate.
 
 Needed:
 
-- Update generated `main.ts` templates to store the Vue app instance.
-- Add `_exit_tree()` and call `app.unmount()`.
 - Verify repeated editor reloads do not duplicate children or signal handlers.
 - Add a reload counter/smoke scene that makes leaks obvious.
 
 ### 3. No automated Godot smoke test
 
-The most important user workflow depends on GodotJS behavior, but the repo currently only has Node-side tests and manual demos.
+The most important user workflow depends on GodotJS behavior. The repo now has Node-side tests, CLI smoke tests, CI, and an optional headless Godot project-open smoke, but not a full GodotJS hot reload assertion.
 
 Needed:
 
-- Add a documented GodotJS smoke command if headless/editor CLI support is available.
 - Validate at minimum:
   - project opens or runs;
   - `dist/app.js` loads;
@@ -80,6 +81,7 @@ Needed:
 
 Implemented MVP components:
 
+- `<A>`
 - `<Div>`
 - `<Img>`
 - `<Span>`
@@ -94,75 +96,56 @@ Implemented MVP components:
 
 Still incomplete:
 
-- `<A>` / anchor component.
-- `backgroundColor` / color theme overrides on containers.
 - `<style>` block support or a clear documented non-goal.
 - Canvas is only a bare `Control`; no `getContext('2d')`.
-- Browser polyfills have little automated coverage.
+- Browser polyfills need broader fetch/network coverage under GodotJS, beyond the current Node-side pure polyfill tests.
 
 Needed:
 
 - Finish or explicitly defer all open beta tracker items.
 - Keep `apps/html-demo` aligned with every component/API.
-- Add smoke tests for plugin registration, lowercase tags, form v-model, asset loading, and browser APIs.
+- Add GodotJS smoke tests for form v-model, asset loading, and browser APIs.
 
 ### 5. Docs drift and copy-paste risk
 
-`packages/html/README.md` still shows an older compiler config using `isNativeTag: (tag) => !htmlTags.includes(tag)`.
-
-Repo guidance and generated config correctly require:
-
-```ts
-isNativeTag: () => false
-```
+README examples now match the generated compiler config and root docs describe `npm run dev`, `_exit_tree()` cleanup, the CLI smoke, and the optional Godot smoke.
 
 Needed:
 
-- Fix README examples to match generated config.
-- Make root README say `npm run dev`, not only `npm run build -> F5`, for the hot reload loop.
-- Document exactly what Godot editor hot reload does and what users should expect.
+- Document observed Godot editor hot reload behavior after real editor verification.
 
 ### 6. Missing project-level quality gate
 
-Current root scripts are mostly build-only. There is no single command that proves the repo is healthy.
+Root scripts now include `test`, `smoke:cli`, `smoke:godot`, and `check`, and CI runs `npm run check`.
 
 Needed:
 
-- Add root `test` script that runs package tests.
-- Add root `check` script for build + tests + CLI smoke.
-- Add CI workflow.
-- Add release/publish checklist.
-- Consider `noEmitOnError: true` for packages before beta.
+- Expand `smoke:godot` from project-open verification to a real hot reload assertion when GodotJS CLI support is available.
 
 ## Recommended Next-Session Goal
 
-Start with the installability blocker because it determines whether the desired CLI workflow can work for any external user.
+Start with public publishing plus real GodotJS hot reload verification.
 
 Suggested Codex goal:
 
-> Make the HTML CLI scaffold installable and verifiable from a clean project.
+> Publish the packages and verify HTML scaffold + Godot editor hot reload end to end.
 
 Acceptance criteria:
 
-- `@vue-godot/browser` is ready to publish and has at least basic tests.
-- `@vue-godot/html` is ready to publish and depends on the published browser package.
-- `vue-godot create --html` works from a clean directory.
-- Generated HTML project starts with an HTML-like template, not only a Godot `<Label>`.
-- A root smoke command verifies basic create and create-html flows.
-- README instructions match the generated project.
+- `@vue-godot/browser` and `@vue-godot/html` are published.
+- `npx @vue-godot/cli create my-app --html` works from a clean directory using public packages.
+- `npm run dev` rebuilds `dist/app.js`, and GodotJS editor reload reflects the change.
+- Repeated reload does not duplicate children or signal handlers.
 
 ## Suggested Priority Order
 
-1. Publishability and clean CLI smoke.
-2. Generated root lifecycle cleanup with `_exit_tree()` / `app.unmount()`.
-3. Root `check` command and CI.
-4. GodotJS hot reload smoke verification.
-5. Finish HTML beta tracker:
-   - `<A>`
-   - color/background support
-   - browser tests
-   - demo coverage
-6. Documentation pass.
+1. Publish packages and verify public clean install.
+2. GodotJS hot reload smoke verification.
+3. Add a reload counter/smoke scene that detects duplicate children/signals.
+4. Finish HTML beta tracker:
+   - Canvas `getContext('2d')` or documented longer-term replacement.
+   - More browser tests under real GodotJS, especially `fetch`.
+5. Documentation pass based on observed Godot editor behavior.
 
 ## Production Readiness Estimate
 

@@ -1,4 +1,12 @@
-import { Fragment, cloneVNode, defineComponent, h, isVNode } from '@vue/runtime-core'
+import {
+  Fragment,
+  cloneVNode,
+  defineComponent,
+  h,
+  isVNode,
+} from '@vue/runtime-core'
+import { Color, StyleBoxFlat } from 'godot'
+import { parseHexColor } from '../utils/colorParser.js'
 import type { GodotContainerTag, HtmlStyle } from '../utils/styleMapping.js'
 import {
   ControlSizeFlags,
@@ -164,6 +172,19 @@ function withThemeConstantOverrides(
   return props
 }
 
+function createBackgroundPanelStyle(
+  color: string | undefined,
+): StyleBoxFlat | null {
+  if (!color || !parseHexColor(color)) {
+    return null
+  }
+
+  const styleBox = new StyleBoxFlat()
+  styleBox.bg_color = Color.html(color)
+  styleBox.draw_center = true
+  return styleBox
+}
+
 /**
  * <Div> — the general-purpose layout container.
  *
@@ -202,7 +223,7 @@ export const Div = defineComponent({
         tag,
         style.alignItems,
       )
-      const content = h(
+      let content = h(
         tag,
         withThemeConstantOverrides(godotProps, themeOverrides),
         childrenWithLayout,
@@ -213,20 +234,29 @@ export const Div = defineComponent({
       }
 
       const padding = resolvePadding(style)
-      if (!padding) {
+      if (padding) {
+        const marginOverrides = {
+          margin_top: padding.top,
+          margin_right: padding.right,
+          margin_bottom: padding.bottom,
+          margin_left: padding.left,
+        }
+
+        content = h(
+          'MarginContainer',
+          withThemeConstantOverrides({}, marginOverrides),
+          [content],
+        )
+      }
+
+      const backgroundStyle = createBackgroundPanelStyle(style.backgroundColor)
+      if (!backgroundStyle) {
         return content
       }
 
-      const marginOverrides = {
-        margin_top: padding.top,
-        margin_right: padding.right,
-        margin_bottom: padding.bottom,
-        margin_left: padding.left,
-      }
-
       return h(
-        'MarginContainer',
-        withThemeConstantOverrides({}, marginOverrides),
+        'PanelContainer',
+        { 'theme_override_styles/panel': backgroundStyle },
         [content],
       )
     }

@@ -36,9 +36,18 @@ import { Control } from 'godot'
 import Test from './Test.vue'
 
 export default class App extends Control {
+  private app: ReturnType<typeof createApp> | null = null
+
   _ready() {
+    this.app?.unmount()
     const app = createApp(Test)
     app.mount(this)
+    this.app = app
+  }
+
+  _exit_tree() {
+    this.app?.unmount()
+    this.app = null
   }
 }
 ```
@@ -50,9 +59,11 @@ export default class App extends Control {
 vue-godot is a custom Vue renderer that targets Godot's scene tree instead of the DOM. The key pieces:
 
 - **`@vue-godot/runtime-tscn`** — A Vue custom renderer (`createRenderer` from `@vue/runtime-core`) that maps Vue operations to Godot node tree operations: `createElement` → `ClassDB.instantiate()`, `insert` → `add_child()`, `patchProp` → `el.set()` / signal `connect()`, etc.
-- **`@vue-godot/cli`** — A CLI tool (`vue-godot`) for vue-godot projects. Currently supports generating Vue `GlobalComponents` type augmentation from GodotJS typings so Volar provides autocomplete and type checking for Godot nodes in Vue templates.
+- **`@vue-godot/cli`** — A CLI tool (`vue-godot`) for scaffolding projects, integrating Vue into an existing Godot project, and generating Vue `GlobalComponents` type augmentation from GodotJS typings.
+- **`@vue-godot/html`** — HTML-like Vue components backed by Godot nodes (`<div>`, `<span>`, `<button>`, `<input>`, `<a>`, media elements, etc.).
+- **`@vue-godot/browser`** — Browser API polyfills for GodotJS (`fetch`, `URL`, `Blob`, `history`, `TextEncoder`, and related APIs).
 - **Vite** builds the Vue app as a CJS library (`dist/app.js`), with `godot` as an external. The Godot scene (`.tscn`) attaches this script to a `Control` node.
-- In the **Godot editor**, GodotJS runs `dist/app.js`. The `_ready()` method calls `createApp(Root).mount(this)`, and Vue takes over the subtree.
+- In the **Godot editor**, GodotJS runs `dist/app.js`. The `_ready()` method calls `createApp(Root).mount(this)`, and `_exit_tree()` calls `app.unmount()` so editor reloads do not retain old Vue trees.
 
 Upper-cased tags in templates (e.g. `<HBoxContainer>`, `<Label>`) are treated as custom elements and resolved at runtime via `ClassDB.instantiate(tag)`.
 
@@ -62,6 +73,8 @@ Upper-cased tags in templates (e.g. `<HBoxContainer>`, `<Label>`) are treated as
 vue-godot/
 ├── packages/
 │   ├── runtime-tscn/       # Vue custom renderer for Godot
+│   ├── html/               # HTML-like components backed by Godot nodes
+│   ├── browser/            # Browser API polyfills for GodotJS
 │   └── cli/                # CLI tool: vue-godot gen-types, scaffolding, etc.
 ├── apps/
 │   ├── v-model/             # Example: two-way binding with TextEdit
@@ -82,7 +95,7 @@ apps/<name>/
 │   ├── vite.config.ts       # Vite config — builds vue/src/main.ts → dist/app.js
 │   ├── tsconfig.json        # Vue/Volar tsconfig (separate from Godot root tsconfig)
 │   └── src/
-│       ├── main.ts          # Entry: createApp(Root).mount(this)
+│       ├── main.ts          # Entry: createApp(Root).mount(this) + unmount cleanup
 │       ├── *.vue            # Vue SFC components
 │       └── env.d.ts         # *.vue module declaration for TypeScript
 ├── tsconfig.json            # Godot root tsconfig (excludes vue/)
@@ -104,11 +117,13 @@ apps/<name>/
 ```bash
 npm install
 npm run build          # builds all packages + apps via Turborepo
+npm run test           # runs package tests
+npm run check          # build + tests + clean CLI scaffold smoke
 ```
 
 ### Run an example
 
-Open the GodotJS editor and open any app's `project.godot`, for example `apps/v-on/project.godot`. Press **F5** to run the scene.
+Open the GodotJS editor and open any app's `project.godot`, for example `apps/v-on/project.godot`. Run `npm run dev` from that app in a terminal, then press **F5** in Godot to run the scene.
 
 ## Development Workflow
 
@@ -159,52 +174,61 @@ import { Control } from 'godot'
 import Test from './Test.vue'
 
 export default class App extends Control {
+  private app: ReturnType<typeof createApp> | null = null
+
   _ready() {
+    this.app?.unmount()
     const app = createApp(Test)
     app.mount(this)
+    this.app = app
+  }
+
+  _exit_tree() {
+    this.app?.unmount()
+    this.app = null
   }
 }
 ```
 
 This class is attached to a `Control` node in the Godot scene (`.tscn` file).
 
-### 5. Build
+### 5. Run Vite in watch mode
 
 ```bash
-npm run build          # from repo root — builds everything
-# or
-cd apps/v-model && npm run build   # build a single app
+cd apps/v-model
+npm run dev
 ```
 
-Vite compiles `vue/src/main.ts` into `dist/app.js` (CJS format, `godot` external). The Godot scene references this file.
+Vite compiles `vue/src/main.ts` into `dist/app.js` (CJS format, `godot` external), then rebuilds on every Vue/TypeScript change. The Godot scene references this file.
 
 ### 6. Run in Godot
 
-Press **F5** in the GodotJS editor. Godot loads `dist/app.js`, the `_ready()` method fires, and Vue renders its component tree into the Godot scene.
+Press **F5** in the GodotJS editor. Godot loads `dist/app.js`, the `_ready()` method fires, and Vue renders its component tree into the Godot scene. On editor reload or scene exit, `_exit_tree()` unmounts the Vue app.
 
 ### Iteration loop
 
 ```
-Edit .vue / .ts  →  npm run build  →  F5 in Godot  →  see changes
+Edit .vue / .ts  →  Vite watch rebuilds dist/app.js  →  Godot editor reload / F5  →  see changes
 ```
 
 ## Creating a New App
 
-1. Copy an existing app directory (e.g. `apps/v-model`) to `apps/<your-app>`
-2. Update `package.json` name field
-3. Update `project.godot` project name
-4. Open `apps/<your-app>/project.godot` in the GodotJS editor to generate fresh typings
-5. Run `npm run gen:types` to generate Vue component types
-6. Edit `vue/src/` with your components
-7. `npm run build` and press **F5** in Godot
+```bash
+npx @vue-godot/cli create my-app
+# or, for HTML-like components:
+npx @vue-godot/cli create my-html-app --html
+```
+
+`create` runs the initial `npm install` and `npm run gen:types`. After that, run `npm run dev`, open the generated `project.godot` in the GodotJS editor, and press **F5**.
 
 ## Packages
 
-| Package                   | Description                                          |
-| ------------------------- | ---------------------------------------------------- |
-| `@vue-godot/runtime-tscn` | Vue custom renderer for Godot scene tree             |
-| `@vue-godot/html`         | HTML-like Vue components built on Godot nodes        |
-| `@vue-godot/cli`          | CLI tool for vue-godot projects                      |
+| Package                   | Description                                   |
+| ------------------------- | --------------------------------------------- |
+| `@vue-godot/runtime-tscn` | Vue custom renderer for Godot scene tree      |
+| `@vue-godot/html`         | HTML-like Vue components built on Godot nodes |
+| `@vue-godot/browser`      | Browser API polyfills for GodotJS             |
+| `@vue-godot/cli`          | CLI tool for vue-godot projects               |
 
 ### `@vue-godot/cli`
 
@@ -221,6 +245,8 @@ vue-godot create my-app --html
 vue-godot integrate --html
 ```
 
+HTML mode also installs `@vue-godot/browser`, calls `installBrowserAPIs()`, and starts with an HTML-like `App.vue`.
+
 #### `gen-types`
 
 Generate Vue `GlobalComponents` type augmentation from GodotJS typings.
@@ -235,3 +261,22 @@ vue-godot gen-types [--typings <dir>] [--out <file>] [--ancestor <class>] [--vue
 | `--out`      | `<typings>/godot.vue-components.gen.d.ts` | Output file path                                 |
 | `--ancestor` | `Control`                                 | Base class — only descendants are included       |
 | `--vue-src`  | `./vue/src`                               | Vue source dir — generates `env.d.ts` shim there |
+
+## Quality Gate
+
+```bash
+npm run build        # packages + demo apps
+npm run test         # package tests
+npm run smoke:cli    # clean create and create --html using packed local packages
+npm run smoke:godot  # optional: opens apps/html-demo with GODOT_BIN/godot4/godot
+npm run check        # build + test + CLI smoke
+```
+
+`npm run smoke:godot` skips when no Godot executable is available. Set `GODOT_BIN=/path/to/godot` to force a specific editor/runtime.
+
+## Release Checklist
+
+1. Run `npm run check`.
+2. Run `npm pack --dry-run` in each package and inspect included files.
+3. Verify `npx @vue-godot/cli create my-app --html && cd my-app && npm run dev` against the published package versions.
+4. If possible, run `npm run smoke:godot` and manually verify repeated Godot editor reloads do not duplicate nodes or signal handlers.

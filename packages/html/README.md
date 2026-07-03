@@ -71,6 +71,7 @@ Rather than embedding a layout engine like Yoga, we map a CSS flexbox subset to 
 | `align-items: *`                              | Default child cross-axis size flag                              |
 | `align-self: center` (on child)               | Size flag `SHRINK_CENTER`                                       |
 | `padding: <n>`                                | `MarginContainer` wrapper or theme override                     |
+| `backgroundColor: '#rrggbb'`                  | `PanelContainer` wrapper with `StyleBoxFlat`                    |
 | `width` / `height`                            | `custom_minimum_size`                                           |
 | `display: none`                               | `visible = false`                                               |
 
@@ -103,7 +104,7 @@ This is intentionally a subset — not full CSS. We cover the 80% of layouts tha
 | `<Video>`           | `VideoStreamPlayer`                                                    | `src`                 |
 | `<Audio>`           | `AudioStreamPlayer`                                                    | `src`                 |
 | `<Svg>`             | `TextureRect` (SVG resource)                                           | `src`                 |
-| `<A>`               | `LinkButton` / `RichTextLabel`                                         | `href`                |
+| `<A>`               | `LinkButton`                                                           | `href`, `@click`      |
 
 ### Lowercase tag compatibility (migrating existing SPAs)
 
@@ -121,10 +122,12 @@ export default {
     vue({
       template: {
         compilerOptions: {
-          // HTML tags → component lookup instead of native element
-          isNativeTag: (tag: string) => !htmlTags.includes(tag),
-          // Godot nodes (uppercase) → custom elements via ClassDB
-          isCustomElement: (tag: string) => /^[A-Z]/.test(tag),
+          // Nothing is a native platform element in Godot.
+          isNativeTag: () => false,
+          // Uppercase tags are Godot nodes unless @vue-godot/html provides them.
+          isCustomElement: (tag: string) =>
+            tag[0] === tag[0].toUpperCase() &&
+            !htmlTags.includes(tag.toLowerCase()),
         },
       },
     }),
@@ -150,8 +153,10 @@ export default {
     vue({
       template: {
         compilerOptions: {
-          isNativeTag: (tag: string) => !htmlTags.includes(tag),
-          isCustomElement: (tag: string) => /^[A-Z]/.test(tag),
+          isNativeTag: () => false,
+          isCustomElement: (tag: string) =>
+            tag[0] === tag[0].toUpperCase() &&
+            !htmlTags.includes(tag.toLowerCase()),
         },
       },
     }),
@@ -162,15 +167,27 @@ export default {
 ```ts
 // main.ts
 import { createApp } from '@vue-godot/runtime-tscn'
+import { installBrowserAPIs } from '@vue-godot/browser'
 import { htmlPlugin } from '@vue-godot/html'
 import { Control } from 'godot'
 import Root from './App.vue'
 
+installBrowserAPIs()
+
 export default class App extends Control {
+  private app: ReturnType<typeof createApp> | null = null
+
   _ready() {
+    this.app?.unmount()
     const app = createApp(Root)
     app.use(htmlPlugin)
     app.mount(this)
+    this.app = app
+  }
+
+  _exit_tree() {
+    this.app?.unmount()
+    this.app = null
   }
 }
 ```
@@ -178,7 +195,7 @@ export default class App extends Control {
 ```vue
 <!-- existing SPA code works as-is -->
 <template>
-  <div style="display: flex; gap: 10px;">
+  <div :style="{ flexDirection: 'row', gap: 10 }">
     <img src="./logo.png" />
     <span>Hello world</span>
   </div>
@@ -214,15 +231,27 @@ const volume = ref(50)
 
 ```ts
 import { createApp } from '@vue-godot/runtime-tscn'
+import { installBrowserAPIs } from '@vue-godot/browser'
 import { htmlPlugin } from '@vue-godot/html'
 import { Control } from 'godot'
 import Root from './App.vue'
 
+installBrowserAPIs()
+
 export default class App extends Control {
+  private app: ReturnType<typeof createApp> | null = null
+
   _ready() {
+    this.app?.unmount()
     const app = createApp(Root)
     app.use(htmlPlugin)
     app.mount(this)
+    this.app = app
+  }
+
+  _exit_tree() {
+    this.app?.unmount()
+    this.app = null
   }
 }
 ```
@@ -242,12 +271,12 @@ This package is in early development. Currently scaffolded:
 - [x] `<Video>` — video playback (`VideoStreamPlayer`, `src`, `autoplay`, `loop`, `muted`, `volume`, `@ended`)
 - [x] `<Audio>` — audio playback (`AudioStreamPlayer`, `src`, `autoplay`, `loop`, `muted`, `volume`, `@ended`)
 - [x] `<Svg>` — SVG display (`TextureRect`, `src`, `scale` for rasterisation quality, `alt`)
-- [ ] `<A>` — link/anchor
+- [x] `<A>` — link/anchor (`LinkButton`, `href`, `@click`)
 - [x] Theme override application (gap, padding)
-- [ ] Theme override application (colors)
+- [x] Theme override application (colors via `backgroundColor`)
 - [x] Size flag mapping (flex, align-self)
 - [x] Div renderer integration tests (nested fragment/array slot layouts)
-- [ ] `<style>` block support via Vite plugin (future)
+- [ ] `<style>` block support is a non-goal for the current beta; use inline style objects until a CSS-to-Godot mapping exists.
 
 ## Demo Apps
 

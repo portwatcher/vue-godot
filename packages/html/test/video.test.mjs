@@ -4,7 +4,7 @@ import { register } from 'node:module'
 
 // Register a loader that intercepts 'godot' and '@vue-godot/browser'
 // bare specifiers with mocks.
-register(new URL('./video-godot-loader.mjs', import.meta.url).href)
+register(new URL('./godot-browser-loader.mjs', import.meta.url).href)
 
 const { Video } = await import('../dist/components/Video.js')
 

@@ -1,7 +1,7 @@
 import { RendererOptions } from '@vue/runtime-core'
 import { Callable, Node } from 'godot'
-import { patchGodotProperty } from './propertyPatch'
-import { patchSignalHandlers } from './signalEvents'
+import { patchGodotProperty } from './propertyPatch.js'
+import { patchSignalHandlers } from './signalEvents.js'
 
 type TSCNRendererOptions = RendererOptions<Node, Node>
 

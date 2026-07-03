@@ -16,6 +16,43 @@ export interface IntegrateOptions {
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+const PACKAGE_SPECS = {
+  '@vue-godot/browser': '^0.0.1',
+  '@vue-godot/cli': '^0.0.2',
+  '@vue-godot/html': '^0.0.1',
+  '@vue-godot/runtime-tscn': '^0.0.2',
+  '@vue/runtime-core': '^3.5.14',
+} as const
+
+function isStringRecord(value: unknown): value is Record<string, string> {
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+  return Object.values(value).every((entry) => typeof entry === 'string')
+}
+
+function readPackageSpecOverrides(): Record<string, string> {
+  const raw = process.env['VUE_GODOT_PACKAGE_OVERRIDES']
+  if (!raw) {
+    return {}
+  }
+
+  const parsed: unknown = JSON.parse(raw)
+  if (!isStringRecord(parsed)) {
+    throw new Error(
+      'VUE_GODOT_PACKAGE_OVERRIDES must be a JSON object of package spec strings',
+    )
+  }
+  return parsed
+}
+
+function packageSpec(
+  packageName: keyof typeof PACKAGE_SPECS,
+  overrides: Record<string, string>,
+): string {
+  return overrides[packageName] ?? PACKAGE_SPECS[packageName]
+}
+
 /** Resolve the bundled templates/ directory (lives next to dist/). */
 export function getTemplatesDir(): string {
   // In the built package: dist/integrate.js → ../templates
@@ -72,12 +109,20 @@ export function newPackageJson(
   name: string,
   html?: boolean,
 ): Record<string, unknown> {
+  const packageOverrides = readPackageSpecOverrides()
   const deps: Record<string, string> = {
-    '@vue-godot/runtime-tscn': '^0.0.2',
-    '@vue/runtime-core': '^3.5.14',
+    '@vue-godot/runtime-tscn': packageSpec(
+      '@vue-godot/runtime-tscn',
+      packageOverrides,
+    ),
+    '@vue/runtime-core': packageSpec('@vue/runtime-core', packageOverrides),
   }
   if (html) {
-    deps['@vue-godot/html'] = '^0.0.1'
+    deps['@vue-godot/browser'] = packageSpec(
+      '@vue-godot/browser',
+      packageOverrides,
+    )
+    deps['@vue-godot/html'] = packageSpec('@vue-godot/html', packageOverrides)
   }
   return {
     name,
@@ -90,7 +135,7 @@ export function newPackageJson(
       'gen:types': 'vue-godot gen-types',
     },
     devDependencies: {
-      '@vue-godot/cli': '*',
+      '@vue-godot/cli': packageSpec('@vue-godot/cli', packageOverrides),
       '@types/node': '^20.11.18',
       '@vitejs/plugin-vue': '^5.2.4',
       vite: '^6.3.5',
@@ -110,7 +155,7 @@ import { defineConfig } from 'vite'
 // Tags provided by @vue-godot/html — kept in sync with htmlTags from the package.
 // Listed here to avoid importing at config-load time (Node ESM resolution).
 const htmlTags = [
-  'audio', 'div', 'img', 'span', 'button',
+  'a', 'audio', 'div', 'img', 'span', 'button',
   'input', 'textarea', 'select', 'option', 'canvas', 'video', 'svg',
 ]
 
@@ -156,18 +201,63 @@ export default defineConfig({
 }
 
 export function generateHtmlMainTs(): string {
-  return `import { createApp } from '@vue-godot/runtime-tscn'
+  return `import { installBrowserAPIs } from '@vue-godot/browser'
+import { createApp } from '@vue-godot/runtime-tscn'
 import { htmlPlugin } from '@vue-godot/html'
 import { VBoxContainer } from 'godot'
 import App from './App.vue'
 
+installBrowserAPIs()
+
 export default class Root extends VBoxContainer {
+  private app: ReturnType<typeof createApp> | null = null
+
   _ready() {
+    this.app?.unmount()
     const app = createApp(App)
     app.use(htmlPlugin)
     app.mount(this)
+    this.app = app
+  }
+
+  _exit_tree() {
+    this.app?.unmount()
+    this.app = null
   }
 }
+`
+}
+
+export function generateHtmlAppVue(): string {
+  return `<template>
+  <div
+    :style="{
+      flexDirection: 'column',
+      gap: 12,
+      padding: 16,
+      width: 520,
+      backgroundColor: '#1f2937',
+    }"
+  >
+    <span :style="{ fontSize: 24, color: '#f8fafc' }">
+      Hello from Vue Godot HTML
+    </span>
+    <span :style="{ color: '#cbd5e1' }">
+      Edit vue/src/App.vue and keep npm run dev running.
+    </span>
+    <input v-model="name" placeholder="Player name" />
+    <button @click="count++">Clicked {{ count }} times</button>
+    <a href="https://github.com/portwatcher/vue-godot">Open project repo</a>
+    <span :style="{ color: '#93c5fd' }">Hello, {{ name || 'player' }}.</span>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const count = ref(0)
+const name = ref('')
+</script>
 `
 }
 
@@ -246,6 +336,12 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     console.log(
       `  updated ${path.relative(process.cwd(), mainTsPath)} (html mode)`,
     )
+
+    const appVuePath = path.join(vueDir, 'src', 'App.vue')
+    fs.writeFileSync(appVuePath, generateHtmlAppVue())
+    console.log(
+      `  updated ${path.relative(process.cwd(), appVuePath)} (html mode)`,
+    )
   }
 
   /* --- package.json --- */
@@ -260,16 +356,33 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     existing.scripts['gen:types'] ??= 'vue-godot gen-types'
 
     existing.devDependencies = existing.devDependencies || {}
-    existing.devDependencies['@vue-godot/cli'] ??= '*'
+    const packageOverrides = readPackageSpecOverrides()
+    existing.devDependencies['@vue-godot/cli'] ??= packageSpec(
+      '@vue-godot/cli',
+      packageOverrides,
+    )
     existing.devDependencies['@types/node'] ??= '^20.11.18'
     existing.devDependencies['@vitejs/plugin-vue'] ??= '^5.2.4'
     existing.devDependencies['vite'] ??= '^6.3.5'
 
     existing.dependencies = existing.dependencies || {}
-    existing.dependencies['@vue-godot/runtime-tscn'] ??= '^0.0.2'
-    existing.dependencies['@vue/runtime-core'] ??= '^3.5.14'
+    existing.dependencies['@vue-godot/runtime-tscn'] ??= packageSpec(
+      '@vue-godot/runtime-tscn',
+      packageOverrides,
+    )
+    existing.dependencies['@vue/runtime-core'] ??= packageSpec(
+      '@vue/runtime-core',
+      packageOverrides,
+    )
     if (html) {
-      existing.dependencies['@vue-godot/html'] ??= '^0.0.1'
+      existing.dependencies['@vue-godot/browser'] ??= packageSpec(
+        '@vue-godot/browser',
+        packageOverrides,
+      )
+      existing.dependencies['@vue-godot/html'] ??= packageSpec(
+        '@vue-godot/html',
+        packageOverrides,
+      )
     }
 
     fs.writeFileSync(pkgJsonPath, JSON.stringify(existing, null, 2) + '\n')

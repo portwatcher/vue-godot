@@ -11,7 +11,7 @@ npm install -D @vue-godot/cli
 Or run directly with `npx`:
 
 ```bash
-npx vue-godot <command> [options]
+npx @vue-godot/cli <command> [options]
 ```
 
 ## Commands
@@ -28,24 +28,29 @@ vue-godot create [name] [options]
 | -------- | ----------------------------------------------------- |
 | `name`   | Project name (used as dir name). Prompted if omitted. |
 
-| Option   | Description                                                            |
-| -------- | ---------------------------------------------------------------------- |
-| `-f`     | Force overwrite if directory already exists                            |
-| `--html` | Enable `@vue-godot/html` — HTML-like components on Godot nodes        |
+| Option   | Description                                                    |
+| -------- | -------------------------------------------------------------- |
+| `-f`     | Force overwrite if directory already exists                    |
+| `--html` | Enable `@vue-godot/html` — HTML-like components on Godot nodes |
 
 When `--html` is set, the scaffolded project includes:
+
 - `@vue-godot/html` as a dependency
-- Vite compiler config (`isNativeTag`) so lowercase HTML tags like `<div>`, `<img>` resolve as components
+- `@vue-godot/browser` as a dependency and `installBrowserAPIs()` in `main.ts`
+- Vite compiler config with `isNativeTag: () => false` so lowercase HTML tags like `<div>`, `<img>`, and `<a>` resolve as components
 - `htmlPlugin` registered in `main.ts` for global component availability
+- an HTML-like starter `App.vue`
+- `_exit_tree()` cleanup that calls `app.unmount()` for editor reload safety
 
 **Example:**
 
 ```bash
-npx vue-godot create my-game --html
+npx @vue-godot/cli create my-game --html
 cd my-game
-npm install
-npm run build
+npm run dev
 ```
+
+`create` runs the initial `npm install` and `npm run gen:types` for you. Keep `npm run dev` running while editing `vue/src`; Vite rebuilds `dist/app.js` for the Godot editor to reload.
 
 ### `integrate`
 
@@ -59,22 +64,23 @@ vue-godot integrate [dir] [options]
 | -------- | ---------------------------------- |
 | `dir`    | Target directory (defaults to `.`) |
 
-| Option   | Description                                                            |
-| -------- | ---------------------------------------------------------------------- |
-| `-f`     | Force overwrite if `vue/` already exists                               |
-| `--html` | Enable `@vue-godot/html` — HTML-like components on Godot nodes        |
+| Option   | Description                                                    |
+| -------- | -------------------------------------------------------------- |
+| `-f`     | Force overwrite if `vue/` already exists                       |
+| `--html` | Enable `@vue-godot/html` — HTML-like components on Godot nodes |
 
 This command:
 
 1. Copies a Vue + Vite template into `<dir>/vue/`
 2. Creates or updates `package.json` with the necessary scripts and dependencies
 3. Resolves `node_modules` paths for the generated `tsconfig.json`
+4. Adds the same HTML/browser setup as `create --html` when `--html` is provided
 
 **Example:**
 
 ```bash
 cd my-existing-godot-project
-npx vue-godot integrate
+npx @vue-godot/cli integrate
 npm install
 npm run gen:types
 npm run dev
@@ -99,7 +105,7 @@ vue-godot gen-types [options]
 
 ```bash
 cd apps/v-model
-npx vue-godot gen-types
+npx @vue-godot/cli gen-types
 ```
 
 Re-run whenever Godot typings are regenerated (e.g. after a Godot version upgrade).
@@ -111,7 +117,7 @@ From the repository root:
 ```bash
 npm install
 npm run build        # builds all packages via Turborepo
-npx vue-godot        # runs the locally-built CLI
+npx vue-godot        # runs the locally-built CLI binary
 ```
 
 ## License

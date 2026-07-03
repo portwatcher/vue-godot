@@ -1,34 +1,35 @@
-export { Audio } from './components/Audio'
-export { Button } from './components/Button'
-export { Canvas } from './components/Canvas'
-export { Div } from './components/Div'
-export { Img } from './components/Img'
-export { Input } from './components/Input'
-export { Option, Select } from './components/Select'
-export { Span } from './components/Span'
-export { Svg } from './components/Svg'
-export { Textarea } from './components/Textarea'
-export { Video } from './components/Video'
-export { htmlPlugin, htmlTags } from './plugin'
-export { classifySource, resolveAssetPath } from './utils/assetResolver'
-export type { SourceKind } from './utils/assetResolver'
+export { A } from './components/A.js'
+export { Audio } from './components/Audio.js'
+export { Button } from './components/Button.js'
+export { Canvas } from './components/Canvas.js'
+export { Div } from './components/Div.js'
+export { Img } from './components/Img.js'
+export { Input } from './components/Input.js'
+export { Option, Select } from './components/Select.js'
+export { Span } from './components/Span.js'
+export { Svg } from './components/Svg.js'
+export { Textarea } from './components/Textarea.js'
+export { Video } from './components/Video.js'
+export { htmlPlugin, htmlTags } from './plugin.js'
+export { classifySource, resolveAssetPath } from './utils/assetResolver.js'
+export type { SourceKind } from './utils/assetResolver.js'
 export {
   createAudioStreamFromBuffer,
   fetchRemoteAudioStream,
   loadAudioStream,
-} from './utils/audioStreamLoader'
-export { parseHexColor } from './utils/colorParser'
-export { parseDataUri } from './utils/dataUri'
-export type { DataUriParts } from './utils/dataUri'
+} from './utils/audioStreamLoader.js'
+export { parseHexColor } from './utils/colorParser.js'
+export { parseDataUri } from './utils/dataUri.js'
+export type { DataUriParts } from './utils/dataUri.js'
 export {
   createStreamFromBuffer,
   fetchRemoteStream,
   loadStream,
-} from './utils/streamLoader'
-export type { HtmlStyle } from './utils/styleMapping'
+} from './utils/streamLoader.js'
+export type { HtmlStyle } from './utils/styleMapping.js'
 export {
   createTextureFromBuffer,
   fetchRemoteTexture,
   loadTexture,
   loadTextureFromBinary,
-} from './utils/textureLoader'
+} from './utils/textureLoader.js'

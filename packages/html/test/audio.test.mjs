@@ -4,7 +4,7 @@ import test from 'node:test'
 
 // Register a loader that intercepts 'godot' and '@vue-godot/browser'
 // bare specifiers with mocks.
-register(new URL('./audio-godot-loader.mjs', import.meta.url).href)
+register(new URL('./godot-browser-loader.mjs', import.meta.url).href)
 
 const { Audio } = await import('../dist/components/Audio.js')
 

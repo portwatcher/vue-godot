@@ -1,17 +1,19 @@
 import type { App, Component } from '@vue/runtime-core'
-import { Audio } from './components/Audio'
-import { Button } from './components/Button'
-import { Canvas } from './components/Canvas'
-import { Div } from './components/Div'
-import { Img } from './components/Img'
-import { Input } from './components/Input'
-import { Option, Select } from './components/Select'
-import { Span } from './components/Span'
-import { Svg } from './components/Svg'
-import { Textarea } from './components/Textarea'
-import { Video } from './components/Video'
+import { A } from './components/A.js'
+import { Audio } from './components/Audio.js'
+import { Button } from './components/Button.js'
+import { Canvas } from './components/Canvas.js'
+import { Div } from './components/Div.js'
+import { Img } from './components/Img.js'
+import { Input } from './components/Input.js'
+import { Option, Select } from './components/Select.js'
+import { Span } from './components/Span.js'
+import { Svg } from './components/Svg.js'
+import { Textarea } from './components/Textarea.js'
+import { Video } from './components/Video.js'
 
 const components: Record<string, Component> = {
+  A,
   Audio,
   Div,
   Img,

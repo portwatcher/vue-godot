@@ -1,4 +1,10 @@
 import { defineComponent, h, ref, type VNode } from '@vue/runtime-core'
+import {
+  applyControlSizeProps,
+  applyDisplayAndOpacityProps,
+  applyFontStyleProps,
+} from '../utils/controlStyle.js'
+import { extractTextFromVNode } from '../utils/slotText.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 
 /** Type guard for Godot OptionButton-like nodes. */
@@ -41,7 +47,7 @@ function extractOptions(
         typeof vnodeProps?.['value'] === 'string'
           ? vnodeProps['value']
           : String(result.length)
-      const label = extractTextFromChildren(vnode)
+      const label = extractTextFromVNode(vnode)
       result.push({ value, label })
     } else if (Array.isArray(vnode.children)) {
       // Fragment — recurse into children
@@ -50,35 +56,6 @@ function extractOptions(
   }
 
   return result
-}
-
-/**
- * Extract flattened text content from a vnode's children.
- */
-function extractTextFromChildren(vnode: VNode): string {
-  const children = vnode.children
-  if (typeof children === 'string') return children
-  if (Array.isArray(children)) {
-    return children
-      .map((child) => {
-        if (typeof child === 'string') return child
-        const childNode = child as VNode
-        if (typeof childNode.children === 'string') return childNode.children
-        return ''
-      })
-      .join('')
-  }
-  // Slots object — try default slot
-  if (children && typeof children === 'object' && 'default' in children) {
-    const slotFn = (children as Record<string, () => VNode[]>)['default']
-    if (typeof slotFn === 'function') {
-      const slotVnodes = slotFn()
-      return slotVnodes
-        .map((v) => (typeof v.children === 'string' ? v.children : ''))
-        .join('')
-    }
-  }
-  return ''
 }
 
 /**
@@ -215,34 +192,9 @@ export const Select = defineComponent({
         nodeProps['disabled'] = true
       }
 
-      // Width / height → custom_minimum_size
-      if (typeof style?.width === 'number' && Number.isFinite(style.width)) {
-        nodeProps['custom_minimum_size:x'] = style.width
-      }
-      if (typeof style?.height === 'number' && Number.isFinite(style.height)) {
-        nodeProps['custom_minimum_size:y'] = style.height
-      }
-
-      // fontSize → theme_override_font_sizes/font_size
-      if (
-        typeof style?.fontSize === 'number' &&
-        Number.isFinite(style.fontSize)
-      ) {
-        nodeProps['theme_override_font_sizes/font_size'] = style.fontSize
-      }
-
-      // display: none
-      if (style?.display === 'none') {
-        nodeProps['visible'] = false
-      }
-
-      // opacity
-      if (
-        typeof style?.opacity === 'number' &&
-        Number.isFinite(style.opacity)
-      ) {
-        nodeProps['modulate'] = `1,1,1,${style.opacity}`
-      }
+      applyControlSizeProps(nodeProps, style)
+      applyFontStyleProps(nodeProps, style)
+      applyDisplayAndOpacityProps(nodeProps, style)
 
       // Sync items imperatively after the vnode is mounted/patched
       nodeProps['onVnodeMounted'] = () => syncItems(options)

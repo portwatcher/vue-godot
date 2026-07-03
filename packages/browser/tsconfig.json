@@ -10,7 +10,7 @@
     "sourceMap": true,
     "outDir": "dist",
     "newLine": "crlf",
-    "noEmitOnError": false,
+    "noEmitOnError": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
