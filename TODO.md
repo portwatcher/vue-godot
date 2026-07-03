@@ -27,8 +27,8 @@ The core renderer is real, both non-HTML and HTML CLI scaffolds now build from a
   - `npm install` succeeds.
   - initial Vite build succeeds.
   - `npm run gen:types` succeeds.
-  - `npm run dev` enters Vite watch mode and rebuilds `dist/app.js`.
-- `vue-godot create --html` works from a clean temp project when package specs are overridden to locally packed tarballs.
+  - `npm run dev` is generated as the Vite watch command.
+- `vue-godot create --html` works from a clean temp project when package specs are overridden to locally packed tarballs. `npm run smoke:cli` now starts the generated HTML app's `npm run dev` watcher, edits `vue/src/App.vue`, and verifies the generated `dist` output changes.
 - Public `npx @vue-godot/cli create my-app --html` still requires publishing `@vue-godot/browser`, `@vue-godot/html`, and the compatible CLI/runtime packages to npm.
 - Registry check: `@vue-godot/runtime-tscn@0.0.2` is public; `@vue-godot/cli@0.0.2` is public but does not support `create --html`, so local `@vue-godot/cli@0.0.3` must be published. `@vue-godot/browser` and `@vue-godot/html` are not published yet.
 - `npm whoami` returns 401 in the current environment, so publishing cannot be completed here without npm credentials.
@@ -127,7 +127,7 @@ Needed:
 
 ### 6. Missing project-level quality gate
 
-Root scripts now include `test`, `smoke:cli`, `smoke:godot`, and `check`, and CI runs `npm run check`. A separate `Godot Smoke` workflow downloads and caches a pinned GodotJS Linux x64 V8 editor bundle, sets `GODOT_BIN`, and runs `npm run smoke:godot`. `smoke:godot` now goes beyond project-open verification when Godot is available: it imports project assets, runs the HTML demo scene headlessly, and requires the app's lifecycle smoke pass marker.
+Root scripts now include `test`, `smoke:cli`, `smoke:godot`, and `check`, and CI runs `npm run check`. `smoke:cli` creates clean local-package projects and verifies the generated HTML `npm run dev` watcher rebuilds `dist` after a Vue source edit. A separate `Godot Smoke` workflow downloads and caches a pinned GodotJS Linux x64 V8 editor bundle, sets `GODOT_BIN`, and runs `npm run smoke:godot`. `smoke:godot` now goes beyond project-open verification when Godot is available: it imports project assets, runs the HTML demo scene headlessly, and requires the app's lifecycle smoke pass marker.
 
 `release:preflight` now wraps the local quality gate, pack dry-runs, generated package-spec checks, npm registry/auth checks, and `smoke:godot`. Strict mode fails when npm credentials or Godot are missing; `--local` mode is for unauthenticated/local environments and reports those as warnings.
 
