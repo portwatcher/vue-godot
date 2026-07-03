@@ -8,6 +8,7 @@
     "test": "turbo run test --filter=\"./packages/*\"",
     "smoke:cli": "node scripts/smoke-cli.mjs",
     "smoke:godot": "node scripts/smoke-godot.mjs",
+    "release:preflight": "node scripts/release-preflight.mjs",
     "check": "npm run build && npm run test && npm run smoke:cli",
     "vue-godot": "vue-godot"
   },

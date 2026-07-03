@@ -30,7 +30,10 @@ The core renderer is real and both non-HTML and HTML CLI scaffolds now build fro
   - `npm run dev` enters Vite watch mode and rebuilds `dist/app.js`.
 - `vue-godot create --html` works from a clean temp project when package specs are overridden to locally packed tarballs.
 - Public `npx @vue-godot/cli create my-app --html` still requires publishing `@vue-godot/browser`, `@vue-godot/html`, and the compatible CLI/runtime packages to npm.
+- Registry check: `@vue-godot/cli@0.0.2` and `@vue-godot/runtime-tscn@0.0.2` are public; `@vue-godot/browser` and `@vue-godot/html` are not published yet.
+- `npm whoami` returns 401 in the current environment, so publishing cannot be completed here without npm credentials.
 - `npm pack --dry-run` for packages looks sane: built `dist` files and CLI templates are included.
+- `npm run release:preflight -- --local` passes. It runs the local quality gate, verifies CLI-generated package specs, checks structured `npm pack --dry-run --json` contents, reads registry state, and reports missing npm auth / Godot as warnings in local mode.
 - No Godot/GodotJS executable was available in the assessment environment, so editor hot reload could not be verified directly. `npm run smoke:godot` now builds `apps/html-demo` and, when `GODOT_BIN`, `godot4`, or `godot` is available, runs a headless lifecycle smoke that repeatedly unmounts/remounts the Vue app, checks for stale children after unmount, checks rendered signal connection counts, drives form controls through Godot signals, checks image/SVG texture loading, and runs the demo browser API smoke helper against a loopback `fetch` endpoint. It skips cleanly otherwise.
 - A GitHub Actions workflow now runs `npm run check`.
 
@@ -47,6 +50,7 @@ Both still need to be published to the public npm registry. Local clean-user sim
 
 Needed:
 
+- Run `npm run release:preflight` with npm credentials and `GODOT_BIN` available.
 - Publish `@vue-godot/browser`.
 - Publish `@vue-godot/html`.
 - Verify `npx @vue-godot/cli create my-app --html && cd my-app && npm run build` against the published packages.
@@ -122,6 +126,8 @@ Needed:
 ### 6. Missing project-level quality gate
 
 Root scripts now include `test`, `smoke:cli`, `smoke:godot`, and `check`, and CI runs `npm run check`. `smoke:godot` now goes beyond project-open verification when Godot is available: it runs the HTML demo scene headlessly and requires the app's lifecycle smoke pass marker.
+
+`release:preflight` now wraps the local quality gate, pack dry-runs, generated package-spec checks, npm registry/auth checks, and `smoke:godot`. Strict mode fails when npm credentials or Godot are missing; `--local` mode is for unauthenticated/local environments and reports those as warnings.
 
 Needed:
 
