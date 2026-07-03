@@ -21,7 +21,7 @@ The core renderer is real and both non-HTML and HTML CLI scaffolds now build fro
   - runs package tests;
   - runs clean CLI scaffold smoke for `create` and `create --html` using packed local packages.
 - `@vue-godot/runtime-tscn` tests pass: 12 tests.
-- `@vue-godot/html` tests pass: 88 tests.
+- `@vue-godot/html` tests pass: 98 tests.
 - `@vue-godot/browser` tests pass: 10 tests.
 - Basic `vue-godot create` works from a clean `/tmp` project:
   - `npm install` succeeds.
