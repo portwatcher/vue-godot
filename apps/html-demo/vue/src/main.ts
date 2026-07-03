@@ -54,6 +54,19 @@ function findNodesByClass(root: Node, className: string): Node[] {
   return matches
 }
 
+function getStringProperty(node: Node, property: string): string | undefined {
+  const value: unknown = node.get(property)
+  return typeof value === 'string' ? value : undefined
+}
+
+function findNodeByStringProperty(
+  nodes: readonly Node[],
+  property: string,
+  expected: string,
+): Node | undefined {
+  return nodes.find((node) => getStringProperty(node, property) === expected)
+}
+
 export default class Root extends VBoxContainer {
   private app: ReturnType<typeof createApp> | null = null
   private smokeMounts = 0
@@ -149,6 +162,157 @@ export default class Root extends VBoxContainer {
     assertBrowserSmokeResults(results)
   }
 
+  private assertSignalConnectionCount(
+    node: Node,
+    signalName: string,
+    expected: number,
+  ): void {
+    const actual = node.get_signal_connection_list(signalName).size()
+    if (actual !== expected) {
+      throw new Error(
+        `expected ${expected} ${signalName} connection(s) on ${node.get_class()}, found ${actual}`,
+      )
+    }
+  }
+
+  private assertLabelText(expected: string): void {
+    const labels = findNodesByClass(this, 'Label')
+    if (!findNodeByStringProperty(labels, 'text', expected)) {
+      throw new Error(`expected Label text "${expected}"`)
+    }
+  }
+
+  private emitChecked(
+    node: Node,
+    signalName: string,
+    ...args: unknown[]
+  ): void {
+    const result = node.emit_signal(signalName, ...args)
+    if (result !== 0) {
+      throw new Error(
+        `failed to emit ${signalName} on ${node.get_class()}: ${result}`,
+      )
+    }
+  }
+
+  private async assertFormSmoke(): Promise<void> {
+    const lineEdits = findNodesByClass(this, 'LineEdit')
+    const textInput = findNodeByStringProperty(
+      lineEdits,
+      'placeholder_text',
+      'Type something...',
+    )
+    const passwordInput = findNodeByStringProperty(
+      lineEdits,
+      'placeholder_text',
+      'Secret',
+    )
+
+    if (!textInput || !passwordInput) {
+      throw new Error('expected text and password LineEdit nodes')
+    }
+
+    this.assertSignalConnectionCount(textInput, 'text_changed', 1)
+    this.emitChecked(textInput, 'text_changed', 'Smoke text')
+    await this.nextFrame()
+    this.assertLabelText('Text input: Smoke text')
+
+    this.assertSignalConnectionCount(passwordInput, 'text_changed', 1)
+    this.emitChecked(passwordInput, 'text_changed', 'hunter2')
+    await this.nextFrame()
+    this.assertLabelText('Password length: 7')
+
+    const checkboxes = findNodesByClass(this, 'CheckBox')
+    const checkbox = checkboxes[0]
+    if (!checkbox) {
+      throw new Error('expected CheckBox node')
+    }
+
+    this.assertSignalConnectionCount(checkbox, 'toggled', 1)
+    this.emitChecked(checkbox, 'toggled', true)
+    await this.nextFrame()
+    this.assertLabelText('Checked: true')
+
+    const sliders = findNodesByClass(this, 'HSlider')
+    const slider = sliders[0]
+    if (!slider) {
+      throw new Error('expected HSlider node')
+    }
+
+    this.assertSignalConnectionCount(slider, 'value_changed', 1)
+    this.emitChecked(slider, 'value_changed', 75)
+    await this.nextFrame()
+    this.assertLabelText('Range: 75')
+
+    const textEdits = findNodesByClass(this, 'TextEdit')
+    const textarea = findNodeByStringProperty(
+      textEdits,
+      'placeholder_text',
+      'Multi-line text...',
+    )
+    if (!textarea) {
+      throw new Error('expected TextEdit node')
+    }
+
+    this.assertSignalConnectionCount(textarea, 'text_changed', 1)
+    textarea.set('text', 'line one\nline two')
+    this.emitChecked(textarea, 'text_changed')
+    await this.nextFrame()
+    this.assertLabelText('Textarea lines: 2')
+
+    const optionButtons = findNodesByClass(this, 'OptionButton')
+    const optionButton = optionButtons[0]
+    if (!optionButton) {
+      throw new Error('expected OptionButton node')
+    }
+
+    this.assertSignalConnectionCount(optionButton, 'item_selected', 1)
+    this.emitChecked(optionButton, 'item_selected', 1)
+    await this.nextFrame()
+    this.assertLabelText('Selected: banana')
+
+    console.log('[vue-godot-smoke] forms=ok')
+  }
+
+  private async assertAssetSmoke(): Promise<void> {
+    await this.nextFrame()
+
+    const textureRects = findNodesByClass(this, 'TextureRect')
+    const image = findNodeByStringProperty(
+      textureRects,
+      'tooltip_text',
+      'Godot icon',
+    )
+    const svg = findNodeByStringProperty(
+      textureRects,
+      'tooltip_text',
+      'SVG icon',
+    )
+
+    if (!image || !svg) {
+      throw new Error('expected Img and Svg TextureRect nodes')
+    }
+
+    for (const node of [image, svg]) {
+      let texture: unknown = null
+      for (let attempt = 0; attempt < 5; attempt++) {
+        texture = node.get('texture')
+        if (texture != null) {
+          break
+        }
+        await this.nextFrame()
+      }
+
+      if (texture == null) {
+        const tooltip =
+          getStringProperty(node, 'tooltip_text') ?? node.get_class()
+        throw new Error(`expected loaded texture for ${tooltip}`)
+      }
+    }
+
+    console.log('[vue-godot-smoke] assets=ok')
+  }
+
   private async runSmokeLifecycleCheck() {
     const reloads = readPositiveIntegerEnv(
       SMOKE_RELOADS_ENV,
@@ -159,6 +323,8 @@ export default class Root extends VBoxContainer {
     try {
       this.assertMountedTree(0, expectedChildCount)
       await this.assertBrowserSmoke()
+      await this.assertFormSmoke()
+      await this.assertAssetSmoke()
 
       for (let cycle = 1; cycle <= reloads; cycle++) {
         await this.assertAfterUnmount(cycle)
