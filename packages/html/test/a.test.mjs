@@ -64,3 +64,19 @@ test('maps common text control styles', () => {
   assert.equal(vnode.props['theme_override_colors/font_color'], '1,0,0,1')
   assert.equal(vnode.props.modulate, '1,1,1,0.5')
 })
+
+test('accepts CSS color formats for text control color', () => {
+  const { vnode } = renderA(
+    {
+      style: {
+        color: 'rgb(0 128 255 / 50%)',
+      },
+    },
+    ['Styled'],
+  )
+
+  assert.equal(
+    vnode.props['theme_override_colors/font_color'],
+    '0,0.5019607843137255,1,0.5',
+  )
+})

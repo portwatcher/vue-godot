@@ -6,7 +6,7 @@ import {
   isVNode,
 } from '@vue/runtime-core'
 import { Color, StyleBoxFlat } from 'godot'
-import { parseHexColor } from '../utils/colorParser.js'
+import { parseColorChannels } from '../utils/colorParser.js'
 import type { GodotContainerTag, HtmlStyle } from '../utils/styleMapping.js'
 import {
   ControlSizeFlags,
@@ -175,12 +175,15 @@ function withThemeConstantOverrides(
 function createBackgroundPanelStyle(
   color: string | undefined,
 ): StyleBoxFlat | null {
-  if (!color || !parseHexColor(color)) {
+  if (!color) {
     return null
   }
 
+  const parsed = parseColorChannels(color)
+  if (!parsed) return null
+
   const styleBox = new StyleBoxFlat()
-  styleBox.bg_color = Color.html(color)
+  styleBox.bg_color = new Color(parsed.r, parsed.g, parsed.b, parsed.a)
   styleBox.draw_center = true
   return styleBox
 }

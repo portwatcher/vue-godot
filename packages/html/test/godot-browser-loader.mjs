@@ -18,6 +18,15 @@ export function load(url, context, nextLoad) {
       shortCircuit: true,
       source: `
         export class Color {
+          constructor(r = 0, g = 0, b = 0, a = 1) {
+            this.__mock = true
+            this.__kind = 'color'
+            this.r = r
+            this.g = g
+            this.b = b
+            this.a = a
+          }
+
           static html(rgba) {
             return { __mock: true, __kind: 'color', rgba }
           }

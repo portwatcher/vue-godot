@@ -64,13 +64,28 @@ test('wraps Div content in PanelContainer when backgroundColor is set', () => {
     vnode.props['theme_override_styles/panel'].__kind,
     'style-box-flat',
   )
-  assert.deepEqual(vnode.props['theme_override_styles/panel'].bg_color, {
-    __mock: true,
-    __kind: 'color',
-    rgba: '#123456',
-  })
+  const color = vnode.props['theme_override_styles/panel'].bg_color
+  assert.equal(color.__mock, true)
+  assert.equal(color.__kind, 'color')
+  assert.equal(color.r, 0.07058823529411765)
+  assert.equal(color.g, 0.20392156862745098)
+  assert.equal(color.b, 0.33725490196078434)
+  assert.equal(color.a, 1)
   assert.equal(vnode.props['theme_override_styles/panel'].draw_center, true)
   assert.equal(vnode.children[0].type, 'VBoxContainer')
+})
+
+test('accepts CSS color formats for Div backgroundColor', () => {
+  const vnode = renderDiv({ backgroundColor: 'hsl(240 100% 50% / 0.5)' })
+
+  assert.equal(vnode.type, 'PanelContainer')
+  const color = vnode.props['theme_override_styles/panel'].bg_color
+  assert.equal(color.__mock, true)
+  assert.equal(color.__kind, 'color')
+  assert.equal(color.r, 0)
+  assert.equal(color.g, 0)
+  assert.equal(color.b, 1)
+  assert.equal(color.a, 0.5)
 })
 
 test('puts padding inside the background panel', () => {

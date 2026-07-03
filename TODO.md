@@ -94,11 +94,15 @@ Implemented MVP components:
 - `<Audio>`
 - `<Svg>`
 
-Still incomplete:
+Still incomplete or externally unverified:
 
-- `<style>` block support or a clear documented non-goal.
 - Canvas is only a bare `Control`; no `getContext('2d')`.
 - Browser polyfills now have a reusable demo smoke helper that can run under `npm run smoke:godot`, and the smoke script provisions a loopback `fetch` endpoint. Form v-model paths and image/SVG asset loading are also covered by the headless smoke. These still need to be run and recorded with a real GodotJS executable.
+
+Current beta decisions and completed hardening:
+
+- `<style>` block support is explicitly documented as a current beta non-goal in `packages/html/README.md`; use inline style objects until a CSS-to-Godot mapping exists.
+- Color parsing now supports hex, named CSS colors, `rgb()` / `rgba()`, and `hsl()` / `hsla()` for text `color` and Div `backgroundColor`.
 
 Needed:
 

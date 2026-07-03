@@ -71,7 +71,8 @@ Rather than embedding a layout engine like Yoga, we map a CSS flexbox subset to 
 | `align-items: *`                              | Default child cross-axis size flag                              |
 | `align-self: center` (on child)               | Size flag `SHRINK_CENTER`                                       |
 | `padding: <n>`                                | `MarginContainer` wrapper or theme override                     |
-| `backgroundColor: '#rrggbb'`                  | `PanelContainer` wrapper with `StyleBoxFlat`                    |
+| `backgroundColor: <color>`                    | `PanelContainer` wrapper with `StyleBoxFlat`                    |
+| `color: <color>`                              | `theme_override_colors/font_color` on text controls             |
 | `width` / `height`                            | `custom_minimum_size`                                           |
 | `display: none`                               | `visible = false`                                               |
 
@@ -89,6 +90,8 @@ Style objects (inline, React Native-style) are the primary styling API:
 ```
 
 This is intentionally a subset — not full CSS. We cover the 80% of layouts that real apps need (flex rows, columns, wrapping, grid) using Godot's own layout engine. If the remaining 20% becomes a bottleneck, a JS layout engine (Yoga/Taffy) can be added later without changing the component API.
+
+Color values support hex (`#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`), named CSS colors, `rgb()` / `rgba()`, and `hsl()` / `hsla()`.
 
 ## Component Mapping
 
@@ -273,10 +276,10 @@ This package is in early development. Currently scaffolded:
 - [x] `<Svg>` — SVG display (`TextureRect`, `src`, `scale` for rasterisation quality, `alt`)
 - [x] `<A>` — link/anchor (`LinkButton`, `href`, `@click`)
 - [x] Theme override application (gap, padding)
-- [x] Theme override application (colors via `backgroundColor`)
+- [x] Theme override application (colors via `backgroundColor` and text `color`)
 - [x] Size flag mapping (flex, align-self)
 - [x] Div renderer integration tests (nested fragment/array slot layouts)
-- [ ] `<style>` block support is a non-goal for the current beta; use inline style objects until a CSS-to-Godot mapping exists.
+- [x] `<style>` block support is a non-goal for the current beta; use inline style objects until a CSS-to-Godot mapping exists.
 
 ## Demo Apps
 
