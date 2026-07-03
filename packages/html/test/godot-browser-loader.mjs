@@ -41,6 +41,14 @@ export function load(url, context, nextLoad) {
           }
         }
 
+        export class FontVariation {
+          constructor() {
+            this.__mock = true
+            this.__kind = 'font-variation'
+            this.variation_embolden = 0
+          }
+        }
+
         export const ResourceLoader = {
           load(path) {
             if (!path) return null

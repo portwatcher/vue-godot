@@ -42,7 +42,8 @@ function resolveTextAlign(textAlign: string | undefined): number | null {
  *
  * Style support:
  *   - `fontSize`      → `theme_override_font_sizes/font_size`
- *   - `color`         → `theme_override_colors/font_color` (hex strings)
+ *   - `fontWeight`    → bold `theme_override_fonts/font` FontVariation
+ *   - `color`         → `theme_override_colors/font_color`
  *   - `textAlign`     → `horizontal_alignment`
  *   - `textTransform`  → `uppercase` (only `'uppercase'` supported)
  *   - `overflowWrap`   → `autowrap_mode` (`'break-word'` = AUTOWRAP_WORD_SMART)
@@ -52,7 +53,7 @@ function resolveTextAlign(textAlign: string | undefined): number | null {
  *
  * Usage:
  *   <Span>Hello world</Span>
- *   <Span :style="{ fontSize: 24, color: '#ff0000' }">Big red text</Span>
+ *   <Span :style="{ fontSize: 24, fontWeight: 'bold', color: '#ff0000' }">Big red text</Span>
  *   <Span :style="{ textTransform: 'uppercase' }">uppercased</Span>
  *   <Span :style="{ overflowWrap: 'break-word' }">Long wrapping text</Span>
  */

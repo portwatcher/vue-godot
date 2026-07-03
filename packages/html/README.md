@@ -73,6 +73,7 @@ Rather than embedding a layout engine like Yoga, we map a CSS flexbox subset to 
 | `padding: <n>`                                | `MarginContainer` wrapper or theme override                     |
 | `backgroundColor: <color>`                    | `PanelContainer` wrapper with `StyleBoxFlat`                    |
 | `color: <color>`                              | `theme_override_colors/font_color` on text controls             |
+| `fontWeight: 'bold'`                          | `theme_override_fonts/font` with `FontVariation` embolden       |
 | `width` / `height`                            | `custom_minimum_size`                                           |
 | `display: none`                               | `visible = false`                                               |
 
@@ -265,7 +266,7 @@ This package is in early development. Currently scaffolded:
 
 - [x] `<Div>` — layout container with style → Godot container mapping
 - [x] `<Img>` — image display with `src` → texture loading
-- [x] `<Span>` — text display with `fontSize`, `color`, `textAlign`, `textTransform`, `overflowWrap`
+- [x] `<Span>` — text display with `fontSize`, `fontWeight`, `color`, `textAlign`, `textTransform`, `overflowWrap`
 - [x] `<Button>` — click handler with `@click`, `disabled`
 - [x] `<Input>` — text, password, checkbox, range inputs with `v-model`
 - [x] `<Textarea>` — multiline text (`TextEdit`, `v-model`, `placeholder`, `rows`/`cols`)
@@ -276,7 +277,7 @@ This package is in early development. Currently scaffolded:
 - [x] `<Svg>` — SVG display (`TextureRect`, `src`, `scale` for rasterisation quality, `alt`)
 - [x] `<A>` — link/anchor (`LinkButton`, `href`, `@click`)
 - [x] Theme override application (gap, padding)
-- [x] Theme override application (colors via `backgroundColor` and text `color`)
+- [x] Theme override application (colors via `backgroundColor` and text `color`, bold text via `FontVariation`)
 - [x] Size flag mapping (flex, align-self)
 - [x] Div renderer integration tests (nested fragment/array slot layouts)
 - [x] `<style>` block support is a non-goal for the current beta; use inline style objects until a CSS-to-Godot mapping exists.

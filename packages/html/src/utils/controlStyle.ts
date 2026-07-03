@@ -1,7 +1,22 @@
+import { FontVariation } from 'godot'
 import { parseHexColor } from './colorParser.js'
 import type { HtmlStyle } from './styleMapping.js'
 
 export type GodotPropBag = Record<string, unknown>
+
+const BOLD_EMBOLDEN_STRENGTH = 0.7
+
+let boldFontVariation: FontVariation | null = null
+
+function getBoldFontVariation(): FontVariation {
+  if (!boldFontVariation) {
+    // Godot does not provide CSS-style font matching here. A FontVariation with
+    // embolden gives a native bold approximation using the active theme font.
+    boldFontVariation = new FontVariation()
+    boldFontVariation.variation_embolden = BOLD_EMBOLDEN_STRENGTH
+  }
+  return boldFontVariation
+}
 
 export function applyControlSizeProps(
   nodeProps: GodotPropBag,
@@ -21,6 +36,10 @@ export function applyFontStyleProps(
 ): void {
   if (typeof style?.fontSize === 'number' && Number.isFinite(style.fontSize)) {
     nodeProps['theme_override_font_sizes/font_size'] = style.fontSize
+  }
+
+  if (style?.fontWeight === 'bold') {
+    nodeProps['theme_override_fonts/font'] = getBoldFontVariation()
   }
 
   if (typeof style?.color === 'string') {

@@ -103,6 +103,7 @@ Current beta decisions and completed hardening:
 
 - `<style>` block support is explicitly documented as a current beta non-goal in `packages/html/README.md`; use inline style objects until a CSS-to-Godot mapping exists.
 - Color parsing now supports hex, named CSS colors, `rgb()` / `rgba()`, and `hsl()` / `hsla()` for text `color` and Div `backgroundColor`.
+- `fontWeight: 'bold'` maps to a Godot `FontVariation` embolden override for text controls.
 
 Needed:
 

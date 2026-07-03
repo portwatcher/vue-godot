@@ -38,8 +38,15 @@
 
   <!-- ===== Section: Span (text styling) ===== -->
   <Label text="--- Span ---" />
-  <span :style="{ fontSize: 24, color: '#ff6600', textAlign: 'center' }">
-    Orange 24px centered
+  <span
+    :style="{
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: 'orange',
+      textAlign: 'center',
+    }"
+  >
+    Bold orange 24px centered
   </span>
   <span
     :style="{

@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import { register } from 'node:module'
 import { h } from '@vue/runtime-core'
 
-import { A } from '../dist/components/A.js'
+register(new URL('./godot-browser-loader.mjs', import.meta.url).href)
+
+const { A } = await import('../dist/components/A.js')
 
 function renderA(props = {}, slotChildren = []) {
   const emitted = []
@@ -79,4 +82,33 @@ test('accepts CSS color formats for text control color', () => {
     vnode.props['theme_override_colors/font_color'],
     '0,0.5019607843137255,1,0.5',
   )
+})
+
+test('maps bold fontWeight to a Godot FontVariation override', () => {
+  const { vnode } = renderA(
+    {
+      style: {
+        fontWeight: 'bold',
+      },
+    },
+    ['Bold'],
+  )
+
+  const font = vnode.props['theme_override_fonts/font']
+  assert.equal(font.__mock, true)
+  assert.equal(font.__kind, 'font-variation')
+  assert.equal(font.variation_embolden, 0.7)
+})
+
+test('does not emit a font override for normal fontWeight', () => {
+  const { vnode } = renderA(
+    {
+      style: {
+        fontWeight: 'normal',
+      },
+    },
+    ['Normal'],
+  )
+
+  assert.equal('theme_override_fonts/font' in vnode.props, false)
 })

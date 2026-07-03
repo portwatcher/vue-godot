@@ -22,6 +22,7 @@ import type { HtmlStyle } from '../utils/styleMapping.js'
  *
  * Style support:
  *   - `fontSize`  → `theme_override_font_sizes/font_size`
+ *   - `fontWeight` → bold `theme_override_fonts/font` FontVariation
  *   - `color`     → `theme_override_colors/font_color`
  *   - `width` / `height` → `custom_minimum_size`
  *   - `display: none`    → `visible = false`
@@ -29,7 +30,7 @@ import type { HtmlStyle } from '../utils/styleMapping.js'
  * Usage:
  *   <Button @click="handleClick">Click me</Button>
  *   <Button :disabled="isLoading">Submit</Button>
- *   <Button :style="{ fontSize: 18 }" @click="save">Save</Button>
+ *   <Button :style="{ fontSize: 18, fontWeight: 'bold' }" @click="save">Save</Button>
  */
 export const Button = defineComponent({
   name: 'Button',
