@@ -1,6 +1,6 @@
 {
   "name": "@vue-godot/cli",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "CLI tool for vue-godot projects — generates types, scaffolds projects, and more",
   "type": "module",
   "main": "./dist/index.js",

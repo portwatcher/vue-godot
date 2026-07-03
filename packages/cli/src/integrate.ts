@@ -18,7 +18,7 @@ const __dirname = path.dirname(__filename)
 
 const PACKAGE_SPECS = {
   '@vue-godot/browser': '^0.0.1',
-  '@vue-godot/cli': '^0.0.2',
+  '@vue-godot/cli': '^0.0.3',
   '@vue-godot/html': '^0.0.1',
   '@vue-godot/runtime-tscn': '^0.0.2',
   '@vue/runtime-core': '^3.5.14',

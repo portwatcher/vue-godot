@@ -30,9 +30,10 @@ The core renderer is real and both non-HTML and HTML CLI scaffolds now build fro
   - `npm run dev` enters Vite watch mode and rebuilds `dist/app.js`.
 - `vue-godot create --html` works from a clean temp project when package specs are overridden to locally packed tarballs.
 - Public `npx @vue-godot/cli create my-app --html` still requires publishing `@vue-godot/browser`, `@vue-godot/html`, and the compatible CLI/runtime packages to npm.
-- Registry check: `@vue-godot/cli@0.0.2` and `@vue-godot/runtime-tscn@0.0.2` are public; `@vue-godot/browser` and `@vue-godot/html` are not published yet.
+- Registry check: `@vue-godot/runtime-tscn@0.0.2` is public; `@vue-godot/cli@0.0.2` is public but does not support `create --html`, so local `@vue-godot/cli@0.0.3` must be published. `@vue-godot/browser` and `@vue-godot/html` are not published yet.
 - `npm whoami` returns 401 in the current environment, so publishing cannot be completed here without npm credentials.
 - `npm pack --dry-run` for packages looks sane: built `dist` files and CLI templates are included.
+- `npm run smoke:public-cli` now automates the post-publish public `create --html` verification, but it cannot pass until `@vue-godot/browser` and `@vue-godot/html` are public.
 - `npm run release:preflight -- --local` passes. It runs the local quality gate, verifies CLI-generated package specs, checks structured `npm pack --dry-run --json` contents, reads registry state, and reports missing npm auth / Godot as warnings in local mode.
 - No Godot/GodotJS executable was available in the assessment environment, so editor hot reload could not be verified directly. `npm run smoke:godot` now builds `apps/html-demo` and, when `GODOT_BIN`, `godot4`, or `godot` is available, runs a headless lifecycle smoke that repeatedly unmounts/remounts the Vue app, checks for stale children after unmount, checks rendered signal connection counts, drives form controls through Godot signals, checks image/SVG texture loading, and runs the demo browser API smoke helper against a loopback `fetch` endpoint. It skips cleanly otherwise.
 - A GitHub Actions workflow now runs `npm run check`.
@@ -51,9 +52,10 @@ Both still need to be published to the public npm registry. Local clean-user sim
 Needed:
 
 - Run `npm run release:preflight` with npm credentials and `GODOT_BIN` available.
+- Publish `@vue-godot/cli@0.0.3`.
 - Publish `@vue-godot/browser`.
 - Publish `@vue-godot/html`.
-- Verify `npx @vue-godot/cli create my-app --html && cd my-app && npm run build` against the published packages.
+- Run `npm run smoke:public-cli` against the published packages.
 - Keep CLI-generated compatible package versions in sync before each release.
 
 ### 2. Hot reload lifecycle safety
