@@ -158,17 +158,20 @@ export async function runBrowserSmokeTests(
 
   if (options.fetchUrl) {
     try {
-      const response = await fetch(options.fetchUrl)
+      const request = new Request(options.fetchUrl, {
+        headers: { 'x-vue-godot-smoke': 'fetch-request' },
+      })
+      const response = await fetch(request)
       const text = await response.text()
       if (!response.ok) {
-        results.push(fail('fetch', `status=${response.status}`))
+        results.push(fail('fetch(Request)', `status=${response.status}`))
       } else if (options.fetchText && text !== options.fetchText) {
-        results.push(fail('fetch', `body=${text}`))
+        results.push(fail('fetch(Request)', `body=${text}`))
       } else {
-        results.push(pass('fetch', `status=${response.status} ok`))
+        results.push(pass('fetch(Request)', `status=${response.status} ok`))
       }
     } catch (error) {
-      results.push(failFromError('fetch', error))
+      results.push(failFromError('fetch(Request)', error))
     }
   }
 

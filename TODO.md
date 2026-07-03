@@ -110,7 +110,7 @@ Current beta decisions and completed hardening:
 - Canvas `getContext('2d')` is explicitly deferred for beta; use a template ref to the underlying Godot `Control` and native draw/`queue_redraw()` methods.
 - Color parsing now supports hex, named CSS colors, `rgb()` / `rgba()`, and `hsl()` / `hsla()` for text `color` and Div `backgroundColor`.
 - `fontWeight: 'bold'` maps to a Godot `FontVariation` embolden override for text controls.
-- `Request` is implemented in `@vue-godot/browser`, installed by `installBrowserAPIs()`, accepted by `fetch()`, covered by package tests, and included in the html-demo browser smoke helper.
+- `Request` is implemented in `@vue-godot/browser`, installed by `installBrowserAPIs()`, accepted by `fetch()`, covered by package tests, and included in the html-demo browser smoke helper. The GodotJS browser smoke now exercises loopback `fetch(new Request(...))`.
 
 Needed:
 
