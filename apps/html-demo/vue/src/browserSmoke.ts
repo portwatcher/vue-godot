@@ -4,6 +4,11 @@ export interface BrowserSmokeResult {
   detail: string
 }
 
+export interface BrowserSmokeOptions {
+  fetchUrl?: string
+  fetchText?: string
+}
+
 function pass(name: string, detail: string): BrowserSmokeResult {
   return { name, ok: true, detail }
 }
@@ -39,7 +44,9 @@ export function assertBrowserSmokeResults(
   throw new Error(formatBrowserSmokeResults(failures))
 }
 
-export function runBrowserSmokeTests(): BrowserSmokeResult[] {
+export async function runBrowserSmokeTests(
+  options: BrowserSmokeOptions = {},
+): Promise<BrowserSmokeResult[]> {
   const results: BrowserSmokeResult[] = []
 
   try {
@@ -131,6 +138,22 @@ export function runBrowserSmokeTests(): BrowserSmokeResult[] {
     results.push(moved ? pass('History', 'ok') : fail('History', location.href))
   } catch (error) {
     results.push(failFromError('History', error))
+  }
+
+  if (options.fetchUrl) {
+    try {
+      const response = await fetch(options.fetchUrl)
+      const text = await response.text()
+      if (!response.ok) {
+        results.push(fail('fetch', `status=${response.status}`))
+      } else if (options.fetchText && text !== options.fetchText) {
+        results.push(fail('fetch', `body=${text}`))
+      } else {
+        results.push(pass('fetch', `status=${response.status} ok`))
+      }
+    } catch (error) {
+      results.push(failFromError('fetch', error))
+    }
   }
 
   return results

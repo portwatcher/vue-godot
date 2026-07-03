@@ -229,8 +229,10 @@ onMounted(() => {
 // --- Browser API smoke tests ---
 const browserTestResult = ref('Not run yet')
 
-function runBrowserTests() {
-  browserTestResult.value = formatBrowserSmokeResults(runBrowserSmokeTests())
+async function runBrowserTests() {
+  browserTestResult.value = formatBrowserSmokeResults(
+    await runBrowserSmokeTests(),
+  )
   console.log('[html-demo] Browser API results:', browserTestResult.value)
 }
 </script>

@@ -13,7 +13,13 @@ installBrowserAPIs()
 
 const SMOKE_ENV = 'VUE_GODOT_SMOKE'
 const SMOKE_RELOADS_ENV = 'VUE_GODOT_SMOKE_RELOADS'
+const SMOKE_FETCH_URL_ENV = 'VUE_GODOT_SMOKE_FETCH_URL'
+const SMOKE_FETCH_TEXT_ENV = 'VUE_GODOT_SMOKE_FETCH_TEXT'
 const DEFAULT_SMOKE_RELOADS = 3
+
+function readOptionalEnv(name: string): string | undefined {
+  return OS.has_environment(name) ? OS.get_environment(name) : undefined
+}
 
 function readPositiveIntegerEnv(name: string, fallback: number): number {
   if (!OS.has_environment(name)) {
@@ -132,8 +138,11 @@ export default class Root extends VBoxContainer {
     }
   }
 
-  private assertBrowserSmoke(): void {
-    const results = runBrowserSmokeTests()
+  private async assertBrowserSmoke(): Promise<void> {
+    const results = await runBrowserSmokeTests({
+      fetchUrl: readOptionalEnv(SMOKE_FETCH_URL_ENV),
+      fetchText: readOptionalEnv(SMOKE_FETCH_TEXT_ENV),
+    })
     console.log(
       `[vue-godot-smoke] browser=${formatBrowserSmokeResults(results)}`,
     )
@@ -149,7 +158,7 @@ export default class Root extends VBoxContainer {
 
     try {
       this.assertMountedTree(0, expectedChildCount)
-      this.assertBrowserSmoke()
+      await this.assertBrowserSmoke()
 
       for (let cycle = 1; cycle <= reloads; cycle++) {
         await this.assertAfterUnmount(cycle)

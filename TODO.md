@@ -31,7 +31,7 @@ The core renderer is real and both non-HTML and HTML CLI scaffolds now build fro
 - `vue-godot create --html` works from a clean temp project when package specs are overridden to locally packed tarballs.
 - Public `npx @vue-godot/cli create my-app --html` still requires publishing `@vue-godot/browser`, `@vue-godot/html`, and the compatible CLI/runtime packages to npm.
 - `npm pack --dry-run` for packages looks sane: built `dist` files and CLI templates are included.
-- No Godot/GodotJS executable was available in the assessment environment, so editor hot reload could not be verified directly. `npm run smoke:godot` now builds `apps/html-demo` and, when `GODOT_BIN`, `godot4`, or `godot` is available, runs a headless lifecycle smoke that repeatedly unmounts/remounts the Vue app, checks for stale children after unmount, checks rendered button `pressed` signal connection counts, and runs the demo browser API smoke helper. It skips cleanly otherwise.
+- No Godot/GodotJS executable was available in the assessment environment, so editor hot reload could not be verified directly. `npm run smoke:godot` now builds `apps/html-demo` and, when `GODOT_BIN`, `godot4`, or `godot` is available, runs a headless lifecycle smoke that repeatedly unmounts/remounts the Vue app, checks for stale children after unmount, checks rendered button `pressed` signal connection counts, and runs the demo browser API smoke helper against a loopback `fetch` endpoint. It skips cleanly otherwise.
 - A GitHub Actions workflow now runs `npm run check`.
 
 ## Major Blockers
@@ -98,13 +98,14 @@ Still incomplete:
 
 - `<style>` block support or a clear documented non-goal.
 - Canvas is only a bare `Control`; no `getContext('2d')`.
-- Browser polyfills now have a reusable demo smoke helper that can run under `npm run smoke:godot`, but `fetch`/network coverage still needs a real GodotJS run beyond the current Node-side pure polyfill tests.
+- Browser polyfills now have a reusable demo smoke helper that can run under `npm run smoke:godot`, and the smoke script provisions a loopback `fetch` endpoint. This still needs to be run and recorded with a real GodotJS executable.
 
 Needed:
 
 - Finish or explicitly defer all open beta tracker items.
 - Keep `apps/html-demo` aligned with every component/API.
-- Add GodotJS smoke tests for form v-model, asset loading, and real `fetch`/network behavior.
+- Add GodotJS smoke tests for form v-model and asset loading.
+- Run and record the loopback `fetch` smoke with a real GodotJS executable.
 
 ### 5. Docs drift and copy-paste risk
 
