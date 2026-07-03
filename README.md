@@ -268,15 +268,16 @@ vue-godot gen-types [--typings <dir>] [--out <file>] [--ancestor <class>] [--vue
 npm run build        # packages + demo apps
 npm run test         # package tests
 npm run smoke:cli    # clean create and create --html using packed local packages
-npm run smoke:godot  # optional: opens apps/html-demo with GODOT_BIN/godot4/godot
+npm run smoke:godot  # optional: runs apps/html-demo lifecycle smoke with GODOT_BIN/godot4/godot
 npm run check        # build + test + CLI smoke
 ```
 
-`npm run smoke:godot` skips when no Godot executable is available. Set `GODOT_BIN=/path/to/godot` to force a specific editor/runtime.
+`npm run smoke:godot` skips when no Godot executable is available. Set `GODOT_BIN=/path/to/godot` to force a specific editor/runtime. When Godot is available, the script builds `apps/html-demo`, runs the scene headlessly with `VUE_GODOT_SMOKE=1`, and fails unless the app reports a completed lifecycle smoke. The smoke repeatedly unmounts/remounts the Vue app, checks that unmount leaves no stale children, and verifies each rendered `Button` has exactly one `pressed` signal connection. Set `VUE_GODOT_SMOKE_RELOADS=10` to change the repeat count, or `VUE_GODOT_SMOKE_OPEN_ONLY=1` to run the older project-open smoke.
 
 ## Release Checklist
 
 1. Run `npm run check`.
 2. Run `npm pack --dry-run` in each package and inspect included files.
 3. Verify `npx @vue-godot/cli create my-app --html && cd my-app && npm run dev` against the published package versions.
-4. If possible, run `npm run smoke:godot` and manually verify repeated Godot editor reloads do not duplicate nodes or signal handlers.
+4. If possible, run `npm run smoke:godot` with a GodotJS executable.
+5. Manually verify repeated Godot editor reloads reflect rebuilt `dist/app.js` and do not duplicate nodes or signal handlers.

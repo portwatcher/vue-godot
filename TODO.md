@@ -31,7 +31,7 @@ The core renderer is real and both non-HTML and HTML CLI scaffolds now build fro
 - `vue-godot create --html` works from a clean temp project when package specs are overridden to locally packed tarballs.
 - Public `npx @vue-godot/cli create my-app --html` still requires publishing `@vue-godot/browser`, `@vue-godot/html`, and the compatible CLI/runtime packages to npm.
 - `npm pack --dry-run` for packages looks sane: built `dist` files and CLI templates are included.
-- No Godot/GodotJS executable was available in the assessment environment, so editor hot reload could not be verified directly. `npm run smoke:godot` now runs a headless project-open smoke when `GODOT_BIN`, `godot4`, or `godot` is available, and skips cleanly otherwise.
+- No Godot/GodotJS executable was available in the assessment environment, so editor hot reload could not be verified directly. `npm run smoke:godot` now builds `apps/html-demo` and, when `GODOT_BIN`, `godot4`, or `godot` is available, runs a headless lifecycle smoke that repeatedly unmounts/remounts the Vue app, checks for stale children after unmount, and checks rendered button `pressed` signal connection counts. It skips cleanly otherwise.
 - A GitHub Actions workflow now runs `npm run check`.
 
 ## Major Blockers
@@ -56,16 +56,16 @@ Needed:
 
 Generated root scripts now store the Vue app instance and call `app.unmount()` in `_exit_tree()`.
 
-The renderer does free nodes when Vue removes them, but repeated Godot editor hot reload still needs direct proof that old Vue apps, nodes, timers, watchers, and signal connections do not accumulate.
+The renderer does free nodes when Vue removes them, and `apps/html-demo` now has a headless lifecycle smoke mode that makes child and button-signal leaks visible under `npm run smoke:godot`. Repeated Godot editor hot reload still needs direct proof that old Vue apps, nodes, timers, watchers, and signal connections do not accumulate in the real editor workflow.
 
 Needed:
 
+- Run `npm run smoke:godot` with a real GodotJS executable and record the result.
 - Verify repeated editor reloads do not duplicate children or signal handlers.
-- Add a reload counter/smoke scene that makes leaks obvious.
 
 ### 3. No automated Godot smoke test
 
-The most important user workflow depends on GodotJS behavior. The repo now has Node-side tests, CLI smoke tests, CI, and an optional headless Godot project-open smoke, but not a full GodotJS hot reload assertion.
+The most important user workflow depends on GodotJS behavior. The repo now has Node-side tests, CLI smoke tests, CI, and an optional headless Godot lifecycle smoke, but not a full editor hot reload assertion.
 
 Needed:
 
@@ -116,11 +116,12 @@ Needed:
 
 ### 6. Missing project-level quality gate
 
-Root scripts now include `test`, `smoke:cli`, `smoke:godot`, and `check`, and CI runs `npm run check`.
+Root scripts now include `test`, `smoke:cli`, `smoke:godot`, and `check`, and CI runs `npm run check`. `smoke:godot` now goes beyond project-open verification when Godot is available: it runs the HTML demo scene headlessly and requires the app's lifecycle smoke pass marker.
 
 Needed:
 
-- Expand `smoke:godot` from project-open verification to a real hot reload assertion when GodotJS CLI support is available.
+- Add CI coverage with an installed GodotJS executable.
+- Expand beyond headless lifecycle simulation to a real editor hot reload assertion when GodotJS CLI/editor support is available.
 
 ## Recommended Next-Session Goal
 
@@ -140,8 +141,8 @@ Acceptance criteria:
 ## Suggested Priority Order
 
 1. Publish packages and verify public clean install.
-2. GodotJS hot reload smoke verification.
-3. Add a reload counter/smoke scene that detects duplicate children/signals.
+2. Run and record the GodotJS headless lifecycle smoke on a real executable.
+3. GodotJS editor hot reload smoke verification.
 4. Finish HTML beta tracker:
    - Canvas `getContext('2d')` or documented longer-term replacement.
    - More browser tests under real GodotJS, especially `fetch`.
