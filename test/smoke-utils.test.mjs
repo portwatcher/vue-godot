@@ -65,6 +65,23 @@ test('resolveGodotCommand normalizes explicit GODOT_BIN directory values', () =>
   }
 })
 
+test('resolveGodotCommand returns absolute paths for relative GODOT_BIN values', () => {
+  const tempDir = createTempDir()
+  const originalCwd = process.cwd()
+  try {
+    const godot = path.join(tempDir, 'godot.linuxbsd.editor.dev.x86_64')
+    writeExecutable(godot)
+
+    process.chdir(path.dirname(tempDir))
+    const relativeGodot = path.relative(process.cwd(), godot)
+
+    assert.equal(resolveGodotCommand({ godotBin: relativeGodot }), godot)
+  } finally {
+    process.chdir(originalCwd)
+    fs.rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('resolveGodotBin rejects directories without a Godot executable', () => {
   const tempDir = createTempDir()
   try {

@@ -332,23 +332,25 @@ export function resolveGodotBin(godotBin) {
     return null
   }
 
-  if (!fs.existsSync(godotBin)) {
+  const absoluteGodotBin = path.resolve(godotBin)
+
+  if (!fs.existsSync(absoluteGodotBin)) {
     throw new Error(`GODOT_BIN does not exist: ${godotBin}`)
   }
 
-  const stat = fs.statSync(godotBin)
+  const stat = fs.statSync(absoluteGodotBin)
   if (stat.isFile()) {
-    if (!isExecutableFile(godotBin)) {
+    if (!isExecutableFile(absoluteGodotBin)) {
       throw new Error(`GODOT_BIN is not executable: ${godotBin}`)
     }
-    return godotBin
+    return absoluteGodotBin
   }
 
   if (!stat.isDirectory()) {
     throw new Error(`GODOT_BIN must be a file or directory: ${godotBin}`)
   }
 
-  const executable = findGodotExecutableInDirectory(godotBin)
+  const executable = findGodotExecutableInDirectory(absoluteGodotBin)
   if (!executable) {
     throw new Error(
       `GODOT_BIN directory does not contain an executable named like godot*: ${godotBin}`,
