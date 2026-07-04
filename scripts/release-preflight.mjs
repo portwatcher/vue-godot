@@ -5,6 +5,7 @@ import {
   compareVersions,
   expectedRange,
   formatCommandFailure,
+  isTrustedPublishingEnvironment,
   npmCommand,
   parseNpmJson as parseNpmJsonStrict,
   readJson,
@@ -242,6 +243,13 @@ function checkRegistry(packagesByName) {
 
 function checkNpmAuth(publishNeeded) {
   logStep('checking npm auth')
+
+  if (isTrustedPublishingEnvironment()) {
+    console.log(
+      '[release-preflight] npm trusted publishing environment detected; skipping npm whoami because OIDC is validated by npm publish',
+    )
+    return
+  }
 
   const result = run(npmCommand, ['whoami'])
   if (result.status === 0) {

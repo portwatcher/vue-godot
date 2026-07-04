@@ -3,6 +3,11 @@
   "version": "0.0.2",
   "description": "Vue runtime renderer for Godot TSCN files",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/portwatcher/vue-godot.git",
+    "directory": "packages/runtime-tscn"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

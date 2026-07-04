@@ -3,6 +3,11 @@
   "version": "0.0.1",
   "description": "HTML-like Vue components built on Godot nodes",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/portwatcher/vue-godot.git",
+    "directory": "packages/html"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

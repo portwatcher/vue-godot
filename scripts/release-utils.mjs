@@ -118,3 +118,12 @@ export function parseNpmJson(stdout, label) {
     throw new Error(`${label}: npm did not return valid JSON\n${stdout}`)
   }
 }
+
+export function isTrustedPublishingEnvironment() {
+  return Boolean(
+    process.env.VUE_GODOT_NPM_TRUSTED_PUBLISHING === '1' ||
+    (process.env.GITHUB_ACTIONS === 'true' &&
+      process.env.ACTIONS_ID_TOKEN_REQUEST_URL &&
+      process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN),
+  )
+}

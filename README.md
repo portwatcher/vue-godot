@@ -259,11 +259,28 @@ The `Godot Smoke` GitHub Actions workflow installs the pinned `GodotJS_1.0.0-2` 
 
 `npm run release:preflight` is strict by default: it fails when packages that need publishing cannot be published by the current npm user, or when the Godot smokes skip instead of running. Use `npm run release:preflight -- --local` to validate the local build, tests, pack contents, generated package specs, and registry read checks while treating missing npm auth or Godot as warnings.
 
-`npm run release:publish` publishes only packages that are missing from npm or newer than the registry, in dependency-safe order (`runtime-tscn`, `browser`, `html`, then `cli`). It defaults to `npm publish --dry-run`; real publishing requires `npm run release:publish -- --yes`. Real mode refuses a dirty worktree, checks `npm whoami`, runs `npm run release:preflight` unless `--skip-preflight` is set, and then runs `npm run smoke:public-cli` against the published CLI version unless `--skip-public-smoke` is set. Use `--otp <code>` for npm accounts with 2FA.
+`npm run release:publish` publishes only packages that are missing from npm or newer than the registry, in dependency-safe order (`runtime-tscn`, `browser`, `html`, then `cli`). It defaults to `npm publish --dry-run`; real publishing requires `npm run release:publish -- --yes`. Real local publishing refuses a dirty worktree, checks `npm whoami`, runs `npm run release:preflight` unless `--skip-preflight` is set, and then runs `npm run smoke:public-cli` against the published CLI version unless `--skip-public-smoke` is set. Use `--otp <code>` for local npm accounts with 2FA. In the trusted-publishing GitHub workflow, `VUE_GODOT_NPM_TRUSTED_PUBLISHING=1` skips `npm whoami` because npm validates OIDC during `npm publish`.
+
+The `Publish` GitHub Actions workflow runs on `v*` tags and manual dispatch. It uses GitHub-hosted Ubuntu, Node 24, `npm@^11.15.0`, `id-token: write`, the shared GodotJS setup action, and `npm run release:publish -- --yes`; no npm token is needed once each package trusts `.github/workflows/publish.yml`.
+
+Configure npm trusted publishing for each package with the GitHub repository `portwatcher/vue-godot`, workflow filename `publish.yml`, and the `npm publish` allowed action:
+
+```bash
+npx npm@latest trust github @vue-godot/runtime-tscn --repository portwatcher/vue-godot --file publish.yml --allow-publish --yes
+npx npm@latest trust github @vue-godot/cli --repository portwatcher/vue-godot --file publish.yml --allow-publish --yes
+```
+
+`npm trust` requires the package to already exist on npm. After the first manual publish of `@vue-godot/browser` and `@vue-godot/html`, run:
+
+```bash
+npx npm@latest trust github @vue-godot/browser --repository portwatcher/vue-godot --file publish.yml --allow-publish --yes
+npx npm@latest trust github @vue-godot/html --repository portwatcher/vue-godot --file publish.yml --allow-publish --yes
+```
 
 ## Release Checklist
 
-1. Run `npm run release:preflight` with npm credentials and `GODOT_BIN` available.
-2. Run `npm run release:publish -- --yes` to publish missing/newer packages in order.
-3. Confirm `npm run smoke:public-cli` passed against the published package versions.
-4. Confirm the remote `Godot Smoke` workflow passed, including the editor reload smoke. Use a manual editor pass for visual inspection before a beta announcement.
+1. Ensure npm trusted publishing is configured for every already-published package.
+2. Push a `v*` tag or manually run the `Publish` workflow to publish missing/newer packages in order.
+3. For package names that do not exist yet, run `npm run release:publish -- --yes --otp <code>` locally for the first publish, then attach trusted publishing and use the workflow for future releases.
+4. Confirm `npm run smoke:public-cli` passed against the published package versions.
+5. Confirm the remote `Godot Smoke` workflow passed, including the editor reload smoke. Use a manual editor pass for visual inspection before a beta announcement.

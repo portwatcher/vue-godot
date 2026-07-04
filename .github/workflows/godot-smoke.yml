@@ -31,11 +31,6 @@ on:
 permissions:
   contents: read
 
-env:
-  GODOTJS_RELEASE: GodotJS_1.0.0-2
-  GODOTJS_ASSET: prebuilt_linux_x64_v8.zip
-  GODOTJS_CACHE_DIR: .cache/godotjs/GodotJS_1.0.0-2/prebuilt_linux_x64_v8
-
 jobs:
   godot-smoke:
     runs-on: ubuntu-22.04
@@ -51,54 +46,8 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Cache GodotJS
-        id: cache-godotjs
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.GODOTJS_CACHE_DIR }}
-          key: godotjs-${{ runner.os }}-${{ env.GODOTJS_RELEASE }}-${{ env.GODOTJS_ASSET }}
-
-      - name: Install Godot runtime dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            ca-certificates \
-            libasound2 \
-            libdbus-1-3 \
-            libfontconfig1 \
-            libgl1 \
-            libglu1-mesa \
-            libpulse0 \
-            libudev1 \
-            libx11-6 \
-            libxcursor1 \
-            libxi6 \
-            libxinerama1 \
-            libxkbcommon0 \
-            libxrandr2 \
-            unzip
-
-      - name: Download GodotJS
-        if: steps.cache-godotjs.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p "$GODOTJS_CACHE_DIR"
-          curl --fail --location --retry 3 \
-            --output "$RUNNER_TEMP/godotjs.zip" \
-            "https://github.com/ialex32x/GodotJS-Build/releases/download/$GODOTJS_RELEASE/$GODOTJS_ASSET"
-          unzip -q "$RUNNER_TEMP/godotjs.zip" -d "$GODOTJS_CACHE_DIR"
-
-      - name: Locate GodotJS executable
-        run: |
-          GODOT_BIN="$(find "$GODOTJS_CACHE_DIR" -type f -name 'godot.linuxbsd.editor.*.x86_64' | sort | head -n 1)"
-          if [ -z "$GODOT_BIN" ]; then
-            echo "Unable to locate GodotJS editor executable in $GODOTJS_CACHE_DIR" >&2
-            find "$GODOTJS_CACHE_DIR" -maxdepth 3 -type f | sort >&2
-            exit 1
-          fi
-
-          chmod +x "$GODOT_BIN"
-          echo "GODOT_BIN=$GODOT_BIN" >> "$GITHUB_ENV"
-          "$GODOT_BIN" --version
+      - name: Setup GodotJS
+        uses: ./.github/actions/setup-godotjs
 
       - name: Install
         run: npm ci

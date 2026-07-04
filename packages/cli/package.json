@@ -3,6 +3,11 @@
   "version": "0.0.3",
   "description": "CLI tool for vue-godot projects — generates types, scaffolds projects, and more",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/portwatcher/vue-godot.git",
+    "directory": "packages/cli"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {

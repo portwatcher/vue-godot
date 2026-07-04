@@ -2,6 +2,7 @@ import path from 'node:path'
 import {
   compareVersions,
   formatCommandFailure,
+  isTrustedPublishingEnvironment,
   npmCommand,
   parseNpmJson,
   readJson,
@@ -121,7 +122,11 @@ function readRegistryVersion(packageName) {
   }
 
   throw new Error(
-    [`Unable to read registry version for ${packageName}`, result.stdout, result.stderr]
+    [
+      `Unable to read registry version for ${packageName}`,
+      result.stdout,
+      result.stderr,
+    ]
       .filter(Boolean)
       .join('\n'),
   )
@@ -143,6 +148,13 @@ function assertCleanWorktree() {
 }
 
 function assertNpmAuth() {
+  if (isTrustedPublishingEnvironment()) {
+    console.log(
+      '[release-publish] npm trusted publishing environment detected; npm publish will authenticate with OIDC',
+    )
+    return
+  }
+
   const result = run(npmCommand, ['whoami'])
   if (result.status !== 0) {
     throw new Error(
@@ -196,13 +208,7 @@ function packageCandidates() {
 }
 
 function publishPackage(candidate, options) {
-  const args = [
-    'publish',
-    '--access',
-    'public',
-    '--tag',
-    options.tag,
-  ]
+  const args = ['publish', '--access', 'public', '--tag', options.tag]
 
   if (!options.yes) {
     args.push('--dry-run')
