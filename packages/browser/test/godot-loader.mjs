@@ -56,6 +56,10 @@ export function load(url, context, nextLoad) {
           const key = '__vueGodotBrowserMockInput'
           if (!globalThis[key]) {
             globalThis[key] = {
+              accelerometer: { x: 0, y: 0, z: 0 },
+              gravity: { x: 0, y: 0, z: 0 },
+              gyroscope: { x: 0, y: 0, z: 0 },
+              magnetometer: { x: 0, y: 0, z: 0 },
               vibrations: [],
               throwOnVibrate: false,
             }
@@ -274,6 +278,22 @@ export function load(url, context, nextLoad) {
               durationMs: duration_ms,
               amplitude,
             })
+          }
+
+          static get_accelerometer() {
+            return mockInputState().accelerometer
+          }
+
+          static get_gravity() {
+            return mockInputState().gravity
+          }
+
+          static get_gyroscope() {
+            return mockInputState().gyroscope
+          }
+
+          static get_magnetometer() {
+            return mockInputState().magnetometer
           }
         }
 

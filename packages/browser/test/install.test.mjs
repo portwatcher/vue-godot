@@ -7,6 +7,8 @@ register(new URL('./godot-loader.mjs', import.meta.url).href)
 const {
   GodotBlob,
   GodotClipboard,
+  GodotDeviceMotionEvent,
+  GodotDeviceOrientationEvent,
   GodotFile,
   GodotFileReader,
   GodotFormData,
@@ -31,6 +33,8 @@ const patchedGlobals = [
   'sessionStorage',
   'Navigator',
   'navigator',
+  'DeviceMotionEvent',
+  'DeviceOrientationEvent',
   'fetch',
   'Request',
   'TextDecoder',
@@ -87,6 +91,11 @@ test('installBrowserAPIs installs missing browser globals', async () => {
     assert.ok(globalThis.sessionStorage instanceof GodotStorage)
     assert.equal(globalThis.Navigator, GodotNavigator)
     assert.ok(globalThis.navigator instanceof GodotNavigator)
+    assert.equal(globalThis.DeviceMotionEvent, GodotDeviceMotionEvent)
+    assert.equal(
+      globalThis.DeviceOrientationEvent,
+      GodotDeviceOrientationEvent,
+    )
     assert.equal(typeof globalThis.navigator.onLine, 'boolean')
     assert.equal(typeof globalThis.navigator.vibrate, 'function')
     assert.ok(globalThis.navigator.clipboard instanceof GodotClipboard)
@@ -135,6 +144,8 @@ test('installPolyfill installs named missing globals only', async () => {
       'sessionStorage',
       'Navigator',
       'navigator',
+      'DeviceMotionEvent',
+      'DeviceOrientationEvent',
       'queueMicrotask',
     ],
     async () => {
@@ -148,6 +159,8 @@ test('installPolyfill installs named missing globals only', async () => {
         'sessionStorage',
         'Navigator',
         'navigator',
+        'DeviceMotionEvent',
+        'DeviceOrientationEvent',
         'URLSearchParams',
         'queueMicrotask',
       )
@@ -161,6 +174,11 @@ test('installPolyfill installs named missing globals only', async () => {
       assert.ok(globalThis.sessionStorage instanceof GodotStorage)
       assert.equal(globalThis.Navigator, GodotNavigator)
       assert.ok(globalThis.navigator instanceof GodotNavigator)
+      assert.equal(globalThis.DeviceMotionEvent, GodotDeviceMotionEvent)
+      assert.equal(
+        globalThis.DeviceOrientationEvent,
+        GodotDeviceOrientationEvent,
+      )
       assert.equal(typeof globalThis.navigator.vibrate, 'function')
       assert.ok(globalThis.navigator.clipboard instanceof GodotClipboard)
       assert.equal(globalThis.URLSearchParams, GodotURLSearchParams)

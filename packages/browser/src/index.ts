@@ -22,6 +22,7 @@
 //   • FileReader      → Async Blob/File readers
 //   • Storage         → user:// localStorage and memory sessionStorage
 //   • Navigator       → onLine, reachability, text clipboard, and vibration
+//   • device sensors  → Input-backed motion/orientation reads and events
 //   • timers/RAF      → SceneTree-backed timing where available
 //   • performance     → Time-backed now() and marks/measures
 //
@@ -93,6 +94,23 @@ export {
 } from './url.js'
 export { GodotURLSearchParams } from './url-search-params.js'
 export type { GodotURLSearchParamsInit } from './url-search-params.js'
+export {
+  GodotDeviceMotionEvent,
+  GodotDeviceOrientationEvent,
+  configureDeviceSensorEvents,
+  dispatchDeviceSensorEvents,
+  getDeviceSensorEventOptions,
+  readDeviceMotion,
+  readDeviceOrientation,
+  startDeviceSensorEvents,
+  stopDeviceSensorEvents,
+} from './device-sensors.js'
+export type {
+  GodotDeviceMotionData,
+  GodotDeviceOrientationData,
+  GodotDeviceSensorEventOptions,
+  GodotVector3Data,
+} from './device-sensors.js'
 export {
   GodotPerformance,
   GodotPerformanceEntry,

@@ -58,6 +58,8 @@ import { fetch, GodotRequest, GodotURL, GodotHeaders } from '@vue-godot/browser'
 | `isClipboardSupported()`                         | DisplayServer helper   | Returns whether the current display server reports text clipboard support                                                                         |
 | `navigator.vibrate()`                            | Godot handheld haptics | Browser Vibration API subset backed by `Input.vibrate_handheld()`                                                                                |
 | `isVibrationSupported()`                         | Input helper           | Returns whether Godot's handheld vibration method is exposed                                                                                     |
+| `DeviceMotionEvent` / `DeviceOrientationEvent`   | Godot sensor events    | Event classes plus opt-in polling helpers backed by `Input` accelerometer, gyroscope, magnetometer, and gravity sensors                          |
+| `readDeviceMotion()` / `readDeviceOrientation()` | Godot sensor reads     | Snapshot helpers for motion/orientation data without starting an event loop                                                                      |
 | `checkNetworkReachability()`                     | Fetch probe            | Configurable HTTP probe using `fetch()` and `AbortController`                                                                                    |
 | `URL`                                            | `GodotURL`             | WHATWG subset — `protocol`, `hostname`, `port`, `pathname`, `search`, `searchParams`, `hash`, `href`, `toString()`                               |
 | `URLSearchParams`                                | `GodotURLSearchParams` | Query string helper with duplicate-key support, iteration, `.append()`, `.set()`, `.getAll()`, `.sort()`                                         |
@@ -288,6 +290,31 @@ navigator.vibrate(0)
 ```
 
 The return value reports whether the pattern was accepted by the polyfill, not whether the device physically vibrated. On Android, the app export must enable the `VIBRATE` permission for Godot's handheld vibration to have an effect.
+
+## Device Motion And Orientation
+
+Device sensor helpers read Godot's accelerometer, gravity, magnetometer, and gyroscope values through `Input`. Use snapshot reads when you need current values, or opt in to browser-style global events.
+
+```ts
+import {
+  readDeviceMotion,
+  readDeviceOrientation,
+  startDeviceSensorEvents,
+  stopDeviceSensorEvents,
+} from '@vue-godot/browser'
+
+const motion = readDeviceMotion()
+const orientation = readDeviceOrientation()
+
+addEventListener('devicemotion', (event) => {
+  console.log(event.acceleration, event.rotationRate)
+})
+
+startDeviceSensorEvents({ intervalMs: 100 })
+stopDeviceSensorEvents()
+```
+
+Godot returns zero vectors for unsupported platforms or missing sensors. The orientation values are best-effort: `alpha` comes from magnetometer heading when available, and `beta` / `gamma` are derived from gravity tilt. Gyroscope rotation rates are converted from radians per second to degrees per second for browser compatibility.
 
 ## Requirements
 

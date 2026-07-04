@@ -8,6 +8,8 @@ const {
   GodotAbortController,
   GodotBlob,
   GodotClipboard,
+  GodotDeviceMotionEvent,
+  GodotDeviceOrientationEvent,
   GodotHeaders,
   GodotRequest,
   GodotResponse,
@@ -23,6 +25,8 @@ const {
   createHistoryAndLocation,
   createObjectURL,
   getGlobalEventTarget,
+  readDeviceMotion,
+  readDeviceOrientation,
   GodotFile,
   GodotFileReader,
   GodotFormData,
@@ -42,6 +46,8 @@ const {
   setNavigatorOnline,
   setInterval: godotSetInterval,
   setTimeout: godotSetTimeout,
+  startDeviceSensorEvents,
+  stopDeviceSensorEvents,
   vibrate: godotVibrate,
 } = await import('../dist/index.js')
 
@@ -63,6 +69,10 @@ function resetMockDisplayServer(options = {}) {
 
 function resetMockInput(options = {}) {
   globalThis.__vueGodotBrowserMockInput = {
+    accelerometer: options.accelerometer ?? { x: 0, y: 0, z: 0 },
+    gravity: options.gravity ?? { x: 0, y: 0, z: 0 },
+    gyroscope: options.gyroscope ?? { x: 0, y: 0, z: 0 },
+    magnetometer: options.magnetometer ?? { x: 0, y: 0, z: 0 },
     vibrations: [],
     throwOnVibrate: options.throwOnVibrate ?? false,
   }
@@ -330,6 +340,63 @@ test('navigator.vibrate returns false when Godot vibration fails', () => {
   resetMockInput({ throwOnVibrate: true })
 
   assert.equal(godotNavigator.vibrate(5), false)
+})
+
+test('device sensor helpers read motion and orientation values', () => {
+  resetMockInput({
+    accelerometer: { x: 1, y: 2, z: 3 },
+    gravity: { x: 0, y: 0, z: 9.8 },
+    gyroscope: { x: Math.PI / 2, y: Math.PI, z: Math.PI * 2 },
+    magnetometer: { x: 0, y: 1, z: 0 },
+  })
+
+  const motion = readDeviceMotion(25)
+  const orientation = readDeviceOrientation()
+
+  assert.deepEqual(motion.acceleration, { x: 1, y: 2, z: 3 })
+  assert.deepEqual(motion.accelerationIncludingGravity, {
+    x: 1,
+    y: 2,
+    z: 12.8,
+  })
+  assert.equal(motion.rotationRate.beta, 90)
+  assert.equal(motion.rotationRate.gamma, 180)
+  assert.equal(motion.rotationRate.alpha, 360)
+  assert.equal(motion.interval, 25)
+  assert.equal(orientation.alpha, 90)
+  assert.equal(orientation.beta, -0)
+  assert.equal(orientation.gamma, 0)
+  assert.equal(orientation.absolute, true)
+})
+
+test('device sensor events dispatch on the global event target', () => {
+  resetMockInput({
+    accelerometer: { x: 1, y: 0, z: 0 },
+    gravity: { x: 0, y: 0, z: 9.8 },
+    magnetometer: { x: 1, y: 0, z: 0 },
+  })
+
+  const target = getGlobalEventTarget()
+  const events = []
+  const onMotion = (event) => {
+    events.push(event)
+  }
+  const onOrientation = (event) => {
+    events.push(event)
+  }
+
+  target.addEventListener('devicemotion', onMotion)
+  target.addEventListener('deviceorientation', onOrientation)
+  startDeviceSensorEvents({ intervalMs: 20 })
+  stopDeviceSensorEvents()
+  target.removeEventListener('devicemotion', onMotion)
+  target.removeEventListener('deviceorientation', onOrientation)
+
+  assert.equal(events.length, 2)
+  assert.ok(events[0] instanceof GodotDeviceMotionEvent)
+  assert.ok(events[1] instanceof GodotDeviceOrientationEvent)
+  assert.equal(events[0].acceleration.x, 1)
+  assert.equal(events[1].alpha, 0)
 })
 
 test('GodotHeaders stores case-insensitive values and serializes for Godot', () => {

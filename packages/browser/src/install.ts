@@ -16,6 +16,17 @@ import {
   clipboard as godotClipboard,
   isClipboardSupported,
 } from './clipboard.js'
+import {
+  GodotDeviceMotionEvent,
+  GodotDeviceOrientationEvent,
+  configureDeviceSensorEvents,
+  dispatchDeviceSensorEvents,
+  getDeviceSensorEventOptions,
+  readDeviceMotion,
+  readDeviceOrientation,
+  startDeviceSensorEvents,
+  stopDeviceSensorEvents,
+} from './device-sensors.js'
 import { GodotTextDecoder, GodotTextEncoder } from './encoding.js'
 import { GodotFile } from './file.js'
 import { GodotFileReader } from './file-reader.js'
@@ -91,6 +102,8 @@ export function installBrowserAPIs(): void {
   polyfill('sessionStorage', godotSessionStorage)
   polyfill('Navigator', GodotNavigator)
   polyfill('navigator', godotNavigator)
+  polyfill('DeviceMotionEvent', GodotDeviceMotionEvent)
+  polyfill('DeviceOrientationEvent', GodotDeviceOrientationEvent)
 
   // URL.createObjectURL / revokeObjectURL (static methods)
   if (typeof g['URL'] === 'function') {
@@ -164,6 +177,15 @@ export function installPolyfill(...names: string[]): void {
     isClipboardSupported,
     isVibrationSupported,
     vibrate,
+    DeviceMotionEvent: GodotDeviceMotionEvent,
+    DeviceOrientationEvent: GodotDeviceOrientationEvent,
+    configureDeviceSensorEvents,
+    dispatchDeviceSensorEvents,
+    getDeviceSensorEventOptions,
+    readDeviceMotion,
+    readDeviceOrientation,
+    startDeviceSensorEvents,
+    stopDeviceSensorEvents,
     checkNetworkReachability,
     configureNetworkReachability,
     getNetworkReachabilityOptions,

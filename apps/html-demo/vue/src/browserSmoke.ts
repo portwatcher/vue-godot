@@ -1,3 +1,10 @@
+import {
+  readDeviceMotion,
+  readDeviceOrientation,
+  startDeviceSensorEvents,
+  stopDeviceSensorEvents,
+} from '@vue-godot/browser'
+
 export interface BrowserSmokeResult {
   name: string
   ok: boolean
@@ -213,6 +220,28 @@ export async function runBrowserSmokeTests(
     )
   } catch (error) {
     results.push(failFromError('navigator.vibrate', error))
+  }
+
+  try {
+    const motion = readDeviceMotion()
+    const orientation = readDeviceOrientation()
+    let motionEventSeen = false
+    const listener = () => {
+      motionEventSeen = true
+    }
+    addEventListener('devicemotion', listener)
+    startDeviceSensorEvents({ intervalMs: 100, orientation: false })
+    stopDeviceSensorEvents()
+    removeEventListener('devicemotion', listener)
+    results.push(
+      typeof motion.acceleration.x === 'number' &&
+        typeof orientation.absolute === 'boolean' &&
+        motionEventSeen
+        ? pass('device sensors', 'ok')
+        : fail('device sensors', 'missing sensor data'),
+    )
+  } catch (error) {
+    results.push(failFromError('device sensors', error))
   }
 
   try {
