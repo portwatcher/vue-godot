@@ -6,7 +6,7 @@ Vue Godot renders Vue components into Godot's scene tree, so you can use Vue rea
 
 This project is experimental and not production ready yet. Follow [@juryxiong](https://x.com/juryxiong) for updates.
 
-See the [compatibility checklist](./docs/compatibility.md) for the current support status, platform caveats, and intentionally skipped browser APIs. See [permissions and export setup](./docs/permissions.md) and the [plugin adapter guide](./docs/plugins.md) for native capability requirements, and [runtime renderer support](./docs/runtime.md) for supported Vue features and unsupported browser/DOM assumptions.
+See the [compatibility checklist](./docs/compatibility.md) for the current support status, platform caveats, and intentionally skipped browser APIs. See the [production readiness guide](./docs/production.md), [permissions and export setup](./docs/permissions.md), and the [plugin adapter guide](./docs/plugins.md) for release and native capability requirements, and [runtime renderer support](./docs/runtime.md) for supported Vue features and unsupported browser/DOM assumptions.
 
 ![demo](./intro-medias/demo.gif)
 
