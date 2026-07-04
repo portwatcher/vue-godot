@@ -41,6 +41,7 @@ When `--html` is set, the scaffolded project includes:
 - `htmlPlugin` registered in `main.ts` for global component availability
 - an HTML-like starter `App.vue`
 - `_exit_tree()` cleanup that calls `app.unmount()` for editor reload safety
+- Volar plugin in `tsconfig.json` (`vueCompilerOptions.plugins`) so the IDE resolves lowercase tags as `@vue-godot/html` components with full type-checking and hover info
 
 **Example:**
 

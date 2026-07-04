@@ -31,6 +31,43 @@ function isStringRecord(value: unknown): value is Record<string, string> {
   return Object.values(value).every((entry) => typeof entry === 'string')
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function objectField(
+  parent: Record<string, unknown>,
+  key: string,
+): Record<string, unknown> {
+  const value = parent[key]
+  if (value === undefined) {
+    const next: Record<string, unknown> = {}
+    parent[key] = next
+    return next
+  }
+  if (isRecord(value)) {
+    return value
+  }
+  throw new Error(`Expected ${key} to be an object`)
+}
+
+function stringArrayField(
+  parent: Record<string, unknown>,
+  key: string,
+): string[] {
+  const value = parent[key]
+  if (value === undefined) {
+    return []
+  }
+  if (
+    Array.isArray(value) &&
+    value.every((entry) => typeof entry === 'string')
+  ) {
+    return [...value]
+  }
+  throw new Error(`Expected ${key} to be a string array`)
+}
+
 function readPackageSpecOverrides(): Record<string, string> {
   const raw = process.env['VUE_GODOT_PACKAGE_OVERRIDES']
   if (!raw) {
@@ -44,6 +81,30 @@ function readPackageSpecOverrides(): Record<string, string> {
     )
   }
   return parsed
+}
+
+export function addHtmlVolarPlugin(vueDir: string, cwd: string): void {
+  const tsconfigPath = path.join(vueDir, 'tsconfig.json')
+  if (!fs.existsSync(tsconfigPath)) {
+    return
+  }
+
+  const parsed: unknown = JSON.parse(fs.readFileSync(tsconfigPath, 'utf-8'))
+  if (!isRecord(parsed)) {
+    throw new Error(`Expected ${tsconfigPath} to contain a JSON object`)
+  }
+
+  const vueCompilerOptions = objectField(parsed, 'vueCompilerOptions')
+  const plugins = stringArrayField(vueCompilerOptions, 'plugins')
+  if (!plugins.includes('@vue-godot/html/volar-plugin')) {
+    plugins.push('@vue-godot/html/volar-plugin')
+  }
+  vueCompilerOptions['plugins'] = plugins
+
+  fs.writeFileSync(tsconfigPath, JSON.stringify(parsed, null, 2) + '\n')
+  console.log(
+    `  updated ${path.relative(cwd, tsconfigPath)} (html volar plugin)`,
+  )
 }
 
 function packageSpec(
@@ -230,7 +291,7 @@ export default class Root extends VBoxContainer {
 
 export function generateHtmlAppVue(): string {
   return `<template>
-  <div
+  <Div
     :style="{
       flexDirection: 'column',
       gap: 12,
@@ -239,17 +300,17 @@ export function generateHtmlAppVue(): string {
       backgroundColor: '#1f2937',
     }"
   >
-    <span :style="{ fontSize: 24, color: '#f8fafc' }">
+    <Span :style="{ fontSize: 24, color: '#f8fafc' }">
       Hello from Vue Godot HTML
-    </span>
-    <span :style="{ color: '#cbd5e1' }">
+    </Span>
+    <Span :style="{ color: '#cbd5e1' }">
       Edit vue/src/App.vue and keep npm run dev running.
-    </span>
-    <input v-model="name" placeholder="Player name" />
-    <button @click="count++">Clicked {{ count }} times</button>
-    <a href="https://github.com/portwatcher/vue-godot">Open project repo</a>
-    <span :style="{ color: '#93c5fd' }">Hello, {{ name || 'player' }}.</span>
-  </div>
+    </Span>
+    <Input v-model="name" placeholder="Player name"></Input>
+    <Button @click="count++">Clicked {{ count }} times</Button>
+    <A href="https://github.com/portwatcher/vue-godot">Open project repo</A>
+    <Span :style="{ color: '#93c5fd' }">Hello, {{ name || 'player' }}.</Span>
+  </Div>
 </template>
 
 <script setup lang="ts">
@@ -354,6 +415,8 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     console.log(
       `  updated ${path.relative(process.cwd(), appVuePath)} (html mode)`,
     )
+
+    addHtmlVolarPlugin(vueDir, process.cwd())
   }
 
   /* --- package.json --- */

@@ -1,3 +1,5 @@
+import './global.js'
+
 export { A } from './components/A.js'
 export { Audio } from './components/Audio.js'
 export { Button } from './components/Button.js'

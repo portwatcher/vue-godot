@@ -42,7 +42,7 @@ export const releasePackageConfigs = [
   {
     name: '@vue-godot/html',
     dir: 'packages/html',
-    expectedFiles: ['dist/index.js', 'dist/index.d.ts'],
+    expectedFiles: ['dist/index.js', 'dist/index.d.ts', 'volar-plugin.cjs'],
   },
 ]
 

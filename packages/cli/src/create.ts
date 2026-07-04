@@ -2,6 +2,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { spawn } from 'node:child_process'
 import {
+  addHtmlVolarPlugin,
   copyTemplateDir,
   generateHtmlAppVue,
   generateHtmlMainTs,
@@ -132,6 +133,8 @@ export async function create(options: CreateOptions): Promise<void> {
     console.log(
       `  updated ${path.relative(process.cwd(), appVuePath)} (html mode)`,
     )
+
+    addHtmlVolarPlugin(vueDir, process.cwd())
   }
 
   /* --- package.json --- */

@@ -4,5 +4,8 @@
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",
     "source.organizeImports": "explicit"
+  },
+  "files.exclude": {
+    "packages/cli/templates": true
   }
 }

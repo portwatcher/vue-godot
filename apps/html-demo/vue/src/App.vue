@@ -1,7 +1,7 @@
 <template>
   <!-- ===== Section: Div layout ===== -->
-  <Label text="--- Div layout ---" />
-  <div
+  <Span>--- Div layout ---</Span>
+  <Div
     :style="{
       flexDirection: direction,
       flexWrap: wrap,
@@ -14,31 +14,33 @@
       backgroundColor: '#172033',
     }"
   >
-    <div :style="{ flex: 1, padding: 8 }">
-      <span :style="{}">flex:1 child</span>
-    </div>
+    <Div :style="{ flex: 1, padding: 8 }">
+      <Span :style="{}">flex:1 child</Span>
+    </Div>
     <template v-for="n in 2" :key="n">
-      <div :style="{ alignSelf: n === 1 ? 'center' : 'flex-end', padding: 6 }">
-        <span>fragment child {{ n }}</span>
-      </div>
+      <Div :style="{ alignSelf: n === 1 ? 'center' : 'flex-end', padding: 6 }">
+        <Span>fragment child {{ n }}</Span>
+      </Div>
     </template>
-    <div :style="{ flex: 2, padding: 8 }">
-      <span>flex:2 child</span>
-    </div>
-  </div>
-  <HBoxContainer>
-    <button @click="toggleDirection">Toggle Direction</button>
-    <button @click="toggleWrap">Toggle Wrap</button>
-    <button @click="cycleJustify">Cycle Justify</button>
-    <button @click="cycleAlign">Cycle Align</button>
-  </HBoxContainer>
-  <Label
-    :text="`direction=${direction} wrap=${wrap} justify=${justify} align=${align}`"
-  />
+    <Div :style="{ flex: 2, padding: 8 }">
+      <Span>flex:2 child</Span>
+    </Div>
+  </Div>
+  <Div :style="{ flexDirection: 'row', gap: 8 }">
+    <Button @click="toggleDirection">Toggle Direction</Button>
+    <Button @click="toggleWrap">Toggle Wrap</Button>
+    <Button @click="cycleJustify">Cycle Justify</Button>
+    <Button @click="cycleAlign">Cycle Align</Button>
+  </Div>
+  <Span>
+    {{
+      `direction=${direction} wrap=${wrap} justify=${justify} align=${align}`
+    }}
+  </Span>
 
   <!-- ===== Section: Span (text styling) ===== -->
-  <Label text="--- Span ---" />
-  <span
+  <Span>--- Span ---</Span>
+  <Span
     :style="{
       fontSize: 24,
       fontWeight: 'bold',
@@ -47,8 +49,8 @@
     }"
   >
     Bold orange 24px centered
-  </span>
-  <span
+  </Span>
+  <Span
     :style="{
       textTransform: 'uppercase',
       overflowWrap: 'break-word',
@@ -56,107 +58,117 @@
     }"
   >
     uppercase with word wrap
-  </span>
+  </Span>
 
   <!-- ===== Section: Button ===== -->
-  <Label text="--- Button ---" />
-  <HBoxContainer>
-    <button @click="onButtonClick">Click me</button>
-    <button :disabled="true">Disabled</button>
-  </HBoxContainer>
-  <Label :text="`Button clicks: ${buttonClicks}`" />
+  <Span>--- Button ---</Span>
+  <Div :style="{ flexDirection: 'row', gap: 8 }">
+    <Button @click="onButtonClick">Click me</Button>
+    <Button :disabled="true">Disabled</Button>
+  </Div>
+  <Span>{{ `Button clicks: ${buttonClicks}` }}</Span>
 
   <!-- ===== Section: PascalCase HTML components ===== -->
-  <Label text="--- PascalCase HTML components ---" />
+  <Label text="--- PascalCase HTML components ---"></Label>
   <Div :style="{ flexDirection: 'row', gap: 8, padding: 8 }">
     <Span :style="{ color: '#a7f3d0' }">PascalCase registration works</Span>
     <Button @click="onPascalButtonClick">Pascal button</Button>
   </Div>
-  <Label :text="`Pascal button clicks: ${pascalButtonClicks}`" />
+  <Label :text="`Pascal button clicks: ${pascalButtonClicks}`"></Label>
 
   <!-- ===== Section: Anchor ===== -->
-  <Label text="--- Anchor ---" />
-  <a
+  <Label text="--- Anchor ---"></Label>
+  <A
     href="https://godotengine.org"
     :style="{ fontSize: 18, color: '#44aaff' }"
     @click="onLinkClick"
   >
     Open Godot site
-  </a>
-  <Label :text="`Anchor clicks: ${linkClicks}`" />
+  </A>
+  <Label :text="`Anchor clicks: ${linkClicks}`"></Label>
 
   <!-- ===== Section: Input (text) ===== -->
-  <Label text="--- Input (text) ---" />
-  <input v-model="textValue" placeholder="Type something..." />
-  <Label :text="`Text input: ${textValue}`" />
+  <Span>--- Input (text) ---</Span>
+  <Input v-model="textValue" placeholder="Type something..."></Input>
+  <Span>{{ `Text input: ${textValue}` }}</Span>
 
   <!-- ===== Section: Input (password) ===== -->
-  <Label text="--- Input (password) ---" />
-  <input type="password" v-model="passwordValue" placeholder="Secret" />
-  <Label :text="`Password length: ${passwordValue.length}`" />
+  <Span>--- Input (password) ---</Span>
+  <Input type="password" v-model="passwordValue" placeholder="Secret"></Input>
+  <Span>{{ `Password length: ${passwordValue.length}` }}</Span>
 
   <!-- ===== Section: Input (checkbox) ===== -->
-  <Label text="--- Input (checkbox) ---" />
-  <input type="checkbox" v-model="checkboxValue" />
-  <Label :text="`Checked: ${checkboxValue}`" />
+  <Span>--- Input (checkbox) ---</Span>
+  <Input type="checkbox" v-model="checkboxValue"></Input>
+  <Span>{{ `Checked: ${checkboxValue}` }}</Span>
 
   <!-- ===== Section: Input (range) ===== -->
-  <Label text="--- Input (range) ---" />
-  <input type="range" v-model="rangeValue" :min="0" :max="100" :step="5" />
-  <Label :text="`Range: ${rangeValue}`" />
+  <Span>--- Input (range) ---</Span>
+  <Input
+    type="range"
+    v-model="rangeValue"
+    :min="0"
+    :max="100"
+    :step="5"
+  ></Input>
+  <Span>{{ `Range: ${rangeValue}` }}</Span>
 
   <!-- ===== Section: Textarea ===== -->
-  <Label text="--- Textarea ---" />
-  <textarea
+  <Span>--- Textarea ---</Span>
+  <Textarea
     v-model="textareaValue"
     placeholder="Multi-line text..."
     :rows="3"
     :cols="40"
-  />
-  <Label :text="`Textarea lines: ${textareaValue.split('\n').length}`" />
+  ></Textarea>
+  <Span>{{ `Textarea lines: ${textareaValue.split('\n').length}` }}</Span>
 
   <!-- ===== Section: Select ===== -->
-  <Label text="--- Select ---" />
-  <select v-model="selectedFruit">
-    <option value="apple">Apple</option>
-    <option value="banana">Banana</option>
-    <option value="cherry">Cherry</option>
-  </select>
-  <Label :text="`Selected: ${selectedFruit}`" />
+  <Span>--- Select ---</Span>
+  <Select v-model="selectedFruit">
+    <Option value="apple">Apple</Option>
+    <Option value="banana">Banana</Option>
+    <Option value="cherry">Cherry</Option>
+  </Select>
+  <Span>{{ `Selected: ${selectedFruit}` }}</Span>
 
   <!-- ===== Section: Img ===== -->
-  <Label text="--- Img ---" />
-  <img
+  <Span>--- Img ---</Span>
+  <Img
     :src="demoSvgDataUri"
     alt="Godot icon"
     :style="{ width: 64, height: 64 }"
-  />
+  ></Img>
 
   <!-- ===== Section: Svg ===== -->
-  <Label text="--- Svg ---" />
-  <svg
+  <Span>--- Svg ---</Span>
+  <Svg
     :src="demoSvgDataUri"
     alt="SVG icon"
     :scale="2"
     :style="{ width: 64, height: 64 }"
-  />
+  ></Svg>
 
   <!-- ===== Section: Canvas ===== -->
-  <Label text="--- Canvas ---" />
-  <canvas ref="canvasRef" :width="200" :height="80" />
+  <Span>--- Canvas ---</Span>
+  <Canvas ref="canvasRef" :width="200" :height="80"></Canvas>
 
   <!-- ===== Section: Audio ===== -->
-  <Label text="--- Audio (no src in demo) ---" />
-  <audio :volume="0.5" :loop="false" :muted="true" />
+  <Span>--- Audio (no src in demo) ---</Span>
+  <Audio :volume="0.5" :loop="false" :muted="true"></Audio>
 
   <!-- ===== Section: Video ===== -->
-  <Label text="--- Video (no src in demo) ---" />
-  <video :style="{ width: 320, height: 180 }" :volume="0.8" :muted="true" />
+  <Span>--- Video (no src in demo) ---</Span>
+  <Video
+    :style="{ width: 320, height: 180 }"
+    :volume="0.8"
+    :muted="true"
+  ></Video>
 
   <!-- ===== Section: Browser APIs ===== -->
-  <Label text="--- Browser API smoke tests ---" />
-  <button @click="runBrowserTests">Run browser API tests</button>
-  <Label :text="browserTestResult" />
+  <Span>--- Browser API smoke tests ---</Span>
+  <Button @click="runBrowserTests">Run browser API tests</Button>
+  <Span>{{ browserTestResult }}</Span>
 </template>
 
 <script setup lang="ts">

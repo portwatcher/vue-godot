@@ -17,12 +17,12 @@ This package serves audience #2 without interfering with audience #1. Both compo
 <template>
   <!-- web dev: familiar HTML-like component -->
   <Div :style="{ flexDirection: 'row', gap: 10 }">
-    <Img src="./assets/logo.png" />
+    <Img src="./assets/logo.png"></Img>
     <Span>Hello world</Span>
   </Div>
 
   <!-- game dev: native Godot node, same template -->
-  <Sprite2D :texture="playerTexture" />
+  <Sprite2D :texture="playerTexture"></Sprite2D>
 </template>
 ```
 
@@ -42,7 +42,7 @@ Each HTML-like element is a Vue component (using `defineComponent` + `h()`) that
 Components that load assets (images, video, audio) handle the loading internally:
 
 ```vue
-<Img src="./assets/photo.png" />
+<Img src="./assets/photo.png"></Img>
 ```
 
 Under the hood, `<Img>` resolves `./assets/photo.png` → `res://assets/photo.png` and calls `ResourceLoader.load()` to get a `Texture2D`, then passes it to the underlying `TextureRect` node.
@@ -82,7 +82,7 @@ Style objects (inline, React Native-style) are the primary styling API:
 ```vue
 <Div :style="{ flexDirection: 'row', gap: 10, padding: 20 }">
   <Div :style="{ flex: 1 }">
-    <Img src="./logo.png" :style="{ width: 64, height: 64 }" />
+    <Img src="./logo.png" :style="{ width: 64, height: 64 }"></Img>
   </Div>
   <Div :style="{ flex: 2, alignItems: 'center' }">
     <Span :style="{ fontSize: 18, color: '#333' }">Hello</Span>
@@ -110,9 +110,18 @@ Color values support hex (`#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`), named CSS co
 | `<Svg>`             | `TextureRect` (SVG resource)                                           | `src`                 |
 | `<A>`               | `LinkButton`                                                           | `href`, `@click`      |
 
+## Provided APIs
+
+| API                                                                                                                                    | Description                                                                                              |
+| -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| HTML-like components (`A`, `Audio`, `Button`, `Canvas`, `Div`, `Img`, `Input`, `Option`, `Select`, `Span`, `Svg`, `Textarea`, `Video`) | Vue components backed by Godot nodes                                                                     |
+| `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
+| `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
+| `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |
+
 ### Lowercase tag compatibility (migrating existing SPAs)
 
-Vue's compiler treats lowercase tags like `<div>` and `<img>` as native HTML elements, bypassing component resolution entirely. To make existing Vue SPAs work without renaming every tag, two things are needed:
+Vue's compiler treats lowercase tags like `<div>` and `<img>` as native HTML elements, bypassing component resolution entirely. To make existing Vue SPAs work without renaming every tag, three things are needed:
 
 1. **Vite config** — tell Vue's compiler that HTML tags are not native (so they resolve as components):
 
@@ -141,7 +150,17 @@ export default {
 
 2. **`htmlPlugin`** — registers every component under both PascalCase and lowercase names, so `<div>` resolves to the same component as `<Div>`.
 
-With this setup, existing SPAs using `<div>`, `<img>`, `<span>`, etc. work without any renaming.
+3. **Volar plugin** — add `@vue-godot/html/volar-plugin` to `vueCompilerOptions.plugins` so the IDE uses the same Godot-aware tag classification:
+
+```json
+{
+  "vueCompilerOptions": {
+    "plugins": ["@vue-godot/html/volar-plugin"]
+  }
+}
+```
+
+With this setup, existing SPAs using `<div>`, `<img>`, `<span>`, etc. work without any renaming, and both lowercase and PascalCase tags get component hover/type information in VS Code.
 
 ## Usage
 
@@ -200,8 +219,8 @@ export default class App extends Control {
 <!-- existing SPA code works as-is -->
 <template>
   <div :style="{ flexDirection: 'row', gap: 10 }">
-    <img src="./logo.png" />
     <span>Hello world</span>
+    <button @click="save">Save</button>
   </div>
 </template>
 ```
@@ -220,12 +239,12 @@ const volume = ref(50)
 
 <template>
   <Div :style="{ flexDirection: 'column', gap: 10 }">
-    <Img src="./logo.png" />
+    <Img src="./logo.png"></Img>
     <Span :style="{ fontSize: 24, color: '#333' }">Welcome!</Span>
-    <Input v-model="name" placeholder="Your name" />
-    <Input type="password" v-model="password" placeholder="Password" />
-    <Input type="checkbox" v-model="agreed" />
-    <Input type="range" v-model="volume" :min="0" :max="100" />
+    <Input v-model="name" placeholder="Your name"></Input>
+    <Input type="password" v-model="password" placeholder="Password"></Input>
+    <Input type="checkbox" v-model="agreed"></Input>
+    <Input type="range" v-model="volume" :min="0" :max="100"></Input>
     <Button @click="save" :style="{ fontSize: 16 }">Save</Button>
   </Div>
 </template>

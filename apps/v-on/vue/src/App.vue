@@ -6,7 +6,7 @@
     <LineEdit
       :placeholder_text="'Type here (snake_case signal via @text_changed)'"
       @text_changed="onSnakeCaseTextChanged"
-    />
+    ></LineEdit>
     <Label
       :text="`snake_case handler fired: ${snakeCaseCount} (last: ${snakeCaseLast})`"
     ></Label>
@@ -23,13 +23,13 @@
             ? [onDynamicPrimary, onDynamicSecondary]
             : onDynamicPrimary
       "
-    />
+    ></LineEdit>
     <HBoxContainer>
-      <Button :text="'Single'" @pressed="() => (mode = 'single')" />
-      <Button :text="'Array'" @pressed="() => (mode = 'array')" />
-      <Button :text="'Off'" @pressed="() => (mode = 'off')" />
-      <Button :text="'Rerender'" @pressed="forceRerender" />
-      <Button :text="'Reset'" @pressed="resetCounters" />
+      <Button :text="'Single'" @pressed="() => (mode = 'single')"></Button>
+      <Button :text="'Array'" @pressed="() => (mode = 'array')"></Button>
+      <Button :text="'Off'" @pressed="() => (mode = 'off')"></Button>
+      <Button :text="'Rerender'" @pressed="forceRerender"></Button>
+      <Button :text="'Reset'" @pressed="resetCounters"></Button>
     </HBoxContainer>
     <Label :text="`mode=${mode} rerenders=${rerenders}`"></Label>
     <Label

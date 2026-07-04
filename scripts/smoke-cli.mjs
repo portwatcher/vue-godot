@@ -49,6 +49,20 @@ function countMatches(value, pattern) {
   return [...value.matchAll(pattern)].length
 }
 
+function assertHtmlVolarPluginConfigured(target) {
+  const tsconfigPath = path.join(target, 'vue/tsconfig.json')
+  const tsconfig = JSON.parse(fs.readFileSync(tsconfigPath, 'utf-8'))
+  const plugins = tsconfig.vueCompilerOptions?.plugins
+  if (
+    !Array.isArray(plugins) ||
+    !plugins.includes('@vue-godot/html/volar-plugin')
+  ) {
+    throw new Error(
+      `${tsconfigPath} must include @vue-godot/html/volar-plugin in vueCompilerOptions.plugins`,
+    )
+  }
+}
+
 async function waitForWatchCondition(state, description, predicate) {
   const startedAt = Date.now()
   while (Date.now() - startedAt < 30_000) {
@@ -178,5 +192,6 @@ const htmlAppDir = smokeProject(
 )
 assertVueSourceIgnoredByGodot(htmlAppDir)
 assertGeneratedOutputIgnoredByGodot(htmlAppDir)
+assertHtmlVolarPluginConfigured(htmlAppDir)
 await smokeWatchRebuild(htmlAppDir, env)
 console.log('[smoke-cli] create and create --html smoke checks passed')
