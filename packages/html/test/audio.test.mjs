@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { register } from 'node:module'
 import test from 'node:test'
+import { renderWhenAsyncPropSettles } from './render-helpers.mjs'
 
 // Register a loader that intercepts 'godot' and '@vue-godot/browser'
 // bare specifiers with mocks.
@@ -25,10 +26,13 @@ async function renderAudio(props = {}) {
       ? await resultOrPromise
       : resultOrPromise
 
-  // Flush microtasks so the immediate watcher's async body completes.
-  await new Promise((r) => setTimeout(r, 0))
+  const vnode = await renderWhenAsyncPropSettles(
+    render,
+    'stream',
+    props.src != null,
+  )
 
-  return { vnode: render(), emitted }
+  return { vnode, emitted }
 }
 
 test('renders an AudioStreamPlayer node', async () => {
