@@ -56,6 +56,7 @@ import {
 } from './storage.js'
 import { createObjectURL, GodotURL, revokeObjectURL } from './url.js'
 import { GodotURLSearchParams } from './url-search-params.js'
+import { isVibrationSupported, vibrate } from './vibration.js'
 
 const g: Record<string, unknown> = globalThis
 
@@ -161,6 +162,8 @@ export function installPolyfill(...names: string[]): void {
     Clipboard: GodotClipboard,
     clipboard: godotClipboard,
     isClipboardSupported,
+    isVibrationSupported,
+    vibrate,
     checkNetworkReachability,
     configureNetworkReachability,
     getNetworkReachabilityOptions,

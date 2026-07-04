@@ -205,6 +205,17 @@ export async function runBrowserSmokeTests(
   }
 
   try {
+    const accepted = navigator.vibrate(0)
+    results.push(
+      typeof accepted === 'boolean'
+        ? pass('navigator.vibrate', `accepted=${accepted} ok`)
+        : fail('navigator.vibrate', typeof accepted),
+    )
+  } catch (error) {
+    results.push(failFromError('navigator.vibrate', error))
+  }
+
+  try {
     localStorage.setItem('vue-godot-smoke', 'local')
     const value = localStorage.getItem('vue-godot-smoke')
     localStorage.removeItem('vue-godot-smoke')

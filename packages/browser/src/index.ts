@@ -21,7 +21,7 @@
 //   • FormData/File   → Multipart-compatible form bodies
 //   • FileReader      → Async Blob/File readers
 //   • Storage         → user:// localStorage and memory sessionStorage
-//   • Navigator       → onLine, reachability, and text clipboard
+//   • Navigator       → onLine, reachability, text clipboard, and vibration
 //   • timers/RAF      → SceneTree-backed timing where available
 //   • performance     → Time-backed now() and marks/measures
 //
@@ -114,6 +114,11 @@ export type {
   GodotPerformanceMeasureOptions,
   GodotTimerHandler,
 } from './timing.js'
+export {
+  isVibrationSupported,
+  vibrate,
+} from './vibration.js'
+export type { GodotVibrationPattern } from './vibration.js'
 
 // Batch installers
 export { installBrowserAPIs, installPolyfill } from './install.js'

@@ -53,9 +53,11 @@ import { fetch, GodotRequest, GodotURL, GodotHeaders } from '@vue-godot/browser'
 | `Storage`                                        | `GodotStorage`         | Web Storage API shape; `.length`, `.key()`, `.getItem()`, `.setItem()`, `.removeItem()`, `.clear()`                                              |
 | `localStorage`                                   | `GodotStorage`         | Persistent JSON-backed storage at `user://vue-godot-browser-local-storage.json` with memory fallback                                             |
 | `sessionStorage`                                 | `GodotStorage`         | Process-memory storage; cleared when the GodotJS runtime exits or reloads                                                                        |
-| `navigator`                                      | `GodotNavigator`       | Provides `navigator.onLine` and `navigator.clipboard`; reachability checks update state and dispatch `online` / `offline` events                  |
+| `navigator`                                      | `GodotNavigator`       | Provides `navigator.onLine`, `navigator.clipboard`, and `navigator.vibrate()`; reachability checks update state and dispatch events                |
 | `navigator.clipboard.readText()` / `writeText()` | `GodotClipboard`       | Async text clipboard subset backed by `DisplayServer.clipboard_get()` / `clipboard_set()` when the display server supports clipboard access       |
 | `isClipboardSupported()`                         | DisplayServer helper   | Returns whether the current display server reports text clipboard support                                                                         |
+| `navigator.vibrate()`                            | Godot handheld haptics | Browser Vibration API subset backed by `Input.vibrate_handheld()`                                                                                |
+| `isVibrationSupported()`                         | Input helper           | Returns whether Godot's handheld vibration method is exposed                                                                                     |
 | `checkNetworkReachability()`                     | Fetch probe            | Configurable HTTP probe using `fetch()` and `AbortController`                                                                                    |
 | `URL`                                            | `GodotURL`             | WHATWG subset — `protocol`, `hostname`, `port`, `pathname`, `search`, `searchParams`, `hash`, `href`, `toString()`                               |
 | `URLSearchParams`                                | `GodotURLSearchParams` | Query string helper with duplicate-key support, iteration, `.append()`, `.set()`, `.getAll()`, `.sort()`                                         |
@@ -275,10 +277,22 @@ if (isClipboardSupported()) {
 }
 ```
 
+## Vibration
+
+`navigator.vibrate()` implements the browser Vibration API shape on top of `Input.vibrate_handheld()`. A number vibrates immediately; arrays alternate vibration and pause durations. Calling `navigator.vibrate(0)` cancels pending vibration patterns.
+
+```ts
+navigator.vibrate(50)
+navigator.vibrate([40, 30, 40])
+navigator.vibrate(0)
+```
+
+The return value reports whether the pattern was accepted by the polyfill, not whether the device physically vibrated. On Android, the app export must enable the `VIBRATE` permission for Godot's handheld vibration to have an effect.
+
 ## Requirements
 
 - **GodotJS** runtime (V8 or QuickJS) with access to the `godot` module
-- Godot engine classes: `HTTPClient`, `DisplayServer`, `Engine`, `FileAccess`, `SceneTree`, `Time`, `TLSOptions`, `PackedByteArray`, `PackedStringArray`
+- Godot engine classes: `HTTPClient`, `DisplayServer`, `Engine`, `FileAccess`, `Input`, `SceneTree`, `Time`, `TLSOptions`, `PackedByteArray`, `PackedStringArray`
 
 ## License
 

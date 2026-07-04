@@ -42,6 +42,7 @@ const {
   setNavigatorOnline,
   setInterval: godotSetInterval,
   setTimeout: godotSetTimeout,
+  vibrate: godotVibrate,
 } = await import('../dist/index.js')
 
 function resetMockHttp(responses) {
@@ -58,6 +59,14 @@ function resetMockDisplayServer(options = {}) {
     features: new Set(options.features ?? [5]),
   }
   return globalThis.__vueGodotBrowserMockDisplayServer
+}
+
+function resetMockInput(options = {}) {
+  globalThis.__vueGodotBrowserMockInput = {
+    vibrations: [],
+    throwOnVibrate: options.throwOnVibrate ?? false,
+  }
+  return globalThis.__vueGodotBrowserMockInput
 }
 
 test('base64 helpers round-trip binary strings', () => {
@@ -284,6 +293,43 @@ test('navigator.clipboard rejects when DisplayServer clipboard is unsupported', 
   await assert.rejects(() => godotClipboard.writeText('blocked'), {
     name: 'NotSupportedError',
   })
+})
+
+test('navigator.vibrate delegates to Input.vibrate_handheld', async () => {
+  const input = resetMockInput()
+
+  assert.equal(godotNavigator.vibrate([5, 5, 10]), true)
+  assert.deepEqual(input.vibrations, [{ durationMs: 5, amplitude: -1 }])
+
+  await new Promise((resolve) => globalThis.setTimeout(resolve, 20))
+
+  assert.deepEqual(input.vibrations, [
+    { durationMs: 5, amplitude: -1 },
+    { durationMs: 10, amplitude: -1 },
+  ])
+})
+
+test('navigator.vibrate validates patterns and cancels pending vibration', async () => {
+  const input = resetMockInput()
+
+  assert.equal(godotVibrate(-1), false)
+  assert.deepEqual(input.vibrations, [])
+
+  assert.equal(godotNavigator.vibrate([1, 50, 1]), true)
+  assert.equal(godotNavigator.vibrate(0), true)
+
+  await new Promise((resolve) => globalThis.setTimeout(resolve, 60))
+
+  assert.deepEqual(input.vibrations, [
+    { durationMs: 1, amplitude: -1 },
+    { durationMs: 0, amplitude: -1 },
+  ])
+})
+
+test('navigator.vibrate returns false when Godot vibration fails', () => {
+  resetMockInput({ throwOnVibrate: true })
+
+  assert.equal(godotNavigator.vibrate(5), false)
 })
 
 test('GodotHeaders stores case-insensitive values and serializes for Godot', () => {

@@ -52,6 +52,17 @@ export function load(url, context, nextLoad) {
           return globalThis[key]
         }
 
+        function mockInputState() {
+          const key = '__vueGodotBrowserMockInput'
+          if (!globalThis[key]) {
+            globalThis[key] = {
+              vibrations: [],
+              throwOnVibrate: false,
+            }
+          }
+          return globalThis[key]
+        }
+
         function bodyToBytes(body) {
           if (body == null) {
             return new Uint8Array()
@@ -251,6 +262,19 @@ export function load(url, context, nextLoad) {
 
         DisplayServer.Feature = {
           FEATURE_CLIPBOARD: 5,
+        }
+
+        export class Input {
+          static vibrate_handheld(duration_ms = 500, amplitude = -1) {
+            const state = mockInputState()
+            if (state.throwOnVibrate) {
+              throw new Error('vibration unavailable')
+            }
+            state.vibrations.push({
+              durationMs: duration_ms,
+              amplitude,
+            })
+          }
         }
 
         export const Engine = {

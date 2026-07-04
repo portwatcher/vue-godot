@@ -11,6 +11,10 @@ import {
   clearTimeout as clearGodotTimeout,
   setTimeout as setGodotTimeout,
 } from './timing.js'
+import {
+  vibrate,
+  type GodotVibrationPattern,
+} from './vibration.js'
 
 export interface GodotNetworkReachabilityOptions {
   url?: string
@@ -66,6 +70,10 @@ export class GodotNavigator {
 
   get onLine(): boolean {
     return this._online
+  }
+
+  vibrate(pattern: GodotVibrationPattern): boolean {
+    return vibrate(pattern)
   }
 
   /** @internal */
