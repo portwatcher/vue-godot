@@ -5,6 +5,7 @@
 // ---------------------------------------------------------------------------
 
 import type { GodotBlob } from './blob.js'
+import { GodotURLSearchParams } from './url-search-params.js'
 
 // ---------------------------------------------------------------------------
 // Blob Object URL store — polyfills URL.createObjectURL / revokeObjectURL
@@ -48,21 +49,34 @@ export function resolveObjectURL(url: string): GodotBlob | undefined {
  * Lightweight URL implementation.
  *
  * Supports `http:`, `https:`, and opaque schemes.
- * Does NOT implement `searchParams` (add if needed).
  */
 export class GodotURL {
   protocol: string = ''
   hostname: string = ''
   port: string = ''
   pathname: string = '/'
-  search: string = ''
   hash: string = ''
   username: string = ''
   password: string = ''
+  readonly searchParams: GodotURLSearchParams = new GodotURLSearchParams()
+
+  private _search: string = ''
 
   constructor(url: string, base?: string) {
+    this.searchParams._setChangeCallback((query) => {
+      this._search = query ? `?${query}` : ''
+    })
     const resolved = base ? this._resolve(url, base) : url
     this._parse(resolved)
+  }
+
+  get search(): string {
+    return this._search
+  }
+
+  set search(value: string) {
+    this._search = value ? (value.startsWith('?') ? value : `?${value}`) : ''
+    this.searchParams._replaceFromString(this._search)
   }
 
   get host(): string {

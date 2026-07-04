@@ -23,7 +23,18 @@ import {
   PopStateEvent,
 } from './history.js'
 import { GodotResponse } from './response.js'
+import {
+  cancelAnimationFrame,
+  clearInterval as godotClearInterval,
+  clearTimeout as godotClearTimeout,
+  performance,
+  queueMicrotask,
+  requestAnimationFrame,
+  setInterval as godotSetInterval,
+  setTimeout as godotSetTimeout,
+} from './timing.js'
 import { createObjectURL, GodotURL, revokeObjectURL } from './url.js'
+import { GodotURLSearchParams } from './url-search-params.js'
 
 const g: Record<string, unknown> = globalThis
 
@@ -49,6 +60,7 @@ export function installBrowserAPIs(): void {
   polyfill('Response', GodotResponse)
   polyfill('Request', GodotRequest)
   polyfill('URL', GodotURL)
+  polyfill('URLSearchParams', GodotURLSearchParams)
 
   // URL.createObjectURL / revokeObjectURL (static methods)
   if (typeof g['URL'] === 'function') {
@@ -64,6 +76,14 @@ export function installBrowserAPIs(): void {
   polyfill('btoa', btoa)
   polyfill('AbortController', GodotAbortController)
   polyfill('AbortSignal', GodotAbortSignal)
+  polyfill('setTimeout', godotSetTimeout)
+  polyfill('clearTimeout', godotClearTimeout)
+  polyfill('setInterval', godotSetInterval)
+  polyfill('clearInterval', godotClearInterval)
+  polyfill('queueMicrotask', queueMicrotask)
+  polyfill('requestAnimationFrame', requestAnimationFrame)
+  polyfill('cancelAnimationFrame', cancelAnimationFrame)
+  polyfill('performance', performance)
 
   // History API — history, location, PopStateEvent, and global event methods
   polyfill('PopStateEvent', PopStateEvent)
@@ -103,6 +123,7 @@ export function installPolyfill(...names: string[]): void {
     Request: GodotRequest,
     Response: GodotResponse,
     URL: GodotURL,
+    URLSearchParams: GodotURLSearchParams,
     'URL.createObjectURL': createObjectURL,
     'URL.revokeObjectURL': revokeObjectURL,
     Blob: GodotBlob,
@@ -112,6 +133,14 @@ export function installPolyfill(...names: string[]): void {
     TextDecoder: GodotTextDecoder,
     AbortController: GodotAbortController,
     AbortSignal: GodotAbortSignal,
+    setTimeout: godotSetTimeout,
+    clearTimeout: godotClearTimeout,
+    setInterval: godotSetInterval,
+    clearInterval: godotClearInterval,
+    queueMicrotask,
+    requestAnimationFrame,
+    cancelAnimationFrame,
+    performance,
     PopStateEvent,
     History: GodotHistory,
     Location: GodotLocation,

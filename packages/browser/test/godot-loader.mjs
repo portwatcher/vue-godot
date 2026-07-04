@@ -180,6 +180,12 @@ export function load(url, context, nextLoad) {
           },
         }
 
+        export const Time = {
+          get_ticks_usec() {
+            return Math.round(performance.now() * 1000)
+          },
+        }
+
         export const TLSOptions = {
           client() {
             return { __mock: true, __kind: 'tls-options' }

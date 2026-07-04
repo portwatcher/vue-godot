@@ -13,13 +13,22 @@ const {
   GodotTextDecoder,
   GodotTextEncoder,
   GodotURL,
+  GodotURLSearchParams,
   atob,
   btoa,
+  cancelAnimationFrame: godotCancelAnimationFrame,
+  clearInterval: godotClearInterval,
+  clearTimeout: godotClearTimeout,
   createHistoryAndLocation,
   createObjectURL,
   getGlobalEventTarget,
+  performance: godotPerformance,
+  queueMicrotask: godotQueueMicrotask,
+  requestAnimationFrame: godotRequestAnimationFrame,
   resolveObjectURL,
   revokeObjectURL,
+  setInterval: godotSetInterval,
+  setTimeout: godotSetTimeout,
 } = await import('../dist/index.js')
 
 test('base64 helpers round-trip binary strings', () => {
@@ -65,6 +74,28 @@ test('GodotURL parses absolute and relative URLs', () => {
 
   const relative = new GodotURL('../next', 'https://example.com/app/page')
   assert.equal(relative.href, 'https://example.com/app/../next')
+})
+
+test('GodotURLSearchParams preserves duplicates and syncs with GodotURL', () => {
+  const params = new GodotURLSearchParams('a=1&a=2&space=hello+world')
+
+  assert.equal(params.get('a'), '1')
+  assert.deepEqual(params.getAll('a'), ['1', '2'])
+  assert.equal(params.get('space'), 'hello world')
+
+  params.set('a', '3')
+  params.append('symbol', 'π value')
+  assert.equal(params.toString(), 'a=3&space=hello+world&symbol=%CF%80+value')
+
+  const url = new GodotURL('https://example.com/path?first=1&first=2')
+  url.searchParams.set('first', '3')
+  url.searchParams.append('next', 'ok')
+
+  assert.equal(url.search, '?first=3&next=ok')
+  assert.equal(url.href, 'https://example.com/path?first=3&next=ok')
+
+  url.search = '?fresh=yes'
+  assert.deepEqual([...url.searchParams], [['fresh', 'yes']])
 })
 
 test('GodotHeaders stores case-insensitive values and serializes for Godot', () => {
@@ -217,4 +248,87 @@ test('AbortController aborts once and notifies listeners', () => {
   assert.equal(controller.signal.reason, 'done')
   assert.equal(calls, 1)
   assert.throws(() => controller.signal.throwIfAborted(), /done/)
+})
+
+test('timer and microtask polyfills schedule and cancel callbacks', async () => {
+  const order = []
+  godotQueueMicrotask(() => {
+    order.push('microtask')
+  })
+  await Promise.resolve()
+  assert.deepEqual(order, ['microtask'])
+
+  const cancelledTimeout = godotSetTimeout(() => {
+    order.push('cancelled-timeout')
+  }, 0)
+  godotClearTimeout(cancelledTimeout)
+
+  await new Promise((resolve) => {
+    godotSetTimeout(
+      (value) => {
+        order.push(value)
+        resolve()
+      },
+      0,
+      'timeout',
+    )
+  })
+
+  let intervalId = 0
+  await new Promise((resolve) => {
+    intervalId = godotSetInterval(() => {
+      order.push('interval')
+      if (order.filter((value) => value === 'interval').length === 2) {
+        godotClearInterval(intervalId)
+        resolve()
+      }
+    }, 0)
+  })
+
+  await new Promise((resolve) => globalThis.setTimeout(resolve, 5))
+
+  assert.deepEqual(order, ['microtask', 'timeout', 'interval', 'interval'])
+})
+
+test('requestAnimationFrame returns timestamps and can be cancelled', async () => {
+  let cancelled = false
+  const cancelledFrame = godotRequestAnimationFrame(() => {
+    cancelled = true
+  })
+  godotCancelAnimationFrame(cancelledFrame)
+
+  const timestamp = await new Promise((resolve) => {
+    godotRequestAnimationFrame(resolve)
+  })
+
+  await new Promise((resolve) => globalThis.setTimeout(resolve, 20))
+
+  assert.equal(cancelled, false)
+  assert.equal(typeof timestamp, 'number')
+  assert.ok(timestamp >= 0)
+})
+
+test('performance polyfill records marks and measures', () => {
+  godotPerformance.clearMarks()
+  godotPerformance.clearMeasures()
+
+  const start = godotPerformance.mark('start', { startTime: 5 })
+  godotPerformance.mark('end', { startTime: 15, detail: { phase: 'done' } })
+  const measure = godotPerformance.measure('span', 'start', 'end')
+  const fixed = godotPerformance.measure('fixed', {
+    start: 20,
+    duration: 7,
+    detail: 'manual',
+  })
+
+  assert.equal(start.entryType, 'mark')
+  assert.equal(measure.duration, 10)
+  assert.equal(fixed.startTime, 20)
+  assert.equal(fixed.duration, 7)
+  assert.equal(godotPerformance.getEntriesByType('mark').length, 2)
+  assert.equal(godotPerformance.getEntriesByName('span')[0], measure)
+
+  godotPerformance.clearMarks('start')
+  assert.equal(godotPerformance.getEntriesByName('start').length, 0)
+  assert.equal(godotPerformance.getEntriesByName('end').length, 1)
 })

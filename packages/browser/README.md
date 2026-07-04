@@ -2,7 +2,7 @@
 
 Browser API polyfills for **GodotJS**.
 
-GodotJS provides only engine bindings (the `godot` module) and a minimal JS runtime (V8 or QuickJS). Standard browser/DOM APIs like `fetch`, `URL`, `Blob`, `atob`, `TextEncoder`, `history`, etc. are **not** available. This package re-implements them on top of Godot's native classes so that higher-level libraries (and your own code) can use familiar Web APIs without modification.
+GodotJS provides only engine bindings (the `godot` module) and a minimal JS runtime (V8 or QuickJS). Standard browser/DOM APIs like `fetch`, `URL`, `Blob`, `atob`, `TextEncoder`, `history`, timers, `requestAnimationFrame`, etc. are **not** available. This package re-implements them on top of Godot's native classes so that higher-level libraries (and your own code) can use familiar Web APIs without modification.
 
 ## Installation
 
@@ -19,7 +19,7 @@ import { installBrowserAPIs } from '@vue-godot/browser'
 
 installBrowserAPIs()
 
-// Now you can use fetch(), Request, URL, Blob, atob, TextEncoder, history, etc. globally
+// Now you can use fetch(), Request, URL, Blob, timers, history, etc. globally
 const res = await fetch('https://example.com/data.json')
 const data = await res.json()
 ```
@@ -40,24 +40,30 @@ import { fetch, GodotRequest, GodotURL, GodotHeaders } from '@vue-godot/browser'
 
 ## Provided APIs
 
-| API                         | Implementation         | Notes                                                                                                        |
-| --------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `fetch()`                   | Godot `HTTPClient`     | Supports GET/POST/PUT/DELETE, `Request` input, redirects (up to 20), TLS, `AbortSignal`, string/ArrayBuffer/Uint8Array/Blob bodies |
-| `Request`                   | `GodotRequest`         | Fetch-compatible request metadata/body wrapper; `.text()`, `.json()`, `.arrayBuffer()`, `.blob()`, `.clone()` |
-| `Headers`                   | `GodotHeaders`         | Map-backed with `toGodotArray()` / `fromGodotArray()` interop                                                |
-| `Response`                  | `GodotResponse`        | ArrayBuffer-backed; `.json()`, `.text()`, `.arrayBuffer()`, `.blob()`, `.clone()`                            |
-| `Blob`                      | `GodotBlob`            | ArrayBuffer-backed; `.slice()`, `.text()`, `.arrayBuffer()`, `.size`, `.type`                                |
-| `URL`                       | `GodotURL`             | WHATWG subset — `protocol`, `hostname`, `port`, `pathname`, `search`, `hash`, `href`, `toString()`           |
-| `atob` / `btoa`             | Pure JS                | RFC 4648 base64 encode/decode                                                                                |
-| `TextEncoder`               | `GodotTextEncoder`     | UTF-8 `.encode()` with V8 native fast-path when available                                                    |
-| `TextDecoder`               | `GodotTextDecoder`     | UTF-8 `.decode()` with V8 native fast-path when available                                                    |
-| `AbortController`           | `GodotAbortController` | Signal-based; `.abort()`, `.signal`                                                                          |
-| `AbortSignal`               | `GodotAbortSignal`     | `.aborted`, `.reason`, `addEventListener('abort', …)`                                                        |
-| `history`                   | `GodotHistory`         | In-memory session history; `pushState()`, `replaceState()`, `go()`, `back()`, `forward()`, `.state`          |
-| `location`                  | `GodotLocation`        | Reflects the current URL; `.href`, `.pathname`, `.search`, `.hash`, `assign()`, `replace()`                  |
-| `PopStateEvent`             | `PopStateEvent`        | Fired on traversal (`go` / `back` / `forward`); carries `.state`                                             |
-| `addEventListener` (global) | `GodotEventTarget`     | Enables `addEventListener('popstate', …)` on `globalThis`                                                    |
-| `EventTarget`               | `GodotEventTarget`     | Standalone or subclassable; `addEventListener`, `removeEventListener`, `dispatchEvent`                       |
+| API                                              | Implementation         | Notes                                                                                                                              |
+| ------------------------------------------------ | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `fetch()`                                        | Godot `HTTPClient`     | Supports GET/POST/PUT/DELETE, `Request` input, redirects (up to 20), TLS, `AbortSignal`, string/ArrayBuffer/Uint8Array/Blob bodies |
+| `Request`                                        | `GodotRequest`         | Fetch-compatible request metadata/body wrapper; `.text()`, `.json()`, `.arrayBuffer()`, `.blob()`, `.clone()`                      |
+| `Headers`                                        | `GodotHeaders`         | Map-backed with `toGodotArray()` / `fromGodotArray()` interop                                                                      |
+| `Response`                                       | `GodotResponse`        | ArrayBuffer-backed; `.json()`, `.text()`, `.arrayBuffer()`, `.blob()`, `.clone()`                                                  |
+| `Blob`                                           | `GodotBlob`            | ArrayBuffer-backed; `.slice()`, `.text()`, `.arrayBuffer()`, `.size`, `.type`                                                      |
+| `URL`                                            | `GodotURL`             | WHATWG subset — `protocol`, `hostname`, `port`, `pathname`, `search`, `searchParams`, `hash`, `href`, `toString()`                 |
+| `URLSearchParams`                                | `GodotURLSearchParams` | Query string helper with duplicate-key support, iteration, `.append()`, `.set()`, `.getAll()`, `.sort()`                           |
+| `atob` / `btoa`                                  | Pure JS                | RFC 4648 base64 encode/decode                                                                                                      |
+| `TextEncoder`                                    | `GodotTextEncoder`     | UTF-8 `.encode()` with V8 native fast-path when available                                                                          |
+| `TextDecoder`                                    | `GodotTextDecoder`     | UTF-8 `.decode()` with V8 native fast-path when available                                                                          |
+| `AbortController`                                | `GodotAbortController` | Signal-based; `.abort()`, `.signal`                                                                                                |
+| `AbortSignal`                                    | `GodotAbortSignal`     | `.aborted`, `.reason`, `addEventListener('abort', …)`                                                                              |
+| `setTimeout` / `clearTimeout`                    | Godot timing           | Uses `SceneTree.create_timer()` where available; falls back to host timers in tests                                                |
+| `setInterval` / `clearInterval`                  | Godot timing           | Repeating timer built on the same scheduler as `setTimeout`                                                                        |
+| `queueMicrotask`                                 | Promise microtask      | Schedules callbacks through the JS microtask queue                                                                                 |
+| `requestAnimationFrame` / `cancelAnimationFrame` | Godot frame timing     | Uses `SceneTree.process_frame` where available; falls back to a 16 ms timer before the scene tree exists                           |
+| `performance`                                    | `GodotPerformance`     | `Time.get_ticks_usec()`-backed `.now()` plus basic marks, measures, and entry lookup                                               |
+| `history`                                        | `GodotHistory`         | In-memory session history; `pushState()`, `replaceState()`, `go()`, `back()`, `forward()`, `.state`                                |
+| `location`                                       | `GodotLocation`        | Reflects the current URL; `.href`, `.pathname`, `.search`, `.hash`, `assign()`, `replace()`                                        |
+| `PopStateEvent`                                  | `PopStateEvent`        | Fired on traversal (`go` / `back` / `forward`); carries `.state`                                                                   |
+| `addEventListener` (global)                      | `GodotEventTarget`     | Enables `addEventListener('popstate', …)` on `globalThis`                                                                          |
+| `EventTarget`                                    | `GodotEventTarget`     | Standalone or subclassable; `addEventListener`, `removeEventListener`, `dispatchEvent`                                             |
 
 ## History API
 
@@ -113,6 +119,36 @@ console.log(location.pathname) // "/app/page1"
 history.back() // fires popstate asynchronously
 ```
 
+## Timing And Performance
+
+`installBrowserAPIs()` installs browser-compatible timers only when the target runtime does not already provide them. In Godot, timers use `SceneTree.create_timer()` so they do not busy-wait while HTTP polling, animations, or app logic are running. `requestAnimationFrame()` waits for `SceneTree.process_frame` and passes a `performance.now()` timestamp to the callback.
+
+```ts
+setTimeout(() => {
+  console.log('later')
+}, 250)
+
+const frame = requestAnimationFrame((time) => {
+  performance.mark('frame')
+  console.log(time)
+})
+cancelAnimationFrame(frame)
+```
+
+The `performance` polyfill supports `now()`, `mark()`, `measure()`, `getEntries()`, `getEntriesByName()`, `getEntriesByType()`, `clearMarks()`, and `clearMeasures()`. It is intentionally limited to local process timing; navigation/resource timing entries are not synthesized.
+
+## URLSearchParams
+
+`GodotURL` exposes a live `.searchParams` object. Mutating it updates `.search` and `.href` immediately.
+
+```ts
+const url = new URL('https://example.com/items?page=1')
+url.searchParams.set('page', '2')
+url.searchParams.append('tag', 'godot')
+
+console.log(url.href) // "https://example.com/items?page=2&tag=godot"
+```
+
 ## How `fetch()` works
 
 Under the hood, `fetch()` drives Godot's `HTTPClient` through its state machine using a non-blocking poll loop:
@@ -146,7 +182,7 @@ As in browsers, `GET` and `HEAD` requests cannot have bodies, and body helper me
 ## Requirements
 
 - **GodotJS** runtime (V8 or QuickJS) with access to the `godot` module
-- Godot engine classes: `HTTPClient`, `Engine`, `TLSOptions`, `PackedByteArray`, `PackedStringArray`
+- Godot engine classes: `HTTPClient`, `Engine`, `SceneTree`, `Time`, `TLSOptions`, `PackedByteArray`, `PackedStringArray`
 
 ## License
 

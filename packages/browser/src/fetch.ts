@@ -12,7 +12,7 @@
 // thread but at least works.
 // ---------------------------------------------------------------------------
 
-import { Engine, HTTPClient, SceneTree, TLSOptions } from 'godot'
+import { HTTPClient, TLSOptions } from 'godot'
 import { GodotHeaders } from './headers.js'
 import {
   GodotRequest,
@@ -20,6 +20,7 @@ import {
   type GodotRequestInput,
 } from './request.js'
 import { GodotResponse } from './response.js'
+import { asyncDelay } from './timing.js'
 import { GodotURL } from './url.js'
 
 // ---------------------------------------------------------------------------
@@ -95,38 +96,6 @@ function redirectMethodFor(responseCode: number, method: string): string {
     return 'GET'
   }
   return method
-}
-
-// ---------------------------------------------------------------------------
-// Async delay helper
-// ---------------------------------------------------------------------------
-
-/**
- * Non-blocking delay using SceneTree.create_timer().
- * Falls back to a resolved promise (busy-poll) if no tree is available.
- */
-async function asyncDelay(ms: number): Promise<void> {
-  try {
-    const mainLoop = Engine.get_main_loop()
-    if (mainLoop && mainLoop instanceof SceneTree) {
-      const timer = (mainLoop as SceneTree).create_timer(ms / 1000.0)
-      await timer.timeout.as_promise()
-      return
-    }
-  } catch {
-    // SceneTree not available
-  }
-  // Fallback: yield to microtask queue
-  return new Promise<void>((resolve) => {
-    // If setTimeout is available (some GodotJS builds), use it.
-    const g: Record<string, unknown> = globalThis
-    if (typeof g['setTimeout'] === 'function') {
-      ;(g['setTimeout'] as (cb: () => void, ms: number) => void)(resolve, ms)
-    } else {
-      // Promise resolve is at least a microtask yield
-      resolve()
-    }
-  })
 }
 
 // ---------------------------------------------------------------------------

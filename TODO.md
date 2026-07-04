@@ -85,11 +85,11 @@ The project is production ready only when all of these are true:
   - [ ] `location`
   - [ ] global `addEventListener` / `removeEventListener` / `dispatchEvent`
 - [ ] Add high-priority web APIs:
-  - [ ] `setTimeout`, `clearTimeout`, `setInterval`, `clearInterval` if missing in target runtimes.
-  - [ ] `queueMicrotask` if missing.
-  - [ ] `requestAnimationFrame` and `cancelAnimationFrame` backed by Godot frame timing.
-  - [ ] `performance.now()` and basic performance marks/measures.
-  - [ ] `URLSearchParams`.
+  - [x] `setTimeout`, `clearTimeout`, `setInterval`, `clearInterval` if missing in target runtimes.
+  - [x] `queueMicrotask` if missing.
+  - [x] `requestAnimationFrame` and `cancelAnimationFrame` backed by Godot frame timing.
+  - [x] `performance.now()` and basic performance marks/measures.
+  - [x] `URLSearchParams`.
   - [ ] `FormData`.
   - [ ] `File`.
   - [ ] `FileReader` or documented skip if not worth supporting.

@@ -17,6 +17,9 @@
 //   • TextEncoder     → Pure JS UTF-8 (with V8 fast-path)
 //   • TextDecoder     → Pure JS UTF-8 (with V8 fast-path)
 //   • AbortController → Signal-based
+//   • URLSearchParams → Pure JS query parameter helper
+//   • timers/RAF      → SceneTree-backed timing where available
+//   • performance     → Time-backed now() and marks/measures
 //
 // Quick start:
 //   import { installBrowserAPIs } from '@vue-godot/browser'
@@ -57,6 +60,29 @@ export {
   resolveObjectURL,
   revokeObjectURL,
 } from './url.js'
+export { GodotURLSearchParams } from './url-search-params.js'
+export type { GodotURLSearchParamsInit } from './url-search-params.js'
+export {
+  GodotPerformance,
+  GodotPerformanceEntry,
+  GodotPerformanceMark,
+  GodotPerformanceMeasure,
+  asyncDelay,
+  cancelAnimationFrame,
+  clearInterval,
+  clearTimeout,
+  performance,
+  queueMicrotask,
+  requestAnimationFrame,
+  setInterval,
+  setTimeout,
+} from './timing.js'
+export type {
+  GodotAnimationFrameCallback,
+  GodotPerformanceMarkOptions,
+  GodotPerformanceMeasureOptions,
+  GodotTimerHandler,
+} from './timing.js'
 
 // Batch installers
 export { installBrowserAPIs, installPolyfill } from './install.js'

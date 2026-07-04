@@ -57,6 +57,18 @@ export async function runBrowserSmokeTests(
   }
 
   try {
+    const params = new URLSearchParams('a=1&space=hello+world')
+    params.append('b', '2')
+    results.push(
+      params.get('space') === 'hello world' && params.get('b') === '2'
+        ? pass('URLSearchParams', 'ok')
+        : fail('URLSearchParams', params.toString()),
+    )
+  } catch (error) {
+    results.push(failFromError('URLSearchParams', error))
+  }
+
+  try {
     const blob = new Blob(['hello'], { type: 'text/plain' })
     results.push(pass('Blob', `size=${blob.size} ok`))
   } catch (error) {
@@ -122,6 +134,105 @@ export async function runBrowserSmokeTests(
     )
   } catch (error) {
     results.push(failFromError('AbortController', error))
+  }
+
+  try {
+    let microtaskRan = false
+    await new Promise<void>((resolve) => {
+      queueMicrotask(() => {
+        microtaskRan = true
+        resolve()
+      })
+    })
+    results.push(
+      microtaskRan
+        ? pass('queueMicrotask', 'ok')
+        : fail('queueMicrotask', 'no-op'),
+    )
+  } catch (error) {
+    results.push(failFromError('queueMicrotask', error))
+  }
+
+  try {
+    const outcome = await new Promise<string>((resolve) => {
+      const cancelled = setTimeout(() => {
+        resolve('cancelled')
+      }, 0)
+      clearTimeout(cancelled)
+      setTimeout(() => {
+        resolve('timeout')
+      }, 0)
+    })
+    results.push(
+      outcome === 'timeout'
+        ? pass('setTimeout', 'ok')
+        : fail('setTimeout', outcome),
+    )
+  } catch (error) {
+    results.push(failFromError('setTimeout', error))
+  }
+
+  try {
+    let count = 0
+    await new Promise<void>((resolve) => {
+      const interval = setInterval(() => {
+        count++
+        if (count === 2) {
+          clearInterval(interval)
+          resolve()
+        }
+      }, 0)
+    })
+    results.push(
+      count === 2
+        ? pass('setInterval', 'ok')
+        : fail('setInterval', String(count)),
+    )
+  } catch (error) {
+    results.push(failFromError('setInterval', error))
+  }
+
+  try {
+    let cancelled = false
+    const cancelledFrame = requestAnimationFrame(() => {
+      cancelled = true
+    })
+    cancelAnimationFrame(cancelledFrame)
+
+    const timestamp = await new Promise<number>((resolve) => {
+      requestAnimationFrame(resolve)
+    })
+
+    results.push(
+      !cancelled && Number.isFinite(timestamp)
+        ? pass('requestAnimationFrame', 'ok')
+        : fail(
+            'requestAnimationFrame',
+            `cancelled=${cancelled} time=${timestamp}`,
+          ),
+    )
+  } catch (error) {
+    results.push(failFromError('requestAnimationFrame', error))
+  }
+
+  try {
+    performance.clearMarks('smoke-start')
+    performance.clearMarks('smoke-end')
+    performance.clearMeasures('smoke-span')
+    performance.mark('smoke-start')
+    performance.mark('smoke-end')
+    const measure = performance.measure(
+      'smoke-span',
+      'smoke-start',
+      'smoke-end',
+    )
+    results.push(
+      typeof performance.now() === 'number' && measure.duration >= 0
+        ? pass('performance', 'ok')
+        : fail('performance', `duration=${measure.duration}`),
+    )
+  } catch (error) {
+    results.push(failFromError('performance', error))
   }
 
   try {
