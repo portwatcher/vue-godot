@@ -21,6 +21,7 @@ export const releasePackageConfigs = [
       'dist/index.js',
       'dist/index.d.ts',
       'dist/cli.js',
+      'templates/vue/.gdignore',
       'templates/vue/vite.config.ts',
       'templates/godot/project.godot',
     ],

@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import {
+  assertFileExists,
   createPackedPackageOverrides,
   nodeCommand,
   npmCommand,
@@ -93,6 +94,13 @@ onMounted(() => {
 })
 </script>
 `,
+  )
+}
+
+function assertVueSourceIgnoredByGodot(projectDir) {
+  assertFileExists(
+    path.join(projectDir, 'vue/.gdignore'),
+    'generated Vue directory .gdignore',
   )
 }
 
@@ -221,6 +229,7 @@ run(nodeCommand, [cliPath, 'create', projectDir, '-f', '--html'], {
   env,
   stdio: 'inherit',
 })
+assertVueSourceIgnoredByGodot(projectDir)
 
 writeSmokeApp(projectDir, INITIAL_MARKER)
 run(npmCommand, ['run', 'build'], {

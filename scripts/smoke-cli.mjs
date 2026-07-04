@@ -4,6 +4,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import {
+  assertFileExists,
   createPackedPackageOverrides,
   nodeCommand,
   npmCommand,
@@ -204,6 +205,13 @@ function smokeProject(cliPath, workspaceDir, name, extraArgs, env) {
   return target
 }
 
+function assertVueSourceIgnoredByGodot(projectDir) {
+  assertFileExists(
+    path.join(projectDir, 'vue/.gdignore'),
+    'generated Vue directory .gdignore',
+  )
+}
+
 const cliPath = requireBuiltCli()
 const workspaceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-smoke-'))
 const packDir = path.join(workspaceDir, 'packs')
@@ -225,5 +233,6 @@ const htmlAppDir = smokeProject(
   ['--html'],
   env,
 )
+assertVueSourceIgnoredByGodot(htmlAppDir)
 await smokeWatchRebuild(htmlAppDir, env)
 console.log('[smoke-cli] create and create --html smoke checks passed')

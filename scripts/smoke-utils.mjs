@@ -52,6 +52,12 @@ export function commandExists(command) {
   return probe.status === 0
 }
 
+export function assertFileExists(filePath, description = filePath) {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`${description} not found: ${filePath}`)
+  }
+}
+
 function isExecutableFile(filePath) {
   try {
     const stat = fs.statSync(filePath)
