@@ -113,7 +113,7 @@ controller, touch behavior, and documented style limits.
 
 | Feature | Owner | Status | Godot backend | Platforms | Permissions/export | Tests | Caveats |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Vue custom renderer | `runtime-tscn` | `partial` | Godot scene tree nodes | All GodotJS targets | None | Unit, renderer stress tests, app builds, smoke | Source interop uses `unknown`-safe types; unsupported classes/props/signals now warn with targeted diagnostics; broader production hardening is still pending. |
+| Vue custom renderer | `runtime-tscn` | `partial` | Godot scene tree nodes | All GodotJS targets | None | Unit, renderer stress tests, app builds, smoke | Supported Vue features and unsupported browser/DOM assumptions are documented in [runtime renderer support](./runtime.md); broader production hardening is still pending. |
 | Godot signal event mapping | `runtime-tscn` | `partial` | Godot signals and `Callable` wrappers | All GodotJS targets | None | Unit | Failed signal connects/disconnects warn with the Godot signal, node name, and Vue event prop. Typed signal coverage still depends on Godot typings. |
 | Prop removal/reset semantics | `runtime-tscn` | `supported` | Godot `get()` / `set()` | All GodotJS targets | None | Unit | Generic reset cannot infer every Godot-specific default; rejected prop reads/writes warn with the prop name. |
 | Static text insertion | `runtime-tscn` | `partial` | Text node placeholders | All GodotJS targets | None | Unit | Non-text static markup is intentionally limited. |

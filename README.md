@@ -6,7 +6,7 @@ Vue Godot renders Vue components into Godot's scene tree, so you can use Vue rea
 
 This project is experimental and not production ready yet. Follow [@juryxiong](https://x.com/juryxiong) for updates.
 
-See the [compatibility checklist](./docs/compatibility.md) for the current support status, platform caveats, and intentionally skipped browser APIs.
+See the [compatibility checklist](./docs/compatibility.md) for the current support status, platform caveats, and intentionally skipped browser APIs. See [runtime renderer support](./docs/runtime.md) for supported Vue features and unsupported browser/DOM assumptions.
 
 ![demo](./intro-medias/demo.gif)
 
@@ -146,6 +146,8 @@ Vue Godot is a custom Vue renderer that targets Godot's scene tree instead of th
 - In the **Godot editor**, GodotJS runs `dist/app.js`. The `_ready()` method calls `createApp(Root).mount(this)`, and `_exit_tree()` calls `app.unmount()` so editor reloads do not retain old Vue trees.
 
 Uppercase template tags such as `<HBoxContainer>` and `<Label>` are treated as Godot node classes. When using `@vue-godot/html`, HTML-like components such as `<Div>` and `<Button>` are registered as Vue components that render Godot nodes internally.
+
+For the supported Vue renderer surface and the browser/DOM assumptions that do not apply in Godot, see [runtime renderer support](./docs/runtime.md).
 
 ## Repository Structure
 

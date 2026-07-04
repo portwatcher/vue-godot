@@ -56,7 +56,7 @@ The project is production ready only when all of these are true:
   - [x] Add stress tests for repeated mount/unmount, large tree updates, reordered keyed children, event replacement, and prop removal.
   - [x] Add runtime diagnostics that identify unsupported node classes, props, and signals with actionable messages.
   - [ ] Add lifecycle tests for editor reload, scene exit, nested apps, and failed mounts.
-  - [ ] Document supported Vue features and unsupported Vue/DOM assumptions.
+  - [x] Document supported Vue features and unsupported Vue/DOM assumptions.
 - [ ] Add a production-grade platform capability layer.
   - [ ] Create `@vue-godot/device` or an equivalent module namespace for device/native APIs.
   - [ ] Define adapter interfaces for plugin-backed capabilities.
