@@ -45,6 +45,9 @@ jobs:
       - name: Setup GodotJS
         uses: ./.github/actions/setup-godotjs
 
+      - name: Install virtual display
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
       - name: Publish
         env:
           NPM_DIST_TAG: ${{ inputs.dist_tag || 'latest' }}
@@ -56,4 +59,4 @@ jobs:
             args+=(--skip-public-smoke)
           fi
 
-          npm run release:publish -- "${args[@]}"
+          xvfb-run -a --server-args="-screen 0 1280x720x24" npm run release:publish -- "${args[@]}"

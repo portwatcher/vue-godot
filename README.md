@@ -253,7 +253,7 @@ npm run release:publish   # guarded publish helper; dry-run by default
 
 `npm run smoke:cli` uses locally packed workspace packages, creates both basic and HTML projects in a temp directory, builds them, then starts the generated HTML app's `npm run dev` watcher, edits `vue/src/App.vue`, and fails unless the generated `dist` output contains the edited marker and stable JavaScript chunk paths.
 
-The `Godot Smoke` GitHub Actions workflow installs the pinned `GodotJS_1.0.0-2` Linux x64 V8 editor bundle, caches it, sets `GODOT_BIN`, and runs `npm run smoke:godot`, `npm run smoke:generated-godot`, and `npm run smoke:editor-reload` on PRs and pushes that touch the HTML demo, package code, or smoke workflow.
+The `Godot Smoke` GitHub Actions workflow installs the pinned `GodotJS_1.0.0-2` Linux x64 V8 editor bundle, caches it, sets `GODOT_BIN`, and runs `npm run smoke:godot`, `npm run smoke:generated-godot`, and `npm run smoke:editor-reload` on PRs and pushes that touch the HTML demo, package code, or smoke workflow. The editor reload smoke runs under Xvfb on Linux because `EditorInterface.play_main_scene()` starts a played-scene process that needs a display server.
 
 `npm run smoke:public-cli` must be run after publishing. It uses `npx @vue-godot/cli@latest create --html` with no local package overrides, then builds the generated app. Set `VUE_GODOT_PUBLIC_CLI_SPEC=@vue-godot/cli@<version>` to test a specific published CLI version.
 
@@ -261,7 +261,7 @@ The `Godot Smoke` GitHub Actions workflow installs the pinned `GodotJS_1.0.0-2` 
 
 `npm run release:publish` publishes only packages that are missing from npm or newer than the registry, in dependency-safe order (`runtime-tscn`, `browser`, `html`, then `cli`). It defaults to `npm publish --dry-run`; real publishing requires `npm run release:publish -- --yes`. Real local publishing refuses a dirty worktree, checks `npm whoami`, runs `npm run release:preflight` unless `--skip-preflight` is set, and then runs `npm run smoke:public-cli` against the published CLI version unless `--skip-public-smoke` is set. Use `--otp <code>` for local npm accounts with 2FA. In the trusted-publishing GitHub workflow, `VUE_GODOT_NPM_TRUSTED_PUBLISHING=1` skips `npm whoami` because npm validates OIDC during `npm publish`.
 
-The `Publish` GitHub Actions workflow runs on `v*` tags and manual dispatch. It uses GitHub-hosted Ubuntu, Node 24, `npm@^11.15.0`, `id-token: write`, the shared GodotJS setup action, and `npm run release:publish -- --yes`; no npm token is needed once each package trusts `.github/workflows/publish.yml`.
+The `Publish` GitHub Actions workflow runs on `v*` tags and manual dispatch. It uses GitHub-hosted Ubuntu, Node 24, `npm@^11.15.0`, `id-token: write`, the shared GodotJS setup action, Xvfb for the editor reload preflight smoke, and `npm run release:publish -- --yes`; no npm token is needed once each package trusts `.github/workflows/publish.yml`.
 
 Configure npm trusted publishing for each package with the GitHub repository `portwatcher/vue-godot`, workflow filename `publish.yml`, and the `npm publish` allowed action:
 

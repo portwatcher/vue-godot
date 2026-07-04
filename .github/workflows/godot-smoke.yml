@@ -49,6 +49,9 @@ jobs:
       - name: Setup GodotJS
         uses: ./.github/actions/setup-godotjs
 
+      - name: Install virtual display
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
       - name: Install
         run: npm ci
 
@@ -62,4 +65,4 @@ jobs:
         run: npm run smoke:generated-godot
 
       - name: Editor reload smoke
-        run: npm run smoke:editor-reload
+        run: xvfb-run -a --server-args="-screen 0 1280x720x24" npm run smoke:editor-reload
