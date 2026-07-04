@@ -266,7 +266,7 @@ vue-godot gen-types [--typings <dir>] [--out <file>] [--ancestor <class>] [--vue
 
 ```bash
 npm run build        # packages + demo apps
-npm run test         # package tests
+npm run test         # package tests plus script utility tests
 npm run smoke:cli    # clean create/create --html plus generated HTML watch rebuild
 npm run smoke:public-cli # post-publish create --html smoke using public npm packages
 npm run smoke:godot  # optional: runs apps/html-demo lifecycle smoke with GODOT_BIN/godot4/godot
@@ -276,7 +276,7 @@ npm run release:preflight # release gate: check + pack dry-runs + registry/auth 
 npm run release:publish   # guarded publish helper; dry-run by default
 ```
 
-`npm run smoke:godot` skips when no Godot executable is available. Set `GODOT_BIN=/path/to/godot` to force a specific editor/runtime. When Godot is available, the script builds `apps/html-demo`, imports project assets with Godot's `--import`, starts a loopback HTTP server for `fetch`, runs the scene headlessly with `VUE_GODOT_SMOKE=1`, and fails unless the app reports a completed lifecycle smoke. The smoke repeatedly unmounts/remounts the Vue app, checks that unmount leaves no stale children, verifies rendered signal connections, drives form controls through Godot signals, checks image/SVG texture loading, and runs the demo browser API smoke checks. Set `VUE_GODOT_SMOKE_RELOADS=10` to change the repeat count, or `VUE_GODOT_SMOKE_OPEN_ONLY=1` to run the older project-open smoke.
+`npm run smoke:godot` skips when no Godot executable is available. Set `GODOT_BIN=/path/to/godot` to force a specific editor/runtime. `GODOT_BIN` may point directly at an executable or at a directory containing a `godot*` executable, including macOS `.app/Contents/MacOS` layouts. When Godot is available, the script builds `apps/html-demo`, imports project assets with Godot's `--import`, starts a loopback HTTP server for `fetch`, runs the scene headlessly with `VUE_GODOT_SMOKE=1`, and fails unless the app reports a completed lifecycle smoke. The smoke repeatedly unmounts/remounts the Vue app, checks that unmount leaves no stale children, verifies rendered signal connections, drives form controls through Godot signals, checks image/SVG texture loading, and runs the demo browser API smoke checks. Set `VUE_GODOT_SMOKE_RELOADS=10` to change the repeat count, or `VUE_GODOT_SMOKE_OPEN_ONLY=1` to run the older project-open smoke.
 
 `npm run smoke:generated-godot` also skips when no Godot executable is available. When Godot is available, it creates a clean `create --html` project with locally packed workspace packages, replaces the generated app with a marker component, builds and runs it headlessly under Godot, starts the generated `npm run dev` watcher, edits `vue/src/App.vue`, verifies the rebuilt `dist` output contains the new marker, and runs the rebuilt app under Godot again.
 

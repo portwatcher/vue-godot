@@ -16,6 +16,9 @@ export const packageDirs = {
   '@vue-godot/runtime-tscn': 'packages/runtime-tscn',
 }
 
+const godotExecutableNamePattern = /^godot(?:4|[._-].*)?(?:\.exe)?$/i
+const godotDirectorySearchDepth = 4
+
 export function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
     cwd: options.cwd ?? repoRoot,
@@ -49,9 +52,106 @@ export function commandExists(command) {
   return probe.status === 0
 }
 
-export function resolveGodotCommand() {
-  if (process.env.GODOT_BIN) {
-    return process.env.GODOT_BIN
+function isExecutableFile(filePath) {
+  try {
+    const stat = fs.statSync(filePath)
+    if (!stat.isFile()) {
+      return false
+    }
+
+    if (process.platform === 'win32') {
+      return true
+    }
+
+    return (stat.mode & 0o111) !== 0
+  } catch {
+    return false
+  }
+}
+
+function godotCandidateRank(filePath) {
+  const name = path.basename(filePath).toLowerCase()
+  if (name === 'godot4') return 0
+  if (name === 'godot') return 1
+  if (name.includes('editor')) return 2
+  return 3
+}
+
+function findGodotExecutableInDirectory(directory) {
+  const queue = [{ directory, depth: 0 }]
+
+  while (queue.length > 0) {
+    const current = queue.shift()
+    const entries = fs
+      .readdirSync(current.directory, { withFileTypes: true })
+      .sort((left, right) => left.name.localeCompare(right.name))
+    const candidates = []
+
+    for (const entry of entries) {
+      const entryPath = path.join(current.directory, entry.name)
+
+      if (entry.isFile() || entry.isSymbolicLink()) {
+        if (
+          godotExecutableNamePattern.test(entry.name) &&
+          isExecutableFile(entryPath)
+        ) {
+          candidates.push(entryPath)
+        }
+        continue
+      }
+
+      if (entry.isDirectory() && current.depth < godotDirectorySearchDepth) {
+        queue.push({ directory: entryPath, depth: current.depth + 1 })
+      }
+    }
+
+    if (candidates.length > 0) {
+      candidates.sort((left, right) => {
+        const rank = godotCandidateRank(left) - godotCandidateRank(right)
+        return rank === 0 ? left.localeCompare(right) : rank
+      })
+      return candidates[0]
+    }
+  }
+
+  return null
+}
+
+export function resolveGodotBin(godotBin) {
+  if (!godotBin) {
+    return null
+  }
+
+  if (!fs.existsSync(godotBin)) {
+    throw new Error(`GODOT_BIN does not exist: ${godotBin}`)
+  }
+
+  const stat = fs.statSync(godotBin)
+  if (stat.isFile()) {
+    if (!isExecutableFile(godotBin)) {
+      throw new Error(`GODOT_BIN is not executable: ${godotBin}`)
+    }
+    return godotBin
+  }
+
+  if (!stat.isDirectory()) {
+    throw new Error(`GODOT_BIN must be a file or directory: ${godotBin}`)
+  }
+
+  const executable = findGodotExecutableInDirectory(godotBin)
+  if (!executable) {
+    throw new Error(
+      `GODOT_BIN directory does not contain an executable named like godot*: ${godotBin}`,
+    )
+  }
+
+  return executable
+}
+
+export function resolveGodotCommand(options = {}) {
+  const godotBin = options.godotBin ?? process.env.GODOT_BIN
+  if (godotBin) {
+    return resolveGodotBin(godotBin)
   }
   if (commandExists('godot4')) {
     return 'godot4'
