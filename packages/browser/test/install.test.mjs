@@ -6,6 +6,9 @@ register(new URL('./godot-loader.mjs', import.meta.url).href)
 
 const {
   GodotBlob,
+  GodotFile,
+  GodotFileReader,
+  GodotFormData,
   GodotRequest,
   GodotURL,
   GodotURLSearchParams,
@@ -15,6 +18,9 @@ const {
 
 const patchedGlobals = [
   'Blob',
+  'File',
+  'FileReader',
+  'FormData',
   'URL',
   'URLSearchParams',
   'fetch',
@@ -71,6 +77,9 @@ test('installBrowserAPIs installs missing browser globals', async () => {
     assert.equal(typeof globalThis.URL.createObjectURL, 'function')
     assert.equal(typeof globalThis.URL.revokeObjectURL, 'function')
     assert.equal(globalThis.Blob, GodotBlob)
+    assert.equal(globalThis.File, GodotFile)
+    assert.equal(globalThis.FileReader, GodotFileReader)
+    assert.equal(globalThis.FormData, GodotFormData)
     assert.equal(globalThis.Request, GodotRequest)
     assert.equal(
       new globalThis.TextDecoder().decode(new Uint8Array([111, 107])),
@@ -96,11 +105,28 @@ test('installBrowserAPIs installs missing browser globals', async () => {
 
 test('installPolyfill installs named missing globals only', async () => {
   await withClearedGlobals(
-    ['Blob', 'Request', 'URL', 'URLSearchParams', 'queueMicrotask'],
+    [
+      'Blob',
+      'File',
+      'FormData',
+      'Request',
+      'URL',
+      'URLSearchParams',
+      'queueMicrotask',
+    ],
     async () => {
-      installPolyfill('Blob', 'Request', 'URLSearchParams', 'queueMicrotask')
+      installPolyfill(
+        'Blob',
+        'File',
+        'FormData',
+        'Request',
+        'URLSearchParams',
+        'queueMicrotask',
+      )
 
       assert.equal(globalThis.Blob, GodotBlob)
+      assert.equal(globalThis.File, GodotFile)
+      assert.equal(globalThis.FormData, GodotFormData)
       assert.equal(globalThis.Request, GodotRequest)
       assert.equal(globalThis.URLSearchParams, GodotURLSearchParams)
       assert.equal(typeof globalThis.queueMicrotask, 'function')

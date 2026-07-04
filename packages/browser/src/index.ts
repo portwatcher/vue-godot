@@ -18,6 +18,8 @@
 //   • TextDecoder     → Pure JS UTF-8 (with V8 fast-path)
 //   • AbortController → Signal-based
 //   • URLSearchParams → Pure JS query parameter helper
+//   • FormData/File   → Multipart-compatible form bodies
+//   • FileReader      → Async Blob/File readers
 //   • timers/RAF      → SceneTree-backed timing where available
 //   • performance     → Time-backed now() and marks/measures
 //
@@ -36,8 +38,13 @@ export { GodotBlob } from './blob.js'
 export type { GodotBodyInit } from './body.js'
 export { GodotTextDecoder, GodotTextEncoder } from './encoding.js'
 export { GodotEvent, GodotEventTarget } from './event-target.js'
+export { GodotFile } from './file.js'
+export type { GodotFilePart, GodotFilePropertyBag } from './file.js'
+export { GodotFileReader } from './file-reader.js'
 export { fetch } from './fetch.js'
 export type { GodotFetchInit } from './fetch.js'
+export { GodotFormData } from './form-data.js'
+export type { GodotFormDataEntryValue } from './form-data.js'
 export { GodotHeaders } from './headers.js'
 export { GodotRequest } from './request.js'
 export type {

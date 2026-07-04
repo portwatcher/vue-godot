@@ -12,7 +12,10 @@ import { GodotAbortController, GodotAbortSignal } from './abort.js'
 import { atob, btoa } from './base64.js'
 import { GodotBlob } from './blob.js'
 import { GodotTextDecoder, GodotTextEncoder } from './encoding.js'
+import { GodotFile } from './file.js'
+import { GodotFileReader } from './file-reader.js'
 import { fetch } from './fetch.js'
+import { GodotFormData } from './form-data.js'
 import { GodotHeaders } from './headers.js'
 import { GodotRequest } from './request.js'
 import {
@@ -55,6 +58,9 @@ export function installBrowserAPIs(): void {
   polyfill('TextEncoder', GodotTextEncoder)
   polyfill('TextDecoder', GodotTextDecoder)
   polyfill('Blob', GodotBlob)
+  polyfill('File', GodotFile)
+  polyfill('FileReader', GodotFileReader)
+  polyfill('FormData', GodotFormData)
   polyfill('fetch', fetch)
   polyfill('Headers', GodotHeaders)
   polyfill('Response', GodotResponse)
@@ -127,6 +133,9 @@ export function installPolyfill(...names: string[]): void {
     'URL.createObjectURL': createObjectURL,
     'URL.revokeObjectURL': revokeObjectURL,
     Blob: GodotBlob,
+    File: GodotFile,
+    FileReader: GodotFileReader,
+    FormData: GodotFormData,
     atob,
     btoa,
     TextEncoder: GodotTextEncoder,

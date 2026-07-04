@@ -22,6 +22,9 @@ const {
   createHistoryAndLocation,
   createObjectURL,
   getGlobalEventTarget,
+  GodotFile,
+  GodotFileReader,
+  GodotFormData,
   performance: godotPerformance,
   queueMicrotask: godotQueueMicrotask,
   requestAnimationFrame: godotRequestAnimationFrame,
@@ -59,6 +62,54 @@ test('GodotBlob merges parts and supports object URLs', async () => {
   assert.equal(resolveObjectURL(url), blob)
   revokeObjectURL(url)
   assert.equal(resolveObjectURL(url), undefined)
+})
+
+test('GodotFile exposes file metadata and inherits Blob readers', async () => {
+  const file = new GodotFile(['hello'], 'greeting.txt', {
+    type: 'text/plain',
+    lastModified: 123,
+  })
+
+  assert.equal(file.name, 'greeting.txt')
+  assert.equal(file.type, 'text/plain')
+  assert.equal(file.lastModified, 123)
+  assert.equal(file.size, 5)
+  assert.equal(await file.text(), 'hello')
+})
+
+test('GodotFormData stores duplicate values and serializes multipart bodies', async () => {
+  const form = new GodotFormData()
+  const file = new GodotFile(['file-body'], 'upload.txt', {
+    type: 'text/plain',
+  })
+
+  form.append('name', 'first')
+  form.append('name', 'second')
+  form.append('upload', file)
+  form.set('name', 'final')
+
+  assert.equal(form.get('name'), 'final')
+  assert.deepEqual(form.getAll('name'), ['final'])
+  assert.equal(form.get('upload'), file)
+  assert.deepEqual(
+    [...form].map(([name]) => name),
+    ['name', 'upload'],
+  )
+
+  const body = new GodotTextDecoder().decode(
+    await form._toMultipartArrayBuffer(),
+  )
+  assert.match(
+    form._getMultipartContentType(),
+    /^multipart\/form-data; boundary=/,
+  )
+  assert.match(body, /Content-Disposition: form-data; name="name"/)
+  assert.match(
+    body,
+    /Content-Disposition: form-data; name="upload"; filename="upload.txt"/,
+  )
+  assert.match(body, /Content-Type: text\/plain/)
+  assert.match(body, /file-body/)
 })
 
 test('GodotURL parses absolute and relative URLs', () => {
@@ -248,6 +299,32 @@ test('AbortController aborts once and notifies listeners', () => {
   assert.equal(controller.signal.reason, 'done')
   assert.equal(calls, 1)
   assert.throws(() => controller.signal.throwIfAborted(), /done/)
+})
+
+test('GodotFileReader reads Blob content and emits load events', async () => {
+  const reader = new GodotFileReader()
+  const events = []
+  reader.onloadstart = () => events.push('loadstart')
+  reader.onload = () => events.push('load')
+  reader.onloadend = () => events.push('loadend')
+
+  await new Promise((resolve, reject) => {
+    reader.addEventListener('loadend', resolve)
+    reader.addEventListener('error', () => reject(reader.error))
+    reader.readAsDataURL(new GodotBlob(['hello'], { type: 'text/plain' }))
+  })
+
+  assert.equal(reader.readyState, reader.DONE)
+  assert.equal(reader.result, 'data:text/plain;base64,aGVsbG8=')
+  assert.deepEqual(events, ['loadstart', 'load', 'loadend'])
+
+  const textReader = new GodotFileReader()
+  await new Promise((resolve, reject) => {
+    textReader.onloadend = resolve
+    textReader.onerror = () => reject(textReader.error)
+    textReader.readAsText(new GodotBlob(['hello']))
+  })
+  assert.equal(textReader.result, 'hello')
 })
 
 test('timer and microtask polyfills schedule and cancel callbacks', async () => {

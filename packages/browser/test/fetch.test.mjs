@@ -4,7 +4,8 @@ import test from 'node:test'
 
 register(new URL('./godot-loader.mjs', import.meta.url).href)
 
-const { GodotRequest, fetch } = await import('../dist/index.js')
+const { GodotFile, GodotFormData, GodotRequest, fetch } =
+  await import('../dist/index.js')
 
 function resetMockHttp(responses) {
   globalThis.__vueGodotBrowserMockHttp = {
@@ -76,4 +77,50 @@ test('fetch converts POST to GET and drops body for 302 redirects', async () => 
   assert.equal(http.requests[1].methodName, 'GET')
   assert.equal(http.requests[1].path, '/next')
   assert.equal(http.requests[1].body, '')
+})
+
+test('fetch serializes FormData request bodies as multipart', async () => {
+  const http = resetMockHttp([
+    {
+      status: 200,
+      headers: { 'content-type': 'text/plain' },
+      body: 'uploaded',
+    },
+  ])
+  const form = new GodotFormData()
+  form.append('title', 'Example')
+  form.append(
+    'file',
+    new GodotFile(['file contents'], 'example.txt', { type: 'text/plain' }),
+  )
+
+  const request = new GodotRequest('https://api.example.com/upload', {
+    method: 'POST',
+    body: form,
+  })
+
+  const response = await fetch(request)
+
+  assert.equal(response.status, 200)
+  assert.equal(await response.text(), 'uploaded')
+  assert.match(
+    request.headers.get('content-type'),
+    /^multipart\/form-data; boundary=/,
+  )
+  assert.match(
+    http.requests[0].headers.find((line) =>
+      line.startsWith('content-type: multipart/form-data; boundary='),
+    ),
+    /^content-type: multipart\/form-data; boundary=/,
+  )
+  assert.match(
+    http.requests[0].body,
+    /Content-Disposition: form-data; name="title"/,
+  )
+  assert.match(
+    http.requests[0].body,
+    /Content-Disposition: form-data; name="file"; filename="example.txt"/,
+  )
+  assert.match(http.requests[0].body, /Content-Type: text\/plain/)
+  assert.match(http.requests[0].body, /file contents/)
 })

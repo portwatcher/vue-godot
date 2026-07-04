@@ -90,9 +90,9 @@ The project is production ready only when all of these are true:
   - [x] `requestAnimationFrame` and `cancelAnimationFrame` backed by Godot frame timing.
   - [x] `performance.now()` and basic performance marks/measures.
   - [x] `URLSearchParams`.
-  - [ ] `FormData`.
-  - [ ] `File`.
-  - [ ] `FileReader` or documented skip if not worth supporting.
+  - [x] `FormData`.
+  - [x] `File`.
+  - [x] `FileReader` or documented skip if not worth supporting.
   - [ ] `WebSocket` backed by `WebSocketPeer`.
   - [ ] `localStorage` backed by `user://`.
   - [ ] `sessionStorage` backed by process memory or `user://` with documented lifecycle.

@@ -7,6 +7,7 @@ import {
   cloneBodyInit,
   decodeBodyBuffer,
 } from './body.js'
+import { GodotFormData } from './form-data.js'
 import { GodotHeaders } from './headers.js'
 import { GodotURL } from './url.js'
 
@@ -43,7 +44,7 @@ export class GodotRequest {
     const body =
       init.body !== undefined
         ? cloneBodyInit(init.body)
-        : inputRequest?._cloneBodyForConstructor() ?? null
+        : (inputRequest?._cloneBodyForConstructor() ?? null)
 
     if ((method === 'GET' || method === 'HEAD') && body !== null) {
       throw new TypeError('Request with GET/HEAD method cannot have a body.')
@@ -55,6 +56,9 @@ export class GodotRequest {
       init.headers !== undefined
         ? new GodotHeaders(init.headers)
         : new GodotHeaders(inputRequest?.headers)
+    if (body instanceof GodotFormData && !this.headers.has('content-type')) {
+      this.headers.set('content-type', body._getMultipartContentType())
+    }
     this.signal = init.signal ?? inputRequest?.signal
     this.redirect = init.redirect ?? inputRequest?.redirect ?? 'follow'
     this._body = body

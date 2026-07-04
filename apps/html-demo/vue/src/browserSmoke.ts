@@ -76,6 +76,51 @@ export async function runBrowserSmokeTests(
   }
 
   try {
+    const file = new File(['hello'], 'hello.txt', {
+      type: 'text/plain',
+      lastModified: 123,
+    })
+    results.push(
+      file.name === 'hello.txt' && file.size === 5
+        ? pass('File', 'ok')
+        : fail('File', `${file.name} size=${file.size}`),
+    )
+  } catch (error) {
+    results.push(failFromError('File', error))
+  }
+
+  try {
+    const form = new FormData()
+    form.append('name', 'demo')
+    form.append('file', new File(['data'], 'demo.txt', { type: 'text/plain' }))
+    results.push(
+      form.get('name') === 'demo' && form.get('file') instanceof File
+        ? pass('FormData', 'ok')
+        : fail('FormData', 'missing entries'),
+    )
+  } catch (error) {
+    results.push(failFromError('FormData', error))
+  }
+
+  try {
+    const reader = new FileReader()
+    const text = await new Promise<string>((resolve, reject) => {
+      reader.onload = () => {
+        resolve(String(reader.result))
+      }
+      reader.onerror = () => {
+        reject(reader.error)
+      }
+      reader.readAsText(new Blob(['hello']))
+    })
+    results.push(
+      text === 'hello' ? pass('FileReader', 'ok') : fail('FileReader', text),
+    )
+  } catch (error) {
+    results.push(failFromError('FileReader', error))
+  }
+
+  try {
     const encoded = btoa('hello')
     const decoded = atob(encoded)
     results.push(

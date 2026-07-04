@@ -1,7 +1,13 @@
 import { GodotBlob } from './blob.js'
 import { GodotTextDecoder, GodotTextEncoder } from './encoding.js'
+import { GodotFormData } from './form-data.js'
 
-export type GodotBodyInit = string | ArrayBuffer | Uint8Array | GodotBlob
+export type GodotBodyInit =
+  | string
+  | ArrayBuffer
+  | Uint8Array
+  | GodotBlob
+  | GodotFormData
 
 export function cloneArrayBuffer(buffer: ArrayBuffer): ArrayBuffer {
   return buffer.slice(0) as ArrayBuffer
@@ -16,6 +22,9 @@ export function cloneBodyInit(body: GodotBodyInit): GodotBodyInit {
   }
   if (body instanceof Uint8Array) {
     return new Uint8Array(body)
+  }
+  if (body instanceof GodotFormData) {
+    return body.clone()
   }
   return body.slice(0, body.size, body.type)
 }
@@ -34,6 +43,9 @@ export async function bodyInitToArrayBuffer(
       body.byteOffset,
       body.byteOffset + body.byteLength,
     ) as ArrayBuffer
+  }
+  if (body instanceof GodotFormData) {
+    return body._toMultipartArrayBuffer()
   }
   return body.arrayBuffer()
 }

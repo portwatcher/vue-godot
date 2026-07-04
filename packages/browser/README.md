@@ -2,7 +2,7 @@
 
 Browser API polyfills for **GodotJS**.
 
-GodotJS provides only engine bindings (the `godot` module) and a minimal JS runtime (V8 or QuickJS). Standard browser/DOM APIs like `fetch`, `URL`, `Blob`, `atob`, `TextEncoder`, `history`, timers, `requestAnimationFrame`, etc. are **not** available. This package re-implements them on top of Godot's native classes so that higher-level libraries (and your own code) can use familiar Web APIs without modification.
+GodotJS provides only engine bindings (the `godot` module) and a minimal JS runtime (V8 or QuickJS). Standard browser/DOM APIs like `fetch`, `URL`, `Blob`, `File`, `FormData`, `atob`, `TextEncoder`, `history`, timers, `requestAnimationFrame`, etc. are **not** available. This package re-implements them on top of Godot's native classes so that higher-level libraries (and your own code) can use familiar Web APIs without modification.
 
 ## Installation
 
@@ -19,7 +19,7 @@ import { installBrowserAPIs } from '@vue-godot/browser'
 
 installBrowserAPIs()
 
-// Now you can use fetch(), Request, URL, Blob, timers, history, etc. globally
+// Now you can use fetch(), Request, URL, Blob, FormData, timers, history, etc. globally
 const res = await fetch('https://example.com/data.json')
 const data = await res.json()
 ```
@@ -42,11 +42,14 @@ import { fetch, GodotRequest, GodotURL, GodotHeaders } from '@vue-godot/browser'
 
 | API                                              | Implementation         | Notes                                                                                                                              |
 | ------------------------------------------------ | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `fetch()`                                        | Godot `HTTPClient`     | Supports GET/POST/PUT/DELETE, `Request` input, redirects (up to 20), TLS, `AbortSignal`, string/ArrayBuffer/Uint8Array/Blob bodies |
+| `fetch()`                                        | Godot `HTTPClient`     | Supports GET/POST/PUT/DELETE, `Request` input, redirects (up to 20), TLS, `AbortSignal`, string/ArrayBuffer/Uint8Array/Blob/File/FormData bodies |
 | `Request`                                        | `GodotRequest`         | Fetch-compatible request metadata/body wrapper; `.text()`, `.json()`, `.arrayBuffer()`, `.blob()`, `.clone()`                      |
 | `Headers`                                        | `GodotHeaders`         | Map-backed with `toGodotArray()` / `fromGodotArray()` interop                                                                      |
 | `Response`                                       | `GodotResponse`        | ArrayBuffer-backed; `.json()`, `.text()`, `.arrayBuffer()`, `.blob()`, `.clone()`                                                  |
 | `Blob`                                           | `GodotBlob`            | ArrayBuffer-backed; `.slice()`, `.text()`, `.arrayBuffer()`, `.size`, `.type`                                                      |
+| `File`                                           | `GodotFile`            | Blob-backed file metadata; `.name`, `.lastModified`, `.webkitRelativePath`                                                         |
+| `FormData`                                       | `GodotFormData`        | Ordered duplicate keys, string/file values, multipart serialization for `fetch()` bodies                                           |
+| `FileReader`                                     | `GodotFileReader`      | Async `readAsText()`, `readAsArrayBuffer()`, `readAsDataURL()`, `readAsBinaryString()` for Blob/File values                        |
 | `URL`                                            | `GodotURL`             | WHATWG subset — `protocol`, `hostname`, `port`, `pathname`, `search`, `searchParams`, `hash`, `href`, `toString()`                 |
 | `URLSearchParams`                                | `GodotURLSearchParams` | Query string helper with duplicate-key support, iteration, `.append()`, `.set()`, `.getAll()`, `.sort()`                           |
 | `atob` / `btoa`                                  | Pure JS                | RFC 4648 base64 encode/decode                                                                                                      |
@@ -178,6 +181,31 @@ const res = await fetch(req)
 ```
 
 As in browsers, `GET` and `HEAD` requests cannot have bodies, and body helper methods can only consume a request once.
+
+## File, FormData, And FileReader
+
+`File` extends the Blob implementation with `name`, `lastModified`, and `webkitRelativePath`. `FormData` stores duplicate keys in insertion order and accepts string, `Blob`, or `File` values. When a `FormData` instance is used as a `Request`/`fetch()` body, `@vue-godot/browser` serializes it as `multipart/form-data` and adds the boundary-bearing `Content-Type` header when the caller has not already set one.
+
+```ts
+const form = new FormData()
+form.append('title', 'Screenshot')
+form.append('image', new File([bytes], 'screen.png', { type: 'image/png' }))
+
+await fetch('https://example.com/upload', {
+  method: 'POST',
+  body: form,
+})
+```
+
+`FileReader` provides event-compatible async reads for Blob/File values:
+
+```ts
+const reader = new FileReader()
+reader.onload = () => {
+  console.log(reader.result)
+}
+reader.readAsText(new Blob(['hello']))
+```
 
 ## Requirements
 
