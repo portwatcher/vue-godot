@@ -5,6 +5,7 @@ import path from 'node:path'
 import {
   assertNoGodotScriptLoadErrors,
   assertGeneratedOutputIgnoredByGodot,
+  assertStableViteChunkNames,
   assertVueSourceIgnoredByGodot,
   createPackedPackageOverrides,
   directoryContainsText,
@@ -156,6 +157,7 @@ run(npmCommand, ['run', 'build'], {
   env,
   stdio: 'inherit',
 })
+assertStableViteChunkNames(projectDir)
 runGodotImport(godot, projectDir)
 await runGodotUntilMarker(godot, projectDir, INITIAL_MARKER)
 
@@ -184,6 +186,7 @@ try {
     () => directoryContainsText(path.join(projectDir, 'dist'), UPDATED_MARKER),
     'generated app watch rebuild output',
   )
+  assertStableViteChunkNames(projectDir)
 } finally {
   await watcher.stop()
 }

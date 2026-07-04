@@ -251,6 +251,9 @@ export default defineConfig({
     rollupOptions: {
       external: ['godot'],
       output: {
+        // Stable chunk paths avoid stale Godot editor resource dependencies
+        // when Vite rebuilds while the project is open.
+        chunkFileNames: 'chunks/[name].js',
         exports: 'named',
       },
     },

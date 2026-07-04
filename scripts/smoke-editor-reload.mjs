@@ -4,6 +4,7 @@ import os from 'node:os'
 import path from 'node:path'
 import {
   assertGeneratedOutputIgnoredByGodot,
+  assertStableViteChunkNames,
   assertNoGodotScriptLoadErrors,
   assertVueSourceIgnoredByGodot,
   createPackedPackageOverrides,
@@ -283,6 +284,7 @@ run(npmCommand, ['run', 'build'], {
   env,
   stdio: 'inherit',
 })
+assertStableViteChunkNames(projectDir)
 writeEditorReloadPlugin(projectDir)
 runGodotImport(godot, projectDir)
 const watcher = startNpmDevWatch(projectDir, env)
@@ -306,6 +308,7 @@ try {
   }
 
   await runEditorReloadSmoke(godot, projectDir)
+  assertStableViteChunkNames(projectDir)
 } finally {
   await watcher.stop()
 }

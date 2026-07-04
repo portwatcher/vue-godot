@@ -42,6 +42,7 @@ When `--html` is set, the scaffolded project includes:
 - an HTML-like starter `App.vue`
 - `_exit_tree()` cleanup that calls `app.unmount()` for editor reload safety
 - Volar plugin in `tsconfig.json` (`vueCompilerOptions.plugins`) so the IDE resolves lowercase tags as `@vue-godot/html` components with full type-checking and hover info
+- Vite output with stable secondary chunk paths under `dist/chunks/` so Godot editor reloads do not chase content-hash filenames
 
 **Example:**
 
@@ -51,7 +52,7 @@ cd my-game
 npm run dev
 ```
 
-`create` runs the initial `npm install` and `npm run gen:types` for you. Keep `npm run dev` running while editing `vue/src`; Vite rebuilds `dist/app.js` for the Godot editor to reload.
+`create` runs the initial `npm install` and `npm run gen:types` for you. Keep `npm run dev` running while editing `vue/src`; Vite rebuilds `dist/app.js` and stable `dist/chunks/*.js` files for the Godot editor to reload.
 
 The generated `vue/` and `gen/` directories include `.gdignore` files so Godot imports the built `dist/app.js` output without trying to scan Vite/TypeScript source files or GodotJS-generated TypeScript resource stubs as scripts.
 
@@ -79,7 +80,7 @@ This command:
 3. Resolves `node_modules` paths for the generated `tsconfig.json`
 4. Adds the same HTML/browser setup as `create --html` when `--html` is provided
 
-The copied `vue/` template and root `gen/` ignore marker keep Godot's asset scan focused on generated `dist/` output rather than Vue source/config files or GodotJS-generated TypeScript resource stubs.
+The copied `vue/` template and root `gen/` ignore marker keep Godot's asset scan focused on generated `dist/` output rather than Vue source/config files or GodotJS-generated TypeScript resource stubs. The Vite config also keeps secondary JavaScript chunk names stable under `dist/chunks/`, which avoids stale Godot editor resource dependencies during watch rebuilds.
 
 **Example:**
 

@@ -5,6 +5,7 @@ import os from 'node:os'
 import path from 'node:path'
 import {
   assertGeneratedOutputIgnoredByGodot,
+  assertStableViteChunkNames,
   assertVueSourceIgnoredByGodot,
   createPackedPackageOverrides,
   delay,
@@ -102,6 +103,7 @@ async function smokeWatchRebuild(target, env) {
   if (!directoryContainsText(distDir, initialMarker)) {
     throw new Error(`Unable to locate initial generated text in ${distDir}`)
   }
+  assertStableViteChunkNames(target)
 
   const state = {
     stdout: '',
@@ -147,6 +149,7 @@ async function smokeWatchRebuild(target, env) {
         directoryContainsText(distDir, replacement)
       )
     })
+    assertStableViteChunkNames(target)
 
     console.log('[smoke-cli] html-app npm run dev rebuild smoke passed')
   } finally {
@@ -166,6 +169,7 @@ function smokeProject(cliPath, workspaceDir, name, extraArgs, env) {
     env,
     stdio: 'inherit',
   })
+  assertStableViteChunkNames(target)
   return target
 }
 

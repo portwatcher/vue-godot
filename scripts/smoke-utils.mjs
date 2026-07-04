@@ -138,6 +138,41 @@ export function directoryContainsText(dir, text) {
   return false
 }
 
+export function assertStableViteChunkNames(projectDir) {
+  const distDir = path.join(projectDir, 'dist')
+  const unstableChunkPaths = []
+  const hashedChunkPattern = /(?:^|[/\\])[^/\\]+-[A-Za-z0-9_-]{8,}\.js$/
+
+  function visit(currentDir) {
+    const entries = fs.readdirSync(currentDir, { withFileTypes: true })
+    for (const entry of entries) {
+      const absolutePath = path.join(currentDir, entry.name)
+      if (entry.isDirectory()) {
+        visit(absolutePath)
+        continue
+      }
+      if (!entry.isFile()) {
+        continue
+      }
+
+      const relativePath = path.relative(distDir, absolutePath)
+      if (hashedChunkPattern.test(relativePath)) {
+        unstableChunkPaths.push(relativePath)
+      }
+    }
+  }
+
+  visit(distDir)
+  if (unstableChunkPaths.length > 0) {
+    throw new Error(
+      [
+        'Generated Vite output must use stable JS chunk names for Godot editor reloads',
+        ...unstableChunkPaths.map((filePath) => `- ${filePath}`),
+      ].join('\n'),
+    )
+  }
+}
+
 export function relevantGodotDiagnosticLines(output) {
   return output
     .split(/\r?\n/)
