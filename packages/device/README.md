@@ -8,7 +8,9 @@ not install browser globals by itself and does not synthesize fake backends when
 no real adapter is registered.
 
 See the repository [compatibility checklist](../../docs/compatibility.md) for
-current support status and platform caveats.
+current support status and platform caveats, and
+[permissions and export setup](../../docs/permissions.md) for native capability
+requirements.
 
 ## Installation
 
