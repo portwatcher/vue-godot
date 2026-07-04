@@ -9,6 +9,7 @@ type InsertParentNode = InsertableNode & {
   add_child(child: InsertableNode): void
   remove_child(child: InsertableNode): void
   move_child(child: InsertableNode, toIndex: number): void
+  get_child_count(): number
 }
 
 type StaticFactories<TNode extends InsertableNode> = {

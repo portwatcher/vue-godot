@@ -7,6 +7,7 @@ type InsertParentNode = InsertableNode & {
   add_child(child: InsertableNode): void
   remove_child(child: InsertableNode): void
   move_child(child: InsertableNode, toIndex: number): void
+  get_child_count(): number
 }
 
 export function insertChildBeforeAnchor(
@@ -21,6 +22,11 @@ export function insertChildBeforeAnchor(
     }
     if (currentParent !== parent) {
       parent.add_child(child)
+      return
+    }
+    const lastIndex = parent.get_child_count() - 1
+    if (child.get_index() !== lastIndex) {
+      parent.move_child(child, lastIndex)
     }
     return
   }

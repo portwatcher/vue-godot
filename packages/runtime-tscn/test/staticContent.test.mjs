@@ -22,6 +22,10 @@ class FakeNode {
     return this.parent.children.indexOf(this)
   }
 
+  get_child_count() {
+    return this.children.length
+  }
+
   add_child(child) {
     if (child.parent && child.parent !== this) {
       throw new Error(`child ${child.name} already has a different parent`)

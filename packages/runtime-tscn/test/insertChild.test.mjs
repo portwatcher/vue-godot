@@ -19,6 +19,10 @@ class FakeNode {
     return this.parent.children.indexOf(this)
   }
 
+  get_child_count() {
+    return this.children.length
+  }
+
   add_child(child) {
     if (child.parent && child.parent !== this) {
       throw new Error(`child ${child.name} already has a different parent`)
@@ -89,4 +93,19 @@ test('reorders correctly when moving an existing child before an anchor', () => 
   insertChildBeforeAnchor(a, parent, c)
 
   assert.deepEqual(childNames(parent), ['b', 'a', 'c'])
+})
+
+test('reorders correctly when moving an existing child to the end', () => {
+  const parent = new FakeNode('parent')
+  const a = new FakeNode('a')
+  const b = new FakeNode('b')
+  const c = new FakeNode('c')
+
+  insertChildBeforeAnchor(a, parent, null)
+  insertChildBeforeAnchor(b, parent, null)
+  insertChildBeforeAnchor(c, parent, null)
+
+  insertChildBeforeAnchor(a, parent, null)
+
+  assert.deepEqual(childNames(parent), ['b', 'c', 'a'])
 })
