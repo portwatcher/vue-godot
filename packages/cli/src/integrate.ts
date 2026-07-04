@@ -323,6 +323,18 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     process.cwd(),
   )
 
+  /* --- keep GodotJS generated resource type stubs out of Godot's scan --- */
+  const genTplDir = path.join(templatesDir, 'gen')
+
+  if (!fs.existsSync(genTplDir)) {
+    console.error(
+      `Template directory not found: ${genTplDir}\nThe CLI package may not be installed correctly.`,
+    )
+    process.exit(1)
+  }
+
+  copyTemplateDir(genTplDir, path.join(absTarget, 'gen'), {}, process.cwd())
+
   /* --- apply HTML-mode overrides --- */
   if (html) {
     const viteConfigPath = path.join(vueDir, 'vite.config.ts')

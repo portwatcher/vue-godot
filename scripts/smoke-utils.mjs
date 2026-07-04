@@ -16,8 +16,20 @@ export const packageDirs = {
   '@vue-godot/runtime-tscn': 'packages/runtime-tscn',
 }
 
+const GODOT_SCRIPT_LOAD_ERROR_PATTERNS = [
+  /\[jsb\]\[Error\]/,
+  /failed to check out module/,
+  /javascript file is missing/,
+  /something went wrong on loading/,
+  /unknown module:/,
+]
+
 const godotExecutableNamePattern = /^godot(?:4|[._-].*)?(?:\.exe)?$/i
 const godotDirectorySearchDepth = 4
+
+export function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
 
 export function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
@@ -44,6 +56,107 @@ export function run(command, args, options = {}) {
   return result.stdout
 }
 
+export async function stopProcess(child) {
+  if (child.exitCode !== null || child.signalCode !== null) {
+    return
+  }
+
+  const closed = new Promise((resolve) => child.once('close', resolve))
+  child.kill('SIGTERM')
+  await Promise.race([
+    closed,
+    delay(3_000).then(() => {
+      if (child.exitCode === null && child.signalCode === null) {
+        child.kill('SIGKILL')
+      }
+    }),
+  ])
+  if (child.exitCode === null && child.signalCode === null) {
+    await closed
+  }
+}
+
+export function directoryContainsText(dir, text) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true })
+  for (const entry of entries) {
+    const absolutePath = path.join(dir, entry.name)
+    if (entry.isDirectory()) {
+      if (directoryContainsText(absolutePath, text)) {
+        return true
+      }
+      continue
+    }
+    if (
+      entry.isFile() &&
+      fs.readFileSync(absolutePath, 'utf-8').includes(text)
+    ) {
+      return true
+    }
+  }
+  return false
+}
+
+export function relevantGodotDiagnosticLines(output) {
+  return output
+    .split(/\r?\n/)
+    .filter((line) =>
+      GODOT_SCRIPT_LOAD_ERROR_PATTERNS.some((pattern) => pattern.test(line)),
+    )
+    .join('\n')
+}
+
+export function assertNoGodotScriptLoadErrors(output, context) {
+  if (
+    !GODOT_SCRIPT_LOAD_ERROR_PATTERNS.some((pattern) => pattern.test(output))
+  ) {
+    return
+  }
+
+  const diagnostics = relevantGodotDiagnosticLines(output)
+  throw new Error(
+    [
+      `${context} printed GodotJS script-load diagnostics`,
+      diagnostics || output,
+    ]
+      .filter(Boolean)
+      .join('\n'),
+  )
+}
+
+export function runGodotImport(godot, projectDir) {
+  const result = spawnSync(
+    godot,
+    ['--headless', '--path', projectDir, '--import'],
+    {
+      cwd: projectDir,
+      env: process.env,
+      encoding: 'utf-8',
+      stdio: 'pipe',
+    },
+  )
+  const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`
+
+  if (result.stdout) {
+    process.stdout.write(result.stdout)
+  }
+  if (result.stderr) {
+    process.stderr.write(result.stderr)
+  }
+
+  if (result.status !== 0) {
+    throw new Error(
+      [
+        `Godot import failed (${result.status ?? result.signal ?? 'unknown'})`,
+        output,
+      ]
+        .filter(Boolean)
+        .join('\n'),
+    )
+  }
+
+  assertNoGodotScriptLoadErrors(output, 'Godot import')
+}
+
 export function commandExists(command) {
   const probe = spawnSync(command, ['--version'], {
     encoding: 'utf-8',
@@ -56,6 +169,20 @@ export function assertFileExists(filePath, description = filePath) {
   if (!fs.existsSync(filePath)) {
     throw new Error(`${description} not found: ${filePath}`)
   }
+}
+
+export function assertVueSourceIgnoredByGodot(projectDir) {
+  assertFileExists(
+    path.join(projectDir, 'vue/.gdignore'),
+    'generated Vue directory .gdignore',
+  )
+}
+
+export function assertGeneratedOutputIgnoredByGodot(projectDir) {
+  assertFileExists(
+    path.join(projectDir, 'gen/.gdignore'),
+    'generated GodotJS resource type output .gdignore',
+  )
 }
 
 function isExecutableFile(filePath) {

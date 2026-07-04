@@ -1,32 +1,27 @@
-import { spawn, spawnSync } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import {
-  assertFileExists,
+  assertNoGodotScriptLoadErrors,
+  assertGeneratedOutputIgnoredByGodot,
+  assertVueSourceIgnoredByGodot,
   createPackedPackageOverrides,
+  delay,
+  directoryContainsText,
   nodeCommand,
   npmCommand,
   requireBuiltCli,
   resolveGodotCommand,
   run,
+  runGodotImport,
+  stopProcess,
 } from './smoke-utils.mjs'
 
 const SMOKE_MARKER_PREFIX = '[vue-godot-generated-smoke]'
 const WATCH_TIMEOUT_MS = 30_000
 const INITIAL_MARKER = `generated initial ${Date.now()}`
 const UPDATED_MARKER = `generated rebuilt ${Date.now()}`
-const GODOT_SCRIPT_LOAD_ERROR_PATTERNS = [
-  /\[jsb\]\[Error\]/,
-  /failed to check out module/,
-  /javascript file is missing/,
-  /something went wrong on loading/,
-  /unknown module:/,
-]
-
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
 
 async function waitFor(predicate, description, timeoutMs = WATCH_TIMEOUT_MS) {
   const startedAt = Date.now()
@@ -37,46 +32,6 @@ async function waitFor(predicate, description, timeoutMs = WATCH_TIMEOUT_MS) {
     await delay(200)
   }
   throw new Error(`Timed out waiting for ${description}`)
-}
-
-function directoryContainsText(dir, text) {
-  const entries = fs.readdirSync(dir, { withFileTypes: true })
-  for (const entry of entries) {
-    const absolutePath = path.join(dir, entry.name)
-    if (entry.isDirectory()) {
-      if (directoryContainsText(absolutePath, text)) {
-        return true
-      }
-      continue
-    }
-    if (
-      entry.isFile() &&
-      fs.readFileSync(absolutePath, 'utf-8').includes(text)
-    ) {
-      return true
-    }
-  }
-  return false
-}
-
-async function stopProcess(child) {
-  if (child.exitCode !== null || child.signalCode !== null) {
-    return
-  }
-
-  const closed = new Promise((resolve) => child.once('close', resolve))
-  child.kill('SIGTERM')
-  await Promise.race([
-    closed,
-    delay(3_000).then(() => {
-      if (child.exitCode === null && child.signalCode === null) {
-        child.kill('SIGKILL')
-      }
-    }),
-  ])
-  if (child.exitCode === null && child.signalCode === null) {
-    await closed
-  }
 }
 
 function writeSmokeApp(projectDir, marker) {
@@ -102,74 +57,6 @@ onMounted(() => {
 </script>
 `,
   )
-}
-
-function assertVueSourceIgnoredByGodot(projectDir) {
-  assertFileExists(
-    path.join(projectDir, 'vue/.gdignore'),
-    'generated Vue directory .gdignore',
-  )
-}
-
-function relevantDiagnosticLines(output) {
-  return output
-    .split(/\r?\n/)
-    .filter((line) =>
-      GODOT_SCRIPT_LOAD_ERROR_PATTERNS.some((pattern) => pattern.test(line)),
-    )
-    .join('\n')
-}
-
-function assertNoGodotScriptLoadErrors(output, context) {
-  if (
-    !GODOT_SCRIPT_LOAD_ERROR_PATTERNS.some((pattern) => pattern.test(output))
-  ) {
-    return
-  }
-
-  const diagnostics = relevantDiagnosticLines(output)
-  throw new Error(
-    [
-      `${context} printed GodotJS script-load diagnostics`,
-      diagnostics || output,
-    ]
-      .filter(Boolean)
-      .join('\n'),
-  )
-}
-
-function runGodotImport(godot, projectDir) {
-  const result = spawnSync(
-    godot,
-    ['--headless', '--path', projectDir, '--import'],
-    {
-      cwd: projectDir,
-      env: process.env,
-      encoding: 'utf-8',
-      stdio: 'pipe',
-    },
-  )
-  const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`
-
-  if (result.stdout) {
-    process.stdout.write(result.stdout)
-  }
-  if (result.stderr) {
-    process.stderr.write(result.stderr)
-  }
-
-  if (result.status !== 0) {
-    throw new Error(
-      [
-        `Godot import failed (${result.status ?? result.signal ?? 'unknown'})`,
-        output,
-      ]
-        .filter(Boolean)
-        .join('\n'),
-    )
-  }
-
-  assertNoGodotScriptLoadErrors(output, 'Generated Godot import')
 }
 
 async function runGodotUntilMarker(godot, projectDir, marker) {
@@ -302,6 +189,7 @@ run(nodeCommand, [cliPath, 'create', projectDir, '-f', '--html'], {
   stdio: 'inherit',
 })
 assertVueSourceIgnoredByGodot(projectDir)
+assertGeneratedOutputIgnoredByGodot(projectDir)
 
 writeSmokeApp(projectDir, INITIAL_MARKER)
 run(npmCommand, ['run', 'build'], {

@@ -4,17 +4,17 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import {
-  assertFileExists,
+  assertGeneratedOutputIgnoredByGodot,
+  assertVueSourceIgnoredByGodot,
   createPackedPackageOverrides,
+  delay,
+  directoryContainsText,
   nodeCommand,
   npmCommand,
   requireBuiltCli,
   run,
+  stopProcess,
 } from './smoke-utils.mjs'
-
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
 
 function hashDirectory(dir) {
   const hash = crypto.createHash('sha256')
@@ -45,52 +45,8 @@ function hashDirectory(dir) {
   return hash.digest('hex')
 }
 
-function directoryContainsText(dir, text) {
-  const entries = fs.readdirSync(dir, { withFileTypes: true })
-
-  for (const entry of entries) {
-    const absolutePath = path.join(dir, entry.name)
-
-    if (entry.isDirectory()) {
-      if (directoryContainsText(absolutePath, text)) {
-        return true
-      }
-      continue
-    }
-
-    if (
-      entry.isFile() &&
-      fs.readFileSync(absolutePath, 'utf-8').includes(text)
-    ) {
-      return true
-    }
-  }
-
-  return false
-}
-
 function countMatches(value, pattern) {
   return [...value.matchAll(pattern)].length
-}
-
-async function stopWatchProcess(child) {
-  if (child.exitCode !== null || child.signalCode !== null) {
-    return
-  }
-
-  const closed = new Promise((resolve) => child.once('close', resolve))
-  child.kill('SIGTERM')
-  await Promise.race([
-    closed,
-    delay(3_000).then(() => {
-      if (child.exitCode === null && child.signalCode === null) {
-        child.kill('SIGKILL')
-      }
-    }),
-  ])
-  if (child.exitCode === null && child.signalCode === null) {
-    await closed
-  }
 }
 
 async function waitForWatchCondition(state, description, predicate) {
@@ -114,11 +70,7 @@ async function waitForWatchCondition(state, description, predicate) {
   }
 
   throw new Error(
-    [
-      `Timed out waiting for ${description}`,
-      state.stdout,
-      state.stderr,
-    ]
+    [`Timed out waiting for ${description}`, state.stdout, state.stderr]
       .filter(Boolean)
       .join('\n'),
   )
@@ -131,9 +83,7 @@ async function smokeWatchRebuild(target, env) {
   const initialMarker = 'Hello from Vue Godot HTML'
 
   if (!source.includes(initialMarker)) {
-    throw new Error(
-      `Unable to locate expected generated text in ${appVuePath}`,
-    )
+    throw new Error(`Unable to locate expected generated text in ${appVuePath}`)
   }
   if (!directoryContainsText(distDir, initialMarker)) {
     throw new Error(`Unable to locate initial generated text in ${distDir}`)
@@ -187,7 +137,7 @@ async function smokeWatchRebuild(target, env) {
     console.log('[smoke-cli] html-app npm run dev rebuild smoke passed')
   } finally {
     fs.writeFileSync(appVuePath, source)
-    await stopWatchProcess(child)
+    await stopProcess(child)
   }
 }
 
@@ -203,13 +153,6 @@ function smokeProject(cliPath, workspaceDir, name, extraArgs, env) {
     stdio: 'inherit',
   })
   return target
-}
-
-function assertVueSourceIgnoredByGodot(projectDir) {
-  assertFileExists(
-    path.join(projectDir, 'vue/.gdignore'),
-    'generated Vue directory .gdignore',
-  )
 }
 
 const cliPath = requireBuiltCli()
@@ -234,5 +177,6 @@ const htmlAppDir = smokeProject(
   env,
 )
 assertVueSourceIgnoredByGodot(htmlAppDir)
+assertGeneratedOutputIgnoredByGodot(htmlAppDir)
 await smokeWatchRebuild(htmlAppDir, env)
 console.log('[smoke-cli] create and create --html smoke checks passed')

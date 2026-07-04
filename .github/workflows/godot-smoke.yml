@@ -3,27 +3,29 @@ name: Godot Smoke
 on:
   pull_request:
     paths:
-      - ".github/workflows/godot-smoke.yml"
-      - "apps/html-demo/**"
-      - "package*.json"
-      - "packages/**"
-      - "scripts/smoke-generated-godot.mjs"
-      - "scripts/smoke-godot.mjs"
-      - "scripts/smoke-utils.mjs"
-      - "turbo.json"
+      - '.github/workflows/godot-smoke.yml'
+      - 'apps/html-demo/**'
+      - 'package*.json'
+      - 'packages/**'
+      - 'scripts/smoke-editor-reload.mjs'
+      - 'scripts/smoke-generated-godot.mjs'
+      - 'scripts/smoke-godot.mjs'
+      - 'scripts/smoke-utils.mjs'
+      - 'turbo.json'
   push:
     branches:
       - develop
       - main
     paths:
-      - ".github/workflows/godot-smoke.yml"
-      - "apps/html-demo/**"
-      - "package*.json"
-      - "packages/**"
-      - "scripts/smoke-generated-godot.mjs"
-      - "scripts/smoke-godot.mjs"
-      - "scripts/smoke-utils.mjs"
-      - "turbo.json"
+      - '.github/workflows/godot-smoke.yml'
+      - 'apps/html-demo/**'
+      - 'package*.json'
+      - 'packages/**'
+      - 'scripts/smoke-editor-reload.mjs'
+      - 'scripts/smoke-generated-godot.mjs'
+      - 'scripts/smoke-godot.mjs'
+      - 'scripts/smoke-utils.mjs'
+      - 'turbo.json'
   workflow_dispatch:
 
 permissions:
@@ -106,3 +108,6 @@ jobs:
 
       - name: Generated Godot smoke
         run: npm run smoke:generated-godot
+
+      - name: Editor reload smoke
+        run: npm run smoke:editor-reload

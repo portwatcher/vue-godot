@@ -79,6 +79,19 @@ export async function create(options: CreateOptions): Promise<void> {
     process.cwd(),
   )
 
+  /* --- copy GodotJS generated resource type ignore marker --- */
+  const genTplDir = path.join(templatesDir, 'gen')
+  const genDir = path.join(absTarget, 'gen')
+
+  if (!fs.existsSync(genTplDir)) {
+    console.error(
+      `Template directory not found: ${genTplDir}\nThe CLI package may not be installed correctly.`,
+    )
+    process.exit(1)
+  }
+
+  copyTemplateDir(genTplDir, genDir, {}, process.cwd())
+
   /* --- copy Vue template --- */
   const vueTplDir = path.join(templatesDir, 'vue')
   const vueDir = path.join(absTarget, 'vue')

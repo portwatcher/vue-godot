@@ -49,7 +49,11 @@ function checkPackageMetadata(packagesByName) {
       continue
     }
 
-    assertEqual(`${config.name} publishConfig.access`, pkg.publishConfig?.access, 'public')
+    assertEqual(
+      `${config.name} publishConfig.access`,
+      pkg.publishConfig?.access,
+      'public',
+    )
 
     if (!Array.isArray(pkg.files) || !pkg.files.includes('dist')) {
       failures.push(`${config.name} package.json must include "dist" in files`)
@@ -95,7 +99,9 @@ async function checkGeneratedPackageSpecs(packagesByName) {
 
   const integratePath = path.join(repoRoot, 'packages/cli/dist/integrate.js')
   if (!fs.existsSync(integratePath)) {
-    failures.push('packages/cli/dist/integrate.js not found; run npm run build first')
+    failures.push(
+      'packages/cli/dist/integrate.js not found; run npm run build first',
+    )
     return
   }
 
@@ -151,7 +157,9 @@ function checkPackDryRun() {
     const parsed = parseNpmJson(result.stdout, `${config.name} npm pack`)
     const pack = Array.isArray(parsed) ? parsed[0] : null
     if (!pack) {
-      failures.push(`${config.name}: npm pack JSON did not include package data`)
+      failures.push(
+        `${config.name}: npm pack JSON did not include package data`,
+      )
       continue
     }
 
@@ -175,12 +183,19 @@ function readRegistryVersion(packageName) {
     return typeof parsed === 'string' ? parsed : null
   }
 
-  if (result.stderr.includes('E404') || result.stdout.includes('"code": "E404"')) {
+  if (
+    result.stderr.includes('E404') ||
+    result.stdout.includes('"code": "E404"')
+  ) {
     return null
   }
 
   failures.push(
-    [`Unable to read registry version for ${packageName}`, result.stdout, result.stderr]
+    [
+      `Unable to read registry version for ${packageName}`,
+      result.stdout,
+      result.stderr,
+    ]
       .filter(Boolean)
       .join('\n'),
   )
@@ -267,7 +282,8 @@ function checkGodotSmoke() {
   }
 
   if (output.includes('[smoke-godot] skipped:')) {
-    const message = 'Godot smoke skipped; set GODOT_BIN or install godot/godot4.'
+    const message =
+      'Godot smoke skipped; set GODOT_BIN or install godot/godot4.'
     if (localOnly) {
       warnings.push(message)
     } else {
@@ -307,6 +323,35 @@ function checkGodotSmoke() {
     )
   ) {
     failures.push('Generated Godot smoke completed without the pass marker')
+  }
+
+  const editorResult = run(npmCommand, ['run', 'smoke:editor-reload'])
+  const editorOutput = `${editorResult.stdout ?? ''}\n${editorResult.stderr ?? ''}`
+  process.stdout.write(editorResult.stdout ?? '')
+  process.stderr.write(editorResult.stderr ?? '')
+
+  if (editorResult.status !== 0) {
+    failures.push(`npm run smoke:editor-reload failed\n${editorOutput}`)
+    return
+  }
+
+  if (editorOutput.includes('[smoke-editor-reload] skipped:')) {
+    const message =
+      'Editor reload smoke skipped; set GODOT_BIN or install godot/godot4.'
+    if (localOnly) {
+      warnings.push(message)
+    } else {
+      failures.push(message)
+    }
+    return
+  }
+
+  if (
+    !editorOutput.includes(
+      '[smoke-editor-reload] generated HTML app editor reload smoke passed',
+    )
+  ) {
+    failures.push('Editor reload smoke completed without the pass marker')
   }
 }
 

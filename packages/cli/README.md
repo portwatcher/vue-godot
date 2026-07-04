@@ -52,7 +52,7 @@ npm run dev
 
 `create` runs the initial `npm install` and `npm run gen:types` for you. Keep `npm run dev` running while editing `vue/src`; Vite rebuilds `dist/app.js` for the Godot editor to reload.
 
-The generated `vue/` directory includes a `.gdignore` file so Godot imports the built `dist/app.js` output without trying to scan Vite/TypeScript source files as GodotJS scripts.
+The generated `vue/` and `gen/` directories include `.gdignore` files so Godot imports the built `dist/app.js` output without trying to scan Vite/TypeScript source files or GodotJS-generated TypeScript resource stubs as scripts.
 
 ### `integrate`
 
@@ -78,7 +78,7 @@ This command:
 3. Resolves `node_modules` paths for the generated `tsconfig.json`
 4. Adds the same HTML/browser setup as `create --html` when `--html` is provided
 
-The copied `vue/` template includes `.gdignore`, keeping Godot's asset scan focused on generated `dist/` output rather than Vue source/config files.
+The copied `vue/` template and root `gen/` ignore marker keep Godot's asset scan focused on generated `dist/` output rather than Vue source/config files or GodotJS-generated TypeScript resource stubs.
 
 **Example:**
 
