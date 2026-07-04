@@ -35,7 +35,7 @@ export const patchProp: TSCNRendererOptions['patchProp'] = function (
         target.disconnect(signalName, new Callable(callable)),
       onError: (phase, signalName, error) => {
         console.warn(
-          `[vue-godot] Error trying to ${phase} signal "${signalName}" on ${safeNodeName(el)}:`,
+          `[vue-godot] Unable to ${phase} signal "${signalName}" on ${safeNodeName(el)} from Vue event prop "${key}". Check that this Godot class defines the signal and that the event name maps to the expected Godot signal:`,
           error,
         )
       },

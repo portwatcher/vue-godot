@@ -171,8 +171,12 @@ export function load(url, context, nextLoad) {
         }
 
         export const ClassDB = {
-          can_instantiate() {
-            return true
+          supportedTags: null,
+          reset() {
+            this.supportedTags = null
+          },
+          can_instantiate(tag) {
+            return this.supportedTags === null || this.supportedTags.has(String(tag))
           },
           instantiate(tag) {
             return tag === 'Label' ? new Label(tag) : new Node(tag)

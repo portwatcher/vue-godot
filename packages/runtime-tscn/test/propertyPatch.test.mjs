@@ -70,3 +70,24 @@ test('warns and skips reset when no cached default is available', () => {
   assert.match(warnings[0], /Unable to reset prop "position"/)
 })
 
+test('warns when Godot rejects an unsupported prop update', () => {
+  const target = {
+    has_method(name) {
+      return name === 'set' || name === 'get'
+    },
+    get() {
+      return 'default'
+    },
+    set(key) {
+      throw new Error(`${key} is not supported`)
+    },
+  }
+  const warnings = []
+
+  patchGodotProperty(target, 'missingProp', 'value', (message) => warnings.push(message))
+
+  assert.equal(warnings.length, 1)
+  assert.match(warnings[0], /Unable to set prop "missingProp"/)
+  assert.match(warnings[0], /may be unsupported/)
+  assert.match(warnings[0], /missingProp is not supported/)
+})

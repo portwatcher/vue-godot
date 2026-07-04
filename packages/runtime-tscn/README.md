@@ -11,6 +11,14 @@ See the repository [compatibility checklist](../../docs/compatibility.md) for cu
 - Render Vue components into Godot scene nodes.
 - Manipulate Godot node properties using Vue's reactivity system.
 
+## Runtime Diagnostics
+
+The renderer emits `[vue-godot]` warnings for unsupported or rejected host operations:
+
+- Unsupported Vue tags / Godot node classes include the tag name and explain the fallback to a generic `Node`.
+- Prop update failures include the prop name and whether Godot rejected reading or writing the value.
+- Signal connection failures include the Godot signal name, target node, and original Vue event prop.
+
 ## Prop Removal / Unset Semantics
 
 When Vue removes a non-event prop (`next == null` / `undefined`), the renderer treats this as a request to reset the Godot property instead of writing `null`/`undefined` directly.

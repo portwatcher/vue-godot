@@ -22,6 +22,13 @@ function setHostNodeText(node: Node, text: string, opName: 'setText' | 'setEleme
   console.warn(`vue-godot doesn't support ${opName} on ${nodeType} (no text property)`)
 }
 
+function createFallbackNodeForUnsupportedTag(tag: string): Node {
+  console.warn(
+    `[vue-godot] Unsupported Godot node class "${tag}". Falling back to a generic Node; check the tag name, generated Godot typings, or ClassDB availability.`,
+  )
+  return new Node()
+}
+
 export const nodeOps: Omit<RendererOptions<Node, Node>, 'patchProp'> = {
   insert: (child, parent, anchor) => {
     if (!parent) {
@@ -41,7 +48,9 @@ export const nodeOps: Omit<RendererOptions<Node, Node>, 'patchProp'> = {
   },
 
   createElement: (tag, isSVG, isCustomElement, vnodeProps): Node => {
-    return ClassDB.can_instantiate(tag) ? ClassDB.instantiate(tag) : new Node()
+    return ClassDB.can_instantiate(tag)
+      ? ClassDB.instantiate(tag)
+      : createFallbackNodeForUnsupportedTag(tag)
   },
 
   createText: (text): Node => {
