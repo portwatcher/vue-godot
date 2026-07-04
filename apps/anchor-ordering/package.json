@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "type": "commonjs",
   "scripts": {
-    "dev": "vite build --watch -c vue/vite.config.ts",
-    "build": "vite build -c vue/vite.config.ts",
-    "postinstall": "npm run build",
+    "dev": "npm run build:deps && vite build --watch -c vue/vite.config.ts",
+    "build": "npm run build:deps && vite build -c vue/vite.config.ts",
+    "build:deps": "npm run --workspace=@vue-godot/runtime-tscn build",
     "gen:types": "vue-godot gen-types"
   },
   "devDependencies": {

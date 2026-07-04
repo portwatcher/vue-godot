@@ -52,6 +52,9 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Build
+        run: npm run build
+
       - name: Godot smoke
         run: npm run smoke:godot
 

@@ -7,9 +7,10 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "dev": "vite build --watch -c vue/vite.config.ts",
+    "dev": "npm run build:deps && vite build --watch -c vue/vite.config.ts",
     "gen:types": "vue-godot gen-types",
-    "build": "vite build -c vue/vite.config.ts"
+    "build": "npm run build:deps && vite build -c vue/vite.config.ts",
+    "build:deps": "npm run --workspace=@vue-godot/runtime-tscn build"
   },
   "devDependencies": {
     "@vue-godot/cli": "*",
