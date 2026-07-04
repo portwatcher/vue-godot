@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -16,6 +16,13 @@ const SMOKE_MARKER_PREFIX = '[vue-godot-generated-smoke]'
 const WATCH_TIMEOUT_MS = 30_000
 const INITIAL_MARKER = `generated initial ${Date.now()}`
 const UPDATED_MARKER = `generated rebuilt ${Date.now()}`
+const GODOT_SCRIPT_LOAD_ERROR_PATTERNS = [
+  /\[jsb\]\[Error\]/,
+  /failed to check out module/,
+  /javascript file is missing/,
+  /something went wrong on loading/,
+  /unknown module:/,
+]
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -104,8 +111,70 @@ function assertVueSourceIgnoredByGodot(projectDir) {
   )
 }
 
+function relevantDiagnosticLines(output) {
+  return output
+    .split(/\r?\n/)
+    .filter((line) =>
+      GODOT_SCRIPT_LOAD_ERROR_PATTERNS.some((pattern) => pattern.test(line)),
+    )
+    .join('\n')
+}
+
+function assertNoGodotScriptLoadErrors(output, context) {
+  if (
+    !GODOT_SCRIPT_LOAD_ERROR_PATTERNS.some((pattern) => pattern.test(output))
+  ) {
+    return
+  }
+
+  const diagnostics = relevantDiagnosticLines(output)
+  throw new Error(
+    [
+      `${context} printed GodotJS script-load diagnostics`,
+      diagnostics || output,
+    ]
+      .filter(Boolean)
+      .join('\n'),
+  )
+}
+
+function runGodotImport(godot, projectDir) {
+  const result = spawnSync(
+    godot,
+    ['--headless', '--path', projectDir, '--import'],
+    {
+      cwd: projectDir,
+      env: process.env,
+      encoding: 'utf-8',
+      stdio: 'pipe',
+    },
+  )
+  const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`
+
+  if (result.stdout) {
+    process.stdout.write(result.stdout)
+  }
+  if (result.stderr) {
+    process.stderr.write(result.stderr)
+  }
+
+  if (result.status !== 0) {
+    throw new Error(
+      [
+        `Godot import failed (${result.status ?? result.signal ?? 'unknown'})`,
+        output,
+      ]
+        .filter(Boolean)
+        .join('\n'),
+    )
+  }
+
+  assertNoGodotScriptLoadErrors(output, 'Generated Godot import')
+}
+
 async function runGodotUntilMarker(godot, projectDir, marker) {
   const expected = `${SMOKE_MARKER_PREFIX} ${marker}`
+  let output = ''
 
   const child = await new Promise((resolve, reject) => {
     const child = spawn(godot, ['--headless', '--path', projectDir], {
@@ -114,7 +183,6 @@ async function runGodotUntilMarker(godot, projectDir, marker) {
       stdio: ['ignore', 'pipe', 'pipe'],
     })
 
-    let output = ''
     let didSettle = false
 
     const timeout = setTimeout(() => {
@@ -169,6 +237,10 @@ async function runGodotUntilMarker(godot, projectDir, marker) {
   })
 
   await stopProcess(child)
+  assertNoGodotScriptLoadErrors(
+    output,
+    `Generated Godot run for marker "${marker}"`,
+  )
 }
 
 function startWatch(projectDir) {
@@ -237,9 +309,7 @@ run(npmCommand, ['run', 'build'], {
   env,
   stdio: 'inherit',
 })
-run(godot, ['--headless', '--path', projectDir, '--import'], {
-  stdio: 'inherit',
-})
+runGodotImport(godot, projectDir)
 await runGodotUntilMarker(godot, projectDir, INITIAL_MARKER)
 
 const watcher = startWatch(projectDir)
