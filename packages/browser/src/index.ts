@@ -22,7 +22,7 @@
 //   • FileReader      → Async Blob/File readers
 //   • WebSocket       → Godot WebSocketPeer
 //   • Storage         → user:// localStorage and memory sessionStorage
-//   • Navigator       → onLine, permissions, geolocation, clipboard, vibration
+//   • Navigator       → onLine, permissions, media devices, geolocation, clipboard, vibration
 //   • device sensors  → Input-backed motion/orientation reads and events
 //   • timers/RAF      → SceneTree-backed timing where available
 //   • performance     → Time-backed now() and marks/measures
@@ -96,6 +96,20 @@ export {
   createHistoryAndLocation,
   getGlobalEventTarget,
 } from './history.js'
+export {
+  GodotMediaDevices,
+  GodotMediaDevicesError,
+  GodotMediaStream,
+  GodotMediaStreamTrack,
+  getRegisteredMediaDevicesAdapter,
+  mediaDevices,
+} from './media-devices.js'
+export type {
+  GodotMediaDevicesErrorName,
+  GodotMediaStreamConstraints,
+  GodotMediaStreamTrackKind,
+  GodotMediaStreamTrackState,
+} from './media-devices.js'
 export {
   GodotPermissionStatus,
   GodotPermissions,

@@ -20,6 +20,10 @@ const {
   GodotGeolocationPosition,
   GodotGeolocationPositionError,
   GodotHeaders,
+  GodotMediaDevices,
+  GodotMediaDevicesError,
+  GodotMediaStream,
+  GodotMediaStreamTrack,
   GodotRequest,
   GodotResponse,
   GodotTextDecoder,
@@ -36,7 +40,9 @@ const {
   createObjectURL,
   geolocation: godotGeolocation,
   getGlobalEventTarget,
+  getRegisteredMediaDevicesAdapter,
   getRegisteredGeolocationAdapter,
+  mediaDevices: godotMediaDevices,
   readDeviceMotion,
   readDeviceOrientation,
   GodotFile,
@@ -122,6 +128,38 @@ const mockGeolocationPosition = {
     speed: null,
   },
   timestamp: 1234,
+}
+
+function createMockMediaStream() {
+  const stoppedTracks = []
+  const tracks = [
+    {
+      id: 'audio-1',
+      kind: 'audio',
+      label: 'Microphone',
+      stop() {
+        stoppedTracks.push('audio-1')
+      },
+    },
+    {
+      id: 'video-1',
+      kind: 'video',
+      label: 'Camera',
+      stop() {
+        stoppedTracks.push('video-1')
+      },
+    },
+  ]
+
+  return {
+    stoppedTracks,
+    stream: {
+      id: 'stream-1',
+      getTracks() {
+        return tracks
+      },
+    },
+  }
 }
 
 test('base64 helpers round-trip binary strings', () => {
@@ -590,6 +628,161 @@ test('navigator.geolocation maps capability failures to browser error codes', as
     assert.equal(timeoutError.code, GodotGeolocationPositionError.TIMEOUT)
   } finally {
     unregisterTimeout()
+    deviceCapabilities.clear()
+  }
+})
+
+test('navigator.mediaDevices is exposed only when an adapter is registered', () => {
+  deviceCapabilities.clear()
+
+  assert.equal(godotNavigator.mediaDevices, undefined)
+  assert.equal(getRegisteredMediaDevicesAdapter(), null)
+
+  const unregister = registerDeviceCapability({
+    capability: 'media-devices',
+    pluginName: 'mock-media',
+    isSupported() {
+      return true
+    },
+    async getUserMedia() {
+      return createMockMediaStream().stream
+    },
+  })
+
+  try {
+    assert.equal(godotNavigator.mediaDevices, godotMediaDevices)
+    assert.ok(godotMediaDevices instanceof GodotMediaDevices)
+    assert.equal(getRegisteredMediaDevicesAdapter()?.pluginName, 'mock-media')
+  } finally {
+    unregister()
+    deviceCapabilities.clear()
+  }
+})
+
+test('navigator.mediaDevices.getUserMedia wraps adapter streams and tracks', async () => {
+  deviceCapabilities.clear()
+  let receivedConstraints = null
+  const mock = createMockMediaStream()
+
+  const unregister = registerDeviceCapability({
+    capability: 'media-devices',
+    pluginName: 'mock-media',
+    isSupported() {
+      return true
+    },
+    async getUserMedia(constraints) {
+      receivedConstraints = constraints
+      return mock.stream
+    },
+  })
+
+  try {
+    const stream = await godotNavigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: { facingMode: 'user' },
+    })
+    const tracks = stream.getTracks()
+    const audioTracks = stream.getAudioTracks()
+    const videoTracks = stream.getVideoTracks()
+
+    assert.ok(stream instanceof GodotMediaStream)
+    assert.equal(stream.id, 'stream-1')
+    assert.equal(stream.active, true)
+    assert.equal(tracks.length, 2)
+    assert.ok(tracks[0] instanceof GodotMediaStreamTrack)
+    assert.equal(audioTracks.length, 1)
+    assert.equal(videoTracks.length, 1)
+    assert.equal(stream.getTrackById('video-1'), videoTracks[0])
+    assert.equal(stream.getTrackById('missing'), null)
+    assert.deepEqual(receivedConstraints, {
+      audio: true,
+      video: { facingMode: 'user' },
+    })
+
+    tracks[0].stop()
+    assert.equal(tracks[0].readyState, 'ended')
+    tracks[0].stop()
+    tracks[1].stop()
+    assert.deepEqual(mock.stoppedTracks, ['audio-1', 'video-1'])
+    assert.equal(stream.active, false)
+  } finally {
+    unregister()
+    deviceCapabilities.clear()
+  }
+})
+
+test('navigator.mediaDevices.getUserMedia validates constraints', async () => {
+  await assert.rejects(
+    () => godotMediaDevices.getUserMedia({}),
+    (error) =>
+      error instanceof TypeError &&
+      error.message.includes('audio and/or video'),
+  )
+})
+
+test('navigator.mediaDevices.getUserMedia maps adapter failures', async () => {
+  deviceCapabilities.clear()
+
+  await assert.rejects(
+    () => godotMediaDevices.getUserMedia({ video: true }),
+    (error) =>
+      error instanceof GodotMediaDevicesError &&
+      error.name === 'NotFoundError',
+  )
+
+  const unregisterDenied = registerDeviceCapability({
+    capability: 'media-devices',
+    pluginName: 'mock-media',
+    getStatus() {
+      return {
+        capability: 'media-devices',
+        state: 'permission-denied',
+        message: 'Camera permission denied.',
+      }
+    },
+    async getUserMedia() {
+      return createMockMediaStream().stream
+    },
+  })
+
+  try {
+    await assert.rejects(
+      () => godotMediaDevices.getUserMedia({ video: true }),
+      (error) =>
+        error instanceof GodotMediaDevicesError &&
+        error.name === 'NotAllowedError' &&
+        error.message === 'Camera permission denied.',
+    )
+  } finally {
+    unregisterDenied()
+    deviceCapabilities.clear()
+  }
+
+  const unregisterExport = registerDeviceCapability({
+    capability: 'media-devices',
+    pluginName: 'mock-media',
+    getStatus() {
+      return {
+        capability: 'media-devices',
+        state: 'export-misconfiguration',
+        message: 'CAMERA export permission is missing.',
+      }
+    },
+    async getUserMedia() {
+      return createMockMediaStream().stream
+    },
+  })
+
+  try {
+    await assert.rejects(
+      () => godotMediaDevices.getUserMedia({ video: true }),
+      (error) =>
+        error instanceof GodotMediaDevicesError &&
+        error.name === 'NotReadableError' &&
+        error.message === 'CAMERA export permission is missing.',
+    )
+  } finally {
+    unregisterExport()
     deviceCapabilities.clear()
   }
 })

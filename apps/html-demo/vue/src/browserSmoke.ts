@@ -1,6 +1,8 @@
 import {
   GodotGeolocationPositionError,
+  GodotMediaDevicesError,
   geolocation,
+  mediaDevices,
   readDeviceMotion,
   readDeviceOrientation,
   startDeviceSensorEvents,
@@ -258,6 +260,33 @@ export async function runBrowserSmokeTests(
     }
   } catch (error) {
     results.push(failFromError('navigator.geolocation', error))
+  }
+
+  try {
+    const navigatorMediaDevices = Reflect.get(navigator, 'mediaDevices')
+    const hasNavigatorMediaDevices =
+      typeof navigatorMediaDevices === 'object' &&
+      navigatorMediaDevices !== null &&
+      typeof (navigatorMediaDevices as { getUserMedia?: unknown })
+        .getUserMedia === 'function'
+
+    if (hasNavigatorMediaDevices) {
+      results.push(pass('navigator.mediaDevices', 'registered ok'))
+    } else {
+      try {
+        await mediaDevices.getUserMedia({ video: true })
+        results.push(fail('navigator.mediaDevices', 'unexpected stream'))
+      } catch (error) {
+        results.push(
+          error instanceof GodotMediaDevicesError &&
+            error.name === 'NotFoundError'
+            ? pass('navigator.mediaDevices', 'missing adapter reported ok')
+            : failFromError('navigator.mediaDevices', error),
+        )
+      }
+    }
+  } catch (error) {
+    results.push(failFromError('navigator.mediaDevices', error))
   }
 
   try {

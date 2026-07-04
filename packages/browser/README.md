@@ -56,9 +56,11 @@ import { fetch, GodotRequest, GodotURL, GodotHeaders } from '@vue-godot/browser'
 | `Storage`                                        | `GodotStorage`         | Web Storage API shape; `.length`, `.key()`, `.getItem()`, `.setItem()`, `.removeItem()`, `.clear()`                                              |
 | `localStorage`                                   | `GodotStorage`         | Persistent JSON-backed storage at `user://vue-godot-browser-local-storage.json` with memory fallback                                             |
 | `sessionStorage`                                 | `GodotStorage`         | Process-memory storage; cleared when the GodotJS runtime exits or reloads                                                                        |
-| `navigator`                                      | `GodotNavigator`       | Provides `navigator.onLine`, `navigator.permissions`, adapter-backed `navigator.geolocation`, `navigator.clipboard`, and `navigator.vibrate()`; reachability changes dispatch events |
+| `navigator`                                      | `GodotNavigator`       | Provides `navigator.onLine`, `navigator.permissions`, adapter-backed `navigator.geolocation`, adapter-backed `navigator.mediaDevices`, `navigator.clipboard`, and `navigator.vibrate()`; reachability changes dispatch events |
 | `navigator.permissions.query()`                  | `GodotPermissions`     | Query-only Permissions API subset for mapped Godot/Android permissions and local capabilities; never triggers native permission prompts             |
 | `navigator.geolocation`                          | `GodotGeolocation`     | Browser Geolocation API callback subset exposed only when a `@vue-godot/device` `GeolocationAdapter` is registered                                 |
+| `navigator.mediaDevices.getUserMedia()`          | `GodotMediaDevices`    | Browser media capture subset exposed only when a `@vue-godot/device` `MediaDevicesAdapter` is registered                                           |
+| `MediaStream` / `MediaStreamTrack`               | `GodotMediaStream`     | Small stream/track wrapper for adapter-provided audio/video tracks, including `getTracks()`, `getAudioTracks()`, `getVideoTracks()`, and `stop()`   |
 | `navigator.clipboard.readText()` / `writeText()` | `GodotClipboard`       | Async text clipboard subset backed by `DisplayServer.clipboard_get()` / `clipboard_set()` when the display server supports clipboard access       |
 | `isClipboardSupported()`                         | DisplayServer helper   | Returns whether the current display server reports text clipboard support                                                                         |
 | `navigator.vibrate()`                            | Godot handheld haptics | Browser Vibration API subset backed by `Input.vibrate_handheld()`                                                                                |
@@ -339,6 +341,46 @@ error code `1` (`PERMISSION_DENIED`); missing plugins, unsupported platforms,
 and export misconfiguration map to code `2` (`POSITION_UNAVAILABLE`); timeout
 errors map to code `3` (`TIMEOUT`). Android and iOS exports still need the
 platform permissions and plist keys required by the native location plugin.
+
+## Media Devices
+
+`navigator.mediaDevices` is exposed only after a `@vue-godot/device`
+`MediaDevicesAdapter` is registered. The browser wrapper supports
+`getUserMedia()` and returns a small `MediaStream` subset over adapter-provided
+tracks.
+
+```ts
+import { installBrowserAPIs } from '@vue-godot/browser'
+import { registerDeviceCapability } from '@vue-godot/device'
+
+registerDeviceCapability({
+  capability: 'media-devices',
+  pluginName: 'my-camera-plugin',
+  async getUserMedia(constraints) {
+    return myCameraPlugin.getUserMedia(constraints)
+  },
+})
+
+installBrowserAPIs()
+
+const stream = await navigator.mediaDevices?.getUserMedia({
+  video: true,
+  audio: true,
+})
+
+for (const track of stream?.getTracks() ?? []) {
+  console.log(track.kind, track.label)
+}
+```
+
+The returned stream supports `id`, `active`, `getTracks()`,
+`getAudioTracks()`, `getVideoTracks()`, and `getTrackById()`. Tracks support
+`id`, `kind`, `label`, `enabled`, `muted`, `readyState`, and `stop()`.
+Permission failures reject with `NotAllowedError`; missing adapters or
+unsupported platforms reject with `NotFoundError`; export misconfiguration
+rejects with `NotReadableError`. Native camera and microphone plugins still own
+device enumeration, permission prompts, platform entitlements, and capture
+implementation.
 
 ## Clipboard
 

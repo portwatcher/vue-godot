@@ -18,6 +18,11 @@ import {
 } from './geolocation.js'
 import { getGlobalEventTarget } from './history.js'
 import {
+  getRegisteredMediaDevicesAdapter,
+  mediaDevices,
+  type GodotMediaDevices,
+} from './media-devices.js'
+import {
   clearTimeout as clearGodotTimeout,
   setTimeout as setGodotTimeout,
 } from './timing.js'
@@ -247,6 +252,10 @@ export class GodotNavigator {
 
   get geolocation(): GodotGeolocation | undefined {
     return getRegisteredGeolocationAdapter() ? geolocation : undefined
+  }
+
+  get mediaDevices(): GodotMediaDevices | undefined {
+    return getRegisteredMediaDevicesAdapter() ? mediaDevices : undefined
   }
 
   get onLine(): boolean {

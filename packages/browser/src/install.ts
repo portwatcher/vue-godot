@@ -55,6 +55,14 @@ import {
   PopStateEvent,
 } from './history.js'
 import {
+  GodotMediaDevices,
+  GodotMediaDevicesError,
+  GodotMediaStream,
+  GodotMediaStreamTrack,
+  getRegisteredMediaDevicesAdapter,
+  mediaDevices,
+} from './media-devices.js'
+import {
   checkNetworkReachability,
   configureNetworkReachability,
   GodotPermissionStatus,
@@ -205,6 +213,12 @@ export function installPolyfill(...names: string[]): void {
     GeolocationPositionError: GodotGeolocationPositionError,
     geolocation,
     getRegisteredGeolocationAdapter,
+    MediaDevices: GodotMediaDevices,
+    MediaDevicesError: GodotMediaDevicesError,
+    MediaStream: GodotMediaStream,
+    MediaStreamTrack: GodotMediaStreamTrack,
+    mediaDevices,
+    getRegisteredMediaDevicesAdapter,
     Clipboard: GodotClipboard,
     clipboard: godotClipboard,
     isClipboardSupported,
