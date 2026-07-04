@@ -1,0 +1,348 @@
+# Production Readiness TODO
+
+Goal: make Vue Godot credible for serious native apps and game UI built with Vue.js on Godot.
+
+When this file is complete, maintainers should be confident enough to remove wording such as "not production ready", "alpha", and "experimental" from public docs and package descriptions. Until every P0 and P1 item below is complete and verified, keep those warnings.
+
+## Current Readiness Snapshot
+
+- `@vue-godot/runtime-tscn` renders Vue into Godot nodes and has unit coverage for insertion, prop reset, signals, and static text.
+- `@vue-godot/html` exposes a small HTML-like component set and an inline style subset.
+- `@vue-godot/browser` exposes an initial browser API subset: `fetch`, `Request`, `Response`, `Headers`, `Blob`, `URL`, `TextEncoder`, `TextDecoder`, `AbortController`, base64 helpers, `history`, `location`, and basic global event dispatch.
+- The repo has build/test/CLI smoke checks and CI Godot smoke workflows.
+- The project is not yet production ready because platform APIs, app UI primitives, compatibility documentation, device integration, performance budgets, runtime stress testing, and end-user app examples are still incomplete.
+
+## Definition Of Done
+
+The project is production ready only when all of these are true:
+
+- [ ] A public compatibility checklist exists and every supported, partial, plugin-backed, or intentionally unsupported web API/component is documented.
+- [ ] All P0 and P1 checklist items in this file are complete.
+- [ ] `npm run check` passes locally and in CI.
+- [ ] Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate.
+- [ ] Android and iOS export smoke apps run on real or hosted devices for the production profile.
+- [ ] At least two serious example apps exist:
+  - [ ] A native app style demo using routing, forms, network, storage, camera or geolocation, permissions, and offline/reachability handling.
+  - [ ] A game UI demo using Godot scenes plus Vue UI, controller/touch/keyboard navigation, animation, audio/video/image assets, and pause/settings/inventory style workflows.
+- [ ] Performance budgets are documented and enforced for app startup, first rendered UI, hot reload, large list rendering, asset loading, and repeated mount/unmount.
+- [ ] Security and dependency audits are clean or documented with accepted risk.
+- [ ] Package READMEs, root README, generated templates, and demo apps match the final supported API surface.
+- [ ] Public docs include platform limits, permission setup, export setup, troubleshooting, and migration guidance from Vue web apps.
+- [ ] The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied.
+
+## Compatibility Strategy
+
+- [ ] Create `docs/compatibility.md` as the source of truth.
+- [ ] Track each API/component with this schema:
+  - API or component name.
+  - Package owner: `runtime-tscn`, `html`, `browser`, `device`, `cli`, or plugin.
+  - Status: `supported`, `partial`, `requires-plugin`, `planned`, `skipped`.
+  - Godot backend: class/module/plugin used, or reason none exists.
+  - Platforms: desktop, Android, iOS, Web export, editor.
+  - Permission/export requirements.
+  - Tests: unit, simulated Godot, real Godot smoke, real device.
+  - Known caveats and spec differences.
+- [ ] Do not install fake browser globals by default when there is no real backend.
+- [ ] Prefer best-effort web-compatible APIs where behavior is close enough.
+- [ ] Prefer explicit adapters for APIs requiring native plugins.
+- [ ] Mark impossible or misleading browser APIs as `skipped` with a clear explanation.
+- [ ] Wrapping stable Godot modules is acceptable.
+- [ ] Wrapping stable Godot plugins or native Android/iOS plugins is acceptable when core Godot does not expose the capability.
+
+## P0: Runtime And Platform Foundation
+
+- [ ] Harden `@vue-godot/runtime-tscn` for production.
+  - [ ] Remove or justify all source-level `any` usage with safer interop types or `unknown` plus guards.
+  - [ ] Add stress tests for repeated mount/unmount, large tree updates, reordered keyed children, event replacement, and prop removal.
+  - [ ] Add runtime diagnostics that identify unsupported node classes, props, and signals with actionable messages.
+  - [ ] Add lifecycle tests for editor reload, scene exit, nested apps, and failed mounts.
+  - [ ] Document supported Vue features and unsupported Vue/DOM assumptions.
+- [ ] Add a production-grade platform capability layer.
+  - [ ] Create `@vue-godot/device` or an equivalent module namespace for device/native APIs.
+  - [ ] Define adapter interfaces for plugin-backed capabilities.
+  - [ ] Provide feature detection helpers such as `isSupported("geolocation")`.
+  - [ ] Ensure APIs return predictable typed errors for unsupported platforms, denied permissions, missing plugins, and export misconfiguration.
+- [ ] Make generated projects production-oriented.
+  - [ ] Add production export guidance for desktop, Android, iOS, and Web where applicable.
+  - [ ] Add Android permission presets for networking, camera, audio input, vibration, notifications, and location where used.
+  - [ ] Add iOS permission/plist guidance for camera, microphone, location, and photo/media access where used.
+  - [ ] Add template checks that warn when selected APIs need missing export settings.
+
+## P0: Browser API Compatibility
+
+- [ ] Expand `@vue-godot/browser` into a serious compatibility layer.
+- [ ] Preserve and harden existing APIs:
+  - [ ] `fetch`
+  - [ ] `Request`
+  - [ ] `Response`
+  - [ ] `Headers`
+  - [ ] `Blob`
+  - [ ] `URL`
+  - [ ] `TextEncoder`
+  - [ ] `TextDecoder`
+  - [ ] `AbortController`
+  - [ ] `history`
+  - [ ] `location`
+  - [ ] global `addEventListener` / `removeEventListener` / `dispatchEvent`
+- [ ] Add high-priority web APIs:
+  - [ ] `setTimeout`, `clearTimeout`, `setInterval`, `clearInterval` if missing in target runtimes.
+  - [ ] `queueMicrotask` if missing.
+  - [ ] `requestAnimationFrame` and `cancelAnimationFrame` backed by Godot frame timing.
+  - [ ] `performance.now()` and basic performance marks/measures.
+  - [ ] `URLSearchParams`.
+  - [ ] `FormData`.
+  - [ ] `File`.
+  - [ ] `FileReader` or documented skip if not worth supporting.
+  - [ ] `WebSocket` backed by `WebSocketPeer`.
+  - [ ] `localStorage` backed by `user://`.
+  - [ ] `sessionStorage` backed by process memory or `user://` with documented lifecycle.
+  - [ ] `navigator.onLine` plus `online` and `offline` events.
+  - [ ] Network reachability probe configuration.
+  - [ ] `navigator.clipboard.readText` / `writeText` where platform clipboard APIs permit.
+  - [ ] Limited `navigator.permissions.query()` for supported mapped permissions.
+  - [ ] `navigator.vibrate()` backed by Godot handheld vibration where available.
+  - [ ] Device motion/orientation events backed by `Input.get_accelerometer()`, `get_gyroscope()`, `get_magnetometer()`, and `get_gravity()`.
+- [ ] Add plugin-backed browser-like APIs:
+  - [ ] `navigator.geolocation` through a registered geolocation adapter.
+  - [ ] `navigator.mediaDevices.getUserMedia()` through camera/microphone adapters where available.
+  - [ ] `MediaStream` subset if camera/microphone support needs browser compatibility.
+  - [ ] `Notification` only if native notification plugins are installed and permissions are configured.
+- [ ] Decide and document skipped APIs:
+  - [ ] DOM `document` and real element tree.
+  - [ ] Service workers.
+  - [ ] Web workers unless a safe GodotJS worker story exists.
+  - [ ] IndexedDB unless a real storage engine is added.
+  - [ ] WebRTC browser API unless mapped to Godot WebRTC classes with credible compatibility.
+
+## P0: HTML And Native UI Components
+
+- [ ] Expand `@vue-godot/html` beyond the current demo component surface.
+- [ ] Add core app primitives:
+  - [ ] `<ScrollView>` backed by Godot scroll containers.
+  - [ ] `<VirtualList>` or `<FlatList>` equivalent for large data sets.
+  - [ ] `<Pressable>` with mouse, touch, keyboard, controller, focus, disabled, hover, pressed, and long-press states.
+  - [ ] `<Modal>` / `<Dialog>` / `<Overlay>`.
+  - [ ] `<SafeAreaView>` or equivalent layout helper.
+  - [ ] `<KeyboardAvoidingView>` or equivalent for mobile text input.
+  - [ ] `<ActivityIndicator>` / `<Progress>`.
+  - [ ] `<Switch>` / checkbox refinement.
+  - [ ] Radio input support.
+  - [ ] Form and label helpers.
+  - [ ] Screen/router container primitives.
+- [ ] Make existing components production-grade:
+  - [ ] `<Div>`
+  - [ ] `<Span>`
+  - [ ] `<Button>`
+  - [ ] `<Input>`
+  - [ ] `<Textarea>`
+  - [ ] `<Select>` / `<Option>`
+  - [ ] `<Img>`
+  - [ ] `<Svg>`
+  - [ ] `<A>`
+  - [ ] `<Audio>`
+  - [ ] `<Video>`
+  - [ ] `<Canvas>`
+- [ ] Add media/device UI:
+  - [ ] `<CameraView>` backed by `CameraServer` / `CameraFeed` / `CameraTexture` where available.
+  - [ ] Camera permission and plugin docs.
+  - [ ] Microphone capture UI or documented non-goal.
+- [ ] Improve styling:
+  - [ ] Define the official style subset and document every property.
+  - [ ] Add CSS parsing or stylesheet support if web migration requires it.
+  - [ ] Support margins, border radius, borders, background images where feasible.
+  - [ ] Support transforms and basic transitions/animations where feasible.
+  - [ ] Support font family loading and fallback.
+  - [ ] Support percent sizes where Godot layout can represent them.
+  - [ ] Add style warnings for unsupported properties.
+- [ ] Improve accessibility and input:
+  - [ ] Focus management.
+  - [ ] Keyboard navigation.
+  - [ ] Controller/gamepad navigation.
+  - [ ] Touch target behavior.
+  - [ ] Accessible names, roles, labels, and hints where Godot exposes equivalents.
+  - [ ] Document platform limitations honestly.
+
+## P0: Native Device APIs
+
+- [ ] Implement `@vue-godot/device` adapters or equivalent modules.
+- [ ] Geolocation:
+  - [ ] Define `GeolocationAdapter`.
+  - [ ] Support `getCurrentPosition`.
+  - [ ] Support `watchPosition`.
+  - [ ] Support `clearWatch`.
+  - [ ] Map errors to web-like error codes.
+  - [ ] Provide Android plugin integration.
+  - [ ] Provide iOS plugin integration.
+  - [ ] Add export permission docs.
+  - [ ] Install `navigator.geolocation` only when an adapter is registered.
+- [ ] Camera:
+  - [ ] Wrap `CameraServer` for feed enumeration where available.
+  - [ ] Add camera feed selection.
+  - [ ] Add `<CameraView>`.
+  - [ ] Add snapshot/capture API if feasible.
+  - [ ] Add Android/iOS plugin fallback where core Godot is insufficient.
+  - [ ] Document platform limits.
+- [ ] Microphone:
+  - [ ] Wrap Godot audio input where feasible.
+  - [ ] Add permission/export docs.
+  - [ ] Define whether a browser `MediaStream` subset is supported or skipped.
+- [ ] Network reachability:
+  - [ ] Implement adapter using local interfaces, DNS, HTTP probe, and timeout.
+  - [ ] Expose current state and events.
+  - [ ] Document that internet reachability is best-effort.
+- [ ] Permissions:
+  - [ ] Define permission names and mappings.
+  - [ ] Support Android `OS.request_permission()` and permission result events.
+  - [ ] Support macOS/iOS/visionOS permissions where Godot exposes them.
+  - [ ] Provide fallback behavior for plugin-managed permissions.
+- [ ] Sensors:
+  - [ ] Accelerometer.
+  - [ ] Gyroscope.
+  - [ ] Magnetometer.
+  - [ ] Gravity vector.
+  - [ ] Device orientation events.
+- [ ] Haptics:
+  - [ ] Handheld vibration.
+  - [ ] Controller vibration where available.
+- [ ] Clipboard:
+  - [ ] Text read/write.
+  - [ ] Image read/write where feasible.
+- [ ] App/system:
+  - [ ] Platform and feature detection.
+  - [ ] App lifecycle events: focus, pause, resume, quit where feasible.
+  - [ ] Deep links / URL open events if feasible.
+  - [ ] Share sheet plugin support if feasible.
+  - [ ] Native notifications plugin support if feasible.
+
+## P1: Routing, Navigation, And App Architecture
+
+- [ ] Provide a recommended Vue Router setup.
+- [ ] Make `createWebHistory()` work for in-app navigation or document the preferred alternative.
+- [ ] Provide navigation examples for stacked screens, tabs, modal routes, and deep links.
+- [ ] Add back button handling on Android and controller/keyboard escape behavior.
+- [ ] Provide app state persistence patterns with storage APIs.
+- [ ] Provide error boundaries or recommended Vue error handling.
+- [ ] Add project architecture guidance for apps, games, and mixed Godot/Vue projects.
+
+## P1: Tooling And Developer Experience
+
+- [ ] Improve CLI commands.
+  - [ ] `create app` profile.
+  - [ ] `create game-ui` profile.
+  - [ ] `integrate --html --device`.
+  - [ ] Template option for router/storage/network/device APIs.
+  - [ ] Doctor command for GodotJS, Node, package versions, export settings, permissions, and missing plugins.
+- [ ] Improve Volar and TypeScript support.
+  - [ ] Lowercase and PascalCase HTML components.
+  - [ ] Generated Godot component typings.
+  - [ ] Style prop type coverage.
+  - [ ] Browser/device API global typings.
+- [ ] Add debugging guidance.
+  - [ ] Godot console logs.
+  - [ ] Source maps.
+  - [ ] Runtime warnings.
+  - [ ] Common GodotJS failure modes.
+- [ ] Add migration docs.
+  - [ ] Vue SPA to Vue Godot.
+  - [ ] React Native mental model to Vue Godot.
+  - [ ] Godot UI to Vue components.
+
+## P1: Testing And CI
+
+- [ ] Add a compatibility test suite organized by API.
+- [ ] Add real Godot smoke coverage for each supported browser/device API.
+- [ ] Add real device CI/manual release checklist for Android and iOS.
+- [ ] Add memory leak checks for repeated mount/unmount and navigation.
+- [ ] Add performance benchmarks:
+  - [ ] Startup time.
+  - [ ] First Vue render.
+  - [ ] Large tree update.
+  - [ ] Large list scroll.
+  - [ ] Image/video/audio loading.
+  - [ ] Fetch/WebSocket throughput.
+  - [ ] Editor reload stability.
+- [ ] Add fixture apps for regression testing.
+- [ ] Make release preflight fail on skipped Godot smoke in non-local release contexts.
+- [ ] Keep `npm audit` clean for moderate and high issues, or document accepted exceptions.
+- [ ] Pin and periodically update GodotJS versions.
+
+## P1: Documentation And Examples
+
+- [ ] Update root README to lead with stable value proposition once ready.
+- [ ] Keep package READMEs accurate for every public API change.
+- [ ] Add `docs/production.md`.
+- [ ] Add `docs/platforms/android.md`.
+- [ ] Add `docs/platforms/ios.md`.
+- [ ] Add `docs/platforms/desktop.md`.
+- [ ] Add `docs/permissions.md`.
+- [ ] Add `docs/plugins.md`.
+- [ ] Add `docs/compatibility.md`.
+- [ ] Add `docs/performance.md`.
+- [ ] Add `docs/troubleshooting.md`.
+- [ ] Add serious native app demo.
+- [ ] Add serious game UI demo.
+- [ ] Keep `apps/html-demo` updated for every HTML/browser/device API.
+
+## P2: Ecosystem And Long-Term Parity
+
+- [ ] Evaluate a layout engine such as Yoga or Taffy only if Godot-native containers cannot cover production app layouts.
+- [ ] Consider a CSS-to-Godot compiler for real stylesheet support.
+- [ ] Consider package adapters for common Vue ecosystem libraries.
+- [ ] Consider a plugin marketplace/list for supported native capability plugins.
+- [ ] Consider devtools integration.
+- [ ] Consider SSR/static pre-render only if there is a real product need.
+
+## API Compatibility Backlog
+
+Use this backlog to seed `docs/compatibility.md`.
+
+| API or Component | Package | Target Status | Backend |
+| --- | --- | --- | --- |
+| `fetch` | browser | supported | `HTTPClient` |
+| `Request` / `Response` / `Headers` | browser | supported | JS + Godot HTTP interop |
+| `Blob` / object URLs | browser | supported | JS memory registry |
+| `URL` / `URLSearchParams` | browser | supported | JS parser |
+| `TextEncoder` / `TextDecoder` | browser | supported | JS/V8 fast path |
+| `AbortController` | browser | supported | JS event target |
+| `history` / `location` | browser | supported | in-memory history |
+| `navigator.onLine` | browser/device | partial | reachability probe |
+| `online` / `offline` events | browser/device | partial | reachability probe |
+| `WebSocket` | browser | supported | `WebSocketPeer` |
+| `localStorage` | browser | supported | `FileAccess` / `user://` |
+| `sessionStorage` | browser | supported | memory or `user://` |
+| `navigator.clipboard` | browser/device | partial | `DisplayServer` clipboard |
+| `navigator.permissions` | browser/device | partial | `OS.request_permission` + adapters |
+| `navigator.vibrate` | browser/device | partial | `Input.vibrate_handheld` |
+| Device motion/orientation | browser/device | partial | `Input` sensors |
+| `navigator.geolocation` | device | requires-plugin | Android/iOS location plugins |
+| `navigator.mediaDevices.getUserMedia` | device/html | requires-plugin | `CameraServer`, audio input, native plugins |
+| `<CameraView>` | html/device | partial | `CameraServer` / `CameraTexture` |
+| Notifications | device | requires-plugin | native plugins |
+| Share sheet | device | requires-plugin | native plugins |
+| DOM `document` | browser | skipped | no DOM in Godot |
+| Service workers | browser | skipped | no browser worker/service worker runtime |
+| IndexedDB | browser | planned or skipped | storage engine required |
+| `<ScrollView>` | html | supported | `ScrollContainer` |
+| `<VirtualList>` | html | supported | virtualized Godot controls |
+| `<Pressable>` | html | supported | `Control` input/focus signals |
+| `<Modal>` / `<Dialog>` | html | supported | Godot popup/window/control stack |
+| `<SafeAreaView>` | html/device | partial | platform/display metrics |
+| `<KeyboardAvoidingView>` | html/device | partial | virtual keyboard metrics |
+| `<Canvas>` 2D context | html | partial | `CanvasItem` draw adapter |
+
+## Final Removal Checklist
+
+Run this checklist before removing "not production ready", "alpha", or "experimental" wording:
+
+- [ ] Every P0 item is complete.
+- [ ] Every P1 item is complete or explicitly moved to P2 with maintainer approval.
+- [ ] `docs/compatibility.md` is complete and linked from root README and package READMEs.
+- [ ] Serious native app demo is complete and passes build/smoke.
+- [ ] Serious game UI demo is complete and passes build/smoke.
+- [ ] Android export with selected device APIs has been tested.
+- [ ] iOS export with selected device APIs has been tested.
+- [ ] CI passes on a clean commit.
+- [ ] Release preflight passes without warnings in the release environment.
+- [ ] `npm audit --audit-level=moderate` is clean or accepted exceptions are documented.
+- [ ] All public READMEs match the final support claims.
+- [ ] The root README warning is removed in the same commit that marks this checklist complete.
