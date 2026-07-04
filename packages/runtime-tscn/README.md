@@ -4,6 +4,8 @@ This package is part of the [Vue Godot](../../README.md) project.
 
 It provides a Vue runtime renderer for Godot TSCN files. This allows you to use Vue.js to define and manipulate Godot scene tree (TSCN) files programmatically.
 
+See the repository [compatibility checklist](../../docs/compatibility.md) for current renderer support status, platform caveats, and known limits.
+
 ## Features
 
 - Render Vue components into Godot scene nodes.

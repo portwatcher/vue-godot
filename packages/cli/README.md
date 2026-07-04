@@ -2,6 +2,8 @@
 
 CLI tool for vue-godot projects — scaffolds new projects, integrates Vue into existing Godot projects, and generates type declarations.
 
+See the repository [compatibility checklist](../../docs/compatibility.md) for current template, runtime, browser API, and component support status.
+
 ## Installation
 
 ```bash

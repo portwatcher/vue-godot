@@ -4,6 +4,8 @@ HTML-like Vue components built on Godot nodes.
 
 This package provides familiar HTML element abstractions (`<Div>`, `<Img>`, `<Button>`, etc.) that render as native Godot nodes under the hood. It runs on top of `@vue-godot/runtime-tscn` — the same renderer used for direct Godot node access.
 
+See the repository [compatibility checklist](../../docs/compatibility.md) for current component support status, platform caveats, and known spec differences.
+
 ## Motivation
 
 Vue-Godot serves two audiences:

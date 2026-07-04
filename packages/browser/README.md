@@ -4,6 +4,8 @@ Browser API polyfills for **GodotJS**.
 
 GodotJS provides only engine bindings (the `godot` module) and a minimal JS runtime (V8 or QuickJS). Standard browser/DOM APIs like `fetch`, `URL`, `Blob`, `File`, `FormData`, `atob`, `TextEncoder`, `history`, timers, `requestAnimationFrame`, etc. are **not** available. This package re-implements them on top of Godot's native classes so that higher-level libraries (and your own code) can use familiar Web APIs without modification.
 
+See the repository [compatibility checklist](../../docs/compatibility.md) for support status, platform caveats, and skipped browser APIs.
+
 ## Installation
 
 ```bash

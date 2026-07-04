@@ -16,7 +16,7 @@ When this file is complete, maintainers should be confident enough to remove wor
 
 The project is production ready only when all of these are true:
 
-- [ ] A public compatibility checklist exists and every supported, partial, plugin-backed, or intentionally unsupported web API/component is documented.
+- [x] A public compatibility checklist exists and every supported, partial, plugin-backed, or intentionally unsupported web API/component is documented.
 - [ ] All P0 and P1 checklist items in this file are complete.
 - [ ] `npm run check` passes locally and in CI.
 - [ ] Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate.
@@ -32,8 +32,8 @@ The project is production ready only when all of these are true:
 
 ## Compatibility Strategy
 
-- [ ] Create `docs/compatibility.md` as the source of truth.
-- [ ] Track each API/component with this schema:
+- [x] Create `docs/compatibility.md` as the source of truth.
+- [x] Track each API/component with this schema:
   - API or component name.
   - Package owner: `runtime-tscn`, `html`, `browser`, `device`, `cli`, or plugin.
   - Status: `supported`, `partial`, `requires-plugin`, `planned`, `skipped`.
@@ -45,7 +45,7 @@ The project is production ready only when all of these are true:
 - [ ] Do not install fake browser globals by default when there is no real backend.
 - [ ] Prefer best-effort web-compatible APIs where behavior is close enough.
 - [ ] Prefer explicit adapters for APIs requiring native plugins.
-- [ ] Mark impossible or misleading browser APIs as `skipped` with a clear explanation.
+- [x] Mark impossible or misleading browser APIs as `skipped` with a clear explanation.
 - [ ] Wrapping stable Godot modules is acceptable.
 - [ ] Wrapping stable Godot plugins or native Android/iOS plugins is acceptable when core Godot does not expose the capability.
 
@@ -107,12 +107,12 @@ The project is production ready only when all of these are true:
   - [ ] `navigator.mediaDevices.getUserMedia()` through camera/microphone adapters where available.
   - [ ] `MediaStream` subset if camera/microphone support needs browser compatibility.
   - [ ] `Notification` only if native notification plugins are installed and permissions are configured.
-- [ ] Decide and document skipped APIs:
-  - [ ] DOM `document` and real element tree.
-  - [ ] Service workers.
-  - [ ] Web workers unless a safe GodotJS worker story exists.
-  - [ ] IndexedDB unless a real storage engine is added.
-  - [ ] WebRTC browser API unless mapped to Godot WebRTC classes with credible compatibility.
+- [x] Decide and document skipped APIs:
+  - [x] DOM `document` and real element tree.
+  - [x] Service workers.
+  - [x] Web workers unless a safe GodotJS worker story exists.
+  - [x] IndexedDB unless a real storage engine is added.
+  - [x] WebRTC browser API unless mapped to Godot WebRTC classes with credible compatibility.
 
 ## P0: HTML And Native UI Components
 
@@ -276,7 +276,7 @@ The project is production ready only when all of these are true:
 - [ ] Add `docs/platforms/desktop.md`.
 - [ ] Add `docs/permissions.md`.
 - [ ] Add `docs/plugins.md`.
-- [ ] Add `docs/compatibility.md`.
+- [x] Add `docs/compatibility.md`.
 - [ ] Add `docs/performance.md`.
 - [ ] Add `docs/troubleshooting.md`.
 - [ ] Add serious native app demo.
