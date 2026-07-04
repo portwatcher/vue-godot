@@ -1,4 +1,4 @@
-import { spawnSync } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -29,6 +29,17 @@ const godotDirectorySearchDepth = 4
 
 export function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+export async function waitFor(predicate, description, timeoutMs = 30_000) {
+  const startedAt = Date.now()
+  while (Date.now() - startedAt < timeoutMs) {
+    if (predicate()) {
+      return
+    }
+    await delay(200)
+  }
+  throw new Error(`Timed out waiting for ${description}`)
 }
 
 export function run(command, args, options = {}) {
@@ -73,6 +84,37 @@ export async function stopProcess(child) {
   ])
   if (child.exitCode === null && child.signalCode === null) {
     await closed
+  }
+}
+
+export function startNpmDevWatch(projectDir, env = process.env) {
+  const child = spawn(npmCommand, ['run', 'dev'], {
+    cwd: projectDir,
+    env,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+
+  const state = {
+    stdout: '',
+    stderr: '',
+    exited: false,
+  }
+
+  child.stdout.setEncoding('utf-8')
+  child.stderr.setEncoding('utf-8')
+  child.stdout.on('data', (chunk) => {
+    state.stdout += chunk
+  })
+  child.stderr.on('data', (chunk) => {
+    state.stderr += chunk
+  })
+  child.on('close', () => {
+    state.exited = true
+  })
+
+  return {
+    state,
+    stop: () => stopProcess(child),
   }
 }
 

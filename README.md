@@ -272,7 +272,7 @@ npm run smoke:cli    # clean create/create --html plus generated HTML watch rebu
 npm run smoke:public-cli # post-publish create --html smoke using public npm packages
 npm run smoke:godot  # optional: runs apps/html-demo lifecycle smoke with GODOT_BIN/godot4/godot
 npm run smoke:generated-godot # optional: generated create --html app under Godot + watch rebuild
-npm run smoke:editor-reload # optional: generated app opened in the Godot editor, then dist/app.js is reloaded twice
+npm run smoke:editor-reload # optional: generated app played from the Godot editor before/after a watch rebuild
 npm run check        # build + test + CLI smoke
 npm run release:preflight # release gate: check + pack dry-runs + registry/auth + Godot smokes
 npm run release:publish   # guarded publish helper; dry-run by default
@@ -282,7 +282,7 @@ npm run release:publish   # guarded publish helper; dry-run by default
 
 `npm run smoke:generated-godot` also skips when no Godot executable is available. When Godot is available, it creates a clean `create --html` project with locally packed workspace packages, replaces the generated app with a marker component, builds and runs it headlessly under Godot, starts the generated `npm run dev` watcher, edits `vue/src/App.vue`, verifies the rebuilt `dist` output contains the new marker, and runs the rebuilt app under Godot again. It also fails on GodotJS missing-module/script-load diagnostics, which catches regressions where Godot scans Vue source/config files instead of only the built `dist` output.
 
-`npm run smoke:editor-reload` also skips when no Godot executable is available. When Godot is available, it creates a clean generated HTML project, enables a temporary editor plugin, opens the project with `godot --headless --editor`, rewrites `dist/app.js` twice in the same editor session, and fails unless GodotJS evaluates both updated markers without missing-module/script-load diagnostics.
+`npm run smoke:editor-reload` also skips when no Godot executable is available. When Godot is available, it creates a clean generated HTML project, writes a visible marker app that auto-quits after mounting, starts the generated `npm run dev` watcher, enables a temporary editor plugin, opens the project with `godot --headless --editor`, uses `EditorInterface.play_main_scene()` to run the generated scene, edits the Vue source, and fails unless a second editor-launched play observes the rebuilt marker without missing-module/script-load diagnostics.
 
 `npm run smoke:cli` uses locally packed workspace packages, creates both basic and HTML projects in a temp directory, builds them, then starts the generated HTML app's `npm run dev` watcher, edits `vue/src/App.vue`, and fails unless the generated `dist` output contains the edited marker.
 

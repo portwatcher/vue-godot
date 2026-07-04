@@ -7,7 +7,6 @@ import {
   assertGeneratedOutputIgnoredByGodot,
   assertVueSourceIgnoredByGodot,
   createPackedPackageOverrides,
-  delay,
   directoryContainsText,
   nodeCommand,
   npmCommand,
@@ -15,24 +14,15 @@ import {
   resolveGodotCommand,
   run,
   runGodotImport,
+  startNpmDevWatch,
   stopProcess,
+  waitFor,
 } from './smoke-utils.mjs'
 
 const SMOKE_MARKER_PREFIX = '[vue-godot-generated-smoke]'
-const WATCH_TIMEOUT_MS = 30_000
 const INITIAL_MARKER = `generated initial ${Date.now()}`
 const UPDATED_MARKER = `generated rebuilt ${Date.now()}`
-
-async function waitFor(predicate, description, timeoutMs = WATCH_TIMEOUT_MS) {
-  const startedAt = Date.now()
-  while (Date.now() - startedAt < timeoutMs) {
-    if (predicate()) {
-      return
-    }
-    await delay(200)
-  }
-  throw new Error(`Timed out waiting for ${description}`)
-}
+const WATCH_TIMEOUT_MS = 30_000
 
 function writeSmokeApp(projectDir, marker) {
   const appVuePath = path.join(projectDir, 'vue/src/App.vue')
@@ -130,37 +120,6 @@ async function runGodotUntilMarker(godot, projectDir, marker) {
   )
 }
 
-function startWatch(projectDir) {
-  const child = spawn(npmCommand, ['run', 'dev'], {
-    cwd: projectDir,
-    env: process.env,
-    stdio: ['ignore', 'pipe', 'pipe'],
-  })
-
-  const state = {
-    stdout: '',
-    stderr: '',
-    exited: false,
-  }
-
-  child.stdout.setEncoding('utf-8')
-  child.stderr.setEncoding('utf-8')
-  child.stdout.on('data', (chunk) => {
-    state.stdout += chunk
-  })
-  child.stderr.on('data', (chunk) => {
-    state.stderr += chunk
-  })
-  child.on('close', () => {
-    state.exited = true
-  })
-
-  return {
-    state,
-    stop: () => stopProcess(child),
-  }
-}
-
 const godot = resolveGodotCommand()
 if (!godot) {
   console.log(
@@ -200,7 +159,7 @@ run(npmCommand, ['run', 'build'], {
 runGodotImport(godot, projectDir)
 await runGodotUntilMarker(godot, projectDir, INITIAL_MARKER)
 
-const watcher = startWatch(projectDir)
+const watcher = startNpmDevWatch(projectDir)
 try {
   await waitFor(
     () =>

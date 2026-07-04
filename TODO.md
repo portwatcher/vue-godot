@@ -12,7 +12,7 @@ Goal for the product:
 
 This is alpha-quality, not production ready yet.
 
-The core renderer is real, both non-HTML and HTML CLI scaffolds now build from a clean project when verified against packed local packages, the generated HTML scaffold loads under a real GodotJS executable before and after a watch rebuild, the HTML demo lifecycle smoke passes under a real GodotJS executable, and a headless Godot editor smoke observes repeated `dist/app.js` reloads in one editor session. The remaining production-readiness gap is external verification: publish the packages to npm, confirm the remote Godot smoke workflow is green, and do a final manual visual editor pass.
+The core renderer is real, both non-HTML and HTML CLI scaffolds now build from a clean project when verified against packed local packages, the generated HTML scaffold loads under a real GodotJS executable before and after a watch rebuild, the HTML demo lifecycle smoke passes under a real GodotJS executable, and a headless Godot editor smoke plays a generated scene before and after a watch rebuild. The remaining production-readiness gap is external verification: publish the packages to npm, confirm the remote Godot smoke workflow is green, and do a final manual visual editor pass.
 
 ## Verified Current State
 
@@ -40,7 +40,7 @@ The core renderer is real, both non-HTML and HTML CLI scaffolds now build from a
 - `GODOT_BIN` now accepts either a direct executable path or a directory containing a `godot*` executable, including macOS app-style layouts.
 - `npm run smoke:godot` passes locally when `GODOT_BIN=/Users/jury/Developments/Godot/editor/macos-editor-4.4-v8`, which resolves to `godot.macos.editor.universal` (`Godot Engine v4.4.2.rc.gh.d94252cf9`). The smoke builds `apps/html-demo`, imports project assets with Godot `--import`, starts a loopback HTTP server for `fetch`, runs the scene headlessly with `VUE_GODOT_SMOKE=1`, repeatedly unmounts/remounts the Vue app, checks for stale children after unmount, checks rendered signal connection counts, drives form controls through Godot signals, checks image/SVG texture loading, and runs the demo browser API smoke helper against the loopback `fetch(new Request(...))` endpoint. The current local run reports `reloads=3`, `mounts=4`, and `unmounts=4`.
 - `npm run smoke:generated-godot` passes locally with the same `GODOT_BIN` directory. It creates a clean `create --html` project from locally packed packages, builds and runs a marker app under Godot, starts the generated `npm run dev` watcher, edits `vue/src/App.vue`, verifies the rebuilt `dist` output contains the new marker, and runs the rebuilt app under Godot again. Generated projects now include `vue/.gdignore` and `gen/.gdignore`, and the smoke fails on GodotJS missing-module/script-load diagnostics, so regressions where Godot tries to load Vue source/config files or generated resource stubs as GodotJS scripts are caught automatically.
-- `npm run smoke:editor-reload` passes locally with the same `GODOT_BIN` directory. It creates a clean generated HTML project, enables a temporary editor plugin, opens the project with `godot --headless --editor`, rewrites `dist/app.js` twice in the same editor process, and verifies GodotJS evaluates both updated markers without missing-module/script-load diagnostics.
+- `npm run smoke:editor-reload` passes locally with the same `GODOT_BIN` directory. It creates a clean generated HTML project, writes a visible marker app that auto-quits after mounting, starts the generated `npm run dev` watcher, enables a temporary editor plugin, opens the project with `godot --headless --editor`, uses `EditorInterface.play_main_scene()` to run the generated scene, edits the Vue source, and verifies a second editor-launched play observes the rebuilt marker without missing-module/script-load diagnostics.
 - GitHub Actions now runs `npm run check`, and the `Godot Smoke` workflow installs the pinned `GodotJS_1.0.0-2` Linux x64 V8 editor bundle before running `npm run smoke:godot`, `npm run smoke:generated-godot`, and `npm run smoke:editor-reload` on relevant PRs and pushes.
 
 ## Major Blockers
@@ -65,7 +65,7 @@ Needed:
 
 Generated root scripts now store the Vue app instance and call `app.unmount()` in `_exit_tree()`.
 
-The renderer does free nodes when Vue removes them, `apps/html-demo` now has a headless lifecycle smoke mode that makes child and button-signal leaks visible under `npm run smoke:godot`, the generated scaffold smoke proves a rebuilt `dist/app.js` still loads under Godot, and the editor reload smoke proves GodotJS re-evaluates rebuilt `dist/app.js` twice in one editor session. Those smokes pass locally with a real GodotJS executable. A manual visual editor pass is still useful before announcing beta quality.
+The renderer does free nodes when Vue removes them, `apps/html-demo` now has a headless lifecycle smoke mode that makes child and button-signal leaks visible under `npm run smoke:godot`, the generated scaffold smoke proves a rebuilt `dist/app.js` still loads under Godot, and the editor reload smoke proves the Godot editor can launch the generated scene before and after a Vue source rebuild. Those smokes pass locally with a real GodotJS executable. A manual visual editor pass is still useful before announcing beta quality.
 
 Needed:
 
@@ -74,7 +74,7 @@ Needed:
 
 ### 3. Godot smoke is headless, not full editor hot reload
 
-The most important user workflow depends on GodotJS behavior. The repo now has Node-side tests, CLI smoke tests, CI, a local headless Godot lifecycle smoke that passes with the pinned GodotJS release, a generated-scaffold Godot smoke that proves rebuilt output still runs, and a headless editor reload smoke that proves repeated `dist/app.js` re-evaluation in one editor process. It still does not have a full GUI-level editor assertion.
+The most important user workflow depends on GodotJS behavior. The repo now has Node-side tests, CLI smoke tests, CI, a local headless Godot lifecycle smoke that passes with the pinned GodotJS release, a generated-scaffold Godot smoke that proves rebuilt output still runs, and a headless editor reload smoke that proves `EditorInterface.play_main_scene()` observes a rebuilt generated scene after a Vite watch rebuild. It still does not have a full GUI-level editor assertion.
 
 Needed:
 
@@ -129,14 +129,14 @@ Needed:
 
 ### 6. Missing project-level quality gate
 
-Root scripts now include `test`, `test:scripts`, `smoke:cli`, `smoke:godot`, `smoke:generated-godot`, `smoke:editor-reload`, and `check`, and CI runs `npm run check`. `test:scripts` covers shared smoke utility behavior such as resolving `GODOT_BIN` from a directory. `smoke:cli` creates clean local-package projects and verifies the generated HTML `npm run dev` watcher rebuilds `dist` after a Vue source edit. `smoke:generated-godot` creates a clean generated HTML project, verifies it runs under Godot, edits the app while the generated Vite watcher is running, checks the rebuilt output, and verifies the rebuilt bundle runs under Godot. `smoke:editor-reload` opens a generated app in a headless Godot editor process and verifies two repeated `dist/app.js` reloads. A separate `Godot Smoke` workflow downloads and caches a pinned GodotJS Linux x64 V8 editor bundle, sets `GODOT_BIN`, and runs all Godot smokes. `smoke:godot` now goes beyond project-open verification when Godot is available: it imports project assets, runs the HTML demo scene headlessly, and requires the app's lifecycle smoke pass marker.
+Root scripts now include `test`, `test:scripts`, `smoke:cli`, `smoke:godot`, `smoke:generated-godot`, `smoke:editor-reload`, and `check`, and CI runs `npm run check`. `test:scripts` covers shared smoke utility behavior such as resolving `GODOT_BIN` from a directory. `smoke:cli` creates clean local-package projects and verifies the generated HTML `npm run dev` watcher rebuilds `dist` after a Vue source edit. `smoke:generated-godot` creates a clean generated HTML project, verifies it runs under Godot, edits the app while the generated Vite watcher is running, checks the rebuilt output, and verifies the rebuilt bundle runs under Godot. `smoke:editor-reload` opens a generated app in a headless Godot editor process, starts the generated Vite watcher, launches the scene through `EditorInterface.play_main_scene()`, edits the Vue source, and verifies a second editor-launched play observes the rebuilt marker. A separate `Godot Smoke` workflow downloads and caches a pinned GodotJS Linux x64 V8 editor bundle, sets `GODOT_BIN`, and runs all Godot smokes. `smoke:godot` now goes beyond project-open verification when Godot is available: it imports project assets, runs the HTML demo scene headlessly, and requires the app's lifecycle smoke pass marker.
 
 `release:preflight` now wraps the local quality gate, pack dry-runs, generated package-spec checks, npm registry/auth checks, `smoke:godot`, `smoke:generated-godot`, and `smoke:editor-reload`. Strict mode fails when npm credentials or Godot are missing; `--local` mode is for unauthenticated/local environments and reports those as warnings. `release:publish` provides the guarded publish flow and stays dry-run unless `--yes` is provided.
 
 Needed:
 
 - Confirm the `Godot Smoke` workflow is green after pushing.
-- Expand beyond headless editor reload simulation to full editor UI verification when feasible.
+- Expand beyond headless editor-play simulation to full editor UI verification when feasible.
 
 ## Recommended Next-Session Goal
 

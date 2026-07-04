@@ -13,16 +13,77 @@ import {
   resolveGodotCommand,
   run,
   runGodotImport,
+  startNpmDevWatch,
   stopProcess,
+  waitFor,
 } from './smoke-utils.mjs'
 
 const SMOKE_PREFIX = '[smoke-editor-reload]'
 const PLUGIN_MARKER = '[vue-godot-editor-reload-smoke]'
+const PLAY_MARKER_PREFIX = '[vue-godot-editor-play-smoke]'
 const EDITOR_TIMEOUT_MS = 90_000
-const RELOAD_TOKENS = [
-  `editor reload ${Date.now()} first`,
-  `editor reload ${Date.now()} second`,
-]
+const INITIAL_SCENE_MARKER = `editor scene initial ${Date.now()}`
+const UPDATED_SCENE_MARKER = `editor scene rebuilt ${Date.now()}`
+
+function writeSmokeApp(projectDir, marker) {
+  fs.writeFileSync(
+    path.join(projectDir, 'vue/src/App.vue'),
+    `<template>
+  <div
+    :style="{
+      flexDirection: 'column',
+      gap: 12,
+      padding: 24,
+      width: 680,
+      backgroundColor: '#1f2937',
+    }"
+  >
+    <span :style="{ fontSize: 34, color: '#f8fafc' }">${marker}</span>
+    <button @click="count++">Clicked {{ count }} times</button>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const count = ref(0)
+</script>
+`,
+  )
+
+  fs.writeFileSync(
+    path.join(projectDir, 'vue/src/main.ts'),
+    `import { installBrowserAPIs } from '@vue-godot/browser'
+import { createApp } from '@vue-godot/runtime-tscn'
+import { htmlPlugin } from '@vue-godot/html'
+import { VBoxContainer } from 'godot'
+import App from './App.vue'
+
+const SMOKE_MARKER = ${JSON.stringify(marker)}
+
+installBrowserAPIs()
+
+export default class Root extends VBoxContainer {
+  private app: ReturnType<typeof createApp> | null = null
+
+  _ready() {
+    this.app?.unmount()
+    const app = createApp(App)
+    app.use(htmlPlugin)
+    app.mount(this)
+    this.app = app
+    console.log(${JSON.stringify(PLAY_MARKER_PREFIX)} + ' ' + SMOKE_MARKER)
+    this.get_tree().quit(0)
+  }
+
+  _exit_tree() {
+    this.app?.unmount()
+    this.app = null
+  }
+}
+`,
+  )
+}
 
 function writeEditorReloadPlugin(projectDir) {
   const addonDir = path.join(projectDir, 'addons/vue_godot_editor_reload_smoke')
@@ -49,34 +110,37 @@ const TARGET := "res://dist/app.js"
 
 var fs: EditorFileSystem
 var scan_timer: Timer
-var ready_timer: Timer
+var play_timer: Timer
 var ticks := 0
 
 func _enter_tree() -> void:
 \tfs = EditorInterface.get_resource_filesystem()
-\tready_timer = Timer.new()
-\tready_timer.one_shot = true
-\tready_timer.wait_time = 2.0
-\tready_timer.timeout.connect(_mark_ready)
-\tadd_child(ready_timer)
-\tready_timer.start()
-
 \tscan_timer = Timer.new()
 \tscan_timer.wait_time = 0.25
 \tscan_timer.timeout.connect(_scan)
 \tadd_child(scan_timer)
-
-func _mark_ready() -> void:
-\tprint(MARKER + " ready")
 \tscan_timer.start()
 
+\tplay_timer = Timer.new()
+\tplay_timer.wait_time = 1.0
+\tplay_timer.timeout.connect(_play_if_idle)
+\tadd_child(play_timer)
+\tplay_timer.start()
+
+\tprint(MARKER + " ready")
+
 func _scan() -> void:
-\tticks += 1
 \tfs.update_file(TARGET)
 \tfs.scan()
+
+func _play_if_idle() -> void:
+\tticks += 1
 \tif ticks > 240:
 \t\tpush_error(MARKER + " timed out waiting for reload")
 \t\tget_tree().quit(1)
+\t\treturn
+\tif not EditorInterface.is_playing_scene():
+\t\tEditorInterface.play_main_scene()
 `,
   )
 
@@ -90,19 +154,10 @@ enabled=PackedStringArray("res://addons/vue_godot_editor_reload_smoke/plugin.cfg
   )
 }
 
-function appendReloadToken(projectDir, token) {
-  fs.appendFileSync(
-    path.join(projectDir, 'dist/app.js'),
-    `\nconsole.log(${JSON.stringify(token)});\n`,
-  )
-  console.log(`${SMOKE_PREFIX} wrote ${JSON.stringify(token)}`)
-}
-
 async function runEditorReloadSmoke(godot, projectDir) {
   let output = ''
-  let nextTokenIndex = 0
-  let ready = false
-  let observedAllTokens = false
+  let wroteUpdatedSource = false
+  let observedUpdatedScene = false
 
   const child = spawn(godot, ['--headless', '--editor', '--path', projectDir], {
     cwd: projectDir,
@@ -137,37 +192,27 @@ async function runEditorReloadSmoke(godot, projectDir) {
       )
     }, EDITOR_TIMEOUT_MS)
 
-    function writeNextToken() {
-      const token = RELOAD_TOKENS[nextTokenIndex]
-      if (!token) {
-        return
-      }
-      appendReloadToken(projectDir, token)
-    }
-
     function handleOutput(chunk) {
       const text = String(chunk)
       output += text
       process.stdout.write(text)
 
-      if (!ready && output.includes(`${PLUGIN_MARKER} ready`)) {
-        ready = true
-        writeNextToken()
+      const initialSceneLog = `[JS] ${PLAY_MARKER_PREFIX} ${INITIAL_SCENE_MARKER}`
+      if (!wroteUpdatedSource && output.includes(initialSceneLog)) {
+        wroteUpdatedSource = true
+        writeSmokeApp(projectDir, UPDATED_SCENE_MARKER)
+        console.log(
+          `${SMOKE_PREFIX} wrote source marker ${JSON.stringify(
+            UPDATED_SCENE_MARKER,
+          )}`,
+        )
       }
 
-      const expectedToken = RELOAD_TOKENS[nextTokenIndex]
-      if (!expectedToken || !output.includes(`[JS] ${expectedToken}`)) {
-        return
-      }
-
-      nextTokenIndex += 1
-      if (nextTokenIndex === RELOAD_TOKENS.length) {
-        observedAllTokens = true
+      const updatedSceneLog = `[JS] ${PLAY_MARKER_PREFIX} ${UPDATED_SCENE_MARKER}`
+      if (output.includes(updatedSceneLog)) {
+        observedUpdatedScene = true
         child.kill('SIGTERM')
-        return
       }
-
-      setTimeout(writeNextToken, 500)
     }
 
     child.stdout.setEncoding('utf-8')
@@ -176,14 +221,14 @@ async function runEditorReloadSmoke(godot, projectDir) {
     child.stderr.on('data', handleOutput)
     child.on('error', (error) => settle(error))
     child.on('close', (code, signal) => {
-      if (observedAllTokens) {
+      if (observedUpdatedScene) {
         settle(null, { code, signal })
         return
       }
       settle(
         new Error(
           [
-            'Godot editor exited before all reload markers were observed',
+            'Godot editor exited before the rebuilt played-scene marker was observed',
             `status=${code ?? signal ?? 'unknown'}`,
             output,
           ]
@@ -232,6 +277,7 @@ run(nodeCommand, [cliPath, 'create', projectDir, '-f', '--html'], {
 assertVueSourceIgnoredByGodot(projectDir)
 assertGeneratedOutputIgnoredByGodot(projectDir)
 
+writeSmokeApp(projectDir, INITIAL_SCENE_MARKER)
 run(npmCommand, ['run', 'build'], {
   cwd: projectDir,
   env,
@@ -239,6 +285,29 @@ run(npmCommand, ['run', 'build'], {
 })
 writeEditorReloadPlugin(projectDir)
 runGodotImport(godot, projectDir)
-await runEditorReloadSmoke(godot, projectDir)
+const watcher = startNpmDevWatch(projectDir, env)
+try {
+  await waitFor(
+    () =>
+      watcher.state.exited ||
+      /built in \d/.test(watcher.state.stdout + watcher.state.stderr),
+    'initial generated app Vite watch build',
+  )
+  if (watcher.state.exited) {
+    throw new Error(
+      [
+        'Generated app watcher exited before editor reload smoke',
+        watcher.state.stdout,
+        watcher.state.stderr,
+      ]
+        .filter(Boolean)
+        .join('\n'),
+    )
+  }
+
+  await runEditorReloadSmoke(godot, projectDir)
+} finally {
+  await watcher.stop()
+}
 
 console.log(`${SMOKE_PREFIX} generated HTML app editor reload smoke passed`)
