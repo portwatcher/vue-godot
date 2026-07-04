@@ -192,10 +192,10 @@ The project is production ready only when all of these are true:
   - [ ] Expose current state and events.
   - [ ] Document that internet reachability is best-effort.
 - [ ] Permissions:
-  - [ ] Define permission names and mappings.
+  - [x] Define permission names and mappings.
   - [ ] Support Android `OS.request_permission()` and permission result events.
   - [ ] Support macOS/iOS/visionOS permissions where Godot exposes them.
-  - [ ] Provide fallback behavior for plugin-managed permissions.
+  - [x] Provide fallback behavior for plugin-managed permissions.
 - [ ] Sensors:
   - [ ] Accelerometer.
   - [ ] Gyroscope.
@@ -312,7 +312,7 @@ Use this backlog to seed `docs/compatibility.md`.
 | `localStorage` | browser | supported | `FileAccess` / `user://` |
 | `sessionStorage` | browser | supported | memory or `user://` |
 | `navigator.clipboard` | browser/device | partial | `DisplayServer` clipboard |
-| `navigator.permissions` | browser/device | partial | `OS.get_granted_permissions` + capability checks |
+| `navigator.permissions` | browser/device | partial | `PermissionAdapter` + `OS.get_granted_permissions` + capability checks |
 | `navigator.vibrate` | browser/device | partial | `Input.vibrate_handheld` |
 | Device motion/orientation | browser/device | partial | `Input` sensors |
 | `navigator.geolocation` | browser/device | requires-plugin | `@vue-godot/device` `GeolocationAdapter` |

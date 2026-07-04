@@ -118,6 +118,7 @@ export {
   checkNetworkReachability,
   configureNetworkReachability,
   getNetworkReachabilityOptions,
+  getRegisteredPermissionAdapter,
   navigator,
   permissions,
   setNavigatorOnline,

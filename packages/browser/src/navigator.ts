@@ -3,6 +3,11 @@
 // ---------------------------------------------------------------------------
 
 import { OS } from 'godot'
+import {
+  deviceCapabilities,
+  type DevicePermissionState,
+  type PermissionAdapter,
+} from '@vue-godot/device'
 import { GodotAbortController } from './abort.js'
 import {
   clipboard,
@@ -125,6 +130,23 @@ function isRuntimePermissionName(
   return Object.prototype.hasOwnProperty.call(RuntimePermissionMap, name)
 }
 
+function isPermissionAdapter(value: unknown): value is PermissionAdapter {
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+
+  const candidate = value as Partial<PermissionAdapter>
+  return (
+    candidate.capability === 'permissions' &&
+    typeof candidate.queryPermission === 'function'
+  )
+}
+
+export function getRegisteredPermissionAdapter(): PermissionAdapter | null {
+  const adapter = deviceCapabilities.getAdapter('permissions')
+  return isPermissionAdapter(adapter) ? adapter : null
+}
+
 function isGodotStringArrayLike(
   value: unknown,
 ): value is GodotStringArrayLike {
@@ -192,6 +214,36 @@ function queryPermissionState(name: string): GodotPermissionState | null {
     : 'prompt'
 }
 
+function mapDevicePermissionState(
+  state: DevicePermissionState,
+): GodotPermissionState | null {
+  switch (state) {
+    case 'granted':
+    case 'denied':
+    case 'prompt':
+      return state
+    case 'unknown':
+      return null
+  }
+}
+
+async function queryAdapterPermissionState(
+  name: string,
+): Promise<GodotPermissionState | null> {
+  const adapter = getRegisteredPermissionAdapter()
+  if (!adapter) {
+    return null
+  }
+
+  try {
+    return mapDevicePermissionState(
+      await adapter.queryPermission({ name }),
+    )
+  } catch {
+    return null
+  }
+}
+
 export class GodotPermissionStatus extends GodotEventTarget {
   readonly name: string
   onchange: GodotPermissionChangeHandler | null = null
@@ -226,7 +278,8 @@ export class GodotPermissions {
     descriptor: GodotPermissionDescriptor,
   ): Promise<GodotPermissionStatus> {
     const name = String(descriptor.name)
-    const state = queryPermissionState(name)
+    const state =
+      (await queryAdapterPermissionState(name)) ?? queryPermissionState(name)
     if (state === null) {
       throw new TypeError(`Unsupported permission name: ${name}`)
     }

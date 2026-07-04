@@ -45,6 +45,7 @@ const {
   getRegisteredMediaDevicesAdapter,
   getRegisteredGeolocationAdapter,
   getRegisteredNotificationAdapter,
+  getRegisteredPermissionAdapter,
   mediaDevices: godotMediaDevices,
   readDeviceMotion,
   readDeviceOrientation,
@@ -419,6 +420,78 @@ test('navigator.permissions.query denies unavailable capabilities and rejects un
     () => godotNavigator.permissions.query({ name: 'screen-wake-lock' }),
     TypeError,
   )
+})
+
+test('navigator.permissions.query uses a registered permission adapter before local fallbacks', async () => {
+  deviceCapabilities.clear()
+  resetMockOS({ grantedPermissions: ['android.permission.RECORD_AUDIO'] })
+
+  const queried = []
+  const unregister = registerDeviceCapability({
+    capability: 'permissions',
+    pluginName: 'mock-permissions',
+    queryPermission(descriptor) {
+      queried.push(descriptor.name)
+      switch (descriptor.name) {
+        case 'camera':
+          return 'denied'
+        case 'microphone':
+          return 'unknown'
+        case 'screen-wake-lock':
+          return 'prompt'
+        default:
+          return 'unknown'
+      }
+    },
+  })
+
+  try {
+    assert.equal(
+      getRegisteredPermissionAdapter()?.pluginName,
+      'mock-permissions',
+    )
+
+    const camera = await godotNavigator.permissions.query({ name: 'camera' })
+    const microphone = await godotNavigator.permissions.query({
+      name: 'microphone',
+    })
+    const wakeLock = await godotNavigator.permissions.query({
+      name: 'screen-wake-lock',
+    })
+
+    assert.equal(camera.state, 'denied')
+    assert.equal(microphone.state, 'granted')
+    assert.equal(wakeLock.state, 'prompt')
+    assert.deepEqual(queried, ['camera', 'microphone', 'screen-wake-lock'])
+  } finally {
+    unregister()
+    deviceCapabilities.clear()
+  }
+})
+
+test('navigator.permissions.query falls back when a permission adapter cannot answer', async () => {
+  deviceCapabilities.clear()
+
+  const unregister = registerDeviceCapability({
+    capability: 'permissions',
+    pluginName: 'mock-permissions',
+    queryPermission() {
+      throw new Error('Adapter cannot answer.')
+    },
+  })
+
+  try {
+    const status = await godotNavigator.permissions.query({ name: 'camera' })
+    assert.equal(status.state, 'prompt')
+
+    await assert.rejects(
+      () => godotNavigator.permissions.query({ name: 'screen-wake-lock' }),
+      TypeError,
+    )
+  } finally {
+    unregister()
+    deviceCapabilities.clear()
+  }
 })
 
 test('navigator.geolocation is exposed only when an adapter is registered', () => {

@@ -57,7 +57,7 @@ import { fetch, GodotRequest, GodotURL, GodotHeaders } from '@vue-godot/browser'
 | `localStorage`                                   | `GodotStorage`         | Persistent JSON-backed storage at `user://vue-godot-browser-local-storage.json` with memory fallback                                             |
 | `sessionStorage`                                 | `GodotStorage`         | Process-memory storage; cleared when the GodotJS runtime exits or reloads                                                                        |
 | `navigator`                                      | `GodotNavigator`       | Provides `navigator.onLine`, `navigator.permissions`, adapter-backed `navigator.geolocation`, adapter-backed `navigator.mediaDevices`, `navigator.clipboard`, and `navigator.vibrate()`; reachability changes dispatch events |
-| `navigator.permissions.query()`                  | `GodotPermissions`     | Query-only Permissions API subset for mapped Godot/Android permissions and local capabilities; never triggers native permission prompts             |
+| `navigator.permissions.query()`                  | `GodotPermissions`     | Query-only Permissions API subset that asks a registered `PermissionAdapter` first, then falls back to mapped Godot/Android permissions and local capabilities |
 | `navigator.geolocation`                          | `GodotGeolocation`     | Browser Geolocation API callback subset exposed only when a `@vue-godot/device` `GeolocationAdapter` is registered                                 |
 | `navigator.mediaDevices.getUserMedia()`          | `GodotMediaDevices`    | Browser media capture subset exposed only when a `@vue-godot/device` `MediaDevicesAdapter` is registered                                           |
 | `MediaStream` / `MediaStreamTrack`               | `GodotMediaStream`     | Small stream/track wrapper for adapter-provided audio/video tracks, including `getTracks()`, `getAudioTracks()`, `getVideoTracks()`, and `stop()`   |
@@ -289,7 +289,14 @@ The default probe is a `HEAD` request to `https://example.com/` with a five-seco
 
 ## Permissions
 
-`navigator.permissions.query()` implements a query-only subset. It never calls `OS.request_permission()` and never opens a native permission prompt. It reports `granted` when Godot already exposes the backing capability or `OS.get_granted_permissions()` includes a mapped Android permission, `prompt` when a mapped runtime permission is not currently granted, and `denied` when a local capability is unavailable.
+`navigator.permissions.query()` implements a query-only subset. It first asks a
+registered `@vue-godot/device` `PermissionAdapter`. If no adapter is registered,
+the adapter reports `unknown`, or the adapter cannot answer, it falls back to
+the built-in Godot/Android mapping. It never calls `OS.request_permission()` and
+never opens a native permission prompt. The fallback reports `granted` when
+Godot already exposes the backing capability or `OS.get_granted_permissions()`
+includes a mapped Android permission, `prompt` when a mapped runtime permission
+is not currently granted, and `denied` when a local capability is unavailable.
 
 ```ts
 const camera = await navigator.permissions.query({ name: 'camera' })
