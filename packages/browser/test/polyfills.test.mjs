@@ -24,6 +24,8 @@ const {
   GodotMediaDevicesError,
   GodotMediaStream,
   GodotMediaStreamTrack,
+  GodotNotification,
+  GodotNotificationError,
   GodotRequest,
   GodotResponse,
   GodotTextDecoder,
@@ -42,6 +44,7 @@ const {
   getGlobalEventTarget,
   getRegisteredMediaDevicesAdapter,
   getRegisteredGeolocationAdapter,
+  getRegisteredNotificationAdapter,
   mediaDevices: godotMediaDevices,
   readDeviceMotion,
   readDeviceOrientation,
@@ -780,6 +783,158 @@ test('navigator.mediaDevices.getUserMedia maps adapter failures', async () => {
         error instanceof GodotMediaDevicesError &&
         error.name === 'NotReadableError' &&
         error.message === 'CAMERA export permission is missing.',
+    )
+  } finally {
+    unregisterExport()
+    deviceCapabilities.clear()
+  }
+})
+
+test('Notification permission reflects registered adapter status', async () => {
+  deviceCapabilities.clear()
+
+  assert.equal(await GodotNotification.requestPermission(), 'default')
+  assert.equal(GodotNotification.permission, 'default')
+  assert.equal(getRegisteredNotificationAdapter(), null)
+
+  const unregister = registerDeviceCapability({
+    capability: 'notifications',
+    pluginName: 'mock-notifications',
+    getStatus() {
+      return {
+        capability: 'notifications',
+        state: 'supported',
+      }
+    },
+    async notify() {},
+  })
+
+  try {
+    assert.equal(
+      getRegisteredNotificationAdapter()?.pluginName,
+      'mock-notifications',
+    )
+
+    let callbackPermission = null
+    const permission = await GodotNotification.requestPermission(
+      (value) => {
+        callbackPermission = value
+      },
+    )
+    assert.equal(permission, 'granted')
+    assert.equal(callbackPermission, 'granted')
+    assert.equal(GodotNotification.permission, 'granted')
+  } finally {
+    unregister()
+    deviceCapabilities.clear()
+  }
+})
+
+test('Notification.show sends through a registered adapter', async () => {
+  deviceCapabilities.clear()
+  const sent = []
+
+  const unregister = registerDeviceCapability({
+    capability: 'notifications',
+    pluginName: 'mock-notifications',
+    async notify(title, options) {
+      sent.push({ title, options })
+    },
+  })
+
+  try {
+    const notification = await GodotNotification.show('Build finished', {
+      body: 'All checks passed.',
+      data: { commit: 'abc123' },
+      icon: 'res://icon.svg',
+      tag: 'build',
+    })
+
+    assert.ok(notification instanceof GodotNotification)
+    assert.equal(notification.title, 'Build finished')
+    assert.equal(notification.body, 'All checks passed.')
+    assert.equal(notification.icon, 'res://icon.svg')
+    assert.equal(notification.tag, 'build')
+    assert.equal(GodotNotification.permission, 'granted')
+    assert.deepEqual(sent, [
+      {
+        title: 'Build finished',
+        options: {
+          body: 'All checks passed.',
+          data: { commit: 'abc123' },
+        },
+      },
+    ])
+
+    let closeEventType = null
+    notification.onclose = (event) => {
+      closeEventType = event.type
+    }
+    notification.close()
+    assert.equal(closeEventType, 'close')
+  } finally {
+    unregister()
+    deviceCapabilities.clear()
+  }
+})
+
+test('Notification maps adapter failures', async () => {
+  deviceCapabilities.clear()
+
+  await assert.rejects(
+    () => GodotNotification.show('Missing adapter'),
+    (error) =>
+      error instanceof GodotNotificationError &&
+      error.name === 'NotFoundError',
+  )
+
+  const unregisterDenied = registerDeviceCapability({
+    capability: 'notifications',
+    pluginName: 'mock-notifications',
+    getStatus() {
+      return {
+        capability: 'notifications',
+        state: 'permission-denied',
+        message: 'Notification permission denied.',
+      }
+    },
+    async notify() {},
+  })
+
+  try {
+    await assert.rejects(
+      () => GodotNotification.show('Denied'),
+      (error) =>
+        error instanceof GodotNotificationError &&
+        error.name === 'NotAllowedError' &&
+        error.message === 'Notification permission denied.',
+    )
+    assert.equal(GodotNotification.permission, 'denied')
+  } finally {
+    unregisterDenied()
+    deviceCapabilities.clear()
+  }
+
+  const unregisterExport = registerDeviceCapability({
+    capability: 'notifications',
+    pluginName: 'mock-notifications',
+    getStatus() {
+      return {
+        capability: 'notifications',
+        state: 'export-misconfiguration',
+        message: 'POST_NOTIFICATIONS export setup is missing.',
+      }
+    },
+    async notify() {},
+  })
+
+  try {
+    await assert.rejects(
+      () => GodotNotification.show('Misconfigured'),
+      (error) =>
+        error instanceof GodotNotificationError &&
+        error.name === 'NotReadableError' &&
+        error.message === 'POST_NOTIFICATIONS export setup is missing.',
     )
   } finally {
     unregisterExport()

@@ -5,6 +5,11 @@ import test from 'node:test'
 register(new URL('./godot-loader.mjs', import.meta.url).href)
 
 const {
+  deviceCapabilities,
+  registerDeviceCapability,
+} = await import('@vue-godot/device')
+
+const {
   GodotBlob,
   GodotClipboard,
   GodotDeviceMotionEvent,
@@ -17,6 +22,7 @@ const {
   GodotMediaStream,
   GodotMediaStreamTrack,
   GodotNavigator,
+  GodotNotification,
   GodotPermissions,
   GodotPermissionStatus,
   GodotRequest,
@@ -46,6 +52,7 @@ const patchedGlobals = [
   'navigator',
   'DeviceMotionEvent',
   'DeviceOrientationEvent',
+  'Notification',
   'fetch',
   'Request',
   'WebSocket',
@@ -117,6 +124,7 @@ test('installBrowserAPIs installs missing browser globals', async () => {
     assert.equal(typeof globalThis.navigator.onLine, 'boolean')
     assert.equal(globalThis.navigator.geolocation, undefined)
     assert.equal(globalThis.navigator.mediaDevices, undefined)
+    assert.equal(globalThis.Notification, undefined)
     assert.equal(typeof globalThis.navigator.vibrate, 'function')
     assert.ok(globalThis.navigator.clipboard instanceof GodotClipboard)
     assert.equal(typeof globalThis.navigator.clipboard.readText, 'function')
@@ -153,6 +161,29 @@ test('installBrowserAPIs installs missing browser globals', async () => {
   })
 })
 
+test('installBrowserAPIs installs Notification only when an adapter is registered', async () => {
+  deviceCapabilities.clear()
+
+  await withClearedGlobals(['Notification'], async () => {
+    installBrowserAPIs()
+    assert.equal(globalThis.Notification, undefined)
+
+    const unregister = registerDeviceCapability({
+      capability: 'notifications',
+      pluginName: 'mock-notifications',
+      async notify() {},
+    })
+
+    try {
+      installBrowserAPIs()
+      assert.equal(globalThis.Notification, GodotNotification)
+    } finally {
+      unregister()
+      deviceCapabilities.clear()
+    }
+  })
+})
+
 test('installPolyfill installs named missing globals only', async () => {
   await withClearedGlobals(
     [
@@ -176,6 +207,7 @@ test('installPolyfill installs named missing globals only', async () => {
       'MediaDevices',
       'MediaStream',
       'MediaStreamTrack',
+      'Notification',
       'DeviceMotionEvent',
       'DeviceOrientationEvent',
       'queueMicrotask',
@@ -200,6 +232,7 @@ test('installPolyfill installs named missing globals only', async () => {
         'MediaDevices',
         'MediaStream',
         'MediaStreamTrack',
+        'Notification',
         'DeviceMotionEvent',
         'DeviceOrientationEvent',
         'URLSearchParams',
@@ -227,6 +260,7 @@ test('installPolyfill installs named missing globals only', async () => {
       assert.equal(globalThis.MediaStream, GodotMediaStream)
       assert.equal(globalThis.MediaStreamTrack, GodotMediaStreamTrack)
       assert.equal(globalThis.navigator.mediaDevices, undefined)
+      assert.equal(globalThis.Notification, GodotNotification)
       assert.equal(globalThis.DeviceMotionEvent, GodotDeviceMotionEvent)
       assert.equal(
         globalThis.DeviceOrientationEvent,

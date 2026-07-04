@@ -61,6 +61,7 @@ import { fetch, GodotRequest, GodotURL, GodotHeaders } from '@vue-godot/browser'
 | `navigator.geolocation`                          | `GodotGeolocation`     | Browser Geolocation API callback subset exposed only when a `@vue-godot/device` `GeolocationAdapter` is registered                                 |
 | `navigator.mediaDevices.getUserMedia()`          | `GodotMediaDevices`    | Browser media capture subset exposed only when a `@vue-godot/device` `MediaDevicesAdapter` is registered                                           |
 | `MediaStream` / `MediaStreamTrack`               | `GodotMediaStream`     | Small stream/track wrapper for adapter-provided audio/video tracks, including `getTracks()`, `getAudioTracks()`, `getVideoTracks()`, and `stop()`   |
+| `Notification`                                   | `GodotNotification`    | Native notification subset exposed by `installBrowserAPIs()` only when a `@vue-godot/device` `NotificationAdapter` is registered                    |
 | `navigator.clipboard.readText()` / `writeText()` | `GodotClipboard`       | Async text clipboard subset backed by `DisplayServer.clipboard_get()` / `clipboard_set()` when the display server supports clipboard access       |
 | `isClipboardSupported()`                         | DisplayServer helper   | Returns whether the current display server reports text clipboard support                                                                         |
 | `navigator.vibrate()`                            | Godot handheld haptics | Browser Vibration API subset backed by `Input.vibrate_handheld()`                                                                                |
@@ -381,6 +382,45 @@ unsupported platforms reject with `NotFoundError`; export misconfiguration
 rejects with `NotReadableError`. Native camera and microphone plugins still own
 device enumeration, permission prompts, platform entitlements, and capture
 implementation.
+
+## Notifications
+
+`Notification` is installed by `installBrowserAPIs()` only when a
+`@vue-godot/device` `NotificationAdapter` is already registered. This package
+does not synthesize fake notifications when there is no native delivery path.
+
+```ts
+import { GodotNotification, installBrowserAPIs } from '@vue-godot/browser'
+import { registerDeviceCapability } from '@vue-godot/device'
+
+registerDeviceCapability({
+  capability: 'notifications',
+  pluginName: 'my-notification-plugin',
+  async notify(title, options) {
+    await myNotificationPlugin.notify(title, options)
+  },
+})
+
+installBrowserAPIs()
+
+const permission = await Notification.requestPermission()
+if (permission === 'granted') {
+  new Notification('Download complete', {
+    body: 'The export is ready.',
+    data: { screen: 'downloads' },
+  })
+}
+
+await GodotNotification.show('Build finished', {
+  body: 'All checks passed.',
+})
+```
+
+`Notification.requestPermission()` reports the registered adapter status; native
+plugins still own permission prompts and platform setup. Delivery failures map
+to browser-style error names: `NotAllowedError` for denied permission,
+`NotFoundError` for missing or unsupported adapters, and `NotReadableError` for
+export or platform configuration problems.
 
 ## Clipboard
 

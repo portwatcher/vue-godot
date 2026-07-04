@@ -1,6 +1,8 @@
 import {
   GodotGeolocationPositionError,
   GodotMediaDevicesError,
+  GodotNotification,
+  GodotNotificationError,
   geolocation,
   mediaDevices,
   readDeviceMotion,
@@ -287,6 +289,34 @@ export async function runBrowserSmokeTests(
     }
   } catch (error) {
     results.push(failFromError('navigator.mediaDevices', error))
+  }
+
+  try {
+    const notificationCtor = Reflect.get(globalThis, 'Notification')
+    const hasNotification =
+      typeof notificationCtor === 'function' &&
+      typeof (notificationCtor as { requestPermission?: unknown })
+        .requestPermission === 'function'
+
+    if (hasNotification) {
+      results.push(pass('Notification', 'registered ok'))
+    } else {
+      const permission = await GodotNotification.requestPermission()
+      try {
+        await GodotNotification.show('Vue Godot smoke')
+        results.push(fail('Notification', 'unexpected native notification'))
+      } catch (error) {
+        results.push(
+          error instanceof GodotNotificationError &&
+            error.name === 'NotFoundError' &&
+            permission === 'default'
+            ? pass('Notification', 'missing adapter reported ok')
+            : failFromError('Notification', error),
+        )
+      }
+    }
+  } catch (error) {
+    results.push(failFromError('Notification', error))
   }
 
   try {

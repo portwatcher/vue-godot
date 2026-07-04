@@ -23,6 +23,7 @@
 //   • WebSocket       → Godot WebSocketPeer
 //   • Storage         → user:// localStorage and memory sessionStorage
 //   • Navigator       → onLine, permissions, media devices, geolocation, clipboard, vibration
+//   • Notification    → adapter-backed native notifications
 //   • device sensors  → Input-backed motion/orientation reads and events
 //   • timers/RAF      → SceneTree-backed timing where available
 //   • performance     → Time-backed now() and marks/measures
@@ -128,6 +129,20 @@ export type {
   GodotPermissionName,
   GodotPermissionState,
 } from './navigator.js'
+export {
+  GodotNotification,
+  GodotNotificationError,
+  GodotNotificationErrorEvent,
+  getRegisteredNotificationAdapter,
+} from './notifications.js'
+export type {
+  GodotNotificationErrorHandler,
+  GodotNotificationErrorName,
+  GodotNotificationEventHandler,
+  GodotNotificationOptions,
+  GodotNotificationPermission,
+  GodotNotificationPermissionCallback,
+} from './notifications.js'
 export { GodotResponse } from './response.js'
 export {
   GodotStorage,

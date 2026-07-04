@@ -73,6 +73,12 @@ import {
   permissions as godotPermissions,
   setNavigatorOnline,
 } from './navigator.js'
+import {
+  GodotNotification,
+  GodotNotificationError,
+  GodotNotificationErrorEvent,
+  getRegisteredNotificationAdapter,
+} from './notifications.js'
 import { GodotResponse } from './response.js'
 import {
   cancelAnimationFrame,
@@ -133,6 +139,9 @@ export function installBrowserAPIs(): void {
   polyfill('navigator', godotNavigator)
   polyfill('DeviceMotionEvent', GodotDeviceMotionEvent)
   polyfill('DeviceOrientationEvent', GodotDeviceOrientationEvent)
+  if (getRegisteredNotificationAdapter()) {
+    polyfill('Notification', GodotNotification)
+  }
 
   // URL.createObjectURL / revokeObjectURL (static methods)
   if (typeof g['URL'] === 'function') {
@@ -237,6 +246,10 @@ export function installPolyfill(...names: string[]): void {
     configureNetworkReachability,
     getNetworkReachabilityOptions,
     setNavigatorOnline,
+    Notification: GodotNotification,
+    NotificationError: GodotNotificationError,
+    NotificationErrorEvent: GodotNotificationErrorEvent,
+    getRegisteredNotificationAdapter,
     'URL.createObjectURL': createObjectURL,
     'URL.revokeObjectURL': revokeObjectURL,
     Blob: GodotBlob,

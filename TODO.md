@@ -8,7 +8,7 @@ When this file is complete, maintainers should be confident enough to remove wor
 
 - `@vue-godot/runtime-tscn` renders Vue into Godot nodes and has unit coverage for insertion, prop reset, signals, static text, diagnostics, lifecycle behavior, and stress update patterns.
 - `@vue-godot/html` exposes a small HTML-like component set and an inline style subset.
-- `@vue-godot/browser` exposes an initial browser API subset: `fetch`, `Request`, `Response`, `Headers`, `Blob`, `URL`, `TextEncoder`, `TextDecoder`, `AbortController`, base64 helpers, `history`, `location`, basic global event dispatch, adapter-backed `navigator.geolocation`, and adapter-backed `navigator.mediaDevices.getUserMedia()`.
+- `@vue-godot/browser` exposes an initial browser API subset: `fetch`, `Request`, `Response`, `Headers`, `Blob`, `URL`, `TextEncoder`, `TextDecoder`, `AbortController`, base64 helpers, `history`, `location`, basic global event dispatch, adapter-backed `navigator.geolocation`, adapter-backed `navigator.mediaDevices.getUserMedia()`, and adapter-backed `Notification`.
 - `@vue-godot/device` exposes a capability registry, adapter contracts, feature detection helpers, and typed errors for plugin-backed native APIs.
 - The repo has build/test/CLI smoke checks, generated export-setting checks, and CI Godot smoke workflows.
 - The project is not yet production ready because platform APIs, app UI primitives, device integration, performance budgets, release/device smoke coverage, and end-user app examples are still incomplete.
@@ -107,7 +107,7 @@ The project is production ready only when all of these are true:
   - [x] `navigator.geolocation` through a registered geolocation adapter.
   - [x] `navigator.mediaDevices.getUserMedia()` through camera/microphone adapters where available.
   - [x] `MediaStream` subset if camera/microphone support needs browser compatibility.
-  - [ ] `Notification` only if native notification plugins are installed and permissions are configured.
+  - [x] `Notification` only if native notification plugins are installed and permissions are configured.
 - [x] Decide and document skipped APIs:
   - [x] DOM `document` and real element tree.
   - [x] Service workers.
@@ -318,7 +318,7 @@ Use this backlog to seed `docs/compatibility.md`.
 | `navigator.geolocation` | browser/device | requires-plugin | `@vue-godot/device` `GeolocationAdapter` |
 | `navigator.mediaDevices.getUserMedia` | browser/device | requires-plugin | `@vue-godot/device` `MediaDevicesAdapter` |
 | `<CameraView>` | html/device | partial | `CameraServer` / `CameraTexture` |
-| Notifications | device | requires-plugin | native plugins |
+| Notifications | browser/device | requires-plugin | `@vue-godot/device` `NotificationAdapter` |
 | Share sheet | device | requires-plugin | native plugins |
 | DOM `document` | browser | skipped | no DOM in Godot |
 | Service workers | browser | skipped | no browser worker/service worker runtime |
