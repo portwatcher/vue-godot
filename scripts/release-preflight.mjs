@@ -241,30 +241,27 @@ function checkRegistry(packagesByName) {
   return publishNeeded
 }
 
-function checkNpmAuth(publishNeeded) {
-  logStep('checking npm auth')
+function checkPublishEnvironment(publishNeeded) {
+  logStep('checking publish environment')
 
   if (isTrustedPublishingEnvironment()) {
     console.log(
-      '[release-preflight] npm trusted publishing environment detected; skipping npm whoami because OIDC is validated by npm publish',
+      '[release-preflight] GitHub Actions trusted publishing environment detected; npm publish will authenticate with OIDC',
     )
     return
   }
 
-  const result = run(npmCommand, ['whoami'])
-  if (result.status === 0) {
-    console.log(`[release-preflight] npm user: ${result.stdout.trim()}`)
+  if (!publishNeeded) {
+    console.log(
+      '[release-preflight] no packages need publishing; trusted publishing is not required',
+    )
     return
   }
 
-  const message = [
-    'npm authentication is required before publishing packages that are missing or newer than the registry.',
-    result.stderr.trim(),
-  ]
-    .filter(Boolean)
-    .join('\n')
+  const message =
+    'Packages are missing from or newer than the registry; publishing must run through the GitHub Actions Publish workflow with npm trusted publishing.'
 
-  if (publishNeeded && !localOnly) {
+  if (!localOnly) {
     failures.push(message)
   } else {
     warnings.push(message)
@@ -399,7 +396,7 @@ async function main() {
   await checkGeneratedPackageSpecs(packagesByName)
   checkPackDryRun()
   const publishNeeded = checkRegistry(packagesByName)
-  checkNpmAuth(publishNeeded)
+  checkPublishEnvironment(publishNeeded)
   checkGodotSmoke()
   printSummary()
 }

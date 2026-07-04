@@ -52,7 +52,6 @@ jobs:
         env:
           NPM_DIST_TAG: ${{ inputs.dist_tag || 'latest' }}
           SKIP_PUBLIC_SMOKE: ${{ inputs.skip_public_smoke || false }}
-          VUE_GODOT_NPM_TRUSTED_PUBLISHING: '1'
         run: |
           args=(--yes --tag "$NPM_DIST_TAG")
           if [ "$SKIP_PUBLIC_SMOKE" = "true" ]; then

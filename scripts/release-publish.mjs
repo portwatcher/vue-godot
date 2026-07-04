@@ -19,13 +19,13 @@ function usage() {
 Dry-run is the default and never publishes:
   npm run release:publish
 
-Real publishing requires an explicit confirmation flag:
-  npm run release:publish -- --yes [--otp <code>]
+Real publishing is only supported in the GitHub Actions trusted-publishing
+environment and requires an explicit confirmation flag:
+  npm run release:publish -- --yes
 
 Options:
   --yes              Perform real npm publish commands.
   --tag <tag>        npm dist-tag to publish with. Default: latest.
-  --otp <code>       npm one-time password for accounts requiring 2FA.
   --skip-preflight   Skip the real-publish preflight gate.
   --skip-public-smoke
                      Skip post-publish public CLI smoke.
@@ -37,7 +37,6 @@ function parseArgs(argv) {
   const options = {
     yes: false,
     tag: 'latest',
-    otp: null,
     skipPreflight: false,
     skipPublicSmoke: false,
   }
@@ -76,20 +75,6 @@ function parseArgs(argv) {
 
     if (arg.startsWith('--tag=')) {
       options.tag = arg.slice('--tag='.length)
-      continue
-    }
-
-    if (arg === '--otp') {
-      const value = argv[++index]
-      if (!value) {
-        throw new Error('--otp requires a value')
-      }
-      options.otp = value
-      continue
-    }
-
-    if (arg.startsWith('--otp=')) {
-      options.otp = arg.slice('--otp='.length)
       continue
     }
 
@@ -147,26 +132,20 @@ function assertCleanWorktree() {
   }
 }
 
-function assertNpmAuth() {
+function assertTrustedPublishingEnvironment() {
   if (isTrustedPublishingEnvironment()) {
     console.log(
-      '[release-publish] npm trusted publishing environment detected; npm publish will authenticate with OIDC',
+      '[release-publish] GitHub Actions trusted publishing environment detected; npm publish will authenticate with OIDC',
     )
     return
   }
 
-  const result = run(npmCommand, ['whoami'])
-  if (result.status !== 0) {
-    throw new Error(
-      [
-        'npm authentication is required for real publishing.',
-        result.stderr.trim(),
-      ]
-        .filter(Boolean)
-        .join('\n'),
-    )
-  }
-  console.log(`[release-publish] npm user: ${result.stdout.trim()}`)
+  throw new Error(
+    [
+      'Refusing to publish outside the GitHub Actions trusted-publishing environment.',
+      'Push a v* tag or run the Publish workflow instead.',
+    ].join('\n'),
+  )
 }
 
 function packageCandidates() {
@@ -214,10 +193,6 @@ function publishPackage(candidate, options) {
     args.push('--dry-run')
   }
 
-  if (options.otp) {
-    args.push('--otp', options.otp)
-  }
-
   console.log(
     `[release-publish] ${options.yes ? 'publishing' : 'dry-run'} ${candidate.name}@${candidate.version}`,
   )
@@ -253,8 +228,8 @@ function main() {
   if (dryRun) {
     console.log('[release-publish] dry-run mode; pass --yes to publish')
   } else {
+    assertTrustedPublishingEnvironment()
     assertCleanWorktree()
-    assertNpmAuth()
     if (!options.skipPreflight) {
       runPreflight()
     }
@@ -272,7 +247,7 @@ function main() {
 
   if (dryRun) {
     console.log(
-      '[release-publish] dry-run passed; rerun with --yes and --otp when release:preflight, npm auth, and 2FA are ready',
+      '[release-publish] dry-run passed; push a v* tag or run the Publish workflow to publish',
     )
     return
   }
