@@ -22,7 +22,7 @@
 //   • FileReader      → Async Blob/File readers
 //   • WebSocket       → Godot WebSocketPeer
 //   • Storage         → user:// localStorage and memory sessionStorage
-//   • Navigator       → onLine, reachability, text clipboard, and vibration
+//   • Navigator       → onLine, permissions, text clipboard, and vibration
 //   • device sensors  → Input-backed motion/orientation reads and events
 //   • timers/RAF      → SceneTree-backed timing where available
 //   • performance     → Time-backed now() and marks/measures
@@ -83,14 +83,23 @@ export {
   getGlobalEventTarget,
 } from './history.js'
 export {
+  GodotPermissionStatus,
+  GodotPermissions,
   GodotNavigator,
   checkNetworkReachability,
   configureNetworkReachability,
   getNetworkReachabilityOptions,
   navigator,
+  permissions,
   setNavigatorOnline,
 } from './navigator.js'
-export type { GodotNetworkReachabilityOptions } from './navigator.js'
+export type {
+  GodotNetworkReachabilityOptions,
+  GodotPermissionChangeHandler,
+  GodotPermissionDescriptor,
+  GodotPermissionName,
+  GodotPermissionState,
+} from './navigator.js'
 export { GodotResponse } from './response.js'
 export {
   GodotStorage,

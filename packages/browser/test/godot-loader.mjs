@@ -67,6 +67,17 @@ export function load(url, context, nextLoad) {
           return globalThis[key]
         }
 
+        function mockOSState() {
+          const key = '__vueGodotBrowserMockOS'
+          if (!globalThis[key]) {
+            globalThis[key] = {
+              grantedPermissions: [],
+              userFsPersistent: true,
+            }
+          }
+          return globalThis[key]
+        }
+
         function mockWebSocketState() {
           const key = '__vueGodotBrowserMockWebSocket'
           if (!globalThis[key]) {
@@ -307,6 +318,20 @@ export function load(url, context, nextLoad) {
 
           static get_magnetometer() {
             return mockInputState().magnetometer
+          }
+        }
+
+        export class OS {
+          static get_granted_permissions() {
+            return new MockStringArray([...mockOSState().grantedPermissions])
+          }
+
+          static request_permission(name) {
+            return mockOSState().grantedPermissions.includes(String(name))
+          }
+
+          static is_userfs_persistent() {
+            return Boolean(mockOSState().userFsPersistent)
           }
         }
 

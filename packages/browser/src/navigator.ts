@@ -2,9 +2,14 @@
 // Navigator and network reachability polyfills for GodotJS
 // ---------------------------------------------------------------------------
 
+import { OS } from 'godot'
 import { GodotAbortController } from './abort.js'
-import { clipboard, type GodotClipboard } from './clipboard.js'
-import { GodotEvent } from './event-target.js'
+import {
+  clipboard,
+  isClipboardSupported,
+  type GodotClipboard,
+} from './clipboard.js'
+import { GodotEvent, GodotEventTarget } from './event-target.js'
 import { fetch } from './fetch.js'
 import { getGlobalEventTarget } from './history.js'
 import {
@@ -23,6 +28,27 @@ export interface GodotNetworkReachabilityOptions {
   expectedStatus?: number | readonly number[]
 }
 
+export type GodotPermissionState = 'granted' | 'denied' | 'prompt'
+export type GodotPermissionName =
+  | 'accelerometer'
+  | 'camera'
+  | 'clipboard-read'
+  | 'clipboard-write'
+  | 'geolocation'
+  | 'gyroscope'
+  | 'magnetometer'
+  | 'microphone'
+  | 'notifications'
+  | 'persistent-storage'
+
+export interface GodotPermissionDescriptor {
+  name: string
+}
+
+export type GodotPermissionChangeHandler = (
+  event: GodotEvent,
+) => void
+
 const DEFAULT_REACHABILITY_OPTIONS: Required<GodotNetworkReachabilityOptions> =
   {
     url: 'https://example.com/',
@@ -33,6 +59,33 @@ const DEFAULT_REACHABILITY_OPTIONS: Required<GodotNetworkReachabilityOptions> =
 
 let reachabilityOptions: Required<GodotNetworkReachabilityOptions> = {
   ...DEFAULT_REACHABILITY_OPTIONS,
+}
+
+const RuntimePermissionMap = {
+  camera: ['android.permission.CAMERA'],
+  geolocation: [
+    'android.permission.ACCESS_FINE_LOCATION',
+    'android.permission.ACCESS_COARSE_LOCATION',
+  ],
+  microphone: ['android.permission.RECORD_AUDIO'],
+  notifications: ['android.permission.POST_NOTIFICATIONS'],
+} as const
+
+const ClipboardPermissionNames = new Set<string>([
+  'clipboard-read',
+  'clipboard-write',
+])
+const SensorPermissionNames = new Set<string>([
+  'accelerometer',
+  'gyroscope',
+  'magnetometer',
+])
+
+type RuntimePermissionName = keyof typeof RuntimePermissionMap
+
+interface GodotStringArrayLike {
+  size(): number
+  get_indexed(index: number): unknown
 }
 
 function normalizeOptions(
@@ -56,6 +109,124 @@ function isExpectedStatus(
     : status === expected
 }
 
+function isRuntimePermissionName(
+  name: string,
+): name is RuntimePermissionName {
+  return Object.prototype.hasOwnProperty.call(RuntimePermissionMap, name)
+}
+
+function isGodotStringArrayLike(
+  value: unknown,
+): value is GodotStringArrayLike {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as { size?: unknown }).size === 'function' &&
+    typeof (value as { get_indexed?: unknown }).get_indexed === 'function'
+  )
+}
+
+function stringArrayLikeToStrings(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map(String)
+  }
+
+  if (!isGodotStringArrayLike(value)) {
+    return []
+  }
+
+  const count = Math.max(0, Math.trunc(Number(value.size())))
+  const result: string[] = []
+  for (let index = 0; index < count; index++) {
+    result.push(String(value.get_indexed(index)))
+  }
+  return result
+}
+
+function readGrantedPermissionSet(): Set<string> {
+  try {
+    return new Set(stringArrayLikeToStrings(OS.get_granted_permissions()))
+  } catch {
+    return new Set()
+  }
+}
+
+function isUserFsPersistent(): boolean {
+  try {
+    return OS.is_userfs_persistent()
+  } catch {
+    return false
+  }
+}
+
+function queryPermissionState(name: string): GodotPermissionState | null {
+  if (ClipboardPermissionNames.has(name)) {
+    return isClipboardSupported() ? 'granted' : 'denied'
+  }
+
+  if (SensorPermissionNames.has(name)) {
+    return 'granted'
+  }
+
+  if (name === 'persistent-storage') {
+    return isUserFsPersistent() ? 'granted' : 'denied'
+  }
+
+  if (!isRuntimePermissionName(name)) {
+    return null
+  }
+
+  const granted = readGrantedPermissionSet()
+  return RuntimePermissionMap[name].some((permission) => granted.has(permission))
+    ? 'granted'
+    : 'prompt'
+}
+
+export class GodotPermissionStatus extends GodotEventTarget {
+  readonly name: string
+  onchange: GodotPermissionChangeHandler | null = null
+
+  private _state: GodotPermissionState
+
+  constructor(name = '', state: GodotPermissionState = 'prompt') {
+    super()
+    this.name = name
+    this._state = state
+  }
+
+  get state(): GodotPermissionState {
+    return this._state
+  }
+
+  /** @internal */
+  _setState(state: GodotPermissionState): void {
+    if (this._state === state) {
+      return
+    }
+
+    this._state = state
+    const event = new GodotEvent('change')
+    this.onchange?.(event)
+    this.dispatchEvent(event)
+  }
+}
+
+export class GodotPermissions {
+  async query(
+    descriptor: GodotPermissionDescriptor,
+  ): Promise<GodotPermissionStatus> {
+    const name = String(descriptor.name)
+    const state = queryPermissionState(name)
+    if (state === null) {
+      throw new TypeError(`Unsupported permission name: ${name}`)
+    }
+
+    return new GodotPermissionStatus(name, state)
+  }
+}
+
+export const permissions = new GodotPermissions()
+
 /**
  * Minimal `Navigator` implementation.
  *
@@ -67,6 +238,7 @@ export class GodotNavigator {
   private _online = true
 
   readonly clipboard: GodotClipboard = clipboard
+  readonly permissions: GodotPermissions = permissions
 
   get onLine(): boolean {
     return this._online

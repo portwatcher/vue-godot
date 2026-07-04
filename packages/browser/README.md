@@ -54,7 +54,8 @@ import { fetch, GodotRequest, GodotURL, GodotHeaders } from '@vue-godot/browser'
 | `Storage`                                        | `GodotStorage`         | Web Storage API shape; `.length`, `.key()`, `.getItem()`, `.setItem()`, `.removeItem()`, `.clear()`                                              |
 | `localStorage`                                   | `GodotStorage`         | Persistent JSON-backed storage at `user://vue-godot-browser-local-storage.json` with memory fallback                                             |
 | `sessionStorage`                                 | `GodotStorage`         | Process-memory storage; cleared when the GodotJS runtime exits or reloads                                                                        |
-| `navigator`                                      | `GodotNavigator`       | Provides `navigator.onLine`, `navigator.clipboard`, and `navigator.vibrate()`; reachability checks update state and dispatch events                |
+| `navigator`                                      | `GodotNavigator`       | Provides `navigator.onLine`, `navigator.permissions`, `navigator.clipboard`, and `navigator.vibrate()`; reachability changes dispatch events        |
+| `navigator.permissions.query()`                  | `GodotPermissions`     | Query-only Permissions API subset for mapped Godot/Android permissions and local capabilities; never triggers native permission prompts             |
 | `navigator.clipboard.readText()` / `writeText()` | `GodotClipboard`       | Async text clipboard subset backed by `DisplayServer.clipboard_get()` / `clipboard_set()` when the display server supports clipboard access       |
 | `isClipboardSupported()`                         | DisplayServer helper   | Returns whether the current display server reports text clipboard support                                                                         |
 | `navigator.vibrate()`                            | Godot handheld haptics | Browser Vibration API subset backed by `Input.vibrate_handheld()`                                                                                |
@@ -280,6 +281,19 @@ console.log(navigator.onLine, online)
 
 The default probe is a `HEAD` request to `https://example.com/` with a five-second timeout. Internet reachability is always best-effort; captive portals, firewall rules, and platform network policies can all affect the result.
 
+## Permissions
+
+`navigator.permissions.query()` implements a query-only subset. It never calls `OS.request_permission()` and never opens a native permission prompt. It reports `granted` when Godot already exposes the backing capability or `OS.get_granted_permissions()` includes a mapped Android permission, `prompt` when a mapped runtime permission is not currently granted, and `denied` when a local capability is unavailable.
+
+```ts
+const camera = await navigator.permissions.query({ name: 'camera' })
+const clipboard = await navigator.permissions.query({ name: 'clipboard-read' })
+
+console.log(camera.state, clipboard.state)
+```
+
+Supported names are `camera`, `microphone`, `geolocation`, `notifications`, `persistent-storage`, `clipboard-read`, `clipboard-write`, `accelerometer`, `gyroscope`, and `magnetometer`. Unknown names reject with `TypeError`. Android mappings use `CAMERA`, `RECORD_AUDIO`, `ACCESS_FINE_LOCATION` / `ACCESS_COARSE_LOCATION`, and `POST_NOTIFICATIONS`; plugin-backed APIs still need their own adapter and permission flow.
+
 ## Clipboard
 
 `navigator.clipboard` implements the async text clipboard subset using Godot's `DisplayServer` clipboard methods. It is available when the current display server reports clipboard support; otherwise `readText()` and `writeText()` reject with `NotSupportedError`.
@@ -342,7 +356,7 @@ Godot returns zero vectors for unsupported platforms or missing sensors. The ori
 ## Requirements
 
 - **GodotJS** runtime (V8 or QuickJS) with access to the `godot` module
-- Godot engine classes: `HTTPClient`, `DisplayServer`, `Engine`, `FileAccess`, `Input`, `SceneTree`, `Time`, `TLSOptions`, `WebSocketPeer`, `PackedByteArray`, `PackedStringArray`
+- Godot engine classes: `HTTPClient`, `DisplayServer`, `Engine`, `FileAccess`, `Input`, `OS`, `SceneTree`, `Time`, `TLSOptions`, `WebSocketPeer`, `PackedByteArray`, `PackedStringArray`
 
 ## License
 

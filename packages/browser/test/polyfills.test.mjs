@@ -32,6 +32,8 @@ const {
   GodotFileReader,
   GodotFormData,
   GodotNavigator,
+  GodotPermissionStatus,
+  GodotPermissions,
   GodotStorage,
   clipboard: godotClipboard,
   checkNetworkReachability,
@@ -78,6 +80,14 @@ function resetMockInput(options = {}) {
     throwOnVibrate: options.throwOnVibrate ?? false,
   }
   return globalThis.__vueGodotBrowserMockInput
+}
+
+function resetMockOS(options = {}) {
+  globalThis.__vueGodotBrowserMockOS = {
+    grantedPermissions: options.grantedPermissions ?? [],
+    userFsPersistent: options.userFsPersistent ?? true,
+  }
+  return globalThis.__vueGodotBrowserMockOS
 }
 
 function resetMockWebSocket(options = {}) {
@@ -292,6 +302,58 @@ test('checkNetworkReachability probes configured URL and updates navigator state
   assert.equal(http.requests[0].methodName, 'GET')
   assert.equal(http.requests[0].hostname, 'status.example.com')
   assert.equal(http.requests[0].path, '/health')
+})
+
+test('navigator.permissions.query reports mapped permission states', async () => {
+  resetMockDisplayServer()
+  resetMockOS({
+    grantedPermissions: [
+      'android.permission.CAMERA',
+      'android.permission.ACCESS_COARSE_LOCATION',
+    ],
+  })
+
+  const camera = await godotNavigator.permissions.query({ name: 'camera' })
+  const microphone = await godotNavigator.permissions.query({
+    name: 'microphone',
+  })
+  const geolocation = await godotNavigator.permissions.query({
+    name: 'geolocation',
+  })
+  const clipboardRead = await godotNavigator.permissions.query({
+    name: 'clipboard-read',
+  })
+  const accelerometer = await godotNavigator.permissions.query({
+    name: 'accelerometer',
+  })
+
+  assert.ok(godotNavigator.permissions instanceof GodotPermissions)
+  assert.ok(camera instanceof GodotPermissionStatus)
+  assert.equal(camera.name, 'camera')
+  assert.equal(camera.state, 'granted')
+  assert.equal(microphone.state, 'prompt')
+  assert.equal(geolocation.state, 'granted')
+  assert.equal(clipboardRead.state, 'granted')
+  assert.equal(accelerometer.state, 'granted')
+})
+
+test('navigator.permissions.query denies unavailable capabilities and rejects unknown names', async () => {
+  resetMockDisplayServer({ features: [] })
+  resetMockOS({ userFsPersistent: false })
+
+  const clipboardRead = await godotNavigator.permissions.query({
+    name: 'clipboard-read',
+  })
+  const persistentStorage = await godotNavigator.permissions.query({
+    name: 'persistent-storage',
+  })
+
+  assert.equal(clipboardRead.state, 'denied')
+  assert.equal(persistentStorage.state, 'denied')
+  await assert.rejects(
+    () => godotNavigator.permissions.query({ name: 'screen-wake-lock' }),
+    TypeError,
+  )
 })
 
 test('navigator.clipboard reads and writes DisplayServer text clipboard', async () => {

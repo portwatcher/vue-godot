@@ -49,9 +49,12 @@ import {
 import {
   checkNetworkReachability,
   configureNetworkReachability,
+  GodotPermissionStatus,
+  GodotPermissions,
   GodotNavigator,
   getNetworkReachabilityOptions,
   navigator as godotNavigator,
+  permissions as godotPermissions,
   setNavigatorOnline,
 } from './navigator.js'
 import { GodotResponse } from './response.js'
@@ -109,6 +112,8 @@ export function installBrowserAPIs(): void {
   polyfill('localStorage', godotLocalStorage)
   polyfill('sessionStorage', godotSessionStorage)
   polyfill('Navigator', GodotNavigator)
+  polyfill('Permissions', GodotPermissions)
+  polyfill('PermissionStatus', GodotPermissionStatus)
   polyfill('navigator', godotNavigator)
   polyfill('DeviceMotionEvent', GodotDeviceMotionEvent)
   polyfill('DeviceOrientationEvent', GodotDeviceOrientationEvent)
@@ -182,7 +187,10 @@ export function installPolyfill(...names: string[]): void {
     localStorage: godotLocalStorage,
     sessionStorage: godotSessionStorage,
     Navigator: GodotNavigator,
+    Permissions: GodotPermissions,
+    PermissionStatus: GodotPermissionStatus,
     navigator: godotNavigator,
+    permissions: godotPermissions,
     Clipboard: GodotClipboard,
     clipboard: godotClipboard,
     isClipboardSupported,

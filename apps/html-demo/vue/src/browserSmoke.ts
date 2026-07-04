@@ -215,6 +215,17 @@ export async function runBrowserSmokeTests(
   }
 
   try {
+    const status = await navigator.permissions.query({ name: 'camera' })
+    results.push(
+      ['granted', 'denied', 'prompt'].includes(status.state)
+        ? pass('navigator.permissions.query', `camera=${status.state} ok`)
+        : fail('navigator.permissions.query', status.state),
+    )
+  } catch (error) {
+    results.push(failFromError('navigator.permissions.query', error))
+  }
+
+  try {
     const text = await navigator.clipboard.readText()
     results.push(
       pass('navigator.clipboard.readText', `length=${text.length} ok`),

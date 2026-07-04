@@ -13,6 +13,8 @@ const {
   GodotFileReader,
   GodotFormData,
   GodotNavigator,
+  GodotPermissions,
+  GodotPermissionStatus,
   GodotRequest,
   GodotStorage,
   GodotURL,
@@ -35,6 +37,8 @@ const patchedGlobals = [
   'localStorage',
   'sessionStorage',
   'Navigator',
+  'Permissions',
+  'PermissionStatus',
   'navigator',
   'DeviceMotionEvent',
   'DeviceOrientationEvent',
@@ -96,7 +100,11 @@ test('installBrowserAPIs installs missing browser globals', async () => {
     assert.ok(globalThis.localStorage instanceof GodotStorage)
     assert.ok(globalThis.sessionStorage instanceof GodotStorage)
     assert.equal(globalThis.Navigator, GodotNavigator)
+    assert.equal(globalThis.Permissions, GodotPermissions)
+    assert.equal(globalThis.PermissionStatus, GodotPermissionStatus)
     assert.ok(globalThis.navigator instanceof GodotNavigator)
+    assert.ok(globalThis.navigator.permissions instanceof GodotPermissions)
+    assert.equal(typeof globalThis.navigator.permissions.query, 'function')
     assert.equal(globalThis.DeviceMotionEvent, GodotDeviceMotionEvent)
     assert.equal(
       globalThis.DeviceOrientationEvent,
@@ -155,6 +163,8 @@ test('installPolyfill installs named missing globals only', async () => {
       'localStorage',
       'sessionStorage',
       'Navigator',
+      'Permissions',
+      'PermissionStatus',
       'navigator',
       'DeviceMotionEvent',
       'DeviceOrientationEvent',
@@ -173,6 +183,8 @@ test('installPolyfill installs named missing globals only', async () => {
         'localStorage',
         'sessionStorage',
         'Navigator',
+        'Permissions',
+        'PermissionStatus',
         'navigator',
         'DeviceMotionEvent',
         'DeviceOrientationEvent',
@@ -191,7 +203,10 @@ test('installPolyfill installs named missing globals only', async () => {
       assert.ok(globalThis.localStorage instanceof GodotStorage)
       assert.ok(globalThis.sessionStorage instanceof GodotStorage)
       assert.equal(globalThis.Navigator, GodotNavigator)
+      assert.equal(globalThis.Permissions, GodotPermissions)
+      assert.equal(globalThis.PermissionStatus, GodotPermissionStatus)
       assert.ok(globalThis.navigator instanceof GodotNavigator)
+      assert.ok(globalThis.navigator.permissions instanceof GodotPermissions)
       assert.equal(globalThis.DeviceMotionEvent, GodotDeviceMotionEvent)
       assert.equal(
         globalThis.DeviceOrientationEvent,

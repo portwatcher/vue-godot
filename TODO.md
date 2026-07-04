@@ -99,7 +99,7 @@ The project is production ready only when all of these are true:
   - [x] `navigator.onLine` plus `online` and `offline` events.
   - [x] Network reachability probe configuration.
   - [x] `navigator.clipboard.readText` / `writeText` where platform clipboard APIs permit.
-  - [ ] Limited `navigator.permissions.query()` for supported mapped permissions.
+  - [x] Limited `navigator.permissions.query()` for supported mapped permissions.
   - [x] `navigator.vibrate()` backed by Godot handheld vibration where available.
   - [x] Device motion/orientation events backed by `Input.get_accelerometer()`, `get_gyroscope()`, `get_magnetometer()`, and `get_gravity()`.
 - [ ] Add plugin-backed browser-like APIs:
@@ -311,7 +311,7 @@ Use this backlog to seed `docs/compatibility.md`.
 | `localStorage` | browser | supported | `FileAccess` / `user://` |
 | `sessionStorage` | browser | supported | memory or `user://` |
 | `navigator.clipboard` | browser/device | partial | `DisplayServer` clipboard |
-| `navigator.permissions` | browser/device | partial | `OS.request_permission` + adapters |
+| `navigator.permissions` | browser/device | partial | `OS.get_granted_permissions` + capability checks |
 | `navigator.vibrate` | browser/device | partial | `Input.vibrate_handheld` |
 | Device motion/orientation | browser/device | partial | `Input` sensors |
 | `navigator.geolocation` | device | requires-plugin | Android/iOS location plugins |
