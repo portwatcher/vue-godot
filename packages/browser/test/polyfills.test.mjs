@@ -15,6 +15,7 @@ const {
   GodotResponse,
   GodotTextDecoder,
   GodotTextEncoder,
+  GodotWebSocket,
   GodotURL,
   GodotURLSearchParams,
   atob,
@@ -77,6 +78,16 @@ function resetMockInput(options = {}) {
     throwOnVibrate: options.throwOnVibrate ?? false,
   }
   return globalThis.__vueGodotBrowserMockInput
+}
+
+function resetMockWebSocket(options = {}) {
+  globalThis.__vueGodotBrowserMockWebSocket = {
+    peers: [],
+    connectError: options.connectError ?? 0,
+    sendError: options.sendError ?? 0,
+    openOnPoll: options.openOnPoll ?? true,
+  }
+  return globalThis.__vueGodotBrowserMockWebSocket
 }
 
 test('base64 helpers round-trip binary strings', () => {
@@ -397,6 +408,81 @@ test('device sensor events dispatch on the global event target', () => {
   assert.ok(events[1] instanceof GodotDeviceOrientationEvent)
   assert.equal(events[0].acceleration.x, 1)
   assert.equal(events[1].alpha, 0)
+})
+
+test('GodotWebSocket opens, sends, receives, and closes', async () => {
+  const socketState = resetMockWebSocket()
+  const events = []
+  const socket = new GodotWebSocket('wss://example.com/socket', ['chat'])
+  socket.binaryType = 'arraybuffer'
+  socket.onopen = () => {
+    events.push('open')
+  }
+  socket.onmessage = (event) => {
+    events.push(event.data)
+  }
+  socket.onclose = (event) => {
+    events.push(`close:${event.code}:${event.reason}`)
+  }
+
+  await new Promise((resolve) => globalThis.setTimeout(resolve, 20))
+
+  const peer = socketState.peers[0]
+  assert.equal(socket.readyState, socket.OPEN)
+  assert.equal(socket.protocol, 'chat')
+  assert.equal(peer.url, 'wss://example.com/socket')
+  assert.equal(Boolean(peer.tlsOptions), true)
+
+  socket.send('hello')
+  socket.send(new Uint8Array([1, 2, 3]))
+  peer.queueText('reply')
+  peer.queueBinary([4, 5, 6])
+
+  await new Promise((resolve) => globalThis.setTimeout(resolve, 20))
+
+  socket.close(1000, 'done')
+  await new Promise((resolve) => globalThis.setTimeout(resolve, 20))
+
+  assert.deepEqual(peer.sent, [
+    { type: 'text', message: 'hello' },
+    { type: 'binary', writeMode: 1, bytes: [1, 2, 3] },
+  ])
+  assert.equal(events[0], 'open')
+  assert.equal(events[1], 'reply')
+  assert.ok(events[2] instanceof ArrayBuffer)
+  assert.deepEqual([...new Uint8Array(events[2])], [4, 5, 6])
+  assert.equal(events[3], 'close:1000:done')
+  assert.equal(socket.readyState, socket.CLOSED)
+})
+
+test('GodotWebSocket validates URLs and reports send errors', async () => {
+  assert.throws(() => new GodotWebSocket('https://example.com'), /ws: or wss:/)
+
+  resetMockWebSocket({ connectError: 42 })
+  const failedSocket = new GodotWebSocket('ws://example.com/fail')
+  let failedClose = null
+  failedSocket.onclose = (event) => {
+    failedClose = event
+  }
+
+  assert.equal(failedSocket.readyState, failedSocket.CONNECTING)
+  await new Promise((resolve) => globalThis.setTimeout(resolve, 20))
+  assert.equal(failedClose?.code, 1006)
+  assert.match(failedClose?.reason, /connect_to_url failed/)
+  assert.equal(failedSocket.readyState, failedSocket.CLOSED)
+
+  resetMockWebSocket({ sendError: 7 })
+  const socket = new GodotWebSocket('ws://example.com/socket')
+  let closed = null
+  socket.onclose = (event) => {
+    closed = event
+  }
+
+  await new Promise((resolve) => globalThis.setTimeout(resolve, 20))
+  socket.send('will fail')
+
+  assert.equal(closed?.code, 1006)
+  assert.equal(socket.readyState, socket.CLOSED)
 })
 
 test('GodotHeaders stores case-insensitive values and serializes for Godot', () => {

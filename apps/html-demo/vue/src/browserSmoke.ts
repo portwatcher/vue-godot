@@ -180,6 +180,18 @@ export async function runBrowserSmokeTests(
   }
 
   try {
+    results.push(
+      typeof WebSocket === 'function' &&
+        WebSocket.CONNECTING === 0 &&
+        WebSocket.OPEN === 1
+        ? pass('WebSocket', 'constructor ok')
+        : fail('WebSocket', 'missing constructor'),
+    )
+  } catch (error) {
+    results.push(failFromError('WebSocket', error))
+  }
+
+  try {
     const controller = new AbortController()
     results.push(
       pass('AbortController', `aborted=${controller.signal.aborted} ok`),

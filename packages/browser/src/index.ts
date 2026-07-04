@@ -20,6 +20,7 @@
 //   • URLSearchParams → Pure JS query parameter helper
 //   • FormData/File   → Multipart-compatible form bodies
 //   • FileReader      → Async Blob/File readers
+//   • WebSocket       → Godot WebSocketPeer
 //   • Storage         → user:// localStorage and memory sessionStorage
 //   • Navigator       → onLine, reachability, text clipboard, and vibration
 //   • device sensors  → Input-backed motion/orientation reads and events
@@ -62,6 +63,18 @@ export type {
   GodotRequestInput,
   GodotRequestRedirect,
 } from './request.js'
+export {
+  GodotCloseEvent,
+  GodotMessageEvent,
+  GodotWebSocket,
+} from './websocket.js'
+export type {
+  GodotWebSocketBinaryType,
+  GodotWebSocketCloseEventHandler,
+  GodotWebSocketData,
+  GodotWebSocketEventHandler,
+  GodotWebSocketMessageEventHandler,
+} from './websocket.js'
 export {
   GodotHistory,
   GodotLocation,

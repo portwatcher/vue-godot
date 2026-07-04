@@ -93,7 +93,7 @@ The project is production ready only when all of these are true:
   - [x] `FormData`.
   - [x] `File`.
   - [x] `FileReader` or documented skip if not worth supporting.
-  - [ ] `WebSocket` backed by `WebSocketPeer`.
+  - [x] `WebSocket` backed by `WebSocketPeer`.
   - [x] `localStorage` backed by `user://`.
   - [x] `sessionStorage` backed by process memory or `user://` with documented lifecycle.
   - [x] `navigator.onLine` plus `online` and `offline` events.

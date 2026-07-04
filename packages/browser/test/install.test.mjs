@@ -17,6 +17,9 @@ const {
   GodotStorage,
   GodotURL,
   GodotURLSearchParams,
+  GodotWebSocket,
+  GodotMessageEvent,
+  GodotCloseEvent,
   installBrowserAPIs,
   installPolyfill,
 } = await import('../dist/index.js')
@@ -37,6 +40,9 @@ const patchedGlobals = [
   'DeviceOrientationEvent',
   'fetch',
   'Request',
+  'WebSocket',
+  'MessageEvent',
+  'CloseEvent',
   'TextDecoder',
   'TextEncoder',
   'setTimeout',
@@ -108,6 +114,9 @@ test('installBrowserAPIs installs missing browser globals', async () => {
     assert.equal(globalThis.FileReader, GodotFileReader)
     assert.equal(globalThis.FormData, GodotFormData)
     assert.equal(globalThis.Request, GodotRequest)
+    assert.equal(globalThis.WebSocket, GodotWebSocket)
+    assert.equal(globalThis.MessageEvent, GodotMessageEvent)
+    assert.equal(globalThis.CloseEvent, GodotCloseEvent)
     assert.equal(
       new globalThis.TextDecoder().decode(new Uint8Array([111, 107])),
       'ok',
@@ -137,6 +146,9 @@ test('installPolyfill installs named missing globals only', async () => {
       'File',
       'FormData',
       'Request',
+      'WebSocket',
+      'MessageEvent',
+      'CloseEvent',
       'URL',
       'URLSearchParams',
       'Storage',
@@ -154,6 +166,9 @@ test('installPolyfill installs named missing globals only', async () => {
         'File',
         'FormData',
         'Request',
+        'WebSocket',
+        'MessageEvent',
+        'CloseEvent',
         'Storage',
         'localStorage',
         'sessionStorage',
@@ -169,6 +184,9 @@ test('installPolyfill installs named missing globals only', async () => {
       assert.equal(globalThis.File, GodotFile)
       assert.equal(globalThis.FormData, GodotFormData)
       assert.equal(globalThis.Request, GodotRequest)
+      assert.equal(globalThis.WebSocket, GodotWebSocket)
+      assert.equal(globalThis.MessageEvent, GodotMessageEvent)
+      assert.equal(globalThis.CloseEvent, GodotCloseEvent)
       assert.equal(globalThis.Storage, GodotStorage)
       assert.ok(globalThis.localStorage instanceof GodotStorage)
       assert.ok(globalThis.sessionStorage instanceof GodotStorage)

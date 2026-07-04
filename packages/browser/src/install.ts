@@ -35,6 +35,11 @@ import { GodotFormData } from './form-data.js'
 import { GodotHeaders } from './headers.js'
 import { GodotRequest } from './request.js'
 import {
+  GodotCloseEvent,
+  GodotMessageEvent,
+  GodotWebSocket,
+} from './websocket.js'
+import {
   createHistoryAndLocation,
   getGlobalEventTarget,
   GodotHistory,
@@ -95,6 +100,9 @@ export function installBrowserAPIs(): void {
   polyfill('Headers', GodotHeaders)
   polyfill('Response', GodotResponse)
   polyfill('Request', GodotRequest)
+  polyfill('WebSocket', GodotWebSocket)
+  polyfill('MessageEvent', GodotMessageEvent)
+  polyfill('CloseEvent', GodotCloseEvent)
   polyfill('URL', GodotURL)
   polyfill('URLSearchParams', GodotURLSearchParams)
   polyfill('Storage', GodotStorage)
@@ -165,6 +173,9 @@ export function installPolyfill(...names: string[]): void {
     Headers: GodotHeaders,
     Request: GodotRequest,
     Response: GodotResponse,
+    WebSocket: GodotWebSocket,
+    MessageEvent: GodotMessageEvent,
+    CloseEvent: GodotCloseEvent,
     URL: GodotURL,
     URLSearchParams: GodotURLSearchParams,
     Storage: GodotStorage,

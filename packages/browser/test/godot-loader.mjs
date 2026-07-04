@@ -67,6 +67,19 @@ export function load(url, context, nextLoad) {
           return globalThis[key]
         }
 
+        function mockWebSocketState() {
+          const key = '__vueGodotBrowserMockWebSocket'
+          if (!globalThis[key]) {
+            globalThis[key] = {
+              peers: [],
+              connectError: 0,
+              sendError: 0,
+              openOnPoll: true,
+            }
+          }
+          return globalThis[key]
+        }
+
         function bodyToBytes(body) {
           if (body == null) {
             return new Uint8Array()
@@ -294,6 +307,119 @@ export function load(url, context, nextLoad) {
 
           static get_magnetometer() {
             return mockInputState().magnetometer
+          }
+        }
+
+        export class WebSocketPeer {
+          supported_protocols = []
+          handshake_headers = []
+          inbound_buffer_size = 0
+          outbound_buffer_size = 0
+          state = 0
+          selectedProtocol = ''
+          incoming = []
+          sent = []
+          closeCode = -1
+          closeReason = ''
+          lastWasText = false
+
+          connect_to_url(url, tlsOptions) {
+            const state = mockWebSocketState()
+            this.url = url
+            this.tlsOptions = tlsOptions
+            this.selectedProtocol = this.supported_protocols[0] ?? ''
+            this.state = state.connectError === 0 ? 0 : 3
+            state.peers.push(this)
+            return state.connectError
+          }
+
+          poll() {
+            if (this.state === 0 && mockWebSocketState().openOnPoll) {
+              this.state = 1
+            }
+          }
+
+          get_ready_state() {
+            return this.state
+          }
+
+          send_text(message) {
+            const state = mockWebSocketState()
+            if (state.sendError !== 0) {
+              return state.sendError
+            }
+            this.sent.push({
+              type: 'text',
+              message: String(message),
+            })
+            return 0
+          }
+
+          send(message, writeMode = 1) {
+            const state = mockWebSocketState()
+            if (state.sendError !== 0) {
+              return state.sendError
+            }
+            const bytes = bodyToBytes(message)
+            this.sent.push({
+              type: 'binary',
+              writeMode,
+              bytes: Array.from(bytes),
+            })
+            return 0
+          }
+
+          queueText(message) {
+            this.incoming.push({
+              text: true,
+              body: String(message),
+            })
+          }
+
+          queueBinary(bytes) {
+            this.incoming.push({
+              text: false,
+              body: bytes,
+            })
+          }
+
+          get_available_packet_count() {
+            return this.incoming.length
+          }
+
+          get_packet() {
+            const packet = this.incoming.shift() ?? {
+              text: false,
+              body: [],
+            }
+            this.lastWasText = packet.text
+            return new MockByteArray(bodyToBytes(packet.body))
+          }
+
+          was_string_packet() {
+            return this.lastWasText
+          }
+
+          close(code = 1000, reason = '') {
+            this.closeCode = code
+            this.closeReason = String(reason)
+            this.state = 3
+          }
+
+          get_close_code() {
+            return this.closeCode
+          }
+
+          get_close_reason() {
+            return this.closeReason
+          }
+
+          get_selected_protocol() {
+            return this.selectedProtocol
+          }
+
+          get_current_outbound_buffered_amount() {
+            return 0
           }
         }
 

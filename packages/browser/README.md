@@ -50,6 +50,7 @@ import { fetch, GodotRequest, GodotURL, GodotHeaders } from '@vue-godot/browser'
 | `File`                                           | `GodotFile`            | Blob-backed file metadata; `.name`, `.lastModified`, `.webkitRelativePath`                                                                       |
 | `FormData`                                       | `GodotFormData`        | Ordered duplicate keys, string/file values, multipart serialization for `fetch()` bodies                                                         |
 | `FileReader`                                     | `GodotFileReader`      | Async `readAsText()`, `readAsArrayBuffer()`, `readAsDataURL()`, `readAsBinaryString()` for Blob/File values                                      |
+| `WebSocket`                                      | `GodotWebSocket`       | Browser WebSocket subset backed by `WebSocketPeer`; supports open/message/error/close, text/binary send, `binaryType`, protocols, and close codes |
 | `Storage`                                        | `GodotStorage`         | Web Storage API shape; `.length`, `.key()`, `.getItem()`, `.setItem()`, `.removeItem()`, `.clear()`                                              |
 | `localStorage`                                   | `GodotStorage`         | Persistent JSON-backed storage at `user://vue-godot-browser-local-storage.json` with memory fallback                                             |
 | `sessionStorage`                                 | `GodotStorage`         | Process-memory storage; cleared when the GodotJS runtime exits or reloads                                                                        |
@@ -174,6 +175,28 @@ Under the hood, `fetch()` drives Godot's `HTTPClient` through its state machine 
 5. **Return** — Wraps the result in a `GodotResponse`
 
 Redirects (301, 302, 303, 307, 308) are followed automatically up to 20 hops.
+
+## WebSocket
+
+`WebSocket` wraps Godot's `WebSocketPeer` and polls it with the same timer scheduler used by the rest of the browser package. It supports the common client API surface: `readyState`, `protocol`, `bufferedAmount`, `binaryType`, `send()`, `close()`, and `open` / `message` / `error` / `close` events.
+
+```ts
+const socket = new WebSocket('wss://example.com/realtime', ['chat'])
+
+socket.onopen = () => {
+  socket.send('hello')
+}
+
+socket.onmessage = (event) => {
+  console.log(event.data)
+}
+
+socket.onclose = (event) => {
+  console.log(event.code, event.reason)
+}
+```
+
+Text messages are delivered as strings. Binary messages are delivered as `Blob` by default or `ArrayBuffer` when `socket.binaryType = 'arraybuffer'`. Godot's WebSocket implementation still needs the app to keep running its main loop; this wrapper polls automatically while the socket is connecting or open.
 
 ## Request API
 
@@ -319,7 +342,7 @@ Godot returns zero vectors for unsupported platforms or missing sensors. The ori
 ## Requirements
 
 - **GodotJS** runtime (V8 or QuickJS) with access to the `godot` module
-- Godot engine classes: `HTTPClient`, `DisplayServer`, `Engine`, `FileAccess`, `Input`, `SceneTree`, `Time`, `TLSOptions`, `PackedByteArray`, `PackedStringArray`
+- Godot engine classes: `HTTPClient`, `DisplayServer`, `Engine`, `FileAccess`, `Input`, `SceneTree`, `Time`, `TLSOptions`, `WebSocketPeer`, `PackedByteArray`, `PackedStringArray`
 
 ## License
 
