@@ -18,6 +18,9 @@ coverage
 # Turbo
 .turbo
 
+# Local tool caches
+.cache/
+
 # Vercel
 .vercel
 
