@@ -196,6 +196,15 @@ export async function runBrowserSmokeTests(
   }
 
   try {
+    const text = await navigator.clipboard.readText()
+    results.push(
+      pass('navigator.clipboard.readText', `length=${text.length} ok`),
+    )
+  } catch (error) {
+    results.push(failFromError('navigator.clipboard.readText', error))
+  }
+
+  try {
     localStorage.setItem('vue-godot-smoke', 'local')
     const value = localStorage.getItem('vue-godot-smoke')
     localStorage.removeItem('vue-godot-smoke')

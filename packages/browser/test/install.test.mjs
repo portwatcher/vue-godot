@@ -6,6 +6,7 @@ register(new URL('./godot-loader.mjs', import.meta.url).href)
 
 const {
   GodotBlob,
+  GodotClipboard,
   GodotFile,
   GodotFileReader,
   GodotFormData,
@@ -87,6 +88,9 @@ test('installBrowserAPIs installs missing browser globals', async () => {
     assert.equal(globalThis.Navigator, GodotNavigator)
     assert.ok(globalThis.navigator instanceof GodotNavigator)
     assert.equal(typeof globalThis.navigator.onLine, 'boolean')
+    assert.ok(globalThis.navigator.clipboard instanceof GodotClipboard)
+    assert.equal(typeof globalThis.navigator.clipboard.readText, 'function')
+    assert.equal(typeof globalThis.navigator.clipboard.writeText, 'function')
     assert.equal(typeof globalThis.URL.createObjectURL, 'function')
     assert.equal(typeof globalThis.URL.revokeObjectURL, 'function')
     assert.equal(globalThis.Blob, GodotBlob)
@@ -156,6 +160,7 @@ test('installPolyfill installs named missing globals only', async () => {
       assert.ok(globalThis.sessionStorage instanceof GodotStorage)
       assert.equal(globalThis.Navigator, GodotNavigator)
       assert.ok(globalThis.navigator instanceof GodotNavigator)
+      assert.ok(globalThis.navigator.clipboard instanceof GodotClipboard)
       assert.equal(globalThis.URLSearchParams, GodotURLSearchParams)
       assert.equal(typeof globalThis.queueMicrotask, 'function')
       assert.equal(globalThis.URL, undefined)

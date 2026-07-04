@@ -21,7 +21,7 @@
 //   • FormData/File   → Multipart-compatible form bodies
 //   • FileReader      → Async Blob/File readers
 //   • Storage         → user:// localStorage and memory sessionStorage
-//   • Navigator       → onLine and reachability probing
+//   • Navigator       → onLine, reachability, and text clipboard
 //   • timers/RAF      → SceneTree-backed timing where available
 //   • performance     → Time-backed now() and marks/measures
 //
@@ -38,6 +38,12 @@ export { GodotAbortController, GodotAbortSignal } from './abort.js'
 export { atob, btoa } from './base64.js'
 export { GodotBlob } from './blob.js'
 export type { GodotBodyInit } from './body.js'
+export {
+  GodotClipboard,
+  GodotClipboardError,
+  clipboard,
+  isClipboardSupported,
+} from './clipboard.js'
 export { GodotTextDecoder, GodotTextEncoder } from './encoding.js'
 export { GodotEvent, GodotEventTarget } from './event-target.js'
 export { GodotFile } from './file.js'

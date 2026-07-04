@@ -53,7 +53,9 @@ import { fetch, GodotRequest, GodotURL, GodotHeaders } from '@vue-godot/browser'
 | `Storage`                                        | `GodotStorage`         | Web Storage API shape; `.length`, `.key()`, `.getItem()`, `.setItem()`, `.removeItem()`, `.clear()`                                              |
 | `localStorage`                                   | `GodotStorage`         | Persistent JSON-backed storage at `user://vue-godot-browser-local-storage.json` with memory fallback                                             |
 | `sessionStorage`                                 | `GodotStorage`         | Process-memory storage; cleared when the GodotJS runtime exits or reloads                                                                        |
-| `navigator`                                      | `GodotNavigator`       | Provides `navigator.onLine`; reachability checks update state and dispatch `online` / `offline` events                                           |
+| `navigator`                                      | `GodotNavigator`       | Provides `navigator.onLine` and `navigator.clipboard`; reachability checks update state and dispatch `online` / `offline` events                  |
+| `navigator.clipboard.readText()` / `writeText()` | `GodotClipboard`       | Async text clipboard subset backed by `DisplayServer.clipboard_get()` / `clipboard_set()` when the display server supports clipboard access       |
+| `isClipboardSupported()`                         | DisplayServer helper   | Returns whether the current display server reports text clipboard support                                                                         |
 | `checkNetworkReachability()`                     | Fetch probe            | Configurable HTTP probe using `fetch()` and `AbortController`                                                                                    |
 | `URL`                                            | `GodotURL`             | WHATWG subset — `protocol`, `hostname`, `port`, `pathname`, `search`, `searchParams`, `hash`, `href`, `toString()`                               |
 | `URLSearchParams`                                | `GodotURLSearchParams` | Query string helper with duplicate-key support, iteration, `.append()`, `.set()`, `.getAll()`, `.sort()`                                         |
@@ -251,10 +253,32 @@ console.log(navigator.onLine, online)
 
 The default probe is a `HEAD` request to `https://example.com/` with a five-second timeout. Internet reachability is always best-effort; captive portals, firewall rules, and platform network policies can all affect the result.
 
+## Clipboard
+
+`navigator.clipboard` implements the async text clipboard subset using Godot's `DisplayServer` clipboard methods. It is available when the current display server reports clipboard support; otherwise `readText()` and `writeText()` reject with `NotSupportedError`.
+
+```ts
+await navigator.clipboard.writeText('Copied from Vue Godot')
+const text = await navigator.clipboard.readText()
+console.log(text)
+```
+
+Only text clipboard access is supported. Image clipboard APIs and permission prompts are not synthesized.
+
+For direct imports, use `clipboard` or `isClipboardSupported()`:
+
+```ts
+import { clipboard, isClipboardSupported } from '@vue-godot/browser'
+
+if (isClipboardSupported()) {
+  await clipboard.writeText('Copied')
+}
+```
+
 ## Requirements
 
 - **GodotJS** runtime (V8 or QuickJS) with access to the `godot` module
-- Godot engine classes: `HTTPClient`, `Engine`, `FileAccess`, `SceneTree`, `Time`, `TLSOptions`, `PackedByteArray`, `PackedStringArray`
+- Godot engine classes: `HTTPClient`, `DisplayServer`, `Engine`, `FileAccess`, `SceneTree`, `Time`, `TLSOptions`, `PackedByteArray`, `PackedStringArray`
 
 ## License
 

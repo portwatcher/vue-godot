@@ -7,6 +7,7 @@ register(new URL('./godot-loader.mjs', import.meta.url).href)
 const {
   GodotAbortController,
   GodotBlob,
+  GodotClipboard,
   GodotHeaders,
   GodotRequest,
   GodotResponse,
@@ -27,6 +28,7 @@ const {
   GodotFormData,
   GodotNavigator,
   GodotStorage,
+  clipboard: godotClipboard,
   checkNetworkReachability,
   configureNetworkReachability,
   createLocalStorage,
@@ -48,6 +50,14 @@ function resetMockHttp(responses) {
     responses: [...responses],
   }
   return globalThis.__vueGodotBrowserMockHttp
+}
+
+function resetMockDisplayServer(options = {}) {
+  globalThis.__vueGodotBrowserMockDisplayServer = {
+    clipboard: options.clipboard ?? '',
+    features: new Set(options.features ?? [5]),
+  }
+  return globalThis.__vueGodotBrowserMockDisplayServer
 }
 
 test('base64 helpers round-trip binary strings', () => {
@@ -252,6 +262,28 @@ test('checkNetworkReachability probes configured URL and updates navigator state
   assert.equal(http.requests[0].methodName, 'GET')
   assert.equal(http.requests[0].hostname, 'status.example.com')
   assert.equal(http.requests[0].path, '/health')
+})
+
+test('navigator.clipboard reads and writes DisplayServer text clipboard', async () => {
+  const displayServer = resetMockDisplayServer()
+
+  await godotNavigator.clipboard.writeText('hello clipboard')
+
+  assert.ok(godotNavigator.clipboard instanceof GodotClipboard)
+  assert.equal(godotNavigator.clipboard, godotClipboard)
+  assert.equal(displayServer.clipboard, 'hello clipboard')
+  assert.equal(await godotNavigator.clipboard.readText(), 'hello clipboard')
+})
+
+test('navigator.clipboard rejects when DisplayServer clipboard is unsupported', async () => {
+  resetMockDisplayServer({ features: [] })
+
+  await assert.rejects(() => godotClipboard.readText(), {
+    name: 'NotSupportedError',
+  })
+  await assert.rejects(() => godotClipboard.writeText('blocked'), {
+    name: 'NotSupportedError',
+  })
 })
 
 test('GodotHeaders stores case-insensitive values and serializes for Godot', () => {

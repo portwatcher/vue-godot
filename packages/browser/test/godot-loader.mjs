@@ -41,6 +41,17 @@ export function load(url, context, nextLoad) {
           return globalThis[key]
         }
 
+        function mockDisplayServerState() {
+          const key = '__vueGodotBrowserMockDisplayServer'
+          if (!globalThis[key]) {
+            globalThis[key] = {
+              clipboard: '',
+              features: new Set([5]),
+            }
+          }
+          return globalThis[key]
+        }
+
         function bodyToBytes(body) {
           if (body == null) {
             return new Uint8Array()
@@ -219,6 +230,28 @@ export function load(url, context, nextLoad) {
         }
 
         FileAccess.ModeFlags = FileAccess.ModeFlags
+
+        export class DisplayServer {
+          static has_feature(feature) {
+            return mockDisplayServerState().features.has(feature)
+          }
+
+          static clipboard_set(clipboard) {
+            mockDisplayServerState().clipboard = String(clipboard)
+          }
+
+          static clipboard_get() {
+            return String(mockDisplayServerState().clipboard ?? '')
+          }
+
+          static clipboard_has() {
+            return String(mockDisplayServerState().clipboard ?? '').length > 0
+          }
+        }
+
+        DisplayServer.Feature = {
+          FEATURE_CLIPBOARD: 5,
+        }
 
         export const Engine = {
           get_main_loop() {

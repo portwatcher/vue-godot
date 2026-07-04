@@ -11,6 +11,11 @@
 import { GodotAbortController, GodotAbortSignal } from './abort.js'
 import { atob, btoa } from './base64.js'
 import { GodotBlob } from './blob.js'
+import {
+  GodotClipboard,
+  clipboard as godotClipboard,
+  isClipboardSupported,
+} from './clipboard.js'
 import { GodotTextDecoder, GodotTextEncoder } from './encoding.js'
 import { GodotFile } from './file.js'
 import { GodotFileReader } from './file-reader.js'
@@ -153,6 +158,9 @@ export function installPolyfill(...names: string[]): void {
     sessionStorage: godotSessionStorage,
     Navigator: GodotNavigator,
     navigator: godotNavigator,
+    Clipboard: GodotClipboard,
+    clipboard: godotClipboard,
+    isClipboardSupported,
     checkNetworkReachability,
     configureNetworkReachability,
     getNetworkReachabilityOptions,

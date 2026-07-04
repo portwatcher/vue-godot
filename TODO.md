@@ -98,7 +98,7 @@ The project is production ready only when all of these are true:
   - [x] `sessionStorage` backed by process memory or `user://` with documented lifecycle.
   - [x] `navigator.onLine` plus `online` and `offline` events.
   - [x] Network reachability probe configuration.
-  - [ ] `navigator.clipboard.readText` / `writeText` where platform clipboard APIs permit.
+  - [x] `navigator.clipboard.readText` / `writeText` where platform clipboard APIs permit.
   - [ ] Limited `navigator.permissions.query()` for supported mapped permissions.
   - [ ] `navigator.vibrate()` backed by Godot handheld vibration where available.
   - [ ] Device motion/orientation events backed by `Input.get_accelerometer()`, `get_gyroscope()`, `get_magnetometer()`, and `get_gravity()`.

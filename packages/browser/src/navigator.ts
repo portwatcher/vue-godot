@@ -3,6 +3,7 @@
 // ---------------------------------------------------------------------------
 
 import { GodotAbortController } from './abort.js'
+import { clipboard, type GodotClipboard } from './clipboard.js'
 import { GodotEvent } from './event-target.js'
 import { fetch } from './fetch.js'
 import { getGlobalEventTarget } from './history.js'
@@ -60,6 +61,8 @@ function isExpectedStatus(
  */
 export class GodotNavigator {
   private _online = true
+
+  readonly clipboard: GodotClipboard = clipboard
 
   get onLine(): boolean {
     return this._online
