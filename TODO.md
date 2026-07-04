@@ -52,7 +52,7 @@ The project is production ready only when all of these are true:
 ## P0: Runtime And Platform Foundation
 
 - [ ] Harden `@vue-godot/runtime-tscn` for production.
-  - [ ] Remove or justify all source-level `any` usage with safer interop types or `unknown` plus guards.
+  - [x] Remove or justify all source-level `any` usage with safer interop types or `unknown` plus guards.
   - [ ] Add stress tests for repeated mount/unmount, large tree updates, reordered keyed children, event replacement, and prop removal.
   - [ ] Add runtime diagnostics that identify unsupported node classes, props, and signals with actionable messages.
   - [ ] Add lifecycle tests for editor reload, scene exit, nested apps, and failed mounts.

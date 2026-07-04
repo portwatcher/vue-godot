@@ -1,5 +1,4 @@
-type EventHandler = (...args: any[]) => any
-type EventHandlerValue = EventHandler | EventHandler[] | null | undefined
+type EventHandler = (...args: unknown[]) => unknown
 
 interface ListenerRecord<TCallable> {
   callable: TCallable
@@ -17,11 +16,14 @@ interface SignalPatchOps<TTarget extends object, TCallable> {
   ) => void
 }
 
-const signalListeners = new WeakMap<object, Map<string, ListenerRecord<any>[]>>()
+const signalListeners = new WeakMap<
+  object,
+  Map<string, ListenerRecord<unknown>[]>
+>()
 
-function normalizeHandlers(value: EventHandlerValue): EventHandler[] {
+function normalizeHandlers(value: unknown): EventHandler[] {
   if (typeof value === 'function') {
-    return [value]
+    return [value as EventHandler]
   }
 
   if (Array.isArray(value)) {
@@ -33,7 +35,7 @@ function normalizeHandlers(value: EventHandlerValue): EventHandler[] {
   return []
 }
 
-function getListenerMap(target: object): Map<string, ListenerRecord<any>[]> {
+function getListenerMap(target: object): Map<string, ListenerRecord<unknown>[]> {
   let listenerMap = signalListeners.get(target)
   if (!listenerMap) {
     listenerMap = new Map()
@@ -56,12 +58,13 @@ export function vueEventKeyToGodotSignalName(key: string): string {
 export function patchSignalHandlers<TTarget extends object, TCallable>(
   target: TTarget,
   eventKey: string,
-  nextValue: EventHandlerValue,
+  nextValue: unknown,
   ops: SignalPatchOps<TTarget, TCallable>,
 ): void {
   const signalName = vueEventKeyToGodotSignalName(eventKey)
   const listenerMap = getListenerMap(target)
-  const previousRecords = listenerMap.get(eventKey) ?? []
+  const previousRecords = (listenerMap.get(eventKey) ??
+    []) as ListenerRecord<TCallable>[]
 
   for (const record of previousRecords) {
     try {

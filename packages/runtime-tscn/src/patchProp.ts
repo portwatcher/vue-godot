@@ -22,8 +22,8 @@ function safeNodeName(node: Node): string {
 export const patchProp: TSCNRendererOptions['patchProp'] = function (
   el: Node,
   key: string,
-  prev: any,
-  next: any,
+  _prev: unknown,
+  next: unknown,
 ) {
   if (key.startsWith('on')) {
     patchSignalHandlers(el, key, next, {

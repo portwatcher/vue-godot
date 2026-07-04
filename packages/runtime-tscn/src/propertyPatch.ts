@@ -1,16 +1,15 @@
 export type GodotPropertyTarget = {
   has_method(method: string): boolean
-  set?: (key: string, value: any) => void
-  get?: (key: string) => any
-  [key: string]: any
+  set?: (key: string, value: unknown) => void
+  get?: (key: string) => unknown
 }
 
-const initialPropValues = new WeakMap<object, Map<string, any>>()
+const initialPropValues = new WeakMap<object, Map<string, unknown>>()
 
 function getCachedDefaults(target: object) {
   let defaults = initialPropValues.get(target)
   if (!defaults) {
-    defaults = new Map<string, any>()
+    defaults = new Map<string, unknown>()
     initialPropValues.set(target, defaults)
   }
   return defaults
@@ -19,12 +18,12 @@ function getCachedDefaults(target: object) {
 export function patchGodotProperty(
   el: GodotPropertyTarget,
   key: string,
-  next: any,
+  next: unknown,
   warn: (message: string) => void = console.warn,
 ) {
   if (!el.has_method('set') || typeof el.set !== 'function') {
     warn(`object has no method "set"`)
-    el[key] = next
+    Reflect.set(el, key, next)
     return
   }
 
@@ -47,4 +46,3 @@ export function patchGodotProperty(
     `[vue-godot] Unable to reset prop "${key}" generically; no cached default value is available`,
   )
 }
-
