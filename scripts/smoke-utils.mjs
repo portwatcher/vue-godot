@@ -24,6 +24,7 @@ const GODOT_SCRIPT_LOAD_ERROR_PATTERNS = [
   /unknown module:/,
 ]
 
+const GODOT_IMPORT_TIMEOUT_MS = 60_000
 const godotExecutableNamePattern = /^godot(?:4|[._-].*)?(?:\.exe)?$/i
 const godotDirectorySearchDepth = 4
 
@@ -203,12 +204,14 @@ export function assertNoGodotScriptLoadErrors(output, context) {
 export function runGodotImport(godot, projectDir) {
   const result = spawnSync(
     godot,
-    ['--headless', '--path', projectDir, '--import'],
+    ['--headless', '--path', projectDir, '--import', '--quit'],
     {
       cwd: projectDir,
       env: process.env,
       encoding: 'utf-8',
       stdio: 'pipe',
+      timeout: GODOT_IMPORT_TIMEOUT_MS,
+      maxBuffer: 10 * 1024 * 1024,
     },
   )
   const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`
@@ -224,6 +227,7 @@ export function runGodotImport(godot, projectDir) {
     throw new Error(
       [
         `Godot import failed (${result.status ?? result.signal ?? 'unknown'})`,
+        result.error instanceof Error ? result.error.message : '',
         output,
       ]
         .filter(Boolean)
