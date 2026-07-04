@@ -40,6 +40,11 @@ export const releasePackageConfigs = [
     ],
   },
   {
+    name: '@vue-godot/device',
+    dir: 'packages/device',
+    expectedFiles: ['dist/index.js', 'dist/index.d.ts'],
+  },
+  {
     name: '@vue-godot/html',
     dir: 'packages/html',
     expectedFiles: ['dist/index.js', 'dist/index.d.ts', 'volar-plugin.cjs'],
@@ -49,6 +54,7 @@ export const releasePackageConfigs = [
 const publishOrder = [
   '@vue-godot/runtime-tscn',
   '@vue-godot/browser',
+  '@vue-godot/device',
   '@vue-godot/html',
   '@vue-godot/cli',
 ]

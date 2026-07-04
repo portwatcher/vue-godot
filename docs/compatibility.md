@@ -74,6 +74,15 @@ Each entry should be evaluated with these fields:
 | `MediaStream` subset | `device` or adapter | `planned` | Camera/microphone adapter objects | Depends on adapter | Same as getUserMedia | None yet | Only useful once capture adapters exist. |
 | `Notification` | `device` or adapter | `requires-plugin` | Native notification plugin | Android, iOS, desktop where plugin exists | Android `POST_NOTIFICATIONS`; platform notification setup | None yet | Do not synthesize browser notifications without native delivery. |
 
+## Device Capability Layer
+
+| API | Owner | Status | Godot backend | Platforms | Permissions/export | Tests | Caveats |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `DeviceCapabilityRegistry` | `device` | `supported` | JavaScript adapter registry | All JS runtimes | None | Unit | Registry only; native capabilities still require registered adapters/plugins. |
+| `registerDeviceCapability()` / `isSupported()` / `requireCapability()` | `device` | `supported` | JavaScript adapter registry | All JS runtimes | None | Unit | `isSupported()` returns `false` when no adapter is registered; `requireCapability()` rejects with typed errors. |
+| `DeviceCapabilityError` | `device` | `supported` | JavaScript typed error | All JS runtimes | None | Unit | Error codes cover unsupported platform, permission denied, missing plugin, and export misconfiguration. |
+| Plugin adapter interfaces | `device` | `supported` | TypeScript contracts | All JS runtimes | Depends on adapter | Type build, unit | Includes generic capability adapters plus geolocation, media devices, notifications, and permissions contracts. |
+
 ## Skipped Browser APIs
 
 | API | Owner | Status | Godot backend | Platforms | Permissions/export | Tests | Caveats |

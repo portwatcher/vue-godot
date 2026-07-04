@@ -112,6 +112,7 @@ export default class App extends Control {
 | Vue rendering into native Godot nodes                                          | `@vue-godot/runtime-tscn` |
 | Familiar HTML-style components backed by Godot nodes                           | `@vue-godot/html`         |
 | Browser-like APIs such as `fetch`, `URL`, `Blob`, `history`, and `TextEncoder` | `@vue-godot/browser`      |
+| Device/native capability adapters and feature detection                        | `@vue-godot/device`       |
 | Project scaffolding, integration, and generated Vue component types            | `@vue-godot/cli`          |
 
 ## Packages
@@ -121,6 +122,7 @@ export default class App extends Control {
 | [`@vue-godot/runtime-tscn`](./packages/runtime-tscn/README.md) | Vue custom renderer for the Godot scene tree                     |
 | [`@vue-godot/html`](./packages/html/README.md)                 | HTML-like Vue components implemented with Godot nodes            |
 | [`@vue-godot/browser`](./packages/browser/README.md)           | Browser API polyfills for GodotJS                                |
+| [`@vue-godot/device`](./packages/device/README.md)             | Device/native capability registry and adapter contracts          |
 | [`@vue-godot/cli`](./packages/cli/README.md)                   | CLI for creating projects, integrating Vue, and generating types |
 
 ## Examples
@@ -142,6 +144,7 @@ Vue Godot is a custom Vue renderer that targets Godot's scene tree instead of th
 - **`@vue-godot/cli`** — A CLI tool (`vue-godot`) for scaffolding projects, integrating Vue into an existing Godot project, and generating Vue `GlobalComponents` type augmentation from GodotJS typings.
 - **`@vue-godot/html`** — HTML-like Vue components backed by Godot nodes (`<div>`, `<span>`, `<button>`, `<input>`, `<a>`, media elements, etc.).
 - **`@vue-godot/browser`** — Browser API polyfills for GodotJS (`fetch`, `URL`, `Blob`, `history`, `TextEncoder`, and related APIs).
+- **`@vue-godot/device`** — Device/native capability registry, adapter interfaces, feature detection, and typed capability errors.
 - **Vite** builds the Vue app as a CJS library (`dist/app.js`), with `godot` as an external. The Godot scene (`.tscn`) attaches this script to a `Control` node.
 - In the **Godot editor**, GodotJS runs `dist/app.js`. The `_ready()` method calls `createApp(Root).mount(this)`, and `_exit_tree()` calls `app.unmount()` so editor reloads do not retain old Vue trees.
 
@@ -157,6 +160,7 @@ vue-godot/
 │   ├── runtime-tscn/       # Vue custom renderer for Godot
 │   ├── html/               # HTML-like components backed by Godot nodes
 │   ├── browser/            # Browser API polyfills for GodotJS
+│   ├── device/             # Device/native capability adapters
 │   └── cli/                # CLI tool: vue-godot gen-types, scaffolding, etc.
 ├── apps/
 │   ├── v-on/               # Event handling example
@@ -263,7 +267,7 @@ The `Godot Smoke` GitHub Actions workflow installs the pinned `GodotJS_1.0.0-2` 
 
 `npm run release:preflight` is strict by default: it fails when packages need publishing and the process is not running in the GitHub Actions trusted-publishing environment, or when the Godot smokes skip instead of running. Use `npm run release:preflight -- --local` to validate the local build, tests, pack contents, generated package specs, and registry read checks while treating missing trusted publishing or Godot as warnings.
 
-`npm run release:publish` publishes only packages that are missing from npm or newer than the registry, in dependency-safe order (`runtime-tscn`, `browser`, `html`, then `cli`). It defaults to `npm publish --dry-run`; real publishing requires `npm run release:publish -- --yes` inside the GitHub Actions trusted-publishing environment. Outside GitHub Actions, `--yes` fails before any registry write. The real publish path refuses a dirty worktree, runs `npm run release:preflight` unless `--skip-preflight` is set, and then runs `npm run smoke:public-cli` against the published CLI version unless `--skip-public-smoke` is set.
+`npm run release:publish` publishes only packages that are missing from npm or newer than the registry, in dependency-safe order (`runtime-tscn`, `browser`, `device`, `html`, then `cli`). It defaults to `npm publish --dry-run`; real publishing requires `npm run release:publish -- --yes` inside the GitHub Actions trusted-publishing environment. Outside GitHub Actions, `--yes` fails before any registry write. The real publish path refuses a dirty worktree, runs `npm run release:preflight` unless `--skip-preflight` is set, and then runs `npm run smoke:public-cli` against the published CLI version unless `--skip-public-smoke` is set.
 
 The `Publish` GitHub Actions workflow runs on `v*` tags and manual dispatch. It uses GitHub-hosted Ubuntu, Node 24, `npm@^11.15.0`, `id-token: write`, the shared GodotJS setup action, Xvfb for the editor reload preflight smoke, and `npm run release:publish -- --yes`; no npm token is needed once each package trusts `.github/workflows/publish.yml`.
 
@@ -273,6 +277,7 @@ Configure npm trusted publishing for each package with the GitHub repository `po
 npx npm@latest trust github @vue-godot/runtime-tscn --repository portwatcher/vue-godot --file publish.yml --allow-publish --yes
 npx npm@latest trust github @vue-godot/cli --repository portwatcher/vue-godot --file publish.yml --allow-publish --yes
 npx npm@latest trust github @vue-godot/browser --repository portwatcher/vue-godot --file publish.yml --allow-publish --yes
+npx npm@latest trust github @vue-godot/device --repository portwatcher/vue-godot --file publish.yml --allow-publish --yes
 npx npm@latest trust github @vue-godot/html --repository portwatcher/vue-godot --file publish.yml --allow-publish --yes
 ```
 

@@ -1,0 +1,44 @@
+{
+  "name": "@vue-godot/device",
+  "version": "0.0.1",
+  "description": "Device and native capability adapters for Vue Godot",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/portwatcher/vue-godot.git",
+    "directory": "packages/device"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "npx tsc -p .",
+    "test": "npm run build && node --test test/*.test.mjs"
+  },
+  "keywords": [
+    "vue",
+    "godot",
+    "device",
+    "native",
+    "capabilities"
+  ],
+  "author": "Portwatcher",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  }
+}

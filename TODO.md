@@ -9,6 +9,7 @@ When this file is complete, maintainers should be confident enough to remove wor
 - `@vue-godot/runtime-tscn` renders Vue into Godot nodes and has unit coverage for insertion, prop reset, signals, static text, diagnostics, lifecycle behavior, and stress update patterns.
 - `@vue-godot/html` exposes a small HTML-like component set and an inline style subset.
 - `@vue-godot/browser` exposes an initial browser API subset: `fetch`, `Request`, `Response`, `Headers`, `Blob`, `URL`, `TextEncoder`, `TextDecoder`, `AbortController`, base64 helpers, `history`, `location`, and basic global event dispatch.
+- `@vue-godot/device` exposes a capability registry, adapter contracts, feature detection helpers, and typed errors for plugin-backed native APIs.
 - The repo has build/test/CLI smoke checks and CI Godot smoke workflows.
 - The project is not yet production ready because platform APIs, app UI primitives, device integration, performance budgets, release/device smoke coverage, and end-user app examples are still incomplete.
 
@@ -57,11 +58,11 @@ The project is production ready only when all of these are true:
   - [x] Add runtime diagnostics that identify unsupported node classes, props, and signals with actionable messages.
   - [x] Add lifecycle tests for editor reload, scene exit, nested apps, and failed mounts.
   - [x] Document supported Vue features and unsupported Vue/DOM assumptions.
-- [ ] Add a production-grade platform capability layer.
-  - [ ] Create `@vue-godot/device` or an equivalent module namespace for device/native APIs.
-  - [ ] Define adapter interfaces for plugin-backed capabilities.
-  - [ ] Provide feature detection helpers such as `isSupported("geolocation")`.
-  - [ ] Ensure APIs return predictable typed errors for unsupported platforms, denied permissions, missing plugins, and export misconfiguration.
+- [x] Add a production-grade platform capability layer.
+  - [x] Create `@vue-godot/device` or an equivalent module namespace for device/native APIs.
+  - [x] Define adapter interfaces for plugin-backed capabilities.
+  - [x] Provide feature detection helpers such as `isSupported("geolocation")`.
+  - [x] Ensure APIs return predictable typed errors for unsupported platforms, denied permissions, missing plugins, and export misconfiguration.
 - [ ] Make generated projects production-oriented.
   - [ ] Add production export guidance for desktop, Android, iOS, and Web where applicable.
   - [ ] Add Android permission presets for networking, camera, audio input, vibration, notifications, and location where used.

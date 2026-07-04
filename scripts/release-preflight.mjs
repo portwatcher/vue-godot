@@ -69,6 +69,7 @@ function checkPackageMetadata(packagesByName) {
   }
 
   const browser = packagesByName.get('@vue-godot/browser')
+  const device = packagesByName.get('@vue-godot/device')
   const html = packagesByName.get('@vue-godot/html')
   const runtime = packagesByName.get('@vue-godot/runtime-tscn')
   const cli = packagesByName.get('@vue-godot/cli')
@@ -88,9 +89,9 @@ function checkPackageMetadata(packagesByName) {
     )
   }
 
-  if (cli && runtime && browser && html) {
+  if (cli && runtime && browser && device && html) {
     console.log(
-      `[release-preflight] local versions: cli ${cli.version}, runtime ${runtime.version}, browser ${browser.version}, html ${html.version}`,
+      `[release-preflight] local versions: cli ${cli.version}, runtime ${runtime.version}, browser ${browser.version}, device ${device.version}, html ${html.version}`,
     )
   }
 }
