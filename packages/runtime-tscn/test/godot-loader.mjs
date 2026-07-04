@@ -113,6 +113,9 @@ export function load(url, context, nextLoad) {
 
           queue_free() {
             this.queuedFree = true
+            for (const child of this.children) {
+              child.queue_free()
+            }
           }
 
           set_meta(key, value) {
@@ -172,13 +175,18 @@ export function load(url, context, nextLoad) {
 
         export const ClassDB = {
           supportedTags: null,
+          throwOnInstantiateTags: new Set(),
           reset() {
             this.supportedTags = null
+            this.throwOnInstantiateTags = new Set()
           },
           can_instantiate(tag) {
             return this.supportedTags === null || this.supportedTags.has(String(tag))
           },
           instantiate(tag) {
+            if (this.throwOnInstantiateTags.has(String(tag))) {
+              throw new Error('Cannot instantiate ' + tag)
+            }
             return tag === 'Label' ? new Label(tag) : new Node(tag)
           },
         }

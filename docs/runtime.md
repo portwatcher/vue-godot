@@ -31,7 +31,7 @@ because it assumes browser elements.
 | Prop removal | The first non-null prop assignment caches the current value via `get()` when possible. Later removal restores that cached value. | Some Godot properties need type-specific reset behavior that the generic renderer cannot infer. |
 | Static content | Plain text static content becomes a text node. | HTML-like static markup is inserted as a placeholder node and warns once. |
 | Diagnostics | Unsupported classes, rejected props, failed signals, unsupported text writes, `querySelector`, and `setScopeId` emit warnings. | Warnings identify likely causes but do not guarantee every invalid Godot property or signal is detectable before Godot rejects it. |
-| Lifecycle cleanup | App code should call `app.unmount()` from `_exit_tree()` and before remounting during editor reload. | Dedicated editor reload and scene-exit smoke coverage is still pending. |
+| Lifecycle cleanup | App code should call `app.unmount()` from `_exit_tree()` and before remounting during editor reload. | Unit coverage exercises editor-style reloads, scene-exit unmount, nested apps, and failed mount recovery; real editor reload smoke remains part of release validation. |
 
 ## Unsupported Browser And DOM Assumptions
 

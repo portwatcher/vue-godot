@@ -6,11 +6,11 @@ When this file is complete, maintainers should be confident enough to remove wor
 
 ## Current Readiness Snapshot
 
-- `@vue-godot/runtime-tscn` renders Vue into Godot nodes and has unit coverage for insertion, prop reset, signals, and static text.
+- `@vue-godot/runtime-tscn` renders Vue into Godot nodes and has unit coverage for insertion, prop reset, signals, static text, diagnostics, lifecycle behavior, and stress update patterns.
 - `@vue-godot/html` exposes a small HTML-like component set and an inline style subset.
 - `@vue-godot/browser` exposes an initial browser API subset: `fetch`, `Request`, `Response`, `Headers`, `Blob`, `URL`, `TextEncoder`, `TextDecoder`, `AbortController`, base64 helpers, `history`, `location`, and basic global event dispatch.
 - The repo has build/test/CLI smoke checks and CI Godot smoke workflows.
-- The project is not yet production ready because platform APIs, app UI primitives, compatibility documentation, device integration, performance budgets, runtime stress testing, and end-user app examples are still incomplete.
+- The project is not yet production ready because platform APIs, app UI primitives, device integration, performance budgets, release/device smoke coverage, and end-user app examples are still incomplete.
 
 ## Definition Of Done
 
@@ -51,11 +51,11 @@ The project is production ready only when all of these are true:
 
 ## P0: Runtime And Platform Foundation
 
-- [ ] Harden `@vue-godot/runtime-tscn` for production.
+- [x] Harden `@vue-godot/runtime-tscn` for production.
   - [x] Remove or justify all source-level `any` usage with safer interop types or `unknown` plus guards.
   - [x] Add stress tests for repeated mount/unmount, large tree updates, reordered keyed children, event replacement, and prop removal.
   - [x] Add runtime diagnostics that identify unsupported node classes, props, and signals with actionable messages.
-  - [ ] Add lifecycle tests for editor reload, scene exit, nested apps, and failed mounts.
+  - [x] Add lifecycle tests for editor reload, scene exit, nested apps, and failed mounts.
   - [x] Document supported Vue features and unsupported Vue/DOM assumptions.
 - [ ] Add a production-grade platform capability layer.
   - [ ] Create `@vue-godot/device` or an equivalent module namespace for device/native APIs.
