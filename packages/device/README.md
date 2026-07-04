@@ -10,7 +10,8 @@ no real adapter is registered.
 See the repository [compatibility checklist](../../docs/compatibility.md) for
 current support status and platform caveats, and
 [permissions and export setup](../../docs/permissions.md) for native capability
-requirements.
+requirements. See the [plugin adapter guide](../../docs/plugins.md) for adapter
+implementation guidance.
 
 ## Installation
 

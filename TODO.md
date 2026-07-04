@@ -276,7 +276,7 @@ The project is production ready only when all of these are true:
 - [ ] Add `docs/platforms/ios.md`.
 - [ ] Add `docs/platforms/desktop.md`.
 - [x] Add `docs/permissions.md`.
-- [ ] Add `docs/plugins.md`.
+- [x] Add `docs/plugins.md`.
 - [x] Add `docs/compatibility.md`.
 - [ ] Add `docs/performance.md`.
 - [ ] Add `docs/troubleshooting.md`.
