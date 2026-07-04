@@ -14,6 +14,7 @@ import {
   npmCommand,
   requireBuiltCli,
   run,
+  canKillProcessGroup,
   stopProcess,
 } from './smoke-utils.mjs'
 
@@ -113,6 +114,7 @@ async function smokeWatchRebuild(target, env) {
   const child = spawn(npmCommand, ['run', 'dev'], {
     cwd: target,
     env,
+    detached: canKillProcessGroup,
     stdio: ['ignore', 'pipe', 'pipe'],
   })
 

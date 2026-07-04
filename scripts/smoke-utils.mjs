@@ -8,6 +8,7 @@ const __filename = fileURLToPath(import.meta.url)
 export const repoRoot = path.resolve(path.dirname(__filename), '..')
 export const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 export const nodeCommand = process.execPath
+export const canKillProcessGroup = process.platform !== 'win32'
 
 export const packageDirs = {
   '@vue-godot/browser': 'packages/browser',
@@ -73,18 +74,39 @@ export async function stopProcess(child) {
     return
   }
 
-  const closed = new Promise((resolve) => child.once('close', resolve))
-  child.kill('SIGTERM')
-  await Promise.race([
-    closed,
-    delay(3_000).then(() => {
-      if (child.exitCode === null && child.signalCode === null) {
-        child.kill('SIGKILL')
+  let didClose = false
+  const closed = new Promise((resolve) => {
+    child.once('close', () => {
+      didClose = true
+      resolve()
+    })
+  })
+
+  function sendSignal(signal) {
+    if (canKillProcessGroup && child.pid) {
+      try {
+        process.kill(-child.pid, signal)
+        return
+      } catch {
+        // Fall back to the direct child below. The child may not be a process
+        // group leader when it was not spawned with detached: true.
       }
-    }),
-  ])
-  if (child.exitCode === null && child.signalCode === null) {
-    await closed
+    }
+    child.kill(signal)
+  }
+
+  sendSignal('SIGTERM')
+  await Promise.race([closed, delay(3_000)])
+
+  if (!didClose && child.exitCode === null && child.signalCode === null) {
+    sendSignal('SIGKILL')
+    await Promise.race([closed, delay(3_000)])
+  }
+
+  if (!didClose) {
+    console.warn(
+      `[smoke-utils] process ${child.pid ?? '<unknown>'} did not close after SIGKILL`,
+    )
   }
 }
 
@@ -92,6 +114,7 @@ export function startNpmDevWatch(projectDir, env = process.env) {
   const child = spawn(npmCommand, ['run', 'dev'], {
     cwd: projectDir,
     env,
+    detached: canKillProcessGroup,
     stdio: ['ignore', 'pipe', 'pipe'],
   })
 
