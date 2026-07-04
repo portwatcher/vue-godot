@@ -12,7 +12,7 @@ Goal for the product:
 
 This is alpha-quality, not production ready yet.
 
-The core renderer is real, both non-HTML and HTML CLI scaffolds now build from a clean project when verified against packed local packages, the generated HTML scaffold loads under a real GodotJS executable before and after a watch rebuild, the HTML demo lifecycle smoke passes under a real GodotJS executable, a headless Godot editor smoke plays a generated scene before and after a watch rebuild, a full Godot editor UI pass has visually confirmed a generated HTML app rendering rebuilt text from `npm run dev`, and a trusted-publishing GitHub workflow is wired for future npm releases. The remaining production-readiness gaps are first publishing the currently unpublished packages, attaching npm trusted publishers where npm allows it, public npm install verification, and remote workflow confirmation after the maintainer publishes.
+The core renderer is real, both non-HTML and HTML CLI scaffolds now build from a clean project when verified against packed local packages, the generated HTML scaffold loads under a real GodotJS executable before and after a watch rebuild, the HTML demo lifecycle smoke passes under a real GodotJS executable, a headless Godot editor smoke plays a generated scene before and after a watch rebuild, a full Godot editor UI pass has visually confirmed a generated HTML app rendering rebuilt text from `npm run dev`, the remote `Godot Smoke` workflow is green on `develop`, and a trusted-publishing GitHub workflow is wired for future npm releases. The remaining production-readiness gaps are first publishing the currently unpublished packages, attaching npm trusted publishers where npm allows it, and public npm install verification after publishing.
 
 ## Verified Current State
 
@@ -34,7 +34,7 @@ The core renderer is real, both non-HTML and HTML CLI scaffolds now build from a
 - Generated Vite configs now keep secondary JavaScript chunks at stable paths under `dist/chunks/` instead of content-hashed filenames. `npm run smoke:cli`, `npm run smoke:generated-godot`, and `npm run smoke:editor-reload` assert this so Godot editor reloads do not chase stale chunk dependency paths after watch rebuilds.
 - Public `npx @vue-godot/cli create my-app --html` still requires publishing `@vue-godot/browser`, `@vue-godot/html`, and the compatible CLI/runtime packages to npm. This publish/public-smoke step is maintainer-owned after local verification is complete.
 - Registry check: `@vue-godot/runtime-tscn@0.0.2` is public; `@vue-godot/cli@0.0.2` is public but does not support `create --html`, so local `@vue-godot/cli@0.0.3` must be published. `@vue-godot/browser` and `@vue-godot/html` are not published yet.
-- `npm whoami` succeeds as `skyquakers` in the current environment. Real local publishing reaches npm, but the registry requires an OTP; `npm run release:publish -- --yes` previously stopped on `EOTP` before publishing `@vue-godot/browser@0.0.1`. `npm trust` management is also blocked by npm CLI browser/2FA authentication in this environment.
+- `npm whoami` succeeds as `skyquakers` in the current environment. Real local publishing reaches npm, but the registry requires an OTP; `GODOT_BIN=/Users/jury/Developments/Godot/editor/macos-editor-4.4-v8 npm run release:publish -- --yes` passed release preflight and stopped on `EOTP` before publishing `@vue-godot/browser@0.0.1`. `npm trust` management is also blocked by npm CLI browser/2FA authentication in this environment.
 - `npm pack --dry-run` for packages looks sane: built `dist` files, CLI templates, and `@vue-godot/html/volar-plugin` are included.
 - `npm run smoke:public-cli` now automates the post-publish public `create --html` verification, but it cannot pass until `@vue-godot/browser` and `@vue-godot/html` are public.
 - `npm run release:publish` automates the package publish order and is dry-run by default. Real local publishing requires `--yes`, a clean worktree, npm auth, release preflight, and then runs the public CLI smoke unless explicitly skipped. The `Publish` GitHub Actions workflow sets `VUE_GODOT_NPM_TRUSTED_PUBLISHING=1`, grants `id-token: write`, installs npm 11, runs the same release flow, and relies on npm OIDC during `npm publish`.
@@ -44,8 +44,8 @@ The core renderer is real, both non-HTML and HTML CLI scaffolds now build from a
 - `npm run smoke:generated-godot` passes locally with the same `GODOT_BIN` directory. It creates a clean `create --html` project from locally packed packages, builds and runs a marker app under Godot, starts the generated `npm run dev` watcher, edits `vue/src/App.vue`, verifies the rebuilt `dist` output contains the new marker, and runs the rebuilt app under Godot again. Generated projects now include `vue/.gdignore` and `gen/.gdignore`, and the smoke fails on GodotJS missing-module/script-load diagnostics, so regressions where Godot tries to load Vue source/config files or generated resource stubs as GodotJS scripts are caught automatically.
 - `npm run smoke:editor-reload` passes locally with the same `GODOT_BIN` directory. It creates a clean generated HTML project, writes a visible marker app that auto-quits after mounting, starts the generated `npm run dev` watcher, enables a temporary editor plugin, opens the project with `godot --headless --editor`, uses `EditorInterface.play_main_scene()` to run the generated scene, edits the Vue source, and verifies a second editor-launched play observes the rebuilt marker without missing-module/script-load diagnostics.
 - Full editor UI visual verification passed locally on a disposable `create --html` project generated from packed local packages. The project opened in the Godot editor UI, `app.tscn` and the generated project files were visible, an editor-launched game window rendered the starter HTML UI, the running `npm run dev` watcher rebuilt after two `vue/src/App.vue` edits, and the full editor-launched window rendered the final rebuilt marker (`Hello from Vue Godot HTML VISUAL RELOAD 2`). A rapid temporary-plugin replay surfaced Godot's dependency dialog once while the editor caught up to swapped chunks; accepting the focused `Open Anyway` action allowed the rebuilt app to render, and stable Vite chunk filenames were added afterward to reduce that dependency churn.
-- GitHub Actions now runs `npm run check`, and the `Godot Smoke` workflow installs the pinned `GodotJS_1.0.0-2` Linux x64 V8 editor bundle before running `npm run smoke:godot`, `npm run smoke:generated-godot`, and `npm run smoke:editor-reload` on relevant PRs and pushes. The shared `.github/actions/setup-godotjs` action is reused by the `Publish` workflow so release preflight runs the same Godot smokes before publishing.
-- Local `develop` includes the remote `develop` branch plus unpushed readiness commits; pushing is required before the new workflow and release-readiness commits can be verified remotely.
+- GitHub Actions now runs `npm run check`, and the `Godot Smoke` workflow installs the pinned `GodotJS_1.0.0-2` Linux x64 V8 editor bundle before running `npm run smoke:godot`, `npm run smoke:generated-godot`, and `npm run smoke:editor-reload` on relevant PRs and pushes. The editor reload step runs under Xvfb on Linux because `EditorInterface.play_main_scene()` starts a played-scene process that needs a display server. The shared `.github/actions/setup-godotjs` action is reused by the `Publish` workflow so release preflight runs the same Godot smokes before publishing.
+- Remote `develop` is pushed through `ad12325`. The latest `Check` run passed (`28711414776`), and the latest `Godot Smoke` run passed (`28711414784`) with `smoke:godot`, `smoke:generated-godot`, and `smoke:editor-reload`.
 
 ## Major Blockers
 
@@ -72,9 +72,9 @@ Generated root scripts now store the Vue app instance and call `app.unmount()` i
 
 The renderer does free nodes when Vue removes them, `apps/html-demo` now has a headless lifecycle smoke mode that makes child and button-signal leaks visible under `npm run smoke:godot`, the generated scaffold smoke proves a rebuilt `dist/app.js` still loads under Godot, the editor reload smoke proves the Godot editor can launch the generated scene before and after a Vue source rebuild, and the manual full editor UI pass confirms the visible editor-launched app reflects rebuilt text from `npm run dev`. Those checks pass locally with a real GodotJS executable.
 
-Needed:
+Status:
 
-- Confirm the remote `Godot Smoke` workflow is green after pushing.
+- Done. The remote `Godot Smoke` workflow passed on `develop` at `ad12325` (`28711414784`), including `smoke:godot`, `smoke:generated-godot`, and `smoke:editor-reload`.
 
 ### 3. Full editor UI verification is local, not automated
 
@@ -103,7 +103,7 @@ Implemented MVP components:
 
 Still incomplete or externally unverified:
 
-- Browser polyfills now have a reusable demo smoke helper that runs under `npm run smoke:godot`, and the smoke script provisions a loopback `fetch` endpoint. Form v-model paths and image/SVG asset loading are covered by the local headless GodotJS smoke. The remote `Godot Smoke` workflow still needs to be confirmed green after pushing.
+- Browser polyfills now have a reusable demo smoke helper that runs under `npm run smoke:godot`, and the smoke script provisions a loopback `fetch` endpoint. Form v-model paths and image/SVG asset loading are covered by the local and remote headless GodotJS smoke. The remote `Godot Smoke` workflow is green on `develop` at `ad12325`.
 
 Current beta decisions and completed hardening:
 
@@ -116,9 +116,8 @@ Current beta decisions and completed hardening:
 
 Needed:
 
-- Maintainer completes publish/public smoke and remote workflow confirmation.
+- Maintainer completes publish/public smoke.
 - Keep `apps/html-demo` aligned with every component/API.
-- Confirm the form, asset loading, and loopback `fetch` smoke remain green in the remote `Godot Smoke` workflow.
 
 ### 5. Docs drift and copy-paste risk
 
@@ -136,29 +135,29 @@ Root scripts now include `test`, `test:scripts`, `smoke:cli`, `smoke:godot`, `sm
 
 Needed:
 
-- Confirm the `Godot Smoke` workflow is green after pushing.
 - Consider GUI-level editor screenshot automation later if the manual visual pass becomes a repeated release requirement.
 
 ## Recommended Next-Session Goal
 
-Local full editor UI verification is complete. Publish/public smoke is maintainer-owned; remote workflow confirmation follows after pushing these readiness commits.
+Local full editor UI verification is complete, and the remote `Godot Smoke` workflow is green on `develop`. Publish/public smoke is maintainer-owned because npm requires a one-time password for the first publish.
 
 Suggested Codex goal:
 
-> Publish the packages and verify public install plus remote Godot workflow.
+> Publish the packages and verify public install.
 
-Acceptance criteria:
+Remaining acceptance criteria:
 
 - `@vue-godot/browser`, `@vue-godot/html`, and compatible CLI/runtime versions are published.
 - `npx @vue-godot/cli create my-app --html` works from a clean directory using public packages.
+
+Completed acceptance criteria:
+
 - The remote `Godot Smoke` workflow passes with `smoke:godot`, `smoke:generated-godot`, and `smoke:editor-reload`.
 
 ## Suggested Priority Order
 
-1. Commit and push local readiness work.
-2. Confirm the `Godot Smoke` workflow is green after pushing.
-3. Maintainer publishes packages with an npm OTP and verifies public clean install.
-4. Re-run `npm run smoke:public-cli` against the published CLI.
+1. Maintainer publishes packages with an npm OTP and verifies public clean install.
+2. Re-run `npm run smoke:public-cli` against the published CLI.
 
 ## Production Readiness Estimate
 
