@@ -65,6 +65,26 @@ function assertHtmlVolarPluginConfigured(target) {
   }
 }
 
+function assertProductionSupportConfigured(target) {
+  const packageJsonPath = path.join(target, 'package.json')
+  const productionDocPath = path.join(target, 'docs/production.md')
+  const exportCheckPath = path.join(target, 'scripts/check-export-settings.mjs')
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
+
+  if (
+    packageJson.scripts?.['check:exports'] !==
+    'node scripts/check-export-settings.mjs'
+  ) {
+    throw new Error(`${packageJsonPath} must include the check:exports script`)
+  }
+  if (!fs.existsSync(productionDocPath)) {
+    throw new Error(`${productionDocPath} must be generated`)
+  }
+  if (!fs.existsSync(exportCheckPath)) {
+    throw new Error(`${exportCheckPath} must be generated`)
+  }
+}
+
 async function waitForWatchCondition(state, description, predicate) {
   const startedAt = Date.now()
   while (Date.now() - startedAt < 30_000) {
@@ -171,6 +191,11 @@ function smokeProject(cliPath, workspaceDir, name, extraArgs, env) {
     env,
     stdio: 'inherit',
   })
+  run(npmCommand, ['run', 'check:exports'], {
+    cwd: target,
+    env,
+    stdio: 'inherit',
+  })
   assertStableViteChunkNames(target)
   return target
 }
@@ -188,7 +213,8 @@ const env = {
 }
 
 console.log(`[smoke-cli] workspace: ${workspaceDir}`)
-smokeProject(cliPath, workspaceDir, 'basic-app', [], env)
+const basicAppDir = smokeProject(cliPath, workspaceDir, 'basic-app', [], env)
+assertProductionSupportConfigured(basicAppDir)
 const htmlAppDir = smokeProject(
   cliPath,
   workspaceDir,
@@ -196,6 +222,7 @@ const htmlAppDir = smokeProject(
   ['--html'],
   env,
 )
+assertProductionSupportConfigured(htmlAppDir)
 assertVueSourceIgnoredByGodot(htmlAppDir)
 assertGeneratedOutputIgnoredByGodot(htmlAppDir)
 assertHtmlVolarPluginConfigured(htmlAppDir)

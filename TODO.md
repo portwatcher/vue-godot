@@ -10,7 +10,7 @@ When this file is complete, maintainers should be confident enough to remove wor
 - `@vue-godot/html` exposes a small HTML-like component set and an inline style subset.
 - `@vue-godot/browser` exposes an initial browser API subset: `fetch`, `Request`, `Response`, `Headers`, `Blob`, `URL`, `TextEncoder`, `TextDecoder`, `AbortController`, base64 helpers, `history`, `location`, and basic global event dispatch.
 - `@vue-godot/device` exposes a capability registry, adapter contracts, feature detection helpers, and typed errors for plugin-backed native APIs.
-- The repo has build/test/CLI smoke checks and CI Godot smoke workflows.
+- The repo has build/test/CLI smoke checks, generated export-setting checks, and CI Godot smoke workflows.
 - The project is not yet production ready because platform APIs, app UI primitives, device integration, performance budgets, release/device smoke coverage, and end-user app examples are still incomplete.
 
 ## Definition Of Done
@@ -63,11 +63,11 @@ The project is production ready only when all of these are true:
   - [x] Define adapter interfaces for plugin-backed capabilities.
   - [x] Provide feature detection helpers such as `isSupported("geolocation")`.
   - [x] Ensure APIs return predictable typed errors for unsupported platforms, denied permissions, missing plugins, and export misconfiguration.
-- [ ] Make generated projects production-oriented.
-  - [ ] Add production export guidance for desktop, Android, iOS, and Web where applicable.
-  - [ ] Add Android permission presets for networking, camera, audio input, vibration, notifications, and location where used.
-  - [ ] Add iOS permission/plist guidance for camera, microphone, location, and photo/media access where used.
-  - [ ] Add template checks that warn when selected APIs need missing export settings.
+- [x] Make generated projects production-oriented.
+  - [x] Add production export guidance for desktop, Android, iOS, and Web where applicable.
+  - [x] Add Android permission presets for networking, camera, audio input, vibration, notifications, and location where used.
+  - [x] Add iOS permission/plist guidance for camera, microphone, location, and photo/media access where used.
+  - [x] Add template checks that warn when selected APIs need missing export settings.
 
 ## P0: Browser API Compatibility
 

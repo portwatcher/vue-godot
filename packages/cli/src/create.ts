@@ -3,6 +3,7 @@ import * as path from 'node:path'
 import { spawn } from 'node:child_process'
 import {
   addHtmlVolarPlugin,
+  copyProductionSupportFiles,
   copyTemplateDir,
   generateHtmlAppVue,
   generateHtmlMainTs,
@@ -92,6 +93,7 @@ export async function create(options: CreateOptions): Promise<void> {
   }
 
   copyTemplateDir(genTplDir, genDir, {}, process.cwd())
+  copyProductionSupportFiles(absTarget, process.cwd())
 
   /* --- copy Vue template --- */
   const vueTplDir = path.join(templatesDir, 'vue')

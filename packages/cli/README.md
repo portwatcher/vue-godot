@@ -58,6 +58,11 @@ npm run dev
 
 The generated `vue/` and `gen/` directories include `.gdignore` files so Godot imports the built `dist/app.js` output without trying to scan Vite/TypeScript source files or GodotJS-generated TypeScript resource stubs as scripts.
 
+Generated projects also include `docs/production.md` and
+`scripts/check-export-settings.mjs`. Run `npm run check:exports` before release
+exports; it scans selected Vue/TypeScript APIs and warns when matching Android
+permissions or iOS plist keys are not present in `export_presets.cfg`.
+
 ### `integrate`
 
 Scaffold a `vue/` folder with Vite + Vue configuration for an existing Godot project.
@@ -81,6 +86,7 @@ This command:
 2. Creates or updates `package.json` with the necessary scripts and dependencies
 3. Resolves `node_modules` paths for the generated `tsconfig.json`
 4. Adds the same HTML/browser setup as `create --html` when `--html` is provided
+5. Adds production export guidance and a non-failing export-setting warning script
 
 The copied `vue/` template and root `gen/` ignore marker keep Godot's asset scan focused on generated `dist/` output rather than Vue source/config files or GodotJS-generated TypeScript resource stubs. The Vite config also keeps secondary JavaScript chunk names stable under `dist/chunks/`, which avoids stale Godot editor resource dependencies during watch rebuilds.
 

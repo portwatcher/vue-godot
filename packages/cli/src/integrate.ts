@@ -166,6 +166,56 @@ export function copyTemplateDir(
   }
 }
 
+export function copyTemplateDirIfMissing(
+  srcDir: string,
+  destDir: string,
+  replacements: Record<string, string>,
+  cwd: string,
+): void {
+  fs.mkdirSync(destDir, { recursive: true })
+
+  for (const entry of fs.readdirSync(srcDir, { withFileTypes: true })) {
+    const srcPath = path.join(srcDir, entry.name)
+    const destPath = path.join(destDir, entry.name)
+
+    if (entry.isDirectory()) {
+      copyTemplateDirIfMissing(srcPath, destPath, replacements, cwd)
+      continue
+    }
+
+    if (fs.existsSync(destPath)) {
+      console.log(`  kept ${path.relative(cwd, destPath)}`)
+      continue
+    }
+
+    let content = fs.readFileSync(srcPath, 'utf-8')
+    for (const [placeholder, value] of Object.entries(replacements)) {
+      content = content.replaceAll(placeholder, value)
+    }
+    fs.writeFileSync(destPath, content)
+    console.log(`  created ${path.relative(cwd, destPath)}`)
+  }
+}
+
+export function copyProductionSupportFiles(targetDir: string, cwd: string): void {
+  const templatesDir = getTemplatesDir()
+  for (const entryName of ['docs', 'scripts']) {
+    const templateDir = path.join(templatesDir, entryName)
+    if (!fs.existsSync(templateDir)) {
+      console.error(
+        `Template directory not found: ${templateDir}\nThe CLI package may not be installed correctly.`,
+      )
+      process.exit(1)
+    }
+    copyTemplateDirIfMissing(
+      templateDir,
+      path.join(targetDir, entryName),
+      {},
+      cwd,
+    )
+  }
+}
+
 export function newPackageJson(
   name: string,
   html?: boolean,
@@ -192,6 +242,7 @@ export function newPackageJson(
     scripts: {
       dev: 'vite build --watch -c vue/vite.config.ts',
       build: 'vite build -c vue/vite.config.ts',
+      'check:exports': 'node scripts/check-export-settings.mjs',
       postinstall: 'npm run build',
       'gen:types': 'vue-godot gen-types',
     },
@@ -398,6 +449,7 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
   }
 
   copyTemplateDir(genTplDir, path.join(absTarget, 'gen'), {}, process.cwd())
+  copyProductionSupportFiles(absTarget, process.cwd())
 
   /* --- apply HTML-mode overrides --- */
   if (html) {
@@ -430,6 +482,7 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     existing.scripts = existing.scripts || {}
     existing.scripts.dev ??= 'vite build --watch -c vue/vite.config.ts'
     existing.scripts.build ??= 'vite build -c vue/vite.config.ts'
+    existing.scripts['check:exports'] ??= 'node scripts/check-export-settings.mjs'
     existing.scripts.postinstall ??= 'npm run build'
     existing.scripts['gen:types'] ??= 'vue-godot gen-types'
 
