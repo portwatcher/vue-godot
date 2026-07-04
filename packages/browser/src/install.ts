@@ -32,6 +32,14 @@ import { GodotFile } from './file.js'
 import { GodotFileReader } from './file-reader.js'
 import { fetch } from './fetch.js'
 import { GodotFormData } from './form-data.js'
+import {
+  GodotGeolocation,
+  GodotGeolocationCoordinates,
+  GodotGeolocationPosition,
+  GodotGeolocationPositionError,
+  geolocation,
+  getRegisteredGeolocationAdapter,
+} from './geolocation.js'
 import { GodotHeaders } from './headers.js'
 import { GodotRequest } from './request.js'
 import {
@@ -191,6 +199,12 @@ export function installPolyfill(...names: string[]): void {
     PermissionStatus: GodotPermissionStatus,
     navigator: godotNavigator,
     permissions: godotPermissions,
+    Geolocation: GodotGeolocation,
+    GeolocationCoordinates: GodotGeolocationCoordinates,
+    GeolocationPosition: GodotGeolocationPosition,
+    GeolocationPositionError: GodotGeolocationPositionError,
+    geolocation,
+    getRegisteredGeolocationAdapter,
     Clipboard: GodotClipboard,
     clipboard: godotClipboard,
     isClipboardSupported,

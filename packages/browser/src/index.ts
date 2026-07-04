@@ -22,7 +22,7 @@
 //   • FileReader      → Async Blob/File readers
 //   • WebSocket       → Godot WebSocketPeer
 //   • Storage         → user:// localStorage and memory sessionStorage
-//   • Navigator       → onLine, permissions, text clipboard, and vibration
+//   • Navigator       → onLine, permissions, geolocation, clipboard, vibration
 //   • device sensors  → Input-backed motion/orientation reads and events
 //   • timers/RAF      → SceneTree-backed timing where available
 //   • performance     → Time-backed now() and marks/measures
@@ -53,6 +53,20 @@ export type { GodotFilePart, GodotFilePropertyBag } from './file.js'
 export { GodotFileReader } from './file-reader.js'
 export { fetch } from './fetch.js'
 export type { GodotFetchInit } from './fetch.js'
+export {
+  GodotGeolocation,
+  GodotGeolocationCoordinates,
+  GodotGeolocationPosition,
+  GodotGeolocationPositionError,
+  geolocation,
+  getRegisteredGeolocationAdapter,
+} from './geolocation.js'
+export type {
+  GodotGeolocationErrorCode,
+  GodotGeolocationPositionCallback,
+  GodotGeolocationPositionErrorCallback,
+  GodotGeolocationPositionOptions,
+} from './geolocation.js'
 export { GodotFormData } from './form-data.js'
 export type { GodotFormDataEntryValue } from './form-data.js'
 export { GodotHeaders } from './headers.js'

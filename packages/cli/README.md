@@ -39,6 +39,7 @@ When `--html` is set, the scaffolded project includes:
 
 - `@vue-godot/html` as a dependency
 - `@vue-godot/browser` as a dependency and `installBrowserAPIs()` in `main.ts`
+- `@vue-godot/device` as a dependency for adapter-backed browser/device APIs
 - Vite compiler config with `isNativeTag: () => false` so lowercase HTML tags like `<div>`, `<img>`, and `<a>` resolve as components
 - `htmlPlugin` registered in `main.ts` for global component availability
 - an HTML-like starter `App.vue`

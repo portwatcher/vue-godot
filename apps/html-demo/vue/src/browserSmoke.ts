@@ -1,4 +1,6 @@
 import {
+  GodotGeolocationPositionError,
+  geolocation,
   readDeviceMotion,
   readDeviceOrientation,
   startDeviceSensorEvents,
@@ -223,6 +225,39 @@ export async function runBrowserSmokeTests(
     )
   } catch (error) {
     results.push(failFromError('navigator.permissions.query', error))
+  }
+
+  try {
+    const navigatorGeolocation = Reflect.get(navigator, 'geolocation')
+    const hasNavigatorGeolocation =
+      typeof navigatorGeolocation === 'object' &&
+      navigatorGeolocation !== null &&
+      typeof (navigatorGeolocation as { getCurrentPosition?: unknown })
+        .getCurrentPosition === 'function'
+
+    if (hasNavigatorGeolocation) {
+      results.push(pass('navigator.geolocation', 'registered ok'))
+    } else {
+      let errorCode: number | null = null
+      await new Promise<void>((resolve) => {
+        geolocation.getCurrentPosition(
+          () => {
+            resolve()
+          },
+          (error) => {
+            errorCode = error.code
+            resolve()
+          },
+        )
+      })
+      results.push(
+        errorCode === GodotGeolocationPositionError.POSITION_UNAVAILABLE
+          ? pass('navigator.geolocation', 'missing adapter reported ok')
+          : fail('navigator.geolocation', `error=${String(errorCode)}`),
+      )
+    }
+  } catch (error) {
+    results.push(failFromError('navigator.geolocation', error))
   }
 
   try {

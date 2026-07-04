@@ -19,6 +19,7 @@ const __dirname = path.dirname(__filename)
 const PACKAGE_SPECS = {
   '@vue-godot/browser': '^0.0.1',
   '@vue-godot/cli': '^0.0.3',
+  '@vue-godot/device': '^0.0.1',
   '@vue-godot/html': '^0.0.1',
   '@vue-godot/runtime-tscn': '^0.0.2',
   '@vue/runtime-core': '^3.5.14',
@@ -231,6 +232,10 @@ export function newPackageJson(
   if (html) {
     deps['@vue-godot/browser'] = packageSpec(
       '@vue-godot/browser',
+      packageOverrides,
+    )
+    deps['@vue-godot/device'] = packageSpec(
+      '@vue-godot/device',
       packageOverrides,
     )
     deps['@vue-godot/html'] = packageSpec('@vue-godot/html', packageOverrides)
@@ -508,6 +513,10 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     if (html) {
       existing.dependencies['@vue-godot/browser'] ??= packageSpec(
         '@vue-godot/browser',
+        packageOverrides,
+      )
+      existing.dependencies['@vue-godot/device'] ??= packageSpec(
+        '@vue-godot/device',
         packageOverrides,
       )
       existing.dependencies['@vue-godot/html'] ??= packageSpec(

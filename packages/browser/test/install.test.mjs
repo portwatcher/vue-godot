@@ -12,6 +12,7 @@ const {
   GodotFile,
   GodotFileReader,
   GodotFormData,
+  GodotGeolocation,
   GodotNavigator,
   GodotPermissions,
   GodotPermissionStatus,
@@ -111,6 +112,7 @@ test('installBrowserAPIs installs missing browser globals', async () => {
       GodotDeviceOrientationEvent,
     )
     assert.equal(typeof globalThis.navigator.onLine, 'boolean')
+    assert.equal(globalThis.navigator.geolocation, undefined)
     assert.equal(typeof globalThis.navigator.vibrate, 'function')
     assert.ok(globalThis.navigator.clipboard instanceof GodotClipboard)
     assert.equal(typeof globalThis.navigator.clipboard.readText, 'function')
@@ -166,6 +168,7 @@ test('installPolyfill installs named missing globals only', async () => {
       'Permissions',
       'PermissionStatus',
       'navigator',
+      'Geolocation',
       'DeviceMotionEvent',
       'DeviceOrientationEvent',
       'queueMicrotask',
@@ -186,6 +189,7 @@ test('installPolyfill installs named missing globals only', async () => {
         'Permissions',
         'PermissionStatus',
         'navigator',
+        'Geolocation',
         'DeviceMotionEvent',
         'DeviceOrientationEvent',
         'URLSearchParams',
@@ -207,6 +211,8 @@ test('installPolyfill installs named missing globals only', async () => {
       assert.equal(globalThis.PermissionStatus, GodotPermissionStatus)
       assert.ok(globalThis.navigator instanceof GodotNavigator)
       assert.ok(globalThis.navigator.permissions instanceof GodotPermissions)
+      assert.equal(globalThis.Geolocation, GodotGeolocation)
+      assert.equal(globalThis.navigator.geolocation, undefined)
       assert.equal(globalThis.DeviceMotionEvent, GodotDeviceMotionEvent)
       assert.equal(
         globalThis.DeviceOrientationEvent,

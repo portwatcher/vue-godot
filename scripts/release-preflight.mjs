@@ -81,6 +81,13 @@ function checkPackageMetadata(packagesByName) {
       expectedRange(browser.version),
     )
   }
+  if (browser && device) {
+    assertEqual(
+      '@vue-godot/browser dependency @vue-godot/device',
+      browser.dependencies?.['@vue-godot/device'],
+      expectedRange(device.version),
+    )
+  }
   if (html && runtime) {
     assertEqual(
       '@vue-godot/html peer dependency @vue-godot/runtime-tscn',
@@ -114,6 +121,7 @@ async function checkGeneratedPackageSpecs(packagesByName) {
 
   for (const packageName of [
     '@vue-godot/browser',
+    '@vue-godot/device',
     '@vue-godot/html',
     '@vue-godot/runtime-tscn',
   ]) {

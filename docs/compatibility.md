@@ -69,7 +69,7 @@ Each entry should be evaluated with these fields:
 
 | API | Owner | Status | Godot backend | Platforms | Permissions/export | Tests | Caveats |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `navigator.geolocation` | `device` or adapter | `requires-plugin` | Android/iOS location plugin adapter | Android, iOS | Android location permissions; iOS location plist keys | None yet | Should only be installed after an adapter is registered. |
+| `navigator.geolocation` | `browser` + `device` adapter | `requires-plugin` | `@vue-godot/device` `GeolocationAdapter` | Android, iOS, desktop where an adapter exists | Android location permissions; iOS location plist keys | Unit, html-demo smoke | `navigator.geolocation` is exposed only after an adapter is registered; native Android/iOS plugin integrations are still needed. |
 | `navigator.mediaDevices.getUserMedia()` | `device` or adapter | `requires-plugin` | Camera/microphone adapters, possibly `CameraServer` and audio input | Android, iOS, desktop where available | Camera and microphone export permissions | None yet | Needs predictable typed errors for missing plugins and denied permission. |
 | `MediaStream` subset | `device` or adapter | `planned` | Camera/microphone adapter objects | Depends on adapter | Same as getUserMedia | None yet | Only useful once capture adapters exist. |
 | `Notification` | `device` or adapter | `requires-plugin` | Native notification plugin | Android, iOS, desktop where plugin exists | Android `POST_NOTIFICATIONS`; platform notification setup | None yet | Do not synthesize browser notifications without native delivery. |

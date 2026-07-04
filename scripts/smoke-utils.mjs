@@ -13,6 +13,7 @@ export const canKillProcessGroup = process.platform !== 'win32'
 export const packageDirs = {
   '@vue-godot/browser': 'packages/browser',
   '@vue-godot/cli': 'packages/cli',
+  '@vue-godot/device': 'packages/device',
   '@vue-godot/html': 'packages/html',
   '@vue-godot/runtime-tscn': 'packages/runtime-tscn',
 }

@@ -5,11 +5,20 @@ import test from 'node:test'
 register(new URL('./godot-loader.mjs', import.meta.url).href)
 
 const {
+  deviceCapabilities,
+  registerDeviceCapability,
+} = await import('@vue-godot/device')
+
+const {
   GodotAbortController,
   GodotBlob,
   GodotClipboard,
   GodotDeviceMotionEvent,
   GodotDeviceOrientationEvent,
+  GodotGeolocation,
+  GodotGeolocationCoordinates,
+  GodotGeolocationPosition,
+  GodotGeolocationPositionError,
   GodotHeaders,
   GodotRequest,
   GodotResponse,
@@ -25,7 +34,9 @@ const {
   clearTimeout: godotClearTimeout,
   createHistoryAndLocation,
   createObjectURL,
+  geolocation: godotGeolocation,
   getGlobalEventTarget,
+  getRegisteredGeolocationAdapter,
   readDeviceMotion,
   readDeviceOrientation,
   GodotFile,
@@ -98,6 +109,19 @@ function resetMockWebSocket(options = {}) {
     openOnPoll: options.openOnPoll ?? true,
   }
   return globalThis.__vueGodotBrowserMockWebSocket
+}
+
+const mockGeolocationPosition = {
+  coords: {
+    latitude: 35.681236,
+    longitude: 139.767125,
+    accuracy: 12,
+    altitude: null,
+    altitudeAccuracy: null,
+    heading: null,
+    speed: null,
+  },
+  timestamp: 1234,
 }
 
 test('base64 helpers round-trip binary strings', () => {
@@ -354,6 +378,220 @@ test('navigator.permissions.query denies unavailable capabilities and rejects un
     () => godotNavigator.permissions.query({ name: 'screen-wake-lock' }),
     TypeError,
   )
+})
+
+test('navigator.geolocation is exposed only when an adapter is registered', () => {
+  deviceCapabilities.clear()
+
+  assert.equal(godotNavigator.geolocation, undefined)
+  assert.equal(getRegisteredGeolocationAdapter(), null)
+
+  const unregister = registerDeviceCapability({
+    capability: 'geolocation',
+    pluginName: 'mock-location',
+    isSupported() {
+      return true
+    },
+    async getCurrentPosition() {
+      return mockGeolocationPosition
+    },
+    watchPosition() {
+      return 1
+    },
+    clearWatch() {},
+  })
+
+  try {
+    assert.equal(godotNavigator.geolocation, godotGeolocation)
+    assert.ok(godotGeolocation instanceof GodotGeolocation)
+    assert.equal(getRegisteredGeolocationAdapter()?.pluginName, 'mock-location')
+  } finally {
+    unregister()
+    deviceCapabilities.clear()
+  }
+})
+
+test('navigator.geolocation delegates getCurrentPosition to the registered adapter', async () => {
+  deviceCapabilities.clear()
+  let receivedOptions = null
+
+  const unregister = registerDeviceCapability({
+    capability: 'geolocation',
+    pluginName: 'mock-location',
+    isSupported() {
+      return true
+    },
+    async getCurrentPosition(options) {
+      receivedOptions = options
+      return mockGeolocationPosition
+    },
+    watchPosition() {
+      return 1
+    },
+    clearWatch() {},
+  })
+
+  try {
+    const position = await new Promise((resolve, reject) => {
+      godotNavigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 500,
+      })
+    })
+
+    assert.ok(position instanceof GodotGeolocationPosition)
+    assert.ok(position.coords instanceof GodotGeolocationCoordinates)
+    assert.equal(position.coords.latitude, 35.681236)
+    assert.equal(position.coords.longitude, 139.767125)
+    assert.equal(position.coords.altitude, null)
+    assert.equal(position.timestamp, 1234)
+    assert.deepEqual(receivedOptions, {
+      enableHighAccuracy: true,
+      timeout: 500,
+    })
+  } finally {
+    unregister()
+    deviceCapabilities.clear()
+  }
+})
+
+test('navigator.geolocation watches positions and clears adapter watches', async () => {
+  deviceCapabilities.clear()
+  const clearedWatchIds = []
+  let receivedOptions = null
+
+  const unregister = registerDeviceCapability({
+    capability: 'geolocation',
+    pluginName: 'mock-location',
+    isSupported() {
+      return true
+    },
+    async getCurrentPosition() {
+      return mockGeolocationPosition
+    },
+    watchPosition(onPosition, _onError, options) {
+      receivedOptions = options
+      onPosition(mockGeolocationPosition)
+      return 42
+    },
+    clearWatch(watchId) {
+      clearedWatchIds.push(watchId)
+    },
+  })
+
+  try {
+    const positions = []
+    const watchId = godotNavigator.geolocation.watchPosition(
+      (position) => {
+        positions.push(position)
+      },
+      null,
+      { maximumAge: 1000 },
+    )
+
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    godotNavigator.geolocation.clearWatch(watchId)
+
+    assert.equal(positions.length, 1)
+    assert.ok(positions[0] instanceof GodotGeolocationPosition)
+    assert.deepEqual(receivedOptions, { maximumAge: 1000 })
+    assert.deepEqual(clearedWatchIds, [42])
+  } finally {
+    unregister()
+    deviceCapabilities.clear()
+  }
+})
+
+test('navigator.geolocation maps capability failures to browser error codes', async () => {
+  deviceCapabilities.clear()
+
+  const missingPluginError = await new Promise((resolve) => {
+    godotGeolocation.getCurrentPosition(
+      () => {
+        resolve(null)
+      },
+      resolve,
+    )
+  })
+
+  assert.ok(missingPluginError instanceof GodotGeolocationPositionError)
+  assert.equal(
+    missingPluginError.code,
+    GodotGeolocationPositionError.POSITION_UNAVAILABLE,
+  )
+
+  const unregister = registerDeviceCapability({
+    capability: 'geolocation',
+    pluginName: 'mock-location',
+    getStatus() {
+      return {
+        capability: 'geolocation',
+        state: 'permission-denied',
+        message: 'Location permission denied.',
+      }
+    },
+    async getCurrentPosition() {
+      return mockGeolocationPosition
+    },
+    watchPosition() {
+      return 1
+    },
+    clearWatch() {},
+  })
+
+  try {
+    const permissionError = await new Promise((resolve) => {
+      godotGeolocation.getCurrentPosition(
+        () => {
+          resolve(null)
+        },
+        resolve,
+      )
+    })
+
+    assert.ok(permissionError instanceof GodotGeolocationPositionError)
+    assert.equal(
+      permissionError.code,
+      GodotGeolocationPositionError.PERMISSION_DENIED,
+    )
+    assert.equal(permissionError.message, 'Location permission denied.')
+  } finally {
+    unregister()
+    deviceCapabilities.clear()
+  }
+
+  const timeoutAdapter = {
+    capability: 'geolocation',
+    pluginName: 'mock-location',
+    isSupported() {
+      return true
+    },
+    async getCurrentPosition() {
+      throw new Error('Location timeout.')
+    },
+    watchPosition() {
+      return 1
+    },
+    clearWatch() {},
+  }
+  const unregisterTimeout = registerDeviceCapability(timeoutAdapter)
+
+  try {
+    const timeoutError = await new Promise((resolve) => {
+      godotGeolocation.getCurrentPosition(
+        () => {
+          resolve(null)
+        },
+        resolve,
+      )
+    })
+
+    assert.ok(timeoutError instanceof GodotGeolocationPositionError)
+    assert.equal(timeoutError.code, GodotGeolocationPositionError.TIMEOUT)
+  } finally {
+    unregisterTimeout()
+    deviceCapabilities.clear()
+  }
 })
 
 test('navigator.clipboard reads and writes DisplayServer text clipboard', async () => {

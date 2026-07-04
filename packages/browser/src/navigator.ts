@@ -11,6 +11,11 @@ import {
 } from './clipboard.js'
 import { GodotEvent, GodotEventTarget } from './event-target.js'
 import { fetch } from './fetch.js'
+import {
+  geolocation,
+  getRegisteredGeolocationAdapter,
+  type GodotGeolocation,
+} from './geolocation.js'
 import { getGlobalEventTarget } from './history.js'
 import {
   clearTimeout as clearGodotTimeout,
@@ -239,6 +244,10 @@ export class GodotNavigator {
 
   readonly clipboard: GodotClipboard = clipboard
   readonly permissions: GodotPermissions = permissions
+
+  get geolocation(): GodotGeolocation | undefined {
+    return getRegisteredGeolocationAdapter() ? geolocation : undefined
+  }
 
   get onLine(): boolean {
     return this._online

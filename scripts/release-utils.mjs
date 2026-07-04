@@ -55,8 +55,8 @@ export const releasePackageConfigs = [
 
 const publishOrder = [
   '@vue-godot/runtime-tscn',
-  '@vue-godot/browser',
   '@vue-godot/device',
+  '@vue-godot/browser',
   '@vue-godot/html',
   '@vue-godot/cli',
 ]
