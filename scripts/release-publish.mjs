@@ -240,39 +240,48 @@ function runPublicSmoke(cliVersion) {
   })
 }
 
-const options = parseArgs(process.argv.slice(2))
-const dryRun = !options.yes
+function main() {
+  const options = parseArgs(process.argv.slice(2))
+  const dryRun = !options.yes
 
-if (dryRun) {
-  console.log('[release-publish] dry-run mode; pass --yes to publish')
-} else {
-  assertCleanWorktree()
-  assertNpmAuth()
-  if (!options.skipPreflight) {
-    runPreflight()
+  if (dryRun) {
+    console.log('[release-publish] dry-run mode; pass --yes to publish')
+  } else {
+    assertCleanWorktree()
+    assertNpmAuth()
+    if (!options.skipPreflight) {
+      runPreflight()
+    }
   }
+
+  const candidates = packageCandidates()
+  if (candidates.length === 0) {
+    console.log('[release-publish] nothing to publish')
+    return
+  }
+
+  for (const candidate of candidates) {
+    publishPackage(candidate, options)
+  }
+
+  if (dryRun) {
+    console.log(
+      '[release-publish] dry-run passed; rerun with --yes and --otp when release:preflight, npm auth, and 2FA are ready',
+    )
+    return
+  }
+
+  if (!options.skipPublicSmoke) {
+    const cli = readJson('packages/cli/package.json')
+    runPublicSmoke(cli.version)
+  }
+
+  console.log('[release-publish] publish flow complete')
 }
 
-const candidates = packageCandidates()
-if (candidates.length === 0) {
-  console.log('[release-publish] nothing to publish')
-  process.exit(0)
+try {
+  main()
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error))
+  process.exit(1)
 }
-
-for (const candidate of candidates) {
-  publishPackage(candidate, options)
-}
-
-if (dryRun) {
-  console.log(
-    '[release-publish] dry-run passed; rerun with --yes after release:preflight and npm auth are ready',
-  )
-  process.exit(0)
-}
-
-if (!options.skipPublicSmoke) {
-  const cli = readJson('packages/cli/package.json')
-  runPublicSmoke(cli.version)
-}
-
-console.log('[release-publish] publish flow complete')

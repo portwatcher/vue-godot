@@ -32,11 +32,11 @@ The core renderer is real, both non-HTML and HTML CLI scaffolds now build from a
 - `vue-godot create --html` works from a clean temp project when package specs are overridden to locally packed tarballs. `npm run smoke:cli` now starts the generated HTML app's `npm run dev` watcher, edits `vue/src/App.vue`, and verifies the generated `dist` output contains the edited marker.
 - Public `npx @vue-godot/cli create my-app --html` still requires publishing `@vue-godot/browser`, `@vue-godot/html`, and the compatible CLI/runtime packages to npm.
 - Registry check: `@vue-godot/runtime-tscn@0.0.2` is public; `@vue-godot/cli@0.0.2` is public but does not support `create --html`, so local `@vue-godot/cli@0.0.3` must be published. `@vue-godot/browser` and `@vue-godot/html` are not published yet.
-- `npm whoami` returns 401 in the current environment, so publishing cannot be completed here without npm credentials.
+- `npm whoami` succeeds as `skyquakers` in the current environment. Real publishing now reaches npm, but the registry requires an OTP; `npm run release:publish -- --yes` stopped on `EOTP` before publishing `@vue-godot/browser@0.0.1`.
 - `npm pack --dry-run` for packages looks sane: built `dist` files and CLI templates are included.
 - `npm run smoke:public-cli` now automates the post-publish public `create --html` verification, but it cannot pass until `@vue-godot/browser` and `@vue-godot/html` are public.
 - `npm run release:publish` automates the package publish order and is dry-run by default. Real publishing requires `--yes`, a clean worktree, npm auth, release preflight, and then runs the public CLI smoke unless explicitly skipped.
-- `npm run release:preflight -- --local` passes. It runs the local quality gate, verifies CLI-generated package specs, checks structured `npm pack --dry-run --json` contents, reads registry state, reports missing npm auth as a warning in local mode, and runs the Godot smokes when `GODOT_BIN` is set. After `npm run check` has already passed, `GODOT_BIN=... npm run release:preflight -- --local --skip-check` also passes.
+- `npm run release:preflight` passes with npm auth and `GODOT_BIN=/Users/jury/Developments/Godot/editor/macos-editor-4.4-v8`. It runs the local quality gate, verifies CLI-generated package specs, checks structured `npm pack --dry-run --json` contents, reads registry state, checks npm auth, and runs the Godot smokes. Local mode is still available for unauthenticated machines, and `GODOT_BIN=... npm run release:preflight -- --local --skip-check` also passes after `npm run check` has already passed.
 - `GODOT_BIN` now accepts either a direct executable path or a directory containing a `godot*` executable, including macOS app-style layouts.
 - `npm run smoke:godot` passes locally when `GODOT_BIN=/Users/jury/Developments/Godot/editor/macos-editor-4.4-v8`, which resolves to `godot.macos.editor.universal` (`Godot Engine v4.4.2.rc.gh.d94252cf9`). The smoke builds `apps/html-demo`, imports project assets with Godot `--import`, starts a loopback HTTP server for `fetch`, runs the scene headlessly with `VUE_GODOT_SMOKE=1`, repeatedly unmounts/remounts the Vue app, checks for stale children after unmount, checks rendered signal connection counts, drives form controls through Godot signals, checks image/SVG texture loading, and runs the demo browser API smoke helper against the loopback `fetch(new Request(...))` endpoint. The current local run reports `reloads=3`, `mounts=4`, and `unmounts=4`.
 - `npm run smoke:generated-godot` passes locally with the same `GODOT_BIN` directory. It creates a clean `create --html` project from locally packed packages, builds and runs a marker app under Godot, starts the generated `npm run dev` watcher, edits `vue/src/App.vue`, verifies the rebuilt `dist` output contains the new marker, and runs the rebuilt app under Godot again.
@@ -56,7 +56,7 @@ Both still need to be published to the public npm registry. Local clean-user sim
 Needed:
 
 - Run `npm run release:preflight` with npm credentials and `GODOT_BIN` available.
-- Run `npm run release:publish -- --yes` to publish missing/newer packages in dependency-safe order.
+- Run `npm run release:publish -- --yes --otp <code>` to publish missing/newer packages in dependency-safe order.
 - Run `npm run smoke:public-cli` against the published packages.
 - Keep CLI-generated compatible package versions in sync before each release.
 
@@ -156,7 +156,7 @@ Acceptance criteria:
 
 ## Suggested Priority Order
 
-1. Publish packages and verify public clean install.
+1. Publish packages with an npm OTP and verify public clean install.
 2. Confirm the `Godot Smoke` workflow is green after pushing.
 3. GodotJS editor hot reload smoke verification.
 4. Documentation pass based on observed Godot editor behavior.
