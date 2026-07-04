@@ -25,6 +25,14 @@ import {
   GodotLocation,
   PopStateEvent,
 } from './history.js'
+import {
+  checkNetworkReachability,
+  configureNetworkReachability,
+  GodotNavigator,
+  getNetworkReachabilityOptions,
+  navigator as godotNavigator,
+  setNavigatorOnline,
+} from './navigator.js'
 import { GodotResponse } from './response.js'
 import {
   cancelAnimationFrame,
@@ -75,6 +83,8 @@ export function installBrowserAPIs(): void {
   polyfill('Storage', GodotStorage)
   polyfill('localStorage', godotLocalStorage)
   polyfill('sessionStorage', godotSessionStorage)
+  polyfill('Navigator', GodotNavigator)
+  polyfill('navigator', godotNavigator)
 
   // URL.createObjectURL / revokeObjectURL (static methods)
   if (typeof g['URL'] === 'function') {
@@ -141,6 +151,12 @@ export function installPolyfill(...names: string[]): void {
     Storage: GodotStorage,
     localStorage: godotLocalStorage,
     sessionStorage: godotSessionStorage,
+    Navigator: GodotNavigator,
+    navigator: godotNavigator,
+    checkNetworkReachability,
+    configureNetworkReachability,
+    getNetworkReachabilityOptions,
+    setNavigatorOnline,
     'URL.createObjectURL': createObjectURL,
     'URL.revokeObjectURL': revokeObjectURL,
     Blob: GodotBlob,

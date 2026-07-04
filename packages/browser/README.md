@@ -53,6 +53,8 @@ import { fetch, GodotRequest, GodotURL, GodotHeaders } from '@vue-godot/browser'
 | `Storage`                                        | `GodotStorage`         | Web Storage API shape; `.length`, `.key()`, `.getItem()`, `.setItem()`, `.removeItem()`, `.clear()`                                              |
 | `localStorage`                                   | `GodotStorage`         | Persistent JSON-backed storage at `user://vue-godot-browser-local-storage.json` with memory fallback                                             |
 | `sessionStorage`                                 | `GodotStorage`         | Process-memory storage; cleared when the GodotJS runtime exits or reloads                                                                        |
+| `navigator`                                      | `GodotNavigator`       | Provides `navigator.onLine`; reachability checks update state and dispatch `online` / `offline` events                                           |
+| `checkNetworkReachability()`                     | Fetch probe            | Configurable HTTP probe using `fetch()` and `AbortController`                                                                                    |
 | `URL`                                            | `GodotURL`             | WHATWG subset — `protocol`, `hostname`, `port`, `pathname`, `search`, `searchParams`, `hash`, `href`, `toString()`                               |
 | `URLSearchParams`                                | `GodotURLSearchParams` | Query string helper with duplicate-key support, iteration, `.append()`, `.set()`, `.getAll()`, `.sort()`                                         |
 | `atob` / `btoa`                                  | Pure JS                | RFC 4648 base64 encode/decode                                                                                                                    |
@@ -221,6 +223,33 @@ localStorage.removeItem('auth-token')
 ```
 
 `sessionStorage` uses process memory only. It survives within the active GodotJS runtime but is cleared when the runtime exits, the app restarts, or the script context is reloaded.
+
+## Network Reachability
+
+`navigator.onLine` starts as `true`, matching browser behavior. Call `checkNetworkReachability()` to run a configurable HTTP probe; when the result changes, the shared global event target dispatches `online` or `offline`.
+
+```ts
+import {
+  checkNetworkReachability,
+  configureNetworkReachability,
+} from '@vue-godot/browser'
+
+configureNetworkReachability({
+  url: 'https://example.com/health',
+  method: 'GET',
+  timeoutMs: 2000,
+  expectedStatus: [200, 204],
+})
+
+addEventListener('offline', () => {
+  console.log('network unavailable')
+})
+
+const online = await checkNetworkReachability()
+console.log(navigator.onLine, online)
+```
+
+The default probe is a `HEAD` request to `https://example.com/` with a five-second timeout. Internet reachability is always best-effort; captive portals, firewall rules, and platform network policies can all affect the result.
 
 ## Requirements
 

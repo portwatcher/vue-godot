@@ -96,8 +96,8 @@ The project is production ready only when all of these are true:
   - [ ] `WebSocket` backed by `WebSocketPeer`.
   - [x] `localStorage` backed by `user://`.
   - [x] `sessionStorage` backed by process memory or `user://` with documented lifecycle.
-  - [ ] `navigator.onLine` plus `online` and `offline` events.
-  - [ ] Network reachability probe configuration.
+  - [x] `navigator.onLine` plus `online` and `offline` events.
+  - [x] Network reachability probe configuration.
   - [ ] `navigator.clipboard.readText` / `writeText` where platform clipboard APIs permit.
   - [ ] Limited `navigator.permissions.query()` for supported mapped permissions.
   - [ ] `navigator.vibrate()` backed by Godot handheld vibration where available.

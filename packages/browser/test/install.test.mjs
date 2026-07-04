@@ -9,6 +9,7 @@ const {
   GodotFile,
   GodotFileReader,
   GodotFormData,
+  GodotNavigator,
   GodotRequest,
   GodotStorage,
   GodotURL,
@@ -27,6 +28,8 @@ const patchedGlobals = [
   'Storage',
   'localStorage',
   'sessionStorage',
+  'Navigator',
+  'navigator',
   'fetch',
   'Request',
   'TextDecoder',
@@ -81,6 +84,9 @@ test('installBrowserAPIs installs missing browser globals', async () => {
     assert.equal(globalThis.Storage, GodotStorage)
     assert.ok(globalThis.localStorage instanceof GodotStorage)
     assert.ok(globalThis.sessionStorage instanceof GodotStorage)
+    assert.equal(globalThis.Navigator, GodotNavigator)
+    assert.ok(globalThis.navigator instanceof GodotNavigator)
+    assert.equal(typeof globalThis.navigator.onLine, 'boolean')
     assert.equal(typeof globalThis.URL.createObjectURL, 'function')
     assert.equal(typeof globalThis.URL.revokeObjectURL, 'function')
     assert.equal(globalThis.Blob, GodotBlob)
@@ -122,6 +128,8 @@ test('installPolyfill installs named missing globals only', async () => {
       'Storage',
       'localStorage',
       'sessionStorage',
+      'Navigator',
+      'navigator',
       'queueMicrotask',
     ],
     async () => {
@@ -133,6 +141,8 @@ test('installPolyfill installs named missing globals only', async () => {
         'Storage',
         'localStorage',
         'sessionStorage',
+        'Navigator',
+        'navigator',
         'URLSearchParams',
         'queueMicrotask',
       )
@@ -144,6 +154,8 @@ test('installPolyfill installs named missing globals only', async () => {
       assert.equal(globalThis.Storage, GodotStorage)
       assert.ok(globalThis.localStorage instanceof GodotStorage)
       assert.ok(globalThis.sessionStorage instanceof GodotStorage)
+      assert.equal(globalThis.Navigator, GodotNavigator)
+      assert.ok(globalThis.navigator instanceof GodotNavigator)
       assert.equal(globalThis.URLSearchParams, GodotURLSearchParams)
       assert.equal(typeof globalThis.queueMicrotask, 'function')
       assert.equal(globalThis.URL, undefined)

@@ -21,6 +21,7 @@
 //   • FormData/File   → Multipart-compatible form bodies
 //   • FileReader      → Async Blob/File readers
 //   • Storage         → user:// localStorage and memory sessionStorage
+//   • Navigator       → onLine and reachability probing
 //   • timers/RAF      → SceneTree-backed timing where available
 //   • performance     → Time-backed now() and marks/measures
 //
@@ -61,6 +62,15 @@ export {
   createHistoryAndLocation,
   getGlobalEventTarget,
 } from './history.js'
+export {
+  GodotNavigator,
+  checkNetworkReachability,
+  configureNetworkReachability,
+  getNetworkReachabilityOptions,
+  navigator,
+  setNavigatorOnline,
+} from './navigator.js'
+export type { GodotNetworkReachabilityOptions } from './navigator.js'
 export { GodotResponse } from './response.js'
 export {
   GodotStorage,

@@ -25,7 +25,10 @@ const {
   GodotFile,
   GodotFileReader,
   GodotFormData,
+  GodotNavigator,
   GodotStorage,
+  checkNetworkReachability,
+  configureNetworkReachability,
   createLocalStorage,
   createSessionStorage,
   performance: godotPerformance,
@@ -33,9 +36,19 @@ const {
   requestAnimationFrame: godotRequestAnimationFrame,
   resolveObjectURL,
   revokeObjectURL,
+  navigator: godotNavigator,
+  setNavigatorOnline,
   setInterval: godotSetInterval,
   setTimeout: godotSetTimeout,
 } = await import('../dist/index.js')
+
+function resetMockHttp(responses) {
+  globalThis.__vueGodotBrowserMockHttp = {
+    requests: [],
+    responses: [...responses],
+  }
+  return globalThis.__vueGodotBrowserMockHttp
+}
 
 test('base64 helpers round-trip binary strings', () => {
   const encoded = btoa('hello')
@@ -185,6 +198,60 @@ test('localStorage persists through the Godot user:// backend', () => {
 
   const third = createLocalStorage(path)
   assert.equal(third.getItem('token'), null)
+})
+
+test('navigator.onLine changes dispatch online and offline events', () => {
+  const target = getGlobalEventTarget()
+  const events = []
+  const onOnline = () => events.push('online')
+  const onOffline = () => events.push('offline')
+
+  target.addEventListener('online', onOnline)
+  target.addEventListener('offline', onOffline)
+
+  setNavigatorOnline(true)
+  setNavigatorOnline(false)
+  setNavigatorOnline(false)
+  setNavigatorOnline(true)
+
+  target.removeEventListener('online', onOnline)
+  target.removeEventListener('offline', onOffline)
+
+  assert.ok(godotNavigator instanceof GodotNavigator)
+  assert.equal(godotNavigator.onLine, true)
+  assert.deepEqual(events, ['offline', 'online'])
+})
+
+test('checkNetworkReachability probes configured URL and updates navigator state', async () => {
+  const http = resetMockHttp([
+    {
+      status: 204,
+      headers: {},
+      body: '',
+    },
+    {
+      status: 503,
+      headers: {},
+      body: '',
+    },
+  ])
+  configureNetworkReachability({
+    url: 'https://status.example.com/health',
+    method: 'GET',
+    timeoutMs: 250,
+    expectedStatus: [200, 204],
+  })
+
+  const first = await checkNetworkReachability()
+  const second = await checkNetworkReachability()
+
+  assert.equal(first, true)
+  assert.equal(second, false)
+  assert.equal(godotNavigator.onLine, false)
+  assert.equal(http.requests.length, 2)
+  assert.equal(http.requests[0].methodName, 'GET')
+  assert.equal(http.requests[0].hostname, 'status.example.com')
+  assert.equal(http.requests[0].path, '/health')
 })
 
 test('GodotHeaders stores case-insensitive values and serializes for Godot', () => {

@@ -182,6 +182,20 @@ export async function runBrowserSmokeTests(
   }
 
   try {
+    const online = navigator.onLine
+    const listener = () => undefined
+    addEventListener('online', listener)
+    removeEventListener('online', listener)
+    results.push(
+      typeof online === 'boolean'
+        ? pass('navigator.onLine', `online=${online} ok`)
+        : fail('navigator.onLine', typeof online),
+    )
+  } catch (error) {
+    results.push(failFromError('navigator.onLine', error))
+  }
+
+  try {
     localStorage.setItem('vue-godot-smoke', 'local')
     const value = localStorage.getItem('vue-godot-smoke')
     localStorage.removeItem('vue-godot-smoke')
