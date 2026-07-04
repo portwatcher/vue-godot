@@ -16,6 +16,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./globals": {
+      "types": "./dist/globals.d.ts",
+      "import": "./dist/globals.js",
+      "default": "./dist/globals.js"
     }
   },
   "files": [
@@ -25,7 +30,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "npx tsc -p .",
+    "build": "node scripts/build.mjs",
     "test": "npm run build && node --test test/*.test.mjs"
   },
   "keywords": [

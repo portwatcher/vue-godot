@@ -237,7 +237,7 @@ The project is production ready only when all of these are true:
   - [ ] Lowercase and PascalCase HTML components.
   - [ ] Generated Godot component typings.
   - [ ] Style prop type coverage.
-  - [ ] Browser/device API global typings.
+  - [x] Browser/device API global typings.
 - [ ] Add debugging guidance.
   - [ ] Godot console logs.
   - [ ] Source maps.

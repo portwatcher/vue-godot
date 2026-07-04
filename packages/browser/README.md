@@ -40,6 +40,20 @@ You can also import individual implementations directly without patching globals
 import { fetch, GodotRequest, GodotURL, GodotHeaders } from '@vue-godot/browser'
 ```
 
+## Global TypeScript Declarations
+
+Projects that exclude DOM typings can opt into Godot-backed browser globals:
+
+```ts
+import '@vue-godot/browser/globals'
+```
+
+This declares globals such as `fetch`, `Blob`, `Request`, `Response`,
+`navigator`, `Notification`, timers, `history`, and `location` using the
+`@vue-godot/browser` implementations. The declarations are not loaded by the
+default package entrypoint because they intentionally replace browser DOM
+globals and can conflict with TypeScript's `lib.dom.d.ts`.
+
 ## Provided APIs
 
 | API                                              | Implementation         | Notes                                                                                                                                            |
