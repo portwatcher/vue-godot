@@ -33,6 +33,14 @@ export function load(url, context, nextLoad) {
           return globalThis[key]
         }
 
+        function mockFileState() {
+          const key = '__vueGodotBrowserMockFiles'
+          if (!globalThis[key]) {
+            globalThis[key] = new Map()
+          }
+          return globalThis[key]
+        }
+
         function bodyToBytes(body) {
           if (body == null) {
             return new Uint8Array()
@@ -173,6 +181,44 @@ export function load(url, context, nextLoad) {
         }
 
         export class SceneTree {}
+
+        export class FileAccess {
+          static ModeFlags = {
+            READ: 1,
+            WRITE: 2,
+            READ_WRITE: 3,
+            WRITE_READ: 7,
+          }
+
+          static open(path, flags) {
+            return new FileAccess(path, flags)
+          }
+
+          static file_exists(path) {
+            return mockFileState().has(path)
+          }
+
+          constructor(path, flags) {
+            this.path = path
+            this.flags = flags
+            this.buffer = flags === FileAccess.ModeFlags.READ
+              ? mockFileState().get(path) ?? ''
+              : ''
+          }
+
+          get_as_text() {
+            return this.buffer
+          }
+
+          store_string(value) {
+            this.buffer += String(value)
+            mockFileState().set(this.path, this.buffer)
+          }
+
+          close() {}
+        }
+
+        FileAccess.ModeFlags = FileAccess.ModeFlags
 
         export const Engine = {
           get_main_loop() {

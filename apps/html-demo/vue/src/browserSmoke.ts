@@ -182,6 +182,32 @@ export async function runBrowserSmokeTests(
   }
 
   try {
+    localStorage.setItem('vue-godot-smoke', 'local')
+    const value = localStorage.getItem('vue-godot-smoke')
+    localStorage.removeItem('vue-godot-smoke')
+    results.push(
+      value === 'local'
+        ? pass('localStorage', 'ok')
+        : fail('localStorage', String(value)),
+    )
+  } catch (error) {
+    results.push(failFromError('localStorage', error))
+  }
+
+  try {
+    sessionStorage.setItem('vue-godot-smoke', 'session')
+    const value = sessionStorage.getItem('vue-godot-smoke')
+    sessionStorage.removeItem('vue-godot-smoke')
+    results.push(
+      value === 'session'
+        ? pass('sessionStorage', 'ok')
+        : fail('sessionStorage', String(value)),
+    )
+  } catch (error) {
+    results.push(failFromError('sessionStorage', error))
+  }
+
+  try {
     let microtaskRan = false
     await new Promise<void>((resolve) => {
       queueMicrotask(() => {

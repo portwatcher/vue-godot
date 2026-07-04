@@ -36,6 +36,11 @@ import {
   setInterval as godotSetInterval,
   setTimeout as godotSetTimeout,
 } from './timing.js'
+import {
+  GodotStorage,
+  localStorage as godotLocalStorage,
+  sessionStorage as godotSessionStorage,
+} from './storage.js'
 import { createObjectURL, GodotURL, revokeObjectURL } from './url.js'
 import { GodotURLSearchParams } from './url-search-params.js'
 
@@ -67,6 +72,9 @@ export function installBrowserAPIs(): void {
   polyfill('Request', GodotRequest)
   polyfill('URL', GodotURL)
   polyfill('URLSearchParams', GodotURLSearchParams)
+  polyfill('Storage', GodotStorage)
+  polyfill('localStorage', godotLocalStorage)
+  polyfill('sessionStorage', godotSessionStorage)
 
   // URL.createObjectURL / revokeObjectURL (static methods)
   if (typeof g['URL'] === 'function') {
@@ -130,6 +138,9 @@ export function installPolyfill(...names: string[]): void {
     Response: GodotResponse,
     URL: GodotURL,
     URLSearchParams: GodotURLSearchParams,
+    Storage: GodotStorage,
+    localStorage: godotLocalStorage,
+    sessionStorage: godotSessionStorage,
     'URL.createObjectURL': createObjectURL,
     'URL.revokeObjectURL': revokeObjectURL,
     Blob: GodotBlob,

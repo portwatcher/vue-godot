@@ -20,6 +20,7 @@
 //   • URLSearchParams → Pure JS query parameter helper
 //   • FormData/File   → Multipart-compatible form bodies
 //   • FileReader      → Async Blob/File readers
+//   • Storage         → user:// localStorage and memory sessionStorage
 //   • timers/RAF      → SceneTree-backed timing where available
 //   • performance     → Time-backed now() and marks/measures
 //
@@ -61,6 +62,13 @@ export {
   getGlobalEventTarget,
 } from './history.js'
 export { GodotResponse } from './response.js'
+export {
+  GodotStorage,
+  createLocalStorage,
+  createSessionStorage,
+  localStorage,
+  sessionStorage,
+} from './storage.js'
 export {
   GodotURL,
   createObjectURL,

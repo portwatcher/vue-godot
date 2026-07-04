@@ -94,8 +94,8 @@ The project is production ready only when all of these are true:
   - [x] `File`.
   - [x] `FileReader` or documented skip if not worth supporting.
   - [ ] `WebSocket` backed by `WebSocketPeer`.
-  - [ ] `localStorage` backed by `user://`.
-  - [ ] `sessionStorage` backed by process memory or `user://` with documented lifecycle.
+  - [x] `localStorage` backed by `user://`.
+  - [x] `sessionStorage` backed by process memory or `user://` with documented lifecycle.
   - [ ] `navigator.onLine` plus `online` and `offline` events.
   - [ ] Network reachability probe configuration.
   - [ ] `navigator.clipboard.readText` / `writeText` where platform clipboard APIs permit.

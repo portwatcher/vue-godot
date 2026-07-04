@@ -25,6 +25,9 @@ const {
   GodotFile,
   GodotFileReader,
   GodotFormData,
+  GodotStorage,
+  createLocalStorage,
+  createSessionStorage,
   performance: godotPerformance,
   queueMicrotask: godotQueueMicrotask,
   requestAnimationFrame: godotRequestAnimationFrame,
@@ -147,6 +150,41 @@ test('GodotURLSearchParams preserves duplicates and syncs with GodotURL', () => 
 
   url.search = '?fresh=yes'
   assert.deepEqual([...url.searchParams], [['fresh', 'yes']])
+})
+
+test('GodotStorage implements Web Storage methods', () => {
+  const storage = createSessionStorage()
+
+  storage.setItem('count', 1)
+  storage.setItem('enabled', true)
+
+  assert.equal(storage.length, 2)
+  assert.equal(storage.getItem('count'), '1')
+  assert.equal(storage.getItem('enabled'), 'true')
+  assert.equal(storage.key(0), 'count')
+  assert.equal(storage.key(10), null)
+
+  storage.removeItem('count')
+  assert.equal(storage.getItem('count'), null)
+
+  storage.clear()
+  assert.equal(storage.length, 0)
+  assert.ok(storage instanceof GodotStorage)
+})
+
+test('localStorage persists through the Godot user:// backend', () => {
+  globalThis.__vueGodotBrowserMockFiles = new Map()
+  const path = 'user://storage-test.json'
+  const first = createLocalStorage(path)
+  first.setItem('token', 'abc')
+
+  const second = createLocalStorage(path)
+
+  assert.equal(second.getItem('token'), 'abc')
+  second.removeItem('token')
+
+  const third = createLocalStorage(path)
+  assert.equal(third.getItem('token'), null)
 })
 
 test('GodotHeaders stores case-insensitive values and serializes for Godot', () => {

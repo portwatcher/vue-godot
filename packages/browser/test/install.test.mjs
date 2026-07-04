@@ -10,6 +10,7 @@ const {
   GodotFileReader,
   GodotFormData,
   GodotRequest,
+  GodotStorage,
   GodotURL,
   GodotURLSearchParams,
   installBrowserAPIs,
@@ -23,6 +24,9 @@ const patchedGlobals = [
   'FormData',
   'URL',
   'URLSearchParams',
+  'Storage',
+  'localStorage',
+  'sessionStorage',
   'fetch',
   'Request',
   'TextDecoder',
@@ -74,6 +78,9 @@ test('installBrowserAPIs installs missing browser globals', async () => {
 
     assert.equal(globalThis.URL, GodotURL)
     assert.equal(globalThis.URLSearchParams, GodotURLSearchParams)
+    assert.equal(globalThis.Storage, GodotStorage)
+    assert.ok(globalThis.localStorage instanceof GodotStorage)
+    assert.ok(globalThis.sessionStorage instanceof GodotStorage)
     assert.equal(typeof globalThis.URL.createObjectURL, 'function')
     assert.equal(typeof globalThis.URL.revokeObjectURL, 'function')
     assert.equal(globalThis.Blob, GodotBlob)
@@ -112,6 +119,9 @@ test('installPolyfill installs named missing globals only', async () => {
       'Request',
       'URL',
       'URLSearchParams',
+      'Storage',
+      'localStorage',
+      'sessionStorage',
       'queueMicrotask',
     ],
     async () => {
@@ -120,6 +130,9 @@ test('installPolyfill installs named missing globals only', async () => {
         'File',
         'FormData',
         'Request',
+        'Storage',
+        'localStorage',
+        'sessionStorage',
         'URLSearchParams',
         'queueMicrotask',
       )
@@ -128,6 +141,9 @@ test('installPolyfill installs named missing globals only', async () => {
       assert.equal(globalThis.File, GodotFile)
       assert.equal(globalThis.FormData, GodotFormData)
       assert.equal(globalThis.Request, GodotRequest)
+      assert.equal(globalThis.Storage, GodotStorage)
+      assert.ok(globalThis.localStorage instanceof GodotStorage)
+      assert.ok(globalThis.sessionStorage instanceof GodotStorage)
       assert.equal(globalThis.URLSearchParams, GodotURLSearchParams)
       assert.equal(typeof globalThis.queueMicrotask, 'function')
       assert.equal(globalThis.URL, undefined)
