@@ -88,4 +88,6 @@ test('html-demo browser smoke registry covers supported API smoke names', () => 
     browserSmokeSource,
     /assertRequiredBrowserSmokeCoverage\(results\)/,
   )
+  assert.match(browserSmokeSource, /GodotClipboardError/)
+  assert.match(browserSmokeSource, /unsupported reported ok/)
 })

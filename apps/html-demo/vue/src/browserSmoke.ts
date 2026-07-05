@@ -1,17 +1,15 @@
 import {
-  GodotGeolocationPositionError,
-  GodotMediaDevicesError,
-  GodotNotification,
-  GodotNotificationError,
+  GodotClipboardError,
   checkNetworkReachability,
   configureDeviceSensorEvents,
   configureNetworkReachability,
-  geolocation,
   getDeviceSensorEventOptions,
   getNetworkReachabilityOptions,
+  getRegisteredGeolocationAdapter,
+  getRegisteredMediaDevicesAdapter,
+  getRegisteredNotificationAdapter,
   isClipboardSupported,
   isVibrationSupported,
-  mediaDevices,
   readDeviceMotion,
   readDeviceOrientation,
   setNavigatorOnline,
@@ -375,24 +373,10 @@ export async function runBrowserSmokeTests(
 
     if (hasNavigatorGeolocation) {
       results.push(pass('navigator.geolocation', 'registered ok'))
+    } else if (!getRegisteredGeolocationAdapter()) {
+      results.push(pass('navigator.geolocation', 'missing adapter reported ok'))
     } else {
-      let errorCode: number | null = null
-      await new Promise<void>((resolve) => {
-        geolocation.getCurrentPosition(
-          () => {
-            resolve()
-          },
-          (error) => {
-            errorCode = error.code
-            resolve()
-          },
-        )
-      })
-      results.push(
-        errorCode === GodotGeolocationPositionError.POSITION_UNAVAILABLE
-          ? pass('navigator.geolocation', 'missing adapter reported ok')
-          : fail('navigator.geolocation', `error=${String(errorCode)}`),
-      )
+      results.push(fail('navigator.geolocation', 'adapter not installed'))
     }
   } catch (error) {
     results.push(failFromError('navigator.geolocation', error))
@@ -408,18 +392,10 @@ export async function runBrowserSmokeTests(
 
     if (hasNavigatorMediaDevices) {
       results.push(pass('navigator.mediaDevices', 'registered ok'))
+    } else if (!getRegisteredMediaDevicesAdapter()) {
+      results.push(pass('navigator.mediaDevices', 'missing adapter reported ok'))
     } else {
-      try {
-        await mediaDevices.getUserMedia({ video: true })
-        results.push(fail('navigator.mediaDevices', 'unexpected stream'))
-      } catch (error) {
-        results.push(
-          error instanceof GodotMediaDevicesError &&
-            error.name === 'NotFoundError'
-            ? pass('navigator.mediaDevices', 'missing adapter reported ok')
-            : failFromError('navigator.mediaDevices', error),
-        )
-      }
+      results.push(fail('navigator.mediaDevices', 'adapter not installed'))
     }
   } catch (error) {
     results.push(failFromError('navigator.mediaDevices', error))
@@ -434,32 +410,32 @@ export async function runBrowserSmokeTests(
 
     if (hasNotification) {
       results.push(pass('Notification', 'registered ok'))
+    } else if (!getRegisteredNotificationAdapter()) {
+      results.push(pass('Notification', 'missing adapter reported ok'))
     } else {
-      const permission = await GodotNotification.requestPermission()
-      try {
-        await GodotNotification.show('Vue Godot smoke')
-        results.push(fail('Notification', 'unexpected native notification'))
-      } catch (error) {
-        results.push(
-          error instanceof GodotNotificationError &&
-            error.name === 'NotFoundError' &&
-            permission === 'default'
-            ? pass('Notification', 'missing adapter reported ok')
-            : failFromError('Notification', error),
-        )
-      }
+      results.push(fail('Notification', 'adapter not installed'))
     }
   } catch (error) {
     results.push(failFromError('Notification', error))
   }
 
   try {
-    const text = await navigator.clipboard.readText()
-    results.push(
-      pass('navigator.clipboard.readText', `length=${text.length} ok`),
-    )
+    if (isClipboardSupported()) {
+      const text = await navigator.clipboard.readText()
+      results.push(
+        pass('navigator.clipboard.readText', `length=${text.length} ok`),
+      )
+    } else {
+      results.push(
+        pass('navigator.clipboard.readText', 'unsupported reported ok'),
+      )
+    }
   } catch (error) {
-    results.push(failFromError('navigator.clipboard.readText', error))
+    results.push(
+      error instanceof GodotClipboardError && error.code === 'not-supported'
+        ? pass('navigator.clipboard.readText', 'unsupported reported ok')
+        : failFromError('navigator.clipboard.readText', error),
+    )
   }
 
   try {

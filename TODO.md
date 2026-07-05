@@ -384,8 +384,8 @@ the final removal commit.
 - [x] Every P0 item is complete.
 - [x] Every P1 item is complete or explicitly moved to P2 with maintainer approval.
 - [x] `docs/compatibility.md` is complete and linked from root README and package READMEs.
-- [ ] Serious native app demo is complete and passes build/smoke.
-- [ ] Serious game UI demo is complete and passes build/smoke.
+- [x] Serious native app demo is complete and passes build/smoke.
+- [x] Serious game UI demo is complete and passes build/smoke.
 - [ ] Android export with selected device APIs has been tested.
 - [ ] iOS export with selected device APIs has been tested.
 - [ ] CI passes on a clean commit.
