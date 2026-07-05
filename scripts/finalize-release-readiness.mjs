@@ -146,10 +146,13 @@ function usage() {
 Applies the final TODO checkboxes and public warning wording removal after a
 strict release-readiness summary proves the evidence-backed final TODO proof
 status is ready. Generate the summary without --allow-open, preferably outside
-the repo:
+the repo, using the pushed release-candidate SHA when evidence was committed in
+a follow-up commit:
 
-  npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json
+  npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit <release-candidate-sha>
   npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json
+  npm run check
+  npm run release:readiness -- --expected-commit <release-candidate-sha>
 
 Options:
   --summary <file>    Strict release-readiness summary JSON.

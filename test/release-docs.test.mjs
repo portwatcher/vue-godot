@@ -537,6 +537,9 @@ test('release readiness audit documents final removal blockers', () => {
     /finalization source text drift/,
     /working tree must be clean before final release readiness finalization/,
     /collectWarningMarkerHits/,
+    /--expected-commit <release-candidate-sha>/,
+    /npm run check/,
+    /release:finalize-readiness -- --summary/,
   ]) {
     assert.match(finalizer, pattern)
   }
