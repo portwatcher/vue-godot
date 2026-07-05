@@ -11,8 +11,12 @@ const { resolveBackgroundImageSource } = await import(
 )
 
 function setupDiv(style = {}, slotChildren = []) {
+  return setupDivWithProps({ style }, slotChildren)
+}
+
+function setupDivWithProps(props = {}, slotChildren = []) {
   return Div.setup(
-    { style },
+    props,
     {
       slots: {
         default: () => slotChildren,
@@ -23,6 +27,12 @@ function setupDiv(style = {}, slotChildren = []) {
 
 function renderDiv(style = {}, slotChildren = []) {
   const render = setupDiv(style, slotChildren)
+
+  return render()
+}
+
+function renderDivWithProps(props = {}, slotChildren = []) {
+  const render = setupDivWithProps(props, slotChildren)
 
   return render()
 }
@@ -311,6 +321,51 @@ test('maps transform style to root container props', () => {
   assert.equal(vnode.props['scale:x'], 2)
   assert.equal(vnode.props['scale:y'], 2)
   assert.equal(vnode.props.rotation, Math.PI / 2)
+})
+
+test('maps accessibility and transform props to the final wrapped root', () => {
+  const vnode = renderDivWithProps({
+    title: 'Wrapped panel',
+    style: {
+      margin: 6,
+      padding: 8,
+      backgroundColor: '#123456',
+      transform: 'translate(3px, 4px) scale(2)',
+    },
+  })
+
+  assert.equal(vnode.type, 'MarginContainer')
+  assert.equal(vnode.props.tooltip_text, 'Wrapped panel')
+  assert.equal(vnode.props['position:x'], 3)
+  assert.equal(vnode.props['position:y'], 4)
+  assert.equal(vnode.props['scale:x'], 2)
+  assert.equal(vnode.props['scale:y'], 2)
+
+  const panel = vnode.children[0]
+  assert.equal(panel.type, 'PanelContainer')
+  assert.equal('tooltip_text' in panel.props, false)
+  assert.equal('position:x' in panel.props, false)
+})
+
+test('maps transition hooks to the final wrapped root', () => {
+  const vnode = renderDiv({
+    backgroundColor: '#123456',
+    opacity: 0.7,
+    transform: 'translateX(8px)',
+    transition: 'opacity 120ms linear, transform 120ms linear',
+  })
+
+  assert.equal(vnode.type, 'PanelContainer')
+  assert.equal(vnode.props['position:x'], 8)
+  assert.equal(vnode.props.modulate.__kind, 'color')
+  assert.equal(vnode.props.modulate.a, 0.7)
+  assert.equal(typeof vnode.props.onVnodeMounted, 'function')
+  assert.equal(typeof vnode.props.onVnodeUpdated, 'function')
+
+  const inner = vnode.children[0]
+  assert.equal(inner.type, 'HBoxContainer')
+  assert.equal('onVnodeMounted' in inner.props, false)
+  assert.equal('modulate' in inner.props, false)
 })
 
 test('maps child flex and alignSelf to size flags in column layout', () => {

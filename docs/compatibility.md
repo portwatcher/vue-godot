@@ -157,7 +157,7 @@ subset.
 
 | Component/API | Owner | Status | Godot backend | Platforms | Permissions/export | Tests | Caveats |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `<Div>` | `html` | `partial` | Godot containers and style wrappers | All Godot UI targets | None | Unit, html-demo | CSS flex/grid subset with margin, padding, color/texture backgrounds, border, radius, percent-size anchors, basic transform wrappers, and opacity/transform/size transitions plus registered keyframe animations; not a DOM element. |
+| `<Div>` | `html` | `partial` | Godot containers and style wrappers | All Godot UI targets | None | Unit, html-demo | CSS flex/grid subset with margin, padding, color/texture backgrounds, border, radius, percent-size anchors, root-level tooltip labels/hints, basic transforms, and opacity/transform/size transitions plus registered keyframe animations; not a DOM element. |
 | `<Span>` | `html` | `partial` | `Label` | All Godot UI targets | None | Unit, html-demo | Text display subset with flattened slot text, style text/size/display/opacity props, registered/local font family loading, and tooltip-backed labels/hints; not a DOM inline layout box. |
 | `<ScrollView>` | `html` | `partial` | `ScrollContainer` plus inner `<Div>` content wrapper | All Godot UI targets | None | Unit, html-demo | Scrollbar behavior follows Godot `ScrollContainer`; content layout uses the existing style subset. |
 | `<VirtualList>` | `html` | `partial` | `ScrollContainer` plus fixed-height row wrappers and spacer `Control` nodes | All Godot UI targets | None | Unit, html-demo | Fixed row heights only; dynamic-height measurement and horizontal virtualization are not implemented. |

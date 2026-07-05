@@ -2,6 +2,7 @@
   <!-- ===== Section: Div layout ===== -->
   <Span>--- Div layout ---</Span>
   <Div
+    title="Responsive Div layout demo"
     :style="{
       flexDirection: direction,
       flexWrap: wrap,
@@ -17,6 +18,8 @@
       borderColor: '#60a5fa',
       borderWidth: 2,
       borderRadius: 8,
+      transform: wrap === 'wrap' ? 'translateX(4px)' : 'translateX(0px)',
+      transition: 'transform 160ms ease-out',
     }"
   >
     <Div :style="{ flex: 1, padding: 8 }">

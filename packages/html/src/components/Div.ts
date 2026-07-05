@@ -6,6 +6,7 @@ import {
   isVNode,
 } from '@vue/runtime-core'
 import type {
+  VNode,
   VNodeArrayChildren,
   VNodeChild,
   VNodeNormalizedChildren,
@@ -197,6 +198,15 @@ function withThemeConstantOverrides(
   return props
 }
 
+function withRootProps(
+  vnode: VNode,
+  rootProps: Record<string, unknown>,
+): VNode {
+  return Object.keys(rootProps).length === 0
+    ? vnode
+    : cloneVNode(vnode, rootProps)
+}
+
 /**
  * <Div> — the general-purpose layout container.
  *
@@ -230,9 +240,10 @@ export const Div = defineComponent({
         themeOverrides,
         props: godotProps,
       } = resolveContainerTag(style)
-      applyAccessibilityProps(godotProps, props)
-      applyTransformStyleProps(godotProps, style)
-      applyMotionStyleProps(godotProps, style)
+      const rootProps: Record<string, unknown> = {}
+      applyAccessibilityProps(rootProps, props)
+      applyTransformStyleProps(rootProps, style)
+      applyMotionStyleProps(rootProps, style)
       const slotChildren = slots.default?.()
       const childrenWithLayout = mapChildrenForContainerLayout(
         slotChildren,
@@ -246,7 +257,7 @@ export const Div = defineComponent({
       )
 
       if (style.display === 'none') {
-        return content
+        return withRootProps(content, rootProps)
       }
 
       const padding = resolvePadding(style)
@@ -287,7 +298,7 @@ export const Div = defineComponent({
 
       const margin = resolveMargin(style)
       if (!margin) {
-        return content
+        return withRootProps(content, rootProps)
       }
 
       const marginOverrides = {
@@ -297,10 +308,13 @@ export const Div = defineComponent({
         margin_left: margin.left,
       }
 
-      return h(
-        'MarginContainer',
-        withThemeConstantOverrides({}, marginOverrides),
-        [content],
+      return withRootProps(
+        h(
+          'MarginContainer',
+          withThemeConstantOverrides({}, marginOverrides),
+          [content],
+        ),
+        rootProps,
       )
     }
   },

@@ -324,7 +324,7 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 | ------------------- | ---------------------------------------------------------------------- | --------------------- |
 | `<ActivityIndicator>` | `ProgressBar`                                                        | `active`, `size`, `fill`, `style` |
 | `<Dialog>`          | `AcceptDialog`                                                         | `v-model`, `title`, `message`, `confirmText`, `trapFocus`, `restoreFocus` |
-| `<Div>`             | `HBoxContainer` / `VBoxContainer` / `*FlowContainer` / `GridContainer` | `style` (layout)      |
+| `<Div>`             | `HBoxContainer` / `VBoxContainer` / `*FlowContainer` / `GridContainer` plus style wrappers | `style` (layout/background/border/motion), accessibility props |
 | `<Form>`            | `PanelContainer` plus inner `<Div>`                                    | `disabled`, `submitOnAccept`, `resetOnCancel`, `contentStyle` |
 | `<CameraView>`      | `TextureRect` with `CameraTexture`                                     | `feedId`, `feedIndex`, `active`, `whichFeed`, `style` |
 | `<Canvas>`          | `Control`                                                              | `width`, `height`, `style`, template ref |

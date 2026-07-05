@@ -131,7 +131,7 @@ The project is production ready only when all of these are true:
   - [x] Form and label helpers.
   - [x] Screen/router container primitives.
 - [ ] Make existing components production-grade:
-  - [ ] `<Div>`
+  - [x] `<Div>`
   - [x] `<Span>`
   - [x] `<Button>`
   - [x] `<Input>`
