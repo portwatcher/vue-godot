@@ -7,6 +7,7 @@ import test from 'node:test'
 
 import {
   collectCheckedTodoEvidenceBlockers,
+  collectFinalTodoStructureBlockers,
   collectTodoItems,
   collectUncheckedTodoItems,
 } from '../scripts/release-readiness.mjs'
@@ -78,6 +79,38 @@ test('release readiness accepts checked final TODO items when evidence is proven
       warningWordingReady: true,
     }),
     [],
+  )
+})
+
+test('release readiness requires the final TODO evidence checklist shape', () => {
+  const todoItems = collectTodoItems(
+    [
+      '- [ ] `npm run check` passes locally and in CI.',
+      '- [ ] `npm run check` passes locally and in CI.',
+      '- [ ] Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate.',
+      '- [ ] Android and iOS export smoke apps run on real or hosted devices for the production profile.',
+      '- [ ] The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied.',
+      '- [ ] Android export with selected device APIs has been tested.',
+      '- [ ] iOS export with selected device APIs has been tested.',
+      '- [ ] CI passes on a clean commit.',
+      '- [ ] Release preflight passes without warnings in the release environment.',
+      '- [ ] The root README warning is removed in the same commit that marks this checklist complete.',
+    ].join('\n'),
+    'TODO.test.md',
+  )
+  const blockers = collectFinalTodoStructureBlockers(
+    todoItems,
+    'TODO.test.md',
+  )
+  const output = blockers.join('\n')
+
+  assert.match(
+    output,
+    /appears 2 times: "`npm run check` passes locally and in CI\."/,
+  )
+  assert.match(
+    output,
+    /must include "All public READMEs match the final support claims\."/,
   )
 })
 

@@ -438,6 +438,28 @@ export function collectCheckedTodoEvidenceBlockers(todoItems, proofs) {
   })
 }
 
+export function collectFinalTodoStructureBlockers(
+  todoItems,
+  file = todoItems[0]?.file ?? 'TODO.md',
+) {
+  return finalTodoEvidenceRequirements.flatMap((requirement) => {
+    const matches = todoItems.filter((item) => item.text === requirement.text)
+    if (matches.length === 0) {
+      return [
+        `${file}: final release checklist must include "${requirement.text}"`,
+      ]
+    }
+
+    if (matches.length > 1) {
+      return [
+        `${file}: final release checklist item appears ${matches.length} times: "${requirement.text}"`,
+      ]
+    }
+
+    return []
+  })
+}
+
 async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
   const evidencePath =
     options.realDevicePath ?? resolveRealDeviceEvidencePath(process.env)
@@ -675,6 +697,7 @@ async function main() {
   )
   const strictCiEvidenceReady =
     !options.allowOpen && realDeviceEvidenceReady && releaseReadinessEvidenceReady
+  blockers.push(...collectFinalTodoStructureBlockers(todoItems))
   blockers.push(
     ...collectCheckedTodoEvidenceBlockers(todoItems, {
       checkCiEvidenceReady: strictCiEvidenceReady,
