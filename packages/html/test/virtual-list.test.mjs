@@ -201,9 +201,10 @@ test('VirtualList maps style height, visibility, opacity, and scroll events', ()
   vnode.props.onScrollStarted()
   vnode.props.onScrollEnded()
   assert.deepEqual(emitted, [['scrollStarted'], ['scrollEnded']])
+  assert.equal('onScrolling' in vnode.props, false)
 })
 
-test('VirtualList updates its window from the Godot scrolling signal', () => {
+test('VirtualList updates its window from the internal scrollbar signal', () => {
   const emitted = []
   const slotCalls = []
   const render = createVirtualListRenderer(
@@ -223,8 +224,34 @@ test('VirtualList updates its window from the Godot scrolling signal', () => {
     [0, 1, 2],
   )
 
-  vnode.props.onVnodeMounted({ el: { scroll_vertical: 40 } })
-  vnode.props.onScrolling()
+  const connectedCallables = new Set()
+  const scrolling = {
+    connect(callable) {
+      connectedCallables.add(callable)
+    },
+    disconnect(callable) {
+      connectedCallables.delete(callable)
+    },
+    is_connected(callable) {
+      return connectedCallables.has(callable)
+    },
+    emit() {
+      for (const callable of connectedCallables) {
+        callable.call()
+      }
+    },
+  }
+  const scrollNode = {
+    scroll_vertical: 40,
+    get_v_scroll_bar() {
+      return { scrolling }
+    },
+  }
+
+  vnode.props.onVnodeMounted({ el: scrollNode })
+  assert.equal(connectedCallables.size, 1)
+
+  scrolling.emit()
   vnode = render()
 
   assert.equal(vnode.props.scroll_vertical, 40)
@@ -236,4 +263,7 @@ test('VirtualList updates its window from the Godot scrolling signal', () => {
     slotCalls.slice(3).map((call) => call.index),
     [4, 5, 6],
   )
+
+  vnode.props.onVnodeUnmounted()
+  assert.equal(connectedCallables.size, 0)
 })

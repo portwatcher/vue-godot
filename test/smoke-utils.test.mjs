@@ -115,6 +115,23 @@ test('Godot smoke diagnostics include missing resource loads', () => {
   )
   assert.throws(
     () => assertNoGodotScriptLoadErrors(output, 'fixture smoke'),
-    /asset-load diagnostics/,
+    /script-load, asset-load, or signal wiring diagnostics/,
+  )
+})
+
+test('Godot smoke diagnostics include failed signal wiring', () => {
+  const output = [
+    'Godot Engine v4.4',
+    'WARN: [vue-godot] Unable to connect signal "scrolling" on @ScrollContainer@2147483771 from Vue event prop "onScrolling". Check that this Godot class defines the signal and that the event name maps to the expected Godot signal:',
+    "ERROR: In Object of type 'ScrollContainer': Attempt to connect nonexistent signal 'scrolling' to callable ''.",
+  ].join('\n')
+
+  assert.match(
+    relevantGodotDiagnosticLines(output),
+    /Unable to connect signal/,
+  )
+  assert.throws(
+    () => assertNoGodotScriptLoadErrors(output, 'fixture smoke'),
+    /signal wiring diagnostics/,
   )
 })

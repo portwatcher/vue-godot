@@ -5,6 +5,7 @@ import {
   type PropType,
   type VNode,
 } from '@vue/runtime-core'
+import { Callable } from 'godot'
 import {
   accessibilityPropOptions,
   applyAccessibilityProps,
@@ -55,12 +56,75 @@ function finiteNumber(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null
 }
 
+interface GodotSignalLike {
+  connect(callable: Callable): unknown
+  disconnect(callable: Callable): unknown
+  is_connected?: (callable: Callable) => boolean
+}
+
+interface VerticalScrollbarSource {
+  get_v_scroll_bar: () => unknown
+}
+
 function hasScrollVertical(value: unknown): value is { scroll_vertical: number } {
   return (
     typeof value === 'object' &&
     value !== null &&
     finiteNumber((value as Record<string, unknown>).scroll_vertical) != null
   )
+}
+
+function hasVerticalScrollbarSource(
+  value: unknown,
+): value is VerticalScrollbarSource {
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+
+  return typeof (value as Record<string, unknown>).get_v_scroll_bar === 'function'
+}
+
+function isGodotSignal(value: unknown): value is GodotSignalLike {
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+
+  const candidate = value as Record<string, unknown>
+  return (
+    typeof candidate.connect === 'function' &&
+    typeof candidate.disconnect === 'function'
+  )
+}
+
+function readVerticalScrollbarScrollingSignal(
+  node: unknown,
+): GodotSignalLike | null {
+  if (!hasVerticalScrollbarSource(node)) {
+    return null
+  }
+
+  const scrollbar = node.get_v_scroll_bar()
+  if (typeof scrollbar !== 'object' || scrollbar === null) {
+    return null
+  }
+
+  const signal = (scrollbar as Record<string, unknown>).scrolling
+  return isGodotSignal(signal) ? signal : null
+}
+
+function isSignalConnected(
+  signal: GodotSignalLike,
+  callable: Callable,
+): boolean {
+  if (typeof signal.is_connected !== 'function') {
+    return false
+  }
+
+  try {
+    return signal.is_connected(callable)
+  } catch {
+    return false
+  }
 }
 
 function resolveItemKey(
@@ -163,6 +227,7 @@ export const VirtualList = defineComponent({
   emits: ['scroll', 'scrollStarted', 'scrollEnded', 'update:scrollOffset'],
   setup(props, { emit, slots }) {
     let scrollNode: unknown = null
+    let verticalScrollbarSignal: GodotSignalLike | null = null
     const internalScrollOffset = ref(0)
 
     function syncScrollOffsetFromNode(): void {
@@ -174,6 +239,57 @@ export const VirtualList = defineComponent({
       internalScrollOffset.value = nextScrollOffset
       emit('update:scrollOffset', nextScrollOffset)
       emit('scroll', nextScrollOffset)
+    }
+
+    const scrollingCallable = new Callable(
+      Callable.create(syncScrollOffsetFromNode),
+    )
+
+    function disconnectVerticalScrollbarSignal(): void {
+      if (!verticalScrollbarSignal) {
+        return
+      }
+
+      try {
+        if (isSignalConnected(verticalScrollbarSignal, scrollingCallable)) {
+          verticalScrollbarSignal.disconnect(scrollingCallable)
+        }
+      } catch {
+        // The node may already be leaving the scene tree during unmount.
+      } finally {
+        verticalScrollbarSignal = null
+      }
+    }
+
+    function attachScrollNode(node: unknown): void {
+      if (scrollNode === node) {
+        return
+      }
+
+      disconnectVerticalScrollbarSignal()
+      scrollNode = node
+
+      const nextSignal = readVerticalScrollbarScrollingSignal(node)
+      if (!nextSignal) {
+        return
+      }
+
+      try {
+        if (!isSignalConnected(nextSignal, scrollingCallable)) {
+          nextSignal.connect(scrollingCallable)
+        }
+        verticalScrollbarSignal = nextSignal
+      } catch (error) {
+        console.warn(
+          '[vue-godot/html] Unable to connect VirtualList vertical scrollbar scrolling signal:',
+          error,
+        )
+      }
+    }
+
+    function clearScrollNode(): void {
+      disconnectVerticalScrollbarSignal()
+      scrollNode = null
     }
 
     return () => {
@@ -204,17 +320,16 @@ export const VirtualList = defineComponent({
         horizontal_scroll_mode: toScrollMode(false, 'disabled'),
         vertical_scroll_mode: toScrollMode(true, props.scrollbarMode),
         'custom_minimum_size:y': viewportHeight,
-        onScrolling: syncScrollOffsetFromNode,
         onScrollStarted: () => emit('scrollStarted'),
         onScrollEnded: () => emit('scrollEnded'),
         onVnodeMounted: (vnode: VNode) => {
-          scrollNode = vnode.el
+          attachScrollNode(vnode.el)
         },
         onVnodeUpdated: (vnode: VNode) => {
-          scrollNode = vnode.el
+          attachScrollNode(vnode.el)
         },
         onVnodeUnmounted: () => {
-          scrollNode = null
+          clearScrollNode()
         },
       }
 

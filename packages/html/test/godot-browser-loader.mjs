@@ -91,6 +91,34 @@ export function load(url, context, nextLoad) {
           }
         }
 
+        export class Callable {
+          constructor(value) {
+            const source = value instanceof Callable ? value._source : value
+            this.__mock = true
+            this.__kind = 'callable'
+            this._source = source
+            this._handler =
+              typeof source === 'function'
+                ? source
+                : typeof source?.handler === 'function'
+                  ? source.handler
+                  : null
+          }
+
+          static create(...args) {
+            const handler = args.length === 1 ? args[0] : args[1]
+            return {
+              __mock: true,
+              __kind: 'callable-source',
+              handler,
+            }
+          }
+
+          call(...args) {
+            return this._handler?.(...args)
+          }
+        }
+
         export class CameraFeed {
           constructor(input = {}) {
             this.__mock = true

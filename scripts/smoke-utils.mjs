@@ -20,12 +20,14 @@ export const packageDirs = {
 
 const GODOT_SCRIPT_LOAD_ERROR_PATTERNS = [
   /\[jsb\]\[Error\]/,
+  /\[vue-godot\] Unable to (?:connect|disconnect) signal/,
   /failed to check out module/,
   /javascript file is missing/,
   /something went wrong on loading/,
   /unknown module:/,
   /Resource file not found:/,
   /Error loading resource:/,
+  /Attempt to (?:connect|disconnect) nonexistent signal/,
 ]
 
 const GODOT_IMPORT_TIMEOUT_MS = 60_000
@@ -219,7 +221,7 @@ export function assertNoGodotScriptLoadErrors(output, context) {
   const diagnostics = relevantGodotDiagnosticLines(output)
   throw new Error(
     [
-      `${context} printed GodotJS script-load or asset-load diagnostics`,
+      `${context} printed GodotJS script-load, asset-load, or signal wiring diagnostics`,
       diagnostics || output,
     ]
       .filter(Boolean)

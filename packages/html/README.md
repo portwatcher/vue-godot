@@ -562,7 +562,7 @@ The component supports `horizontal`, `vertical`, `scrollbarMode`, `horizontalScr
 </VirtualList>
 ```
 
-It supports `items` or `itemCount`, `itemHeight`, `height`, `overscan`, `scrollOffset`, `keyField`, `keyExtractor`, `scrollbarMode`, `scrollStep`, `style`, `contentStyle`, and `itemStyle`. The default slot receives `{ item, index, key, range }`. Godot's `scrolling` signal updates the rendered range and emits `scroll` plus `update:scrollOffset`.
+It supports `items` or `itemCount`, `itemHeight`, `height`, `overscan`, `scrollOffset`, `keyField`, `keyExtractor`, `scrollbarMode`, `scrollStep`, `style`, `contentStyle`, and `itemStyle`. The default slot receives `{ item, index, key, range }`. The component listens to the internal vertical `ScrollBar`'s `scrolling` signal to update the rendered range and emit `scroll` plus `update:scrollOffset`.
 
 ### Progress and loading indicators
 
