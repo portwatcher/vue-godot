@@ -419,6 +419,7 @@ test('release readiness audit documents final removal blockers', () => {
     /applyReleaseReadinessFinalization/,
     /strict mode without --allow-open/,
     /evidence-backed final TODO proof\s+status/,
+    /finalization source text drift/,
     /working tree must be clean before final release readiness finalization/,
     /collectWarningMarkerHits/,
   ]) {
@@ -456,7 +457,8 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(production, /structured readiness check status/)
   assert.match(production, /release tooling\s+script wiring/)
   assert.match(production, /prematurely checked final TODO boxes/)
-  assert.match(production, /dirty worktree/)
+  assert.match(production, /source text drift/)
+  assert.match(production, /dirty\s+worktree/)
   assert.match(readme, /check:public-surface/)
   assert.match(production, /GitHub Actions run URLs for/)
   assert.match(production, /Release Preflight/)
@@ -476,8 +478,10 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(readme, /structured readiness check status/)
   assert.match(readme, /release tooling script wiring/)
   assert.match(readme, /prematurely checked final TODO boxes/)
-  assert.match(readme, /dirty worktree/)
+  assert.match(readme, /source text drift/)
+  assert.match(readme, /dirty\s+worktree/)
   assert.match(readDoc('docs/real-device-release.md'), /release:finalize-readiness/)
+  assert.match(readDoc('docs/real-device-release.md'), /source text drift/)
   assert.match(todo, /release:readiness/)
   assert.equal(example.releasePreflightRunConclusion, 'success')
   assert.equal(example.releasePreflightRunWorkflowName, 'Release Preflight')

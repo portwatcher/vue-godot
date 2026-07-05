@@ -113,8 +113,9 @@ npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json
 
 `release:finalize-readiness` rejects summaries generated with `--allow-open`,
 unexpected readiness blockers, missing evidence-backed final TODO proof status,
-package description warning markers, or a dirty worktree. Commit the finalizer
-edits, then rerun strict `npm run release:readiness`.
+package description warning markers, finalizer source text drift, or a dirty
+worktree. Commit the finalizer edits, then rerun strict
+`npm run release:readiness`.
 
 Use
 [`docs/release-readiness-evidence.example.json`](./release-readiness-evidence.example.json)

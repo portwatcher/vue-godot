@@ -146,3 +146,25 @@ test('release readiness finalizer checks final TODOs and removes warning markers
     [],
   )
 })
+
+test('release readiness finalizer rejects unexpected source text drift', () => {
+  const sources = readSources()
+  sources['README.md'] = sources['README.md'].replace(
+    [
+      'Production-readiness examples are tracked by the',
+      '[example app criteria](./docs/example-apps.md) before the project can remove',
+      'preview/experimental language.',
+    ].join('\n'),
+    'Example app coverage evidence is documented separately.',
+  )
+
+  const result = applyReleaseReadinessFinalization(
+    sources,
+    readyFinalizationSummary(),
+  )
+
+  assert.match(
+    result.errors.join('\n'),
+    /README\.md: finalization source text drift for root README example coverage wording/,
+  )
+})

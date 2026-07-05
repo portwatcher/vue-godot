@@ -46,6 +46,7 @@ const finalizationFiles = [
 
 const textReplacements = [
   {
+    label: 'TODO readiness status wording',
     file: 'TODO.md',
     before: [
       '- The project is not yet production ready because release/device evidence, CI',
@@ -58,12 +59,14 @@ const textReplacements = [
     ].join('\n'),
   },
   {
+    label: 'root README experimental warning',
     file: 'README.md',
     before:
       'This project is experimental and not production ready yet. Follow [@juryxiong](https://x.com/juryxiong) for updates.\n\n',
     after: '',
   },
   {
+    label: 'root README example coverage wording',
     file: 'README.md',
     before: [
       'Production-readiness examples are tracked by the',
@@ -76,11 +79,13 @@ const textReplacements = [
     ].join('\n'),
   },
   {
+    label: 'root README final support wording',
     file: 'README.md',
     before: 'before experimental/not-production-ready text is removed.',
     after: 'before the final support claim is published.',
   },
   {
+    label: 'compatibility experimental qualifier',
     file: 'docs/compatibility.md',
     before: [
       'This is the source of truth for Vue Godot API and component compatibility. The',
@@ -95,6 +100,7 @@ const textReplacements = [
     ].join('\n'),
   },
   {
+    label: 'production guide experimental intro',
     file: 'docs/production.md',
     before: [
       'Vue Godot is still experimental. Use this guide as the release checklist for',
@@ -106,6 +112,7 @@ const textReplacements = [
     ].join('\n'),
   },
   {
+    label: 'production guide gate intro',
     file: 'docs/production.md',
     before: [
       'Before removing experimental/not-production-ready language, the repository still',
@@ -114,6 +121,7 @@ const textReplacements = [
     after: 'For production release candidates, keep these gates green:',
   },
   {
+    label: 'production guide preview qualifier',
     file: 'docs/production.md',
     before: [
       'Until those are complete, treat release builds as preview/alpha-quality and',
@@ -123,6 +131,7 @@ const textReplacements = [
       'Keep release records explicit about the evidence used for each candidate.',
   },
   {
+    label: 'real-device release preview qualifier',
     file: 'docs/real-device-release.md',
     before:
       'the repository remains preview-quality for those device capabilities.',
@@ -305,12 +314,26 @@ function readFinalizationSources() {
   )
 }
 
-function replaceOnce(source, before, after) {
-  if (!source.includes(before)) {
-    return source
+function applyTextReplacement(source, replacement) {
+  if (source.includes(replacement.before)) {
+    return {
+      error: null,
+      source: source.replace(replacement.before, replacement.after),
+    }
   }
 
-  return source.replace(before, after)
+  if (replacement.after !== '' && source.includes(replacement.after)) {
+    return { error: null, source }
+  }
+
+  if (replacement.after === '') {
+    return { error: null, source }
+  }
+
+  return {
+    error: `${replacement.file}: finalization source text drift for ${replacement.label}`,
+    source,
+  }
 }
 
 function checkFinalTodoItems(source, summary) {
@@ -350,11 +373,14 @@ export function applyReleaseReadinessFinalization(sources, summary) {
   nextSources['TODO.md'] = checkFinalTodoItems(nextSources['TODO.md'], summary)
 
   for (const replacement of textReplacements) {
-    nextSources[replacement.file] = replaceOnce(
+    const result = applyTextReplacement(
       nextSources[replacement.file],
-      replacement.before,
-      replacement.after,
+      replacement,
     )
+    nextSources[replacement.file] = result.source
+    if (result.error) {
+      errors.push(result.error)
+    }
   }
 
   const warningHits = collectWarningMarkerHits((file) => nextSources[file] ?? '')

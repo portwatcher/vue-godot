@@ -196,9 +196,10 @@ npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json
 
 The finalizer refuses `--allow-open` summaries, unexpected readiness blockers,
 missing evidence-backed final TODO proof status, package description warning
-markers, or a dirty worktree. It only checks the final TODO boxes and removes
-public warning wording after strict evidence is ready. Commit those edits, then
-rerun `npm run release:readiness` without `--allow-open`.
+markers, finalizer source text drift, or a dirty worktree. It only checks the
+final TODO boxes and removes public warning wording after strict evidence is
+ready. Commit those edits, then rerun `npm run release:readiness` without
+`--allow-open`.
 
 Local-only preflight runs (`npm run release:preflight -- --local`) warn when
 this evidence is missing. Non-local preflight runs fail until the evidence file
