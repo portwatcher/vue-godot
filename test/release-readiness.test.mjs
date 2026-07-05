@@ -6,6 +6,7 @@ import path from 'node:path'
 import test from 'node:test'
 
 import {
+  ciEvidenceCommands,
   collectCheckedTodoEvidenceBlockers,
   collectFinalTodoStructureBlockers,
   collectFinalTodoRequirementStatuses,
@@ -744,6 +745,21 @@ test('release readiness summary includes missing evidence next actions', () => {
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }
+})
+
+test('release readiness CI evidence commands quote local branch names', () => {
+  assert.deepEqual(
+    ciEvidenceCommands('0123456789abcdef0123456789abcdef01234567', {
+      currentBranch: "release candidate's branch",
+      upstreamRef: null,
+    }),
+    [
+      'npm run check',
+      "git push --set-upstream origin 'release candidate'\\''s branch'",
+      'npm run release:ci -- --commit 0123456789abcdef0123456789abcdef01234567 --wait --output release/ci-runs.json',
+      'GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit 0123456789abcdef0123456789abcdef01234567 --dispatch-missing --wait --ref <release-candidate-branch-or-tag> --output release/ci-runs.json',
+    ],
+  )
 })
 
 test('release readiness reports a dirty worktree blocker', () => {

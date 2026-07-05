@@ -42,6 +42,7 @@ import {
   releasePackageConfigs,
   repoRoot,
   run,
+  shellQuote,
 } from './release-utils.mjs'
 
 const releaseReadinessEvidenceEnvVar =
@@ -883,10 +884,10 @@ function checkPublicSurface(blockers) {
   return false
 }
 
-function ciEvidenceCommands(commit, localGit) {
+export function ciEvidenceCommands(commit, localGit) {
   const pushCommand =
     localGit?.currentBranch && !localGit.upstreamRef
-      ? `git push --set-upstream origin ${localGit.currentBranch}`
+      ? `git push --set-upstream origin ${shellQuote(localGit.currentBranch)}`
       : 'git push'
 
   return [

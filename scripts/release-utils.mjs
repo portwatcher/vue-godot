@@ -116,6 +116,15 @@ export function normalizeCommitSha(value, optionName = '--commit') {
   return commit
 }
 
+export function shellQuote(value) {
+  const text = String(value)
+  if (/^[A-Za-z0-9_/:=.,@%+-]+$/.test(text)) {
+    return text
+  }
+
+  return `'${text.replaceAll("'", "'\\''")}'`
+}
+
 export function formatCommandFailure(command, commandArgs, result) {
   const rendered = [command, ...commandArgs].join(' ')
   return [

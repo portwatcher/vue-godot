@@ -15,7 +15,12 @@ import {
   releaseCiCommand as formatReleaseCiCommand,
   releaseDispatchRefPlaceholder,
 } from './release-handoff-commands.mjs'
-import { normalizeCommitSha, repoRoot, run } from './release-utils.mjs'
+import {
+  normalizeCommitSha,
+  repoRoot,
+  run,
+  shellQuote,
+} from './release-utils.mjs'
 
 export const releasePreflightWorkflowName = 'Release Preflight'
 export const requiredReleaseCiWorkflows = ['Check', 'Godot Smoke']
@@ -640,7 +645,7 @@ export function collectReleaseCiNextActions(output) {
   if (output.commitFound === false) {
     const pushCommand =
       localGit?.currentBranch && !localGit.upstreamRef
-        ? `git push --set-upstream origin ${localGit.currentBranch}`
+        ? `git push --set-upstream origin ${shellQuote(localGit.currentBranch)}`
         : 'git push'
     actions.push({
       id: 'push-release-candidate',

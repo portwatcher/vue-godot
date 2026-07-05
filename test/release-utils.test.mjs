@@ -4,6 +4,7 @@ import test from 'node:test'
 import {
   isFullCommitSha,
   normalizeCommitSha,
+  shellQuote,
 } from '../scripts/release-utils.mjs'
 
 const commit = '0123456789abcdef0123456789abcdef01234567'
@@ -31,4 +32,12 @@ test('normalizeCommitSha rejects branch names, short SHAs, and blank values', ()
     () => normalizeCommitSha('   ', '--expected-commit'),
     /--expected-commit requires a value/,
   )
+})
+
+test('shellQuote leaves safe tokens readable and quotes shell-sensitive values', () => {
+  assert.equal(shellQuote('develop'), 'develop')
+  assert.equal(shellQuote('release/candidate-1'), 'release/candidate-1')
+  assert.equal(shellQuote('release candidate'), "'release candidate'")
+  assert.equal(shellQuote("release'candidate"), "'release'\\''candidate'")
+  assert.equal(shellQuote('release;candidate'), "'release;candidate'")
 })

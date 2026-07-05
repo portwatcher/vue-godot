@@ -455,6 +455,35 @@ test('release CI output includes local git hints for unpushed commits', () => {
   )
 })
 
+test('release CI next actions quote local branch names in push commands', () => {
+  const actions = collectReleaseCiNextActions({
+    commit,
+    commitFound: false,
+    localGit: {
+      currentBranch: "release candidate's branch",
+      currentHead: commit,
+      commitIsHead: true,
+      dirtyWorktree: false,
+      upstreamCommit: null,
+      upstreamMatchesCommit: false,
+      upstreamRef: null,
+    },
+    missingWorkflowNames: requiredReleaseCiWorkflows,
+    releasePreflightRunCommit: null,
+    requiredWorkflowNames: requiredReleaseCiWorkflows,
+  })
+
+  assert.ok(
+    actions.some(
+      (action) =>
+        action.id === 'push-release-candidate' &&
+        action.commands.includes(
+          "git push --set-upstream origin 'release candidate'\\''s branch'",
+        ),
+    ),
+  )
+})
+
 test('release CI hints report stale upstreams and dirty worktrees', () => {
   const hints = collectReleaseCiHints({
     commit,
