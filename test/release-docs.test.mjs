@@ -92,6 +92,7 @@ test('release preflight enforces real device evidence', () => {
 
   for (const pattern of [
     /checkRealDeviceEvidence/,
+    /currentReleasePackageVersions/,
     /readRealDeviceEvidence/,
     /validateRealDeviceEvidence/,
     /realDeviceEvidenceEnvVar/,
@@ -137,6 +138,7 @@ test('release readiness audit documents final removal blockers', () => {
     /release-readiness evidence missing/,
     /collectUncheckedTodoItems/,
     /checkCleanWorktree/,
+    /currentReleasePackageVersions/,
     /validateRealDeviceEvidence/,
     /release-evidence-utils/,
     /releasePreflightWarningCount must be 0/,

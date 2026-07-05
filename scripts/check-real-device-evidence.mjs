@@ -5,7 +5,7 @@ import {
   resolveRealDeviceEvidencePath,
   validateRealDeviceEvidence,
 } from './real-device-evidence.mjs'
-import { repoRoot } from './release-utils.mjs'
+import { currentReleasePackageVersions, repoRoot } from './release-utils.mjs'
 
 function usage() {
   console.log(`Usage: node scripts/check-real-device-evidence.mjs [options]
@@ -89,6 +89,7 @@ function main() {
 
   const errors = validateRealDeviceEvidence(evidence, {
     expectedCommit: options.expectedCommit,
+    expectedPackageVersions: currentReleasePackageVersions(),
   })
 
   if (errors.length > 0) {

@@ -75,6 +75,15 @@ export function releasePackageConfigsInPublishOrder() {
   })
 }
 
+export function currentReleasePackageVersions() {
+  return Object.fromEntries(
+    releasePackageConfigs.map((config) => [
+      config.name,
+      readJson(path.join(config.dir, 'package.json')).version,
+    ]),
+  )
+}
+
 export function readJson(relativePath) {
   return JSON.parse(fs.readFileSync(path.join(repoRoot, relativePath), 'utf-8'))
 }

@@ -36,10 +36,11 @@ VUE_GODOT_REAL_DEVICE_EVIDENCE=release/real-device-evidence.json npm run release
 
 Use [real-device-evidence.example.json](./real-device-evidence.example.json) as
 the schema reference. The evidence file must include the tested commit, package
-versions, GodotJS version, successful Check and Godot Smoke GitHub Actions run
-URLs for `portwatcher/vue-godot` and commit SHAs, Android and iOS artifacts or
-hosted-device build identifiers, device model/OS/orientation/locale, selected
-APIs, and passed or explicitly skipped platform checks.
+versions matching the current package manifests, GodotJS version, successful
+Check and Godot Smoke GitHub Actions run URLs for `portwatcher/vue-godot` and
+commit SHAs, Android and iOS artifacts or hosted-device build identifiers,
+device model/OS/orientation/locale, selected APIs, and passed or explicitly
+skipped platform checks.
 
 Local-only preflight runs (`npm run release:preflight -- --local`) warn when
 this evidence is missing. Non-local preflight runs fail until the evidence file

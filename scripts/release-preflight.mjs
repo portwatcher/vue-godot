@@ -3,6 +3,7 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import {
   compareVersions,
+  currentReleasePackageVersions,
   expectedRange,
   formatCommandFailure,
   isTrustedPublishingEnvironment,
@@ -494,6 +495,7 @@ function checkRealDeviceEvidence() {
   const currentCommit = readCurrentCommit()
   const errors = validateRealDeviceEvidence(evidence, {
     expectedCommit: currentCommit ?? undefined,
+    expectedPackageVersions: currentReleasePackageVersions(),
   })
 
   if (errors.length > 0) {

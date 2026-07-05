@@ -8,7 +8,10 @@ import {
   resolveRealDeviceEvidencePath,
   validateRealDeviceEvidence,
 } from '../scripts/real-device-evidence.mjs'
-import { releasePackageConfigs } from '../scripts/release-utils.mjs'
+import {
+  currentReleasePackageVersions,
+  releasePackageConfigs,
+} from '../scripts/release-utils.mjs'
 
 const repoRoot = process.cwd()
 
@@ -49,9 +52,12 @@ function validEvidence() {
 }
 
 test('real device evidence accepts a complete Android and iOS sign-off', () => {
+  const evidence = validEvidence()
+
   assert.deepEqual(
-    validateRealDeviceEvidence(validEvidence(), {
+    validateRealDeviceEvidence(evidence, {
       expectedCommit: '0123456789abcdef0123456789abcdef01234567',
+      expectedPackageVersions: evidence.packageVersions,
     }),
     [],
   )
@@ -81,6 +87,19 @@ test('real device evidence rejects stale commit evidence', () => {
       expectedCommit: 'ffffffffffffffffffffffffffffffffffffffff',
     }).join('\n'),
     /must match current commit/,
+  )
+})
+
+test('real device evidence rejects stale package versions when expected versions are provided', () => {
+  const evidence = validEvidence()
+  const expectedPackageVersions = { ...evidence.packageVersions }
+  evidence.packageVersions['@vue-godot/html'] = '9.9.9'
+
+  assert.match(
+    validateRealDeviceEvidence(evidence, { expectedPackageVersions }).join(
+      '\n',
+    ),
+    /evidence\.packageVersions\.@vue-godot\/html must match current package version 0\.0\.0/,
   )
 })
 
@@ -120,7 +139,12 @@ test('checked-in real device evidence example matches the validator schema', () 
 
   assert.deepEqual(errors, [])
   assert.ok(evidence)
-  assert.deepEqual(validateRealDeviceEvidence(evidence), [])
+  assert.deepEqual(
+    validateRealDeviceEvidence(evidence, {
+      expectedPackageVersions: currentReleasePackageVersions(),
+    }),
+    [],
+  )
 })
 
 test('real device evidence path resolves from the release environment variable', () => {

@@ -109,3 +109,35 @@ test('release readiness requires a GitHub Actions preflight run URL for this rep
     fs.rmSync(tempDir, { force: true, recursive: true })
   }
 })
+
+test('release readiness rejects stale real-device package versions', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
+  const realDevicePath = path.join(tempDir, 'real-device-evidence.json')
+  const evidence = JSON.parse(
+    fs.readFileSync('docs/real-device-evidence.example.json', 'utf-8'),
+  )
+  evidence.packageVersions['@vue-godot/html'] = '9.9.9'
+
+  fs.writeFileSync(realDevicePath, JSON.stringify(evidence, null, 2))
+
+  try {
+    const result = runReadiness([
+      '--allow-open',
+      '--real-device-path',
+      realDevicePath,
+      '--readiness-path',
+      'docs/release-readiness-evidence.example.json',
+      '--expected-commit',
+      '0123456789abcdef0123456789abcdef01234567',
+    ])
+    const output = `${result.stdout}\n${result.stderr}`
+
+    assert.equal(result.status, 0)
+    assert.match(
+      output,
+      /packageVersions\.@vue-godot\/html must match current package version/,
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})

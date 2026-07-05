@@ -174,10 +174,25 @@ export function validateRealDeviceEvidence(evidence, options = {}) {
   if (!isRecord(evidence.packageVersions)) {
     errors.push('evidence.packageVersions must be an object')
   } else {
+    const expectedPackageVersions = isRecord(options.expectedPackageVersions)
+      ? options.expectedPackageVersions
+      : null
+
     for (const config of releasePackageConfigs) {
       if (!hasNonEmptyString(evidence.packageVersions, config.name)) {
         errors.push(
           `evidence.packageVersions.${config.name} must be a non-empty string`,
+        )
+        continue
+      }
+
+      const expectedVersion = expectedPackageVersions?.[config.name]
+      if (
+        typeof expectedVersion === 'string' &&
+        evidence.packageVersions[config.name] !== expectedVersion
+      ) {
+        errors.push(
+          `evidence.packageVersions.${config.name} must match current package version ${expectedVersion}`,
         )
       }
     }

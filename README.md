@@ -291,7 +291,7 @@ The `Godot Smoke` GitHub Actions workflow installs the pinned `GodotJS_1.0.0-2` 
 
 `npm run smoke:public-cli` must be run after publishing. It uses `npx @vue-godot/cli@latest create --html` with no local package overrides, then builds the generated app. Set `VUE_GODOT_PUBLIC_CLI_SPEC=@vue-godot/cli@<version>` to test a specific published CLI version.
 
-`npm run check:real-device-evidence` reads `release/real-device-evidence.json` by default, or `VUE_GODOT_REAL_DEVICE_EVIDENCE` when the release evidence lives elsewhere. It validates the current Android/iOS export-smoke evidence format documented in [real device release checklist](./docs/real-device-release.md).
+`npm run check:real-device-evidence` reads `release/real-device-evidence.json` by default, or `VUE_GODOT_REAL_DEVICE_EVIDENCE` when the release evidence lives elsewhere. It validates the current Android/iOS export-smoke evidence format, including package versions against the current manifests, documented in [real device release checklist](./docs/real-device-release.md).
 
 `npm run release:readiness -- --allow-open` prints the remaining final-readiness blockers without failing while the production-readiness TODO is still open. The strict form, `npm run release:readiness`, is for the committed final removal candidate: it checks for a clean worktree, open TODO boxes, current real-device evidence, `release/release-readiness-evidence.json` for a successful warning-free Release Preflight workflow run, and public warning wording before experimental/not-production-ready text is removed.
 

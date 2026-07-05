@@ -41,7 +41,8 @@ is for the committed final removal candidate and fails unless the worktree is
 clean and TODO boxes, current real-device evidence,
 `release/release-readiness-evidence.json`, and public warning wording are all in
 the final release state. Evidence run URLs must be GitHub Actions run URLs for
-`portwatcher/vue-godot`. Use
+`portwatcher/vue-godot`, and real-device package versions must match the current
+package manifests. Use
 [`docs/release-readiness-evidence.example.json`](./release-readiness-evidence.example.json)
 as the schema reference for the post-preflight evidence file.
 

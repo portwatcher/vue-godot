@@ -13,7 +13,12 @@ import {
   hasNonEmptyString,
   isRecord,
 } from './release-evidence-utils.mjs'
-import { readJson, repoRoot, run } from './release-utils.mjs'
+import {
+  currentReleasePackageVersions,
+  readJson,
+  repoRoot,
+  run,
+} from './release-utils.mjs'
 
 const releaseReadinessEvidenceEnvVar =
   'VUE_GODOT_RELEASE_READINESS_EVIDENCE'
@@ -311,6 +316,7 @@ function checkRealDeviceEvidence(blockers, options, expectedCommit) {
 
   const errors = validateRealDeviceEvidence(evidence, {
     expectedCommit,
+    expectedPackageVersions: currentReleasePackageVersions(),
   })
   if (errors.length > 0) {
     blockers.push(
