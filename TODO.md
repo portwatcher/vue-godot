@@ -160,7 +160,7 @@ The project is production ready only when all of these are true:
   - [x] Support font family loading and fallback.
   - [x] Support percent sizes where Godot layout can represent them.
   - [x] Add style warnings for unsupported properties.
-- [ ] Improve accessibility and input:
+- [x] Improve accessibility and input:
   - [x] Focus management.
     - [x] Add `autoFocus` / `autofocus` mount-time focus for focusable controls.
     - [x] Map explicit focus traversal NodePaths to Godot focus graph props.
@@ -173,9 +173,9 @@ The project is production ready only when all of these are true:
     - [x] Add controller navigation examples and fallback guidance.
   - [x] Touch target behavior.
     - [x] Add opt-in `minTouchTarget` minimum Godot Control hit size for focusable controls.
-  - [ ] Accessible names, roles, labels, and hints where Godot exposes equivalents.
+  - [x] Accessible names, roles, labels, and hints where Godot exposes equivalents.
     - [x] Map accessible names, labels, hints, and titles to Godot `tooltip_text` on Control-backed components.
-    - [ ] Map roles if supported Godot bindings expose a native accessibility role API.
+    - [x] Map roles if supported Godot bindings expose a native accessibility role API.
   - [x] Document platform limitations honestly.
 
 ## P0: Native Device APIs

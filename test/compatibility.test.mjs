@@ -69,6 +69,10 @@ function parseCompatibilityRows(markdown) {
 }
 
 const rows = parseCompatibilityRows(compatibility)
+const htmlReadme = fs.readFileSync(
+  path.join(repoRoot, 'packages/html/README.md'),
+  'utf-8',
+)
 
 function normalize(value) {
   return value.replace(/`/g, '').toLowerCase()
@@ -222,6 +226,26 @@ test('html compatibility rows cover every registered component and tool API', ()
   for (const api of ['htmlPlugin', 'htmlTags', 'Volar plugin']) {
     assertDocumented(api, 'html')
   }
+})
+
+test('html accessibility docs match the checked-in Godot role support', () => {
+  const typingsDir = path.join(repoRoot, 'packages/runtime-tscn/typings')
+  const typingFiles = fs
+    .readdirSync(typingsDir)
+    .filter((name) => /^godot\d+\.gen\.d\.ts$/.test(name))
+  assert.ok(typingFiles.length > 0, 'Expected generated Godot typings')
+
+  const generatedTypings = typingFiles
+    .map((name) => fs.readFileSync(path.join(typingsDir, name), 'utf-8'))
+    .join('\n')
+
+  assert.doesNotMatch(
+    generatedTypings,
+    /\b(?:get|set)\s+(?:accessibility_|accessible_|aria_)?role\b|\b(?:get|set)\s+accessibility_/i,
+    'If Godot exposes portable accessibility role bindings, map role props instead of documenting them as unavailable.',
+  )
+  assert.match(compatibility, /Native ARIA role mapping is not implemented/)
+  assert.match(htmlReadme, /Native ARIA role mapping is not implemented/)
 })
 
 test('device compatibility rows cover core registry, adapters, and submodules', () => {
