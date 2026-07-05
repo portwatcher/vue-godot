@@ -17,6 +17,8 @@ const {
   Progress,
   KeyboardAvoidingView,
   SafeAreaView,
+  Screen,
+  ScreenStack,
   ScrollView,
   Switch,
   VirtualList,
@@ -38,6 +40,8 @@ test('htmlTags includes every lowercase component tag', () => {
   assert.ok(htmlTags.includes('pressable'))
   assert.ok(htmlTags.includes('progress'))
   assert.ok(htmlTags.includes('safeareaview'))
+  assert.ok(htmlTags.includes('screen'))
+  assert.ok(htmlTags.includes('screenstack'))
   assert.ok(htmlTags.includes('scrollview'))
   assert.ok(htmlTags.includes('switch'))
   assert.ok(htmlTags.includes('video'))
@@ -79,6 +83,10 @@ test('htmlPlugin registers PascalCase and lowercase components', () => {
   assert.equal(registered.get('progress'), Progress)
   assert.equal(registered.get('SafeAreaView'), SafeAreaView)
   assert.equal(registered.get('safeareaview'), SafeAreaView)
+  assert.equal(registered.get('Screen'), Screen)
+  assert.equal(registered.get('screen'), Screen)
+  assert.equal(registered.get('ScreenStack'), ScreenStack)
+  assert.equal(registered.get('screenstack'), ScreenStack)
   assert.equal(registered.get('ScrollView'), ScrollView)
   assert.equal(registered.get('scrollview'), ScrollView)
   assert.equal(registered.get('Switch'), Switch)

@@ -129,7 +129,7 @@ The project is production ready only when all of these are true:
   - [x] `<Switch>` / checkbox refinement.
   - [x] Radio input support.
   - [x] Form and label helpers.
-  - [ ] Screen/router container primitives.
+  - [x] Screen/router container primitives.
 - [ ] Make existing components production-grade:
   - [ ] `<Div>`
   - [ ] `<Span>`
@@ -335,6 +335,8 @@ Use this backlog to seed `docs/compatibility.md`.
 | `<Input type="radio">` | html | supported | `CheckBox` + `ButtonGroup` |
 | `<Form>` | html | supported | `PanelContainer` |
 | `<Label>` | html | supported | `Label` / `<Div>` wrapper |
+| `<Screen>` | html | supported | `Control` / `PanelContainer` |
+| `<ScreenStack>` | html | supported | `<Screen>` + named slots |
 | `<Canvas>` 2D context | html | partial | `CanvasItem` draw adapter |
 
 ## Final Removal Checklist

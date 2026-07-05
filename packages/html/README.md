@@ -141,6 +141,8 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 | `<Pressable>`       | `PanelContainer`                                                       | `disabled`, `longPressDelay`, interaction events |
 | `<Progress>`        | `ProgressBar`                                                          | `value`, `min`, `max`, `indeterminate`, `showPercentage` |
 | `<SafeAreaView>`    | `MarginContainer` / `PanelContainer`                                   | `edges`, `fallbackInsets`, `contentStyle` |
+| `<Screen>`          | `Control` / `PanelContainer` plus inner `<Div>`                        | `visible`, `fullRect`, `contentStyle` |
+| `<ScreenStack>`     | `<Screen>` plus active named slot                                      | `v-model`, `routes`, `initialRouteName`, `contentStyle` |
 | `<ScrollView>`      | `ScrollContainer`                                                      | `horizontal`, `vertical`, `scrollbarMode`, `contentStyle` |
 | `<VirtualList>`     | `ScrollContainer` plus spacer `Control` nodes                          | `items`, `itemHeight`, `height`, `overscan`, slot props |
 | `<Span>`            | `Label`                                                                | text content, `style` |
@@ -158,7 +160,7 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 
 | API                                                                                                                                    | Description                                                                                              |
 | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Dialog`, `Div`, `Form`, `Img`, `Input`, `KeyboardAvoidingView`, `Label`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `SafeAreaView`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`, `VirtualList`) | Vue components backed by Godot nodes                                                                     |
+| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Dialog`, `Div`, `Form`, `Img`, `Input`, `KeyboardAvoidingView`, `Label`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `SafeAreaView`, `Screen`, `ScreenStack`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`, `VirtualList`) | Vue components backed by Godot nodes                                                                     |
 | `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
 | `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |
@@ -428,6 +430,48 @@ It supports `disabled`, `submitOnAccept`, `resetOnCancel`, `style`, and `content
 
 It supports `text`, `required`, `requiredIndicator`, `style`, and `contentStyle`. Text styling uses the same Godot-backed subset as `<Span>`: `fontSize`, `fontWeight`, `color`, `textAlign`, `textTransform`, `overflowWrap`, and `overflow`. The component groups label text with slot content visually; browser `for` / `id` focus binding is not implemented.
 
+### Screen and screen stack scope
+
+`<Screen>` maps to a full-parent Godot `Control` or `PanelContainer` surface with an inner `<Div>` content wrapper:
+
+```vue
+<Screen
+  :style="{ backgroundColor: '#111827' }"
+  :content-style="{ gap: 12, padding: 16 }"
+>
+  <Span>Home</Span>
+  <Button @click="save">Save</Button>
+</Screen>
+```
+
+It supports `visible`, `fullRect`, `style`, and `contentStyle`. By default, it anchors to the full parent with right/bottom anchors set to `1` and zero offsets. Set `fullRect` to `false` when rendering a screen inline inside another layout.
+
+`<ScreenStack>` wraps `<Screen>` and renders the active route's named slot:
+
+```vue
+<ScreenStack
+  v-model="activeRoute"
+  :routes="[
+    { name: 'home', title: 'Home' },
+    { name: 'settings', title: 'Settings' },
+  ]"
+  @navigate="onNavigate"
+  @back="onBack"
+>
+  <template #home="{ route, navigate }">
+    <Span>{{ route.title }}</Span>
+    <Button @click="navigate('settings')">Settings</Button>
+  </template>
+
+  <template #settings="{ route, back }">
+    <Span>{{ route.title }}</Span>
+    <Button @click="back()">Back</Button>
+  </template>
+</ScreenStack>
+```
+
+Routes are plain objects with `name`, optional `title`, `params`, and `meta`. Slot props include `{ route, routeName, index, routes, canGoBack, navigate, back }`. The component manages a small in-memory back stack and emits `update:modelValue`, `navigate`, and `back`. It is a screen container primitive for native-style app shells; Vue Router integration, deep links, Android back handling, and tab/modal route examples are tracked separately in the routing TODOs.
+
 ### Pressable interaction scope
 
 `<Pressable>` maps to a focusable Godot `PanelContainer` and exposes mouse/touch/key/controller activation through Godot `gui_input`, focus, and mouse-enter/exit signals:
@@ -571,6 +615,8 @@ This package is in early development. Currently scaffolded:
 - [x] `<Dialog>` — confirmation dialog (`AcceptDialog`, confirm/cancel/close events)
 - [x] `<Form>` — focusable form wrapper (`PanelContainer`, submit/reset input actions, content wrapper)
 - [x] `<Label>` — text or control label helper (`Label`, required indicator, text style subset)
+- [x] `<Screen>` — full-parent screen surface (`Control` / `PanelContainer`, content wrapper)
+- [x] `<ScreenStack>` — route-name screen stack container (named slots, `v-model`, back stack helpers)
 - [x] `<Pressable>` — focusable interactive wrapper (`PanelContainer`, hover/focus/press/long-press state)
 - [x] `<SafeAreaView>` — safe-area layout helper (`DisplayServer.get_display_safe_area()`, margin padding, fallback insets)
 - [x] `<KeyboardAvoidingView>` — virtual keyboard layout helper (`DisplayServer.virtual_keyboard_get_height()`, padding/position/height behavior, fallback height)

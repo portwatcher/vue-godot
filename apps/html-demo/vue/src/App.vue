@@ -311,6 +311,48 @@
     }}
   </Span>
 
+  <!-- ===== Section: Screen / ScreenStack ===== -->
+  <Span>--- Screen / ScreenStack ---</Span>
+  <Screen
+    :full-rect="false"
+    :style="{ width: 420, backgroundColor: '#1e1b4b' }"
+    :content-style="{ gap: 6, padding: 10 }"
+  >
+    <Span :style="{ color: '#ddd6fe', fontWeight: 'bold' }">
+      Standalone screen surface
+    </Span>
+    <Span :style="{ color: '#c4b5fd' }">
+      Inline mode keeps this demo section in flow.
+    </Span>
+  </Screen>
+  <ScreenStack
+    v-model="activeScreen"
+    :routes="screenRoutes"
+    :full-rect="false"
+    :style="{ width: 420, backgroundColor: '#172033' }"
+    :content-style="{ gap: 8, padding: 10 }"
+    @navigate="onScreenNavigate"
+    @back="onScreenBack"
+  >
+    <template #home="{ route, navigate }">
+      <Span :style="{ color: '#bae6fd', fontWeight: 'bold' }">
+        {{ route.title }}
+      </Span>
+      <Button @click="navigate('settings')">Open Settings Screen</Button>
+    </template>
+    <template #settings="{ route, back }">
+      <Span :style="{ color: '#fecaca', fontWeight: 'bold' }">
+        {{ route.title }}
+      </Span>
+      <Button @click="back()">Back To Home</Button>
+    </template>
+  </ScreenStack>
+  <Span>
+    {{
+      `ScreenStack active=${activeScreen} transitions=${screenTransitionCount}`
+    }}
+  </Span>
+
   <!-- ===== Section: Input (text) ===== -->
   <Span>--- Input (text) ---</Span>
   <Input v-model="textValue" placeholder="Type something..."></Input>
@@ -543,6 +585,22 @@ function onFormSubmit() {
 function onFormReset() {
   formResetCount.value++
   formName.value = ''
+}
+
+// --- Screen / ScreenStack ---
+const screenRoutes = [
+  { name: 'home', title: 'Home Screen' },
+  { name: 'settings', title: 'Settings Screen' },
+]
+const activeScreen = ref('home')
+const screenTransitionCount = ref(0)
+
+function onScreenNavigate() {
+  screenTransitionCount.value++
+}
+
+function onScreenBack() {
+  screenTransitionCount.value++
 }
 
 // --- Input ---

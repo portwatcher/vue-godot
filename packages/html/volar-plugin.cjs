@@ -34,6 +34,8 @@ const htmlTags = [
   'pressable',
   'progress',
   'safeareaview',
+  'screen',
+  'screenstack',
   'scrollview',
   'switch',
   'canvas',
