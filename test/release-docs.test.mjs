@@ -103,8 +103,10 @@ test('release preflight enforces real device evidence', () => {
     /currentReleasePackageVersions/,
     /readRealDeviceEvidence/,
     /validateRealDeviceEvidence/,
+    /verifyRealDeviceEvidenceRuns/,
     /realDeviceEvidenceEnvVar/,
     /Real device evidence missing/,
+    /Real device CI run evidence could not be verified/,
   ]) {
     assert.match(preflight, pattern)
   }
@@ -115,8 +117,10 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(production, /check:real-device-evidence/)
   assert.match(production, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
+  assert.match(production, /GitHub\s+Actions metadata/)
   assert.match(readme, /check:real-device-evidence/)
   assert.match(readme, /real-device-evidence\.json/)
+  assert.match(readme, /GitHub Actions metadata/)
   assert.match(workflow, /real_device_evidence_path/)
   assert.match(workflow, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
   assert.match(production, /Release Preflight/)

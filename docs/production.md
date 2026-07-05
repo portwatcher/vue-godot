@@ -29,7 +29,8 @@ component coverage.
 evidence JSON when it exists. `release:preflight` verifies package metadata,
 generated package specs, dry-run package contents including every
 `package.json` export target, registry state, publish environment assumptions,
-serious example app readiness, Godot smoke, and real device evidence.
+serious example app readiness, Godot smoke, real device evidence, and GitHub
+Actions metadata for the Check/Godot Smoke run URLs recorded in that evidence.
 
 The local preflight command may warn when Godot smoke is skipped or when package
 versions are newer than the registry. Release builds should run the full
@@ -40,15 +41,17 @@ trusted-publishing checks. Real-device evidence is read from
 only; non-local preflight fails when either gate is skipped.
 
 `npm run release:readiness -- --allow-open` reports final-removal blockers while
-the production TODO remains open. The strict `npm run release:readiness` command
-is for the committed final removal candidate and fails unless the worktree is
-clean and TODO boxes, current real-device evidence,
+the production TODO remains open and does not contact GitHub. The strict
+`npm run release:readiness` command is for the committed final removal candidate
+and fails unless the worktree is clean and TODO boxes, current real-device evidence,
 public-surface documentation/demo alignment,
 `release/release-readiness-evidence.json`, and public warning wording are all in
 the final release state. Evidence run URLs must be GitHub Actions run URLs for
-`portwatcher/vue-godot`, workflow names must match `Check`, `Godot Smoke`, and
-`Release Preflight`, and real-device package versions must match the current
-package manifests. Use
+`portwatcher/vue-godot`; in strict mode the run metadata is fetched from GitHub,
+the workflow names must match `Check`, `Godot Smoke`, and `Release Preflight`,
+the run commits must match the evidence commit, the runs must be completed
+successfully, and real-device package versions must match the current package
+manifests. Use
 [`docs/release-readiness-evidence.example.json`](./release-readiness-evidence.example.json)
 as the schema reference for the post-preflight evidence file.
 

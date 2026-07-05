@@ -5,6 +5,7 @@ import {
   assertGitHubActionsRunUrl,
   hasNonEmptyString,
   isRecord,
+  verifyGitHubActionsRunUrl,
 } from './release-evidence-utils.mjs'
 import { releasePackageConfigs, repoRoot } from './release-utils.mjs'
 
@@ -215,6 +216,39 @@ export function validateRealDeviceEvidence(evidence, options = {}) {
 
   validatePlatformEvidence(evidence, 'android', errors)
   validatePlatformEvidence(evidence, 'ios', errors)
+
+  return errors
+}
+
+export async function verifyRealDeviceEvidenceRuns(evidence, options = {}) {
+  const specs = [
+    {
+      urlKey: 'checkRunUrl',
+      workflowName: 'Check',
+      label: 'evidence.checkRunUrl',
+    },
+    {
+      urlKey: 'godotSmokeRunUrl',
+      workflowName: 'Godot Smoke',
+      label: 'evidence.godotSmokeRunUrl',
+    },
+  ]
+  const errors = []
+
+  for (const spec of specs) {
+    errors.push(
+      ...(await verifyGitHubActionsRunUrl(
+        evidence[spec.urlKey],
+        {
+          label: spec.label,
+          workflowName: spec.workflowName,
+          commit: evidence.commit,
+          conclusion: 'success',
+        },
+        options,
+      )),
+    )
+  }
 
   return errors
 }

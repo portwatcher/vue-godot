@@ -7,12 +7,14 @@ import {
   realDeviceEvidenceEnvVar,
   resolveRealDeviceEvidencePath,
   validateRealDeviceEvidence,
+  verifyRealDeviceEvidenceRuns,
 } from './real-device-evidence.mjs'
 import {
   assertExactString,
   assertGitHubActionsRunUrl,
   hasNonEmptyString,
   isRecord,
+  verifyGitHubActionsRunUrl,
 } from './release-evidence-utils.mjs'
 import { collectPublicSurfaceAuditErrors } from './public-surface-audit.mjs'
 import {
@@ -301,7 +303,7 @@ function validateReleaseReadinessEvidence(evidence, expectedCommit) {
   return errors
 }
 
-function checkRealDeviceEvidence(blockers, options, expectedCommit) {
+async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
   const evidencePath =
     options.realDevicePath ?? resolveRealDeviceEvidencePath(process.env)
   const { evidence, errors: readErrors } = readRealDeviceEvidence(evidencePath)
@@ -333,10 +335,25 @@ function checkRealDeviceEvidence(blockers, options, expectedCommit) {
         .filter(Boolean)
         .join('\n'),
     )
+    return
+  }
+
+  if (!options.allowOpen) {
+    const runErrors = await verifyRealDeviceEvidenceRuns(evidence)
+    if (runErrors.length > 0) {
+      blockers.push(
+        [
+          `real-device CI run evidence could not be verified: ${relative(
+            evidencePath,
+          )}`,
+          ...runErrors,
+        ].join('\n'),
+      )
+    }
   }
 }
 
-function checkReleaseReadinessEvidence(blockers, options, expectedCommit) {
+async function checkReleaseReadinessEvidence(blockers, options, expectedCommit) {
   const evidencePath = resolveReadinessEvidencePath(options)
   const { evidence, errors: readErrors } = readJsonEvidence(evidencePath)
 
@@ -361,6 +378,29 @@ function checkReleaseReadinessEvidence(blockers, options, expectedCommit) {
         ...errors,
       ].join('\n'),
     )
+    return
+  }
+
+  if (!options.allowOpen) {
+    const runErrors = await verifyGitHubActionsRunUrl(
+      evidence.releasePreflightRunUrl,
+      {
+        label: 'releaseReadiness.releasePreflightRunUrl',
+        workflowName: 'Release Preflight',
+        commit: evidence.commit,
+        conclusion: 'success',
+      },
+    )
+    if (runErrors.length > 0) {
+      blockers.push(
+        [
+          `release-readiness CI run evidence could not be verified: ${relative(
+            evidencePath,
+          )}`,
+          ...runErrors,
+        ].join('\n'),
+      )
+    }
   }
 }
 
@@ -404,14 +444,18 @@ function checkPublicSurface(blockers) {
   blockers.push(['public surface audit failed', ...errors].join('\n'))
 }
 
-function main() {
+async function main() {
   const options = parseArgs(process.argv.slice(2))
   const blockers = collectUncheckedTodoItems()
   const expectedCommit = options.expectedCommit ?? currentCommit(blockers)
 
   checkCleanWorktree(blockers)
-  checkRealDeviceEvidence(blockers, options, expectedCommit ?? undefined)
-  checkReleaseReadinessEvidence(blockers, options, expectedCommit ?? undefined)
+  await checkRealDeviceEvidence(blockers, options, expectedCommit ?? undefined)
+  await checkReleaseReadinessEvidence(
+    blockers,
+    options,
+    expectedCommit ?? undefined,
+  )
 
   const packageJson = readJson('package.json')
 
@@ -483,7 +527,7 @@ function main() {
 }
 
 try {
-  main()
+  await main()
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error))
   process.exit(1)

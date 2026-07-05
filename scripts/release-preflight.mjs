@@ -20,6 +20,7 @@ import {
   realDeviceEvidenceEnvVar,
   resolveRealDeviceEvidencePath,
   validateRealDeviceEvidence,
+  verifyRealDeviceEvidenceRuns,
 } from './real-device-evidence.mjs'
 
 const args = new Set(process.argv.slice(2))
@@ -472,7 +473,7 @@ function recordRealDeviceEvidenceIssue(message) {
   }
 }
 
-function checkRealDeviceEvidence() {
+async function checkRealDeviceEvidence() {
   logStep('checking real device evidence')
 
   const evidencePath = resolveRealDeviceEvidencePath(process.env)
@@ -503,6 +504,17 @@ function checkRealDeviceEvidence() {
       [`Real device evidence is incomplete: ${relativePath}`, ...errors].join(
         '\n',
       ),
+    )
+    return
+  }
+
+  const runErrors = await verifyRealDeviceEvidenceRuns(evidence)
+  if (runErrors.length > 0) {
+    recordRealDeviceEvidenceIssue(
+      [
+        `Real device CI run evidence could not be verified: ${relativePath}`,
+        ...runErrors,
+      ].join('\n'),
     )
     return
   }
@@ -551,7 +563,7 @@ async function main() {
   checkPublishEnvironment(publishNeeded)
   checkSeriousExampleApps()
   checkGodotSmoke()
-  checkRealDeviceEvidence()
+  await checkRealDeviceEvidence()
   printSummary()
 }
 

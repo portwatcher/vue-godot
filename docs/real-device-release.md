@@ -44,6 +44,13 @@ for `portwatcher/vue-godot`, Android and iOS artifacts or hosted-device build
 identifiers, device model/OS/orientation/locale, selected APIs, and passed or
 explicitly skipped platform checks.
 
+Non-local `release:preflight` reads the recorded Check and Godot Smoke run URLs
+from the GitHub Actions API and fails if either run is not completed,
+successful, named for the expected workflow, or attached to the evidence commit.
+The final strict `release:readiness` gate applies the same check and also
+verifies the recorded Release Preflight run metadata. The `--allow-open`
+readiness audit stays offline so it can be used before final evidence exists.
+
 Local-only preflight runs (`npm run release:preflight -- --local`) warn when
 this evidence is missing. Non-local preflight runs fail until the evidence file
 exists and validates for the current commit.
