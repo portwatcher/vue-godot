@@ -268,7 +268,7 @@ The project is production ready only when all of these are true:
 - [x] Add a compatibility test suite organized by API.
 - [ ] Add real Godot smoke coverage for each supported browser/device API.
 - [ ] Add real device CI/manual release checklist for Android and iOS.
-- [ ] Add memory leak checks for repeated mount/unmount and navigation.
+- [x] Add memory leak checks for repeated mount/unmount and navigation.
 - [ ] Add performance benchmarks:
   - [ ] Startup time.
   - [ ] First Vue render.

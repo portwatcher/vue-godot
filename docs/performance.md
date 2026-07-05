@@ -17,7 +17,7 @@ CI records and fails on the relevant measurements.
 | Hot reload edit to rebuilt `dist/app.js` | <= 1s starter, <= 3s serious app | app-owned budget | Keep stable chunk names to avoid Godot editor dependency churn. |
 | Large list rendering | 60 fps target while scrolling | no sustained frame over 33ms | Use `<VirtualList>` for large fixed-height lists. |
 | Asset loading for first screen | critical local assets <= 250ms after mount | remote assets async and non-blocking | Import or preload critical `res://` resources where possible. |
-| Repeated mount/unmount | 100 cycles without stale rendered children | no unbounded memory growth | Existing unit and smoke tests cover stale children; memory gates are still pending. |
+| Repeated mount/unmount | 100 cycles without stale rendered children | no unbounded memory growth | Unit stress tests cover repeated mount/unmount and keyed navigation stale-node release; real heap gates are still pending. |
 | Fetch/WebSocket responsiveness | app-owned timeout budget | app-owned timeout budget | Use abort/timeouts and avoid blocking first render on non-critical network calls. |
 
 If an app needs different numbers, commit the app-specific budget in its docs or
@@ -137,7 +137,9 @@ npm run smoke:editor-reload
 
 Set `GODOT_BIN=/path/to/godot` when the executable is not discoverable. These
 smokes catch stale children, missing module imports, unstable chunk paths, and
-editor reload behavior. They do not replace future memory-budget benchmarks.
+editor reload behavior. Runtime stress tests also cover repeated mount/unmount
+and keyed navigation stale-node release. They do not replace future
+memory-budget benchmarks.
 
 ## Bundle And Build Hygiene
 
