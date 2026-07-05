@@ -366,7 +366,7 @@ Run this checklist before removing "not production ready", "alpha", or "experime
 
 - [ ] Every P0 item is complete.
 - [ ] Every P1 item is complete or explicitly moved to P2 with maintainer approval.
-- [ ] `docs/compatibility.md` is complete and linked from root README and package READMEs.
+- [x] `docs/compatibility.md` is complete and linked from root README and package READMEs.
 - [ ] Serious native app demo is complete and passes build/smoke.
 - [ ] Serious game UI demo is complete and passes build/smoke.
 - [ ] Android export with selected device APIs has been tested.
