@@ -258,6 +258,14 @@ test('release preflight enforces real device evidence', () => {
     /Release commit options \(`--commit`, `--expected-commit`, and\s+`--release-preflight-run-commit`\) require full 40-character git commit SHAs/,
   )
   assert.match(production, /--include-release-preflight/)
+  assert.match(
+    production,
+    /--release-preflight-run-commit "\$\(git rev-parse HEAD\)"/,
+  )
+  assert.doesNotMatch(
+    production,
+    /--release-preflight-run-commit <evidence-commit-sha>/,
+  )
   assert.match(production, /--dispatch-missing/)
   assert.match(production, /--wait/)
   assert.match(production, /GH_TOKEN="\$\(gh auth token\)"/)
@@ -324,6 +332,10 @@ test('release preflight enforces real device evidence', () => {
     production,
     /strict CI evidence is\s+still missing[\s\S]*refreshes Check and Godot\s+Smoke from the release-candidate ref[\s\S]*Release Preflight from\s+the current evidence commit ref[\s\S]*--release-preflight-run-commit "\$\(git rev-parse HEAD\)"/,
   )
+  assert.doesNotMatch(
+    production,
+    /--release-preflight-run-commit <evidence-commit-sha>/,
+  )
   assert.match(production, /--real-device-evidence-path/)
   assert.match(production, /--release-preflight-run-commit/)
   assert.match(production, /--ref <release-candidate-branch-or-tag>/)
@@ -374,6 +386,14 @@ test('release preflight enforces real device evidence', () => {
     /Release commit options \(`--commit`, `--expected-commit`, and `--release-preflight-run-commit`\) require full 40-character git commit SHAs/,
   )
   assert.match(readme, /--include-release-preflight/)
+  assert.match(
+    readme,
+    /--release-preflight-run-commit "\$\(git rev-parse HEAD\)"[\s\S]*from the evidence commit/,
+  )
+  assert.doesNotMatch(
+    readme,
+    /--release-preflight-run-commit <evidence-commit-sha>/,
+  )
   assert.match(readme, /--dispatch-missing/)
   assert.match(readme, /--wait/)
   assert.match(readme, /GH_TOKEN="\$\(gh auth token\)"/)
@@ -420,6 +440,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(
     readme,
     /strict CI evidence is still missing[\s\S]*refreshes Check and Godot Smoke from the release-candidate ref[\s\S]*Release Preflight from the current evidence commit ref[\s\S]*--release-preflight-run-commit "\$\(git rev-parse HEAD\)"/,
+  )
+  assert.doesNotMatch(
+    readme,
+    /--release-preflight-run-commit <evidence-commit-sha>/,
   )
   assert.match(readme, /--real-device-evidence-path/)
   assert.match(readme, /--release-preflight-run-commit/)
@@ -481,6 +505,14 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(checklist, /ci-runs\.json/)
   assert.match(checklist, /--include-release-preflight/)
+  assert.match(
+    checklist,
+    /--release-preflight-run-commit "\$\(git rev-parse HEAD\)"/,
+  )
+  assert.doesNotMatch(
+    checklist,
+    /--release-preflight-run-commit <evidence-commit-sha>/,
+  )
   assert.match(checklist, /--dispatch-missing/)
   assert.match(checklist, /--wait/)
   assert.match(checklist, /GH_TOKEN="\$\(gh auth token\)"/)
@@ -528,6 +560,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(
     checklist,
     /strict CI evidence is still missing[\s\S]*refreshes Check and Godot Smoke from the\s+release-candidate ref[\s\S]*Release Preflight from the evidence\s+ref[\s\S]*--release-preflight-run-commit "\$\(git rev-parse HEAD\)"/,
+  )
+  assert.doesNotMatch(
+    checklist,
+    /--release-preflight-run-commit <evidence-commit-sha>/,
   )
   assert.match(checklist, /--real-device-evidence-path/)
   assert.match(checklist, /--release-preflight-run-commit/)

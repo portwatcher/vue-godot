@@ -58,9 +58,9 @@ unless the branch or tag resolves to the same commit on GitHub. After the
 Release Preflight workflow passes, rerun it with `--include-release-preflight`
 so the same CI evidence file also includes the verified preflight run URL used
 by final readiness evidence. If that workflow runs on a follow-up evidence
-commit, pass
-`--release-preflight-run-commit <evidence-commit-sha>` while keeping
-`--commit <release-candidate-sha>` pointed at the tested release commit.
+commit, pass `--release-preflight-run-commit "$(git rev-parse HEAD)"` from the
+evidence commit while keeping `--commit <release-candidate-sha>` pointed at the
+tested release commit.
 `release:evidence` rejects not-ready or inconsistent structured CI summaries
 before writing evidence.
 `npm run release:platform-evidence -- --production-profile` creates a starter
@@ -114,9 +114,10 @@ helpers check that the summary commit matches and that the preflight had zero
 failures, zero warnings, did not use local-only mode, and did not skip release
 gates before recording those facts in final readiness evidence. When the
 preflight run URL is supplied manually from a follow-up evidence commit, pass
-`--release-preflight-run-commit <evidence-commit-sha>` so the run metadata is
-verified against the workflow commit while the summary and generated evidence
-still validate the tested release candidate.
+`--release-preflight-run-commit "$(git rev-parse HEAD)"` from the evidence
+commit, or the full evidence commit SHA if you are not on it, so the run
+metadata is verified against the workflow commit while the summary and generated
+evidence still validate the tested release candidate.
 
 The local preflight command may warn when Godot smoke is skipped or when package
 versions are newer than the registry. Release builds should run the full
@@ -214,7 +215,7 @@ workflow run URL with:
 npm run release:ci -- \
   --commit <release-candidate-sha> \
   --include-release-preflight \
-  --release-preflight-run-commit <evidence-commit-sha> \
+  --release-preflight-run-commit "$(git rev-parse HEAD)" \
   --output release/ci-runs.json
 ```
 
@@ -235,7 +236,7 @@ the workflow and evidence input:
 GH_TOKEN="$(gh auth token)" npm run release:ci -- \
   --commit <release-candidate-sha> \
   --include-release-preflight \
-  --release-preflight-run-commit <evidence-commit-sha> \
+  --release-preflight-run-commit "$(git rev-parse HEAD)" \
   --dispatch-missing \
   --wait \
   --ref <evidence-branch-or-tag> \
@@ -243,7 +244,8 @@ GH_TOKEN="$(gh auth token)" npm run release:ci -- \
   --output release/ci-runs.json
 ```
 
-For this later preflight dispatch, the ref must resolve to the evidence commit.
+For this later preflight dispatch, the ref must resolve to the current evidence
+commit.
 The helper sends the tested release candidate as the workflow `expected_commit`
 input, so non-local preflight validates `release/real-device-evidence.json`
 against the release commit even though the workflow run attaches to the

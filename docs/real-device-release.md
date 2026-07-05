@@ -212,7 +212,7 @@ run the preflight workflow on that follow-up evidence commit and keep
 npm run release:ci -- \
   --commit <release-candidate-sha> \
   --include-release-preflight \
-  --release-preflight-run-commit <evidence-commit-sha> \
+  --release-preflight-run-commit "$(git rev-parse HEAD)" \
   --output release/ci-runs.json
 ```
 
@@ -231,7 +231,7 @@ workflow input:
 GH_TOKEN="$(gh auth token)" npm run release:ci -- \
   --commit <release-candidate-sha> \
   --include-release-preflight \
-  --release-preflight-run-commit <evidence-commit-sha> \
+  --release-preflight-run-commit "$(git rev-parse HEAD)" \
   --dispatch-missing \
   --wait \
   --ref <evidence-branch-or-tag> \
@@ -240,7 +240,7 @@ GH_TOKEN="$(gh auth token)" npm run release:ci -- \
 ```
 
 For that later preflight dispatch, `<evidence-branch-or-tag>` must resolve to the
-evidence commit that contains `release/real-device-evidence.json`. The helper
+current evidence commit that contains `release/real-device-evidence.json`. The helper
 passes the tested release candidate to the workflow as `expected_commit`, so the
 non-local preflight validates the committed evidence against the release commit
 instead of against the evidence commit itself. If Check or Godot Smoke is still
@@ -268,8 +268,9 @@ skipped, failed, or warning-bearing summaries before writing readiness evidence.
 with `--include-release-preflight`, and the structured CI summary must report
 the Release Preflight workflow as ready; otherwise pass
 `--release-preflight-run-url` manually. Pass
-`--release-preflight-run-commit <evidence-commit-sha>` with a manual URL when
-the preflight run attached to a follow-up evidence commit.
+`--release-preflight-run-commit "$(git rev-parse HEAD)"` with a manual URL when
+the preflight run attached to the current evidence commit, or pass the full
+evidence commit SHA if you are not on it.
 `--release-preflight-warning-count 0` is only an optional consistency check when
 the summary artifact is also supplied.
 Commit the final evidence files before running strict readiness:
