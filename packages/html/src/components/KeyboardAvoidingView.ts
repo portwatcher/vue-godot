@@ -1,5 +1,10 @@
 import { defineComponent, h } from '@vue/runtime-core'
-import { createBackgroundPanelStyle } from '../utils/backgroundStyle.js'
+import {
+  createBackgroundPanelStyle,
+  createBackgroundTexturePanelProps,
+  createBackgroundTexturePanelStyle,
+} from '../utils/backgroundStyle.js'
+import { useBackgroundTexture } from '../utils/backgroundTexture.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
 import { createMarginThemeOverrides } from '../utils/edgeInsets.js'
 import {
@@ -45,6 +50,11 @@ export const KeyboardAvoidingView = defineComponent({
     },
   },
   setup(props, { slots }) {
+    const backgroundTexture = useBackgroundTexture(
+      () => props.style,
+      'KeyboardAvoidingView',
+    )
+
     return () => {
       const behavior = normalizeKeyboardAvoidingBehavior(props.behavior)
       const keyboardHeight = readVirtualKeyboardHeight(
@@ -88,20 +98,29 @@ export const KeyboardAvoidingView = defineComponent({
         { style: props.contentStyle ?? {} },
         slots.default?.(),
       )
+      const backgroundTextureStyle = createBackgroundTexturePanelStyle(
+        backgroundTexture.value,
+      )
       const backgroundStyle = createBackgroundPanelStyle(props.style)
+      let paddedContent = h('MarginContainer', marginProps, [content])
 
-      if (!backgroundStyle) {
+      if (backgroundStyle && backgroundTextureStyle) {
+        paddedContent = h(
+          'PanelContainer',
+          createBackgroundTexturePanelProps(backgroundTextureStyle),
+          [paddedContent],
+        )
+      }
+
+      if (!backgroundStyle && !backgroundTextureStyle) {
         return h('MarginContainer', { ...nodeProps, ...marginProps }, [content])
       }
 
-      return h(
-        'PanelContainer',
-        {
-          ...nodeProps,
-          'theme_override_styles/panel': backgroundStyle,
-        },
-        [h('MarginContainer', marginProps, [content])],
-      )
+      const panelProps: Record<string, unknown> = { ...nodeProps }
+      panelProps['theme_override_styles/panel'] =
+        backgroundStyle ?? backgroundTextureStyle
+
+      return h('PanelContainer', panelProps, [paddedContent])
     }
   },
 })

@@ -150,10 +150,10 @@ The project is production ready only when all of these are true:
 - [ ] Improve styling:
   - [x] Define the official style subset and document every property.
   - [ ] Add CSS parsing or stylesheet support if web migration requires it.
-  - [ ] Support margins, border radius, borders, background images where feasible.
+  - [x] Support margins, border radius, borders, background images where feasible.
     - [x] Margins.
     - [x] Border radius and borders.
-    - [ ] Background images.
+    - [x] Background images.
   - [ ] Support transforms and basic transitions/animations where feasible.
   - [ ] Support font family loading and fallback.
   - [ ] Support percent sizes where Godot layout can represent them.

@@ -1,5 +1,10 @@
 import { defineComponent, h, ref } from '@vue/runtime-core'
-import { createBackgroundPanelStyle } from '../utils/backgroundStyle.js'
+import {
+  createBackgroundPanelStyle,
+  createBackgroundTexturePanelProps,
+  createBackgroundTexturePanelStyle,
+} from '../utils/backgroundStyle.js'
+import { useBackgroundTexture } from '../utils/backgroundTexture.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
 import { FocusMode, readPressedState } from '../utils/controlInput.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
@@ -56,6 +61,10 @@ export const Pressable = defineComponent({
     'stateChange',
   ],
   setup(props, { slots, emit }) {
+    const backgroundTexture = useBackgroundTexture(
+      () => props.style,
+      'Pressable',
+    )
     const hovered = ref(false)
     const pressed = ref(false)
     const focused = ref(false)
@@ -171,11 +180,27 @@ export const Pressable = defineComponent({
       applyCommonControlStyleProps(nodeProps, props.style, 'Pressable')
 
       const backgroundStyle = createBackgroundPanelStyle(props.style)
+      const backgroundTextureStyle = createBackgroundTexturePanelStyle(
+        backgroundTexture.value,
+      )
       if (backgroundStyle) {
         nodeProps['theme_override_styles/panel'] = backgroundStyle
+      } else if (backgroundTextureStyle) {
+        nodeProps['theme_override_styles/panel'] = backgroundTextureStyle
       }
 
-      return h('PanelContainer', nodeProps, slots.default?.(state()))
+      const children = slots.default?.(state())
+      if (!backgroundStyle || !backgroundTextureStyle) {
+        return h('PanelContainer', nodeProps, children)
+      }
+
+      return h('PanelContainer', nodeProps, [
+        h(
+          'PanelContainer',
+          createBackgroundTexturePanelProps(backgroundTextureStyle),
+          children,
+        ),
+      ])
     }
   },
 })

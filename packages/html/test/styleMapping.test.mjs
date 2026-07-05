@@ -218,10 +218,12 @@ test('detects unsupported style keys against the documented subset', () => {
       borderRadius: 8,
       margin: 12,
       backgroundImage: 'url(panel.png)',
+      boxShadow: '0 0 4px black',
     }),
-    ['backgroundImage'],
+    ['boxShadow'],
   )
   assert.equal(supportedHtmlStyleKeys.includes('width'), true)
+  assert.equal(supportedHtmlStyleKeys.includes('backgroundImage'), true)
   assert.equal(supportedHtmlStyleKeys.includes('borderRadius'), true)
   assert.equal(supportedHtmlStyleKeys.includes('margin'), true)
 })

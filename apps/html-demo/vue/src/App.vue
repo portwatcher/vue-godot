@@ -13,6 +13,7 @@
       width: 560,
       minHeight: 120,
       backgroundColor: '#172033',
+      backgroundImage: `url('${demoSvgDataUri}')`,
       borderColor: '#60a5fa',
       borderWidth: 2,
       borderRadius: 8,

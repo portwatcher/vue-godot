@@ -41,6 +41,17 @@ export function load(url, context, nextLoad) {
           }
         }
 
+        export class StyleBoxTexture {
+          constructor() {
+            this.__mock = true
+            this.__kind = 'style-box-texture'
+            this.texture = null
+            this.draw_center = false
+            this.axis_stretch_horizontal = -1
+            this.axis_stretch_vertical = -1
+          }
+        }
+
         export class FontVariation {
           constructor() {
             this.__mock = true

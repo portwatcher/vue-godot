@@ -6,9 +6,12 @@ import { Fragment, h } from '@vue/runtime-core'
 register(new URL('./godot-browser-loader.mjs', import.meta.url).href)
 
 const { Div } = await import('../dist/components/Div.js')
+const { resolveBackgroundImageSource } = await import(
+  '../dist/utils/backgroundStyle.js'
+)
 
-function renderDiv(style = {}, slotChildren = []) {
-  const render = Div.setup(
+function setupDiv(style = {}, slotChildren = []) {
+  return Div.setup(
     { style },
     {
       slots: {
@@ -16,7 +19,18 @@ function renderDiv(style = {}, slotChildren = []) {
       },
     },
   )
+}
 
+function renderDiv(style = {}, slotChildren = []) {
+  const render = setupDiv(style, slotChildren)
+
+  return render()
+}
+
+async function renderDivAfterBackgroundLoad(style = {}, slotChildren = []) {
+  const render = setupDiv(style, slotChildren)
+  await Promise.resolve()
+  await Promise.resolve()
   return render()
 }
 
@@ -98,6 +112,63 @@ test('puts padding inside the background panel', () => {
     8,
   )
   assert.equal(vnode.children[0].children[0].type, 'HBoxContainer')
+})
+
+test('parses supported CSS backgroundImage url values', () => {
+  assert.equal(
+    resolveBackgroundImageSource('url("./assets/panel.png")'),
+    './assets/panel.png',
+  )
+  assert.equal(
+    resolveBackgroundImageSource("url('res://ui/panel.png')"),
+    'res://ui/panel.png',
+  )
+  assert.equal(
+    resolveBackgroundImageSource('url(user://panel.png)'),
+    'user://panel.png',
+  )
+  assert.equal(resolveBackgroundImageSource('none'), null)
+  assert.equal(resolveBackgroundImageSource('linear-gradient(red, blue)'), null)
+})
+
+test('wraps Div content in a texture panel for backgroundImage', async () => {
+  const vnode = await renderDivAfterBackgroundLoad({
+    backgroundImage: 'url("./assets/panel.png")',
+  })
+
+  assert.equal(vnode.type, 'PanelContainer')
+  const styleBox = vnode.props['theme_override_styles/panel']
+  assert.equal(styleBox.__kind, 'style-box-texture')
+  assert.equal(styleBox.texture.__kind, 'local')
+  assert.equal(styleBox.texture.path, 'res://assets/panel.png')
+  assert.equal(styleBox.draw_center, true)
+  assert.equal(styleBox.axis_stretch_horizontal, 0)
+  assert.equal(styleBox.axis_stretch_vertical, 0)
+  assert.equal(vnode.children[0].type, 'HBoxContainer')
+})
+
+test('keeps flat border panel outside texture background panel', async () => {
+  const vnode = await renderDivAfterBackgroundLoad({
+    backgroundColor: '#123456',
+    borderColor: '#60a5fa',
+    borderWidth: 2,
+    backgroundImage: 'url("res://ui/panel.png")',
+  })
+
+  assert.equal(vnode.type, 'PanelContainer')
+  assert.equal(
+    vnode.props['theme_override_styles/panel'].__kind,
+    'style-box-flat',
+  )
+  assert.equal(vnode.props['theme_override_styles/panel'].border_width_top, 2)
+
+  const texturePanel = vnode.children[0]
+  assert.equal(texturePanel.type, 'PanelContainer')
+  assert.equal(
+    texturePanel.props['theme_override_styles/panel'].__kind,
+    'style-box-texture',
+  )
+  assert.equal(texturePanel.children[0].type, 'HBoxContainer')
 })
 
 test('wraps margin outside panel and maps border styles', () => {

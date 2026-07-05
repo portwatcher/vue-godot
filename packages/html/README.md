@@ -75,6 +75,7 @@ Rather than embedding a layout engine like Yoga, we map a CSS flexbox subset to 
 | `padding: <n>`                                | `MarginContainer` wrapper or theme override                     |
 | `margin: <n>`                                 | Outer `MarginContainer` wrapper where supported                 |
 | `backgroundColor: <color>`                    | `PanelContainer` wrapper with `StyleBoxFlat`                    |
+| `backgroundImage: url(...)`                   | `PanelContainer` wrapper with `StyleBoxTexture`                 |
 | `borderColor` / `borderWidth` / `borderRadius` | `StyleBoxFlat` border and corner-radius props                 |
 | `color: <color>`                              | `theme_override_colors/font_color` on text controls             |
 | `fontWeight: 'bold'`                          | `theme_override_fonts/font` with `FontVariation` embolden       |
@@ -119,6 +120,7 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 | `minWidth`, `minHeight`, `maxWidth`, `maxHeight` | Clamps container minimum size where the component uses container sizing. |
 | `objectFit` | Maps media texture stretch/expand behavior for `<Img>` and `<Svg>`. |
 | `backgroundColor` | Maps to a `PanelContainer` `StyleBoxFlat` background where supported. |
+| `backgroundImage` | Supports a single `url(...)` image and maps loaded textures to a stretched `StyleBoxTexture` background where supported. |
 | `borderColor` | Maps to `StyleBoxFlat.border_color` where the component uses a panel style. |
 | `borderStyle` | Supports `'solid'` and `'none'` for `StyleBoxFlat` borders. |
 | `borderWidth`, `borderTopWidth`, `borderRightWidth`, `borderBottomWidth`, `borderLeftWidth` | Maps to `StyleBoxFlat` border widths. |
@@ -132,7 +134,7 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 | `overflow` | Supports `'hidden'` clipping where the backing Godot node exposes it. |
 | `opacity` | Maps to a Godot `modulate` alpha color. |
 
-Background images are not part of the current style subset. Use explicit media components such as `<Img>` or `<Svg>` until a texture-backed panel/background mapping is designed.
+Background images use the same loader as `<Img>` for local Godot paths, relative paths, data URIs, blob URLs, and remote URLs. CSS gradients, multiple backgrounds, repeat modes, and precise `background-size` / `background-position` behavior are not part of the current subset; the loaded texture is stretched to the panel bounds.
 
 ## Component Mapping
 
@@ -643,6 +645,7 @@ This package is in early development. Currently scaffolded:
 - [x] Theme override application (gap, padding)
 - [x] Theme override application (colors via `backgroundColor` and text `color`, bold text via `FontVariation`)
 - [x] Theme override application (margin wrappers plus `StyleBoxFlat` border and corner radius props)
+- [x] Texture-backed background images via `backgroundImage: url(...)`
 - [x] Size flag mapping (flex, align-self)
 - [x] Div renderer integration tests (nested fragment/array slot layouts)
 - [x] `<style>` block support is a non-goal for the current beta; use inline style objects until a CSS-to-Godot mapping exists.

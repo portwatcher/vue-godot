@@ -1,5 +1,10 @@
 import { defineComponent, h } from '@vue/runtime-core'
-import { createBackgroundPanelStyle } from '../utils/backgroundStyle.js'
+import {
+  createBackgroundPanelStyle,
+  createBackgroundTexturePanelProps,
+  createBackgroundTexturePanelStyle,
+} from '../utils/backgroundStyle.js'
+import { useBackgroundTexture } from '../utils/backgroundTexture.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
 import { createMarginThemeOverrides } from '../utils/edgeInsets.js'
 import {
@@ -36,6 +41,11 @@ export const SafeAreaView = defineComponent({
     },
   },
   setup(props, { slots }) {
+    const backgroundTexture = useBackgroundTexture(
+      () => props.style,
+      'SafeAreaView',
+    )
+
     return () => {
       const safeAreaInsets = readDisplayServerSafeAreaInsets(
         props.fallbackInsets,
@@ -48,22 +58,35 @@ export const SafeAreaView = defineComponent({
       const nodeProps: Record<string, unknown> = {}
       applyCommonControlStyleProps(nodeProps, props.style, 'SafeAreaView')
 
-      const content = h(Div, { style: props.contentStyle ?? {} }, slots.default?.())
+      const content = h(
+        Div,
+        { style: props.contentStyle ?? {} },
+        slots.default?.(),
+      )
       const marginProps = createMarginThemeOverrides(padding)
+      const backgroundTextureStyle = createBackgroundTexturePanelStyle(
+        backgroundTexture.value,
+      )
       const backgroundStyle = createBackgroundPanelStyle(props.style)
+      let paddedContent = h('MarginContainer', marginProps, [content])
 
-      if (!backgroundStyle) {
+      if (backgroundStyle && backgroundTextureStyle) {
+        paddedContent = h(
+          'PanelContainer',
+          createBackgroundTexturePanelProps(backgroundTextureStyle),
+          [paddedContent],
+        )
+      }
+
+      if (!backgroundStyle && !backgroundTextureStyle) {
         return h('MarginContainer', { ...nodeProps, ...marginProps }, [content])
       }
 
-      return h(
-        'PanelContainer',
-        {
-          ...nodeProps,
-          'theme_override_styles/panel': backgroundStyle,
-        },
-        [h('MarginContainer', marginProps, [content])],
-      )
+      const panelProps: Record<string, unknown> = { ...nodeProps }
+      panelProps['theme_override_styles/panel'] =
+        backgroundStyle ?? backgroundTextureStyle
+
+      return h('PanelContainer', panelProps, [paddedContent])
     }
   },
 })

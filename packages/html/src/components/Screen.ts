@@ -1,5 +1,10 @@
 import { defineComponent, h } from '@vue/runtime-core'
-import { createBackgroundPanelStyle } from '../utils/backgroundStyle.js'
+import {
+  createBackgroundPanelStyle,
+  createBackgroundTexturePanelProps,
+  createBackgroundTexturePanelStyle,
+} from '../utils/backgroundStyle.js'
+import { useBackgroundTexture } from '../utils/backgroundTexture.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 import { Div } from './Div.js'
@@ -37,6 +42,8 @@ export const Screen = defineComponent({
     },
   },
   setup(props, { slots }) {
+    const backgroundTexture = useBackgroundTexture(() => props.style, 'Screen')
+
     return () => {
       const nodeProps: Record<string, unknown> = {
         visible: props.visible !== false && props.style?.display !== 'none',
@@ -48,23 +55,37 @@ export const Screen = defineComponent({
       applyCommonControlStyleProps(nodeProps, props.style, 'Screen')
 
       const backgroundStyle = createBackgroundPanelStyle(props.style)
-      const tag = backgroundStyle ? 'PanelContainer' : 'Control'
+      const backgroundTextureStyle = createBackgroundTexturePanelStyle(
+        backgroundTexture.value,
+      )
+      const tag =
+        backgroundStyle || backgroundTextureStyle ? 'PanelContainer' : 'Control'
       if (backgroundStyle) {
         nodeProps['theme_override_styles/panel'] = backgroundStyle
+      } else if (backgroundTextureStyle) {
+        nodeProps['theme_override_styles/panel'] = backgroundTextureStyle
       }
 
-      return h(tag, nodeProps, [
-        h(
-          Div,
-          {
-            style: {
-              flexDirection: 'column',
-              ...(props.contentStyle ?? {}),
-            },
+      let content = h(
+        Div,
+        {
+          style: {
+            flexDirection: 'column',
+            ...(props.contentStyle ?? {}),
           },
-          slots.default?.(),
-        ),
-      ])
+        },
+        slots.default?.(),
+      )
+
+      if (backgroundStyle && backgroundTextureStyle) {
+        content = h(
+          'PanelContainer',
+          createBackgroundTexturePanelProps(backgroundTextureStyle),
+          [content],
+        )
+      }
+
+      return h(tag, nodeProps, [content])
     }
   },
 })

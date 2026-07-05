@@ -10,7 +10,12 @@ import type {
   VNodeChild,
   VNodeNormalizedChildren,
 } from '@vue/runtime-core'
-import { createBackgroundPanelStyle } from '../utils/backgroundStyle.js'
+import {
+  createBackgroundPanelStyle,
+  createBackgroundTexturePanelProps,
+  createBackgroundTexturePanelStyle,
+} from '../utils/backgroundStyle.js'
+import { useBackgroundTexture } from '../utils/backgroundTexture.js'
 import type { GodotContainerTag, HtmlStyle } from '../utils/styleMapping.js'
 import {
   ControlSizeFlags,
@@ -206,6 +211,8 @@ export const Div = defineComponent({
     },
   },
   setup(props, { slots }) {
+    const backgroundTexture = useBackgroundTexture(() => props.style, 'Div')
+
     return () => {
       const style = props.style ?? {}
       warnUnsupportedStyleProps(style, 'Div')
@@ -242,6 +249,17 @@ export const Div = defineComponent({
         content = h(
           'MarginContainer',
           withThemeConstantOverrides({}, marginOverrides),
+          [content],
+        )
+      }
+
+      const backgroundTextureStyle = createBackgroundTexturePanelStyle(
+        backgroundTexture.value,
+      )
+      if (backgroundTextureStyle) {
+        content = h(
+          'PanelContainer',
+          createBackgroundTexturePanelProps(backgroundTextureStyle),
           [content],
         )
       }

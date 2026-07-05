@@ -57,6 +57,7 @@ export interface HtmlStyle {
   maxHeight?: number
   objectFit?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down'
   backgroundColor?: string
+  backgroundImage?: string
   borderColor?: string
   borderStyle?: 'none' | 'solid'
   borderWidth?: StyleLength
@@ -83,6 +84,7 @@ export const supportedHtmlStyleKeys = [
   'alignItems',
   'alignSelf',
   'backgroundColor',
+  'backgroundImage',
   'borderBottomLeftRadius',
   'borderBottomRightRadius',
   'borderBottomWidth',
