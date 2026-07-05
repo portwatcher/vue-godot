@@ -8,11 +8,15 @@ export const defaultReleasePreflightSummaryPath =
   'release/release-preflight-summary.json'
 export const defaultReleaseReadinessEvidencePath =
   'release/release-readiness-evidence.json'
-export const productionProfilePlatformEvidenceCommand =
+const productionProfilePlatformEvidenceBaseCommand =
   'npm run release:platform-evidence -- --production-profile'
 
 export function releaseCommitLabel(commit) {
   return commit ?? releaseCandidateCommitPlaceholder
+}
+
+export function productionProfilePlatformEvidenceCommand(commit) {
+  return `${productionProfilePlatformEvidenceBaseCommand} --commit ${releaseCommitLabel(commit)}`
 }
 
 export function releaseCiCommand(commit, options = {}) {

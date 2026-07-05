@@ -9,6 +9,7 @@ import {
   defaultReleaseReadinessEvidencePath,
   defaultReleaseCiEvidencePath,
   initialReleaseCiCommands,
+  productionProfilePlatformEvidenceCommand,
   releaseEvidenceCommand,
   releaseCandidateCommitPlaceholder,
   releaseCiCommand,
@@ -27,6 +28,14 @@ test('release handoff commands format release CI waits and dispatches', () => {
   assert.equal(releasePreflightRunCommitPlaceholder, '<evidence-commit-sha>')
   assert.equal(defaultPlatformEvidencePath, 'release/platform-evidence.json')
   assert.equal(defaultReleaseCiEvidencePath, 'release/ci-runs.json')
+  assert.equal(
+    productionProfilePlatformEvidenceCommand(null),
+    'npm run release:platform-evidence -- --production-profile --commit <release-candidate-sha>',
+  )
+  assert.equal(
+    productionProfilePlatformEvidenceCommand(commit),
+    `npm run release:platform-evidence -- --production-profile --commit ${commit}`,
+  )
 
   assert.deepEqual(initialReleaseCiCommands(commit), [
     `npm run release:ci -- --commit ${commit} --wait --output release/ci-runs.json`,

@@ -110,7 +110,7 @@ function collectNextActions(summary) {
         title: 'Create and fill Android/iOS platform evidence',
         detail:
           'Start from the platform evidence worksheet, run the selected API export checks on real or hosted devices, and record pass/skip outcomes.',
-        commands: [productionProfilePlatformEvidenceCommand],
+        commands: [productionProfilePlatformEvidenceCommand(expectedCommit)],
       },
       {
         id: 'assemble-real-device-evidence',

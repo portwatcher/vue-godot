@@ -483,7 +483,7 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
         (action) =>
           action.id === 'create-platform-evidence' &&
           action.commands.includes(
-            'npm run release:platform-evidence -- --production-profile',
+            'npm run release:platform-evidence -- --production-profile --commit <release-candidate-sha>',
           ),
       ),
     )
@@ -536,7 +536,7 @@ test('check-real-device-evidence next actions honor expected commits', () => {
         (action) =>
           action.id === 'create-platform-evidence' &&
           action.commands.includes(
-            'npm run release:platform-evidence -- --production-profile',
+            `npm run release:platform-evidence -- --production-profile --commit ${expectedCommit}`,
           ),
       ),
     )
