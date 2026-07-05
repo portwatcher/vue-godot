@@ -90,6 +90,10 @@ npm run release:ci -- --include-release-preflight --output release/ci-runs.json
 
 Run that before creating final readiness evidence.
 
+The `Check`, `Godot Smoke`, `Release Preflight`, and `Publish` workflows all run
+under Node 24 with `npm@^11.15.0`, so release-candidate CI evidence is produced
+with the same Node/npm baseline as the release gate.
+
 ## App Build Checklist
 
 For each app:
