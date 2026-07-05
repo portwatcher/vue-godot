@@ -1,14 +1,19 @@
 import type { VNode } from '@vue/runtime-core'
+import {
+  splitCssCommaSeparated,
+  splitCssWhitespaceOutsideParens,
+} from './cssParsing.js'
 import { createOpacityModulate } from './godotColor.js'
 import type {
   HtmlStyle,
+  HtmlStyleInput,
   StyleAnimationDirection,
   StyleAnimationIterationCount,
   StyleTime,
   StyleTransitionProperty,
   StyleTransitionTimingFunction,
 } from './styleMapping.js'
-import { toNumericPixels } from './styleMapping.js'
+import { normalizeHtmlStyle, toNumericPixels } from './styleMapping.js'
 import { resolveTransformStyle, type ResolvedTransform } from './transformStyle.js'
 import type { GodotPropBag } from './controlStyle.js'
 
@@ -195,57 +200,6 @@ function parseStyleTime(value: StyleTime | undefined): number | null {
   return Math.max(0, seconds)
 }
 
-function splitCommaSeparated(value: string): string[] {
-  const parts: string[] = []
-  let depth = 0
-  let start = 0
-
-  for (let index = 0; index < value.length; index += 1) {
-    const char = value[index]
-    if (char === '(') {
-      depth += 1
-    } else if (char === ')' && depth > 0) {
-      depth -= 1
-    } else if (char === ',' && depth === 0) {
-      parts.push(value.slice(start, index).trim())
-      start = index + 1
-    }
-  }
-
-  parts.push(value.slice(start).trim())
-  return parts.filter((part) => part.length > 0)
-}
-
-function splitWhitespaceOutsideParens(value: string): string[] {
-  const parts: string[] = []
-  let depth = 0
-  let start: number | null = null
-
-  for (let index = 0; index < value.length; index += 1) {
-    const char = value[index]
-    if (char === '(') {
-      depth += 1
-    } else if (char === ')' && depth > 0) {
-      depth -= 1
-    }
-
-    if (/\s/.test(char) && depth === 0) {
-      if (start != null) {
-        parts.push(value.slice(start, index))
-        start = null
-      }
-    } else if (start == null) {
-      start = index
-    }
-  }
-
-  if (start != null) {
-    parts.push(value.slice(start))
-  }
-
-  return parts
-}
-
 function normalizeTransitionProperty(
   value: string,
 ): StyleTransitionProperty | null {
@@ -277,7 +231,7 @@ function resolveTransition(
 function parseTransitionShorthandItem(
   value: string,
 ): ResolvedStyleTransition | null {
-  const tokens = splitWhitespaceOutsideParens(value)
+  const tokens = splitCssWhitespaceOutsideParens(value)
   let property: StyleTransitionProperty = 'all'
   let duration: number | null = null
   let delay: number | null = null
@@ -316,7 +270,7 @@ function parseTransitionShorthand(
     return []
   }
 
-  return splitCommaSeparated(value)
+  return splitCssCommaSeparated(value)
     .map(parseTransitionShorthandItem)
     .filter((transition): transition is ResolvedStyleTransition =>
       Boolean(transition),
@@ -331,10 +285,10 @@ function normalizeStringList(
   }
 
   if (isReadonlyStringArray(value)) {
-    return value.flatMap((entry) => splitCommaSeparated(entry))
+    return value.flatMap((entry) => splitCssCommaSeparated(entry))
   }
 
-  return splitCommaSeparated(value)
+  return splitCssCommaSeparated(value)
 }
 
 function normalizeTimeList(
@@ -348,7 +302,7 @@ function normalizeTimeList(
     return [...value]
   }
 
-  return typeof value === 'string' ? splitCommaSeparated(value) : [value]
+  return typeof value === 'string' ? splitCssCommaSeparated(value) : [value]
 }
 
 function isReadonlyStringArray(
@@ -418,21 +372,22 @@ function hasTransitionDeclaration(style: HtmlStyle | undefined): boolean {
 }
 
 export function resolveStyleTransitions(
-  style: HtmlStyle | undefined,
+  style: HtmlStyleInput,
 ): ResolvedStyleTransition[] {
-  if (!style) {
+  const normalizedStyle = normalizeHtmlStyle(style)
+  if (!normalizedStyle) {
     return []
   }
 
-  if (!hasTransitionLonghands(style)) {
-    return parseTransitionShorthand(style.transition)
+  if (!hasTransitionLonghands(normalizedStyle)) {
+    return parseTransitionShorthand(normalizedStyle.transition)
   }
 
-  const properties = parseTransitionPropertyList(style.transitionProperty)
-  const durations = parseTransitionTimeList(style.transitionDuration)
-  const delays = parseTransitionTimeList(style.transitionDelay)
+  const properties = parseTransitionPropertyList(normalizedStyle.transitionProperty)
+  const durations = parseTransitionTimeList(normalizedStyle.transitionDuration)
+  const delays = parseTransitionTimeList(normalizedStyle.transitionDelay)
   const timingFunctions = parseTransitionTimingList(
-    style.transitionTimingFunction,
+    normalizedStyle.transitionTimingFunction,
   )
 
   return properties
@@ -579,9 +534,10 @@ function addTarget(
 
 export function resolveTransitionTargets(
   nodeProps: GodotPropBag,
-  style: HtmlStyle | undefined,
+  style: HtmlStyleInput,
 ): TransitionTarget[] {
-  const transitions = resolveStyleTransitions(style)
+  const normalizedStyle = normalizeHtmlStyle(style)
+  const transitions = resolveStyleTransitions(normalizedStyle)
   if (transitions.length === 0) {
     return []
   }
@@ -594,13 +550,14 @@ export function resolveTransitionTargets(
       nodeProps,
       'opacity',
       'modulate',
-      nodeProps.modulate ?? createOpacityModulate(style?.opacity ?? 1),
+      nodeProps.modulate ?? createOpacityModulate(normalizedStyle?.opacity ?? 1),
     )
   }
 
   if (hasTransitionForProperty(transitions, 'transform')) {
     const transform =
-      resolveTransformStyle(style?.transform) ?? createIdentityTransform()
+      resolveTransformStyle(normalizedStyle?.transform) ??
+      createIdentityTransform()
     addTarget(
       targets,
       nodeProps,
@@ -845,30 +802,32 @@ function createAnimationSignature(
 }
 
 export function resolveStyleAnimation(
-  style: HtmlStyle | undefined,
+  style: HtmlStyleInput,
 ): ResolvedStyleAnimation | null {
-  if (!style) {
+  const normalizedStyle = normalizeHtmlStyle(style)
+  if (!normalizedStyle) {
     return null
   }
 
-  const name = style.animationName?.trim()
+  const name = normalizedStyle.animationName?.trim()
   if (!name || name === 'none') {
     return null
   }
 
   const frames = registeredStyleKeyframes.get(name)
-  const duration = parseStyleTime(style.animationDuration)
+  const duration = parseStyleTime(normalizedStyle.animationDuration)
   if (!frames || frames.length < 2 || duration == null || duration <= 0) {
     return null
   }
 
   const timingFunction =
-    parseTimingFunction(style.animationTimingFunction) ?? defaultTimingFunction
-  const delay = parseStyleTime(style.animationDelay) ?? 0
+    parseTimingFunction(normalizedStyle.animationTimingFunction) ??
+    defaultTimingFunction
+  const delay = parseStyleTime(normalizedStyle.animationDelay) ?? 0
   const iterationCount = normalizeAnimationIterationCount(
-    style.animationIterationCount,
+    normalizedStyle.animationIterationCount,
   )
-  const direction = normalizeAnimationDirection(style.animationDirection)
+  const direction = normalizeAnimationDirection(normalizedStyle.animationDirection)
 
   return {
     name,
@@ -1012,11 +971,12 @@ function applyAnimationCleanupProps(nodeProps: GodotPropBag): void {
 
 export function applyAnimationStyleProps(
   nodeProps: GodotPropBag,
-  style: HtmlStyle | undefined,
+  style: HtmlStyleInput,
 ): void {
-  const animation = resolveStyleAnimation(style)
+  const normalizedStyle = normalizeHtmlStyle(style)
+  const animation = resolveStyleAnimation(normalizedStyle)
   if (!animation) {
-    if (hasAnimationDeclaration(style)) {
+    if (hasAnimationDeclaration(normalizedStyle)) {
       applyAnimationCleanupProps(nodeProps)
     }
     return
@@ -1069,19 +1029,20 @@ function applyTransitionCleanupProps(nodeProps: GodotPropBag): void {
 
 export function applyTransitionStyleProps(
   nodeProps: GodotPropBag,
-  style: HtmlStyle | undefined,
+  style: HtmlStyleInput,
 ): void {
-  const transitions = resolveStyleTransitions(style)
+  const normalizedStyle = normalizeHtmlStyle(style)
+  const transitions = resolveStyleTransitions(normalizedStyle)
   if (transitions.length === 0) {
-    if (hasTransitionDeclaration(style)) {
+    if (hasTransitionDeclaration(normalizedStyle)) {
       applyTransitionCleanupProps(nodeProps)
     }
     return
   }
 
-  const targets = resolveTransitionTargets(nodeProps, style)
+  const targets = resolveTransitionTargets(nodeProps, normalizedStyle)
   if (targets.length === 0) {
-    if (hasTransitionDeclaration(style)) {
+    if (hasTransitionDeclaration(normalizedStyle)) {
       applyTransitionCleanupProps(nodeProps)
     }
     return
@@ -1117,7 +1078,7 @@ export function applyTransitionStyleProps(
 
 export function applyMotionStyleProps(
   nodeProps: GodotPropBag,
-  style: HtmlStyle | undefined,
+  style: HtmlStyleInput,
 ): void {
   applyTransitionStyleProps(nodeProps, style)
   applyAnimationStyleProps(nodeProps, style)

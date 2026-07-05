@@ -11,6 +11,7 @@ import {
 } from '../utils/focus.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import {
   applyMinTouchTargetProps,
   touchTargetPropOptions,
@@ -37,10 +38,7 @@ export const Switch = defineComponent({
     ...accessibilityPropOptions,
     ...focusPropOptions,
     ...touchTargetPropOptions,
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
   },
   emits: ['update:modelValue', 'change'],
   setup(props, { slots, emit }) {

@@ -19,7 +19,8 @@ import {
   resolveKeyboardAvoidingInsets,
   type KeyboardAvoidingBehavior,
 } from '../utils/keyboardAvoiding.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
+import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import { Div } from './Div.js'
 
 /**
@@ -45,14 +46,8 @@ export const KeyboardAvoidingView = defineComponent({
       default: 0,
     },
     ...accessibilityPropOptions,
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
-    contentStyle: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
+    contentStyle: htmlStyleProp,
   },
   setup(props, { slots }) {
     const backgroundTexture = useBackgroundTexture(
@@ -61,6 +56,8 @@ export const KeyboardAvoidingView = defineComponent({
     )
 
     return () => {
+      const style = normalizeHtmlStyle(props.style)
+      const contentStyle = normalizeHtmlStyle(props.contentStyle)
       const behavior = normalizeKeyboardAvoidingBehavior(props.behavior)
       const keyboardHeight = readVirtualKeyboardHeight(
         props.fallbackKeyboardHeight,
@@ -73,14 +70,14 @@ export const KeyboardAvoidingView = defineComponent({
       const nodeProps: Record<string, unknown> = {}
       applyCommonControlStyleProps(
         nodeProps,
-        props.style,
+        style,
         'KeyboardAvoidingView',
       )
       applyAccessibilityProps(nodeProps, props)
 
       const adjustedHeight =
         behavior === 'height'
-          ? resolveKeyboardAvoidingHeight(props.style, avoidance)
+          ? resolveKeyboardAvoidingHeight(style, avoidance)
           : null
       if (adjustedHeight != null) {
         nodeProps['custom_minimum_size:y'] = adjustedHeight
@@ -94,20 +91,20 @@ export const KeyboardAvoidingView = defineComponent({
         behavior === 'padding' ||
         (behavior === 'height' && adjustedHeight == null)
       const insets = resolveKeyboardAvoidingInsets(
-        props.style,
+        style,
         avoidance,
         includePaddingAvoidance,
       )
       const marginProps = createMarginThemeOverrides(insets)
       const content = h(
         Div,
-        { style: props.contentStyle ?? {} },
+        { style: contentStyle ?? {} },
         slots.default?.(),
       )
       const backgroundTextureStyle = createBackgroundTexturePanelStyle(
         backgroundTexture.value,
       )
-      const backgroundStyle = createBackgroundPanelStyle(props.style)
+      const backgroundStyle = createBackgroundPanelStyle(style)
       let paddedContent = h('MarginContainer', marginProps, [content])
 
       if (backgroundStyle && backgroundTextureStyle) {

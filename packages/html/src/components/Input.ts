@@ -17,9 +17,11 @@ import {
 } from '../utils/focus.js'
 import { getRadioButtonGroup } from '../utils/radioGroups.js'
 import {
+  normalizeHtmlStyle,
   warnUnsupportedStyleProps,
   type HtmlStyle,
 } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import {
   applyMinTouchTargetProps,
   touchTargetPropOptions,
@@ -158,15 +160,12 @@ export const Input = defineComponent({
     ...accessibilityPropOptions,
     ...focusPropOptions,
     ...touchTargetPropOptions,
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
     return () => {
-      const style = props.style
+      const style = normalizeHtmlStyle(props.style)
       warnUnsupportedStyleProps(style, 'Input')
       const inputType = props.type ?? 'text'
       const mapping = INPUT_TYPE_MAP[inputType] ?? INPUT_TYPE_MAP['text']

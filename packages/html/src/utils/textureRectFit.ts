@@ -1,5 +1,9 @@
 import type { GodotPropBag } from './controlStyle.js'
-import type { HtmlStyle } from './styleMapping.js'
+import {
+  normalizeHtmlStyle,
+  type HtmlStyle,
+  type HtmlStyleInput,
+} from './styleMapping.js'
 
 /**
  * TextureRect.ExpandMode enum values (Godot 4.x).
@@ -77,10 +81,11 @@ export function resolveTextureRectObjectFit(
 
 export function applyTextureRectObjectFitProps(
   nodeProps: GodotPropBag,
-  style: HtmlStyle | undefined,
+  style: HtmlStyleInput,
   hasExplicitSize: boolean,
 ): void {
-  const fitMapping = resolveTextureRectObjectFit(style?.objectFit)
+  const normalizedStyle = normalizeHtmlStyle(style)
+  const fitMapping = resolveTextureRectObjectFit(normalizedStyle?.objectFit)
   if (fitMapping) {
     nodeProps['expand_mode'] = fitMapping.expand_mode
     nodeProps['stretch_mode'] = fitMapping.stretch_mode

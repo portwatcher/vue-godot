@@ -4,9 +4,10 @@ import {
 } from './controlStyle.js'
 import { createOpacityModulate } from './godotColor.js'
 import {
+  normalizeHtmlStyle,
   resolveContainerTag,
   warnUnsupportedStyleProps,
-  type HtmlStyle,
+  type HtmlStyleInput,
 } from './styleMapping.js'
 
 export type ScrollViewScrollbarMode =
@@ -55,16 +56,17 @@ export function applyFiniteNumberProp(
 
 export function applyScrollContainerStyleProps(
   props: Record<string, unknown>,
-  style: HtmlStyle | undefined,
+  style: HtmlStyleInput,
   componentName: string,
 ): void {
-  if (!style) {
+  const normalizedStyle = normalizeHtmlStyle(style)
+  if (!normalizedStyle) {
     return
   }
 
-  warnUnsupportedStyleProps(style, componentName)
+  warnUnsupportedStyleProps(normalizedStyle, componentName)
 
-  const styleProps = resolveContainerTag(style).props
+  const styleProps = resolveContainerTag(normalizedStyle).props
   for (const propName of [
     'visible',
     'custom_minimum_size:x',
@@ -82,9 +84,12 @@ export function applyScrollContainerStyleProps(
       props[propName] = styleProps[propName]
     }
   }
-  if (typeof style.opacity === 'number' && Number.isFinite(style.opacity)) {
-    props['modulate'] = createOpacityModulate(style.opacity)
+  if (
+    typeof normalizedStyle.opacity === 'number' &&
+    Number.isFinite(normalizedStyle.opacity)
+  ) {
+    props['modulate'] = createOpacityModulate(normalizedStyle.opacity)
   }
-  applyTransformStyleProps(props, style)
-  applyMotionStyleProps(props, style)
+  applyTransformStyleProps(props, normalizedStyle)
+  applyMotionStyleProps(props, normalizedStyle)
 }

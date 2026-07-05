@@ -4,6 +4,8 @@ import test from 'node:test'
 import {
   clearUnsupportedStyleWarningsForTests,
   getUnsupportedStyleKeys,
+  normalizeHtmlStyle,
+  parseHtmlStyle,
   resolveBorderRadii,
   resolveBorderWidths,
   resolveContainerTag,
@@ -266,6 +268,65 @@ test('detects unsupported style keys against the documented subset', () => {
   assert.equal(supportedHtmlStyleKeys.includes('transition'), true)
   assert.equal(supportedHtmlStyleKeys.includes('transitionDuration'), true)
   assert.equal(supportedHtmlStyleKeys.includes('fontFamily'), true)
+})
+
+test('parses CSS declaration strings into the Godot-backed style subset', () => {
+  const parsed = parseHtmlStyle(`
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    padding: 4px 8px;
+    border: 2px solid #ffffff;
+    border-radius: 4px 8px;
+    background: #112233;
+    transition: opacity 150ms ease-out;
+    animation-iteration-count: infinite;
+    box-shadow: 0 0 4px black;
+  `)
+
+  assert.deepEqual(parsed, {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 8,
+    paddingTop: 4,
+    paddingRight: 8,
+    paddingBottom: 4,
+    paddingLeft: 8,
+    borderWidth: 2,
+    borderStyle: 'solid',
+    borderColor: '#ffffff',
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 4,
+    borderBottomLeftRadius: 8,
+    backgroundColor: '#112233',
+    transition: 'opacity 150ms ease-out',
+    animationIterationCount: 'infinite',
+    boxShadow: '0 0 4px black',
+  })
+  assert.deepEqual(getUnsupportedStyleKeys(parsed), ['boxShadow'])
+  assert.deepEqual(
+    getUnsupportedStyleKeys('width: 120px; box-shadow: 0 0 4px black'),
+    ['boxShadow'],
+  )
+})
+
+test('normalizes style arrays with later entries taking precedence', () => {
+  assert.deepEqual(
+    normalizeHtmlStyle([
+      'width: 120px; height: 40px; margin: 2px 4px',
+      { height: 56, opacity: 0.8 },
+    ]),
+    {
+      width: 120,
+      height: 56,
+      marginTop: 2,
+      marginRight: 4,
+      marginBottom: 2,
+      marginLeft: 4,
+      opacity: 0.8,
+    },
+  )
 })
 
 test('warns once per unsupported style key and component', () => {

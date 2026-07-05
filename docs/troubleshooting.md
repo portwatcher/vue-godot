@@ -183,8 +183,9 @@ right fallback.
 
 ### CSS Is Ignored
 
-`@vue-godot/html` supports a documented inline style subset. Unsupported CSS
-properties warn once per component/property pair. Check
+`@vue-godot/html` supports a documented inline style subset as objects, CSS
+declaration strings, or arrays. Unsupported CSS properties warn once per
+component/property pair. Check
 [packages/html/README.md](../packages/html/README.md) for the supported style
 table before copying browser CSS into a Godot UI.
 

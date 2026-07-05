@@ -52,7 +52,7 @@ npx vue-godot integrate --html
 5. Replace DOM-only code with component refs, Godot node refs, browser polyfill
    helpers, or explicit device adapters.
 6. Replace global CSS/cascade assumptions with the documented inline style
-   subset and Godot container layout.
+   subset, CSS declaration-string style inputs, and Godot container layout.
 7. Run `npm run build`, `npm run check:exports`, and test in the GodotJS editor.
 
 See the `@vue-godot/html` README's lowercase tag migration section for the

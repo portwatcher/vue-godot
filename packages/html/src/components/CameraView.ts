@@ -11,9 +11,11 @@ import {
 } from '../utils/controlStyle.js'
 import { createCameraTexture } from '../utils/camera.js'
 import {
+  normalizeHtmlStyle,
   warnUnsupportedStyleProps,
   type HtmlStyle,
 } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import { applyTextureRectObjectFitProps } from '../utils/textureRectFit.js'
 
 /**
@@ -43,10 +45,7 @@ export const CameraView = defineComponent({
       default: undefined,
     },
     ...accessibilityPropOptions,
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
   },
   setup(props) {
     const texture = shallowRef<Texture2D | null>(null)
@@ -65,7 +64,7 @@ export const CameraView = defineComponent({
     )
 
     return () => {
-      const style = props.style
+      const style = normalizeHtmlStyle(props.style)
       warnUnsupportedStyleProps(style, 'CameraView')
       const nodeProps: Record<string, unknown> = {}
 

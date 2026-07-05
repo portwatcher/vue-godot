@@ -14,7 +14,8 @@ import {
   createFocusContainmentController,
   focusContainmentPropOptions,
 } from '../utils/focus.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
+import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import { Div } from './Div.js'
 
 const MouseFilter = {
@@ -42,14 +43,8 @@ export const Overlay = defineComponent({
     },
     ...focusContainmentPropOptions,
     ...accessibilityPropOptions,
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
-    contentStyle: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
+    contentStyle: htmlStyleProp,
   },
   emits: ['update:modelValue', 'click', 'backdropClick'],
   setup(props, { slots, emit }) {
@@ -57,8 +52,10 @@ export const Overlay = defineComponent({
     const focusContainment = createFocusContainmentController()
 
     return () => {
+      const style = normalizeHtmlStyle(props.style)
+      const contentStyle = normalizeHtmlStyle(props.contentStyle)
       const visible =
-        props.modelValue !== false && props.style?.display !== 'none'
+        props.modelValue !== false && style?.display !== 'none'
       const nodeProps: Record<string, unknown> = {
         visible,
         anchor_right: 1,
@@ -78,14 +75,14 @@ export const Overlay = defineComponent({
         },
       }
 
-      applyCommonControlStyleProps(nodeProps, props.style, 'Overlay')
+      applyCommonControlStyleProps(nodeProps, style, 'Overlay')
       applyAccessibilityProps(nodeProps, props)
       focusContainment.apply(nodeProps, props, {
         open: visible,
         selfLoopTraversal: true,
       })
 
-      const backgroundStyle = createBackgroundPanelStyle(props.style)
+      const backgroundStyle = createBackgroundPanelStyle(style)
       const backgroundTextureStyle = createBackgroundTexturePanelStyle(
         backgroundTexture.value,
       )
@@ -97,7 +94,7 @@ export const Overlay = defineComponent({
 
       let content = h(
         Div,
-        { style: props.contentStyle ?? {} },
+        { style: contentStyle ?? {} },
         slots.default?.(),
       )
       if (backgroundStyle && backgroundTextureStyle) {

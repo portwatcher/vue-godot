@@ -1,6 +1,10 @@
 import { DisplayServer } from 'godot'
 import { zeroEdgeInsets } from './edgeInsets.js'
-import { resolvePadding, type HtmlStyle } from './styleMapping.js'
+import {
+  normalizeHtmlStyle,
+  resolvePadding,
+  type HtmlStyleInput,
+} from './styleMapping.js'
 
 export type SafeAreaEdge = 'top' | 'right' | 'bottom' | 'left'
 
@@ -127,12 +131,13 @@ export function readDisplayServerSafeAreaInsets(
 }
 
 export function resolveSafeAreaPadding(
-  style: HtmlStyle | undefined,
+  style: HtmlStyleInput,
   safeAreaInsets: SafeAreaInsets,
   edges: SafeAreaEdge[] | undefined,
 ): SafeAreaInsets {
   const activeEdges = new Set(edges ?? allSafeAreaEdges)
-  const stylePadding = resolvePadding(style ?? {}) ?? zeroEdgeInsets
+  const stylePadding =
+    resolvePadding(normalizeHtmlStyle(style) ?? {}) ?? zeroEdgeInsets
 
   return {
     top: stylePadding.top + (activeEdges.has('top') ? safeAreaInsets.top : 0),

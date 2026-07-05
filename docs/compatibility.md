@@ -148,8 +148,9 @@ shortcuts, controller activation, and escape/back handling are Godot
 input-action patterns (`ui_accept`, `ui_cancel`, and project-defined actions),
 not DOM keyboard events. They are marked `partial` until the production-grade
 component checklist covers role mapping and documented style limits. Inline
-style objects support the documented Godot-backed subset; unsupported style
-keys emit a `[vue-godot/html]` warning once per component/property pair. Basic
+style inputs support object, CSS declaration-string, and array forms for the
+documented Godot-backed subset; unsupported style keys emit a
+`[vue-godot/html]` warning once per component/property pair. Basic
 transitions for opacity, transform, width, and height run through bound Godot
 `Tween`s, and registered keyframe-style animations support the same property
 subset.

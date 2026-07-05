@@ -3,7 +3,8 @@ import {
   createFocusContainmentController,
   focusContainmentPropOptions,
 } from '../utils/focus.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
+import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import {
   applyWindowBaseProps,
   emitWindowClose,
@@ -57,18 +58,16 @@ export const Modal = defineComponent({
       default: false,
     },
     ...focusContainmentPropOptions,
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
   },
   emits: ['update:modelValue', 'close'],
   setup(props, { slots, emit }) {
     const focusContainment = createFocusContainmentController()
 
     return () => {
+      const style = normalizeHtmlStyle(props.style)
       const visible =
-        isWindowOpen(props.modelValue) && props.style?.display !== 'none'
+        isWindowOpen(props.modelValue) && style?.display !== 'none'
       const nodeProps: Record<string, unknown> = {
         wrap_controls: true,
         transient: props.transient !== false,

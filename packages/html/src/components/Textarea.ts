@@ -16,9 +16,11 @@ import {
   focusPropOptions,
 } from '../utils/focus.js'
 import {
+  normalizeHtmlStyle,
   warnUnsupportedStyleProps,
   type HtmlStyle,
 } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import {
   applyMinTouchTargetProps,
   touchTargetPropOptions,
@@ -88,17 +90,14 @@ export const Textarea = defineComponent({
     ...accessibilityPropOptions,
     ...focusPropOptions,
     ...touchTargetPropOptions,
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
     let textEditNode: unknown = null
 
     return () => {
-      const style = props.style
+      const style = normalizeHtmlStyle(props.style)
       warnUnsupportedStyleProps(style, 'Textarea')
       const nodeProps: Record<string, unknown> = {}
 

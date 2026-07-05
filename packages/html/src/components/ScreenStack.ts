@@ -1,5 +1,6 @@
 import { defineComponent, h, ref } from '@vue/runtime-core'
 import type { HtmlStyle } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import {
   findScreenRoute,
   resolveScreenRoute,
@@ -36,14 +37,8 @@ export const ScreenStack = defineComponent({
       type: Boolean,
       default: true,
     },
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
-    contentStyle: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
+    contentStyle: htmlStyleProp,
   },
   emits: ['update:modelValue', 'navigate', 'back'],
   setup(props, { slots, emit }) {

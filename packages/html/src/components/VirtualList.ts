@@ -16,9 +16,11 @@ import {
   type ScrollViewScrollbarMode,
 } from '../utils/scrollContainer.js'
 import {
+  normalizeHtmlStyle,
   toNumericPixels,
   type HtmlStyle,
 } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import {
   nonNegativeFinite,
   positiveFinite,
@@ -153,18 +155,9 @@ export const VirtualList = defineComponent({
       type: Number,
       default: undefined,
     },
-    style: {
-      type: Object as PropType<HtmlStyle | undefined>,
-      default: undefined,
-    },
-    contentStyle: {
-      type: Object as PropType<HtmlStyle | undefined>,
-      default: undefined,
-    },
-    itemStyle: {
-      type: Object as PropType<HtmlStyle | undefined>,
-      default: undefined,
-    },
+    style: htmlStyleProp,
+    contentStyle: htmlStyleProp,
+    itemStyle: htmlStyleProp,
     ...accessibilityPropOptions,
   },
   emits: ['scroll', 'scrollStarted', 'scrollEnded', 'update:scrollOffset'],
@@ -185,9 +178,12 @@ export const VirtualList = defineComponent({
 
     return () => {
       const itemHeight = positiveFinite(props.itemHeight, 32)
+      const style = normalizeHtmlStyle(props.style)
+      const contentStyle = normalizeHtmlStyle(props.contentStyle)
+      const itemStyle = normalizeHtmlStyle(props.itemStyle)
       const viewportHeight = resolveViewportHeight(
         props.height,
-        props.style,
+        style,
         itemHeight,
       )
       const itemCount = resolveItemCount(props.items, props.itemCount)
@@ -222,7 +218,7 @@ export const VirtualList = defineComponent({
         },
       }
 
-      applyScrollContainerStyleProps(nodeProps, props.style, 'VirtualList')
+      applyScrollContainerStyleProps(nodeProps, style, 'VirtualList')
       applyAccessibilityProps(nodeProps, props)
       applyFiniteNumberProp(nodeProps, 'scroll_vertical', scrollOffset)
       applyFiniteNumberProp(
@@ -256,7 +252,7 @@ export const VirtualList = defineComponent({
             {
               key,
               style: {
-                ...(props.itemStyle ?? {}),
+                ...(itemStyle ?? {}),
                 height: itemHeight,
               },
             },
@@ -274,7 +270,7 @@ export const VirtualList = defineComponent({
           Div,
           {
             style: {
-              ...(props.contentStyle ?? {}),
+              ...(contentStyle ?? {}),
               flexDirection: 'column',
             },
           },

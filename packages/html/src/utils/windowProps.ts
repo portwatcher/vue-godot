@@ -1,8 +1,9 @@
 import type { GodotPropBag } from './controlStyle.js'
 import {
+  normalizeHtmlStyle,
   toNumericPixels,
   warnUnsupportedStyleProps,
-  type HtmlStyle,
+  type HtmlStyleInput,
 } from './styleMapping.js'
 
 export interface WindowLikeProps {
@@ -12,7 +13,7 @@ export interface WindowLikeProps {
   height?: number
   minWidth?: number
   minHeight?: number
-  style?: HtmlStyle
+  style?: HtmlStyleInput
 }
 
 function finiteNumber(value: number | undefined): number | null {
@@ -28,22 +29,22 @@ export function applyWindowBaseProps(
   props: WindowLikeProps,
   componentName = 'Window',
 ): void {
-  warnUnsupportedStyleProps(props.style, componentName)
+  const style = normalizeHtmlStyle(props.style)
+  warnUnsupportedStyleProps(style, componentName)
 
   nodeProps['visible'] =
-    isWindowOpen(props.modelValue) && props.style?.display !== 'none'
+    isWindowOpen(props.modelValue) && style?.display !== 'none'
 
   if (props.title) {
     nodeProps['title'] = props.title
   }
 
-  const width = finiteNumber(props.width) ?? toNumericPixels(props.style?.width)
-  const height =
-    finiteNumber(props.height) ?? toNumericPixels(props.style?.height)
+  const width = finiteNumber(props.width) ?? toNumericPixels(style?.width)
+  const height = finiteNumber(props.height) ?? toNumericPixels(style?.height)
   const minWidth =
-    finiteNumber(props.minWidth) ?? toNumericPixels(props.style?.minWidth)
+    finiteNumber(props.minWidth) ?? toNumericPixels(style?.minWidth)
   const minHeight =
-    finiteNumber(props.minHeight) ?? toNumericPixels(props.style?.minHeight)
+    finiteNumber(props.minHeight) ?? toNumericPixels(style?.minHeight)
 
   if (width != null) {
     nodeProps['size:x'] = width

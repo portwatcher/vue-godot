@@ -86,7 +86,14 @@ export {
   fetchRemoteStream,
   loadStream,
 } from './utils/streamLoader.js'
-export type { HtmlStyle } from './utils/styleMapping.js'
+export {
+  normalizeHtmlStyle,
+  parseHtmlStyle,
+} from './utils/styleMapping.js'
+export type {
+  HtmlStyle,
+  HtmlStyleInput,
+} from './utils/styleMapping.js'
 export {
   createTextureFromBuffer,
   fetchRemoteTexture,

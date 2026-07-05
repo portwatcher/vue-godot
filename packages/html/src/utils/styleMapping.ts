@@ -1,3 +1,9 @@
+import {
+  splitCssDeclaration,
+  splitCssDeclarations,
+  splitCssWhitespaceOutsideParens,
+} from './cssParsing.js'
+
 /**
  * Maps a CSS flexbox-subset style object to the Godot container type
  * and properties that best represent it.
@@ -114,6 +120,13 @@ export interface HtmlStyle {
   opacity?: number
 }
 
+export type HtmlStyleInput =
+  | HtmlStyle
+  | string
+  | readonly HtmlStyleInput[]
+  | null
+  | undefined
+
 export const supportedHtmlStyleKeys = [
   'alignItems',
   'alignSelf',
@@ -181,18 +194,481 @@ export const supportedHtmlStyleKeys = [
 const supportedHtmlStyleKeySet = new Set<string>(supportedHtmlStyleKeys)
 const warnedUnsupportedStyleProps = new Set<string>()
 
+type MutableHtmlStyle = HtmlStyle & Record<string, unknown>
+
+function isHtmlStyleInputArray(
+  style: HtmlStyleInput,
+): style is readonly HtmlStyleInput[] {
+  return Array.isArray(style)
+}
+
+function cssPropertyNameToStyleKey(property: string): string {
+  const trimmed = property.trim()
+  if (trimmed.startsWith('--')) {
+    return trimmed
+  }
+
+  return trimmed
+    .toLowerCase()
+    .replace(/-([a-z])/g, (_match, letter: string) => letter.toUpperCase())
+}
+
+function parseCssNumber(value: string): number | null {
+  const match = value.trim().match(/^(-?(?:\d+(?:\.\d+)?|\.\d+))(?:px)?$/i)
+  if (!match) {
+    return null
+  }
+
+  const parsed = Number(match[1])
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+function parseCssLength(value: string): StyleLength {
+  return parseCssNumber(value) ?? value.trim()
+}
+
+function parseCssTime(value: string): StyleTime {
+  return parseCssNumber(value) ?? value.trim().toLowerCase()
+}
+
+function parseCssBoxLengths(value: string): StyleLength[] | null {
+  const values = splitCssWhitespaceOutsideParens(value).map(parseCssLength)
+  return values.length >= 1 && values.length <= 4 ? values : null
+}
+
+function applyBoxShorthand(
+  value: string,
+  setAll: (length: StyleLength) => void,
+  setTop: (length: StyleLength) => void,
+  setRight: (length: StyleLength) => void,
+  setBottom: (length: StyleLength) => void,
+  setLeft: (length: StyleLength) => void,
+): void {
+  const lengths = parseCssBoxLengths(value)
+  if (!lengths) {
+    return
+  }
+
+  if (lengths.length === 1) {
+    setAll(lengths[0])
+    return
+  }
+
+  const [top, right, bottom, left] = [
+    lengths[0],
+    lengths[1],
+    lengths[2] ?? lengths[0],
+    lengths[3] ?? lengths[1],
+  ]
+  setTop(top)
+  setRight(right)
+  setBottom(bottom)
+  setLeft(left)
+}
+
+function applyBorderRadiusShorthand(
+  style: MutableHtmlStyle,
+  value: string,
+): void {
+  const simpleValue = value.split('/')[0]?.trim() ?? value
+  const lengths = parseCssBoxLengths(simpleValue)
+  if (!lengths) {
+    return
+  }
+
+  if (lengths.length === 1) {
+    style.borderRadius = lengths[0]
+    return
+  }
+
+  style.borderTopLeftRadius = lengths[0]
+  style.borderTopRightRadius = lengths[1]
+  style.borderBottomRightRadius = lengths[2] ?? lengths[0]
+  style.borderBottomLeftRadius = lengths[3] ?? lengths[1]
+}
+
+function parseFontWeight(value: string): HtmlStyle['fontWeight'] | null {
+  const normalized = value.trim().toLowerCase()
+  if (normalized === 'normal' || normalized === 'bold') {
+    return normalized
+  }
+
+  const numeric = parseCssNumber(normalized)
+  if (numeric == null) {
+    return null
+  }
+  return numeric >= 600 ? 'bold' : 'normal'
+}
+
+function parseAnimationIterationCount(
+  value: string,
+): StyleAnimationIterationCount | null {
+  const normalized = value.trim().toLowerCase()
+  if (normalized === 'infinite') {
+    return 'infinite'
+  }
+
+  const numeric = parseCssNumber(normalized)
+  return numeric != null && numeric > 0 ? numeric : null
+}
+
+function applyBorderShorthand(style: MutableHtmlStyle, value: string): void {
+  const tokens = splitCssWhitespaceOutsideParens(value)
+  for (const token of tokens) {
+    const normalized = token.toLowerCase()
+    const length = parseCssNumber(token)
+    if (length != null) {
+      style.borderWidth = length
+    } else if (normalized === 'solid' || normalized === 'none') {
+      style.borderStyle = normalized
+      if (normalized === 'none') {
+        style.borderWidth = 0
+      }
+    } else {
+      style.borderColor = token
+    }
+  }
+}
+
+function applyBackgroundShorthand(style: MutableHtmlStyle, value: string): void {
+  const trimmed = value.trim()
+  if (/^url\(/i.test(trimmed)) {
+    style.backgroundImage = trimmed
+  } else if (trimmed && !splitCssWhitespaceOutsideParens(trimmed)[1]) {
+    style.backgroundColor = trimmed
+  } else {
+    style.background = trimmed
+  }
+}
+
+function assignUnsupportedStyleProperty(
+  style: MutableHtmlStyle,
+  key: string,
+  value: string,
+): void {
+  style[key] = value
+}
+
+function setParsedStyleProperty(
+  style: MutableHtmlStyle,
+  key: string,
+  value: string,
+): void {
+  const normalizedValue = value.trim().toLowerCase()
+  const numeric = parseCssNumber(value)
+
+  switch (key) {
+    case 'display':
+      if (
+        normalizedValue === 'flex' ||
+        normalizedValue === 'grid' ||
+        normalizedValue === 'none'
+      ) {
+        style.display = normalizedValue
+      }
+      return
+    case 'flexDirection':
+      if (normalizedValue === 'row' || normalizedValue === 'column') {
+        style.flexDirection = normalizedValue
+      }
+      return
+    case 'flexWrap':
+      if (normalizedValue === 'nowrap' || normalizedValue === 'wrap') {
+        style.flexWrap = normalizedValue
+      }
+      return
+    case 'justifyContent':
+      if (
+        normalizedValue === 'flex-start' ||
+        normalizedValue === 'center' ||
+        normalizedValue === 'flex-end'
+      ) {
+        style.justifyContent = normalizedValue
+      }
+      return
+    case 'alignItems':
+      if (
+        normalizedValue === 'flex-start' ||
+        normalizedValue === 'center' ||
+        normalizedValue === 'flex-end' ||
+        normalizedValue === 'stretch'
+      ) {
+        style.alignItems = normalizedValue
+      }
+      return
+    case 'alignSelf':
+      if (
+        normalizedValue === 'flex-start' ||
+        normalizedValue === 'center' ||
+        normalizedValue === 'flex-end' ||
+        normalizedValue === 'stretch'
+      ) {
+        style.alignSelf = normalizedValue
+      }
+      return
+    case 'flex':
+      if (numeric != null) {
+        style.flex = numeric
+      }
+      return
+    case 'gap':
+      if (numeric != null) {
+        style.gap = numeric
+      }
+      return
+    case 'columns':
+      if (numeric != null) {
+        style.columns = numeric
+      }
+      return
+    case 'margin':
+      applyBoxShorthand(
+        value,
+        (length) => {
+          style.margin = length
+        },
+        (length) => {
+          style.marginTop = length
+        },
+        (length) => {
+          style.marginRight = length
+        },
+        (length) => {
+          style.marginBottom = length
+        },
+        (length) => {
+          style.marginLeft = length
+        },
+      )
+      return
+    case 'padding':
+      applyBoxShorthand(
+        value,
+        (length) => {
+          style.padding = length
+        },
+        (length) => {
+          style.paddingTop = length
+        },
+        (length) => {
+          style.paddingRight = length
+        },
+        (length) => {
+          style.paddingBottom = length
+        },
+        (length) => {
+          style.paddingLeft = length
+        },
+      )
+      return
+    case 'borderWidth':
+      applyBoxShorthand(
+        value,
+        (length) => {
+          style.borderWidth = length
+        },
+        (length) => {
+          style.borderTopWidth = length
+        },
+        (length) => {
+          style.borderRightWidth = length
+        },
+        (length) => {
+          style.borderBottomWidth = length
+        },
+        (length) => {
+          style.borderLeftWidth = length
+        },
+      )
+      return
+    case 'marginTop':
+    case 'marginRight':
+    case 'marginBottom':
+    case 'marginLeft':
+    case 'paddingTop':
+    case 'paddingRight':
+    case 'paddingBottom':
+    case 'paddingLeft':
+    case 'width':
+    case 'height':
+    case 'borderTopWidth':
+    case 'borderRightWidth':
+    case 'borderBottomWidth':
+    case 'borderLeftWidth':
+    case 'borderTopLeftRadius':
+    case 'borderTopRightRadius':
+    case 'borderBottomRightRadius':
+    case 'borderBottomLeftRadius':
+      style[key] = parseCssLength(value)
+      return
+    case 'minWidth':
+    case 'minHeight':
+    case 'maxWidth':
+    case 'maxHeight':
+    case 'fontSize':
+    case 'opacity':
+      if (numeric != null) {
+        style[key] = numeric
+      }
+      return
+    case 'objectFit':
+      if (
+        normalizedValue === 'fill' ||
+        normalizedValue === 'contain' ||
+        normalizedValue === 'cover' ||
+        normalizedValue === 'none' ||
+        normalizedValue === 'scale-down'
+      ) {
+        style.objectFit = normalizedValue
+      }
+      return
+    case 'background':
+      applyBackgroundShorthand(style, value)
+      return
+    case 'backgroundColor':
+    case 'backgroundImage':
+    case 'borderColor':
+    case 'color':
+    case 'fontFamily':
+    case 'transform':
+    case 'transition':
+    case 'transitionProperty':
+    case 'animationName':
+      style[key] = value.trim()
+      return
+    case 'border':
+      applyBorderShorthand(style, value)
+      return
+    case 'borderStyle':
+      if (normalizedValue === 'solid' || normalizedValue === 'none') {
+        style.borderStyle = normalizedValue
+      }
+      return
+    case 'borderRadius':
+      applyBorderRadiusShorthand(style, value)
+      return
+    case 'fontWeight': {
+      const fontWeight = parseFontWeight(value)
+      if (fontWeight) {
+        style.fontWeight = fontWeight
+      }
+      return
+    }
+    case 'textTransform':
+      if (
+        normalizedValue === 'none' ||
+        normalizedValue === 'uppercase' ||
+        normalizedValue === 'lowercase' ||
+        normalizedValue === 'capitalize'
+      ) {
+        style.textTransform = normalizedValue
+      }
+      return
+    case 'textAlign':
+      if (
+        normalizedValue === 'left' ||
+        normalizedValue === 'center' ||
+        normalizedValue === 'right'
+      ) {
+        style.textAlign = normalizedValue
+      }
+      return
+    case 'transitionDuration':
+    case 'transitionDelay':
+    case 'animationDuration':
+    case 'animationDelay':
+      style[key] = parseCssTime(value)
+      return
+    case 'transitionTimingFunction':
+    case 'animationTimingFunction':
+      style[key] = normalizedValue
+      return
+    case 'animationIterationCount': {
+      const iterationCount = parseAnimationIterationCount(value)
+      if (iterationCount != null) {
+        style.animationIterationCount = iterationCount
+      }
+      return
+    }
+    case 'animationDirection':
+      if (normalizedValue === 'normal' || normalizedValue === 'reverse') {
+        style.animationDirection = normalizedValue
+      }
+      return
+    case 'overflowWrap':
+      if (normalizedValue === 'normal' || normalizedValue === 'break-word') {
+        style.overflowWrap = normalizedValue
+      }
+      return
+    case 'overflow':
+      if (normalizedValue === 'visible' || normalizedValue === 'hidden') {
+        style.overflow = normalizedValue
+      }
+      return
+    default:
+      assignUnsupportedStyleProperty(style, key, value.trim())
+  }
+}
+
+export function parseHtmlStyle(style: string): HtmlStyle {
+  const parsed: MutableHtmlStyle = {}
+
+  for (const declaration of splitCssDeclarations(style)) {
+    const parts = splitCssDeclaration(declaration)
+    if (!parts) {
+      continue
+    }
+
+    setParsedStyleProperty(
+      parsed,
+      cssPropertyNameToStyleKey(parts.property),
+      parts.value,
+    )
+  }
+
+  return parsed
+}
+
+export function normalizeHtmlStyle(
+  style: HtmlStyleInput,
+): HtmlStyle | undefined {
+  if (style == null) {
+    return undefined
+  }
+
+  if (typeof style === 'string') {
+    return parseHtmlStyle(style)
+  }
+
+  if (isHtmlStyleInputArray(style)) {
+    const merged: MutableHtmlStyle = {}
+    for (const entry of style) {
+      const normalized = normalizeHtmlStyle(entry)
+      if (normalized) {
+        Object.assign(merged, normalized)
+      }
+    }
+    return Object.keys(merged).length > 0 ? merged : undefined
+  }
+
+  return style
+}
+
 export function getUnsupportedStyleKeys(
-  style: object | undefined,
+  style: HtmlStyleInput,
 ): string[] {
-  if (!style || typeof style !== 'object' || Array.isArray(style)) {
+  const normalized = normalizeHtmlStyle(style)
+  if (!normalized) {
     return []
   }
 
-  return Object.keys(style).filter((key) => !supportedHtmlStyleKeySet.has(key))
+  return Object.keys(normalized).filter(
+    (key) => !supportedHtmlStyleKeySet.has(key),
+  )
 }
 
 export function warnUnsupportedStyleProps(
-  style: object | undefined,
+  style: HtmlStyleInput,
   componentName: string,
   warn: (message: string) => void = console.warn,
 ): void {

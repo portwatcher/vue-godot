@@ -16,7 +16,8 @@ import {
   applyFocusTraversalProps,
   focusPropOptions,
 } from '../utils/focus.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
+import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import {
   applyMinTouchTargetProps,
   touchTargetPropOptions,
@@ -59,10 +60,7 @@ export const Pressable = defineComponent({
     ...accessibilityPropOptions,
     ...focusPropOptions,
     ...touchTargetPropOptions,
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
   },
   emits: [
     'press',
@@ -193,7 +191,9 @@ export const Pressable = defineComponent({
         },
       }
 
-      applyCommonControlStyleProps(nodeProps, props.style, 'Pressable')
+      const style = normalizeHtmlStyle(props.style)
+
+      applyCommonControlStyleProps(nodeProps, style, 'Pressable')
       applyMinTouchTargetProps(nodeProps, props)
       applyAccessibilityProps(nodeProps, props)
       applyFocusTraversalProps(nodeProps, props)
@@ -201,7 +201,7 @@ export const Pressable = defineComponent({
         applyAutoFocusProp(nodeProps, props)
       }
 
-      const backgroundStyle = createBackgroundPanelStyle(props.style)
+      const backgroundStyle = createBackgroundPanelStyle(style)
       const backgroundTextureStyle = createBackgroundTexturePanelStyle(
         backgroundTexture.value,
       )

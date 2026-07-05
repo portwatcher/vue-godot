@@ -1,9 +1,10 @@
 import { DisplayServer } from 'godot'
 import { zeroEdgeInsets, type EdgeInsets } from './edgeInsets.js'
 import {
+  normalizeHtmlStyle,
   resolvePadding,
   toNumericPixels,
-  type HtmlStyle,
+  type HtmlStyleInput,
 } from './styleMapping.js'
 
 export type KeyboardAvoidingBehavior = 'padding' | 'position' | 'height'
@@ -68,11 +69,12 @@ export function resolveKeyboardAvoidanceHeight(
 }
 
 export function resolveKeyboardAvoidingInsets(
-  style: HtmlStyle | undefined,
+  style: HtmlStyleInput,
   keyboardAvoidance: number,
   includeKeyboardAvoidance: boolean,
 ): EdgeInsets {
-  const stylePadding = resolvePadding(style ?? {}) ?? zeroEdgeInsets
+  const stylePadding =
+    resolvePadding(normalizeHtmlStyle(style) ?? {}) ?? zeroEdgeInsets
 
   return {
     top: stylePadding.top,
@@ -85,9 +87,9 @@ export function resolveKeyboardAvoidingInsets(
 }
 
 export function resolveKeyboardAvoidingHeight(
-  style: HtmlStyle | undefined,
+  style: HtmlStyleInput,
   keyboardAvoidance: number,
 ): number | null {
-  const height = toNumericPixels(style?.height)
+  const height = toNumericPixels(normalizeHtmlStyle(style)?.height)
   return height == null ? null : nonNegative(height - keyboardAvoidance)
 }

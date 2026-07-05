@@ -5,6 +5,7 @@ import {
 } from '../utils/accessibility.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import {
   applyProgressBarProps,
   type ProgressFillMode,
@@ -50,10 +51,7 @@ export const Progress = defineComponent({
       default: 'begin-to-end',
     },
     ...accessibilityPropOptions,
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
   },
   setup(props) {
     return () => {

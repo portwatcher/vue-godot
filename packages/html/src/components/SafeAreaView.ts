@@ -18,7 +18,8 @@ import {
   type SafeAreaEdge,
   type SafeAreaInsets,
 } from '../utils/safeArea.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
+import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import { Div } from './Div.js'
 
 /**
@@ -36,14 +37,8 @@ export const SafeAreaView = defineComponent({
       default: undefined,
     },
     ...accessibilityPropOptions,
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
-    contentStyle: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
+    contentStyle: htmlStyleProp,
   },
   setup(props, { slots }) {
     const backgroundTexture = useBackgroundTexture(
@@ -52,28 +47,30 @@ export const SafeAreaView = defineComponent({
     )
 
     return () => {
+      const style = normalizeHtmlStyle(props.style)
+      const contentStyle = normalizeHtmlStyle(props.contentStyle)
       const safeAreaInsets = readDisplayServerSafeAreaInsets(
         props.fallbackInsets,
       )
       const padding = resolveSafeAreaPadding(
-        props.style,
+        style,
         safeAreaInsets,
         props.edges,
       )
       const nodeProps: Record<string, unknown> = {}
-      applyCommonControlStyleProps(nodeProps, props.style, 'SafeAreaView')
+      applyCommonControlStyleProps(nodeProps, style, 'SafeAreaView')
       applyAccessibilityProps(nodeProps, props)
 
       const content = h(
         Div,
-        { style: props.contentStyle ?? {} },
+        { style: contentStyle ?? {} },
         slots.default?.(),
       )
       const marginProps = createMarginThemeOverrides(padding)
       const backgroundTextureStyle = createBackgroundTexturePanelStyle(
         backgroundTexture.value,
       )
-      const backgroundStyle = createBackgroundPanelStyle(props.style)
+      const backgroundStyle = createBackgroundPanelStyle(style)
       let paddedContent = h('MarginContainer', marginProps, [content])
 
       if (backgroundStyle && backgroundTextureStyle) {

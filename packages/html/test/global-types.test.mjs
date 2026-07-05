@@ -43,7 +43,7 @@ test('html package exposes typed PascalCase and lowercase GlobalComponents', () 
     `import '@vue-godot/html'
 import { registerStyleKeyframes } from '@vue-godot/html'
 import type { GlobalComponents as RuntimeGlobalComponents } from '@vue/runtime-core'
-import type { HtmlStyle } from '@vue-godot/html'
+import type { HtmlStyle, HtmlStyleInput } from '@vue-godot/html'
 
 type Assert<T extends true> = T
 type HasKey<T, K extends PropertyKey> = K extends keyof T ? true : false
@@ -59,7 +59,7 @@ type LowercaseDivProps = ComponentProps<RuntimeGlobalComponents['div']>
 type ButtonProps = ComponentProps<RuntimeGlobalComponents['Button']>
 type InputProps = ComponentProps<RuntimeGlobalComponents['Input']>
 
-const divStyle: NonNullable<DivProps['style']> = {
+const htmlStyle: HtmlStyle = {
   flexDirection: 'row',
   gap: 8,
   width: '50%',
@@ -73,8 +73,15 @@ const divStyle: NonNullable<DivProps['style']> = {
   transitionDuration: ['120ms', 0.2],
   transitionTimingFunction: 'ease-out',
 }
-const htmlStyle: HtmlStyle = divStyle
-const lowercaseStyle: NonNullable<LowercaseDivProps['style']> = htmlStyle
+const divStyle: NonNullable<DivProps['style']> = htmlStyle
+const cssStyle: NonNullable<DivProps['style']> =
+  'flex-direction: row; gap: 8px; width: 50%; transform: translateY(2px)'
+const styleArray: NonNullable<LowercaseDivProps['style']> = [
+  cssStyle,
+  htmlStyle,
+]
+const styleInput: HtmlStyleInput = styleArray
+const lowercaseStyle: NonNullable<LowercaseDivProps['style']> = styleInput
 const unregisterKeyframes = registerStyleKeyframes('pulse', [
   { offset: 0, style: { opacity: 0.5, transform: 'scale(1)' } },
   { offset: 1, style: { opacity: 1, transform: 'scale(1.1)' } },
@@ -87,6 +94,9 @@ const inputModel: string | number | boolean | undefined =
 const badStyle: HtmlStyle = { position: 'absolute' }
 
 void lowercaseStyle
+void cssStyle
+void styleArray
+void styleInput
 void unregisterKeyframes
 void disabled
 void inputModel

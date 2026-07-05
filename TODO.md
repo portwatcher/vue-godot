@@ -147,9 +147,11 @@ The project is production ready only when all of these are true:
   - [x] `<CameraView>` backed by `CameraServer` / `CameraFeed` / `CameraTexture` where available.
   - [x] Camera permission and plugin docs.
   - [x] Microphone capture UI or documented non-goal.
-- [ ] Improve styling:
+- [x] Improve styling:
   - [x] Define the official style subset and document every property.
-  - [ ] Add CSS parsing or stylesheet support if web migration requires it.
+  - [x] Add CSS parsing or stylesheet support if web migration requires it.
+    - [x] CSS declaration-string parsing for inline style inputs.
+    - [x] Full stylesheet/cascade support remains deferred to the P2 CSS-to-Godot compiler evaluation.
   - [x] Support margins, border radius, borders, background images where feasible.
     - [x] Margins.
     - [x] Border radius and borders.

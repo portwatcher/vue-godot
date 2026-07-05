@@ -2,8 +2,9 @@ import { createFontStyleOverride } from './fontLoader.js'
 import { createOpacityModulate, parseGodotColor } from './godotColor.js'
 import {
   applyStyleSizeProps,
+  normalizeHtmlStyle,
   warnUnsupportedStyleProps,
-  type HtmlStyle,
+  type HtmlStyleInput,
   type ResolvedStyleSize,
 } from './styleMapping.js'
 import { resolveTransformStyle } from './transformStyle.js'
@@ -13,29 +14,33 @@ export type GodotPropBag = Record<string, unknown>
 
 export function applyControlSizeProps(
   nodeProps: GodotPropBag,
-  style: HtmlStyle | undefined,
+  style: HtmlStyleInput,
 ): ResolvedStyleSize {
-  return applyStyleSizeProps(nodeProps, style)
+  return applyStyleSizeProps(nodeProps, normalizeHtmlStyle(style))
 }
 
 export function applyFontStyleProps(
   nodeProps: GodotPropBag,
-  style: HtmlStyle | undefined,
+  style: HtmlStyleInput,
 ): void {
-  if (typeof style?.fontSize === 'number' && Number.isFinite(style.fontSize)) {
-    nodeProps['theme_override_font_sizes/font_size'] = style.fontSize
+  const normalizedStyle = normalizeHtmlStyle(style)
+  if (
+    typeof normalizedStyle?.fontSize === 'number' &&
+    Number.isFinite(normalizedStyle.fontSize)
+  ) {
+    nodeProps['theme_override_font_sizes/font_size'] = normalizedStyle.fontSize
   }
 
   const fontOverride = createFontStyleOverride(
-    style?.fontFamily,
-    style?.fontWeight,
+    normalizedStyle?.fontFamily,
+    normalizedStyle?.fontWeight,
   )
   if (fontOverride) {
     nodeProps['theme_override_fonts/font'] = fontOverride
   }
 
-  if (typeof style?.color === 'string') {
-    const parsed = parseGodotColor(style.color)
+  if (typeof normalizedStyle?.color === 'string') {
+    const parsed = parseGodotColor(normalizedStyle.color)
     if (parsed) {
       nodeProps['theme_override_colors/font_color'] = parsed
     }
@@ -44,14 +49,18 @@ export function applyFontStyleProps(
 
 export function applyDisplayAndOpacityProps(
   nodeProps: GodotPropBag,
-  style: HtmlStyle | undefined,
+  style: HtmlStyleInput,
 ): void {
-  if (style?.display === 'none') {
+  const normalizedStyle = normalizeHtmlStyle(style)
+  if (normalizedStyle?.display === 'none') {
     nodeProps['visible'] = false
   }
 
-  if (typeof style?.opacity === 'number' && Number.isFinite(style.opacity)) {
-    nodeProps['modulate'] = createOpacityModulate(style.opacity)
+  if (
+    typeof normalizedStyle?.opacity === 'number' &&
+    Number.isFinite(normalizedStyle.opacity)
+  ) {
+    nodeProps['modulate'] = createOpacityModulate(normalizedStyle.opacity)
   }
 }
 
@@ -66,9 +75,10 @@ function addNumericProp(
 
 export function applyTransformStyleProps(
   nodeProps: GodotPropBag,
-  style: HtmlStyle | undefined,
+  style: HtmlStyleInput,
 ): void {
-  const transform = resolveTransformStyle(style?.transform)
+  const normalizedStyle = normalizeHtmlStyle(style)
+  const transform = resolveTransformStyle(normalizedStyle?.transform)
   if (!transform) {
     return
   }
@@ -92,15 +102,16 @@ export function applyTransformStyleProps(
 
 export function applyCommonControlStyleProps(
   nodeProps: GodotPropBag,
-  style: HtmlStyle | undefined,
+  style: HtmlStyleInput,
   componentName = 'Control',
 ): void {
-  warnUnsupportedStyleProps(style, componentName)
-  applyControlSizeProps(nodeProps, style)
-  applyFontStyleProps(nodeProps, style)
-  applyDisplayAndOpacityProps(nodeProps, style)
-  applyTransformStyleProps(nodeProps, style)
-  applyMotionStyleProps(nodeProps, style)
+  const normalizedStyle = normalizeHtmlStyle(style)
+  warnUnsupportedStyleProps(normalizedStyle, componentName)
+  applyControlSizeProps(nodeProps, normalizedStyle)
+  applyFontStyleProps(nodeProps, normalizedStyle)
+  applyDisplayAndOpacityProps(nodeProps, normalizedStyle)
+  applyTransformStyleProps(nodeProps, normalizedStyle)
+  applyMotionStyleProps(nodeProps, normalizedStyle)
 }
 
 export {

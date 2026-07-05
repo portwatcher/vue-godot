@@ -10,9 +10,11 @@ import {
   applyMotionStyleProps,
 } from '../utils/controlStyle.js'
 import {
+  normalizeHtmlStyle,
   warnUnsupportedStyleProps,
   type HtmlStyle,
 } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import { applyTextureRectObjectFitProps } from '../utils/textureRectFit.js'
 import { classifySource, loadTexture } from '../utils/textureLoader.js'
 
@@ -45,10 +47,7 @@ export const Img = defineComponent({
       type: String,
       default: undefined,
     },
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
     alt: {
       type: String,
       default: undefined,
@@ -87,7 +86,7 @@ export const Img = defineComponent({
     )
 
     return () => {
-      const style = props.style
+      const style = normalizeHtmlStyle(props.style)
       warnUnsupportedStyleProps(style, 'Img')
       const nodeProps: Record<string, unknown> = {}
 

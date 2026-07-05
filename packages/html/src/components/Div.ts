@@ -24,9 +24,15 @@ import {
   applyTransformStyleProps,
   applyMotionStyleProps,
 } from '../utils/controlStyle.js'
-import type { GodotContainerTag, HtmlStyle } from '../utils/styleMapping.js'
+import type {
+  GodotContainerTag,
+  HtmlStyle,
+  HtmlStyleInput,
+} from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import {
   ControlSizeFlags,
+  normalizeHtmlStyle,
   resolveContainerTag,
   resolveMargin,
   resolvePadding,
@@ -153,12 +159,9 @@ function mapChildForContainerLayout(
   }
 
   const existingProps = (child.props ?? null) as Record<string, unknown> | null
-  const childStyle =
-    existingProps &&
-    typeof existingProps.style === 'object' &&
-    !Array.isArray(existingProps.style)
-      ? (existingProps.style as HtmlStyle)
-      : undefined
+  const childStyle = existingProps
+    ? normalizeHtmlStyle(existingProps.style as HtmlStyleInput)
+    : undefined
   const layoutProps = resolveChildLayoutProps(
     childStyle,
     containerTag,
@@ -214,16 +217,13 @@ export const Div = defineComponent({
   name: 'Div',
   props: {
     ...accessibilityPropOptions,
-    style: {
-      type: Object as () => HtmlStyle,
-      default: () => ({}),
-    },
+    style: htmlStyleProp,
   },
   setup(props, { slots }) {
     const backgroundTexture = useBackgroundTexture(() => props.style, 'Div')
 
     return () => {
-      const style = props.style ?? {}
+      const style = normalizeHtmlStyle(props.style) ?? {}
       warnUnsupportedStyleProps(style, 'Div')
       const {
         tag,

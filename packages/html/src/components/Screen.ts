@@ -10,7 +10,8 @@ import {
 } from '../utils/backgroundStyle.js'
 import { useBackgroundTexture } from '../utils/backgroundTexture.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
+import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import { Div } from './Div.js'
 
 const fullRectProps = {
@@ -37,30 +38,26 @@ export const Screen = defineComponent({
       default: true,
     },
     ...accessibilityPropOptions,
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
-    contentStyle: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
+    contentStyle: htmlStyleProp,
   },
   setup(props, { slots }) {
     const backgroundTexture = useBackgroundTexture(() => props.style, 'Screen')
 
     return () => {
+      const style = normalizeHtmlStyle(props.style)
+      const contentStyle = normalizeHtmlStyle(props.contentStyle)
       const nodeProps: Record<string, unknown> = {
-        visible: props.visible !== false && props.style?.display !== 'none',
+        visible: props.visible !== false && style?.display !== 'none',
       }
       if (props.fullRect !== false) {
         Object.assign(nodeProps, fullRectProps)
       }
 
-      applyCommonControlStyleProps(nodeProps, props.style, 'Screen')
+      applyCommonControlStyleProps(nodeProps, style, 'Screen')
       applyAccessibilityProps(nodeProps, props)
 
-      const backgroundStyle = createBackgroundPanelStyle(props.style)
+      const backgroundStyle = createBackgroundPanelStyle(style)
       const backgroundTextureStyle = createBackgroundTexturePanelStyle(
         backgroundTexture.value,
       )
@@ -77,7 +74,7 @@ export const Screen = defineComponent({
         {
           style: {
             flexDirection: 'column',
-            ...(props.contentStyle ?? {}),
+            ...(contentStyle ?? {}),
           },
         },
         slots.default?.(),

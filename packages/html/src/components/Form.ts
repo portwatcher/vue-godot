@@ -16,7 +16,8 @@ import {
   applyFocusTraversalProps,
   focusPropOptions,
 } from '../utils/focus.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
+import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import {
   applyMinTouchTargetProps,
   touchTargetPropOptions,
@@ -44,20 +45,16 @@ export const Form = defineComponent({
     ...accessibilityPropOptions,
     ...focusPropOptions,
     ...touchTargetPropOptions,
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
-    contentStyle: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
+    contentStyle: htmlStyleProp,
   },
   emits: ['submit', 'reset'],
   setup(props, { slots, emit }) {
     const backgroundTexture = useBackgroundTexture(() => props.style, 'Form')
 
     return () => {
+      const style = normalizeHtmlStyle(props.style)
+      const contentStyle = normalizeHtmlStyle(props.contentStyle)
       const nodeProps: Record<string, unknown> = {
         focus_mode: props.disabled === true ? FocusMode.NONE : FocusMode.ALL,
         onGuiInput: (event: unknown) => {
@@ -80,7 +77,7 @@ export const Form = defineComponent({
         },
       }
 
-      applyCommonControlStyleProps(nodeProps, props.style, 'Form')
+      applyCommonControlStyleProps(nodeProps, style, 'Form')
       applyMinTouchTargetProps(nodeProps, props)
       applyAccessibilityProps(nodeProps, props)
       applyFocusTraversalProps(nodeProps, props)
@@ -88,7 +85,7 @@ export const Form = defineComponent({
         applyAutoFocusProp(nodeProps, props)
       }
 
-      const backgroundStyle = createBackgroundPanelStyle(props.style)
+      const backgroundStyle = createBackgroundPanelStyle(style)
       const backgroundTextureStyle = createBackgroundTexturePanelStyle(
         backgroundTexture.value,
       )
@@ -103,7 +100,7 @@ export const Form = defineComponent({
         {
           style: {
             flexDirection: 'column',
-            ...(props.contentStyle ?? {}),
+            ...(contentStyle ?? {}),
           },
         },
         slots.default?.(),

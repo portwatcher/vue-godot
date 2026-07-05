@@ -12,9 +12,11 @@ import {
 } from '../utils/controlStyle.js'
 import { resolveAssetPath } from '../utils/assetResolver.js'
 import {
+  normalizeHtmlStyle,
   warnUnsupportedStyleProps,
   type HtmlStyle,
 } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import { classifySource, loadSvgTextureFromFile } from '../utils/textureLoader.js'
 
 /**
@@ -168,10 +170,7 @@ export const Svg = defineComponent({
       type: String,
       default: undefined,
     },
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
     /**
      * Rasterisation scale factor applied when decoding an SVG from a
      * data URI, blob URL, or remote URL.  Has no effect on local
@@ -262,7 +261,7 @@ export const Svg = defineComponent({
     )
 
     return () => {
-      const style = props.style
+      const style = normalizeHtmlStyle(props.style)
       warnUnsupportedStyleProps(style, 'Svg')
       const nodeProps: Record<string, unknown> = {}
 

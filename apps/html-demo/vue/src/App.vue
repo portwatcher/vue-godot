@@ -42,16 +42,15 @@
       <Span>flex:2 child</Span>
     </Div>
     <Div
-      :style="{
-        padding: 6,
-        width: 150,
-        backgroundColor: '#0f766e',
-        borderRadius: 6,
-        animationName: 'html-demo-pulse',
-        animationDuration: '900ms',
-        animationIterationCount: 'infinite',
-        animationTimingFunction: 'ease-in-out',
-      }"
+      :style="[
+        'padding: 6px; width: 150px; background: #0f766e; border-radius: 6px',
+        {
+          animationName: 'html-demo-pulse',
+          animationDuration: '900ms',
+          animationIterationCount: 'infinite',
+          animationTimingFunction: 'ease-in-out',
+        },
+      ]"
     >
       <Span>keyframe pulse</Span>
     </Div>

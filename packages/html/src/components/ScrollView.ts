@@ -9,7 +9,8 @@ import {
   toScrollMode,
   type ScrollViewScrollbarMode,
 } from '../utils/scrollContainer.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
+import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import { Div } from './Div.js'
 
 export type { ScrollViewScrollbarMode } from '../utils/scrollContainer.js'
@@ -29,14 +30,8 @@ function defaultContentStyle(horizontal: boolean, vertical: boolean): HtmlStyle 
 export const ScrollView = defineComponent({
   name: 'ScrollView',
   props: {
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
-    contentStyle: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
+    contentStyle: htmlStyleProp,
     horizontal: {
       type: Boolean,
       default: false,
@@ -87,6 +82,7 @@ export const ScrollView = defineComponent({
     return () => {
       const horizontal = props.horizontal === true
       const vertical = props.vertical !== false
+      const contentStyleOverride = normalizeHtmlStyle(props.contentStyle)
       const scrollbarMode = props.scrollbarMode ?? 'auto'
       const nodeProps: Record<string, unknown> = {
         clip_contents: true,
@@ -122,7 +118,7 @@ export const ScrollView = defineComponent({
 
       const contentStyle = {
         ...defaultContentStyle(horizontal, vertical),
-        ...(props.contentStyle ?? {}),
+        ...(contentStyleOverride ?? {}),
       }
 
       return h('ScrollContainer', nodeProps, [

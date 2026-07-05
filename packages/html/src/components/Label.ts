@@ -7,7 +7,8 @@ import {
   type GodotPropBag,
 } from '../utils/controlStyle.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
+import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import {
   applyLabelTextStyleProps,
   withRequiredIndicator,
@@ -33,17 +34,12 @@ export const Label = defineComponent({
       default: ' *',
     },
     ...accessibilityPropOptions,
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
-    contentStyle: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
+    contentStyle: htmlStyleProp,
   },
   setup(props, { slots }) {
     return () => {
+      const contentStyle = normalizeHtmlStyle(props.contentStyle)
       const slotChildren = slots.default?.()
       const rawText = props.text ?? extractTextFromSlot(slots.default)
       const nodeProps: GodotPropBag = {
@@ -67,7 +63,7 @@ export const Label = defineComponent({
         {
           style: {
             flexDirection: 'column',
-            ...(props.contentStyle ?? {}),
+            ...(contentStyle ?? {}),
           },
         },
         [labelNode, ...slotChildren],

@@ -86,7 +86,9 @@ Rather than embedding a layout engine like Yoga, we map a CSS flexbox subset to 
 | `width` / `height`                            | Pixel minimum size or percent Control anchors                   |
 | `display: none`                               | `visible = false`                                               |
 
-Style objects (inline, React Native-style) are the primary styling API:
+Style objects (inline, React Native-style) are the primary styling API. For
+migration, `style` also accepts CSS declaration strings and arrays of style
+objects/strings; later entries in an array override earlier entries.
 
 ```vue
 <Div :style="{ flexDirection: 'row', gap: 10, padding: 20 }">
@@ -99,13 +101,23 @@ Style objects (inline, React Native-style) are the primary styling API:
 </Div>
 ```
 
+```vue
+<Div :style="'flex-direction: row; gap: 10px; padding: 20px'">
+  <Span>CSS declaration string</Span>
+</Div>
+
+<Div :style="['padding: 8px; background: #112233', { flex: 1 }]">
+  <Span>Array style input</Span>
+</Div>
+```
+
 This is intentionally a subset — not full CSS. We cover the 80% of layouts that real apps need (flex rows, columns, wrapping, grid) using Godot's own layout engine. If the remaining 20% becomes a bottleneck, a JS layout engine (Yoga/Taffy) can be added later without changing the component API.
 
 Color values support hex (`#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`), named CSS colors, `rgb()` / `rgba()`, and `hsl()` / `hsla()`.
 
 ### Supported style props and warnings
 
-Inline style objects are intentionally limited to the Godot-backed subset below. Unsupported style keys emit a `[vue-godot/html]` warning once per component/property pair so migrations surface ignored CSS instead of failing silently.
+Inline style inputs are intentionally limited to the Godot-backed subset below. CSS declaration strings are parsed from kebab-case into the same `HtmlStyle` keys and support common `margin`, `padding`, `border`, `border-radius`, and `background` shorthands. Unsupported style keys emit a `[vue-godot/html]` warning once per component/property pair so migrations surface ignored CSS instead of failing silently.
 
 | Style prop | Godot behavior |
 | --- | --- |
@@ -350,13 +362,14 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 | `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
 | `registerFontFamily`, `unregisterFontFamily`, `parseFontFamilyList`                                                                     | Registers CSS `fontFamily` names to local Godot font resources and parses CSS fallback lists              |
+| `parseHtmlStyle`, `normalizeHtmlStyle`                                                                                                  | Parses CSS declaration strings and normalizes object/string/array style inputs to `HtmlStyle`             |
 | `registerStyleKeyframes`, `unregisterStyleKeyframes`                                                                                    | Registers Tween-backed style keyframes for `animationName` on `opacity`, `transform`, `width`, and `height` |
 | `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |
 
 Package types augment `@vue/runtime-core` `GlobalComponents`. PascalCase tags
 such as `<Div>` and lowercase tags such as `<div>` share the same component
-prop types, including `style: HtmlStyle` for the documented Godot-backed style
-subset.
+prop types, including `style: HtmlStyleInput` for object, string, and array
+style inputs in the documented Godot-backed subset.
 
 ### Lowercase tag compatibility (migrating existing SPAs)
 
@@ -840,6 +853,7 @@ This package is in early development. Currently scaffolded:
 - [x] Opt-in minimum touch target sizing on focusable controls
 - [x] Theme override application (margin wrappers plus `StyleBoxFlat` border and corner radius props)
 - [x] Texture-backed background images via `backgroundImage: url(...)`
+- [x] CSS declaration-string and array style input normalization
 - [x] Basic transform mapping (`translate`, `scale`, `rotate`)
 - [x] Tween-backed transitions and registered keyframe animations for opacity, transform, width, and height
 - [x] Size flag mapping (flex, align-self)

@@ -2,7 +2,10 @@ import {
   applyCommonControlStyleProps,
   type GodotPropBag,
 } from './controlStyle.js'
-import type { HtmlStyle } from './styleMapping.js'
+import {
+  normalizeHtmlStyle,
+  type HtmlStyleInput,
+} from './styleMapping.js'
 
 const HorizontalAlignment = {
   LEFT: 0,
@@ -25,25 +28,26 @@ function resolveTextAlign(textAlign: string | undefined): number | null {
 
 export function applyLabelTextStyleProps(
   nodeProps: GodotPropBag,
-  style: HtmlStyle | undefined,
+  style: HtmlStyleInput,
   componentName: string,
 ): void {
-  applyCommonControlStyleProps(nodeProps, style, componentName)
+  const normalizedStyle = normalizeHtmlStyle(style)
+  applyCommonControlStyleProps(nodeProps, normalizedStyle, componentName)
 
-  const hAlign = resolveTextAlign(style?.textAlign)
+  const hAlign = resolveTextAlign(normalizedStyle?.textAlign)
   if (hAlign != null) {
     nodeProps['horizontal_alignment'] = hAlign
   }
 
-  if (style?.textTransform === 'uppercase') {
+  if (normalizedStyle?.textTransform === 'uppercase') {
     nodeProps['uppercase'] = true
   }
 
-  if (style?.overflowWrap === 'break-word') {
+  if (normalizedStyle?.overflowWrap === 'break-word') {
     nodeProps['autowrap_mode'] = 3
   }
 
-  if (style?.overflow === 'hidden') {
+  if (normalizedStyle?.overflow === 'hidden') {
     nodeProps['clip_text'] = true
   }
 }

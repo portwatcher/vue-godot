@@ -10,7 +10,8 @@ import {
   focusPropOptions,
 } from '../utils/focus.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
+import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import {
   applyMinTouchTargetProps,
   touchTargetPropOptions,
@@ -55,15 +56,12 @@ export const Button = defineComponent({
     ...accessibilityPropOptions,
     ...focusPropOptions,
     ...touchTargetPropOptions,
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
   },
   emits: ['click'],
   setup(props, { slots, emit }) {
     return () => {
-      const style = props.style
+      const style = normalizeHtmlStyle(props.style)
       const nodeProps: Record<string, unknown> = {}
 
       nodeProps['text'] = extractTextFromSlot(slots.default)

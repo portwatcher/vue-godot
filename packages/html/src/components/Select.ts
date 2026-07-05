@@ -17,9 +17,11 @@ import {
 } from '../utils/focus.js'
 import { extractTextFromVNode } from '../utils/slotText.js'
 import {
+  normalizeHtmlStyle,
   warnUnsupportedStyleProps,
   type HtmlStyle,
 } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 import {
   applyMinTouchTargetProps,
   touchTargetPropOptions,
@@ -152,10 +154,7 @@ export const Select = defineComponent({
     ...accessibilityPropOptions,
     ...focusPropOptions,
     ...touchTargetPropOptions,
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
   },
   emits: ['update:modelValue', 'change'],
   setup(props, { slots, emit }) {
@@ -188,7 +187,7 @@ export const Select = defineComponent({
     }
 
     return () => {
-      const style = props.style
+      const style = normalizeHtmlStyle(props.style)
       warnUnsupportedStyleProps(style, 'Select')
       const nodeProps: Record<string, unknown> = {}
 

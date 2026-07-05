@@ -10,9 +10,11 @@ import {
 import { createOpacityModulate } from '../utils/godotColor.js'
 import {
   applyStyleSizeProps,
+  normalizeHtmlStyle,
   warnUnsupportedStyleProps,
   type HtmlStyle,
 } from '../utils/styleMapping.js'
+import { htmlStyleProp } from '../utils/styleProps.js'
 
 /** Default canvas width matching the HTML `<canvas>` default. */
 const DEFAULT_WIDTH = 300
@@ -65,14 +67,11 @@ export const Canvas = defineComponent({
       default: DEFAULT_HEIGHT,
     },
     ...accessibilityPropOptions,
-    style: {
-      type: Object as () => HtmlStyle,
-      default: undefined,
-    },
+    style: htmlStyleProp,
   },
   setup(props) {
     return () => {
-      const style = props.style
+      const style = normalizeHtmlStyle(props.style)
       warnUnsupportedStyleProps(style, 'Canvas')
       const nodeProps: Record<string, unknown> = {}
 

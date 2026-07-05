@@ -41,6 +41,23 @@ test('applies resolved container theme overrides to Div node props', () => {
   assert.equal(vnode.props['theme_override_constants/separation'], 10)
 })
 
+test('accepts CSS declaration strings for Div style', () => {
+  const vnode = renderDiv(
+    'flex-direction: row; gap: 10px; padding: 4px 8px',
+  )
+
+  assert.equal(vnode.type, 'MarginContainer')
+  assert.equal(vnode.props['theme_override_constants/margin_top'], 4)
+  assert.equal(vnode.props['theme_override_constants/margin_right'], 8)
+  assert.equal(vnode.props['theme_override_constants/margin_bottom'], 4)
+  assert.equal(vnode.props['theme_override_constants/margin_left'], 8)
+  assert.equal(vnode.children[0].type, 'HBoxContainer')
+  assert.equal(
+    vnode.children[0].props['theme_override_constants/separation'],
+    10,
+  )
+})
+
 test('uses flow-theme override keys for wrapping Div containers', () => {
   const vnode = renderDiv({ flexDirection: 'column', flexWrap: 'wrap', gap: 9 })
 
