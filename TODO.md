@@ -132,7 +132,7 @@ The project is production ready only when all of these are true:
   - [x] Screen/router container primitives.
 - [ ] Make existing components production-grade:
   - [ ] `<Div>`
-  - [ ] `<Span>`
+  - [x] `<Span>`
   - [x] `<Button>`
   - [ ] `<Input>`
   - [x] `<Textarea>`
