@@ -57,6 +57,35 @@ export function load(url, context, nextLoad) {
           }
         }
 
+        function mockDisplayServerState() {
+          const key = '__vueGodotHtmlMockDisplayServer'
+          if (!globalThis[key]) {
+            globalThis[key] = {
+              safeArea: {
+                position: { x: 0, y: 0 },
+                size: { x: 1000, y: 1000 },
+              },
+              windowSize: { x: 1000, y: 1000 },
+              screenSize: { x: 1000, y: 1000 },
+            }
+          }
+          return globalThis[key]
+        }
+
+        export class DisplayServer {
+          static get_display_safe_area() {
+            return mockDisplayServerState().safeArea
+          }
+
+          static window_get_size() {
+            return mockDisplayServerState().windowSize
+          }
+
+          static screen_get_size() {
+            return mockDisplayServerState().screenSize
+          }
+        }
+
         export const ResourceLoader = {
           load(path) {
             if (!path) return null

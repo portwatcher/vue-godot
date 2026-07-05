@@ -137,6 +137,7 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 | `<Overlay>`         | `PanelContainer` plus inner `<Div>`                                    | `v-model`, `closeOnClick`, `blockInput`, `contentStyle` |
 | `<Pressable>`       | `PanelContainer`                                                       | `disabled`, `longPressDelay`, interaction events |
 | `<Progress>`        | `ProgressBar`                                                          | `value`, `min`, `max`, `indeterminate`, `showPercentage` |
+| `<SafeAreaView>`    | `MarginContainer` / `PanelContainer`                                   | `edges`, `fallbackInsets`, `contentStyle` |
 | `<ScrollView>`      | `ScrollContainer`                                                      | `horizontal`, `vertical`, `scrollbarMode`, `contentStyle` |
 | `<Span>`            | `Label`                                                                | text content, `style` |
 | `<Switch>`          | `CheckButton`                                                          | `v-model`, `label`, `disabled`, `style` |
@@ -153,7 +154,7 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 
 | API                                                                                                                                    | Description                                                                                              |
 | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Dialog`, `Div`, `Img`, `Input`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`) | Vue components backed by Godot nodes                                                                     |
+| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Dialog`, `Div`, `Img`, `Input`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `SafeAreaView`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`) | Vue components backed by Godot nodes                                                                     |
 | `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
 | `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |
@@ -381,6 +382,23 @@ Checkbox inputs now also accept `label`, which maps to the underlying Godot butt
 
 It supports `disabled`, `longPressDelay`, `style`, and default slot content. Events are `press`, `click`, `longPress`, `pressIn`, `pressOut`, `hoverIn`, `hoverOut`, `focus`, `blur`, and `stateChange`. The default slot also receives `{ hovered, pressed, focused, disabled }`.
 
+### SafeAreaView layout scope
+
+`<SafeAreaView>` reads `DisplayServer.get_display_safe_area()` and pads content away from display cutouts or unsafe edges. It uses `DisplayServer.window_get_size()` to calculate right and bottom insets, falling back to `screen_get_size()` when needed:
+
+```vue
+<SafeAreaView
+  :edges="['top', 'bottom']"
+  :fallback-insets="{ top: 16, bottom: 16 }"
+  :style="{ backgroundColor: '#111827', padding: 8 }"
+  :content-style="{ flexDirection: 'column', gap: 8 }"
+>
+  <Span>Safe content</Span>
+</SafeAreaView>
+```
+
+It supports `edges`, `fallbackInsets`, `style`, and `contentStyle`. `style.padding*` values are added to the platform safe-area insets; `fallbackInsets` are used when safe-area metrics are unavailable or invalid.
+
 ### Modal, dialog, and overlay scope
 
 `<Overlay>` maps to a full-parent `PanelContainer` backdrop with one inner `<Div>` content wrapper:
@@ -467,6 +485,7 @@ This package is in early development. Currently scaffolded:
 - [x] `<Modal>` — modal window primitive (`Window`, close requests, sizing props)
 - [x] `<Dialog>` — confirmation dialog (`AcceptDialog`, confirm/cancel/close events)
 - [x] `<Pressable>` — focusable interactive wrapper (`PanelContainer`, hover/focus/press/long-press state)
+- [x] `<SafeAreaView>` — safe-area layout helper (`DisplayServer.get_display_safe_area()`, margin padding, fallback insets)
 - [x] `<Span>` — text display with `fontSize`, `fontWeight`, `color`, `textAlign`, `textTransform`, `overflowWrap`
 - [x] `<Switch>` — binary toggle (`CheckButton`, `v-model`, `label`, `disabled`)
 - [x] `<Button>` — click handler with `@click`, `disabled`

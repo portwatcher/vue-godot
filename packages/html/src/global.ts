@@ -12,6 +12,7 @@ import type { Option, Select } from './components/Select.js'
 import type { Overlay } from './components/Overlay.js'
 import type { Pressable } from './components/Pressable.js'
 import type { Progress } from './components/Progress.js'
+import type { SafeAreaView } from './components/SafeAreaView.js'
 import type { ScrollView } from './components/ScrollView.js'
 import type { Span } from './components/Span.js'
 import type { Svg } from './components/Svg.js'
@@ -35,6 +36,7 @@ declare module '@vue/runtime-core' {
     Overlay: typeof Overlay
     Pressable: typeof Pressable
     Progress: typeof Progress
+    SafeAreaView: typeof SafeAreaView
     ScrollView: typeof ScrollView
     Select: typeof Select
     Span: typeof Span
@@ -57,6 +59,7 @@ declare module '@vue/runtime-core' {
     overlay: typeof Overlay
     pressable: typeof Pressable
     progress: typeof Progress
+    safeareaview: typeof SafeAreaView
     scrollview: typeof ScrollView
     select: typeof Select
     span: typeof Span

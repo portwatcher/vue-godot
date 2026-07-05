@@ -30,6 +30,7 @@ const htmlTags = [
   'overlay',
   'pressable',
   'progress',
+  'safeareaview',
   'scrollview',
   'switch',
   'canvas',

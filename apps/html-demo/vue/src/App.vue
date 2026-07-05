@@ -38,6 +38,22 @@
     }}
   </Span>
 
+  <!-- ===== Section: SafeAreaView ===== -->
+  <Span>--- SafeAreaView ---</Span>
+  <SafeAreaView
+    :edges="['top', 'right', 'bottom', 'left']"
+    :fallback-insets="{ top: 8, right: 12, bottom: 8, left: 12 }"
+    :style="{ width: 420, backgroundColor: '#111827', padding: 4 }"
+    :content-style="{ flexDirection: 'row', gap: 8, alignItems: 'center' }"
+  >
+    <Span :style="{ color: '#a7f3d0', fontWeight: 'bold' }">
+      Safe area content
+    </Span>
+    <Span :style="{ color: '#d1d5db' }">
+      fallback inset smoke test
+    </Span>
+  </SafeAreaView>
+
   <!-- ===== Section: ScrollView ===== -->
   <Span>--- ScrollView ---</Span>
   <ScrollView

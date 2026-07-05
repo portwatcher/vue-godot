@@ -123,7 +123,7 @@ The project is production ready only when all of these are true:
   - [ ] `<VirtualList>` or `<FlatList>` equivalent for large data sets.
   - [x] `<Pressable>` with mouse, touch, keyboard, controller, focus, disabled, hover, pressed, and long-press states.
   - [x] `<Modal>` / `<Dialog>` / `<Overlay>`.
-  - [ ] `<SafeAreaView>` or equivalent layout helper.
+  - [x] `<SafeAreaView>` or equivalent layout helper.
   - [ ] `<KeyboardAvoidingView>` or equivalent for mobile text input.
   - [x] `<ActivityIndicator>` / `<Progress>`.
   - [x] `<Switch>` / checkbox refinement.

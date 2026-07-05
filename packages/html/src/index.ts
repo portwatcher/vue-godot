@@ -17,6 +17,11 @@ export { Pressable } from './components/Pressable.js'
 export type { PressableState } from './components/Pressable.js'
 export { Progress } from './components/Progress.js'
 export type { ProgressFillMode } from './components/Progress.js'
+export { SafeAreaView } from './components/SafeAreaView.js'
+export type {
+  SafeAreaEdge,
+  SafeAreaInsets,
+} from './utils/safeArea.js'
 export { ScrollView } from './components/ScrollView.js'
 export type { ScrollViewScrollbarMode } from './components/ScrollView.js'
 export { Span } from './components/Span.js'

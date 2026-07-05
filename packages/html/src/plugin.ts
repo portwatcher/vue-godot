@@ -13,6 +13,7 @@ import { Option, Select } from './components/Select.js'
 import { Overlay } from './components/Overlay.js'
 import { Pressable } from './components/Pressable.js'
 import { Progress } from './components/Progress.js'
+import { SafeAreaView } from './components/SafeAreaView.js'
 import { ScrollView } from './components/ScrollView.js'
 import { Span } from './components/Span.js'
 import { Svg } from './components/Svg.js'
@@ -37,6 +38,7 @@ const components: Record<string, Component> = {
   Select,
   Option,
   Progress,
+  SafeAreaView,
   ScrollView,
   Canvas,
   Video,
