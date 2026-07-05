@@ -29,8 +29,9 @@ component coverage.
 evidence JSON when it exists. `release:preflight` verifies package metadata,
 generated package specs, dry-run package contents including every
 `package.json` export target, registry state, publish environment assumptions,
-serious example app readiness, Godot smoke, real device evidence, and GitHub
-Actions metadata for the Check/Godot Smoke run URLs recorded in that evidence.
+dependency audit status, serious example app readiness, Godot smoke, real
+device evidence, and GitHub Actions metadata for the Check/Godot Smoke run URLs
+recorded in that evidence.
 After pushing a release candidate,
 `npm run release:ci -- --commit <sha> --output release/ci-runs.json` checks
 GitHub Actions for completed successful Check and Godot Smoke runs on that exact

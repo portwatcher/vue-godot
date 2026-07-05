@@ -78,15 +78,23 @@ test('release preflight enforces serious example app readiness', () => {
 
 test('release preflight validates package export targets in tarballs', () => {
   const preflight = readDoc('scripts/release-preflight.mjs')
+  const production = readDoc('docs/production.md')
+  const readme = readDoc('README.md')
 
   for (const pattern of [
     /collectPackageExportFiles/,
     /packageJson\.exports/,
     /collectPackageExportFiles\(packageJson\.exports\)/,
     /package tarball missing \$\{expectedFile\}/,
+    /checkDependencyAudit/,
+    /audit.*--audit-level=moderate/,
   ]) {
     assert.match(preflight, pattern)
   }
+
+  assert.match(production, /dependency audit status/)
+  assert.match(readme, /dependency audit reports moderate-or-higher advisories/)
+  assert.match(readme, /dependency audit status/)
 })
 
 test('release preflight enforces real device evidence', () => {

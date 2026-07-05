@@ -520,6 +520,13 @@ function checkSeriousExampleApps() {
   }
 }
 
+function checkDependencyAudit() {
+  logStep('checking dependency audit')
+  runRequired(npmCommand, ['audit', '--audit-level=moderate'], {
+    stdio: 'inherit',
+  })
+}
+
 function readCurrentCommit() {
   const result = run('git', ['rev-parse', 'HEAD'])
   if (result.status !== 0) {
@@ -670,6 +677,7 @@ async function main() {
   checkPackDryRun()
   const publishNeeded = checkRegistry(packagesByName)
   checkPublishEnvironment(publishNeeded)
+  checkDependencyAudit()
   checkSeriousExampleApps()
   checkGodotSmoke()
   await checkRealDeviceEvidence()
