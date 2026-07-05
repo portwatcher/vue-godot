@@ -7,6 +7,7 @@ import {
   collectReleaseCiRunEvidence,
   dispatchableReleaseCiWorkflows,
   missingReleaseCiWorkflows,
+  releaseCiOutput,
   releaseCiWorkflowDispatches,
   releasePreflightWorkflowName,
   requiredReleaseCiWorkflows,
@@ -137,6 +138,67 @@ test('release CI run evidence can include Release Preflight for final readiness'
     evidence.workflows[releasePreflightWorkflowName].runUrl,
     'https://github.com/portwatcher/vue-godot/actions/runs/3',
   )
+})
+
+test('release CI output reports structured workflow readiness', () => {
+  const workflows = [...requiredReleaseCiWorkflows, releasePreflightWorkflowName]
+  const result = collectReleaseCiRunEvidence(
+    [
+      workflowRun({
+        name: 'Check',
+        html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+      }),
+      workflowRun({
+        name: releasePreflightWorkflowName,
+        html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/3',
+      }),
+    ],
+    commit,
+    workflows,
+  )
+  const output = releaseCiOutput(
+    { ...result, runs: [], commitFound: true },
+    workflows,
+  )
+
+  assert.equal(output.ready, false)
+  assert.equal(output.commit, commit)
+  assert.equal(output.commitFound, true)
+  assert.deepEqual(output.requiredWorkflowNames, workflows)
+  assert.deepEqual(output.passedWorkflowNames, [
+    'Check',
+    releasePreflightWorkflowName,
+  ])
+  assert.deepEqual(output.missingWorkflowNames, ['Godot Smoke'])
+  assert.deepEqual(output.checks, {
+    checkWorkflow: true,
+    commitFound: true,
+    godotSmokeWorkflow: false,
+    releasePreflightWorkflow: true,
+  })
+  assert.equal(output.evidence, result.evidence)
+  assert.equal(output.errors, result.errors)
+})
+
+test('release CI output reports missing commit status', () => {
+  const result = collectReleaseCiRunEvidence(
+    [],
+    commit,
+    requiredReleaseCiWorkflows,
+    { commitFound: false },
+  )
+  const output = releaseCiOutput(
+    { ...result, runs: [], commitFound: false },
+    requiredReleaseCiWorkflows,
+  )
+
+  assert.equal(output.ready, false)
+  assert.equal(output.commitFound, false)
+  assert.deepEqual(output.passedWorkflowNames, [])
+  assert.deepEqual(output.missingWorkflowNames, requiredReleaseCiWorkflows)
+  assert.equal(output.checks.commitFound, false)
+  assert.equal(output.checks.checkWorkflow, false)
+  assert.equal(output.checks.godotSmokeWorkflow, false)
 })
 
 test('release CI run selection prefers the newest successful matching run', () => {

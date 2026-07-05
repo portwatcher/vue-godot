@@ -35,7 +35,9 @@ recorded in that evidence.
 After pushing a release candidate,
 `npm run release:ci -- --commit <sha> --output release/ci-runs.json` checks
 GitHub Actions for completed successful Check and Godot Smoke runs on that exact
-commit and writes the run URLs used by real-device release evidence. Add
+commit and writes `ready`, `commitFound`, required/passed/missing workflow
+names, structured workflow checks, and the run URLs used by real-device release
+evidence. Add
 `--wait` to poll while workflows are still running. If a release-candidate
 commit is not found on GitHub, push it before collecting CI evidence. If the
 commit only changes docs or evidence and a workflow did not run automatically,

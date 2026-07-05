@@ -85,7 +85,7 @@ Keep worksheet fields only in `release/platform-evidence.json`; final
 `passOnlyChecks`, or `selectedApiRequiredChecks`.
 
 After the release candidate is pushed, verify the required CI runs and capture
-their URLs:
+their URLs and structured workflow readiness status:
 
 ```bash
 npm run release:ci -- \
@@ -107,7 +107,9 @@ GH_TOKEN="$(gh auth token)" npm run release:ci -- \
 
 The dispatch ref must resolve to the same commit on GitHub. If `release:ci`
 reports that the commit was not found on GitHub, push the release-candidate
-commit first.
+commit first. The resulting `release/ci-runs.json` includes `ready`,
+`commitFound`, required/passed/missing workflow names, structured workflow
+checks, and the run URLs consumed by `release:evidence`.
 
 Then assemble the evidence file from the real device data and completed CI
 runs:

@@ -34,8 +34,8 @@ function usage() {
   console.log(`Usage: node scripts/check-release-ci-runs.mjs [options]
 
 Verifies that the release commit has completed successful GitHub Actions runs
-for the required release CI workflows, then prints the run URLs used by
-release evidence.
+for the required release CI workflows, then prints the run URLs and structured
+workflow readiness status used by release evidence.
 
 Options:
   --commit <sha>       Commit to verify. Default: current HEAD.
@@ -475,8 +475,33 @@ async function waitForReleaseCiRunResult(commit, workflows, options) {
   return result
 }
 
-function releaseCiOutput(result) {
+export function releaseCiOutput(result, workflows = requiredReleaseCiWorkflows) {
+  const passedWorkflowNames = workflows.filter(
+    (workflowName) => result.evidence.workflows[workflowName],
+  )
+  const missingWorkflowNames = workflows.filter(
+    (workflowName) => !result.evidence.workflows[workflowName],
+  )
+  const checks = {
+    checkWorkflow: passedWorkflowNames.includes('Check'),
+    commitFound: result.commitFound !== false,
+    godotSmokeWorkflow: passedWorkflowNames.includes('Godot Smoke'),
+  }
+
+  if (workflows.includes(releasePreflightWorkflowName)) {
+    checks.releasePreflightWorkflow = passedWorkflowNames.includes(
+      releasePreflightWorkflowName,
+    )
+  }
+
   return {
+    ready: result.errors.length === 0,
+    commit: result.evidence.commit,
+    commitFound: result.commitFound !== false,
+    requiredWorkflowNames: [...workflows],
+    passedWorkflowNames,
+    missingWorkflowNames,
+    checks,
     evidence: result.evidence,
     errors: result.errors,
   }
@@ -511,7 +536,7 @@ async function main() {
     result = await waitForReleaseCiRunResult(commit, workflows, options)
   }
 
-  const output = releaseCiOutput(result)
+  const output = releaseCiOutput(result, workflows)
   if (options.output) {
     writeJson(options.output, output, options)
   }

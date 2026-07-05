@@ -182,6 +182,10 @@ test('release preflight enforces real device evidence', () => {
     /validateWorkflowDispatchRef/,
     /fetchGitHubCommitExists/,
     /was not found on GitHub/,
+    /requiredWorkflowNames/,
+    /missingWorkflowNames/,
+    /checkWorkflow/,
+    /godotSmokeWorkflow/,
     /Release Preflight/,
   ]) {
     assert.match(releaseCi, pattern)
@@ -215,6 +219,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /GH_TOKEN="\$\(gh auth token\)"/)
   assert.match(production, /resolves to the same commit on GitHub/)
   assert.match(production, /commit is not found on GitHub/)
+  assert.match(production, /required\/passed\/missing workflow/)
+  assert.match(production, /structured workflow\s+checks/)
   assert.match(production, /Node 24/)
   assert.match(production, /npm@\^11\.15\.0/)
   assert.match(production, /release:platform-evidence/)
@@ -242,6 +248,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /GH_TOKEN="\$\(gh auth token\)"/)
   assert.match(readme, /resolve to the same commit on GitHub/)
   assert.match(readme, /commit was not found on GitHub/)
+  assert.match(readme, /required\/passed\/missing workflow/)
+  assert.match(readme, /structured workflow\s+checks/)
   assert.match(readme, /Node 24/)
   assert.match(readme, /npm@\^11\.15\.0/)
   assert.match(readme, /--ci-evidence/)
@@ -272,6 +280,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /GH_TOKEN="\$\(gh auth token\)"/)
   assert.match(checklist, /resolve to the same commit on GitHub/)
   assert.match(checklist, /commit\s+was not found on GitHub/)
+  assert.match(checklist, /required\/passed\/missing workflow/)
+  assert.match(checklist, /structured workflow\s+checks/)
   assert.match(checklist, /--ci-evidence/)
   assert.match(checklist, /--release-preflight-summary/)
   assert.match(checklist, /local\/skip flags/)
