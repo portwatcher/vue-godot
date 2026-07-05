@@ -56,6 +56,13 @@ After the Android and iOS checks are complete, create
 objects from the schema example. Keep every required platform check either in
 `passedChecks` or in `skippedChecks` with a release-specific reason.
 
+After the release candidate is pushed, verify the required CI runs and capture
+their URLs:
+
+```bash
+npm run release:ci -- --commit "$(git rev-parse HEAD)"
+```
+
 Then assemble the evidence file from the real device data and completed CI
 runs:
 

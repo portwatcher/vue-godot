@@ -121,6 +121,23 @@ export async function fetchGitHubActionsRun(runUrl, options = {}) {
   return await requestJson(apiUrl, options)
 }
 
+export async function fetchGitHubActionsRunsForCommit(commit, options = {}) {
+  if (typeof commit !== 'string' || commit.trim().length === 0) {
+    throw new Error('Commit must be a non-empty string')
+  }
+
+  const apiBaseUrl = options.apiBaseUrl ?? 'https://api.github.com'
+  const apiUrl = `${apiBaseUrl}/repos/${githubRepoOwner}/${githubRepoName}/actions/runs?head_sha=${encodeURIComponent(
+    commit,
+  )}&per_page=100`
+  const response = await requestJson(apiUrl, options)
+  if (!isRecord(response) || !Array.isArray(response.workflow_runs)) {
+    throw new Error('GitHub API response did not include workflow_runs')
+  }
+
+  return response.workflow_runs
+}
+
 export function validateGitHubActionsRunMetadata(run, expected) {
   const errors = []
   const label = expected.label ?? 'GitHub Actions run'

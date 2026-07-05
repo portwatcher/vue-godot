@@ -91,6 +91,7 @@ test('release preflight validates package export targets in tarballs', () => {
 
 test('release preflight enforces real device evidence', () => {
   const preflight = readDoc('scripts/release-preflight.mjs')
+  const checklist = readDoc('docs/real-device-release.md')
   const production = readDoc('docs/production.md')
   const readme = readDoc('README.md')
   const packageJson = JSON.parse(readDoc('package.json'))
@@ -116,17 +117,24 @@ test('release preflight enforces real device evidence', () => {
     'node scripts/check-real-device-evidence.mjs',
   )
   assert.equal(
+    packageJson.scripts['release:ci'],
+    'node scripts/check-release-ci-runs.mjs',
+  )
+  assert.equal(
     packageJson.scripts['release:evidence'],
     'node scripts/create-release-evidence.mjs',
   )
   assert.match(production, /check:real-device-evidence/)
+  assert.match(production, /release:ci/)
   assert.match(production, /release:evidence/)
   assert.match(production, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
   assert.match(production, /GitHub\s+Actions metadata/)
   assert.match(readme, /check:real-device-evidence/)
+  assert.match(readme, /release:ci/)
   assert.match(readme, /release:evidence/)
   assert.match(readme, /real-device-evidence\.json/)
   assert.match(readme, /GitHub Actions metadata/)
+  assert.match(checklist, /release:ci/)
   assert.match(workflow, /real_device_evidence_path/)
   assert.match(workflow, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
   assert.match(production, /Release Preflight/)
