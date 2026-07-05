@@ -221,6 +221,16 @@ Use Godot project input actions for shortcuts. Focused `<Pressable>` controls ac
 
 For controller fallback behavior, set `autoFocus` on the first interactive control in a screen, provide directional `focusNeighbor*` props when Godot's inferred neighbor is ambiguous, and keep touch/focus targets large enough with `minTouchTarget`.
 
+### Platform Limits
+
+HTML-like components are Godot nodes, not browser DOM elements. The current accessibility and input surface is intentionally limited to stable Godot-backed behavior:
+
+- Accessibility labels, hints, and titles map to `Control.tooltip_text`; native ARIA role mapping is not available in the checked-in Godot bindings.
+- Focus management supports mount-time focus and explicit Godot focus graph props, but focus traps, focus restoration, modal focus containment, and browser tab-order emulation are not implemented yet.
+- Keyboard, controller, and back behavior use Godot input actions such as `ui_accept` and `ui_cancel`; DOM keyboard events and document-level shortcut bubbling are not emulated.
+- `minTouchTarget` changes the Control minimum size; it does not create invisible hit slop outside the Godot Control rect.
+- Pointer, keyboard, controller, safe-area, virtual-keyboard, media, and asset behavior follow the Godot platform/export being run.
+
 ## Component Mapping
 
 | HTML-like Component | Godot Node                                                             | Key Props             |
