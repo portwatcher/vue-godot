@@ -7,8 +7,9 @@ and to measure regressions consistently.
 These budgets are initial release targets. `npm run bench:performance` enforces
 deterministic Node-side regression budgets for startup, first render, tree
 updates, virtual list scrolling, media loader paths, fetch/WebSocket throughput,
-and editor-style reload stability. Keep real device/export measurements in app
-or release notes when hardware-specific numbers matter.
+repeated mount/unmount cleanup, and editor-style reload stability. Keep real
+device/export measurements in app or release notes when hardware-specific
+numbers matter.
 
 ## Target Budgets
 
@@ -19,7 +20,7 @@ or release notes when hardware-specific numbers matter.
 | Hot reload edit to rebuilt `dist/app.js` | <= 1s starter, <= 3s serious app | app-owned budget | Keep stable chunk names to avoid Godot editor dependency churn. |
 | Large list rendering | 60 fps target while scrolling | no sustained frame over 33ms | Use `<VirtualList>` for large fixed-height lists. |
 | Asset loading for first screen | critical local assets <= 250ms after mount | remote assets async and non-blocking | Import or preload critical `res://` resources where possible. |
-| Repeated mount/unmount | 100 cycles without stale rendered children | no unbounded memory growth | Unit stress tests cover repeated mount/unmount and keyed navigation stale-node release; real heap gates are still pending. |
+| Repeated mount/unmount | 200 cycles <= 1s with no stale rendered children or unfreed descendants | no unbounded memory growth in exported release evidence | `npm run bench:performance` enforces the deterministic cleanup budget; app teams should add heap snapshots when hardware-specific memory growth matters. |
 | Fetch/WebSocket responsiveness | app-owned timeout budget | app-owned timeout budget | Use abort/timeouts and avoid blocking first render on non-critical network calls. |
 
 If an app needs different numbers, commit the app-specific budget in its docs or
@@ -139,9 +140,10 @@ npm run smoke:editor-reload
 
 Set `GODOT_BIN=/path/to/godot` when the executable is not discoverable. These
 smokes catch stale children, missing module imports, unstable chunk paths, and
-editor reload behavior. Runtime stress tests also cover repeated mount/unmount
-and keyed navigation stale-node release. They do not replace future
-memory-budget benchmarks.
+editor reload behavior. Runtime stress tests and the performance benchmark suite
+also cover repeated mount/unmount and keyed navigation stale-node release. They
+do not replace release-candidate heap snapshots for apps with hardware-specific
+memory budgets.
 
 ## Automated Benchmarks
 
@@ -162,6 +164,8 @@ npm run bench:performance
   stream creation paths.
 - Fetch/WebSocket throughput: mocked Godot `HTTPClient` fetches plus
   `WebSocketPeer` sends.
+- Repeated mount/unmount: 200 mount/unmount cycles with no stale rendered
+  children and no unfreed descendants.
 - Editor reload stability: repeated unmount/remount cycles with stale node
   release checks.
 

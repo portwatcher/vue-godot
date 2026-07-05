@@ -15,6 +15,7 @@ export const requiredBenchmarkIds = [
   'large-list-scroll',
   'media-asset-loading',
   'fetch-websocket-throughput',
+  'repeated-mount-unmount',
   'editor-reload-stability',
 ]
 
@@ -247,6 +248,47 @@ async function benchmarkFetchWebSocketThroughput() {
   }
 }
 
+async function benchmarkRepeatedMountUnmount() {
+  const [{ createApp }, { h, nextTick }, { Node }] = await loadRuntimeModules()
+  const root = new Node('repeated-mount-root')
+  const cycles = 200
+  const startedAt = performance.now()
+
+  for (let index = 0; index < cycles; index++) {
+    const app = createApp({
+      render() {
+        return h('VBoxContainer', null, [
+          h('Label', { text: `cycle-${index}` }),
+          h('Label', { text: `value-${index}` }),
+        ])
+      },
+    })
+
+    app.mount(root)
+    await nextTick()
+
+    const mountedRoot = root.children[0]
+    const children = [...mountedRoot.children]
+    assert.equal(root.children.length, 1)
+    assert.equal(children.length, 2)
+    assert.equal(children[0].text, `cycle-${index}`)
+
+    app.unmount()
+    await nextTick()
+
+    assert.deepEqual(root.children, [])
+    assert.equal(mountedRoot.queuedFree, true)
+    for (const child of children) {
+      assert.equal(child.queuedFree, true)
+    }
+  }
+
+  return {
+    durationMs: elapsedSince(startedAt),
+    iterations: cycles,
+  }
+}
+
 async function benchmarkEditorReloadStability() {
   const [{ createApp }, { h, nextTick }, { Node }] = await loadRuntimeModules()
   const root = new Node('editor-reload-root')
@@ -321,6 +363,12 @@ export const benchmarkDefinitions = [
     label: 'Fetch/WebSocket throughput',
     thresholdMs: 1_000,
     run: benchmarkFetchWebSocketThroughput,
+  },
+  {
+    id: 'repeated-mount-unmount',
+    label: 'Repeated mount/unmount',
+    thresholdMs: 1_000,
+    run: benchmarkRepeatedMountUnmount,
   },
   {
     id: 'editor-reload-stability',
