@@ -62,6 +62,7 @@ unregister()
 | Adapter interfaces | `GeolocationAdapter`, `MediaDevicesAdapter`, `NotificationAdapter`, `PermissionAdapter`, and generic `DeviceCapabilityAdapter`. |
 | `@vue-godot/device/microphone` | Godot-backed microphone and audio-bus capture helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/permissions` | Godot-backed permission helpers for Android runtime requests, permission result events, and granted-permission lists. Imported from a subpath so the root package stays backend-neutral outside Godot. |
+| `@vue-godot/device/sensors` | Godot-backed accelerometer, gravity, gyroscope, magnetometer, motion, and orientation snapshot helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 
 ## Capability Status
 
@@ -173,3 +174,30 @@ reports granted dangerous permissions. On sandboxed macOS, Godot uses the same
 method for user-selected folder grants; `revokeGrantedPermissions()` clears
 those saved grants where Godot supports it. iOS, visionOS, and plugin-specific
 permission prompts still require explicit native/plugin adapters.
+
+## Godot Sensor Helpers
+
+Import the built-in Godot sensor helpers from the `sensors` subpath:
+
+```ts
+import {
+  readAccelerometer,
+  readDeviceMotion,
+  readDeviceOrientation,
+  readGravity,
+} from '@vue-godot/device/sensors'
+
+const acceleration = readAccelerometer()
+const gravity = readGravity()
+const motion = readDeviceMotion()
+const orientation = readDeviceOrientation()
+```
+
+These helpers wrap `Input.get_accelerometer()`, `Input.get_gravity()`,
+`Input.get_gyroscope()`, and `Input.get_magnetometer()`. Unsupported platforms
+or unavailable sensors usually return zero vectors through Godot, and thrown
+sensor reads are normalized to zero vectors. `readDeviceMotion()` returns
+browser-compatible acceleration and rotation-rate data; `readDeviceOrientation()`
+derives best-effort heading and tilt from magnetometer and gravity values. Use
+`@vue-godot/browser` when you need browser-style `devicemotion` and
+`deviceorientation` events.

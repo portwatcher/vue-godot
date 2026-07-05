@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "npm run build:deps && vite build --watch -c vue/vite.config.ts",
     "build": "npm run build:deps && vite build -c vue/vite.config.ts",
-    "build:deps": "npm run --workspace=@vue-godot/runtime-tscn build && npm run --workspace=@vue-godot/browser build && npm run --workspace=@vue-godot/html build",
+    "build:deps": "npm run --workspace=@vue-godot/runtime-tscn build && npm run --workspace=@vue-godot/device build && npm run --workspace=@vue-godot/browser build && npm run --workspace=@vue-godot/html build",
     "gen:types": "vue-godot gen-types"
   },
   "devDependencies": {

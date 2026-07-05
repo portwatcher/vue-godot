@@ -26,6 +26,11 @@
       "types": "./dist/permissions.d.ts",
       "import": "./dist/permissions.js",
       "default": "./dist/permissions.js"
+    },
+    "./sensors": {
+      "types": "./dist/sensors.d.ts",
+      "import": "./dist/sensors.js",
+      "default": "./dist/sensors.js"
     }
   },
   "files": [

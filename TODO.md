@@ -211,12 +211,12 @@ The project is production ready only when all of these are true:
   - [x] Support Android `OS.request_permission()` and permission result events.
   - [x] Support macOS/iOS/visionOS permissions where Godot exposes them.
   - [x] Provide fallback behavior for plugin-managed permissions.
-- [ ] Sensors:
-  - [ ] Accelerometer.
-  - [ ] Gyroscope.
-  - [ ] Magnetometer.
-  - [ ] Gravity vector.
-  - [ ] Device orientation events.
+- [x] Sensors:
+  - [x] Accelerometer.
+  - [x] Gyroscope.
+  - [x] Magnetometer.
+  - [x] Gravity vector.
+  - [x] Device orientation events.
 - [ ] Haptics:
   - [ ] Handheld vibration.
   - [ ] Controller vibration where available.

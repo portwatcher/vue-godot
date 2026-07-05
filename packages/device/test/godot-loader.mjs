@@ -94,6 +94,28 @@ export function load(url, context, nextLoad) {
           return globalThis[key]
         }
 
+        function mockInputState() {
+          const key = '__vueGodotDeviceMockInput'
+          if (!globalThis[key]) {
+            globalThis[key] = {
+              accelerometer: { x: 0, y: 0, z: 0 },
+              gravity: { x: 0, y: 0, z: 0 },
+              gyroscope: { x: 0, y: 0, z: 0 },
+              magnetometer: { x: 0, y: 0, z: 0 },
+              throwOnSensors: new Set(),
+            }
+          }
+          return globalThis[key]
+        }
+
+        function readMockSensor(method, key) {
+          const state = mockInputState()
+          if (state.throwOnSensors.has(method)) {
+            throw new Error('sensor unavailable')
+          }
+          return state[key]
+        }
+
         function mockMainLoop() {
           const key = '__vueGodotDeviceMockMainLoop'
           if (!globalThis[key]) {
@@ -160,6 +182,24 @@ export function load(url, context, nextLoad) {
             const state = mockPermissionState()
             state.revoked = true
             state.granted = []
+          }
+        }
+
+        export class Input {
+          static get_accelerometer() {
+            return readMockSensor('get_accelerometer', 'accelerometer')
+          }
+
+          static get_gravity() {
+            return readMockSensor('get_gravity', 'gravity')
+          }
+
+          static get_gyroscope() {
+            return readMockSensor('get_gyroscope', 'gyroscope')
+          }
+
+          static get_magnetometer() {
+            return readMockSensor('get_magnetometer', 'magnetometer')
           }
         }
 

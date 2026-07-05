@@ -1,11 +1,19 @@
 // ---------------------------------------------------------------------------
 // Device motion and orientation polyfills for GodotJS
 // ---------------------------------------------------------------------------
-// Uses Godot's Input sensor methods. On platforms without physical sensors,
-// Godot returns Vector3.ZERO, matching its native behavior.
+// Uses @vue-godot/device/sensors, which wraps Godot's Input sensor methods.
+// On platforms without physical sensors, Godot returns Vector3.ZERO.
 // ---------------------------------------------------------------------------
 
-import { Input } from 'godot'
+import {
+  readDeviceMotion as readGodotDeviceMotion,
+  readDeviceOrientation as readGodotDeviceOrientation,
+} from '@vue-godot/device/sensors'
+import type {
+  GodotDeviceMotionData,
+  GodotDeviceOrientationData,
+  GodotVector3Data,
+} from '@vue-godot/device/sensors'
 import { GodotEvent } from './event-target.js'
 import { getGlobalEventTarget } from './history.js'
 import {
@@ -13,29 +21,11 @@ import {
   setInterval as setGodotInterval,
 } from './timing.js'
 
-export interface GodotVector3Data {
-  x: number
-  y: number
-  z: number
-}
-
-export interface GodotDeviceMotionData {
-  acceleration: GodotVector3Data
-  accelerationIncludingGravity: GodotVector3Data
-  rotationRate: {
-    alpha: number
-    beta: number
-    gamma: number
-  }
-  interval: number
-}
-
-export interface GodotDeviceOrientationData {
-  alpha: number | null
-  beta: number | null
-  gamma: number | null
-  absolute: boolean
-}
+export type {
+  GodotDeviceMotionData,
+  GodotDeviceOrientationData,
+  GodotVector3Data,
+} from '@vue-godot/device/sensors'
 
 export interface GodotDeviceSensorEventOptions {
   intervalMs?: number
@@ -48,8 +38,6 @@ const DEFAULT_SENSOR_EVENT_OPTIONS: Required<GodotDeviceSensorEventOptions> = {
   motion: true,
   orientation: true,
 }
-
-const RAD_TO_DEG = 180 / Math.PI
 
 let sensorEventOptions: Required<GodotDeviceSensorEventOptions> = {
   ...DEFAULT_SENSOR_EVENT_OPTIONS,
@@ -72,66 +60,8 @@ function normalizeOptions(
   }
 }
 
-function vectorComponent(vector: unknown, key: keyof GodotVector3Data): number {
-  if (typeof vector !== 'object' || vector === null) {
-    return 0
-  }
-
-  const value = (vector as Record<string, unknown>)[key]
-  return typeof value === 'number' && Number.isFinite(value) ? value : 0
-}
-
-function toVectorData(vector: unknown): GodotVector3Data {
-  return {
-    x: vectorComponent(vector, 'x'),
-    y: vectorComponent(vector, 'y'),
-    z: vectorComponent(vector, 'z'),
-  }
-}
-
 function zeroVector(): GodotVector3Data {
   return { x: 0, y: 0, z: 0 }
-}
-
-function readSensor(method: keyof Pick<
-  typeof Input,
-  | 'get_accelerometer'
-  | 'get_gravity'
-  | 'get_gyroscope'
-  | 'get_magnetometer'
->): GodotVector3Data {
-  try {
-    return toVectorData(Input[method]())
-  } catch {
-    return zeroVector()
-  }
-}
-
-function addVectors(
-  first: GodotVector3Data,
-  second: GodotVector3Data,
-): GodotVector3Data {
-  return {
-    x: first.x + second.x,
-    y: first.y + second.y,
-    z: first.z + second.z,
-  }
-}
-
-function vectorMagnitude(vector: GodotVector3Data): number {
-  return Math.sqrt(vector.x ** 2 + vector.y ** 2 + vector.z ** 2)
-}
-
-function radiansToDegrees(value: number): number {
-  return value * RAD_TO_DEG
-}
-
-function normalizeDegrees(value: number): number {
-  return ((value % 360) + 360) % 360
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value))
 }
 
 export class GodotDeviceMotionEvent extends GodotEvent {
@@ -177,48 +107,11 @@ export class GodotDeviceOrientationEvent extends GodotEvent {
 export function readDeviceMotion(
   interval = sensorEventOptions.intervalMs,
 ): GodotDeviceMotionData {
-  const acceleration = readSensor('get_accelerometer')
-  const gravity = readSensor('get_gravity')
-  const gyroscope = readSensor('get_gyroscope')
-
-  return {
-    acceleration,
-    accelerationIncludingGravity: addVectors(acceleration, gravity),
-    rotationRate: {
-      alpha: radiansToDegrees(gyroscope.z),
-      beta: radiansToDegrees(gyroscope.x),
-      gamma: radiansToDegrees(gyroscope.y),
-    },
-    interval,
-  }
+  return readGodotDeviceMotion(interval)
 }
 
 export function readDeviceOrientation(): GodotDeviceOrientationData {
-  const gravity = readSensor('get_gravity')
-  const magnetometer = readSensor('get_magnetometer')
-  const hasGravity = vectorMagnitude(gravity) > 0
-  const hasMagnetometer = vectorMagnitude(magnetometer) > 0
-
-  return {
-    alpha: hasMagnetometer
-      ? normalizeDegrees(
-          radiansToDegrees(Math.atan2(magnetometer.y, magnetometer.x)),
-        )
-      : null,
-    beta: hasGravity
-      ? clamp(
-          radiansToDegrees(
-            Math.atan2(-gravity.x, Math.sqrt(gravity.y ** 2 + gravity.z ** 2)),
-          ),
-          -180,
-          180,
-        )
-      : null,
-    gamma: hasGravity
-      ? clamp(radiansToDegrees(Math.atan2(gravity.y, gravity.z)), -90, 90)
-      : null,
-    absolute: hasMagnetometer,
-  }
+  return readGodotDeviceOrientation()
 }
 
 export function configureDeviceSensorEvents(
