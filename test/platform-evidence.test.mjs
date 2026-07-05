@@ -5,7 +5,10 @@ import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
 
-import { auditPlatformEvidence } from '../scripts/check-platform-evidence.mjs'
+import {
+  auditPlatformEvidence,
+  formatPlatformEvidenceProgress,
+} from '../scripts/check-platform-evidence.mjs'
 import { buildPlatformEvidenceTemplate } from '../scripts/create-platform-evidence.mjs'
 import {
   productionProfileSelectedApis,
@@ -59,6 +62,20 @@ test('platform evidence audit reports incomplete worksheet gaps', () => {
     summary.platforms.ios.remainingChecks.includes(
       'safe-area-keyboard-rotation-text-input',
     ),
+  )
+  assert.deepEqual(summary.progress.android, {
+    ready: false,
+    selectedApiCount: productionProfileSelectedApis.length,
+    missingFieldCount: 5,
+    completedCheckCount: 0,
+    requiredCheckCount: requiredRealDeviceChecks.android.length,
+    remainingCheckCount: requiredRealDeviceChecks.android.length,
+    mustPassMissingCheckCount: requiredRealDeviceChecks.android.length - 1,
+    skippableMissingCheckCount: 1,
+  })
+  assert.match(
+    formatPlatformEvidenceProgress(summary),
+    /Android: 5 metadata field\(s\) missing, 14\/14 required check\(s\) unresolved, 13 must-pass check\(s\) missing/,
   )
 })
 
@@ -152,6 +169,113 @@ test('platform evidence audit accepts non-production profile when allowed', () =
   assert.equal(summary.errorCount, 0)
 })
 
+test('record-platform-evidence CLI records one platform result batch', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-platform-'))
+  const evidencePath = path.join(tempDir, 'platform-evidence.json')
+  const summaryPath = path.join(tempDir, 'platform-summary.json')
+
+  try {
+    fs.writeFileSync(
+      evidencePath,
+      `${JSON.stringify(buildPlatformEvidenceTemplate({ selectedApis: [] }), null, 2)}\n`,
+    )
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/record-platform-evidence.mjs',
+        '--platform',
+        'android',
+        '--platform-evidence',
+        evidencePath,
+        '--artifact',
+        'vue-godot-android-release.aab',
+        '--device',
+        'Pixel hosted device',
+        '--os',
+        'Android 15',
+        '--orientation',
+        'portrait and landscape',
+        '--locale',
+        'en-US',
+        '--pass',
+        'cold-launch,no-godotjs-load-diagnostics',
+        '--skip',
+        'network-if-selected=Network APIs were not selected for this hosted pass',
+        '--expected-commit',
+        commit,
+        '--summary-output',
+        summaryPath,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf-8',
+      },
+    )
+
+    assert.equal(result.status, 0, result.stderr || result.stdout)
+    const updated = JSON.parse(fs.readFileSync(evidencePath, 'utf-8'))
+    assert.equal(updated.android.artifact, 'vue-godot-android-release.aab')
+    assert.equal(updated.android.deviceModel, 'Pixel hosted device')
+    assert.equal(updated.android.osVersion, 'Android 15')
+    assert.equal(updated.android.orientation, 'portrait and landscape')
+    assert.equal(updated.android.locale, 'en-US')
+    assert.deepEqual(updated.android.passedChecks, [
+      'cold-launch',
+      'no-godotjs-load-diagnostics',
+    ])
+    assert.equal(
+      updated.android.skippedChecks['network-if-selected'],
+      'Network APIs were not selected for this hosted pass',
+    )
+
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+    assert.equal(summary.updatedPlatform, 'android')
+    assert.equal(summary.expectedCommit, commit)
+    assert.equal(summary.progress.android.completedCheckCount, 3)
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
+test('record-platform-evidence CLI rejects skipped must-pass checks', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-platform-'))
+  const evidencePath = path.join(tempDir, 'platform-evidence.json')
+
+  try {
+    fs.writeFileSync(
+      evidencePath,
+      `${JSON.stringify(buildPlatformEvidenceTemplate({ productionProfile: true }), null, 2)}\n`,
+    )
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/record-platform-evidence.mjs',
+        '--platform',
+        'ios',
+        '--platform-evidence',
+        evidencePath,
+        '--skip',
+        'cold-launch=Skipped in hosted device pass',
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf-8',
+      },
+    )
+
+    assert.equal(result.status, 1)
+    assert.match(
+      result.stderr,
+      /ios check\(s\) must be recorded in passedChecks, not skippedChecks: cold-launch/,
+    )
+    const unchanged = JSON.parse(fs.readFileSync(evidencePath, 'utf-8'))
+    assert.deepEqual(unchanged.ios.passedChecks, [])
+    assert.deepEqual(unchanged.ios.skippedChecks, {})
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
 test('check-platform-evidence CLI writes summary and supports allow-open', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-platform-'))
   const evidencePath = path.join(tempDir, 'platform-evidence.json')
@@ -185,6 +309,8 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
     assert.equal(summary.ready, false)
     assert.equal(summary.path, path.relative(repoRoot, evidencePath))
     assert.equal(summary.nextActions[0].id, 'complete-platform-evidence')
+    assert.match(summary.nextActions[0].detail, /Android: 5 metadata/)
+    assert.match(summary.nextActions[0].detail, /iOS: 5 metadata/)
     assert.ok(
       summary.nextActions[0].commands.includes(
         `npm run check:platform-evidence -- --platform-evidence ${evidencePath} --summary-output ${summaryPath} --allow-open --expected-commit ${commit}`,

@@ -84,6 +84,11 @@ The worksheet reads `release/ci-runs.json` by default, or
 `--ci-evidence <file>`, records an `initialCiEvidence` status object, and omits
 duplicate Check/Godot Smoke collection commands when that file already validates
 initial CI for the tested commit.
+Use `npm run release:record-platform-evidence -- --platform android` or
+`--platform ios` after each hosted or real-device pass to record
+artifact/device metadata, `--pass` check names, and `--skip check=reason`
+outcomes without hand-editing JSON. The helper rejects unknown check names and
+refuses to skip pass-only or selected-API-required checks.
 The production profile currently expands to `fetch`, `WebSocket`,
 `checkNetworkReachability`, `navigator.onLine`, `localStorage`,
 `sessionStorage`, `navigator.permissions.query`, `navigator.clipboard`,

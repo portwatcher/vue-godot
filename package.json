@@ -20,6 +20,7 @@
     "check:real-device-evidence": "node scripts/check-real-device-evidence.mjs",
     "release:ci": "node scripts/check-release-ci-runs.mjs",
     "release:platform-evidence": "node scripts/create-platform-evidence.mjs",
+    "release:record-platform-evidence": "node scripts/record-platform-evidence.mjs",
     "release:evidence": "node scripts/create-release-evidence.mjs",
     "release:preflight-summary": "node scripts/download-release-preflight-summary.mjs",
     "release:finalize-readiness": "node scripts/finalize-release-readiness.mjs",

@@ -164,6 +164,27 @@ drift from the maintained check lists, and follow-up `nextActions`. Before
 assembling final evidence, run the same command without `--allow-open`; it must
 pass.
 
+After each real or hosted device pass, record the observed metadata and outcomes
+without hand-editing JSON:
+
+```bash
+npm run release:record-platform-evidence -- \
+  --platform android \
+  --artifact <apk-aab-or-hosted-build-id> \
+  --device <device-model> \
+  --os <os-version> \
+  --orientation "portrait and landscape" \
+  --locale en-US \
+  --pass cold-launch,no-godotjs-load-diagnostics \
+  --skip audio-input-if-selected="not selected for this release profile" \
+  --expected-commit <release-candidate-sha> \
+  --summary-output release/platform-evidence-summary.json
+```
+
+Use `--platform ios` for the iOS pass. The recorder rejects unknown check names
+and refuses to put pass-only or selected-API-required checks in `skippedChecks`;
+those checks must be recorded with `--pass` after they actually pass.
+
 After the release candidate is pushed, verify the required CI runs and capture
 their URLs and structured workflow readiness status:
 

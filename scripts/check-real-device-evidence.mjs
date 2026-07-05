@@ -15,7 +15,10 @@ import {
   productionProfilePlatformEvidenceCommand,
   releaseEvidenceCommand,
 } from './release-handoff-commands.mjs'
-import { readPlatformEvidenceAudit } from './check-platform-evidence.mjs'
+import {
+  formatPlatformEvidenceProgress,
+  readPlatformEvidenceAudit,
+} from './check-platform-evidence.mjs'
 import { readInitialCiEvidenceStatus } from './release-ci-evidence.mjs'
 import {
   currentReleasePackageVersions,
@@ -130,11 +133,14 @@ function collectNextActions(summary) {
         commands: [productionProfilePlatformEvidenceCommand(expectedCommit)],
       })
     } else if (!platformEvidence.ready) {
+      const progress = formatPlatformEvidenceProgress(platformEvidence)
       platformEvidenceCommands.push({
         id: 'complete-platform-evidence',
         title: 'Complete Android/iOS platform evidence worksheet',
-        detail:
+        detail: [
           'The worksheet exists; fill missing metadata and record every required check as passedChecks or skippedChecks before final evidence assembly.',
+          progress,
+        ].join(' '),
         commands: [
           checkPlatformEvidenceCommand(expectedCommit, {
             allowOpen: true,

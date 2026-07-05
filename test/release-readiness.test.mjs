@@ -291,6 +291,8 @@ test('release readiness requires release tooling scripts', () => {
         'release:ci': 'node scripts/check-release-ci-runs.mjs',
         'release:platform-evidence':
           'node scripts/create-platform-evidence.mjs',
+        'release:record-platform-evidence':
+          'node scripts/record-platform-evidence.mjs',
         'release:evidence': 'node scripts/create-release-evidence.mjs',
         'release:preflight-summary':
           'node scripts/download-release-preflight-summary.mjs',
@@ -884,6 +886,8 @@ test('release readiness summary includes missing evidence next actions', () => {
       (action) => action.id === 'real-device-evidence',
     )
     assert.ok(realDeviceAction)
+    assert.match(realDeviceAction.detail, /Android: 5 metadata field\(s\) missing/)
+    assert.match(realDeviceAction.detail, /iOS: 5 metadata field\(s\) missing/)
     assert.equal(realDeviceAction.commands[0], 'npm run check')
     assert.ok(
       realDeviceAction.commands.every(

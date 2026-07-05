@@ -462,6 +462,53 @@ function auditPlatformWorksheet(record, platform, options = {}) {
   return status
 }
 
+function worksheetProgress(status) {
+  if (!status) {
+    return null
+  }
+
+  return {
+    ready: status.ready,
+    selectedApiCount: status.selectedApis.length,
+    missingFieldCount: status.missingFields.length,
+    completedCheckCount: status.completedCheckCount,
+    requiredCheckCount: status.requiredCheckCount,
+    remainingCheckCount: status.remainingChecks.length,
+    mustPassMissingCheckCount: status.mustPassMissingChecks.length,
+    skippableMissingCheckCount: status.skippableMissingChecks.length,
+  }
+}
+
+function formatPlatformLabel(platform) {
+  return platform === 'ios' ? 'iOS' : 'Android'
+}
+
+function formatProgressPart(platform, status) {
+  if (!status) {
+    return `${formatPlatformLabel(platform)}: worksheet missing`
+  }
+
+  if (status.ready) {
+    return `${formatPlatformLabel(platform)}: ready`
+  }
+
+  return [
+    `${formatPlatformLabel(platform)}: ${status.missingFields.length} metadata field(s) missing`,
+    `${status.remainingChecks.length}/${status.requiredCheckCount} required check(s) unresolved`,
+    `${status.mustPassMissingChecks.length} must-pass check(s) missing`,
+  ].join(', ')
+}
+
+export function formatPlatformEvidenceProgress(summary) {
+  if (!isRecord(summary?.platforms)) {
+    return 'Platform worksheet status is unavailable.'
+  }
+
+  return ['android', 'ios']
+    .map((platform) => formatProgressPart(platform, summary.platforms[platform]))
+    .join('; ')
+}
+
 export function auditPlatformEvidence(evidence, options = {}) {
   const errors = []
   const summary = {
@@ -469,6 +516,10 @@ export function auditPlatformEvidence(evidence, options = {}) {
     errors,
     evidencePresent: Boolean(evidence),
     platforms: {
+      android: null,
+      ios: null,
+    },
+    progress: {
       android: null,
       ios: null,
     },
@@ -502,6 +553,10 @@ export function auditPlatformEvidence(evidence, options = {}) {
 
   summary.errorCount = errors.length
   summary.ready = errors.length === 0
+  summary.progress = {
+    android: worksheetProgress(summary.platforms.android),
+    ios: worksheetProgress(summary.platforms.ios),
+  }
   return summary
 }
 
@@ -537,11 +592,15 @@ function collectNextActions(summary, options) {
   }
 
   if (!summary.ready) {
+    const progress = formatPlatformEvidenceProgress(summary)
     actions.push({
       id: 'complete-platform-evidence',
       title: 'Finish Android and iOS worksheet evidence',
-      detail:
-        'Fill missing metadata and record every required check as passedChecks or skippedChecks. passOnlyChecks and selectedApiRequiredChecks must be in passedChecks.',
+      detail: [
+        'Fill missing metadata and record every required check as passedChecks or skippedChecks.',
+        'passOnlyChecks and selectedApiRequiredChecks must be in passedChecks.',
+        progress,
+      ].join(' '),
       commands: [
         checkPlatformEvidenceCommand(commit, {
           allowOpen: true,

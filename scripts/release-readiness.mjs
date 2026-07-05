@@ -23,7 +23,10 @@ import { readInitialCiEvidenceStatus } from './release-ci-evidence.mjs'
 export { validateInitialCiEvidence } from './release-ci-evidence.mjs'
 import { collectPublicSurfaceAuditErrors } from './public-surface-audit.mjs'
 import { collectLocalGitReleaseState } from './check-release-ci-runs.mjs'
-import { readPlatformEvidenceAudit } from './check-platform-evidence.mjs'
+import {
+  formatPlatformEvidenceProgress,
+  readPlatformEvidenceAudit,
+} from './check-platform-evidence.mjs'
 import { finalizationFiles } from './release-finalization-files.mjs'
 import {
   checkPlatformEvidenceCommand,
@@ -587,6 +590,10 @@ const releaseToolingScriptRequirements = [
   ['check:serious-examples', 'node scripts/check-serious-example-apps.mjs'],
   ['release:ci', 'node scripts/check-release-ci-runs.mjs'],
   ['release:platform-evidence', 'node scripts/create-platform-evidence.mjs'],
+  [
+    'release:record-platform-evidence',
+    'node scripts/record-platform-evidence.mjs',
+  ],
   ['release:evidence', 'node scripts/create-release-evidence.mjs'],
   [
     'release:preflight-summary',
@@ -1011,6 +1018,9 @@ function collectReadinessNextActions(
     !checks.iosRealDeviceEvidence
   ) {
     const platformEvidenceCommands = []
+    const platformEvidenceProgress = platformEvidence?.ready
+      ? ''
+      : formatPlatformEvidenceProgress(platformEvidence)
     if (!platformEvidence?.evidencePresent) {
       platformEvidenceCommands.push(
         productionProfilePlatformEvidenceCommand(commit),
@@ -1034,8 +1044,12 @@ function collectReadinessNextActions(
     actions.push({
       id: 'real-device-evidence',
       title: 'Complete Android and iOS real-device export evidence',
-      detail:
+      detail: [
         'Run the local check and selected API export checks on real or hosted devices, reuse the platform worksheet when it exists, then assemble and validate release/real-device-evidence.json for the tested release commit.',
+        platformEvidenceProgress,
+      ]
+        .filter(Boolean)
+        .join(' '),
       commands: [
         'npm run check',
         ...platformEvidenceCommands,

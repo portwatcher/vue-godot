@@ -241,6 +241,10 @@ test('release preflight enforces real device evidence', () => {
     'node scripts/create-platform-evidence.mjs',
   )
   assert.equal(
+    packageJson.scripts['release:record-platform-evidence'],
+    'node scripts/record-platform-evidence.mjs',
+  )
+  assert.equal(
     packageJson.scripts['release:evidence'],
     'node scripts/create-release-evidence.mjs',
   )
@@ -298,6 +302,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /Node 24/)
   assert.match(production, /npm@\^11\.15\.0/)
   assert.match(production, /release:platform-evidence/)
+  assert.match(production, /release:record-platform-evidence/)
+  assert.match(production, /--platform android/)
+  assert.match(production, /--platform ios/)
+  assert.match(production, /refuses to skip pass-only or selected-API-required checks/)
   assert.match(production, /--production-profile/)
   assert.match(production, /production-profile selected API set/)
   assert.match(
@@ -535,6 +543,11 @@ test('release preflight enforces real device evidence', () => {
     /rejects local-only, skipped, failed, or warning-bearing preflight summaries/,
   )
   assert.match(readme, /release:platform-evidence/)
+  assert.match(readme, /release:record-platform-evidence/)
+  assert.match(readme, /--platform android/)
+  assert.match(readme, /--platform ios/)
+  assert.match(readme, /rejects unknown checks/)
+  assert.match(readme, /refuses to skip pass-only or selected-API-required checks/)
   assert.match(readme, /--production-profile/)
   assert.match(readme, /production-profile selected API set/)
   assert.match(
@@ -697,6 +710,12 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /--expected-commit <release-candidate-sha>/)
   assert.match(checklist, /follow-up evidence commit/)
   assert.match(checklist, /release:platform-evidence/)
+  assert.match(checklist, /release:record-platform-evidence/)
+  assert.match(checklist, /--platform android/)
+  assert.match(checklist, /--platform ios/)
+  assert.match(checklist, /--pass cold-launch,no-godotjs-load-diagnostics/)
+  assert.match(checklist, /--skip audio-input-if-selected/)
+  assert.match(checklist, /refuses to put pass-only or selected-API-required checks/)
   assert.match(checklist, /check:platform-evidence/)
   assert.match(checklist, /platform-evidence-summary\.json/)
   assert.match(checklist, /--production-profile/)
