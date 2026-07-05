@@ -74,6 +74,9 @@ test('platform evidence template lists required checks without passing them', ()
         action.id === 'assemble-real-device-evidence' &&
         action.commands[0] === 'npm run check' &&
         action.commands.includes(
+          'GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit <release-candidate-sha> --dispatch-missing --wait --ref <branch-or-tag> --output release/ci-runs.json',
+        ) &&
+        action.commands.includes(
           'npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --real-device-output release/real-device-evidence.json',
         ),
     ),

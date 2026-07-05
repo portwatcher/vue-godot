@@ -225,7 +225,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /validation status, errors, and `nextActions`/)
   assert.match(
     production,
-    /missing-evidence assembly and invalid-evidence regeneration\s+hints begin with `npm run check`/,
+    /missing-evidence assembly and invalid-evidence regeneration\s+hints begin with `npm run check` before release CI wait\/dispatch/,
   )
   assert.match(production, /release:ci/)
   assert.match(production, /--include-release-preflight/)
@@ -248,7 +248,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /Selected API names are validated/)
   assert.match(production, /selected APIs must be recorded in `passedChecks`/)
   assert.match(production, /top-level `nextActions` section/)
-  assert.match(production, /running `npm run check` and assembling final evidence/)
+  assert.match(production, /release CI wait\/dispatch commands/)
+  assert.match(production, /final evidence assembly commands/)
   assert.match(production, /worksheet fields/)
   assert.match(
     production,
@@ -309,7 +310,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /validation status, errors, and `nextActions`/)
   assert.match(
     readme,
-    /missing-evidence assembly and invalid-evidence regeneration hints begin with `npm run check`/,
+    /missing-evidence assembly and invalid-evidence regeneration hints begin with `npm run check` before release CI wait\/dispatch/,
   )
   assert.match(readme, /release:ci/)
   assert.match(readme, /--include-release-preflight/)
@@ -377,7 +378,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /Selected API names are validated/)
   assert.match(readme, /must be in `passedChecks`/)
   assert.match(readme, /top-level `nextActions` section/)
-  assert.match(readme, /records `npm run check` plus the commands/)
+  assert.match(readme, /release CI wait\/dispatch commands/)
+  assert.match(readme, /final evidence assembly commands/)
   assert.match(readme, /worksheet fields/)
   assert.match(
     readme,
@@ -392,7 +394,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /validation status, errors, and `nextActions`/)
   assert.match(
     checklist,
-    /missing-evidence assembly and invalid-evidence\s+regeneration hints begin with `npm run check`/,
+    /missing-evidence assembly and invalid-evidence\s+regeneration hints begin with `npm run check` before release CI wait\/dispatch/,
   )
   assert.match(checklist, /ci-runs\.json/)
   assert.match(checklist, /--include-release-preflight/)
@@ -465,7 +467,9 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /passOnlyChecks/)
   assert.match(checklist, /selectedApiRequiredChecks/)
   assert.match(checklist, /top-level `nextActions`/)
-  assert.match(checklist, /local `npm run check` and commands/)
+  assert.match(checklist, /release CI wait\/dispatch commands/)
+  assert.match(checklist, /local `npm run check`/)
+  assert.match(checklist, /final evidence\s+assembly commands/)
   assert.match(checklist, /worksheet fields/)
   assert.match(
     checklist,

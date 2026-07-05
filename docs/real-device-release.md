@@ -97,8 +97,9 @@ shows which conditional checks came from the selected API set. Selected API
 names are validated, so typos or unknown names fail before conditional checks
 can be omitted. Conditional checks for selected APIs must be moved into
 `passedChecks`. The generated top-level `nextActions` section records the
-local `npm run check` and commands for turning the completed worksheet into
-final real-device evidence.
+local `npm run check`, release CI wait/dispatch commands, and final evidence
+assembly commands for turning the completed worksheet into final real-device
+evidence.
 Keep only complete `android` and `ios` evidence objects before running
 `npm run release:evidence`.
 Keep worksheet fields only in `release/platform-evidence.json`; final
@@ -157,8 +158,8 @@ strict release gates reject it.
 Use `npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json`
 to write validation status, errors, and `nextActions` command hints for fixing
 or creating evidence; missing-evidence assembly and invalid-evidence
-regeneration hints begin with `npm run check` before release CI or evidence
-regeneration runs.
+regeneration hints begin with `npm run check` before release CI wait/dispatch
+or evidence regeneration runs.
 The helper validates the normalized platform evidence before fetching GitHub run
 metadata, so missing device details, unknown selected APIs, or selected-API
 checks left in `skippedChecks` fail before network calls.

@@ -6,6 +6,7 @@ import {
   resolveRealDeviceEvidencePath,
   validateRealDeviceEvidence,
 } from './real-device-evidence.mjs'
+import { initialReleaseCiCommands } from './release-handoff-commands.mjs'
 import { currentReleasePackageVersions, repoRoot } from './release-utils.mjs'
 
 function usage() {
@@ -112,7 +113,7 @@ function collectNextActions(summary) {
           'After the tested release candidate has CI runs and completed platform evidence, write release/real-device-evidence.json.',
         commands: [
           'npm run check',
-          'npm run release:ci -- --commit <release-candidate-sha> --wait --output release/ci-runs.json',
+          ...initialReleaseCiCommands(),
           'npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --real-device-output release/real-device-evidence.json',
           'npm run check:real-device-evidence -- --expected-commit <release-candidate-sha>',
         ],

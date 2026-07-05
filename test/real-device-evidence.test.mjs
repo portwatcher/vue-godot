@@ -384,6 +384,9 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
           action.id === 'assemble-real-device-evidence' &&
           action.commands[0] === 'npm run check' &&
           action.commands.includes(
+            'GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit <release-candidate-sha> --dispatch-missing --wait --ref <branch-or-tag> --output release/ci-runs.json',
+          ) &&
+          action.commands.includes(
             'npm run check:real-device-evidence -- --expected-commit <release-candidate-sha>',
           ),
       ),

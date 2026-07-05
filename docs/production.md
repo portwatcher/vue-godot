@@ -30,8 +30,8 @@ evidence JSON when it exists. Add
 `--summary-output release/real-device-evidence-summary.json` to write
 validation status, errors, and `nextActions` command hints for fixing or
 creating evidence; missing-evidence assembly and invalid-evidence regeneration
-hints begin with `npm run check` before release CI or evidence regeneration
-runs. `release:preflight` verifies package metadata,
+hints begin with `npm run check` before release CI wait/dispatch or evidence
+regeneration runs. `release:preflight` verifies package metadata,
 generated package specs, dry-run package contents including every
 `package.json` export target, registry state, publish environment assumptions,
 dependency audit status, serious example app readiness, Godot smoke, real
@@ -65,9 +65,9 @@ be skipped.
 Use its `selectedApiRequiredChecks` worksheet to see which conditional checks
 the selected APIs made mandatory.
 Conditional checks required by selected APIs must be recorded in `passedChecks`,
-not `skippedChecks`. Its top-level `nextActions` section records the commands
-for running `npm run check` and assembling final evidence after the worksheet is
-complete.
+not `skippedChecks`. Its top-level `nextActions` section records `npm run check`,
+release CI wait/dispatch commands, and final evidence assembly commands for
+after the worksheet is complete.
 After device testing and CI runs exist, `npm run release:evidence` assembles the
 real-device and release-readiness evidence files from the current package
 versions, Android/iOS platform evidence, CI evidence, and verified GitHub

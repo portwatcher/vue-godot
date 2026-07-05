@@ -9,6 +9,12 @@ import {
   hasGitHubActionsRunUrl,
   validateGitHubActionsRunMetadata,
 } from './release-evidence-utils.mjs'
+import {
+  defaultRealDeviceEvidencePath,
+  defaultReleaseCiEvidencePath,
+  releaseCiCommand as formatReleaseCiCommand,
+  releaseDispatchRefPlaceholder,
+} from './release-handoff-commands.mjs'
 import { repoRoot, run } from './release-utils.mjs'
 
 export const releasePreflightWorkflowName = 'Release Preflight'
@@ -28,7 +34,6 @@ export const releaseCiWorkflowDispatches = {
 
 const defaultPollMs = 15_000
 const defaultTimeoutMs = 45 * 60_000
-const defaultRealDeviceEvidencePath = 'release/real-device-evidence.json'
 
 function usage() {
   console.log(`Usage: node scripts/check-release-ci-runs.mjs [options]
@@ -465,37 +470,17 @@ export function collectReleaseCiHints(output) {
 }
 
 function releaseCiCommand(output, options = {}) {
-  const args = ['npm run release:ci --', '--commit', output.commit]
-  if (output.requiredWorkflowNames.includes(releasePreflightWorkflowName)) {
-    args.push('--include-release-preflight')
-  }
-  if (options.dispatchMissing) {
-    args.push('--dispatch-missing')
-  }
-  if (options.wait) {
-    args.push('--wait')
-  }
-  if (options.ref) {
-    args.push('--ref', options.ref)
-  }
-  if (
-    options.realDeviceEvidencePath &&
-    output.requiredWorkflowNames.includes(releasePreflightWorkflowName)
-  ) {
-    args.push(
-      '--real-device-evidence-path',
-      options.realDeviceEvidencePath,
-    )
-  }
-  if (options.output) {
-    args.push('--output', options.output)
-  }
-  return args.join(' ')
+  return formatReleaseCiCommand(output.commit, {
+    ...options,
+    includeReleasePreflight: output.requiredWorkflowNames.includes(
+      releasePreflightWorkflowName,
+    ),
+  })
 }
 
 function releaseCiCommandAfterPush(output) {
   const options = {
-    output: 'release/ci-runs.json',
+    output: defaultReleaseCiEvidencePath,
     wait: true,
   }
 
@@ -503,12 +488,13 @@ function releaseCiCommandAfterPush(output) {
     return releaseCiCommand(output, options)
   }
 
-  return `GH_TOKEN="$(gh auth token)" ${releaseCiCommand(output, {
+  return releaseCiCommand(output, {
     ...options,
     dispatchMissing: true,
     realDeviceEvidencePath: defaultRealDeviceEvidencePath,
-    ref: '<branch-or-tag>',
-  })}`
+    ref: releaseDispatchRefPlaceholder,
+    withGitHubToken: true,
+  })
 }
 
 export function collectReleaseCiNextActions(output) {
@@ -547,9 +533,9 @@ export function collectReleaseCiNextActions(output) {
   if (output.missingWorkflowNames.length > 0) {
     const commandOptions = {
       dispatchMissing: true,
-      output: 'release/ci-runs.json',
+      output: defaultReleaseCiEvidencePath,
       realDeviceEvidencePath: defaultRealDeviceEvidencePath,
-      ref: '<branch-or-tag>',
+      ref: releaseDispatchRefPlaceholder,
       wait: true,
     }
     actions.push({

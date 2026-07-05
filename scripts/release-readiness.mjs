@@ -22,6 +22,11 @@ import { collectPublicSurfaceAuditErrors } from './public-surface-audit.mjs'
 import { collectLocalGitReleaseState } from './check-release-ci-runs.mjs'
 import { finalizationFiles } from './release-finalization-files.mjs'
 import {
+  initialReleaseCiCommands,
+  releaseCommitLabel,
+  releasePreflightCiCommands,
+} from './release-handoff-commands.mjs'
+import {
   currentReleasePackageVersions,
   readJson,
   releasePackageConfigs,
@@ -862,7 +867,6 @@ function checkPublicSurface(blockers) {
 }
 
 function ciEvidenceCommands(commit, localGit) {
-  const releaseCommit = releaseCommitLabel(commit)
   const pushCommand =
     localGit?.currentBranch && !localGit.upstreamRef
       ? `git push --set-upstream origin ${localGit.currentBranch}`
@@ -871,13 +875,8 @@ function ciEvidenceCommands(commit, localGit) {
   return [
     'npm run check',
     pushCommand,
-    `npm run release:ci -- --commit ${releaseCommit} --wait --output release/ci-runs.json`,
-    `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${releaseCommit} --dispatch-missing --wait --ref <branch-or-tag> --output release/ci-runs.json`,
+    ...initialReleaseCiCommands(commit),
   ]
-}
-
-function releaseCommitLabel(commit) {
-  return commit ?? '<release-candidate-sha>'
 }
 
 function collectReadinessNextActions(checks, commit, localGit) {
@@ -917,7 +916,7 @@ function collectReadinessNextActions(checks, commit, localGit) {
       commands: [
         'npm run check',
         'npm run release:platform-evidence -- --selected-api <api>',
-        `npm run release:ci -- --commit ${releaseCommit} --wait --output release/ci-runs.json`,
+        ...initialReleaseCiCommands(commit),
         `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${releaseCommit} --real-device-output release/real-device-evidence.json`,
         `npm run check:real-device-evidence -- --expected-commit ${releaseCommit}`,
       ],
@@ -932,8 +931,7 @@ function collectReadinessNextActions(checks, commit, localGit) {
         'Run the local check after the tested release candidate and real-device evidence are pushed, capture Check, Godot Smoke, and Release Preflight runs, dispatching Release Preflight when needed, then write release-readiness evidence.',
       commands: [
         'npm run check',
-        `npm run release:ci -- --commit ${releaseCommit} --include-release-preflight --wait --output release/ci-runs.json`,
-        `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${releaseCommit} --include-release-preflight --dispatch-missing --wait --ref <branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
+        ...releasePreflightCiCommands(commit),
         'GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --output release/release-preflight-summary.json',
         `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${releaseCommit} --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json`,
         `npm run release:readiness -- --expected-commit ${releaseCommit}`,
