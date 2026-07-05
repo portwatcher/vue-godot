@@ -406,13 +406,13 @@ export const finalTodoEvidenceRequirements = [
     text: '`npm run check` passes locally and in CI.',
     proof: 'checkCiEvidenceReady',
     reason:
-      'Check workflow evidence and workflow wiring must be verified in a strict release-readiness run',
+      'committed release/ci-runs.json evidence must verify a successful Check workflow run',
   },
   {
     text: 'Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate.',
     proof: 'godotSmokeCiEvidenceReady',
     reason:
-      'Godot Smoke workflow evidence and workflow wiring must be verified in a strict release-readiness run',
+      'committed release/ci-runs.json evidence must verify a successful Godot Smoke workflow run',
   },
   {
     text: 'Android and iOS export smoke apps run on real or hosted devices for the production profile.',
@@ -884,6 +884,129 @@ function checkPublicSurface(blockers) {
   return false
 }
 
+function workflowEvidenceErrors(ciEvidence, workflowName) {
+  const errors = []
+  const workflow = isRecord(ciEvidence.workflows?.[workflowName])
+    ? ciEvidence.workflows[workflowName]
+    : null
+
+  if (!workflow) {
+    return [`CI evidence missing ${workflowName} workflow run`]
+  }
+
+  try {
+    assertGitHubActionsRunUrl(workflow, 'runUrl', `${workflowName}.runUrl`)
+  } catch (error) {
+    errors.push(error instanceof Error ? error.message : String(error))
+  }
+
+  if (!isFullCommitSha(workflow.runCommit)) {
+    errors.push(
+      `CI evidence ${workflowName}.runCommit must be a full 40-character git commit SHA`,
+    )
+  }
+
+  if (workflow.runConclusion !== 'success') {
+    errors.push(`CI evidence ${workflowName}.runConclusion must be "success"`)
+  }
+
+  return errors
+}
+
+export function validateInitialCiEvidence(ciResult, expectedCommit) {
+  const errors = []
+  if (!isRecord(ciResult)) {
+    return ['CI evidence must be a JSON object']
+  }
+
+  if (ciResult.ready !== true) {
+    errors.push('CI evidence ready must be true')
+  }
+  if (ciResult.commitFound !== true) {
+    errors.push('CI evidence commitFound must be true')
+  }
+  if (ciResult.commit !== expectedCommit) {
+    errors.push(`CI evidence commit must match ${expectedCommit}`)
+  }
+
+  const requiredWorkflowNames = ['Check', 'Godot Smoke']
+  for (const fieldName of ['requiredWorkflowNames', 'passedWorkflowNames']) {
+    const workflowNames = ciResult[fieldName]
+    if (!Array.isArray(workflowNames)) {
+      errors.push(`CI evidence ${fieldName} must be an array`)
+      continue
+    }
+
+    for (const workflowName of requiredWorkflowNames) {
+      if (!workflowNames.includes(workflowName)) {
+        errors.push(`CI evidence ${fieldName} must include ${workflowName}`)
+      }
+    }
+  }
+
+  if (!Array.isArray(ciResult.missingWorkflowNames)) {
+    errors.push('CI evidence missingWorkflowNames must be an array')
+  } else {
+    const missingRequiredWorkflowNames = requiredWorkflowNames.filter(
+      (workflowName) => ciResult.missingWorkflowNames.includes(workflowName),
+    )
+    if (missingRequiredWorkflowNames.length > 0) {
+      errors.push(
+        `CI evidence missing required workflow(s): ${missingRequiredWorkflowNames.join(', ')}`,
+      )
+    }
+  }
+
+  if (!isRecord(ciResult.checks)) {
+    errors.push('CI evidence checks must be an object')
+  } else {
+    for (const [checkName, workflowName] of [
+      ['commitFound', 'release commit'],
+      ['checkWorkflow', 'Check'],
+      ['godotSmokeWorkflow', 'Godot Smoke'],
+    ]) {
+      if (ciResult.checks[checkName] !== true) {
+        errors.push(
+          `CI evidence checks.${checkName} must be true for ${workflowName}`,
+        )
+      }
+    }
+  }
+
+  const ciEvidence = isRecord(ciResult.evidence) ? ciResult.evidence : null
+  if (!ciEvidence) {
+    errors.push('CI evidence must include an evidence object')
+    return errors
+  }
+
+  if (ciEvidence.commit !== expectedCommit) {
+    errors.push(`CI evidence.evidence.commit must match ${expectedCommit}`)
+  }
+  if (!isRecord(ciEvidence.workflows)) {
+    errors.push('CI evidence must include evidence.workflows')
+    return errors
+  }
+
+  for (const workflowName of requiredWorkflowNames) {
+    errors.push(...workflowEvidenceErrors(ciEvidence, workflowName))
+  }
+
+  return errors
+}
+
+function checkInitialCiEvidence(expectedCommit) {
+  if (!expectedCommit) {
+    return false
+  }
+
+  try {
+    const ciResult = JSON.parse(readText(defaultReleaseCiEvidencePath))
+    return validateInitialCiEvidence(ciResult, expectedCommit).length === 0
+  } catch {
+    return false
+  }
+}
+
 export function ciEvidenceCommands(commit, localGit) {
   const pushCommand =
     localGit?.currentBranch && !localGit.upstreamRef
@@ -924,7 +1047,7 @@ function collectReadinessNextActions(checks, commit, localGit) {
     })
   }
 
-  if (!checks.strictCiEvidence) {
+  if (!checks.initialCiEvidence) {
     actions.push({
       id: 'ci-evidence',
       title: 'Collect initial CI evidence for the tested release commit',
@@ -947,7 +1070,7 @@ function collectReadinessNextActions(checks, commit, localGit) {
       commands: [
         'npm run check',
         productionProfilePlatformEvidenceCommand(commit),
-        ...initialReleaseCiCommands(commit),
+        ...(checks.initialCiEvidence ? [] : initialReleaseCiCommands(commit)),
         releaseEvidenceCommand(commit),
         checkRealDeviceEvidenceCommand(commit),
         ...commitEvidenceCommands(
@@ -971,7 +1094,7 @@ function collectReadinessNextActions(checks, commit, localGit) {
         'Run the local check after the tested release candidate and real-device evidence are pushed, refresh Check and Godot Smoke from the release-candidate ref when CI evidence is still missing, then dispatch Release Preflight from the current evidence commit ref and write release-readiness evidence.',
       commands: [
         'npm run check',
-        ...(checks.strictCiEvidence ? [] : initialReleaseCiCommands(commit)),
+        ...(checks.initialCiEvidence ? [] : initialReleaseCiCommands(commit)),
         ...releasePreflightCiCommands(commit, {
           releasePreflightRunCommit: currentHeadCommitCommand,
         }),
@@ -1117,6 +1240,8 @@ async function main() {
   const releaseWorkflowBlockers = collectReleaseWorkflowBlockers()
   blockers.push(...releaseWorkflowBlockers)
   const releaseWorkflowsReady = releaseWorkflowBlockers.length === 0
+  const initialCiEvidenceReady =
+    releaseWorkflowsReady && checkInitialCiEvidence(expectedCommit)
 
   const publicSurfaceReady = checkPublicSurface(blockers)
 
@@ -1139,14 +1264,14 @@ async function main() {
 
   const checkedFinalTodoProofs = {
     androidRealDeviceEvidenceReady,
-    checkCiEvidenceReady: strictCiEvidenceReady && releaseWorkflowsReady,
+    checkCiEvidenceReady: initialCiEvidenceReady,
     ciEvidenceReady:
       cleanWorktreeReady &&
       realDeviceEvidenceReady &&
       releaseReadinessEvidenceReady &&
       releaseWorkflowsReady &&
       !options.allowOpen,
-    godotSmokeCiEvidenceReady: strictCiEvidenceReady && releaseWorkflowsReady,
+    godotSmokeCiEvidenceReady: initialCiEvidenceReady,
     iosRealDeviceEvidenceReady,
     publicReadmesReady: publicSurfaceReady && rootReadmeWarningReady,
     realDeviceEvidenceReady,
@@ -1176,6 +1301,7 @@ async function main() {
     cleanWorktree: cleanWorktreeReady,
     finalTodoStructure: finalTodoStructureBlockers.length === 0,
     iosRealDeviceEvidence: iosRealDeviceEvidenceReady,
+    initialCiEvidence: initialCiEvidenceReady,
     publicSurface: publicSurfaceReady,
     publicWarningMarkersRemoved: warningMarkers.length === 0,
     packageDescriptionWarningsRemoved:

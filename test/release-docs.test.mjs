@@ -330,7 +330,11 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
-    /strict CI evidence is\s+still missing[\s\S]*refreshes Check and Godot\s+Smoke from the release-candidate ref[\s\S]*Release Preflight from\s+the current evidence commit ref[\s\S]*--release-preflight-run-commit "\$\(git rev-parse HEAD\)"/,
+    /release\/ci-runs\.json` already validates Check and Godot Smoke[\s\S]*omits the\s+duplicate Check\/Godot Smoke collection commands/,
+  )
+  assert.match(
+    production,
+    /initial CI evidence is\s+still missing[\s\S]*refreshes Check and Godot\s+Smoke from the release-candidate ref[\s\S]*Release Preflight from\s+the current evidence commit ref[\s\S]*--release-preflight-run-commit "\$\(git rev-parse HEAD\)"/,
   )
   assert.doesNotMatch(
     production,
@@ -439,7 +443,11 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     readme,
-    /strict CI evidence is still missing[\s\S]*refreshes Check and Godot Smoke from the release-candidate ref[\s\S]*Release Preflight from the current evidence commit ref[\s\S]*--release-preflight-run-commit "\$\(git rev-parse HEAD\)"/,
+    /release\/ci-runs\.json` already validates Check and Godot Smoke[\s\S]*omits the duplicate Check\/Godot Smoke collection commands/,
+  )
+  assert.match(
+    readme,
+    /initial CI evidence is still missing[\s\S]*refreshes Check and Godot Smoke from the release-candidate ref[\s\S]*Release Preflight from the current evidence commit ref[\s\S]*--release-preflight-run-commit "\$\(git rev-parse HEAD\)"/,
   )
   assert.doesNotMatch(
     readme,
@@ -559,7 +567,11 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     checklist,
-    /strict CI evidence is still missing[\s\S]*refreshes Check and Godot Smoke from the\s+release-candidate ref[\s\S]*Release Preflight from the evidence\s+ref[\s\S]*--release-preflight-run-commit "\$\(git rev-parse HEAD\)"/,
+    /release\/ci-runs\.json` already[\s\S]*validates Check and Godot Smoke[\s\S]*omits the duplicate Check\/Godot Smoke\s+collection commands/,
+  )
+  assert.match(
+    checklist,
+    /initial CI evidence is still\s+missing[\s\S]*refreshes Check and Godot Smoke\s+from the\s+release-candidate ref[\s\S]*Release Preflight from the\s+evidence ref[\s\S]*--release-preflight-run-commit "\$\(git rev-parse HEAD\)"/,
   )
   assert.doesNotMatch(
     checklist,

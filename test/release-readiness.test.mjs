@@ -16,6 +16,7 @@ import {
   collectTodoItems,
   collectUncheckedTodoItems,
   formatFinalTodoRequirementStatus,
+  validateInitialCiEvidence,
   validateReleaseReadinessEvidence,
 } from '../scripts/release-readiness.mjs'
 
@@ -358,6 +359,48 @@ test('release readiness requires Release Preflight expected commit wiring', () =
   assert.match(output, /\.github\/workflows\/release-preflight\.yml/)
   assert.match(output, /expected_commit/)
   assert.match(output, /--expected-commit "\$\{\{ inputs\.expected_commit \}\}"/)
+})
+
+test('release readiness validates initial CI evidence for Check and Godot Smoke', () => {
+  const commit = '0123456789abcdef0123456789abcdef01234567'
+  const evidence = {
+    ready: true,
+    commit,
+    commitFound: true,
+    requiredWorkflowNames: ['Check', 'Godot Smoke'],
+    passedWorkflowNames: ['Check', 'Godot Smoke'],
+    missingWorkflowNames: [],
+    checks: {
+      checkWorkflow: true,
+      commitFound: true,
+      godotSmokeWorkflow: true,
+    },
+    evidence: {
+      commit,
+      workflows: {
+        Check: {
+          runUrl:
+            'https://github.com/portwatcher/vue-godot/actions/runs/28752207158',
+          runCommit: commit,
+          runConclusion: 'success',
+        },
+        'Godot Smoke': {
+          runUrl:
+            'https://github.com/portwatcher/vue-godot/actions/runs/28752356926',
+          runCommit: commit,
+          runConclusion: 'success',
+        },
+      },
+    },
+  }
+
+  assert.deepEqual(validateInitialCiEvidence(evidence, commit), [])
+
+  evidence.missingWorkflowNames = ['Godot Smoke']
+  assert.match(
+    validateInitialCiEvidence(evidence, commit).join('\n'),
+    /missing required workflow\(s\): Godot Smoke/,
+  )
 })
 
 test('release readiness scans package descriptions for final warning wording', () => {
@@ -740,6 +783,72 @@ test('release readiness summary includes missing evidence next actions', () => {
     assert.ok(
       releasePreflightAction.commands.includes(
         'git commit -m "Add release readiness evidence"',
+      ),
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
+test('release readiness reuses committed initial CI evidence in next actions', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
+  const summaryPath = path.join(tempDir, 'release-readiness-summary.json')
+  const ciEvidence = JSON.parse(
+    fs.readFileSync(path.join(process.cwd(), 'release/ci-runs.json'), 'utf-8'),
+  )
+
+  try {
+    const result = runReadiness([
+      '--allow-open',
+      '--expected-commit',
+      ciEvidence.commit,
+      '--real-device-path',
+      path.join(tempDir, 'missing-real-device-evidence.json'),
+      '--readiness-path',
+      path.join(tempDir, 'missing-release-readiness-evidence.json'),
+      '--summary-output',
+      summaryPath,
+    ])
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+
+    assert.equal(result.status, 0)
+    assert.equal(summary.checks.initialCiEvidence, true)
+    assert.equal(
+      summary.finalTodoRequirements.find(
+        (status) => status.proof === 'checkCiEvidenceReady',
+      )?.ready,
+      true,
+    )
+    assert.equal(
+      summary.finalTodoRequirements.find(
+        (status) => status.proof === 'godotSmokeCiEvidenceReady',
+      )?.ready,
+      true,
+    )
+    assert.equal(
+      summary.nextActions.some((action) => action.id === 'ci-evidence'),
+      false,
+    )
+
+    const realDeviceAction = summary.nextActions.find(
+      (action) => action.id === 'real-device-evidence',
+    )
+    assert.ok(realDeviceAction)
+    assert.ok(
+      realDeviceAction.commands.every(
+        (command) => !command.includes('npm run release:ci --'),
+      ),
+    )
+
+    const releasePreflightAction = summary.nextActions.find(
+      (action) => action.id === 'release-preflight-evidence',
+    )
+    assert.ok(releasePreflightAction)
+    assert.ok(
+      releasePreflightAction.commands.every(
+        (command) =>
+          command.includes('--include-release-preflight') ||
+          !command.includes('npm run release:ci --'),
       ),
     )
   } finally {
