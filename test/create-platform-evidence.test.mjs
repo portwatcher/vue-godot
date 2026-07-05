@@ -91,7 +91,7 @@ test('platform evidence template lists required checks without passing them', ()
 test('platform evidence template next actions honor custom output paths', () => {
   const template = buildPlatformEvidenceTemplate({
     output: 'release/custom-platform-evidence.json',
-    commit,
+    commit: ` ${commit} `,
     selectedApis: ['fetch'],
   })
 
@@ -118,6 +118,17 @@ test('platform evidence template next actions honor custom output paths', () => 
     assembleAction.commands.includes(
       `npm run check:real-device-evidence -- --expected-commit ${commit}`,
     ),
+  )
+})
+
+test('platform evidence template rejects invalid release commits', () => {
+  assert.throws(
+    () =>
+      buildPlatformEvidenceTemplate({
+        commit: 'release-candidate',
+        selectedApis: ['fetch'],
+      }),
+    /--commit must be a full 40-character git commit SHA/,
   )
 })
 

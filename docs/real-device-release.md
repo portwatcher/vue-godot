@@ -113,9 +113,9 @@ local `npm run check`, release CI wait/dispatch commands, and final evidence
 assembly commands for turning the completed worksheet into final real-device
 evidence.
 Pass `--commit <release-candidate-sha>` when creating the worksheet if the
-tested release commit is known; generated `nextActions` commands will use that
-commit for CI collection, evidence assembly, and validation instead of the
-placeholder.
+tested release commit is known; it must be the full 40-character commit SHA.
+Generated `nextActions` commands will use that commit for CI collection,
+evidence assembly, and validation instead of the placeholder.
 Keep only complete `android` and `ios` evidence objects before running
 `npm run release:evidence`.
 Keep worksheet fields only in `release/platform-evidence.json`; final

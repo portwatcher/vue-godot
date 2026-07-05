@@ -64,9 +64,9 @@ before writing evidence.
 Android/iOS platform evidence file with the exact required device check names
 for the maintained production-profile selected API set; it still must be filled
 with real artifact, device, OS, API, pass, and skip data after testing. Pass
-`--commit <release-candidate-sha>` when the tested commit is known so generated
-`nextActions` commands use that commit for CI collection, evidence assembly,
-and validation.
+`--commit <release-candidate-sha>` with the full 40-character tested commit SHA
+when it is known so generated `nextActions` commands use that commit for CI
+collection, evidence assembly, and validation.
 The production profile currently expands to `fetch`, `WebSocket`,
 `checkNetworkReachability`, `navigator.onLine`, `localStorage`,
 `sessionStorage`, `navigator.permissions.query`, `navigator.clipboard`,
