@@ -8,6 +8,7 @@ import test from 'node:test'
 import {
   collectCheckedTodoEvidenceBlockers,
   collectFinalTodoStructureBlockers,
+  collectReleaseToolingBlockers,
   collectTodoItems,
   collectUncheckedTodoItems,
 } from '../scripts/release-readiness.mjs'
@@ -114,6 +115,47 @@ test('release readiness requires the final TODO evidence checklist shape', () =>
   )
 })
 
+test('release readiness requires release tooling scripts', () => {
+  assert.deepEqual(
+    collectReleaseToolingBlockers({
+      scripts: {
+        check:
+          'npm run build && npm run test && npm run smoke:cli && npm run check:serious-examples && npm run bench:performance',
+        'check:public-surface': 'node scripts/public-surface-audit.mjs',
+        'check:real-device-evidence':
+          'node scripts/check-real-device-evidence.mjs',
+        'check:serious-examples':
+          'node scripts/check-serious-example-apps.mjs',
+        'release:ci': 'node scripts/check-release-ci-runs.mjs',
+        'release:platform-evidence':
+          'node scripts/create-platform-evidence.mjs',
+        'release:evidence': 'node scripts/create-release-evidence.mjs',
+        'release:preflight-summary':
+          'node scripts/download-release-preflight-summary.mjs',
+        'release:readiness': 'node scripts/release-readiness.mjs',
+        'release:preflight': 'node scripts/release-preflight.mjs',
+      },
+    }),
+    [],
+  )
+
+  const blockers = collectReleaseToolingBlockers({
+    scripts: {
+      check: 'npm run build',
+      'release:ci': 'node scripts/renamed-release-ci.mjs',
+    },
+  })
+  const output = blockers.join('\n')
+
+  assert.match(output, /check:public-surface/)
+  assert.match(output, /check:real-device-evidence/)
+  assert.match(output, /release:ci as node scripts\/check-release-ci-runs\.mjs/)
+  assert.match(output, /release:evidence/)
+  assert.match(output, /release:preflight-summary/)
+  assert.match(output, /release:preflight as node scripts\/release-preflight\.mjs/)
+  assert.match(output, /check script must run npm run check:serious-examples/)
+})
+
 test('release readiness reports current blockers without failing when allowed open', () => {
   const result = runReadiness(['--allow-open'])
   const output = `${result.stdout}\n${result.stderr}`
@@ -195,6 +237,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.equal(summary.checks.publicSurface, true)
     assert.equal(summary.checks.publicWarningMarkersRemoved, false)
     assert.equal(summary.checks.realDeviceEvidence, true)
+    assert.equal(summary.checks.releaseTooling, true)
     assert.equal(summary.checks.releaseReadinessEvidence, true)
     assert.equal(summary.checks.rootReadmeWarningsRemoved, false)
     assert.equal(summary.checks.strictCiEvidence, false)

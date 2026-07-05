@@ -465,6 +465,42 @@ export function collectFinalTodoStructureBlockers(
   })
 }
 
+const releaseToolingScriptRequirements = [
+  ['check:public-surface', 'node scripts/public-surface-audit.mjs'],
+  ['check:real-device-evidence', 'node scripts/check-real-device-evidence.mjs'],
+  ['check:serious-examples', 'node scripts/check-serious-example-apps.mjs'],
+  ['release:ci', 'node scripts/check-release-ci-runs.mjs'],
+  ['release:platform-evidence', 'node scripts/create-platform-evidence.mjs'],
+  ['release:evidence', 'node scripts/create-release-evidence.mjs'],
+  [
+    'release:preflight-summary',
+    'node scripts/download-release-preflight-summary.mjs',
+  ],
+  ['release:readiness', 'node scripts/release-readiness.mjs'],
+  ['release:preflight', 'node scripts/release-preflight.mjs'],
+]
+
+export function collectReleaseToolingBlockers(packageJson) {
+  const blockers = []
+  const scripts = isRecord(packageJson?.scripts) ? packageJson.scripts : {}
+
+  for (const [scriptName, expectedCommand] of releaseToolingScriptRequirements) {
+    if (scripts[scriptName] !== expectedCommand) {
+      blockers.push(
+        `package.json must expose ${scriptName} as ${expectedCommand}`,
+      )
+    }
+  }
+
+  if (!String(scripts.check ?? '').includes('npm run check:serious-examples')) {
+    blockers.push(
+      'package.json check script must run npm run check:serious-examples',
+    )
+  }
+
+  return blockers
+}
+
 async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
   const evidencePath =
     options.realDevicePath ?? resolveRealDeviceEvidencePath(process.env)
@@ -664,43 +700,8 @@ async function main() {
   )
 
   const packageJson = readJson('package.json')
-
-  if (
-    packageJson.scripts?.['check:public-surface'] !==
-    'node scripts/public-surface-audit.mjs'
-  ) {
-    blockers.push(
-      'package.json must expose check:public-surface as node scripts/public-surface-audit.mjs',
-    )
-  }
-
-  if (
-    packageJson.scripts?.['check:serious-examples'] !==
-    'node scripts/check-serious-example-apps.mjs'
-  ) {
-    blockers.push(
-      'package.json must expose check:serious-examples as node scripts/check-serious-example-apps.mjs',
-    )
-  }
-
-  if (
-    !String(packageJson.scripts?.check ?? '').includes(
-      'npm run check:serious-examples',
-    )
-  ) {
-    blockers.push(
-      'package.json check script must run npm run check:serious-examples',
-    )
-  }
-
-  if (
-    packageJson.scripts?.['release:readiness'] !==
-    'node scripts/release-readiness.mjs'
-  ) {
-    blockers.push(
-      'package.json must expose release:readiness as node scripts/release-readiness.mjs',
-    )
-  }
+  const releaseToolingBlockers = collectReleaseToolingBlockers(packageJson)
+  blockers.push(...releaseToolingBlockers)
 
   const publicSurfaceReady = checkPublicSurface(blockers)
 
@@ -743,6 +744,7 @@ async function main() {
     publicSurface: publicSurfaceReady,
     publicWarningMarkersRemoved: warningMarkers.length === 0,
     realDeviceEvidence: realDeviceEvidenceReady,
+    releaseTooling: releaseToolingBlockers.length === 0,
     releaseReadinessEvidence: releaseReadinessEvidenceReady,
     rootReadmeWarningsRemoved: rootReadmeWarningReady,
     strictCiEvidence: strictCiEvidenceReady,

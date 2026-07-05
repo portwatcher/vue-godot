@@ -343,6 +343,7 @@ test('release readiness audit documents final removal blockers', () => {
     /collectUncheckedTodoItems/,
     /collectFinalTodoStructureBlockers/,
     /collectCheckedTodoEvidenceBlockers/,
+    /collectReleaseToolingBlockers/,
     /checkCleanWorktree/,
     /collectPublicSurfaceAuditErrors/,
     /currentReleasePackageVersions/,
@@ -360,6 +361,7 @@ test('release readiness audit documents final removal blockers', () => {
     /root README final-removal wording/,
     /summary-output/,
     /checkedFinalTodosBackedByEvidence/,
+    /releaseTooling/,
     /strictCiEvidence/,
     /writeReadinessSummary/,
   ]) {
@@ -384,6 +386,7 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(production, /release-readiness-summary/)
   assert.match(production, /TODO counts/)
   assert.match(production, /structured readiness check status/)
+  assert.match(production, /release tooling\s+script wiring/)
   assert.match(production, /prematurely checked final TODO boxes/)
   assert.match(readme, /check:public-surface/)
   assert.match(production, /GitHub Actions run URLs for/)
@@ -395,6 +398,7 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(readme, /release-readiness-evidence\.json/)
   assert.match(readme, /TODO counts/)
   assert.match(readme, /structured readiness check status/)
+  assert.match(readme, /release tooling script wiring/)
   assert.match(readme, /prematurely checked final TODO boxes/)
   assert.match(todo, /release:readiness/)
   assert.equal(example.releasePreflightRunConclusion, 'success')
