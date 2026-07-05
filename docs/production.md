@@ -59,7 +59,9 @@ helper writes `ready`, `commitFound`, required/passed/missing workflow
 names, structured workflow checks, local Git branch/upstream diagnostics, hints
 for unpushed commits or stale upstreams, `nextActions` command hints for running
 `npm run check` before pushing or dispatching missing workflows, and the run
-URLs used by real-device release evidence. Add
+URLs used by real-device release evidence. When an existing ready output file
+already contains the same workflow evidence, reruns keep that file unchanged so
+evidence-only commits do not churn on local Git diagnostics alone. Add
 `--wait` to poll while workflows are still running. If a release-candidate
 commit is not found on GitHub, push it before collecting CI evidence. If the
 commit only changes docs or evidence and a workflow did not run automatically,

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
 
@@ -11,6 +12,7 @@ import {
   collectWorkflowDispatchRefErrors,
   dispatchableReleaseCiWorkflows,
   missingReleaseCiWorkflows,
+  readyReleaseCiEvidenceUnchanged,
   releaseCiOutput,
   releaseCiWorkflowDispatches,
   releasePreflightWorkflowName,
@@ -18,6 +20,7 @@ import {
   selectLatestWorkflowRun,
   selectSuccessfulWorkflowRun,
   validateWorkflowDispatchRef,
+  writeReleaseCiOutputJson,
 } from '../scripts/check-release-ci-runs.mjs'
 
 const commit = '0123456789abcdef0123456789abcdef01234567'
@@ -298,6 +301,97 @@ test('release CI output reports structured workflow readiness', () => {
         ),
     ),
   )
+})
+
+test('release CI output preserves ready evidence files when only local diagnostics changed', () => {
+  const result = collectReleaseCiRunEvidence(
+    [
+      workflowRun({
+        name: 'Check',
+        html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+      }),
+      workflowRun({
+        name: 'Godot Smoke',
+        html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+      }),
+    ],
+    commit,
+    requiredReleaseCiWorkflows,
+  )
+  const existingOutput = releaseCiOutput(
+    {
+      ...result,
+      commitFound: true,
+      localGit: {
+        currentBranch: 'develop',
+        currentHead: commit,
+        commitIsHead: true,
+        dirtyWorktree: false,
+        upstreamCommit: commit,
+        upstreamMatchesCommit: true,
+        upstreamRef: 'origin/develop',
+      },
+      runs: [],
+    },
+    requiredReleaseCiWorkflows,
+  )
+  const nextOutput = releaseCiOutput(
+    {
+      ...result,
+      commitFound: true,
+      localGit: {
+        currentBranch: 'develop',
+        currentHead: otherCommit,
+        commitIsHead: false,
+        dirtyWorktree: false,
+        upstreamCommit: commit,
+        upstreamMatchesCommit: true,
+        upstreamRef: 'origin/develop',
+      },
+      runs: [],
+    },
+    requiredReleaseCiWorkflows,
+  )
+
+  assert.equal(
+    readyReleaseCiEvidenceUnchanged(existingOutput, nextOutput),
+    true,
+  )
+
+  const changedWorkflowOutput = JSON.parse(JSON.stringify(nextOutput))
+  changedWorkflowOutput.evidence.workflows.Check.runId = 100
+  assert.equal(
+    readyReleaseCiEvidenceUnchanged(existingOutput, changedWorkflowOutput),
+    false,
+  )
+
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'release-ci-output-'))
+  const outputPath = path.join(tempDir, 'ci-runs.json')
+  const existingJson = `${JSON.stringify(existingOutput, null, 2)}\n`
+
+  try {
+    fs.writeFileSync(outputPath, existingJson)
+
+    assert.equal(
+      writeReleaseCiOutputJson(outputPath, nextOutput, { json: true }),
+      false,
+    )
+    assert.equal(fs.readFileSync(outputPath, 'utf-8'), existingJson)
+
+    assert.equal(
+      writeReleaseCiOutputJson(outputPath, changedWorkflowOutput, {
+        json: true,
+      }),
+      true,
+    )
+    assert.deepEqual(
+      JSON.parse(fs.readFileSync(outputPath, 'utf-8')).evidence.workflows.Check
+        .runId,
+      100,
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
 })
 
 test('release CI output carries evidence commit command hints for preflight', () => {

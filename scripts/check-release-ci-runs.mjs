@@ -7,6 +7,7 @@ import {
   fetchGitHubCommitSha,
   fetchGitHubActionsRunsForCommit,
   hasGitHubActionsRunUrl,
+  isRecord,
   validateGitHubActionsRunMetadata,
 } from './release-evidence-utils.mjs'
 import {
@@ -757,14 +758,60 @@ function printText(output, workflows) {
   }
 }
 
-function writeJson(filePath, data, options) {
+function comparableReadyReleaseCiEvidence(output) {
+  if (!isRecord(output) || output.ready !== true) {
+    return null
+  }
+
+  return {
+    checks: output.checks,
+    commit: output.commit,
+    commitFound: output.commitFound,
+    errors: output.errors,
+    evidence: output.evidence,
+    missingWorkflowNames: output.missingWorkflowNames,
+    passedWorkflowNames: output.passedWorkflowNames,
+    ready: output.ready,
+    releasePreflightRunCommit: output.releasePreflightRunCommit,
+    requiredWorkflowNames: output.requiredWorkflowNames,
+  }
+}
+
+export function readyReleaseCiEvidenceUnchanged(existingOutput, nextOutput) {
+  const existing = comparableReadyReleaseCiEvidence(existingOutput)
+  const next = comparableReadyReleaseCiEvidence(nextOutput)
+  if (!existing || !next) {
+    return false
+  }
+
+  return JSON.stringify(existing) === JSON.stringify(next)
+}
+
+function readExistingJson(filePath) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+  } catch {
+    return null
+  }
+}
+
+export function writeReleaseCiOutputJson(filePath, data, options = {}) {
   const resolved = path.resolve(repoRoot, filePath)
+  const relativePath = path.relative(repoRoot, resolved)
+  const existingOutput = readExistingJson(resolved)
+
+  if (readyReleaseCiEvidenceUnchanged(existingOutput, data)) {
+    logProgress(
+      options,
+      `[release-ci] kept ${relativePath} (workflow evidence unchanged)`,
+    )
+    return false
+  }
+
   fs.mkdirSync(path.dirname(resolved), { recursive: true })
   fs.writeFileSync(resolved, `${JSON.stringify(data, null, 2)}\n`)
-  logProgress(
-    options,
-    `[release-ci] wrote ${path.relative(repoRoot, resolved)}`,
-  )
+  logProgress(options, `[release-ci] wrote ${relativePath}`)
+  return true
 }
 
 async function collectReleaseCiRunResult(commit, workflows, options = {}) {
@@ -940,7 +987,7 @@ async function main() {
     workflows,
   )
   if (options.output) {
-    writeJson(options.output, output, options)
+    writeReleaseCiOutputJson(options.output, output, options)
   }
 
   if (options.json) {
