@@ -431,6 +431,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
       summary.nextActions.some(
         (action) =>
           action.id === 'release-preflight-evidence' &&
+          action.commands[0] === 'npm run check' &&
           action.commands.includes(
             `npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --wait --output release/ci-runs.json`,
           ) &&
@@ -560,6 +561,7 @@ test('release readiness summary includes missing evidence next actions', () => {
       summary.nextActions.some(
         (action) =>
           action.id === 'real-device-evidence' &&
+          action.commands[0] === 'npm run check' &&
           action.commands.includes(
             `npm run check:real-device-evidence -- --expected-commit ${summary.commit}`,
           ),
@@ -569,6 +571,7 @@ test('release readiness summary includes missing evidence next actions', () => {
       summary.nextActions.some(
         (action) =>
           action.id === 'release-preflight-evidence' &&
+          action.commands[0] === 'npm run check' &&
           action.commands.some((command) =>
             command.includes('--readiness-output release/release-readiness-evidence.json'),
           ),

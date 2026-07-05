@@ -912,8 +912,9 @@ function collectReadinessNextActions(checks, commit, localGit) {
       id: 'real-device-evidence',
       title: 'Complete Android and iOS real-device export evidence',
       detail:
-        'Run the selected API export checks on real or hosted devices, then assemble and validate release/real-device-evidence.json for the tested release commit.',
+        'Run the local check and selected API export checks on real or hosted devices, then assemble and validate release/real-device-evidence.json for the tested release commit.',
       commands: [
+        'npm run check',
         'npm run release:platform-evidence -- --selected-api <api>',
         `npm run release:ci -- --commit ${releaseCommit} --wait --output release/ci-runs.json`,
         `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${releaseCommit} --real-device-output release/real-device-evidence.json`,
@@ -927,8 +928,9 @@ function collectReadinessNextActions(checks, commit, localGit) {
       id: 'release-preflight-evidence',
       title: 'Collect CI and warning-free Release Preflight evidence',
       detail:
-        'After the tested release candidate and real-device evidence are pushed, capture Check, Godot Smoke, and Release Preflight runs, then write release-readiness evidence.',
+        'Run the local check after the tested release candidate and real-device evidence are pushed, capture Check, Godot Smoke, and Release Preflight runs, then write release-readiness evidence.',
       commands: [
+        'npm run check',
         `npm run release:ci -- --commit ${releaseCommit} --include-release-preflight --wait --output release/ci-runs.json`,
         'GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --output release/release-preflight-summary.json',
         `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${releaseCommit} --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json`,

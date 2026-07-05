@@ -223,6 +223,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /check:real-device-evidence/)
   assert.match(production, /real-device-evidence-summary\.json/)
   assert.match(production, /validation status, errors, and `nextActions`/)
+  assert.match(production, /missing-evidence assembly hints begin with `npm run check`/)
   assert.match(production, /release:ci/)
   assert.match(production, /--include-release-preflight/)
   assert.match(production, /--dispatch-missing/)
@@ -270,6 +271,10 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(production, /local Git state/)
   assert.match(production, /local\s+`npm run check`/)
+  assert.match(
+    production,
+    /CI, real-device, and Release Preflight evidence actions[\s\S]*begin with `npm run check`/,
+  )
   assert.match(production, /before pushing or dispatching missing workflows/)
   assert.match(production, /CI evidence\s+collection/)
   assert.match(production, /push\/dispatch commands/)
@@ -287,6 +292,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /check:real-device-evidence/)
   assert.match(readme, /real-device-evidence-summary\.json/)
   assert.match(readme, /validation status, errors, and `nextActions`/)
+  assert.match(readme, /missing-evidence assembly hints begin with `npm run check`/)
   assert.match(readme, /release:ci/)
   assert.match(readme, /--include-release-preflight/)
   assert.match(readme, /--dispatch-missing/)
@@ -322,6 +328,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /separate Android\/iOS real-device evidence status/)
   assert.match(readme, /local Git state/)
   assert.match(readme, /local `npm run check`/)
+  assert.match(
+    readme,
+    /CI, real-device, and Release Preflight evidence actions begin with `npm run check`/,
+  )
   assert.match(readme, /CI evidence collection/)
   assert.match(readme, /push\/dispatch commands/)
   assert.match(readme, /resolves evidence and finalizer commands/)
@@ -351,6 +361,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /release:ci/)
   assert.match(checklist, /real-device-evidence-summary\.json/)
   assert.match(checklist, /validation status, errors, and `nextActions`/)
+  assert.match(checklist, /missing-evidence assembly hints begin with `npm run check`/)
   assert.match(checklist, /ci-runs\.json/)
   assert.match(checklist, /--include-release-preflight/)
   assert.match(checklist, /--dispatch-missing/)
@@ -384,6 +395,10 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(checklist, /local Git state/)
   assert.match(checklist, /local `npm run check`/)
+  assert.match(
+    checklist,
+    /CI, real-device, and Release Preflight evidence actions[\s\S]*begin with\s+`npm run check`/,
+  )
   assert.match(checklist, /CI evidence\s+collection/)
   assert.match(checklist, /push\/dispatch commands/)
   assert.match(checklist, /resolves evidence and\s+finalizer commands/)

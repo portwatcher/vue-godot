@@ -64,7 +64,9 @@ evidence status, CI workflow wiring status, release tooling/workflow blocker
 lists, public warning markers, package description warning status, and
 `nextActions` command hints for the local `npm run check`, CI evidence
 collection, push/dispatch commands, and the remaining evidence/finalizer work as
-JSON. When an expected commit is known, the summary resolves evidence and
+JSON. The CI, real-device, and Release Preflight evidence actions begin with
+`npm run check` before collecting CI or assembling evidence. When an expected
+commit is known, the summary resolves evidence and
 finalizer commands to that tested release commit.
 
 Before device testing, initialize `release/platform-evidence.json` so the exact
@@ -148,7 +150,8 @@ The helper strips worksheet fields before writing final evidence. If
 strict release gates reject it.
 Use `npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json`
 to write validation status, errors, and `nextActions` command hints for fixing
-or creating evidence.
+or creating evidence; missing-evidence assembly hints begin with `npm run check`
+before release CI is collected.
 The helper validates the normalized platform evidence before fetching GitHub run
 metadata, so missing device details, unknown selected APIs, or selected-API
 checks left in `skippedChecks` fail before network calls.
