@@ -42,7 +42,7 @@ interface InputTypeMapping {
   valueType: 'string' | 'boolean' | 'number' | 'radio'
 }
 
-const INPUT_TYPE_MAP: Record<string, InputTypeMapping> = {
+const INPUT_TYPE_MAP = {
   text: {
     tag: 'LineEdit',
     changeEvent: 'onTextChanged',
@@ -73,6 +73,16 @@ const INPUT_TYPE_MAP: Record<string, InputTypeMapping> = {
     valueProp: 'value',
     valueType: 'number',
   },
+} satisfies Record<string, InputTypeMapping>
+
+type SupportedInputType = keyof typeof INPUT_TYPE_MAP
+
+function resolveInputType(type: string | undefined): SupportedInputType {
+  const requestedType = type ?? 'text'
+  if (Object.prototype.hasOwnProperty.call(INPUT_TYPE_MAP, requestedType)) {
+    return requestedType as SupportedInputType
+  }
+  return 'text'
 }
 
 /**
@@ -96,6 +106,7 @@ const INPUT_TYPE_MAP: Record<string, InputTypeMapping> = {
  *   - `name`         — radio group name
  *   - `label`        — text label for checkbox/radio inputs
  *   - `disabled`     — disables interaction
+ *   - `readonly`     — disables text editing for text/password inputs
  *   - `maxLength`    — max character count (text/password)
  *   - `min` / `max` / `step` — range slider bounds
  *   - `style`        — subset of CSS styles
@@ -141,6 +152,10 @@ export const Input = defineComponent({
       type: Boolean,
       default: false,
     },
+    readonly: {
+      type: Boolean,
+      default: false,
+    },
     maxLength: {
       type: Number,
       default: undefined,
@@ -167,8 +182,10 @@ export const Input = defineComponent({
     return () => {
       const style = normalizeHtmlStyle(props.style)
       warnUnsupportedStyleProps(style, 'Input')
-      const inputType = props.type ?? 'text'
-      const mapping = INPUT_TYPE_MAP[inputType] ?? INPUT_TYPE_MAP['text']
+      const inputType = resolveInputType(props.type)
+      const mapping = INPUT_TYPE_MAP[inputType]
+      const readonlyLineEdit =
+        props.readonly && (inputType === 'text' || inputType === 'password')
       const nodeProps: Record<string, unknown> = {}
 
       // Current value → Godot property
@@ -183,6 +200,9 @@ export const Input = defineComponent({
       nodeProps[mapping.changeEvent] = (
         newValue: string | boolean | number,
       ) => {
+        if (props.disabled || readonlyLineEdit) {
+          return
+        }
         if (mapping.valueType === 'radio') {
           if (newValue === true) {
             emit('update:modelValue', props.value ?? 'on')
@@ -248,7 +268,7 @@ export const Input = defineComponent({
       }
 
       // Disabled
-      if (props.disabled) {
+      if (props.disabled || readonlyLineEdit) {
         // LineEdit uses `editable`, BaseButton/Slider use `disabled`
         if (mapping.tag === 'LineEdit') {
           nodeProps['editable'] = false

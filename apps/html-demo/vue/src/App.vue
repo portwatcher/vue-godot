@@ -413,16 +413,32 @@
   <Input
     v-model="textValue"
     placeholder="Type something..."
+    :max-length="40"
+    title="Text input demo"
+    :min-touch-target="48"
     auto-focus
     focus-next="."
     focus-previous="."
     focus-neighbor-right="."
+    :style="{ width: 220, fontSize: 14 }"
   ></Input>
   <Span>{{ `Text input: ${textValue}` }}</Span>
+  <Input
+    v-model="readonlyValue"
+    readonly
+    title="Readonly input demo"
+    :style="{ width: 220 }"
+  ></Input>
+  <Span>{{ `Readonly input: ${readonlyValue}` }}</Span>
 
   <!-- ===== Section: Input (password) ===== -->
   <Span>--- Input (password) ---</Span>
-  <Input type="password" v-model="passwordValue" placeholder="Secret"></Input>
+  <Input
+    type="password"
+    v-model="passwordValue"
+    placeholder="Secret"
+    :max-length="24"
+  ></Input>
   <Span>{{ `Password length: ${passwordValue.length}` }}</Span>
 
   <!-- ===== Section: Input (checkbox) ===== -->
@@ -467,6 +483,8 @@
     :min="0"
     :max="100"
     :step="5"
+    :min-touch-target="48"
+    :style="{ width: 220 }"
   ></Input>
   <Span>{{ `Range: ${rangeValue}` }}</Span>
 
@@ -742,6 +760,7 @@ function onScreenBack() {
 
 // --- Input ---
 const textValue = ref('')
+const readonlyValue = ref('Locked')
 const passwordValue = ref('')
 const checkboxValue = ref(false)
 const radioValue = ref('alpha')

@@ -343,7 +343,7 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 | `<Span>`            | `Label`                                                                | text content, `style`, accessibility props |
 | `<Switch>`          | `CheckButton`                                                          | `v-model`, `label`, `disabled`, `style` |
 | `<Button>`          | `Button`                                                               | `@click`, `disabled`, `style`, shared focus/touch/accessibility props |
-| `<Input>`           | `LineEdit` / `CheckBox` / `HSlider`                                    | `type`, `v-model`, `label`, `name`, `value` |
+| `<Input>`           | `LineEdit` / `CheckBox` / `HSlider`                                    | `type`, `v-model`, `placeholder`, `readonly`, `disabled`, `label`, `name`, `value`, `min`/`max`/`step`, `style` |
 | `<Textarea>`        | `TextEdit`                                                             | `v-model`, `placeholder`, `disabled`, `readonly`, `rows`, `cols`, `style` |
 | `<Select>`          | `OptionButton`                                                         | `v-model`, `<Option value disabled selected>`, `style`, shared focus/touch/accessibility props |
 | `<Video>`           | `VideoStreamPlayer`                                                    | `src`, `autoplay`, `loop`, `muted`, `volume`, `style`, `@ended` |
