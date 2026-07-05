@@ -243,8 +243,9 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
-    /separate Android\/iOS real-device evidence status/,
+    /separate Android\/iOS real-device\s+evidence status/,
   )
+  assert.match(production, /package description warning/)
   assert.match(production, /release:preflight-summary/)
   assert.match(production, /--release-preflight-summary/)
   assert.match(production, /release-preflight-summary/)
@@ -272,6 +273,7 @@ test('release preflight enforces real device evidence', () => {
     /rejects not-ready or inconsistent structured CI summaries/,
   )
   assert.match(readme, /separate Android\/iOS real-device evidence status/)
+  assert.match(readme, /package description warning/)
   assert.match(
     readme,
     /rejects local-only, skipped, failed, or warning-bearing preflight summaries/,

@@ -22,6 +22,7 @@ import { collectPublicSurfaceAuditErrors } from './public-surface-audit.mjs'
 import {
   currentReleasePackageVersions,
   readJson,
+  releasePackageConfigs,
   repoRoot,
   run,
 } from './release-utils.mjs'
@@ -71,6 +72,21 @@ const releaseWarningMarkers = [
     file: 'docs/real-device-release.md',
     label: 'real-device docs preview-quality warning',
     pattern: /preview-quality/i,
+  },
+]
+
+const packageDescriptionWarningMarkers = [
+  {
+    label: 'package description not-production-ready wording',
+    pattern: /not production ready/i,
+  },
+  {
+    label: 'package description experimental wording',
+    pattern: /experimental/i,
+  },
+  {
+    label: 'package description alpha wording',
+    pattern: /\balpha\b/i,
   },
 ]
 
@@ -671,6 +687,34 @@ function checkWarningMarkerState(blockers, markersStillPresent) {
   return markersStillPresent
 }
 
+function packageDescriptionEntries() {
+  return [
+    { file: 'package.json', description: readJson('package.json').description },
+    ...releasePackageConfigs.map((config) => {
+      const file = `${config.dir}/package.json`
+      return {
+        file,
+        description: readJson(file).description,
+      }
+    }),
+  ]
+}
+
+export function collectPackageDescriptionWarningHits(
+  entries = packageDescriptionEntries(),
+) {
+  return entries.flatMap((entry) => {
+    const description =
+      typeof entry.description === 'string' ? entry.description : ''
+    return packageDescriptionWarningMarkers.flatMap((marker) => {
+      if (!marker.pattern.test(description)) {
+        return []
+      }
+      return [`${entry.file}: ${marker.label}`]
+    })
+  })
+}
+
 function checkPublicSurface(blockers) {
   const errors = collectPublicSurfaceAuditErrors()
   if (errors.length === 0) {
@@ -686,6 +730,7 @@ function writeReadinessSummary(
   expectedCommit,
   blockers,
   warningMarkers,
+  packageDescriptionWarnings,
   checks,
   todoItems,
 ) {
@@ -700,6 +745,7 @@ function writeReadinessSummary(
     ready: blockers.length === 0,
     blockerCount: blockers.length,
     warningMarkerCount: warningMarkers.length,
+    packageDescriptionWarningCount: packageDescriptionWarnings.length,
     todo: {
       total: todoItems.length,
       checked: todoItems.filter((item) => item.checked).length,
@@ -708,6 +754,7 @@ function writeReadinessSummary(
     checks: { ...checks },
     blockers: [...blockers],
     warningMarkers: [...warningMarkers],
+    packageDescriptionWarnings: [...packageDescriptionWarnings],
   }
 
   fs.mkdirSync(path.dirname(resolved), { recursive: true })
@@ -746,6 +793,10 @@ async function main() {
   const publicSurfaceReady = checkPublicSurface(blockers)
 
   const warningMarkers = collectWarningMarkerHits()
+  const packageDescriptionWarnings = collectPackageDescriptionWarningHits()
+  for (const marker of packageDescriptionWarnings) {
+    blockers.push(`${marker} must be removed before final release readiness`)
+  }
   const rootReadmeWarningReady = !warningMarkers.some((marker) =>
     marker.startsWith('README.md:'),
   )
@@ -769,7 +820,10 @@ async function main() {
     realDeviceEvidenceReady,
     releaseReadinessEvidenceReady,
     rootReadmeWarningReady,
-    warningWordingReady: blockers.length === 0 && warningMarkers.length === 0,
+    warningWordingReady:
+      blockers.length === 0 &&
+      warningMarkers.length === 0 &&
+      packageDescriptionWarnings.length === 0,
   }
   const checkedFinalTodoEvidenceBlockers = collectCheckedTodoEvidenceBlockers(
     todoItems,
@@ -787,6 +841,8 @@ async function main() {
     iosRealDeviceEvidence: iosRealDeviceEvidenceReady,
     publicSurface: publicSurfaceReady,
     publicWarningMarkersRemoved: warningMarkers.length === 0,
+    packageDescriptionWarningsRemoved:
+      packageDescriptionWarnings.length === 0,
     realDeviceEvidence: realDeviceEvidenceReady,
     realDeviceEvidenceMetadata: realDeviceEvidenceMetadataReady,
     releaseTooling: releaseToolingBlockers.length === 0,
@@ -800,6 +856,7 @@ async function main() {
       expectedCommit,
       blockers,
       warningMarkers,
+      packageDescriptionWarnings,
       checks,
       todoItems,
     )
@@ -824,6 +881,13 @@ async function main() {
   if (warningMarkers.length > 0) {
     console.log('\n[release-readiness] public warning markers still present')
     for (const marker of warningMarkers) {
+      console.log(`- ${marker}`)
+    }
+  }
+
+  if (packageDescriptionWarnings.length > 0) {
+    console.log('\n[release-readiness] package description warning markers')
+    for (const marker of packageDescriptionWarnings) {
       console.log(`- ${marker}`)
     }
   }

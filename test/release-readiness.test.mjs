@@ -8,6 +8,7 @@ import test from 'node:test'
 import {
   collectCheckedTodoEvidenceBlockers,
   collectFinalTodoStructureBlockers,
+  collectPackageDescriptionWarningHits,
   collectReleaseToolingBlockers,
   collectTodoItems,
   collectUncheckedTodoItems,
@@ -193,6 +194,30 @@ test('release readiness requires release tooling scripts', () => {
   assert.match(output, /check script must run npm run check:serious-examples/)
 })
 
+test('release readiness scans package descriptions for final warning wording', () => {
+  assert.deepEqual(
+    collectPackageDescriptionWarningHits([
+      {
+        file: 'packages/alpha/package.json',
+        description: 'Experimental alpha adapter',
+      },
+      {
+        file: 'packages/stable/package.json',
+        description: 'Stable adapter contracts',
+      },
+      {
+        file: 'packages/not-ready/package.json',
+        description: 'Not production ready plugin bridge',
+      },
+    ]),
+    [
+      'packages/alpha/package.json: package description experimental wording',
+      'packages/alpha/package.json: package description alpha wording',
+      'packages/not-ready/package.json: package description not-production-ready wording',
+    ],
+  )
+})
+
 test('release readiness reports current blockers without failing when allowed open', () => {
   const result = runReadiness(['--allow-open'])
   const output = `${result.stdout}\n${result.stderr}`
@@ -260,6 +285,8 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.equal(summary.ready, false)
     assert.ok(summary.blockerCount > 0)
     assert.equal(summary.warningMarkerCount, 8)
+    assert.equal(summary.packageDescriptionWarningCount, 0)
+    assert.deepEqual(summary.packageDescriptionWarnings, [])
     assert.equal(summary.todo.unchecked, 10)
     assert.equal(summary.checks.androidRealDeviceEvidence, true)
     assert.equal(summary.checks.checkedFinalTodosBackedByEvidence, true)
@@ -275,6 +302,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.equal(summary.checks.iosRealDeviceEvidence, true)
     assert.equal(summary.checks.publicSurface, true)
     assert.equal(summary.checks.publicWarningMarkersRemoved, false)
+    assert.equal(summary.checks.packageDescriptionWarningsRemoved, true)
     assert.equal(summary.checks.realDeviceEvidence, true)
     assert.equal(summary.checks.realDeviceEvidenceMetadata, true)
     assert.equal(summary.checks.releaseTooling, true)
