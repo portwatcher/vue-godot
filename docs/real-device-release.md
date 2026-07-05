@@ -62,13 +62,16 @@ capture the current blockers, TODO counts, unchecked TODO item details, final TO
 readiness check status, local Git state, separate Android/iOS real-device
 evidence status, CI workflow wiring status, release tooling/workflow blocker
 lists, public warning markers, package description warning status, and
-`nextActions` command hints for the local `npm run check`, CI evidence
+`nextActions` command hints for the local `npm run check`, initial CI evidence
 collection, push/dispatch commands, and the remaining evidence/finalizer work as
-JSON. The CI, real-device, and Release Preflight evidence actions begin with
-`npm run check` before collecting CI or assembling evidence. The final
-warning-removal action runs `npm run check` after the finalizer, stages the
-finalizer files, commits them, and then runs the final strict readiness check.
-When an expected
+JSON. The initial CI, real-device, and Release Preflight evidence actions begin
+with `npm run check` before collecting CI or assembling evidence. The initial CI
+action captures Check and Godot Smoke, while Release Preflight is captured later
+after real-device evidence is committed. That later action includes the
+`--dispatch-missing` command and `--real-device-evidence-path` input for the
+workflow-dispatch-only preflight workflow. The final warning-removal action runs
+`npm run check` after the finalizer, stages the finalizer files, commits them,
+and then runs the final strict readiness check. When an expected
 commit is known, the summary resolves evidence and
 finalizer commands to that tested release commit.
 

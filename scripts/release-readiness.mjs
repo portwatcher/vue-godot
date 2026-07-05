@@ -871,8 +871,8 @@ function ciEvidenceCommands(commit, localGit) {
   return [
     'npm run check',
     pushCommand,
-    `npm run release:ci -- --commit ${releaseCommit} --include-release-preflight --wait --output release/ci-runs.json`,
-    `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${releaseCommit} --include-release-preflight --dispatch-missing --wait --ref <branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
+    `npm run release:ci -- --commit ${releaseCommit} --wait --output release/ci-runs.json`,
+    `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${releaseCommit} --dispatch-missing --wait --ref <branch-or-tag> --output release/ci-runs.json`,
   ]
 }
 
@@ -897,9 +897,9 @@ function collectReadinessNextActions(checks, commit, localGit) {
   if (!checks.strictCiEvidence) {
     actions.push({
       id: 'ci-evidence',
-      title: 'Collect CI evidence for the tested release commit',
+      title: 'Collect initial CI evidence for the tested release commit',
       detail:
-        'Run the local check, push the release-candidate commit, wait for Check, Godot Smoke, and Release Preflight, then write release/ci-runs.json for evidence assembly.',
+        'Run the local check, push the release-candidate commit, wait for Check and Godot Smoke, then write release/ci-runs.json for real-device evidence assembly. Release Preflight is collected later after real-device evidence is committed.',
       commands: ciEvidenceCommands(commit, localGit),
     })
   }
@@ -929,10 +929,11 @@ function collectReadinessNextActions(checks, commit, localGit) {
       id: 'release-preflight-evidence',
       title: 'Collect CI and warning-free Release Preflight evidence',
       detail:
-        'Run the local check after the tested release candidate and real-device evidence are pushed, capture Check, Godot Smoke, and Release Preflight runs, then write release-readiness evidence.',
+        'Run the local check after the tested release candidate and real-device evidence are pushed, capture Check, Godot Smoke, and Release Preflight runs, dispatching Release Preflight when needed, then write release-readiness evidence.',
       commands: [
         'npm run check',
         `npm run release:ci -- --commit ${releaseCommit} --include-release-preflight --wait --output release/ci-runs.json`,
+        `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${releaseCommit} --include-release-preflight --dispatch-missing --wait --ref <branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
         'GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --output release/release-preflight-summary.json',
         `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${releaseCommit} --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json`,
         `npm run release:readiness -- --expected-commit ${releaseCommit}`,

@@ -413,18 +413,29 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.equal(summary.releaseWorkflowBlockerCount, 0)
     assert.deepEqual(summary.releaseWorkflowBlockers, [])
     assert.ok(Array.isArray(summary.nextActions))
+    const ciEvidenceAction = summary.nextActions.find(
+      (action) => action.id === 'ci-evidence',
+    )
+    assert.ok(ciEvidenceAction)
+    assert.equal(ciEvidenceAction.commands[0], 'npm run check')
     assert.ok(
-      summary.nextActions.some(
-        (action) =>
-          action.id === 'ci-evidence' &&
-          action.commands[0] === 'npm run check' &&
-          action.commands.some((command) => command.startsWith('git push')) &&
-          action.commands.includes(
-            `npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --wait --output release/ci-runs.json`,
-          ) &&
-          action.commands.some((command) =>
-            command.includes('--dispatch-missing --wait --ref <branch-or-tag>'),
-          ),
+      ciEvidenceAction.commands.some((command) =>
+        command.startsWith('git push'),
+      ),
+    )
+    assert.ok(
+      ciEvidenceAction.commands.includes(
+        `npm run release:ci -- --commit ${exampleCommit} --wait --output release/ci-runs.json`,
+      ),
+    )
+    assert.ok(
+      ciEvidenceAction.commands.some((command) =>
+        command.includes('--dispatch-missing --wait --ref <branch-or-tag>'),
+      ),
+    )
+    assert.ok(
+      ciEvidenceAction.commands.every(
+        (command) => !command.includes('--include-release-preflight'),
       ),
     )
     assert.ok(
@@ -434,6 +445,9 @@ test('release readiness writes a machine-readable blocker summary', () => {
           action.commands[0] === 'npm run check' &&
           action.commands.includes(
             `npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --wait --output release/ci-runs.json`,
+          ) &&
+          action.commands.includes(
+            `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --dispatch-missing --wait --ref <branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
           ) &&
           action.commands.includes(
             `npm run release:readiness -- --expected-commit ${exampleCommit}`,

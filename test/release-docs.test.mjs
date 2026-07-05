@@ -276,8 +276,14 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /local\s+`npm run check`/)
   assert.match(
     production,
-    /CI, real-device, and Release Preflight evidence actions[\s\S]*begin with `npm run check`/,
+    /initial CI, real-device, and Release Preflight evidence\s+actions begin with `npm run check`/,
   )
+  assert.match(
+    production,
+    /initial CI action captures Check and Godot Smoke[\s\S]*Release Preflight is\s+captured later after real-device evidence is committed/,
+  )
+  assert.match(production, /--real-device-evidence-path/)
+  assert.match(production, /workflow-dispatch-only preflight workflow/)
   assert.match(
     production,
     /final warning-removal action runs `npm run check` after the finalizer/,
@@ -285,7 +291,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /git add TODO\.md README\.md docs\/compatibility\.md docs\/production\.md docs\/real-device-release\.md/)
   assert.match(production, /git commit -m "Finalize production readiness"/)
   assert.match(production, /before pushing or dispatching missing workflows/)
-  assert.match(production, /CI evidence\s+collection/)
+  assert.match(production, /initial CI evidence\s+collection/)
   assert.match(production, /push\/dispatch commands/)
   assert.match(production, /resolves evidence and finalizer commands/)
   assert.match(production, /tested release commit/)
@@ -342,14 +348,20 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /local `npm run check`/)
   assert.match(
     readme,
-    /CI, real-device, and Release Preflight evidence actions begin with `npm run check`/,
+    /initial CI, real-device, and Release Preflight evidence actions begin with `npm run check`/,
   )
+  assert.match(
+    readme,
+    /initial CI action captures Check and Godot Smoke, while Release Preflight is captured later after real-device evidence is committed/,
+  )
+  assert.match(readme, /--real-device-evidence-path/)
+  assert.match(readme, /workflow-dispatch-only preflight workflow/)
   assert.match(
     readme,
     /final warning-removal action runs `npm run check` after the finalizer/,
   )
   assert.match(readme, /git commit -m "Finalize production readiness"/)
-  assert.match(readme, /CI evidence collection/)
+  assert.match(readme, /initial CI evidence collection/)
   assert.match(readme, /push\/dispatch commands/)
   assert.match(readme, /resolves evidence and finalizer commands/)
   assert.match(readme, /tested release commit/)
@@ -417,15 +429,21 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /local `npm run check`/)
   assert.match(
     checklist,
-    /CI, real-device, and Release Preflight evidence actions[\s\S]*begin with\s+`npm run check`/,
+    /initial CI, real-device, and Release Preflight evidence actions[\s\S]*begin\s+with `npm run check`/,
   )
   assert.match(
     checklist,
-    /final\s+warning-removal action runs `npm run check` after the finalizer/,
+    /initial CI\s+action captures Check and Godot Smoke[\s\S]*Release Preflight is captured later\s+after real-device evidence is committed/,
+  )
+  assert.match(checklist, /--real-device-evidence-path/)
+  assert.match(checklist, /workflow-dispatch-only preflight workflow/)
+  assert.match(
+    checklist,
+    /final\s+warning-removal action runs\s+`npm run check` after the finalizer/,
   )
   assert.match(checklist, /git add TODO\.md README\.md docs\/compatibility\.md docs\/production\.md docs\/real-device-release\.md/)
   assert.match(checklist, /git commit -m "Finalize production readiness"/)
-  assert.match(checklist, /CI evidence\s+collection/)
+  assert.match(checklist, /initial CI evidence\s+collection/)
   assert.match(checklist, /push\/dispatch commands/)
   assert.match(checklist, /resolves evidence and\s+finalizer commands/)
   assert.match(checklist, /tested\s+release commit/)
