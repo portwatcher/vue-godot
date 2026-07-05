@@ -173,6 +173,8 @@
   <Overlay
     v-model="overlayOpen"
     :close-on-click="true"
+    :trap-focus="true"
+    :restore-focus="true"
     :style="{ backgroundColor: '#0008', opacity: 0.9 }"
     :content-style="{
       flexDirection: 'column',
@@ -190,6 +192,8 @@
     :width="360"
     :height="220"
     :unresizable="true"
+    :trap-focus="true"
+    :restore-focus="true"
   >
     <Div :style="{ flexDirection: 'column', gap: 8, padding: 12 }">
       <Span>Modal content is rendered inside a Godot Window.</Span>
@@ -201,6 +205,8 @@
     title="Confirm action"
     message="Dialog backed by AcceptDialog."
     confirm-text="OK"
+    :trap-focus="true"
+    :restore-focus="true"
     @confirm="dialogConfirmCount++"
     @cancel="dialogCancelCount++"
   ></Dialog>

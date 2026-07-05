@@ -117,14 +117,15 @@ property yet. Focusable controls support mount-time `autoFocus` / `autofocus`
 through Godot `grab_focus()` and explicit Godot focus graph paths through
 `focusNext`, `focusPrevious`, and directional `focusNeighbor*` props. The same
 focusable controls support opt-in `minTouchTarget` sizing for touch and
-controller-friendly hit rects. Keyboard shortcuts, controller activation, and
-escape/back handling are Godot input-action patterns (`ui_accept`, `ui_cancel`,
-and project-defined actions), not DOM keyboard events. Focus traps,
-restoration, and browser tab-order emulation are not implemented. They are
-marked `partial` until the production-grade component checklist covers role
-mapping and documented style limits. Inline style objects support the
-documented Godot-backed subset; unsupported style keys emit a
-`[vue-godot/html]` warning once per component/property pair.
+controller-friendly hit rects. `<Overlay>`, `<Modal>`, and `<Dialog>` support
+Godot-native focus containment and restoration through `trapFocus` and
+`restoreFocus`; browser tab-order emulation is not implemented. Keyboard
+shortcuts, controller activation, and escape/back handling are Godot
+input-action patterns (`ui_accept`, `ui_cancel`, and project-defined actions),
+not DOM keyboard events. They are marked `partial` until the production-grade
+component checklist covers role mapping and documented style limits. Inline
+style objects support the documented Godot-backed subset; unsupported style
+keys emit a `[vue-godot/html]` warning once per component/property pair.
 
 | Component/API | Owner | Status | Godot backend | Platforms | Permissions/export | Tests | Caveats |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -134,9 +135,9 @@ documented Godot-backed subset; unsupported style keys emit a
 | `<VirtualList>` | `html` | `partial` | `ScrollContainer` plus fixed-height row wrappers and spacer `Control` nodes | All Godot UI targets | None | Unit, html-demo | Fixed row heights only; dynamic-height measurement and horizontal virtualization are not implemented. |
 | `<Progress>` | `html` | `partial` | `ProgressBar` | All Godot UI targets | None | Unit, html-demo | Uses Godot `Range` props and native indeterminate mode; not a DOM progress element. |
 | `<ActivityIndicator>` | `html` | `partial` | `ProgressBar` indeterminate mode | All Godot UI targets | None | Unit, html-demo | Bar-style busy indicator; spinner visuals are not implemented yet. |
-| `<Overlay>` | `html` | `partial` | `PanelContainer` plus inner `<Div>` content wrapper | All Godot UI targets | None | Unit, html-demo | Godot `Control` overlay, not a DOM portal; backdrop input follows Godot `mouse_filter`. |
-| `<Modal>` | `html` | `partial` | `Window` | All Godot UI targets | None | Unit, html-demo | Window behavior follows Godot embedded/native subwindow settings; browser focus trapping is not implemented yet. |
-| `<Dialog>` | `html` | `partial` | `AcceptDialog` | All Godot UI targets | None | Unit, html-demo | Confirmation dialog subset; button layout and escape handling follow Godot `AcceptDialog`. |
+| `<Overlay>` | `html` | `partial` | `PanelContainer` plus inner `<Div>` content wrapper | All Godot UI targets | None | Unit, html-demo | Godot `Control` overlay, not a DOM portal; backdrop input follows Godot `mouse_filter`; focus containment uses the backdrop root as a Godot focus sentinel, not DOM tab-order traversal. |
+| `<Modal>` | `html` | `partial` | `Window` | All Godot UI targets | None | Unit, html-demo | Window behavior follows Godot embedded/native subwindow settings; `trapFocus`/`restoreFocus` use Godot window focus and the previous viewport focus owner. |
+| `<Dialog>` | `html` | `partial` | `AcceptDialog` | All Godot UI targets | None | Unit, html-demo | Confirmation dialog subset; button layout and escape handling follow Godot `AcceptDialog`; `trapFocus`/`restoreFocus` use Godot window focus and the previous viewport focus owner. |
 | `<Pressable>` | `html` | `partial` | `PanelContainer` with `Control.gui_input`, focus, and mouse signals | All Godot UI targets | None | Unit, html-demo | Mouse/touch/keyboard/controller activation depends on Godot focused Control input; supports `autoFocus`, focus traversal props, and `minTouchTarget`; labels and hints map to `tooltip_text`; ARIA-style roles are not implemented yet. |
 | `<Form>` | `html` | `partial` | `PanelContainer` plus inner `<Div>` content wrapper | All Godot UI targets | None | Unit, html-demo | Emits `submit` from `ui_accept` and optional `reset` from `ui_cancel`; supports shared focus and touch target props; not a browser DOM form and does not serialize controls. |
 | `<Label>` | `html` | `partial` | `Label` plus optional inner `<Div>` wrapper | All Godot UI targets | None | Unit, html-demo | Groups label text with slot content visually; browser `for` / `id` focus binding is not implemented; labels and hints map to `tooltip_text`. |

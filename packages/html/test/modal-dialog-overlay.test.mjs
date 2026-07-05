@@ -51,6 +51,9 @@ test('Modal renders an exclusive transient Godot Window', () => {
   assert.equal(vnode.props['size:y'], 260)
   assert.equal(vnode.props['min_size:x'], 300)
   assert.equal(vnode.props['min_size:y'], 180)
+  assert.equal(typeof vnode.props.onVnodeMounted, 'function')
+  assert.equal(typeof vnode.props.onVnodeUpdated, 'function')
+  assert.equal(typeof vnode.props.onVnodeBeforeUnmount, 'function')
   assert.deepEqual(vnode.children, [child])
 
   vnode.props.onCloseRequested()
@@ -103,6 +106,9 @@ test('Dialog renders an AcceptDialog and forwards confirm/cancel events', () => 
   assert.equal(vnode.props.transient, true)
   assert.equal(vnode.props.exclusive, true)
   assert.equal(vnode.props['size:x'], 360)
+  assert.equal(typeof vnode.props.onVnodeMounted, 'function')
+  assert.equal(typeof vnode.props.onVnodeUpdated, 'function')
+  assert.equal(typeof vnode.props.onVnodeBeforeUnmount, 'function')
 
   vnode.props.onConfirmed()
   assert.deepEqual(emitted, [['confirm'], ['update:modelValue', false]])
@@ -145,6 +151,16 @@ test('Overlay renders a full-parent PanelContainer with backdrop events', () => 
   assert.equal(vnode.props.offset_right, 0)
   assert.equal(vnode.props.offset_bottom, 0)
   assert.equal(vnode.props.mouse_filter, 0)
+  assert.equal(vnode.props.focus_mode, 2)
+  assert.equal(vnode.props.focus_next, '.')
+  assert.equal(vnode.props.focus_previous, '.')
+  assert.equal(vnode.props.focus_neighbor_left, '.')
+  assert.equal(vnode.props.focus_neighbor_top, '.')
+  assert.equal(vnode.props.focus_neighbor_right, '.')
+  assert.equal(vnode.props.focus_neighbor_bottom, '.')
+  assert.equal(typeof vnode.props.onVnodeMounted, 'function')
+  assert.equal(typeof vnode.props.onVnodeUpdated, 'function')
+  assert.equal(typeof vnode.props.onVnodeBeforeUnmount, 'function')
   assert.equal(vnode.props.modulate.__kind, 'color')
   assert.equal(vnode.props.modulate.a, 0.5)
   assert.equal(
@@ -174,4 +190,18 @@ test('Overlay can ignore input and hide via modelValue', () => {
 
   assert.equal(vnode.props.visible, false)
   assert.equal(vnode.props.mouse_filter, 2)
+})
+
+test('Overlay can opt out of focus containment', () => {
+  const vnode = renderComponent(Overlay, {
+    modelValue: true,
+    trapFocus: false,
+    restoreFocus: false,
+  })
+
+  assert.equal('focus_mode' in vnode.props, false)
+  assert.equal('focus_next' in vnode.props, false)
+  assert.equal('onVnodeMounted' in vnode.props, false)
+  assert.equal('onVnodeUpdated' in vnode.props, false)
+  assert.equal('onVnodeBeforeUnmount' in vnode.props, false)
 })

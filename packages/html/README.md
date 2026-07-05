@@ -215,7 +215,9 @@ When both a label and hint are provided, the tooltip text is joined on separate 
 
 Focusable controls (`<A>`, `<Button>`, `<Form>`, `<Input>`, `<Pressable>`, `<Select>`, `<Switch>`, and `<Textarea>`) accept `autoFocus` and `autofocus`. When enabled, the component calls Godot `grab_focus()` on the mounted backing node. Disabled controls skip auto-focus.
 
-The same controls also accept Godot focus graph NodePath strings: `focusNext`, `focusPrevious`, `focusNeighborLeft`, `focusNeighborTop`, `focusNeighborRight`, and `focusNeighborBottom`. These map to `focus_next`, `focus_previous`, and directional `focus_neighbor_*` props, so keyboard Tab traversal and controller/D-pad traversal can be made explicit. Focus traps, restoration, browser tab-order emulation, and modal focus containment are not implemented yet.
+The same controls also accept Godot focus graph NodePath strings: `focusNext`, `focusPrevious`, `focusNeighborLeft`, `focusNeighborTop`, `focusNeighborRight`, and `focusNeighborBottom`. These map to `focus_next`, `focus_previous`, and directional `focus_neighbor_*` props, so keyboard Tab traversal and controller/D-pad traversal can be made explicit.
+
+`<Overlay>`, `<Modal>`, and `<Dialog>` accept `trapFocus` and `restoreFocus`, both enabled by default. When opened, they remember the current Godot focus owner, grab focus for the overlay/window root, and restore the previous focus owner when closed or unmounted. `<Overlay>` also applies self-looping Godot focus graph props on its backdrop root so Tab and directional focus cannot fall through to controls behind it. This is Godot-native containment, not browser DOM tab-order emulation.
 
 ### Touch Targets
 
@@ -263,7 +265,7 @@ For controller fallback behavior, set `autoFocus` on the first interactive contr
 HTML-like components are Godot nodes, not browser DOM elements. The current accessibility and input surface is intentionally limited to stable Godot-backed behavior:
 
 - Accessibility labels, hints, and titles map to `Control.tooltip_text`; native ARIA role mapping is not available in the checked-in Godot bindings.
-- Focus management supports mount-time focus and explicit Godot focus graph props, but focus traps, focus restoration, modal focus containment, and browser tab-order emulation are not implemented yet.
+- Focus management supports mount-time focus, explicit Godot focus graph props, and Godot-native focus containment/restoration for `<Overlay>`, `<Modal>`, and `<Dialog>`; browser DOM tab-order emulation is not implemented.
 - Keyboard, controller, and back behavior use Godot input actions such as `ui_accept` and `ui_cancel`; DOM keyboard events and document-level shortcut bubbling are not emulated.
 - `minTouchTarget` changes the Control minimum size; it does not create invisible hit slop outside the Godot Control rect.
 - Pointer, keyboard, controller, safe-area, virtual-keyboard, media, and asset behavior follow the Godot platform/export being run.
@@ -273,15 +275,15 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 | HTML-like Component | Godot Node                                                             | Key Props             |
 | ------------------- | ---------------------------------------------------------------------- | --------------------- |
 | `<ActivityIndicator>` | `ProgressBar`                                                        | `active`, `size`, `fill`, `style` |
-| `<Dialog>`          | `AcceptDialog`                                                         | `v-model`, `title`, `message`, `confirmText` |
+| `<Dialog>`          | `AcceptDialog`                                                         | `v-model`, `title`, `message`, `confirmText`, `trapFocus`, `restoreFocus` |
 | `<Div>`             | `HBoxContainer` / `VBoxContainer` / `*FlowContainer` / `GridContainer` | `style` (layout)      |
 | `<Form>`            | `PanelContainer` plus inner `<Div>`                                    | `disabled`, `submitOnAccept`, `resetOnCancel`, `contentStyle` |
 | `<CameraView>`      | `TextureRect` with `CameraTexture`                                     | `feedId`, `feedIndex`, `active`, `whichFeed`, `style` |
 | `<Img>`             | `TextureRect`                                                          | `src`, `alt`, `style` |
 | `<KeyboardAvoidingView>` | `MarginContainer` / `PanelContainer`                              | `behavior`, `keyboardVerticalOffset`, `fallbackKeyboardHeight`, `contentStyle` |
 | `<Label>`           | `Label` / inner `<Div>` wrapper                                        | `text`, `required`, `requiredIndicator`, `contentStyle` |
-| `<Modal>`           | `Window`                                                               | `v-model`, `title`, `width`, `height` |
-| `<Overlay>`         | `PanelContainer` plus inner `<Div>`                                    | `v-model`, `closeOnClick`, `blockInput`, `contentStyle` |
+| `<Modal>`           | `Window`                                                               | `v-model`, `title`, `width`, `height`, `trapFocus`, `restoreFocus` |
+| `<Overlay>`         | `PanelContainer` plus inner `<Div>`                                    | `v-model`, `closeOnClick`, `blockInput`, `trapFocus`, `restoreFocus`, `contentStyle` |
 | `<Pressable>`       | `PanelContainer`                                                       | `disabled`, `longPressDelay`, `minTouchTarget`, interaction events |
 | `<Progress>`        | `ProgressBar`                                                          | `value`, `min`, `max`, `indeterminate`, `showPercentage` |
 | `<SafeAreaView>`    | `MarginContainer` / `PanelContainer`                                   | `edges`, `fallbackInsets`, `contentStyle` |
@@ -701,9 +703,9 @@ It supports `behavior` (`"padding"`, `"position"`, or `"height"`), `enabled`, `k
 </Overlay>
 ```
 
-It supports `v-model`, `closeOnClick`, `blockInput`, `style`, and `contentStyle`, and emits `click` and `backdropClick`. It is a Godot `Control` overlay, not a DOM portal.
+It supports `v-model`, `closeOnClick`, `blockInput`, `trapFocus`, `restoreFocus`, `style`, and `contentStyle`, and emits `click` and `backdropClick`. It is a Godot `Control` overlay, not a DOM portal. Focus containment uses the backdrop root as a Godot focus sentinel; provide explicit focus graph props on inner controls when a complex overlay needs custom traversal.
 
-`<Modal>` maps to Godot `Window` and supports `v-model`, `title`, `width`, `height`, `minWidth`, `minHeight`, `exclusive`, `transient`, `popup`, `unresizable`, and `style`:
+`<Modal>` maps to Godot `Window` and supports `v-model`, `title`, `width`, `height`, `minWidth`, `minHeight`, `exclusive`, `transient`, `popup`, `unresizable`, `trapFocus`, `restoreFocus`, and `style`:
 
 ```vue
 <Modal v-model="showModal" title="Settings" :width="420" :height="260">
@@ -714,7 +716,7 @@ It supports `v-model`, `closeOnClick`, `blockInput`, `style`, and `contentStyle`
 </Modal>
 ```
 
-`<Dialog>` maps to Godot `AcceptDialog` and supports `v-model`, `title`, `message`, `confirmText`, `closeOnEscape`, `hideOnOk`, sizing props, and `style`:
+`<Dialog>` maps to Godot `AcceptDialog` and supports `v-model`, `title`, `message`, `confirmText`, `closeOnEscape`, `hideOnOk`, `trapFocus`, `restoreFocus`, sizing props, and `style`:
 
 ```vue
 <Dialog
@@ -768,9 +770,9 @@ This package is in early development. Currently scaffolded:
 - [x] `<ActivityIndicator>` — bar-style busy indicator (`ProgressBar` indeterminate mode)
 - [x] `<ScrollView>` — scrollable viewport (`ScrollContainer`, axis props, scrollbar modes, scroll offsets)
 - [x] `<VirtualList>` — fixed-height large-list virtualization (`ScrollContainer`, spacer controls, scroll offset updates)
-- [x] `<Overlay>` — full-parent backdrop/control layer (`PanelContainer`, `v-model`, backdrop events)
-- [x] `<Modal>` — modal window primitive (`Window`, close requests, sizing props)
-- [x] `<Dialog>` — confirmation dialog (`AcceptDialog`, confirm/cancel/close events)
+- [x] `<Overlay>` — full-parent backdrop/control layer (`PanelContainer`, `v-model`, backdrop events, focus containment)
+- [x] `<Modal>` — modal window primitive (`Window`, close requests, sizing props, focus restoration)
+- [x] `<Dialog>` — confirmation dialog (`AcceptDialog`, confirm/cancel/close events, focus restoration)
 - [x] `<Form>` — focusable form wrapper (`PanelContainer`, submit/reset input actions, content wrapper)
 - [x] `<Label>` — text or control label helper (`Label`, required indicator, text style subset)
 - [x] `<Screen>` — full-parent screen surface (`Control` / `PanelContainer`, content wrapper)

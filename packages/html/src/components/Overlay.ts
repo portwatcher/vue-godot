@@ -10,6 +10,10 @@ import {
 } from '../utils/backgroundStyle.js'
 import { useBackgroundTexture } from '../utils/backgroundTexture.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
+import {
+  createFocusContainmentController,
+  focusContainmentPropOptions,
+} from '../utils/focus.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 import { Div } from './Div.js'
 
@@ -36,6 +40,7 @@ export const Overlay = defineComponent({
       type: Boolean,
       default: true,
     },
+    ...focusContainmentPropOptions,
     ...accessibilityPropOptions,
     style: {
       type: Object as () => HtmlStyle,
@@ -49,10 +54,13 @@ export const Overlay = defineComponent({
   emits: ['update:modelValue', 'click', 'backdropClick'],
   setup(props, { slots, emit }) {
     const backgroundTexture = useBackgroundTexture(() => props.style, 'Overlay')
+    const focusContainment = createFocusContainmentController()
 
     return () => {
+      const visible =
+        props.modelValue !== false && props.style?.display !== 'none'
       const nodeProps: Record<string, unknown> = {
-        visible: props.modelValue !== false && props.style?.display !== 'none',
+        visible,
         anchor_right: 1,
         anchor_bottom: 1,
         offset_left: 0,
@@ -72,6 +80,10 @@ export const Overlay = defineComponent({
 
       applyCommonControlStyleProps(nodeProps, props.style, 'Overlay')
       applyAccessibilityProps(nodeProps, props)
+      focusContainment.apply(nodeProps, props, {
+        open: visible,
+        selfLoopTraversal: true,
+      })
 
       const backgroundStyle = createBackgroundPanelStyle(props.style)
       const backgroundTextureStyle = createBackgroundTexturePanelStyle(

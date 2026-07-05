@@ -164,7 +164,7 @@ The project is production ready only when all of these are true:
   - [ ] Focus management.
     - [x] Add `autoFocus` / `autofocus` mount-time focus for focusable controls.
     - [x] Map explicit focus traversal NodePaths to Godot focus graph props.
-    - [ ] Add focus traps and restoration where needed.
+    - [x] Add focus traps and restoration where needed.
   - [ ] Keyboard navigation.
     - [x] Map `focusNext` / `focusPrevious` to Godot Tab focus traversal.
     - [x] Add higher-level keyboard shortcut and escape/back guidance.

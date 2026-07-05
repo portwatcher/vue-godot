@@ -1,8 +1,13 @@
 import { defineComponent, h } from '@vue/runtime-core'
+import {
+  createFocusContainmentController,
+  focusContainmentPropOptions,
+} from '../utils/focus.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 import {
   applyWindowBaseProps,
   emitWindowClose,
+  isWindowOpen,
 } from '../utils/windowProps.js'
 
 /**
@@ -51,6 +56,7 @@ export const Modal = defineComponent({
       type: Boolean,
       default: false,
     },
+    ...focusContainmentPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -58,7 +64,11 @@ export const Modal = defineComponent({
   },
   emits: ['update:modelValue', 'close'],
   setup(props, { slots, emit }) {
+    const focusContainment = createFocusContainmentController()
+
     return () => {
+      const visible =
+        isWindowOpen(props.modelValue) && props.style?.display !== 'none'
       const nodeProps: Record<string, unknown> = {
         wrap_controls: true,
         transient: props.transient !== false,
@@ -71,6 +81,7 @@ export const Modal = defineComponent({
       }
 
       applyWindowBaseProps(nodeProps, props, 'Modal')
+      focusContainment.apply(nodeProps, props, { open: visible })
 
       return h('Window', nodeProps, slots.default?.())
     }

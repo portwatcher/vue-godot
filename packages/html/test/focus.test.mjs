@@ -8,7 +8,11 @@ register(new URL('./godot-browser-loader.mjs', import.meta.url).href)
 const { Button, Input, Option, Select, Textarea } = await import(
   '../dist/index.js'
 )
-const { focusGodotControl } = await import('../dist/utils/focus.js')
+const {
+  createFocusContainmentController,
+  focusGodotControl,
+  readCurrentFocusOwner,
+} = await import('../dist/utils/focus.js')
 
 function renderButton(props = {}, children = []) {
   const render = Button.setup(props, {
@@ -75,6 +79,67 @@ test('focusGodotControl uses grab_focus or Object.call fallback', () => {
 
   assert.equal(grabbed, 1)
   assert.deepEqual(calls, ['grab_focus'])
+})
+
+test('readCurrentFocusOwner reads the owner from a Godot viewport', () => {
+  const owner = { id: 'opener' }
+
+  assert.equal(
+    readCurrentFocusOwner({
+      get_viewport: () => ({
+        gui_get_focus_owner: () => owner,
+      }),
+    }),
+    owner,
+  )
+  assert.equal(readCurrentFocusOwner({}), null)
+})
+
+test('focus containment traps focus on open and restores it on close', () => {
+  const controller = createFocusContainmentController()
+  const calls = []
+  const opener = {
+    grab_focus: () => {
+      calls.push('opener')
+    },
+  }
+  const root = {
+    get_viewport: () => ({
+      gui_get_focus_owner: () => opener,
+    }),
+    grab_focus: () => {
+      calls.push('root')
+    },
+  }
+  const openProps = {}
+
+  controller.apply(
+    openProps,
+    { trapFocus: true, restoreFocus: true },
+    { open: true, selfLoopTraversal: true },
+  )
+
+  assert.equal(openProps.focus_mode, 2)
+  assert.equal(openProps.focus_next, '.')
+  assert.equal(openProps.focus_previous, '.')
+  assert.equal(openProps.focus_neighbor_left, '.')
+  assert.equal(openProps.focus_neighbor_top, '.')
+  assert.equal(openProps.focus_neighbor_right, '.')
+  assert.equal(openProps.focus_neighbor_bottom, '.')
+
+  openProps.onVnodeMounted({ el: root })
+  assert.deepEqual(calls, ['root'])
+
+  const closedProps = {}
+  controller.apply(
+    closedProps,
+    { trapFocus: true, restoreFocus: true },
+    { open: false, selfLoopTraversal: true },
+  )
+
+  assert.equal('focus_next' in closedProps, false)
+  closedProps.onVnodeUpdated({ el: root })
+  assert.deepEqual(calls, ['root', 'opener'])
 })
 
 test('Button and Input install auto-focus vnode hooks', () => {

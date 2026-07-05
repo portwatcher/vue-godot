@@ -1,8 +1,13 @@
 import { defineComponent, h } from '@vue/runtime-core'
+import {
+  createFocusContainmentController,
+  focusContainmentPropOptions,
+} from '../utils/focus.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 import {
   applyWindowBaseProps,
   emitWindowClose,
+  isWindowOpen,
 } from '../utils/windowProps.js'
 
 /**
@@ -51,6 +56,7 @@ export const Dialog = defineComponent({
       type: Boolean,
       default: true,
     },
+    ...focusContainmentPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -58,7 +64,11 @@ export const Dialog = defineComponent({
   },
   emits: ['update:modelValue', 'confirm', 'cancel', 'close'],
   setup(props, { slots, emit }) {
+    const focusContainment = createFocusContainmentController()
+
     return () => {
+      const visible =
+        isWindowOpen(props.modelValue) && props.style?.display !== 'none'
       const nodeProps: Record<string, unknown> = {
         transient: true,
         exclusive: true,
@@ -87,6 +97,7 @@ export const Dialog = defineComponent({
       }
 
       applyWindowBaseProps(nodeProps, props, 'Dialog')
+      focusContainment.apply(nodeProps, props, { open: visible })
 
       return h('AcceptDialog', nodeProps, slots.default?.())
     }
