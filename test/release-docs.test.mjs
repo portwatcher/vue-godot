@@ -25,6 +25,7 @@ test('real device release checklist covers required Android and iOS gates', () =
     /npm run release:preflight/,
     /VUE_GODOT_REAL_DEVICE_EVIDENCE/,
     /real-device-evidence\.example\.json/,
+    /GitHub Actions run URL[\s\S]*portwatcher\/vue-godot/,
     /Release Preflight/,
     /Godot Smoke workflow/,
     /APK\/AAB/,
@@ -137,6 +138,7 @@ test('release readiness audit documents final removal blockers', () => {
     /collectUncheckedTodoItems/,
     /checkCleanWorktree/,
     /validateRealDeviceEvidence/,
+    /release-evidence-utils/,
     /releasePreflightWarningCount must be 0/,
     /working tree must be clean for final release readiness/,
     /public warning markers still present/,
@@ -149,6 +151,7 @@ test('release readiness audit documents final removal blockers', () => {
     'node scripts/release-readiness.mjs',
   )
   assert.match(production, /release:readiness/)
+  assert.match(production, /GitHub Actions run URLs for/)
   assert.match(production, /release-readiness-evidence\.example\.json/)
   assert.match(readme, /release:readiness/)
   assert.match(readme, /release-readiness-evidence\.json/)

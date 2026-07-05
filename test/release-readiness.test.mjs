@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
 
@@ -64,5 +65,47 @@ test('release readiness reports a dirty worktree blocker', () => {
     assert.match(output, /\.release-readiness-dirty-test/)
   } finally {
     fs.rmSync(markerPath, { force: true })
+  }
+})
+
+test('release readiness requires a GitHub Actions preflight run URL for this repo', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
+  const readinessPath = path.join(tempDir, 'release-readiness.json')
+
+  fs.writeFileSync(
+    readinessPath,
+    JSON.stringify(
+      {
+        commit: '0123456789abcdef0123456789abcdef01234567',
+        releasePreflightRunUrl: 'https://example.com/actions/runs/3',
+        releasePreflightRunCommit:
+          '0123456789abcdef0123456789abcdef01234567',
+        releasePreflightRunConclusion: 'success',
+        releasePreflightWarningCount: 0,
+      },
+      null,
+      2,
+    ),
+  )
+
+  try {
+    const result = runReadiness([
+      '--allow-open',
+      '--real-device-path',
+      'docs/real-device-evidence.example.json',
+      '--readiness-path',
+      readinessPath,
+      '--expected-commit',
+      '0123456789abcdef0123456789abcdef01234567',
+    ])
+    const output = `${result.stdout}\n${result.stderr}`
+
+    assert.equal(result.status, 0)
+    assert.match(
+      output,
+      /releasePreflightRunUrl must be a GitHub Actions run URL for portwatcher\/vue-godot/,
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
   }
 })

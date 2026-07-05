@@ -8,6 +8,11 @@ import {
   resolveRealDeviceEvidencePath,
   validateRealDeviceEvidence,
 } from './real-device-evidence.mjs'
+import {
+  assertGitHubActionsRunUrl,
+  hasNonEmptyString,
+  isRecord,
+} from './release-evidence-utils.mjs'
 import { readJson, repoRoot, run } from './release-utils.mjs'
 
 const releaseReadinessEvidenceEnvVar =
@@ -151,18 +156,6 @@ function readText(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), 'utf-8')
 }
 
-function isRecord(value) {
-  return value != null && typeof value === 'object' && !Array.isArray(value)
-}
-
-function hasNonEmptyString(record, key) {
-  return typeof record[key] === 'string' && record[key].trim().length > 0
-}
-
-function hasUrlString(record, key) {
-  return hasNonEmptyString(record, key) && /^https?:\/\//.test(record[key])
-}
-
 function currentCommit(blockers) {
   const result = run('git', ['rev-parse', 'HEAD'])
   if (result.status !== 0) {
@@ -254,9 +247,12 @@ function validateReleaseReadinessEvidence(evidence, expectedCommit) {
     }
   }
 
-  if (!hasUrlString(evidence, 'releasePreflightRunUrl')) {
-    errors.push('releaseReadiness.releasePreflightRunUrl must be an http(s) URL')
-  }
+  assertGitHubActionsRunUrl(
+    evidence,
+    'releasePreflightRunUrl',
+    errors,
+    'releaseReadiness',
+  )
 
   if (evidence.releasePreflightRunConclusion !== 'success') {
     errors.push(

@@ -40,7 +40,8 @@ the production TODO remains open. The strict `npm run release:readiness` command
 is for the committed final removal candidate and fails unless the worktree is
 clean and TODO boxes, current real-device evidence,
 `release/release-readiness-evidence.json`, and public warning wording are all in
-the final release state. Use
+the final release state. Evidence run URLs must be GitHub Actions run URLs for
+`portwatcher/vue-godot`. Use
 [`docs/release-readiness-evidence.example.json`](./release-readiness-evidence.example.json)
 as the schema reference for the post-preflight evidence file.
 

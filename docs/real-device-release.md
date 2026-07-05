@@ -11,9 +11,9 @@ marking Android or iOS device validation complete:
 
 - commit hash and package versions under test
 - GodotJS version and export preset names
-- CI run URL for `npm run check`
+- GitHub Actions run URL for `npm run check` in `portwatcher/vue-godot`
 - `npm run check:serious-examples` result for the release commit
-- CI run URL for the Godot Smoke workflow
+- GitHub Actions run URL for the Godot Smoke workflow in `portwatcher/vue-godot`
 - `npm run release:preflight` result from the release environment
 - Android APK/AAB artifact name or hosted-device build identifier
 - iOS archive, TestFlight, or hosted-device build identifier
@@ -36,10 +36,10 @@ VUE_GODOT_REAL_DEVICE_EVIDENCE=release/real-device-evidence.json npm run release
 
 Use [real-device-evidence.example.json](./real-device-evidence.example.json) as
 the schema reference. The evidence file must include the tested commit, package
-versions, GodotJS version, successful Check and Godot Smoke run URLs and commit
-SHAs, Android and iOS artifacts or hosted-device build identifiers, device
-model/OS/orientation/locale, selected APIs, and passed or explicitly skipped
-platform checks.
+versions, GodotJS version, successful Check and Godot Smoke GitHub Actions run
+URLs for `portwatcher/vue-godot` and commit SHAs, Android and iOS artifacts or
+hosted-device build identifiers, device model/OS/orientation/locale, selected
+APIs, and passed or explicitly skipped platform checks.
 
 Local-only preflight runs (`npm run release:preflight -- --local`) warn when
 this evidence is missing. Non-local preflight runs fail until the evidence file

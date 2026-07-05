@@ -95,6 +95,24 @@ test('real device evidence requires successful CI runs for the evidence commit',
   assert.match(errors, /godotSmokeRunCommit must match evidence\.commit/)
 })
 
+test('real device evidence requires GitHub Actions run URLs for this repo', () => {
+  const evidence = validEvidence()
+  evidence.checkRunUrl = 'https://example.com/checks/1'
+  evidence.godotSmokeRunUrl =
+    'https://github.com/other-owner/vue-godot/actions/runs/2'
+
+  const errors = validateRealDeviceEvidence(evidence).join('\n')
+
+  assert.match(
+    errors,
+    /checkRunUrl must be a GitHub Actions run URL for portwatcher\/vue-godot/,
+  )
+  assert.match(
+    errors,
+    /godotSmokeRunUrl must be a GitHub Actions run URL for portwatcher\/vue-godot/,
+  )
+})
+
 test('checked-in real device evidence example matches the validator schema', () => {
   const { evidence, errors } = readRealDeviceEvidence(
     path.join(repoRoot, 'docs/real-device-evidence.example.json'),

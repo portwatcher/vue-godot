@@ -1,5 +1,10 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import {
+  assertGitHubActionsRunUrl,
+  hasNonEmptyString,
+  isRecord,
+} from './release-evidence-utils.mjs'
 import { releasePackageConfigs, repoRoot } from './release-utils.mjs'
 
 export const realDeviceEvidenceEnvVar = 'VUE_GODOT_REAL_DEVICE_EVIDENCE'
@@ -61,27 +66,9 @@ export function readRealDeviceEvidence(evidencePath) {
   }
 }
 
-function isRecord(value) {
-  return value != null && typeof value === 'object' && !Array.isArray(value)
-}
-
-function hasNonEmptyString(record, key) {
-  return typeof record[key] === 'string' && record[key].trim().length > 0
-}
-
-function hasUrlString(record, key) {
-  return hasNonEmptyString(record, key) && /^https?:\/\//.test(record[key])
-}
-
 function assertString(record, key, errors, label) {
   if (!hasNonEmptyString(record, key)) {
     errors.push(`${label}.${key} must be a non-empty string`)
-  }
-}
-
-function assertUrl(record, key, errors, label) {
-  if (!hasUrlString(record, key)) {
-    errors.push(`${label}.${key} must be an http(s) URL`)
   }
 }
 
@@ -151,10 +138,10 @@ export function validateRealDeviceEvidence(evidence, options = {}) {
 
   assertString(evidence, 'commit', errors, 'evidence')
   assertString(evidence, 'godotJsVersion', errors, 'evidence')
-  assertUrl(evidence, 'checkRunUrl', errors, 'evidence')
+  assertGitHubActionsRunUrl(evidence, 'checkRunUrl', errors, 'evidence')
   assertString(evidence, 'checkRunCommit', errors, 'evidence')
   assertSuccessConclusion(evidence, 'checkRunConclusion', errors, 'evidence')
-  assertUrl(evidence, 'godotSmokeRunUrl', errors, 'evidence')
+  assertGitHubActionsRunUrl(evidence, 'godotSmokeRunUrl', errors, 'evidence')
   assertString(evidence, 'godotSmokeRunCommit', errors, 'evidence')
   assertSuccessConclusion(
     evidence,
