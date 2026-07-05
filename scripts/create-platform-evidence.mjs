@@ -11,9 +11,11 @@ import {
 } from './real-device-evidence.mjs'
 import {
   checkRealDeviceEvidenceCommand,
+  defaultReleaseCiEvidencePath,
   initialReleaseCiCommands,
   releaseEvidenceCommand,
 } from './release-handoff-commands.mjs'
+import { readInitialCiEvidenceStatus } from './release-ci-evidence.mjs'
 import { normalizeCommitSha, repoRoot } from './release-utils.mjs'
 
 const defaultOutput = 'release/platform-evidence.json'
@@ -39,6 +41,8 @@ Options:
                                   selected API set used by release evidence.
   --commit <sha>                   Full tested release-candidate commit SHA
                                   for nextActions command hints.
+  --ci-evidence <file>             CI evidence file for nextActions reuse.
+                                  Default: ${defaultReleaseCiEvidencePath}.
   --android-artifact <name>        Android APK/AAB or hosted build identifier.
   --ios-artifact <name>            iOS archive, TestFlight, or hosted build identifier.
   --android-export-preset <name>   Android export preset. Default: Android Release.
@@ -68,6 +72,7 @@ function parseArgs(argv) {
     selectedApis: [],
     productionProfile: false,
     commit: null,
+    ciEvidencePath: defaultReleaseCiEvidencePath,
     androidArtifact: '',
     iosArtifact: '',
     androidExportPreset: 'Android Release',
@@ -87,6 +92,7 @@ function parseArgs(argv) {
     ['--android-export-preset', 'androidExportPreset'],
     ['--ios-export-preset', 'iosExportPreset'],
     ['--commit', 'commit'],
+    ['--ci-evidence', 'ciEvidencePath'],
     ['--android-device', 'androidDevice'],
     ['--ios-device', 'iosDevice'],
     ['--android-os', 'androidOs'],
@@ -195,7 +201,15 @@ function buildPlatformTemplate(platform, options) {
   }
 }
 
-function buildNextActions(platformEvidencePath, commit) {
+function buildNextActions(platformEvidencePath, commit, options = {}) {
+  const ciEvidencePath = options.ciEvidencePath ?? defaultReleaseCiEvidencePath
+  const ciEvidenceCommands = options.initialCiEvidenceReady
+    ? []
+    : initialReleaseCiCommands(commit, { output: ciEvidencePath })
+  const ciEvidenceDetail = options.initialCiEvidenceReady
+    ? 'Committed CI evidence already validates Check and Godot Smoke for the tested release candidate; generate release/real-device-evidence.json from this worksheet after device testing.'
+    : 'After CI runs exist for the tested release candidate, generate release/real-device-evidence.json from this worksheet.'
+
   return [
     {
       id: 'complete-platform-evidence',
@@ -214,12 +228,14 @@ function buildNextActions(platformEvidencePath, commit) {
     {
       id: 'assemble-real-device-evidence',
       title: 'Assemble and validate final real-device evidence',
-      detail:
-        'After CI runs exist for the tested release candidate, generate release/real-device-evidence.json from this worksheet.',
+      detail: ciEvidenceDetail,
       commands: [
         'npm run check',
-        ...initialReleaseCiCommands(commit),
-        releaseEvidenceCommand(commit, { platformEvidencePath }),
+        ...ciEvidenceCommands,
+        releaseEvidenceCommand(commit, {
+          ciEvidencePath,
+          platformEvidencePath,
+        }),
         checkRealDeviceEvidenceCommand(commit),
       ],
     },
@@ -253,12 +269,20 @@ export function buildPlatformEvidenceTemplate(options = {}) {
     orientation: options.orientation ?? '',
     locale: options.locale ?? '',
     output: options.output ?? defaultOutput,
+    ciEvidencePath: options.ciEvidencePath ?? defaultReleaseCiEvidencePath,
     commit: normalizeCommitSha(options.commit, '--commit'),
     selectedApis,
   }
+  const initialCiEvidence = readInitialCiEvidenceStatus(
+    normalized.ciEvidencePath,
+    normalized.commit,
+  )
 
   return {
-    nextActions: buildNextActions(normalized.output, normalized.commit),
+    nextActions: buildNextActions(normalized.output, normalized.commit, {
+      ciEvidencePath: normalized.ciEvidencePath,
+      initialCiEvidenceReady: initialCiEvidence.ready,
+    }),
     android: buildPlatformTemplate('android', normalized),
     ios: buildPlatformTemplate('ios', normalized),
   }

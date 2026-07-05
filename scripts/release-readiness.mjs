@@ -18,6 +18,9 @@ import {
   isRecord,
   verifyGitHubActionsRunUrl,
 } from './release-evidence-utils.mjs'
+import { validateInitialCiEvidence } from './release-ci-evidence.mjs'
+
+export { validateInitialCiEvidence } from './release-ci-evidence.mjs'
 import { collectPublicSurfaceAuditErrors } from './public-surface-audit.mjs'
 import { collectLocalGitReleaseState } from './check-release-ci-runs.mjs'
 import { finalizationFiles } from './release-finalization-files.mjs'
@@ -884,127 +887,44 @@ function checkPublicSurface(blockers) {
   return false
 }
 
-function workflowEvidenceErrors(ciEvidence, workflowName) {
-  const errors = []
-  const workflow = isRecord(ciEvidence.workflows?.[workflowName])
-    ? ciEvidence.workflows[workflowName]
-    : null
-
-  if (!workflow) {
-    return [`CI evidence missing ${workflowName} workflow run`]
+function collectInitialCiEvidenceStatus(expectedCommit) {
+  const status = {
+    path: defaultReleaseCiEvidencePath,
+    ready: false,
+    commit: null,
+    validForCommit: null,
+    errorCount: 0,
+    errors: [],
   }
 
-  try {
-    assertGitHubActionsRunUrl(workflow, 'runUrl', `${workflowName}.runUrl`)
-  } catch (error) {
-    errors.push(error instanceof Error ? error.message : String(error))
-  }
-
-  if (!isFullCommitSha(workflow.runCommit)) {
-    errors.push(
-      `CI evidence ${workflowName}.runCommit must be a full 40-character git commit SHA`,
-    )
-  }
-
-  if (workflow.runConclusion !== 'success') {
-    errors.push(`CI evidence ${workflowName}.runConclusion must be "success"`)
-  }
-
-  return errors
-}
-
-export function validateInitialCiEvidence(ciResult, expectedCommit) {
-  const errors = []
-  if (!isRecord(ciResult)) {
-    return ['CI evidence must be a JSON object']
-  }
-
-  if (ciResult.ready !== true) {
-    errors.push('CI evidence ready must be true')
-  }
-  if (ciResult.commitFound !== true) {
-    errors.push('CI evidence commitFound must be true')
-  }
-  if (ciResult.commit !== expectedCommit) {
-    errors.push(`CI evidence commit must match ${expectedCommit}`)
-  }
-
-  const requiredWorkflowNames = ['Check', 'Godot Smoke']
-  for (const fieldName of ['requiredWorkflowNames', 'passedWorkflowNames']) {
-    const workflowNames = ciResult[fieldName]
-    if (!Array.isArray(workflowNames)) {
-      errors.push(`CI evidence ${fieldName} must be an array`)
-      continue
-    }
-
-    for (const workflowName of requiredWorkflowNames) {
-      if (!workflowNames.includes(workflowName)) {
-        errors.push(`CI evidence ${fieldName} must include ${workflowName}`)
-      }
-    }
-  }
-
-  if (!Array.isArray(ciResult.missingWorkflowNames)) {
-    errors.push('CI evidence missingWorkflowNames must be an array')
-  } else {
-    const missingRequiredWorkflowNames = requiredWorkflowNames.filter(
-      (workflowName) => ciResult.missingWorkflowNames.includes(workflowName),
-    )
-    if (missingRequiredWorkflowNames.length > 0) {
-      errors.push(
-        `CI evidence missing required workflow(s): ${missingRequiredWorkflowNames.join(', ')}`,
-      )
-    }
-  }
-
-  if (!isRecord(ciResult.checks)) {
-    errors.push('CI evidence checks must be an object')
-  } else {
-    for (const [checkName, workflowName] of [
-      ['commitFound', 'release commit'],
-      ['checkWorkflow', 'Check'],
-      ['godotSmokeWorkflow', 'Godot Smoke'],
-    ]) {
-      if (ciResult.checks[checkName] !== true) {
-        errors.push(
-          `CI evidence checks.${checkName} must be true for ${workflowName}`,
-        )
-      }
-    }
-  }
-
-  const ciEvidence = isRecord(ciResult.evidence) ? ciResult.evidence : null
-  if (!ciEvidence) {
-    errors.push('CI evidence must include an evidence object')
-    return errors
-  }
-
-  if (ciEvidence.commit !== expectedCommit) {
-    errors.push(`CI evidence.evidence.commit must match ${expectedCommit}`)
-  }
-  if (!isRecord(ciEvidence.workflows)) {
-    errors.push('CI evidence must include evidence.workflows')
-    return errors
-  }
-
-  for (const workflowName of requiredWorkflowNames) {
-    errors.push(...workflowEvidenceErrors(ciEvidence, workflowName))
-  }
-
-  return errors
-}
-
-function checkInitialCiEvidence(expectedCommit) {
   if (!expectedCommit) {
-    return false
+    status.errors = ['expected commit is required to validate CI evidence']
+    status.errorCount = status.errors.length
+    return status
   }
 
   try {
     const ciResult = JSON.parse(readText(defaultReleaseCiEvidencePath))
-    return validateInitialCiEvidence(ciResult, expectedCommit).length === 0
-  } catch {
-    return false
+    if (isRecord(ciResult) && isFullCommitSha(ciResult.commit)) {
+      status.commit = ciResult.commit
+    }
+
+    status.errors = validateInitialCiEvidence(ciResult, expectedCommit)
+    status.ready = status.errors.length === 0
+    if (
+      !status.ready &&
+      status.commit &&
+      status.commit !== expectedCommit &&
+      validateInitialCiEvidence(ciResult, status.commit).length === 0
+    ) {
+      status.validForCommit = status.commit
+    }
+  } catch (error) {
+    status.errors = [error instanceof Error ? error.message : String(error)]
   }
+
+  status.errorCount = status.errors.length
+  return status
 }
 
 export function ciEvidenceCommands(commit, localGit) {
@@ -1033,7 +953,12 @@ function commitEvidenceCommands(files, message, options = {}) {
   return commands
 }
 
-function collectReadinessNextActions(checks, commit, localGit) {
+function collectReadinessNextActions(
+  checks,
+  commit,
+  localGit,
+  initialCiEvidence,
+) {
   const actions = []
   const releaseCommit = releaseCommitLabel(commit)
 
@@ -1044,6 +969,22 @@ function collectReadinessNextActions(checks, commit, localGit) {
       detail:
         'Strict release readiness requires the release evidence and final wording changes to be checked from a clean worktree.',
       commands: ['git status --short'],
+    })
+  }
+
+  if (
+    !checks.initialCiEvidence &&
+    initialCiEvidence?.validForCommit &&
+    initialCiEvidence.validForCommit !== commit
+  ) {
+    actions.push({
+      id: 'expected-commit',
+      title: 'Run readiness against the tested release commit',
+      detail:
+        'The checked-in CI evidence is valid for an earlier release-candidate commit; pass --expected-commit when release evidence is committed after that candidate.',
+      commands: [
+        `npm run release:readiness -- --allow-open --expected-commit ${initialCiEvidence.validForCommit} --summary-output release/release-readiness-summary.json`,
+      ],
     })
   }
 
@@ -1162,6 +1103,7 @@ function writeReadinessSummary(
   finalTodoRequirementStatuses,
   checks,
   todoItems,
+  initialCiEvidence,
 ) {
   if (!options.summaryOutput) {
     return
@@ -1194,7 +1136,13 @@ function writeReadinessSummary(
       })),
     },
     checks: { ...checks },
-    nextActions: collectReadinessNextActions(checks, expectedCommit, localGit),
+    initialCiEvidence: { ...initialCiEvidence },
+    nextActions: collectReadinessNextActions(
+      checks,
+      expectedCommit,
+      localGit,
+      initialCiEvidence,
+    ),
     finalTodoRequirements: finalTodoRequirementStatuses.map((status) => ({
       ...status,
     })),
@@ -1240,8 +1188,9 @@ async function main() {
   const releaseWorkflowBlockers = collectReleaseWorkflowBlockers()
   blockers.push(...releaseWorkflowBlockers)
   const releaseWorkflowsReady = releaseWorkflowBlockers.length === 0
+  const initialCiEvidenceStatus = collectInitialCiEvidenceStatus(expectedCommit)
   const initialCiEvidenceReady =
-    releaseWorkflowsReady && checkInitialCiEvidence(expectedCommit)
+    releaseWorkflowsReady && initialCiEvidenceStatus.ready
 
   const publicSurfaceReady = checkPublicSurface(blockers)
 
@@ -1326,6 +1275,7 @@ async function main() {
       finalTodoRequirementStatuses,
       checks,
       todoItems,
+      initialCiEvidenceStatus,
     )
   } catch (error) {
     blockers.push(

@@ -460,6 +460,44 @@ test('release readiness reports current blockers without failing when allowed op
   assert.match(output, /open gates remain/)
 })
 
+test('release readiness suggests expected commit for committed CI evidence', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
+  const summaryPath = path.join(tempDir, 'release-readiness-summary.json')
+  const ciEvidence = readCommittedReleaseCiEvidence()
+
+  try {
+    const result = runReadiness([
+      '--allow-open',
+      '--summary-output',
+      summaryPath,
+    ])
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+
+    assert.equal(result.status, 0)
+    assert.notEqual(summary.commit, ciEvidence.commit)
+    assert.equal(summary.initialCiEvidence.ready, false)
+    assert.equal(summary.initialCiEvidence.commit, ciEvidence.commit)
+    assert.equal(summary.initialCiEvidence.validForCommit, ciEvidence.commit)
+    assert.ok(
+      summary.initialCiEvidence.errors.some((error) =>
+        error.includes(`CI evidence commit must match ${summary.commit}`),
+      ),
+    )
+
+    const expectedCommitAction = summary.nextActions.find(
+      (action) => action.id === 'expected-commit',
+    )
+    assert.ok(expectedCommitAction)
+    assert.ok(
+      expectedCommitAction.commands.includes(
+        `npm run release:readiness -- --allow-open --expected-commit ${ciEvidence.commit} --summary-output release/release-readiness-summary.json`,
+      ),
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
 test('release readiness fails in strict mode while final gates are open', () => {
   const result = runReadiness()
   const output = `${result.stdout}\n${result.stderr}`

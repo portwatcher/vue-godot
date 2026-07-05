@@ -583,6 +583,51 @@ test('check-real-device-evidence next actions honor expected commits', () => {
   }
 })
 
+test('check-real-device-evidence reuses committed initial CI evidence', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-evidence-'))
+  const summaryPath = path.join(tempDir, 'real-device-summary.json')
+  const ciEvidence = JSON.parse(
+    fs.readFileSync(path.join(repoRoot, 'release/ci-runs.json'), 'utf-8'),
+  )
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/check-real-device-evidence.mjs',
+        '--optional',
+        '--expected-commit',
+        ciEvidence.commit,
+        '--path',
+        path.join(tempDir, 'missing-real-device-evidence.json'),
+        '--summary-output',
+        summaryPath,
+      ],
+      { cwd: repoRoot, encoding: 'utf-8' },
+    )
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+    const assembleAction = summary.nextActions.find(
+      (action) => action.id === 'assemble-real-device-evidence',
+    )
+
+    assert.equal(result.status, 0)
+    assert.equal(summary.initialCiEvidenceReady, true)
+    assert.ok(assembleAction)
+    assert.ok(
+      assembleAction.commands.every(
+        (command) => !command.includes('npm run release:ci --'),
+      ),
+    )
+    assert.ok(
+      assembleAction.commands.includes(
+        `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${ciEvidence.commit} --real-device-output release/real-device-evidence.json`,
+      ),
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
 test('check-real-device-evidence rejects non-SHA expected commits', () => {
   const result = spawnSync(
     process.execPath,

@@ -30,9 +30,9 @@ evidence JSON when it exists. Add
 `--summary-output release/real-device-evidence-summary.json` to write
 validation status, errors, and `nextActions` command hints for fixing or
 creating evidence; missing-evidence assembly and invalid-evidence regeneration
-hints begin with `npm run check` before release CI wait/dispatch or evidence
-regeneration runs and resolve command placeholders to `--expected-commit` when
-it is supplied. `release:preflight` verifies package metadata,
+hints begin with `npm run check` before any still-needed release CI
+wait/dispatch or evidence regeneration runs and resolve command placeholders to
+`--expected-commit` when it is supplied. `release:preflight` verifies package metadata,
 generated package specs, dry-run package contents including every
 `package.json` export target, registry state, publish environment assumptions,
 dependency audit status, serious example app readiness, Godot smoke, real
@@ -70,6 +70,9 @@ with real artifact, device, OS, API, pass, and skip data after testing. Pass
 `--commit <release-candidate-sha>` with the full 40-character tested commit SHA
 when it is known so generated `nextActions` commands use that commit for CI
 collection, evidence assembly, and validation.
+The worksheet reads `release/ci-runs.json` by default, or
+`--ci-evidence <file>`, and omits duplicate Check/Godot Smoke collection
+commands when that file already validates initial CI for the tested commit.
 The production profile currently expands to `fetch`, `WebSocket`,
 `checkNetworkReachability`, `navigator.onLine`, `localStorage`,
 `sessionStorage`, `navigator.permissions.query`, `navigator.clipboard`,
@@ -143,7 +146,11 @@ The initial CI action captures Check and Godot Smoke, while Release Preflight is
 captured later after real-device evidence is committed. When
 `release/ci-runs.json` already validates Check and Godot Smoke for the expected
 release commit, readiness marks that initial CI evidence as ready and omits the
-duplicate Check/Godot Smoke collection commands from later `nextActions`. If
+duplicate Check/Godot Smoke collection commands from later `nextActions`. If a
+checked-in `release/ci-runs.json` is valid for a different tested release commit
+and `--expected-commit` is omitted, the summary also adds an `expected-commit`
+`nextActions` entry with the exact
+`npm run release:readiness -- --allow-open --expected-commit ...` command. If
 initial CI evidence is still missing, the release-readiness evidence action
 refreshes Check and Godot Smoke from the release-candidate ref before
 dispatching Release Preflight from the current evidence commit ref with

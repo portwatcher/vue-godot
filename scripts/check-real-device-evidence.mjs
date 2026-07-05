@@ -8,10 +8,12 @@ import {
 } from './real-device-evidence.mjs'
 import {
   checkRealDeviceEvidenceCommand,
+  defaultReleaseCiEvidencePath,
   initialReleaseCiCommands,
   productionProfilePlatformEvidenceCommand,
   releaseEvidenceCommand,
 } from './release-handoff-commands.mjs'
+import { readInitialCiEvidenceStatus } from './release-ci-evidence.mjs'
 import {
   currentReleasePackageVersions,
   normalizeCommitSha,
@@ -111,6 +113,13 @@ function collectNextActions(summary) {
   const expectedCommit = summary.expectedCommit
 
   if (summary.evidencePresent === false) {
+    const ciEvidenceCommands = summary.initialCiEvidenceReady
+      ? []
+      : initialReleaseCiCommands(expectedCommit)
+    const assembleDetail = summary.initialCiEvidenceReady
+      ? 'After completing platform evidence, write release/real-device-evidence.json using the already validated Check/Godot Smoke CI evidence.'
+      : 'After the tested release candidate has CI runs and completed platform evidence, write release/real-device-evidence.json.'
+
     return [
       {
         id: 'create-platform-evidence',
@@ -122,11 +131,10 @@ function collectNextActions(summary) {
       {
         id: 'assemble-real-device-evidence',
         title: 'Assemble final real-device evidence after device testing',
-        detail:
-          'After the tested release candidate has CI runs and completed platform evidence, write release/real-device-evidence.json.',
+        detail: assembleDetail,
         commands: [
           'npm run check',
-          ...initialReleaseCiCommands(expectedCommit),
+          ...ciEvidenceCommands,
           releaseEvidenceCommand(expectedCommit),
           checkRealDeviceEvidenceCommand(expectedCommit),
         ],
@@ -172,11 +180,18 @@ function main() {
     evidencePath: describeRealDeviceEvidencePath(evidencePath),
     evidencePresent: Boolean(evidence),
     expectedCommit: options.expectedCommit ?? null,
+    initialCiEvidencePath: defaultReleaseCiEvidencePath,
+    initialCiEvidenceReady: false,
     optional: options.optional,
     ready: false,
     errorCount: 0,
     errors: [],
   }
+  const initialCiEvidence = readInitialCiEvidenceStatus(
+    defaultReleaseCiEvidencePath,
+    summary.expectedCommit,
+  )
+  summary.initialCiEvidenceReady = initialCiEvidence.ready
 
   if (!evidence) {
     const message = readErrors.join('\n')

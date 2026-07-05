@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import test from 'node:test'
 
 import { buildPlatformEvidenceTemplate } from '../scripts/create-platform-evidence.mjs'
@@ -22,6 +25,37 @@ function baseRun(name, id) {
     head_sha: commit,
     conclusion: 'success',
     html_url: `https://github.com/portwatcher/vue-godot/actions/runs/${id}`,
+  }
+}
+
+function initialCiEvidence() {
+  return {
+    ready: true,
+    commitFound: true,
+    commit,
+    requiredWorkflowNames: ['Check', 'Godot Smoke'],
+    passedWorkflowNames: ['Check', 'Godot Smoke'],
+    missingWorkflowNames: [],
+    checks: {
+      commitFound: true,
+      checkWorkflow: true,
+      godotSmokeWorkflow: true,
+    },
+    evidence: {
+      commit,
+      workflows: {
+        Check: {
+          runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+          runCommit: commit,
+          runConclusion: 'success',
+        },
+        'Godot Smoke': {
+          runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+          runCommit: commit,
+          runConclusion: 'success',
+        },
+      },
+    },
   }
 }
 
@@ -121,6 +155,40 @@ test('platform evidence template next actions honor custom output paths', () => 
       `npm run check:real-device-evidence -- --expected-commit ${commit}`,
     ),
   )
+})
+
+test('platform evidence template reuses ready initial CI evidence', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-ci-'))
+  const ciEvidencePath = path.join(tempDir, 'ci-runs.json')
+
+  try {
+    fs.writeFileSync(
+      ciEvidencePath,
+      `${JSON.stringify(initialCiEvidence(), null, 2)}\n`,
+    )
+    const template = buildPlatformEvidenceTemplate({
+      ciEvidencePath,
+      commit,
+      selectedApis: ['fetch'],
+    })
+    const assembleAction = template.nextActions.find(
+      (action) => action.id === 'assemble-real-device-evidence',
+    )
+
+    assert.ok(assembleAction)
+    assert.ok(
+      assembleAction.commands.every(
+        (command) => !command.includes('npm run release:ci --'),
+      ),
+    )
+    assert.ok(
+      assembleAction.commands.some((command) =>
+        command.includes(`--ci-evidence ${ciEvidencePath}`),
+      ),
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
 })
 
 test('platform evidence template rejects invalid release commits', () => {

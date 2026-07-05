@@ -15,11 +15,9 @@
     {
       "id": "assemble-real-device-evidence",
       "title": "Assemble and validate final real-device evidence",
-      "detail": "After CI runs exist for the tested release candidate, generate release/real-device-evidence.json from this worksheet.",
+      "detail": "Committed CI evidence already validates Check and Godot Smoke for the tested release candidate; generate release/real-device-evidence.json from this worksheet after device testing.",
       "commands": [
         "npm run check",
-        "npm run release:ci -- --commit 92c5d36719fc9bd7329766dfd6ead1a8d7af0357 --wait --output release/ci-runs.json",
-        "GH_TOKEN=\"$(gh auth token)\" npm run release:ci -- --commit 92c5d36719fc9bd7329766dfd6ead1a8d7af0357 --dispatch-missing --wait --ref <release-candidate-branch-or-tag> --output release/ci-runs.json",
         "npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 92c5d36719fc9bd7329766dfd6ead1a8d7af0357 --real-device-output release/real-device-evidence.json",
         "npm run check:real-device-evidence -- --expected-commit 92c5d36719fc9bd7329766dfd6ead1a8d7af0357"
       ]
