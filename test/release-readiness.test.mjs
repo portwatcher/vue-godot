@@ -17,7 +17,7 @@ test('release readiness reports current blockers without failing when allowed op
   const output = `${result.stdout}\n${result.stderr}`
 
   assert.equal(result.status, 0)
-  assert.match(output, /TODO\.md:21/)
+  assert.match(output, /All P0 and P1 checklist items/)
   assert.match(output, /real-device evidence missing/)
   assert.match(output, /release-readiness evidence missing/)
   assert.match(output, /public warning markers still present/)
@@ -49,7 +49,7 @@ test('release readiness accepts checked-in evidence examples for schema coverage
   assert.equal(result.status, 0)
   assert.doesNotMatch(output, /evidence missing/)
   assert.doesNotMatch(output, /must match current commit/)
-  assert.match(output, /TODO\.md:21/)
+  assert.match(output, /All P0 and P1 checklist items/)
 })
 
 test('release readiness reports a dirty worktree blocker', () => {

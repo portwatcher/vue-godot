@@ -11,7 +11,9 @@ When this file is complete, maintainers should be confident enough to remove wor
 - `@vue-godot/browser` exposes an initial browser API subset: `fetch`, `Request`, `Response`, `Headers`, `Blob`, `URL`, `TextEncoder`, `TextDecoder`, `AbortController`, base64 helpers, `history`, `location`, basic global event dispatch, adapter-backed `navigator.geolocation`, adapter-backed `navigator.mediaDevices.getUserMedia()`, and adapter-backed `Notification`.
 - `@vue-godot/device` exposes a capability registry, adapter contracts, feature detection helpers, and typed errors for plugin-backed native APIs.
 - The repo has build/test/CLI smoke checks, generated export-setting checks, and CI Godot smoke workflows.
-- The project is not yet production ready because platform APIs, app UI primitives, device integration, and release/device smoke coverage are still incomplete.
+- The project is not yet production ready because release/device evidence, CI
+  smoke evidence for the current release candidate, and final public wording
+  removal are still incomplete.
 
 ## Definition Of Done
 
@@ -27,7 +29,7 @@ The project is production ready only when all of these are true:
   - [x] A game UI demo using Godot scenes plus Vue UI, controller/touch/keyboard navigation, animation, audio/video/image assets, and pause/settings/inventory style workflows.
 - [x] Performance budgets are documented and enforced for app startup, first rendered UI, hot reload, large list rendering, asset loading, and repeated mount/unmount.
 - [x] Security and dependency audits are clean or documented with accepted risk.
-- [ ] Package READMEs, root README, generated templates, and demo apps match the final supported API surface.
+- [x] Package READMEs, root README, generated templates, and demo apps match the final supported API surface.
 - [x] Public docs include platform limits, permission setup, export setup, troubleshooting, and migration guidance from Vue web apps.
 - [ ] The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied.
 
@@ -379,7 +381,7 @@ Run this checklist before removing "not production ready", "alpha", or
 blockers remain, then run `npm run release:readiness` without `--allow-open` in
 the final removal commit.
 
-- [ ] Every P0 item is complete.
+- [x] Every P0 item is complete.
 - [ ] Every P1 item is complete or explicitly moved to P2 with maintainer approval.
 - [x] `docs/compatibility.md` is complete and linked from root README and package READMEs.
 - [ ] Serious native app demo is complete and passes build/smoke.
