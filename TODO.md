@@ -287,9 +287,9 @@ The project is production ready only when all of these are true:
 - [ ] Update root README to lead with stable value proposition once ready.
 - [ ] Keep package READMEs accurate for every public API change.
 - [x] Add `docs/production.md`.
-- [ ] Add `docs/platforms/android.md`.
-- [ ] Add `docs/platforms/ios.md`.
-- [ ] Add `docs/platforms/desktop.md`.
+- [x] Add `docs/platforms/android.md`.
+- [x] Add `docs/platforms/ios.md`.
+- [x] Add `docs/platforms/desktop.md`.
 - [x] Add `docs/permissions.md`.
 - [x] Add `docs/plugins.md`.
 - [x] Add `docs/compatibility.md`.
