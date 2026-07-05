@@ -10,7 +10,7 @@
       gap: 12,
       padding: 16,
       margin: 4,
-      width: 560,
+      width: '80%',
       minHeight: 120,
       backgroundColor: '#172033',
       backgroundImage: `url('${demoSvgDataUri}')`,

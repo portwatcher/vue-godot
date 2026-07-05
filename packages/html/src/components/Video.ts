@@ -1,10 +1,12 @@
 import { defineComponent, h, ref, shallowRef, watch } from '@vue/runtime-core'
 import type { VideoStream } from 'godot'
-import { applyTransformStyleProps } from '../utils/controlStyle.js'
+import {
+  applyControlSizeProps,
+  applyTransformStyleProps,
+} from '../utils/controlStyle.js'
 import { createOpacityModulate } from '../utils/godotColor.js'
 import { classifySource, loadStream } from '../utils/streamLoader.js'
 import {
-  toNumericPixels,
   warnUnsupportedStyleProps,
   type HtmlStyle,
 } from '../utils/styleMapping.js'
@@ -145,15 +147,7 @@ export const Video = defineComponent({
       // Expand — scale video to control size (like <video> default behavior)
       nodeProps['expand'] = true
 
-      // Width / height → custom_minimum_size
-      const w = toNumericPixels(style?.width)
-      const h_ = toNumericPixels(style?.height)
-      if (w != null) {
-        nodeProps['custom_minimum_size:x'] = w
-      }
-      if (h_ != null) {
-        nodeProps['custom_minimum_size:y'] = h_
-      }
+      applyControlSizeProps(nodeProps, style)
 
       // display: none
       if (style?.display === 'none') {

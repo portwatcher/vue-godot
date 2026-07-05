@@ -1,8 +1,10 @@
 import { defineComponent, h, ref, shallowRef, watch } from '@vue/runtime-core'
 import type { Texture2D } from 'godot'
-import { applyTransformStyleProps } from '../utils/controlStyle.js'
 import {
-  toNumericPixels,
+  applyControlSizeProps,
+  applyTransformStyleProps,
+} from '../utils/controlStyle.js'
+import {
   warnUnsupportedStyleProps,
   type HtmlStyle,
 } from '../utils/styleMapping.js'
@@ -156,22 +158,19 @@ export const Img = defineComponent({
         nodeProps['texture'] = texture.value
       }
 
-      // Width / height → custom_minimum_size
-      const w = toNumericPixels(style?.width)
-      const h_ = toNumericPixels(style?.height)
-      if (w != null) {
-        nodeProps['custom_minimum_size:x'] = w
-      }
-      if (h_ != null) {
-        nodeProps['custom_minimum_size:y'] = h_
-      }
+      const resolvedSize = applyControlSizeProps(nodeProps, style)
+      const hasExplicitSize =
+        resolvedSize.widthPixels != null ||
+        resolvedSize.heightPixels != null ||
+        resolvedSize.widthRatio != null ||
+        resolvedSize.heightRatio != null
 
       // object-fit → expand_mode + stretch_mode
       const fitMapping = resolveObjectFit(style?.objectFit)
       if (fitMapping) {
         nodeProps['expand_mode'] = fitMapping.expand_mode
         nodeProps['stretch_mode'] = fitMapping.stretch_mode
-      } else if (w != null || h_ != null) {
+      } else if (hasExplicitSize) {
         // When explicit size is set but no objectFit, default to
         // EXPAND_IGNORE_SIZE so the TextureRect respects the size
         // and STRETCH_KEEP_ASPECT_CENTERED to avoid distortion.

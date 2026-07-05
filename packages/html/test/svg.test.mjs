@@ -84,6 +84,20 @@ test('handles pixel string values for width/height', async () => {
   assert.equal(vnode.props['custom_minimum_size:y'], 64)
 })
 
+test('maps percent width and height to anchors', async () => {
+  const vnode = await renderSvg({
+    src: './icon.svg',
+    style: { width: '50%', height: '25%' },
+  })
+
+  assert.equal(vnode.props.anchor_left, 0)
+  assert.equal(vnode.props.anchor_right, 0.5)
+  assert.equal(vnode.props.anchor_top, 0)
+  assert.equal(vnode.props.anchor_bottom, 0.25)
+  assert.equal(vnode.props.expand_mode, 1)
+  assert.equal(vnode.props.stretch_mode, 5)
+})
+
 test('maps display:none to visible=false', async () => {
   const vnode = await renderSvg({
     src: './icon.svg',

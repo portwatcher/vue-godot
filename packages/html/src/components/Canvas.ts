@@ -2,7 +2,7 @@ import { defineComponent, h } from '@vue/runtime-core'
 import { applyTransformStyleProps } from '../utils/controlStyle.js'
 import { createOpacityModulate } from '../utils/godotColor.js'
 import {
-  toNumericPixels,
+  applyStyleSizeProps,
   warnUnsupportedStyleProps,
   type HtmlStyle,
 } from '../utils/styleMapping.js'
@@ -68,10 +68,15 @@ export const Canvas = defineComponent({
       warnUnsupportedStyleProps(style, 'Canvas')
       const nodeProps: Record<string, unknown> = {}
 
-      // Width / height → custom_minimum_size
-      // Style width/height take precedence over the width/height props
-      const width = toNumericPixels(style?.width) ?? props.width
-      const height = toNumericPixels(style?.height) ?? props.height
+      const resolvedSize = applyStyleSizeProps(nodeProps, style)
+      const width =
+        resolvedSize.widthPixels != null || resolvedSize.widthRatio != null
+          ? null
+          : props.width
+      const height =
+        resolvedSize.heightPixels != null || resolvedSize.heightRatio != null
+          ? null
+          : props.height
 
       if (typeof width === 'number' && Number.isFinite(width)) {
         nodeProps['custom_minimum_size:x'] = width

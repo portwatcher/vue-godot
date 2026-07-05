@@ -151,6 +151,20 @@ test('handles pixel string values for width/height', async () => {
   assert.equal(vnode.props['custom_minimum_size:y'], 240)
 })
 
+test('maps percent width and height to anchors', async () => {
+  const { vnode } = await renderVideo({
+    src: './v.ogv',
+    style: { width: '80%', height: '45%' },
+  })
+
+  assert.equal(vnode.props.anchor_left, 0)
+  assert.equal(vnode.props.anchor_right, 0.8)
+  assert.equal(vnode.props.anchor_top, 0)
+  assert.equal(vnode.props.anchor_bottom, 0.45)
+  assert.equal('custom_minimum_size:x' in vnode.props, false)
+  assert.equal('custom_minimum_size:y' in vnode.props, false)
+})
+
 // -----------------------------------------------------------------------
 // Data-URI, Blob, and Remote source tests
 // -----------------------------------------------------------------------

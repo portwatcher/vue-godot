@@ -158,7 +158,7 @@ The project is production ready only when all of these are true:
     - [x] Basic transform mapping (`translate`, `scale`, `rotate`).
     - [ ] Transitions and animations.
   - [x] Support font family loading and fallback.
-  - [ ] Support percent sizes where Godot layout can represent them.
+  - [x] Support percent sizes where Godot layout can represent them.
   - [x] Add style warnings for unsupported properties.
 - [ ] Improve accessibility and input:
   - [ ] Focus management.

@@ -81,7 +81,7 @@ Rather than embedding a layout engine like Yoga, we map a CSS flexbox subset to 
 | `color: <color>`                              | `theme_override_colors/font_color` on text controls             |
 | `fontFamily: <family list>`                   | Registered/local Godot fonts with fallback `FontVariation`      |
 | `fontWeight: 'bold'`                          | `theme_override_fonts/font` with `FontVariation` embolden       |
-| `width` / `height`                            | `custom_minimum_size`                                           |
+| `width` / `height`                            | Pixel minimum size or percent Control anchors                   |
 | `display: none`                               | `visible = false`                                               |
 
 Style objects (inline, React Native-style) are the primary styling API:
@@ -118,7 +118,7 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 | `columns` | Maps to `GridContainer.columns` for grid `<Div>` layouts. |
 | `padding`, `paddingTop`, `paddingRight`, `paddingBottom`, `paddingLeft` | Maps to `MarginContainer` theme margin constants. |
 | `margin`, `marginTop`, `marginRight`, `marginBottom`, `marginLeft` | Maps to an outer `MarginContainer` where supported. |
-| `width`, `height` | Maps numeric or pixel-string values to minimum/control size. |
+| `width`, `height` | Maps numeric or pixel-string values to minimum/control size; maps percent strings to Godot Control anchor ratios with zero offsets. |
 | `minWidth`, `minHeight`, `maxWidth`, `maxHeight` | Clamps container minimum size where the component uses container sizing. |
 | `objectFit` | Maps media texture stretch/expand behavior for `<Img>` and `<Svg>`. |
 | `backgroundColor` | Maps to a `PanelContainer` `StyleBoxFlat` background where supported. |
@@ -155,6 +155,8 @@ registerFontFamily('Inter', './fonts/Inter.ttf', [
 ```vue
 <Span :style="{ fontFamily: 'Inter, sans-serif', fontSize: 18 }">Hello</Span>
 ```
+
+Percent `width` and `height` values map to Godot `Control` anchors from the top-left corner, for example `width: '50%'` sets `anchor_left = 0`, `anchor_right = 0.5`, and zero horizontal offsets. Godot `Container` nodes may still override child anchors during layout; use flex and size flags for proportional container layouts.
 
 ## Component Mapping
 
@@ -666,6 +668,7 @@ This package is in early development. Currently scaffolded:
 - [x] Theme override application (gap, padding)
 - [x] Theme override application (colors via `backgroundColor` and text `color`, bold text via `FontVariation`)
 - [x] Registered/local font family loading with fallback fonts
+- [x] Percent width/height mapping to Control anchors
 - [x] Theme override application (margin wrappers plus `StyleBoxFlat` border and corner radius props)
 - [x] Texture-backed background images via `backgroundImage: url(...)`
 - [x] Basic transform mapping (`translate`, `scale`, `rotate`)

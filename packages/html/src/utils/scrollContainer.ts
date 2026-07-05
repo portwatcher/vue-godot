@@ -66,6 +66,14 @@ export function applyScrollContainerStyleProps(
     'visible',
     'custom_minimum_size:x',
     'custom_minimum_size:y',
+    'anchor_left',
+    'anchor_top',
+    'anchor_right',
+    'anchor_bottom',
+    'offset_left',
+    'offset_top',
+    'offset_right',
+    'offset_bottom',
   ]) {
     if (propName in styleProps) {
       props[propName] = styleProps[propName]

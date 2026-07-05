@@ -1,9 +1,10 @@
 import { createFontStyleOverride } from './fontLoader.js'
 import { createOpacityModulate, parseGodotColor } from './godotColor.js'
 import {
-  toNumericPixels,
+  applyStyleSizeProps,
   warnUnsupportedStyleProps,
   type HtmlStyle,
+  type ResolvedStyleSize,
 } from './styleMapping.js'
 import { resolveTransformStyle } from './transformStyle.js'
 
@@ -12,15 +13,8 @@ export type GodotPropBag = Record<string, unknown>
 export function applyControlSizeProps(
   nodeProps: GodotPropBag,
   style: HtmlStyle | undefined,
-): void {
-  const width = toNumericPixels(style?.width)
-  const height = toNumericPixels(style?.height)
-  if (width != null) {
-    nodeProps['custom_minimum_size:x'] = width
-  }
-  if (height != null) {
-    nodeProps['custom_minimum_size:y'] = height
-  }
+): ResolvedStyleSize {
+  return applyStyleSizeProps(nodeProps, style)
 }
 
 export function applyFontStyleProps(

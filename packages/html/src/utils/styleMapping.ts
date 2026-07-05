@@ -23,7 +23,7 @@
  *   padding: <n>                      MarginContainer wrapper + margin overrides
  *   margin: <n>                       outer MarginContainer wrapper where supported
  *   border-radius / border-width      StyleBoxFlat corner and border props
- *   width / height                    custom_minimum_size
+ *   width / height                    custom_minimum_size or Control anchors
  *   display: none                     visible = false
  */
 
@@ -196,6 +196,13 @@ export interface ContainerMapping {
   props: Record<string, unknown>
 }
 
+export interface ResolvedStyleSize {
+  widthPixels: number | null
+  heightPixels: number | null
+  widthRatio: number | null
+  heightRatio: number | null
+}
+
 export const ControlSizeFlags = {
   SHRINK_BEGIN: 0,
   FILL: 1,
@@ -343,6 +350,75 @@ export function toNumericPixels(
   return null
 }
 
+export function toPercentRatio(
+  value: number | string | undefined,
+): number | null {
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const normalized = value.trim().toLowerCase()
+  const matched = normalized.match(/^(-?\d+(?:\.\d+)?)%$/)
+  if (!matched) {
+    return null
+  }
+
+  const parsed = Number(matched[1])
+  return Number.isFinite(parsed) ? parsed / 100 : null
+}
+
+export function resolveStyleSize(
+  style: Pick<HtmlStyle, 'width' | 'height'> | undefined,
+): ResolvedStyleSize {
+  return {
+    widthPixels: toNumericPixels(style?.width),
+    heightPixels: toNumericPixels(style?.height),
+    widthRatio: toPercentRatio(style?.width),
+    heightRatio: toPercentRatio(style?.height),
+  }
+}
+
+function applyWidthRatioProps(
+  props: Record<string, unknown>,
+  ratio: number,
+): void {
+  props.anchor_left = 0
+  props.anchor_right = ratio
+  props.offset_left = 0
+  props.offset_right = 0
+}
+
+function applyHeightRatioProps(
+  props: Record<string, unknown>,
+  ratio: number,
+): void {
+  props.anchor_top = 0
+  props.anchor_bottom = ratio
+  props.offset_top = 0
+  props.offset_bottom = 0
+}
+
+export function applyStyleSizeProps(
+  props: Record<string, unknown>,
+  style: Pick<HtmlStyle, 'width' | 'height'> | undefined,
+): ResolvedStyleSize {
+  const size = resolveStyleSize(style)
+
+  if (size.widthPixels != null) {
+    props['custom_minimum_size:x'] = size.widthPixels
+  } else if (size.widthRatio != null) {
+    applyWidthRatioProps(props, size.widthRatio)
+  }
+
+  if (size.heightPixels != null) {
+    props['custom_minimum_size:y'] = size.heightPixels
+  } else if (size.heightRatio != null) {
+    applyHeightRatioProps(props, size.heightRatio)
+  }
+
+  return size
+}
+
 function resolveMinimumAxisSize(
   sizeValue: number | string | undefined,
   minValue: number | undefined,
@@ -431,6 +507,8 @@ export function resolveContainerTag(style: HtmlStyle): ContainerMapping {
       props['alignment'] = alignment
     }
   }
+
+  applyStyleSizeProps(props, style)
 
   const minWidth = resolveMinimumAxisSize(
     style.width,

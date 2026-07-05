@@ -59,3 +59,25 @@ test('applies basic transform style to Godot control props', () => {
   assert.equal(props['scale:x'], -1)
   assert.equal(props.rotation, 3.14159)
 })
+
+test('applies percent sizes to Godot control anchors', () => {
+  const props = {}
+
+  applyCommonControlStyleProps(
+    props,
+    {
+      width: '75%',
+      height: '50%',
+    },
+    'PercentBox',
+  )
+
+  assert.equal(props.anchor_left, 0)
+  assert.equal(props.anchor_right, 0.75)
+  assert.equal(props.offset_left, 0)
+  assert.equal(props.offset_right, 0)
+  assert.equal(props.anchor_top, 0)
+  assert.equal(props.anchor_bottom, 0.5)
+  assert.equal(props.offset_top, 0)
+  assert.equal(props.offset_bottom, 0)
+})

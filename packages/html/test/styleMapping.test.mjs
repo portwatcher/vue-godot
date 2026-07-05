@@ -110,14 +110,34 @@ test('maps width/height/min constraints to custom_minimum_size axes', () => {
   assert.equal(size.props['custom_minimum_size:y'], 42)
 })
 
-test('ignores unsupported non-pixel width values', () => {
+test('maps percent width and height to Control anchor ratios', () => {
   const size = resolveContainerTag({
     width: '50%',
-    height: 'auto',
+    height: '25%',
+  })
+
+  assert.equal(size.props.anchor_left, 0)
+  assert.equal(size.props.anchor_right, 0.5)
+  assert.equal(size.props.anchor_top, 0)
+  assert.equal(size.props.anchor_bottom, 0.25)
+  assert.equal(size.props.offset_left, 0)
+  assert.equal(size.props.offset_right, 0)
+  assert.equal(size.props.offset_top, 0)
+  assert.equal(size.props.offset_bottom, 0)
+  assert.equal('custom_minimum_size:x' in size.props, false)
+  assert.equal('custom_minimum_size:y' in size.props, false)
+})
+
+test('ignores unsupported non-pixel and non-percent size values', () => {
+  const size = resolveContainerTag({
+    width: 'auto',
+    height: 'min-content',
   })
 
   assert.equal('custom_minimum_size:x' in size.props, false)
   assert.equal('custom_minimum_size:y' in size.props, false)
+  assert.equal('anchor_right' in size.props, false)
+  assert.equal('anchor_bottom' in size.props, false)
 })
 
 test('maps display:none alongside supported size props', () => {
