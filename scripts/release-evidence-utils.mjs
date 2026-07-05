@@ -7,6 +7,15 @@ const githubActionsRunUrlSource = `https://github.com/${githubRepoOwner}/${githu
 export const githubActionsRunUrlPattern =
   /^https:\/\/github\.com\/portwatcher\/vue-godot\/actions\/runs\/[0-9]+(?:\/[A-Za-z0-9_./?=&%-]+)?$/
 
+export class GitHubApiError extends Error {
+  constructor(statusCode, body) {
+    super(`GitHub API returned HTTP ${statusCode}${body ? `: ${body}` : ''}`)
+    this.name = 'GitHubApiError'
+    this.statusCode = statusCode
+    this.body = body
+  }
+}
+
 export function isRecord(value) {
   return value != null && typeof value === 'object' && !Array.isArray(value)
 }
@@ -78,11 +87,7 @@ function requestJson(url, options = {}) {
           const body = chunks.join('')
           const statusCode = response.statusCode ?? 0
           if (statusCode < 200 || statusCode >= 300) {
-            reject(
-              new Error(
-                `GitHub API returned HTTP ${statusCode}${body ? `: ${body}` : ''}`,
-              ),
-            )
+            reject(new GitHubApiError(statusCode, body))
             return
           }
 
@@ -136,6 +141,30 @@ export async function fetchGitHubActionsRunsForCommit(commit, options = {}) {
   }
 
   return response.workflow_runs
+}
+
+export async function fetchGitHubCommitExists(commit, options = {}) {
+  if (typeof commit !== 'string' || commit.trim().length === 0) {
+    throw new Error('Commit must be a non-empty string')
+  }
+
+  const apiBaseUrl = options.apiBaseUrl ?? 'https://api.github.com'
+  const apiUrl = `${apiBaseUrl}/repos/${githubRepoOwner}/${githubRepoName}/commits/${encodeURIComponent(
+    commit,
+  )}`
+
+  try {
+    await requestJson(apiUrl, options)
+    return true
+  } catch (error) {
+    if (
+      error instanceof GitHubApiError &&
+      (error.statusCode === 404 || error.statusCode === 422)
+    ) {
+      return false
+    }
+    throw error
+  }
 }
 
 export function validateGitHubActionsRunMetadata(run, expected) {

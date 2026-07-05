@@ -35,8 +35,9 @@ After pushing a release candidate,
 `npm run release:ci -- --commit <sha> --output release/ci-runs.json` checks
 GitHub Actions for completed successful Check and Godot Smoke runs on that exact
 commit and writes the run URLs used by real-device release evidence. If a
-release-candidate commit only changes docs or evidence and a workflow did not
-run automatically, dispatch the Check and Godot Smoke workflows manually on that
+release-candidate commit is not found on GitHub, push it before collecting CI
+evidence. If the commit only changes docs or evidence and a workflow did not run
+automatically, dispatch the Check and Godot Smoke workflows manually on that
 exact ref before collecting CI evidence. After the Release Preflight workflow
 passes, rerun it with `--include-release-preflight` so the same CI evidence file
 also includes the verified preflight run URL used by final readiness evidence.

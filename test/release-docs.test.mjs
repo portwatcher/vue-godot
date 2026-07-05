@@ -130,6 +130,8 @@ test('release preflight enforces real device evidence', () => {
   for (const pattern of [
     /include-release-preflight/,
     /releasePreflightWorkflowName/,
+    /fetchGitHubCommitExists/,
+    /was not found on GitHub/,
     /Release Preflight/,
   ]) {
     assert.match(releaseCi, pattern)
@@ -154,6 +156,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /check:real-device-evidence/)
   assert.match(production, /release:ci/)
   assert.match(production, /--include-release-preflight/)
+  assert.match(production, /commit is not found on GitHub/)
   assert.match(production, /dispatch the Check and Godot Smoke workflows/)
   assert.match(production, /Node 24/)
   assert.match(production, /npm@\^11\.15\.0/)
@@ -166,6 +169,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /check:real-device-evidence/)
   assert.match(readme, /release:ci/)
   assert.match(readme, /--include-release-preflight/)
+  assert.match(readme, /commit was not found on GitHub/)
   assert.match(readme, /dispatch the `Check` and `Godot Smoke` workflows/)
   assert.match(readme, /Node 24/)
   assert.match(readme, /npm@\^11\.15\.0/)
@@ -179,6 +183,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /release:ci/)
   assert.match(checklist, /ci-runs\.json/)
   assert.match(checklist, /--include-release-preflight/)
+  assert.match(checklist, /commit\s+was not found on GitHub/)
   assert.match(checklist, /dispatch the workflow manually/)
   assert.match(checklist, /--ci-evidence/)
   assert.match(checklist, /--release-preflight-summary/)

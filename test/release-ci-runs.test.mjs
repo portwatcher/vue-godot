@@ -91,6 +91,19 @@ test('release CI run evidence reports missing required workflows', () => {
   assert.match(errors.join('\n'), /No completed successful Godot Smoke/)
 })
 
+test('release CI run evidence reports commits that are not visible on GitHub', () => {
+  const { errors } = collectReleaseCiRunEvidence(
+    [],
+    commit,
+    requiredReleaseCiWorkflows,
+    { commitFound: false },
+  )
+
+  assert.match(errors[0], /Commit .* was not found on GitHub/)
+  assert.match(errors[0], /push the release-candidate commit/)
+  assert.match(errors.join('\n'), /No completed successful Check/)
+})
+
 test('release CI run evidence can include Release Preflight for final readiness', () => {
   const { evidence, errors } = collectReleaseCiRunEvidence(
     [

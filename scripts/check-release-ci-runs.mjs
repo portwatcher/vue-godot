@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import {
+  fetchGitHubCommitExists,
   fetchGitHubActionsRunsForCommit,
   hasGitHubActionsRunUrl,
   validateGitHubActionsRunMetadata,
@@ -151,12 +152,19 @@ export function collectReleaseCiRunEvidence(
   runs,
   commit,
   workflows = requiredReleaseCiWorkflows,
+  options = {},
 ) {
   const evidence = {
     commit,
     workflows: {},
   }
   const errors = []
+
+  if (options.commitFound === false) {
+    errors.push(
+      `Commit ${commit} was not found on GitHub; push the release-candidate commit before collecting CI evidence.`,
+    )
+  }
 
   for (const workflowName of workflows) {
     const runMetadata = selectSuccessfulWorkflowRun(runs, workflowName, commit)
@@ -210,8 +218,11 @@ async function main() {
   const options = parseArgs(process.argv.slice(2))
   const commit = options.commit ?? currentCommit()
   const workflows = releaseCiWorkflows(options)
-  const runs = await fetchGitHubActionsRunsForCommit(commit)
-  const result = collectReleaseCiRunEvidence(runs, commit, workflows)
+  const commitFound = await fetchGitHubCommitExists(commit)
+  const runs = commitFound ? await fetchGitHubActionsRunsForCommit(commit) : []
+  const result = collectReleaseCiRunEvidence(runs, commit, workflows, {
+    commitFound,
+  })
 
   if (options.output) {
     writeJson(options.output, result)

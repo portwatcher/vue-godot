@@ -79,7 +79,8 @@ npm run release:ci -- \
 
 If the `Check` or `Godot Smoke` workflow did not run automatically for that
 commit, dispatch the workflow manually on the release-candidate ref and rerun
-the command above after it completes.
+the command above after it completes. If `release:ci` reports that the commit
+was not found on GitHub, push the release-candidate commit first.
 
 Then assemble the evidence file from the real device data and completed CI
 runs:
