@@ -50,11 +50,13 @@ filled with real artifact, device, OS, API, pass, and skip data after testing.
 After device testing and CI runs exist, `npm run release:evidence` assembles the
 real-device and release-readiness evidence files from the current package
 versions, Android/iOS platform evidence, CI evidence, and verified GitHub
-Actions run metadata. For final readiness evidence, pass the downloaded
+Actions run metadata. For final readiness evidence, fetch the
 `release-preflight-summary` artifact from the Release Preflight workflow with
-`--release-preflight-summary release/release-preflight-summary.json`; the helper
-checks that the summary commit matches and that the preflight had zero failures
-before using its warning count.
+`GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --output release/release-preflight-summary.json`,
+then pass it to `release:evidence` with
+`--release-preflight-summary release/release-preflight-summary.json`. The
+helpers check that the summary commit matches and that the preflight had zero
+failures before using its warning count.
 
 The local preflight command may warn when Godot smoke is skipped or when package
 versions are newer than the registry. Release builds should run the full
@@ -93,6 +95,14 @@ npm run release:ci -- --include-release-preflight --output release/ci-runs.json
 ```
 
 Run that before creating final readiness evidence.
+
+Then download the matching summary artifact:
+
+```bash
+GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- \
+  --ci-evidence release/ci-runs.json \
+  --output release/release-preflight-summary.json
+```
 
 To dispatch and wait for the preflight workflow from the command line, include
 the workflow and evidence input:

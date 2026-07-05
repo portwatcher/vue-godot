@@ -20,6 +20,7 @@
     "release:ci": "node scripts/check-release-ci-runs.mjs",
     "release:platform-evidence": "node scripts/create-platform-evidence.mjs",
     "release:evidence": "node scripts/create-release-evidence.mjs",
+    "release:preflight-summary": "node scripts/download-release-preflight-summary.mjs",
     "release:readiness": "node scripts/release-readiness.mjs",
     "release:preflight": "node scripts/release-preflight.mjs",
     "release:publish": "node scripts/release-publish.mjs",

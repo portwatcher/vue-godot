@@ -1,0 +1,148 @@
+import assert from 'node:assert/strict'
+import test from 'node:test'
+import zlib from 'node:zlib'
+
+import {
+  extractReleasePreflightRunUrl,
+  extractReleasePreflightSummaryFromZip,
+  releasePreflightSummaryArtifactName,
+  selectReleasePreflightSummaryArtifact,
+} from '../scripts/download-release-preflight-summary.mjs'
+
+const commit = '0123456789abcdef0123456789abcdef01234567'
+
+function zipEntry(name, contents) {
+  const nameBuffer = Buffer.from(name)
+  const source = Buffer.from(contents)
+  const compressed = zlib.deflateRawSync(source)
+  const localHeader = Buffer.alloc(30)
+  localHeader.writeUInt32LE(0x04034b50, 0)
+  localHeader.writeUInt16LE(20, 4)
+  localHeader.writeUInt16LE(8, 8)
+  localHeader.writeUInt32LE(compressed.length, 18)
+  localHeader.writeUInt32LE(source.length, 22)
+  localHeader.writeUInt16LE(nameBuffer.length, 26)
+
+  const localFile = Buffer.concat([localHeader, nameBuffer, compressed])
+  const centralDirectory = Buffer.alloc(46)
+  centralDirectory.writeUInt32LE(0x02014b50, 0)
+  centralDirectory.writeUInt16LE(20, 4)
+  centralDirectory.writeUInt16LE(20, 6)
+  centralDirectory.writeUInt16LE(8, 10)
+  centralDirectory.writeUInt32LE(compressed.length, 20)
+  centralDirectory.writeUInt32LE(source.length, 24)
+  centralDirectory.writeUInt16LE(nameBuffer.length, 28)
+
+  const centralDirectoryFile = Buffer.concat([centralDirectory, nameBuffer])
+  const endOfCentralDirectory = Buffer.alloc(22)
+  endOfCentralDirectory.writeUInt32LE(0x06054b50, 0)
+  endOfCentralDirectory.writeUInt16LE(1, 8)
+  endOfCentralDirectory.writeUInt16LE(1, 10)
+  endOfCentralDirectory.writeUInt32LE(centralDirectoryFile.length, 12)
+  endOfCentralDirectory.writeUInt32LE(localFile.length, 16)
+
+  return Buffer.concat([localFile, centralDirectoryFile, endOfCentralDirectory])
+}
+
+test('release preflight summary artifact selection prefers the latest unexpired artifact', () => {
+  const selected = selectReleasePreflightSummaryArtifact([
+    {
+      id: 1,
+      name: releasePreflightSummaryArtifactName,
+      expired: false,
+      updated_at: '2026-01-01T00:00:00Z',
+    },
+    {
+      id: 2,
+      name: 'other-artifact',
+      expired: false,
+      updated_at: '2026-01-01T02:00:00Z',
+    },
+    {
+      id: 3,
+      name: releasePreflightSummaryArtifactName,
+      expired: true,
+      updated_at: '2026-01-01T03:00:00Z',
+    },
+    {
+      id: 4,
+      name: releasePreflightSummaryArtifactName,
+      expired: false,
+      updated_at: '2026-01-01T01:00:00Z',
+    },
+  ])
+
+  assert.equal(selected.id, 4)
+})
+
+test('release preflight summary artifact extraction reads the uploaded summary JSON', () => {
+  const summary = {
+    commit,
+    localOnly: false,
+    skipCheck: false,
+    skipGodot: false,
+    skipSeriousExamples: false,
+    warningCount: 0,
+    failureCount: 0,
+    warnings: [],
+    failures: [],
+  }
+  const zipBuffer = zipEntry(
+    'release/release-preflight-summary.json',
+    JSON.stringify(summary),
+  )
+
+  assert.deepEqual(
+    JSON.parse(extractReleasePreflightSummaryFromZip(zipBuffer)),
+    summary,
+  )
+})
+
+test('release preflight summary artifact extraction accepts flattened artifact paths', () => {
+  const summary = {
+    commit,
+    warningCount: 0,
+    failureCount: 0,
+    warnings: [],
+    failures: [],
+  }
+  const zipBuffer = zipEntry(
+    'release-preflight-summary.json',
+    JSON.stringify(summary),
+  )
+
+  assert.deepEqual(
+    JSON.parse(extractReleasePreflightSummaryFromZip(zipBuffer)),
+    summary,
+  )
+})
+
+test('release preflight summary run URL can be read from CI evidence', () => {
+  const runUrl = 'https://github.com/portwatcher/vue-godot/actions/runs/3'
+  assert.deepEqual(
+    extractReleasePreflightRunUrl(
+      {
+        evidence: {
+          commit,
+          workflows: {
+            Check: {
+              runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+            },
+            'Godot Smoke': {
+              runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+            },
+            'Release Preflight': {
+              runUrl,
+            },
+          },
+        },
+        errors: [],
+      },
+      commit,
+    ),
+    {
+      runUrl,
+      errors: [],
+    },
+  )
+})

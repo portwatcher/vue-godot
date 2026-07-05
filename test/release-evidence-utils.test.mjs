@@ -2,7 +2,9 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
+  downloadGitHubActionsArtifactZip,
   extractGitHubActionsRunId,
+  fetchGitHubActionsRunArtifacts,
   githubTokenFromEnv,
   validateGitHubActionsRunMetadata,
 } from '../scripts/release-evidence-utils.mjs'
@@ -68,7 +70,10 @@ test('GitHub Actions run metadata rejects stale or failed runs', () => {
 
   assert.match(errors, /status must be "completed"/)
   assert.match(errors, /workflow name must be "Check"/)
-  assert.match(errors, /commit must be 0123456789abcdef0123456789abcdef01234567/)
+  assert.match(
+    errors,
+    /commit must be 0123456789abcdef0123456789abcdef01234567/,
+  )
   assert.match(errors, /conclusion must be "success"/)
 })
 
@@ -79,4 +84,15 @@ test('GitHub token helper accepts Actions and gh token environment names', () =>
   )
   assert.equal(githubTokenFromEnv({ GH_TOKEN: 'gh-token' }), 'gh-token')
   assert.equal(githubTokenFromEnv({}), null)
+})
+
+test('GitHub artifact helpers validate identifiers before requesting metadata', async () => {
+  await assert.rejects(
+    () => fetchGitHubActionsRunArtifacts('https://example.com/actions/runs/1'),
+    /GitHub Actions run URL/,
+  )
+  await assert.rejects(
+    () => downloadGitHubActionsArtifactZip(0),
+    /Artifact id must be a positive integer/,
+  )
 })

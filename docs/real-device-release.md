@@ -103,16 +103,22 @@ npm run release:evidence -- \
   --real-device-output release/real-device-evidence.json
 ```
 
-After the `Release Preflight` workflow passes without warnings, download its
-`release-preflight-summary` artifact as
-`release/release-preflight-summary.json`. Then refresh CI evidence so it
-includes the verified Release Preflight run URL:
+After the `Release Preflight` workflow passes without warnings, refresh CI
+evidence so it includes the verified Release Preflight run URL:
 
 ```bash
 npm run release:ci -- \
   --commit "$(git rev-parse HEAD)" \
   --include-release-preflight \
   --output release/ci-runs.json
+```
+
+Then fetch the matching `release-preflight-summary` artifact:
+
+```bash
+GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- \
+  --ci-evidence release/ci-runs.json \
+  --output release/release-preflight-summary.json
 ```
 
 To dispatch and wait for `Release Preflight` from the same helper, add the
