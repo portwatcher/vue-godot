@@ -40,6 +40,23 @@ export const requiredRealDeviceChecks = {
   ],
 }
 
+export const passOnlyRealDeviceChecks = {
+  android: [
+    'cold-launch',
+    'no-godotjs-load-diagnostics',
+    'storage-restart',
+    'android-back-handling',
+    'background-foreground',
+  ],
+  ios: [
+    'cold-launch',
+    'no-godotjs-load-diagnostics',
+    'plist-entitlements',
+    'storage-restart',
+    'background-foreground',
+  ],
+}
+
 export const selectedApiRequiredRealDeviceChecks = {
   fetch: {
     all: ['network-if-selected'],
@@ -264,6 +281,12 @@ function validatePlatformEvidence(evidence, platform, errors) {
       errors.push(
         `${platform} must pass ${check} or document a skippedChecks.${check} reason`,
       )
+    }
+  }
+
+  for (const check of passOnlyRealDeviceChecks[platform]) {
+    if (!passedChecks.has(check)) {
+      errors.push(`${platform}.${check} must be in passedChecks`)
     }
   }
 

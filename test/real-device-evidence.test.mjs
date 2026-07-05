@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import test from 'node:test'
 import {
+  passOnlyRealDeviceChecks,
   readRealDeviceEvidence,
   requiredRealDeviceChecks,
   resolveRealDeviceEvidencePath,
@@ -68,20 +69,36 @@ test('real device evidence accepts a complete Android and iOS sign-off', () => {
 
 test('real device evidence requires every platform check to pass or be skipped with a reason', () => {
   const evidence = validEvidence()
+  evidence.android.selectedApis = ['SafeAreaView']
   evidence.android.passedChecks = evidence.android.passedChecks.filter(
-    (check) => check !== 'android-back-handling',
+    (check) => check !== 'network-if-selected',
   )
 
   assert.match(
     validateRealDeviceEvidence(evidence).join('\n'),
-    /android-back-handling/,
+    /network-if-selected/,
   )
 
+  evidence.android.skippedChecks = {
+    'network-if-selected': 'Release candidate did not select network APIs.',
+  }
+
+  assert.deepEqual(validateRealDeviceEvidence(evidence), [])
+})
+
+test('real device evidence requires core platform checks to pass', () => {
+  const evidence = validEvidence()
+  evidence.android.passedChecks = evidence.android.passedChecks.filter(
+    (check) => check !== 'android-back-handling',
+  )
   evidence.android.skippedChecks = {
     'android-back-handling': 'Release profile does not register back handling.',
   }
 
-  assert.deepEqual(validateRealDeviceEvidence(evidence), [])
+  assert.match(
+    validateRealDeviceEvidence(evidence).join('\n'),
+    /android\.android-back-handling must be in passedChecks/,
+  )
 })
 
 test('real device evidence requires conditional checks to pass for selected APIs', () => {
@@ -126,6 +143,20 @@ test('real device evidence rejects unknown check names', () => {
 })
 
 test('selected API release checks cover public conditional release gates', () => {
+  assert.deepEqual(passOnlyRealDeviceChecks.android, [
+    'cold-launch',
+    'no-godotjs-load-diagnostics',
+    'storage-restart',
+    'android-back-handling',
+    'background-foreground',
+  ])
+  assert.deepEqual(passOnlyRealDeviceChecks.ios, [
+    'cold-launch',
+    'no-godotjs-load-diagnostics',
+    'plist-entitlements',
+    'storage-restart',
+    'background-foreground',
+  ])
   assert.deepEqual(selectedApiRequiredRealDeviceChecks.fetch.all, [
     'network-if-selected',
   ])

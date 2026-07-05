@@ -47,6 +47,8 @@ by final readiness evidence.
 `npm run release:platform-evidence` creates a starter Android/iOS platform
 evidence file with the exact required device check names; it still must be
 filled with real artifact, device, OS, API, pass, and skip data after testing.
+Its `passOnlyChecks` worksheet lists core launch/runtime checks that must not
+be skipped.
 Use its `selectedApiRequiredChecks` worksheet to see which conditional checks
 the selected APIs made mandatory.
 Conditional checks required by selected APIs must be recorded in `passedChecks`,

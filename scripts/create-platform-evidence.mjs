@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import {
+  passOnlyRealDeviceChecks,
   requiredRealDeviceChecks,
   selectedApiRequiredCheckMap,
 } from './real-device-evidence.mjs'
@@ -16,7 +17,8 @@ Creates a starter Android/iOS platform evidence JSON file for real-device
 release testing. The generated file is intentionally not release-ready: fill
 artifact/device details and move each requiredChecks entry into passedChecks or
 skippedChecks with a release-specific reason after testing.
-Checks listed in selectedApiRequiredChecks must be recorded in passedChecks.
+Checks listed in passOnlyChecks and selectedApiRequiredChecks must be recorded
+in passedChecks.
 
 Options:
   --output <file>                  Output path. Default: ${defaultOutput}
@@ -162,6 +164,7 @@ function buildPlatformTemplate(platform, options) {
     passedChecks: [],
     skippedChecks: {},
     requiredChecks: [...requiredRealDeviceChecks[platform]],
+    passOnlyChecks: [...passOnlyRealDeviceChecks[platform]],
     selectedApiRequiredChecks: selectedApiRequiredChecks(
       selectedApis,
       platform,

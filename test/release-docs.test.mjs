@@ -124,19 +124,23 @@ test('release preflight enforces real device evidence', () => {
   }
 
   for (const pattern of [
+    /passOnlyRealDeviceChecks/,
     /selectedApiRequiredRealDeviceChecks/,
     /selectedApiRequiredCheckMap/,
     /must be in passedChecks because selectedApis includes/,
+    /must be in passedChecks/,
   ]) {
     assert.match(realDeviceEvidence, pattern)
   }
 
+  assert.match(platformEvidenceHelper, /passOnlyChecks/)
   assert.match(platformEvidenceHelper, /selectedApiRequiredChecks/)
   assert.match(platformEvidenceHelper, /selectedApiRequiredCheckMap/)
 
   for (const pattern of [
     /release-preflight-summary/,
     /extractReleasePreflightWarningCount/,
+    /passOnlyChecks/,
     /selectedApiRequiredChecks/,
     /Release preflight summary commit must match/,
     /Release Preflight/,
@@ -200,6 +204,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /Node 24/)
   assert.match(production, /npm@\^11\.15\.0/)
   assert.match(production, /release:platform-evidence/)
+  assert.match(production, /passOnlyChecks/)
   assert.match(production, /selectedApiRequiredChecks/)
   assert.match(production, /selected APIs must be recorded in `passedChecks`/)
   assert.match(production, /release:evidence/)
@@ -222,6 +227,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /--summary-output/)
   assert.match(readme, /--release-preflight-summary/)
   assert.match(readme, /release:platform-evidence/)
+  assert.match(readme, /passOnlyChecks/)
   assert.match(readme, /selectedApiRequiredChecks/)
   assert.match(readme, /must be in `passedChecks`/)
   assert.match(readme, /release:evidence/)
@@ -241,9 +247,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /release-preflight-summary/)
   assert.match(checklist, /release:preflight-summary/)
   assert.match(checklist, /release:platform-evidence/)
+  assert.match(checklist, /passOnlyChecks/)
   assert.match(checklist, /selectedApiRequiredChecks/)
   assert.match(checklist, /selected API set/)
-  assert.match(checklist, /Conditional checks for\s+selected APIs/)
+  assert.match(checklist, /Conditional\s+checks for\s+selected APIs/)
   assert.match(workflow, /real_device_evidence_path/)
   assert.match(workflow, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
   assert.match(checkWorkflow, /workflow_dispatch/)

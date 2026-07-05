@@ -7,6 +7,7 @@ import {
   normalizePlatformEvidence,
 } from '../scripts/create-release-evidence.mjs'
 import {
+  passOnlyRealDeviceChecks,
   requiredRealDeviceChecks,
   validateRealDeviceEvidence,
 } from '../scripts/real-device-evidence.mjs'
@@ -58,7 +59,12 @@ test('platform evidence template lists required checks without passing them', ()
     template.android.requiredChecks,
     requiredRealDeviceChecks.android,
   )
+  assert.deepEqual(
+    template.android.passOnlyChecks,
+    passOnlyRealDeviceChecks.android,
+  )
   assert.deepEqual(template.ios.requiredChecks, requiredRealDeviceChecks.ios)
+  assert.deepEqual(template.ios.passOnlyChecks, passOnlyRealDeviceChecks.ios)
 
   const errors = validateRealDeviceEvidence(fullEvidence(template)).join('\n')
   assert.match(errors, /android must pass cold-launch/)
@@ -96,6 +102,7 @@ test('release evidence normalization removes template-only required checks', () 
   const normalized = normalizePlatformEvidence(template.android)
 
   assert.equal('requiredChecks' in normalized, false)
+  assert.equal('passOnlyChecks' in normalized, false)
   assert.equal('selectedApiRequiredChecks' in normalized, false)
   assert.deepEqual(normalized.passedChecks, [])
 })
