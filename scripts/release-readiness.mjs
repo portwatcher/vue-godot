@@ -868,6 +868,7 @@ function ciEvidenceCommands(commit, localGit) {
       : 'git push'
 
   return [
+    'npm run check',
     pushCommand,
     `npm run release:ci -- --commit ${releaseCommit} --include-release-preflight --wait --output release/ci-runs.json`,
     `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${releaseCommit} --include-release-preflight --dispatch-missing --wait --ref <branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
@@ -897,7 +898,7 @@ function collectReadinessNextActions(checks, commit, localGit) {
       id: 'ci-evidence',
       title: 'Collect CI evidence for the tested release commit',
       detail:
-        'Push the release-candidate commit, wait for Check, Godot Smoke, and Release Preflight, then write release/ci-runs.json for evidence assembly.',
+        'Run the local check, push the release-candidate commit, wait for Check, Godot Smoke, and Release Preflight, then write release/ci-runs.json for evidence assembly.',
       commands: ciEvidenceCommands(commit, localGit),
     })
   }

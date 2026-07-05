@@ -100,9 +100,10 @@ contact GitHub. Add
 warning markers, package description warning status, release tooling/workflow
 blocker lists, TODO counts, unchecked TODO item details, final TODO proof status,
 structured readiness check status, local Git state, and `nextActions` command
-hints for the remaining evidence/finalizer work, including CI evidence
-collection, push/dispatch commands, separate Android/iOS real-device evidence
-status, and CI workflow wiring status, as JSON for release handoff. When an
+hints for the remaining evidence/finalizer work, including the local
+`npm run check`, CI evidence collection, push/dispatch commands, separate
+Android/iOS real-device evidence status, and CI workflow wiring status, as JSON
+for release handoff. When an
 expected commit is known, the summary resolves evidence and finalizer commands
 to that tested release commit. The strict
 `npm run release:readiness` command is for the committed final removal

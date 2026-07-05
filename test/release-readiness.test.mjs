@@ -417,6 +417,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
       summary.nextActions.some(
         (action) =>
           action.id === 'ci-evidence' &&
+          action.commands[0] === 'npm run check' &&
           action.commands.some((command) => command.startsWith('git push')) &&
           action.commands.includes(
             `npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --wait --output release/ci-runs.json`,

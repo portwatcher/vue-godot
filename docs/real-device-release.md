@@ -62,10 +62,10 @@ capture the current blockers, TODO counts, unchecked TODO item details, final TO
 readiness check status, local Git state, separate Android/iOS real-device
 evidence status, CI workflow wiring status, release tooling/workflow blocker
 lists, public warning markers, package description warning status, and
-`nextActions` command hints for CI evidence collection, push/dispatch commands,
-and the remaining evidence/finalizer work as JSON. When an expected commit is
-known, the summary resolves evidence and finalizer commands to that tested
-release commit.
+`nextActions` command hints for the local `npm run check`, CI evidence
+collection, push/dispatch commands, and the remaining evidence/finalizer work as
+JSON. When an expected commit is known, the summary resolves evidence and
+finalizer commands to that tested release commit.
 
 Before device testing, initialize `release/platform-evidence.json` so the exact
 Android and iOS required check names are ready to fill:

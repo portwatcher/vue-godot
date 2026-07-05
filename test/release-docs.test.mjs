@@ -265,9 +265,10 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
-    /separate Android\/iOS real-device\s+evidence\s+status/,
+    /separate\s+Android\/iOS real-device\s+evidence\s+status/,
   )
   assert.match(production, /local Git state/)
+  assert.match(production, /local\s+`npm run check`/)
   assert.match(production, /CI evidence\s+collection/)
   assert.match(production, /push\/dispatch commands/)
   assert.match(production, /resolves evidence and finalizer commands/)
@@ -317,6 +318,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(readme, /separate Android\/iOS real-device evidence status/)
   assert.match(readme, /local Git state/)
+  assert.match(readme, /local `npm run check`/)
   assert.match(readme, /CI evidence collection/)
   assert.match(readme, /push\/dispatch commands/)
   assert.match(readme, /resolves evidence and finalizer commands/)
@@ -376,9 +378,10 @@ test('release preflight enforces real device evidence', () => {
     /separate\s+Android\/iOS real-device\s+evidence\s+status/,
   )
   assert.match(checklist, /local Git state/)
-  assert.match(checklist, /CI evidence collection/)
+  assert.match(checklist, /local `npm run check`/)
+  assert.match(checklist, /CI evidence\s+collection/)
   assert.match(checklist, /push\/dispatch commands/)
-  assert.match(checklist, /resolves evidence and finalizer commands/)
+  assert.match(checklist, /resolves evidence and\s+finalizer commands/)
   assert.match(checklist, /tested\s+release commit/)
   assert.match(checklist, /`nextActions` command hints/)
   assert.match(checklist, /unchecked TODO item details/)
