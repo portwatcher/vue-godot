@@ -4,7 +4,10 @@ import test from 'node:test'
 import {
   clearUnsupportedStyleWarningsForTests,
   getUnsupportedStyleKeys,
+  resolveBorderRadii,
+  resolveBorderWidths,
   resolveContainerTag,
+  resolveMargin,
   resolvePadding,
   supportedHtmlStyleKeys,
   warnUnsupportedStyleProps,
@@ -131,7 +134,7 @@ test('maps display:none alongside supported size props', () => {
 })
 
 test('resolves padding with directional overrides', () => {
-  assert.deepEqual(resolvePadding({ padding: 20 }), {
+  assert.deepEqual(resolvePadding({ padding: '20px' }), {
     top: 20,
     right: 20,
     bottom: 20,
@@ -162,6 +165,51 @@ test('resolves padding with directional overrides', () => {
   assert.equal(resolvePadding({}), null)
 })
 
+test('resolves margin, border widths, and corner radii', () => {
+  assert.deepEqual(
+    resolveMargin({
+      margin: 12,
+      marginLeft: '18px',
+    }),
+    {
+      top: 12,
+      right: 12,
+      bottom: 12,
+      left: 18,
+    },
+  )
+
+  assert.deepEqual(
+    resolveBorderWidths({
+      borderWidth: 2,
+      borderTopWidth: 4,
+      borderStyle: 'solid',
+    }),
+    {
+      top: 4,
+      right: 2,
+      bottom: 2,
+      left: 2,
+    },
+  )
+
+  assert.equal(resolveBorderWidths({ borderWidth: 2, borderStyle: 'none' }), null)
+
+  assert.deepEqual(
+    resolveBorderRadii({
+      borderRadius: 6,
+      borderTopRightRadius: '10px',
+      borderBottomLeftRadius: 0,
+    }),
+    {
+      topLeft: 6,
+      topRight: 10,
+      bottomRight: 6,
+      bottomLeft: 0,
+    },
+  )
+})
+
 test('detects unsupported style keys against the documented subset', () => {
   assert.deepEqual(
     getUnsupportedStyleKeys({
@@ -169,10 +217,13 @@ test('detects unsupported style keys against the documented subset', () => {
       backgroundColor: '#112233',
       borderRadius: 8,
       margin: 12,
+      backgroundImage: 'url(panel.png)',
     }),
-    ['borderRadius', 'margin'],
+    ['backgroundImage'],
   )
   assert.equal(supportedHtmlStyleKeys.includes('width'), true)
+  assert.equal(supportedHtmlStyleKeys.includes('borderRadius'), true)
+  assert.equal(supportedHtmlStyleKeys.includes('margin'), true)
 })
 
 test('warns once per unsupported style key and component', () => {

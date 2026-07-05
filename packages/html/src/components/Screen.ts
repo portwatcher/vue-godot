@@ -47,9 +47,7 @@ export const Screen = defineComponent({
 
       applyCommonControlStyleProps(nodeProps, props.style, 'Screen')
 
-      const backgroundStyle = createBackgroundPanelStyle(
-        props.style?.backgroundColor,
-      )
+      const backgroundStyle = createBackgroundPanelStyle(props.style)
       const tag = backgroundStyle ? 'PanelContainer' : 'Control'
       if (backgroundStyle) {
         nodeProps['theme_override_styles/panel'] = backgroundStyle

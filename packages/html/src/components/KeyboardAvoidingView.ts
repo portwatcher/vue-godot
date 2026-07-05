@@ -88,9 +88,7 @@ export const KeyboardAvoidingView = defineComponent({
         { style: props.contentStyle ?? {} },
         slots.default?.(),
       )
-      const backgroundStyle = createBackgroundPanelStyle(
-        props.style?.backgroundColor,
-      )
+      const backgroundStyle = createBackgroundPanelStyle(props.style)
 
       if (!backgroundStyle) {
         return h('MarginContainer', { ...nodeProps, ...marginProps }, [content])

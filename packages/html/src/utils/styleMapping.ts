@@ -21,9 +21,13 @@
  *   align-items: center              default cross-axis child SizeFlags.SHRINK_CENTER
  *   align-self: center (on child)    SizeFlags.SHRINK_CENTER
  *   padding: <n>                      MarginContainer wrapper + margin overrides
+ *   margin: <n>                       outer MarginContainer wrapper where supported
+ *   border-radius / border-width      StyleBoxFlat corner and border props
  *   width / height                    custom_minimum_size
  *   display: none                     visible = false
  */
+
+export type StyleLength = number | string
 
 export interface HtmlStyle {
   display?: 'flex' | 'grid' | 'none'
@@ -35,11 +39,16 @@ export interface HtmlStyle {
   flex?: number
   gap?: number
   columns?: number
-  padding?: number
-  paddingTop?: number
-  paddingRight?: number
-  paddingBottom?: number
-  paddingLeft?: number
+  margin?: StyleLength
+  marginTop?: StyleLength
+  marginRight?: StyleLength
+  marginBottom?: StyleLength
+  marginLeft?: StyleLength
+  padding?: StyleLength
+  paddingTop?: StyleLength
+  paddingRight?: StyleLength
+  paddingBottom?: StyleLength
+  paddingLeft?: StyleLength
   width?: number | string
   height?: number | string
   minWidth?: number
@@ -48,6 +57,18 @@ export interface HtmlStyle {
   maxHeight?: number
   objectFit?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down'
   backgroundColor?: string
+  borderColor?: string
+  borderStyle?: 'none' | 'solid'
+  borderWidth?: StyleLength
+  borderTopWidth?: StyleLength
+  borderRightWidth?: StyleLength
+  borderBottomWidth?: StyleLength
+  borderLeftWidth?: StyleLength
+  borderRadius?: StyleLength
+  borderTopLeftRadius?: StyleLength
+  borderTopRightRadius?: StyleLength
+  borderBottomRightRadius?: StyleLength
+  borderBottomLeftRadius?: StyleLength
   color?: string
   fontSize?: number
   fontWeight?: 'normal' | 'bold'
@@ -62,6 +83,18 @@ export const supportedHtmlStyleKeys = [
   'alignItems',
   'alignSelf',
   'backgroundColor',
+  'borderBottomLeftRadius',
+  'borderBottomRightRadius',
+  'borderBottomWidth',
+  'borderColor',
+  'borderLeftWidth',
+  'borderRadius',
+  'borderRightWidth',
+  'borderStyle',
+  'borderTopLeftRadius',
+  'borderTopRightRadius',
+  'borderTopWidth',
+  'borderWidth',
   'color',
   'columns',
   'display',
@@ -73,6 +106,11 @@ export const supportedHtmlStyleKeys = [
   'gap',
   'height',
   'justifyContent',
+  'margin',
+  'marginBottom',
+  'marginLeft',
+  'marginRight',
+  'marginTop',
   'maxHeight',
   'maxWidth',
   'minHeight',
@@ -167,18 +205,41 @@ export const ContainerAlignment = {
   END: 2,
 } as const
 
-export interface ResolvedPadding {
+export interface ResolvedEdges {
   top: number
   right: number
   bottom: number
   left: number
 }
 
-export function resolvePadding(style: HtmlStyle): ResolvedPadding | null {
-  const top = style.paddingTop ?? style.padding
-  const right = style.paddingRight ?? style.padding
-  const bottom = style.paddingBottom ?? style.padding
-  const left = style.paddingLeft ?? style.padding
+export type ResolvedPadding = ResolvedEdges
+
+function resolveEdgeValue(value: StyleLength | undefined): number | null {
+  return toNumericPixels(value)
+}
+
+function resolveBoxEdges(
+  base: StyleLength | undefined,
+  topValue: StyleLength | undefined,
+  rightValue: StyleLength | undefined,
+  bottomValue: StyleLength | undefined,
+  leftValue: StyleLength | undefined,
+): ResolvedEdges | null {
+  if (
+    base == null &&
+    topValue == null &&
+    rightValue == null &&
+    bottomValue == null &&
+    leftValue == null
+  ) {
+    return null
+  }
+
+  const baseResolved = resolveEdgeValue(base)
+  const top = resolveEdgeValue(topValue) ?? baseResolved
+  const right = resolveEdgeValue(rightValue) ?? baseResolved
+  const bottom = resolveEdgeValue(bottomValue) ?? baseResolved
+  const left = resolveEdgeValue(leftValue) ?? baseResolved
 
   if (top == null && right == null && bottom == null && left == null) {
     return null
@@ -189,6 +250,73 @@ export function resolvePadding(style: HtmlStyle): ResolvedPadding | null {
     right: right ?? 0,
     bottom: bottom ?? 0,
     left: left ?? 0,
+  }
+}
+
+export function resolvePadding(style: HtmlStyle): ResolvedPadding | null {
+  return resolveBoxEdges(
+    style.padding,
+    style.paddingTop,
+    style.paddingRight,
+    style.paddingBottom,
+    style.paddingLeft,
+  )
+}
+
+export function resolveMargin(style: HtmlStyle): ResolvedEdges | null {
+  return resolveBoxEdges(
+    style.margin,
+    style.marginTop,
+    style.marginRight,
+    style.marginBottom,
+    style.marginLeft,
+  )
+}
+
+export function resolveBorderWidths(style: HtmlStyle): ResolvedEdges | null {
+  if (style.borderStyle === 'none') {
+    return null
+  }
+
+  return resolveBoxEdges(
+    style.borderWidth,
+    style.borderTopWidth,
+    style.borderRightWidth,
+    style.borderBottomWidth,
+    style.borderLeftWidth,
+  )
+}
+
+export interface ResolvedCornerRadii {
+  topLeft: number
+  topRight: number
+  bottomRight: number
+  bottomLeft: number
+}
+
+export function resolveBorderRadii(
+  style: HtmlStyle,
+): ResolvedCornerRadii | null {
+  const base = resolveEdgeValue(style.borderRadius)
+  const topLeft = resolveEdgeValue(style.borderTopLeftRadius) ?? base
+  const topRight = resolveEdgeValue(style.borderTopRightRadius) ?? base
+  const bottomRight = resolveEdgeValue(style.borderBottomRightRadius) ?? base
+  const bottomLeft = resolveEdgeValue(style.borderBottomLeftRadius) ?? base
+
+  if (
+    topLeft == null &&
+    topRight == null &&
+    bottomRight == null &&
+    bottomLeft == null
+  ) {
+    return null
+  }
+
+  return {
+    topLeft: topLeft ?? 0,
+    topRight: topRight ?? 0,
+    bottomRight: bottomRight ?? 0,
+    bottomLeft: bottomLeft ?? 0,
   }
 }
 

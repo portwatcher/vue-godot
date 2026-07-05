@@ -73,7 +73,9 @@ Rather than embedding a layout engine like Yoga, we map a CSS flexbox subset to 
 | `align-items: *`                              | Default child cross-axis size flag                              |
 | `align-self: center` (on child)               | Size flag `SHRINK_CENTER`                                       |
 | `padding: <n>`                                | `MarginContainer` wrapper or theme override                     |
+| `margin: <n>`                                 | Outer `MarginContainer` wrapper where supported                 |
 | `backgroundColor: <color>`                    | `PanelContainer` wrapper with `StyleBoxFlat`                    |
+| `borderColor` / `borderWidth` / `borderRadius` | `StyleBoxFlat` border and corner-radius props                 |
 | `color: <color>`                              | `theme_override_colors/font_color` on text controls             |
 | `fontWeight: 'bold'`                          | `theme_override_fonts/font` with `FontVariation` embolden       |
 | `width` / `height`                            | `custom_minimum_size`                                           |
@@ -112,10 +114,15 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 | `gap` | Maps to Godot theme separation constants. |
 | `columns` | Maps to `GridContainer.columns` for grid `<Div>` layouts. |
 | `padding`, `paddingTop`, `paddingRight`, `paddingBottom`, `paddingLeft` | Maps to `MarginContainer` theme margin constants. |
+| `margin`, `marginTop`, `marginRight`, `marginBottom`, `marginLeft` | Maps to an outer `MarginContainer` where supported. |
 | `width`, `height` | Maps numeric or pixel-string values to minimum/control size. |
 | `minWidth`, `minHeight`, `maxWidth`, `maxHeight` | Clamps container minimum size where the component uses container sizing. |
 | `objectFit` | Maps media texture stretch/expand behavior for `<Img>` and `<Svg>`. |
 | `backgroundColor` | Maps to a `PanelContainer` `StyleBoxFlat` background where supported. |
+| `borderColor` | Maps to `StyleBoxFlat.border_color` where the component uses a panel style. |
+| `borderStyle` | Supports `'solid'` and `'none'` for `StyleBoxFlat` borders. |
+| `borderWidth`, `borderTopWidth`, `borderRightWidth`, `borderBottomWidth`, `borderLeftWidth` | Maps to `StyleBoxFlat` border widths. |
+| `borderRadius`, `borderTopLeftRadius`, `borderTopRightRadius`, `borderBottomRightRadius`, `borderBottomLeftRadius` | Maps to `StyleBoxFlat` corner radii. |
 | `color` | Maps text-capable controls to `theme_override_colors/font_color`. |
 | `fontSize` | Maps text-capable controls to `theme_override_font_sizes/font_size`. |
 | `fontWeight` | Supports `'bold'` via a Godot `FontVariation` embolden override. |
@@ -124,6 +131,8 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 | `overflowWrap` | Supports `'break-word'` on `<Span>` and `<Label>` via smart word wrapping. |
 | `overflow` | Supports `'hidden'` clipping where the backing Godot node exposes it. |
 | `opacity` | Maps to a Godot `modulate` alpha color. |
+
+Background images are not part of the current style subset. Use explicit media components such as `<Img>` or `<Svg>` until a texture-backed panel/background mapping is designed.
 
 ## Component Mapping
 
@@ -633,6 +642,7 @@ This package is in early development. Currently scaffolded:
 - [x] `<A>` — link/anchor (`LinkButton`, `href`, `@click`)
 - [x] Theme override application (gap, padding)
 - [x] Theme override application (colors via `backgroundColor` and text `color`, bold text via `FontVariation`)
+- [x] Theme override application (margin wrappers plus `StyleBoxFlat` border and corner radius props)
 - [x] Size flag mapping (flex, align-self)
 - [x] Div renderer integration tests (nested fragment/array slot layouts)
 - [x] `<style>` block support is a non-goal for the current beta; use inline style objects until a CSS-to-Godot mapping exists.

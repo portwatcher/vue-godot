@@ -15,6 +15,7 @@ import type { GodotContainerTag, HtmlStyle } from '../utils/styleMapping.js'
 import {
   ControlSizeFlags,
   resolveContainerTag,
+  resolveMargin,
   resolvePadding,
   warnUnsupportedStyleProps,
 } from '../utils/styleMapping.js'
@@ -245,14 +246,30 @@ export const Div = defineComponent({
         )
       }
 
-      const backgroundStyle = createBackgroundPanelStyle(style.backgroundColor)
-      if (!backgroundStyle) {
+      const backgroundStyle = createBackgroundPanelStyle(style)
+      if (backgroundStyle) {
+        content = h(
+          'PanelContainer',
+          { 'theme_override_styles/panel': backgroundStyle },
+          [content],
+        )
+      }
+
+      const margin = resolveMargin(style)
+      if (!margin) {
         return content
       }
 
+      const marginOverrides = {
+        margin_top: margin.top,
+        margin_right: margin.right,
+        margin_bottom: margin.bottom,
+        margin_left: margin.left,
+      }
+
       return h(
-        'PanelContainer',
-        { 'theme_override_styles/panel': backgroundStyle },
+        'MarginContainer',
+        withThemeConstantOverrides({}, marginOverrides),
         [content],
       )
     }

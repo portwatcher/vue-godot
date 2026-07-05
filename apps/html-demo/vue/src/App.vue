@@ -9,9 +9,13 @@
       alignItems: align,
       gap: 12,
       padding: 16,
+      margin: 4,
       width: 560,
       minHeight: 120,
       backgroundColor: '#172033',
+      borderColor: '#60a5fa',
+      borderWidth: 2,
+      borderRadius: 8,
     }"
   >
     <Div :style="{ flex: 1, padding: 8 }">

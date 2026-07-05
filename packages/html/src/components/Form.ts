@@ -59,9 +59,7 @@ export const Form = defineComponent({
 
       applyCommonControlStyleProps(nodeProps, props.style, 'Form')
 
-      const backgroundStyle = createBackgroundPanelStyle(
-        props.style?.backgroundColor,
-      )
+      const backgroundStyle = createBackgroundPanelStyle(props.style)
       if (backgroundStyle) {
         nodeProps['theme_override_styles/panel'] = backgroundStyle
       }

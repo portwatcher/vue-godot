@@ -60,9 +60,7 @@ export const Overlay = defineComponent({
 
       applyCommonControlStyleProps(nodeProps, props.style, 'Overlay')
 
-      const backgroundStyle = createBackgroundPanelStyle(
-        props.style?.backgroundColor,
-      )
+      const backgroundStyle = createBackgroundPanelStyle(props.style)
       if (backgroundStyle) {
         nodeProps['theme_override_styles/panel'] = backgroundStyle
       }

@@ -100,6 +100,52 @@ test('puts padding inside the background panel', () => {
   assert.equal(vnode.children[0].children[0].type, 'HBoxContainer')
 })
 
+test('wraps margin outside panel and maps border styles', () => {
+  const vnode = renderDiv({
+    margin: 6,
+    marginBottom: 10,
+    backgroundColor: '#123456',
+    borderColor: 'rgb(255 0 0)',
+    borderWidth: 2,
+    borderTopWidth: 4,
+    borderRadius: 5,
+    borderBottomLeftRadius: 1,
+  })
+
+  assert.equal(vnode.type, 'MarginContainer')
+  assert.equal(vnode.props['theme_override_constants/margin_top'], 6)
+  assert.equal(vnode.props['theme_override_constants/margin_right'], 6)
+  assert.equal(vnode.props['theme_override_constants/margin_bottom'], 10)
+  assert.equal(vnode.props['theme_override_constants/margin_left'], 6)
+
+  const panel = vnode.children[0]
+  assert.equal(panel.type, 'PanelContainer')
+  const styleBox = panel.props['theme_override_styles/panel']
+  assert.equal(styleBox.border_color.__kind, 'color')
+  assert.equal(styleBox.border_color.r, 1)
+  assert.equal(styleBox.border_width_top, 4)
+  assert.equal(styleBox.border_width_right, 2)
+  assert.equal(styleBox.border_width_bottom, 2)
+  assert.equal(styleBox.border_width_left, 2)
+  assert.equal(styleBox.corner_radius_top_left, 5)
+  assert.equal(styleBox.corner_radius_top_right, 5)
+  assert.equal(styleBox.corner_radius_bottom_right, 5)
+  assert.equal(styleBox.corner_radius_bottom_left, 1)
+})
+
+test('renders border-only styles without a panel fill', () => {
+  const vnode = renderDiv({
+    borderColor: '#60a5fa',
+    borderWidth: 1,
+  })
+
+  assert.equal(vnode.type, 'PanelContainer')
+  const styleBox = vnode.props['theme_override_styles/panel']
+  assert.equal(styleBox.draw_center, false)
+  assert.equal(styleBox.border_width_top, 1)
+  assert.equal(vnode.children[0].type, 'HBoxContainer')
+})
+
 test('does not create a padding wrapper for display:none', () => {
   const vnode = renderDiv({ display: 'none', padding: 24 })
 
