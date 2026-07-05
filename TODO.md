@@ -43,7 +43,7 @@ The project is production ready only when all of these are true:
   - Permission/export requirements.
   - Tests: unit, simulated Godot, real Godot smoke, real device.
   - Known caveats and spec differences.
-- [ ] Do not install fake browser globals by default when there is no real backend.
+- [x] Do not install fake browser globals by default when there is no real backend.
 - [ ] Prefer best-effort web-compatible APIs where behavior is close enough.
 - [ ] Prefer explicit adapters for APIs requiring native plugins.
 - [x] Mark impossible or misleading browser APIs as `skipped` with a clear explanation.
@@ -202,10 +202,10 @@ The project is production ready only when all of these are true:
   - [x] Wrap Godot audio input where feasible.
   - [x] Add permission/export docs.
   - [x] Define whether a browser `MediaStream` subset is supported or skipped.
-- [ ] Network reachability:
-  - [ ] Implement adapter using local interfaces, DNS, HTTP probe, and timeout.
-  - [ ] Expose current state and events.
-  - [ ] Document that internet reachability is best-effort.
+- [x] Network reachability:
+  - [x] Implement adapter using local interfaces, DNS, HTTP probe, and timeout.
+  - [x] Expose current state and events.
+  - [x] Document that internet reachability is best-effort.
 - [ ] Permissions:
   - [x] Define permission names and mappings.
   - [ ] Support Android `OS.request_permission()` and permission result events.
