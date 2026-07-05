@@ -258,7 +258,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
-    /missing-evidence assembly\s+and\s+invalid-evidence regeneration\s+hints begin with `npm run check`\s+before any\s+still-needed release CI\s+wait\/dispatch/,
+    /missing-evidence assembly\s+and\s+invalid-evidence regeneration\s+hints begin with `npm run check`[\s\S]*platform worksheet audit before final evidence assembly or regeneration[\s\S]*still-needed release CI\s+wait\/dispatch/,
   )
   assert.match(
     production,
@@ -407,7 +407,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     readme,
-    /missing-evidence assembly\s+and\s+invalid-evidence regeneration\s+hints begin with `npm run check`\s+before any\s+still-needed release CI\s+wait\/dispatch/,
+    /missing-evidence assembly\s+and\s+invalid-evidence regeneration\s+hints begin with `npm run check`[\s\S]*platform worksheet audit before final evidence assembly or regeneration[\s\S]*still-needed release CI\s+wait\/dispatch/,
   )
   assert.match(readme, /resolve\s+command placeholders\s+to\s+`--expected-commit`/)
   assert.match(readme, /release:ci/)
@@ -547,7 +547,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     checklist,
-    /missing-evidence\s+assembly\s+and\s+invalid-evidence\s+regeneration hints begin with `npm run check`\s+before any\s+still-needed release\s+CI wait\/dispatch/,
+    /missing-evidence\s+assembly\s+and\s+invalid-evidence\s+regeneration hints begin with `npm run check`[\s\S]*platform worksheet audit before final evidence assembly or\s+regeneration[\s\S]*still-needed release\s+CI wait\/dispatch/,
   )
   assert.match(checklist, /ci-runs\.json/)
   assert.match(checklist, /--include-release-preflight/)

@@ -25,6 +25,7 @@ import { collectPublicSurfaceAuditErrors } from './public-surface-audit.mjs'
 import { collectLocalGitReleaseState } from './check-release-ci-runs.mjs'
 import { finalizationFiles } from './release-finalization-files.mjs'
 import {
+  checkPlatformEvidenceCommand,
   checkRealDeviceEvidenceCommand,
   currentHeadCommitCommand,
   defaultPlatformEvidencePath,
@@ -1016,6 +1017,7 @@ function collectReadinessNextActions(
         'npm run check',
         productionProfilePlatformEvidenceCommand(commit),
         ...(checks.initialCiEvidence ? [] : initialReleaseCiCommands(commit)),
+        checkPlatformEvidenceCommand(commit),
         releaseEvidenceCommand(commit),
         checkRealDeviceEvidenceCommand(commit),
         ...commitEvidenceCommands(

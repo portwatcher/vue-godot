@@ -7,6 +7,7 @@ import {
   validateRealDeviceEvidence,
 } from './real-device-evidence.mjs'
 import {
+  checkPlatformEvidenceCommand,
   checkRealDeviceEvidenceCommand,
   defaultReleaseCiEvidencePath,
   initialReleaseCiCommands,
@@ -135,6 +136,7 @@ function collectNextActions(summary) {
         commands: [
           'npm run check',
           ...ciEvidenceCommands,
+          checkPlatformEvidenceCommand(expectedCommit),
           releaseEvidenceCommand(expectedCommit),
           checkRealDeviceEvidenceCommand(expectedCommit),
         ],
@@ -150,6 +152,7 @@ function collectNextActions(summary) {
         'Run the local check, then use the reported validation errors to update platform evidence or regenerate final evidence for the tested release commit.',
       commands: [
         'npm run check',
+        checkPlatformEvidenceCommand(expectedCommit),
         releaseEvidenceCommand(expectedCommit),
         checkRealDeviceEvidenceCommand(expectedCommit),
       ],

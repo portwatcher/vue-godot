@@ -37,8 +37,9 @@ evidence JSON when it exists. Add
 `--summary-output release/real-device-evidence-summary.json` to write
 validation status, errors, initial CI evidence status, and `nextActions`
 command hints for fixing or creating evidence; missing-evidence assembly and
-invalid-evidence regeneration hints begin with `npm run check` before any
-still-needed release CI wait/dispatch or evidence regeneration runs and resolve
+invalid-evidence regeneration hints begin with `npm run check`, run the
+platform worksheet audit before final evidence assembly or regeneration, then
+run any still-needed release CI wait/dispatch or evidence commands and resolve
 command placeholders to `--expected-commit` when it is supplied.
 `release:preflight` verifies package metadata,
 generated package specs, dry-run package contents including every
@@ -172,7 +173,8 @@ dispatching Release Preflight from the current evidence commit ref with
 That later action includes the `--dispatch-missing`,
 `--release-preflight-run-commit`, and `--real-device-evidence-path` inputs for
 the workflow-dispatch-only preflight workflow. The real-device evidence action
-stages `release/platform-evidence.json`,
+runs the platform worksheet audit before final evidence assembly, stages
+`release/platform-evidence.json`,
 `release/ci-runs.json`, and `release/real-device-evidence.json`, commits them
 with `git commit -m "Add real-device release evidence"`, then pushes so the
 Release Preflight workflow can run from that evidence ref. The

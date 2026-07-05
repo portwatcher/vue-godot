@@ -71,7 +71,9 @@ remaining evidence/finalizer work as JSON. The initial CI, real-device, and
 Release Preflight evidence actions begin
 with `npm run check` before collecting CI or assembling evidence. The initial CI
 action captures Check and Godot Smoke, while Release Preflight is captured later
-after real-device evidence is committed. When `release/ci-runs.json`, or the
+after real-device evidence is committed. The real-device evidence action runs
+the platform worksheet audit before final evidence assembly. When
+`release/ci-runs.json`, or the
 file passed with `--ci-evidence <file>`, already validates Check and Godot Smoke
 for the expected release commit, readiness marks that initial CI evidence as
 ready and omits the duplicate Check/Godot Smoke collection commands from later
@@ -211,8 +213,10 @@ strict release gates reject it.
 Use `npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json`
 to write validation status, errors, initial CI evidence status, and
 `nextActions` command hints for fixing or creating evidence; missing-evidence
-assembly and invalid-evidence regeneration hints begin with `npm run check`
-before any still-needed release CI wait/dispatch or evidence regeneration runs.
+assembly and invalid-evidence regeneration hints begin with `npm run check`,
+run the platform worksheet audit before final evidence assembly or
+regeneration, then run any still-needed release CI wait/dispatch or evidence
+commands.
 The helper validates the normalized platform evidence before fetching GitHub run
 metadata, so missing device details, unknown selected APIs, or selected-API
 checks left in `skippedChecks` fail before network calls.

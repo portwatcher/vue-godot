@@ -518,6 +518,9 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
             'GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit <release-candidate-sha> --dispatch-missing --wait --ref <release-candidate-branch-or-tag> --output release/ci-runs.json',
           ) &&
           action.commands.includes(
+            'npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit <release-candidate-sha>',
+          ) &&
+          action.commands.includes(
             'npm run check:real-device-evidence -- --expected-commit <release-candidate-sha>',
           ),
       ),
@@ -566,6 +569,11 @@ test('check-real-device-evidence next actions honor expected commits', () => {
     assert.ok(
       assembleAction.commands.includes(
         `npm run release:ci -- --commit ${expectedCommit} --wait --output release/ci-runs.json`,
+      ),
+    )
+    assert.ok(
+      assembleAction.commands.includes(
+        `npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit ${expectedCommit}`,
       ),
     )
     assert.ok(
@@ -629,6 +637,11 @@ test('check-real-device-evidence reuses committed initial CI evidence', () => {
     )
     assert.ok(
       assembleAction.commands.includes(
+        `npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit ${ciEvidence.commit}`,
+      ),
+    )
+    assert.ok(
+      assembleAction.commands.includes(
         `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${ciEvidence.commit} --real-device-output release/real-device-evidence.json`,
       ),
     )
@@ -687,6 +700,9 @@ test('check-real-device-evidence writes validation errors before failing', () =>
         (action) =>
           action.id === 'fix-real-device-evidence' &&
           action.commands[0] === 'npm run check' &&
+          action.commands.includes(
+            'npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit <release-candidate-sha>',
+          ) &&
           action.commands.some((command) =>
             command.includes('--real-device-output release/real-device-evidence.json'),
           ),
