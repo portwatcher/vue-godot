@@ -248,10 +248,10 @@ The project is production ready only when all of these are true:
   - [x] `integrate --html --device`.
   - [x] Template option for router/storage/network/device APIs.
   - [x] Doctor command for GodotJS, Node, package versions, export settings, permissions, and missing plugins.
-- [ ] Improve Volar and TypeScript support.
-  - [ ] Lowercase and PascalCase HTML components.
-  - [ ] Generated Godot component typings.
-  - [ ] Style prop type coverage.
+- [x] Improve Volar and TypeScript support.
+  - [x] Lowercase and PascalCase HTML components.
+  - [x] Generated Godot component typings.
+  - [x] Style prop type coverage.
   - [x] Browser/device API global typings.
 - [x] Add debugging guidance.
   - [x] Godot console logs.

@@ -159,7 +159,7 @@ documented Godot-backed subset; unsupported style keys emit a
 | `<Canvas>` | `html` | `partial` | `Control` | All Godot UI targets | None | Unit, html-demo | No `getContext('2d')`; use Godot drawing through template refs. |
 | `htmlPlugin` | `html` | `supported` | Vue plugin registration | All Vue Godot apps | None | Unit, CLI smoke | Registers PascalCase and lowercase aliases. |
 | `htmlTags` | `html` | `supported` | Static tag list | Build tooling | Must be kept in Vite config generation | Unit, CLI smoke | Used by Vue compiler custom-element rules. |
-| Volar plugin | `html` | `partial` | Volar language service plugin | Editor tooling | VS Code/Volar setup | CLI smoke | Tracks lowercase HTML-like component resolution. |
+| Volar plugin and HTML component globals | `html` | `supported` | Volar language service plugin plus `@vue/runtime-core` `GlobalComponents` augmentation | Editor tooling | VS Code/Volar setup | Type compile test, CLI smoke | PascalCase and lowercase HTML-like tags resolve to the same component prop types, including `HtmlStyle` style props. |
 
 ## Runtime And CLI
 
@@ -172,6 +172,6 @@ documented Godot-backed subset; unsupported style keys emit a
 | `vue-godot create` | `cli` | `supported` | Project templates | Local development | Node.js, GodotJS editor | CLI smoke, unit | Generated projects include production export guidance and a non-failing export-setting check backed by `vue-godot doctor --exports-only`; `--device` adds `@vue-godot/device`; `create app` and `create game-ui` provide named starter profiles; `--router`, `--storage`, `--network`, and `--device-api` scaffold optional starter modules. |
 | `vue-godot create --html` | `cli` | `supported` | HTML/browser template integration | Local development | Node.js, GodotJS editor | CLI smoke, unit | Template is a starter, not a serious app demo yet, but includes browser/device/html dependencies, production export guidance, and checks. |
 | `vue-godot integrate` | `cli` | `supported` | Existing project scaffolding | Local development | Node.js, GodotJS editor | Unit, CLI smoke | Adds production export guidance and the same doctor-backed export-setting check used by generated projects; `--device` can be used by itself or with `--html`. |
-| `vue-godot gen-types` | `cli` | `supported` | GodotJS generated typings | Local development | GodotJS typings must exist | Unit, CLI smoke | Regenerate when Godot typings change. |
+| `vue-godot gen-types` | `cli` | `supported` | GodotJS generated typings | Local development | GodotJS typings must exist | Unit, CLI smoke | Generates method-filtered Godot node `GlobalComponents` types for `@vue/runtime-core` and `vue`, plus a no-`any` Vue SFC shim. Regenerate when Godot typings change. |
 | `vue-godot doctor` | `cli` | `supported` | Local filesystem diagnostics | Local development and release review | Node.js, package installs, GodotJS typings, export presets, plugin-backed API setup | Unit | Static guardrail only; warnings must still be validated in the Godot editor and on target devices. |
 | `@vue-godot/browser/globals` | `browser` | `supported` | TypeScript declarations | Non-DOM Godot TypeScript projects | None | Type compile test | Opt-in global declarations for projects that exclude `lib.dom.d.ts`; default package types avoid global merging conflicts. |

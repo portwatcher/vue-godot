@@ -147,6 +147,9 @@ npm run dev
 ### `gen-types`
 
 Generate Vue `GlobalComponents` type augmentation from GodotJS typings. This gives Volar full autocomplete and type checking for Godot node tags (e.g. `<Button>`, `<Label>`) in `.vue` templates.
+Generated props include settable Godot instance properties and exclude methods;
+the command also refreshes the Vue SFC shim without introducing permissive
+`any` types.
 
 ```bash
 vue-godot gen-types [options]

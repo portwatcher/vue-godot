@@ -314,6 +314,11 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 | `registerFontFamily`, `unregisterFontFamily`, `parseFontFamilyList`                                                                     | Registers CSS `fontFamily` names to local Godot font resources and parses CSS fallback lists              |
 | `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |
 
+Package types augment `@vue/runtime-core` `GlobalComponents`. PascalCase tags
+such as `<Div>` and lowercase tags such as `<div>` share the same component
+prop types, including `style: HtmlStyle` for the documented Godot-backed style
+subset.
+
 ### Lowercase tag compatibility (migrating existing SPAs)
 
 Vue's compiler treats lowercase tags like `<div>` and `<img>` as native HTML elements, bypassing component resolution entirely. To make existing Vue SPAs work without renaming every tag, three things are needed:
