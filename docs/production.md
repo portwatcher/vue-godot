@@ -46,6 +46,7 @@ Follow the dedicated permission and adapter docs before shipping:
 - [Android platform guide](./platforms/android.md)
 - [iOS and Apple platform guide](./platforms/ios.md)
 - [Desktop platform guide](./platforms/desktop.md)
+- [Troubleshooting](./troubleshooting.md)
 
 Minimum platform checks:
 

@@ -8,6 +8,8 @@ This project is experimental and not production ready yet. Follow [@juryxiong](h
 
 See the [compatibility checklist](./docs/compatibility.md) for the current support status, platform caveats, and intentionally skipped browser APIs. See the [production readiness guide](./docs/production.md), [permissions and export setup](./docs/permissions.md), and the [plugin adapter guide](./docs/plugins.md) for release and native capability requirements, the [routing and navigation guide](./docs/routing.md) for app architecture patterns, and [runtime renderer support](./docs/runtime.md) for supported Vue features and unsupported browser/DOM assumptions.
 
+For build, editor, export, and runtime debugging, see [troubleshooting](./docs/troubleshooting.md).
+
 ![demo](./intro-medias/demo.gif)
 
 ## Quick Start

@@ -253,11 +253,11 @@ The project is production ready only when all of these are true:
   - [ ] Generated Godot component typings.
   - [ ] Style prop type coverage.
   - [x] Browser/device API global typings.
-- [ ] Add debugging guidance.
-  - [ ] Godot console logs.
-  - [ ] Source maps.
-  - [ ] Runtime warnings.
-  - [ ] Common GodotJS failure modes.
+- [x] Add debugging guidance.
+  - [x] Godot console logs.
+  - [x] Source maps.
+  - [x] Runtime warnings.
+  - [x] Common GodotJS failure modes.
 - [ ] Add migration docs.
   - [ ] Vue SPA to Vue Godot.
   - [ ] React Native mental model to Vue Godot.
@@ -294,7 +294,7 @@ The project is production ready only when all of these are true:
 - [x] Add `docs/plugins.md`.
 - [x] Add `docs/compatibility.md`.
 - [ ] Add `docs/performance.md`.
-- [ ] Add `docs/troubleshooting.md`.
+- [x] Add `docs/troubleshooting.md`.
 - [ ] Add serious native app demo.
 - [ ] Add serious game UI demo.
 - [ ] Keep `apps/html-demo` updated for every HTML/browser/device API.
