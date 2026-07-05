@@ -117,3 +117,29 @@ test('release handoff commands include preflight evidence input only for preflig
     'GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit 0123456789abcdef0123456789abcdef01234567 --include-release-preflight --dispatch-missing --wait --ref release-candidate --real-device-evidence-path release/custom-real-device.json --output release/custom-ci-runs.json',
   )
 })
+
+test('release handoff commands quote custom refs and evidence paths', () => {
+  assert.equal(
+    releaseCiCommand(commit, {
+      dispatchMissing: true,
+      includeReleasePreflight: true,
+      output: 'release/ci runs.json',
+      realDeviceEvidencePath: 'release/real device evidence.json',
+      ref: "release candidate's branch",
+      wait: true,
+      withGitHubToken: true,
+    }),
+    `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${commit} --include-release-preflight --dispatch-missing --wait --ref 'release candidate'\\''s branch' --real-device-evidence-path 'release/real device evidence.json' --output 'release/ci runs.json'`,
+  )
+
+  assert.equal(
+    releaseEvidenceCommand(commit, {
+      ciEvidencePath: 'release/ci runs.json',
+      platformEvidencePath: "release/platform evidence's draft.json",
+      realDeviceEvidencePath: 'release/real device evidence.json',
+      readinessEvidencePath: 'release/readiness evidence.json',
+      releasePreflightSummaryPath: 'release/preflight summary.json',
+    }),
+    `npm run release:evidence -- --platform-evidence 'release/platform evidence'\\''s draft.json' --ci-evidence 'release/ci runs.json' --commit ${commit} --real-device-output 'release/real device evidence.json' --release-preflight-summary 'release/preflight summary.json' --readiness-output 'release/readiness evidence.json'`,
+  )
+})

@@ -1,3 +1,5 @@
+import { shellQuote } from './release-utils.mjs'
+
 export const releaseCandidateCommitPlaceholder = '<release-candidate-sha>'
 export const releasePreflightRunCommitPlaceholder = '<evidence-commit-sha>'
 export const currentHeadCommitCommand = '"$(git rev-parse HEAD)"'
@@ -12,19 +14,45 @@ export const defaultReleasePreflightSummaryPath =
   'release/release-preflight-summary.json'
 export const defaultReleaseReadinessEvidencePath =
   'release/release-readiness-evidence.json'
-const productionProfilePlatformEvidenceBaseCommand =
-  'npm run release:platform-evidence -- --production-profile'
+
+function shellArg(value) {
+  const text = String(value)
+  if (text === currentHeadCommitCommand || /^<[^>]+>$/.test(text)) {
+    return text
+  }
+
+  return shellQuote(text)
+}
+
+function shellCommand(args) {
+  return args.map((arg) => shellArg(arg)).join(' ')
+}
 
 export function releaseCommitLabel(commit) {
   return commit ?? releaseCandidateCommitPlaceholder
 }
 
 export function productionProfilePlatformEvidenceCommand(commit) {
-  return `${productionProfilePlatformEvidenceBaseCommand} --commit ${releaseCommitLabel(commit)}`
+  return shellCommand([
+    'npm',
+    'run',
+    'release:platform-evidence',
+    '--',
+    '--production-profile',
+    '--commit',
+    releaseCommitLabel(commit),
+  ])
 }
 
 export function releaseCiCommand(commit, options = {}) {
-  const args = ['npm run release:ci --', '--commit', releaseCommitLabel(commit)]
+  const args = [
+    'npm',
+    'run',
+    'release:ci',
+    '--',
+    '--commit',
+    releaseCommitLabel(commit),
+  ]
 
   if (options.includeReleasePreflight) {
     args.push('--include-release-preflight')
@@ -52,7 +80,7 @@ export function releaseCiCommand(commit, options = {}) {
     args.push('--output', options.output)
   }
 
-  const command = args.join(' ')
+  const command = shellCommand(args)
   return options.withGitHubToken
     ? `GH_TOKEN="$(gh auth token)" ${command}`
     : command
@@ -109,7 +137,10 @@ export function releasePreflightCiCommands(commit, options = {}) {
 
 export function releaseEvidenceCommand(commit, options = {}) {
   const args = [
-    'npm run release:evidence --',
+    'npm',
+    'run',
+    'release:evidence',
+    '--',
     '--platform-evidence',
     options.platformEvidencePath ?? defaultPlatformEvidencePath,
     '--ci-evidence',
@@ -131,9 +162,16 @@ export function releaseEvidenceCommand(commit, options = {}) {
     args.push('--readiness-output', options.readinessEvidencePath)
   }
 
-  return args.join(' ')
+  return shellCommand(args)
 }
 
 export function checkRealDeviceEvidenceCommand(commit) {
-  return `npm run check:real-device-evidence -- --expected-commit ${releaseCommitLabel(commit)}`
+  return shellCommand([
+    'npm',
+    'run',
+    'check:real-device-evidence',
+    '--',
+    '--expected-commit',
+    releaseCommitLabel(commit),
+  ])
 }

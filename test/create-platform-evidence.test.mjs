@@ -90,7 +90,7 @@ test('platform evidence template lists required checks without passing them', ()
 
 test('platform evidence template next actions honor custom output paths', () => {
   const template = buildPlatformEvidenceTemplate({
-    output: 'release/custom-platform-evidence.json',
+    output: "release/custom platform's evidence.json",
     commit: ` ${commit} `,
     selectedApis: ['fetch'],
   })
@@ -101,7 +101,9 @@ test('platform evidence template next actions honor custom output paths', () => 
   assert.ok(assembleAction)
   assert.ok(
     assembleAction.commands.some((command) =>
-      command.includes('--platform-evidence release/custom-platform-evidence.json'),
+      command.includes(
+        "--platform-evidence 'release/custom platform'\\''s evidence.json'",
+      ),
     ),
   )
   assert.ok(
@@ -111,7 +113,7 @@ test('platform evidence template next actions honor custom output paths', () => 
   )
   assert.ok(
     assembleAction.commands.includes(
-      `npm run release:evidence -- --platform-evidence release/custom-platform-evidence.json --ci-evidence release/ci-runs.json --commit ${commit} --real-device-output release/real-device-evidence.json`,
+      `npm run release:evidence -- --platform-evidence 'release/custom platform'\\''s evidence.json' --ci-evidence release/ci-runs.json --commit ${commit} --real-device-output release/real-device-evidence.json`,
     ),
   )
   assert.ok(
