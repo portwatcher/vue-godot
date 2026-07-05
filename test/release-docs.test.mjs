@@ -85,12 +85,9 @@ test('serious example app criteria are documented and linked', () => {
 
   for (const pattern of [
     /^# Serious Example App Criteria/m,
-    /^## Required Design Context/m,
-    /\.impeccable\.md/,
-    /## Design Context/,
-    /target audience and usage context/,
-    /primary jobs the user is trying to complete/,
-    /brand personality and interface tone/,
+    /^## Design Scope/m,
+    /SDK reference examples/,
+    /implementation-focused/,
     /^## Native App Demo/m,
     /multi-screen routing/,
     /network loading, failure, retry, and reachability\/offline states/,

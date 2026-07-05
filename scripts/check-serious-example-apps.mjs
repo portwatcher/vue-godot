@@ -262,35 +262,9 @@ function checkRepositoryWiring(root, failures) {
   }
 }
 
-function checkDesignContext(root, failures) {
-  const designContextPath = path.join(root, '.impeccable.md')
-  const designContext = readTextIfExists(designContextPath)
-  if (!designContext) {
-    failures.push('.impeccable.md is missing')
-    return
-  }
-
-  for (const marker of [
-    '## Design Context',
-    '### Users',
-    '### Brand Personality',
-    '### Aesthetic Direction',
-    '### Design Principles',
-  ]) {
-    requireIncludes(
-      root,
-      failures,
-      designContext,
-      marker,
-      '.impeccable.md',
-    )
-  }
-}
-
 function checkSeriousExampleApps(root) {
   const failures = []
 
-  checkDesignContext(root, failures)
   for (const app of expectedApps) {
     checkApp(root, failures, app)
   }

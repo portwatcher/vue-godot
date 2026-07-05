@@ -5,21 +5,12 @@ show Vue Godot handling realistic product work, not only isolated component
 fixtures. These criteria define what those apps must prove before the TODO
 entries can be checked.
 
-## Required Design Context
+## Design Scope
 
-Before implementing either serious demo, confirm these inputs with the
-maintainer:
-
-- target audience and usage context
-- primary jobs the user is trying to complete
-- brand personality and interface tone
-
-Do not infer this context from the codebase. The examples should be credible
-for the people they are meant to serve, and the owner must define that audience
-before UI direction, copy, layout, color, and motion are finalized. Save the
-confirmed context in `.impeccable.md` under `## Design Context`; the serious
-example app readiness check fails until that section includes users, brand
-personality, aesthetic direction, and design principles.
+These are SDK reference examples, not branded product demos. Their visual style
+can be simple and implementation-focused as long as they clearly exercise the
+required Vue Godot capabilities, build reliably, and document what each workflow
+proves.
 
 ## Native App Demo
 
@@ -54,7 +45,6 @@ the fixture app coverage. It must demonstrate:
 Before checking off the serious demo TODO items:
 
 - add both apps to the root README examples table
-- add confirmed owner-provided design context to `.impeccable.md`
 - keep each app's package scripts compatible with the fixture app build contract
 - include both apps in `test/fixture-apps.test.mjs`
 - run `npm run check:serious-examples`
