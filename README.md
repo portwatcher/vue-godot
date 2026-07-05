@@ -142,18 +142,20 @@ export default class App extends Control {
 
 ## Examples
 
-| App                                              | Demonstrates                                               |
-| ------------------------------------------------ | ---------------------------------------------------------- |
-| [`apps/v-on`](./apps/v-on)                       | Godot signal handling with Vue events                      |
-| [`apps/v-model`](./apps/v-model)                 | Two-way binding with Godot controls                        |
-| [`apps/template-ref`](./apps/template-ref)       | Vue template refs against Godot nodes                      |
-| [`apps/lifecycles`](./apps/lifecycles)           | Component lifecycle behavior                               |
-| [`apps/anchor-ordering`](./apps/anchor-ordering) | Anchor and layout ordering behavior                        |
-| [`apps/html-demo`](./apps/html-demo)             | `@vue-godot/html` components and `@vue-godot/browser` APIs |
+| App                                              | Demonstrates                                                            |
+| ------------------------------------------------ | ----------------------------------------------------------------------- |
+| [`apps/v-on`](./apps/v-on)                       | Godot signal handling with Vue events                                   |
+| [`apps/v-model`](./apps/v-model)                 | Two-way binding with Godot controls                                     |
+| [`apps/template-ref`](./apps/template-ref)       | Vue template refs against Godot nodes                                   |
+| [`apps/lifecycles`](./apps/lifecycles)           | Component lifecycle behavior                                            |
+| [`apps/anchor-ordering`](./apps/anchor-ordering) | Anchor and layout ordering behavior                                     |
+| [`apps/html-demo`](./apps/html-demo)             | `@vue-godot/html` components and `@vue-godot/browser` APIs              |
+| [`apps/native-app-demo`](./apps/native-app-demo) | App profile: routing, storage, network, permissions, and device APIs    |
+| [`apps/game-ui-demo`](./apps/game-ui-demo)       | Game UI profile: HUD state, input modes, media, settings, and inventory |
 
-The remaining production-readiness examples must satisfy the
-[serious example app criteria](./docs/example-apps.md) before the project can
-remove preview/experimental language.
+Production-readiness examples are tracked by the
+[example app criteria](./docs/example-apps.md) before the project can remove
+preview/experimental language.
 
 ## How It Works
 
@@ -187,7 +189,9 @@ vue-godot/
 │   ├── template-ref/       # Template ref example
 │   ├── lifecycles/         # Lifecycle example
 │   ├── anchor-ordering/    # Layout ordering example
-│   └── html-demo/          # HTML/browser integration demo
+│   ├── html-demo/          # HTML/browser integration demo
+│   ├── native-app-demo/    # App profile integration example
+│   └── game-ui-demo/       # Game UI profile integration example
 └── turbo.json              # Turborepo config
 ```
 

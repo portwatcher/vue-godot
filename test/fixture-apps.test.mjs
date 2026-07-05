@@ -71,6 +71,69 @@ const fixtureApps = [
     },
   },
   {
+    id: 'native-app-demo',
+    entryComponent: 'App.vue',
+    requiredDependencies: [
+      '@vue-godot/browser',
+      '@vue-godot/device',
+      '@vue-godot/html',
+      '@vue-godot/runtime-tscn',
+      'vue-router',
+    ],
+    usesHtmlPlugin: true,
+    sources: {
+      'vue/src/main.ts': [
+        'installBrowserAPIs()',
+        'app.use(htmlPlugin)',
+        'app.use(router)',
+      ],
+      'vue/src/App.vue': ['<SafeAreaView', '<router-view></router-view>'],
+      'vue/src/app/router.ts': ['createRouter', 'HomeScreen', 'DeviceScreen'],
+      'vue/src/screens/HomeScreen.vue': [
+        'Profile form input',
+        '<KeyboardAvoidingView',
+        '<Form',
+        'checkNetworkReachability',
+        'setNavigatorOnline',
+        'localStorage.setItem',
+        'sessionStorage.setItem',
+      ],
+      'vue/src/screens/DeviceScreen.vue': [
+        'godotNavigator.permissions.query',
+        'godotNavigator.geolocation.getCurrentPosition',
+        'mediaDevices.getUserMedia',
+        'getCapabilityStatus',
+      ],
+    },
+  },
+  {
+    id: 'game-ui-demo',
+    entryComponent: 'App.vue',
+    requiredDependencies: [
+      '@vue-godot/browser',
+      '@vue-godot/html',
+      '@vue-godot/runtime-tscn',
+    ],
+    usesHtmlPlugin: true,
+    sources: {
+      'vue/src/main.ts': ['installBrowserAPIs()', 'app.use(htmlPlugin)'],
+      'vue/src/App.vue': [
+        'Vue-rendered HUD',
+        'controller',
+        'keyboard',
+        'touch',
+        '<Audio',
+        '<Video',
+        '<Img',
+        'inventory',
+        'settings',
+        'focus restoration',
+        'requestAnimationFrame',
+        'pause',
+      ],
+    },
+  },
+  {
     id: 'lifecycles',
     entryComponent: 'App.vue',
     requiredDependencies: ['@vue-godot/runtime-tscn'],
@@ -253,7 +316,7 @@ test('fixture app workspaces expose the regression build contract', () => {
     const viteConfigPath = fixturePath(fixture, 'vue/vite.config.ts')
     const viteConfig = readText(viteConfigPath)
     for (const marker of [
-      "isNativeTag: () => false",
+      'isNativeTag: () => false',
       "entry: 'vue/src/main.ts'",
       "formats: ['cjs']",
       "fileName: () => 'app.js'",

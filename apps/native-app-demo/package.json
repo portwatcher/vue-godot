@@ -1,0 +1,25 @@
+{
+  "name": "native-app-demo",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "npm run build:deps && vite build --watch -c vue/vite.config.ts",
+    "build": "npm run build:deps && vite build -c vue/vite.config.ts",
+    "build:deps": "npm run --workspace=@vue-godot/runtime-tscn build && npm run --workspace=@vue-godot/device build && npm run --workspace=@vue-godot/browser build && npm run --workspace=@vue-godot/html build",
+    "gen:types": "vue-godot gen-types"
+  },
+  "devDependencies": {
+    "@vue-godot/cli": "*",
+    "@types/node": "^20.11.18",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "vite": "^6.3.5"
+  },
+  "dependencies": {
+    "@vue-godot/browser": "*",
+    "@vue-godot/device": "*",
+    "@vue-godot/html": "*",
+    "@vue-godot/runtime-tscn": "*",
+    "@vue/runtime-core": "^3.5.14",
+    "vue-router": "~4.5.1"
+  }
+}

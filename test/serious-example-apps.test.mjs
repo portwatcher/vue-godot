@@ -46,7 +46,10 @@ function packageJson(requiredDependencies) {
 function createFixtureApp(root, appId, requiredDependencies, readmeMarkers) {
   const appRoot = path.join(root, 'apps', appId)
   writeText(path.join(appRoot, 'README.md'), `${readmeMarkers.join('\n')}\n`)
-  writeText(path.join(appRoot, 'package.json'), packageJson(requiredDependencies))
+  writeText(
+    path.join(appRoot, 'package.json'),
+    packageJson(requiredDependencies),
+  )
   writeText(path.join(appRoot, 'project.godot'), 'config_version=5\n')
   writeText(path.join(appRoot, 'app.tscn'), '[gd_scene format=3]\n')
   writeText(path.join(appRoot, 'vue/vite.config.ts'), 'export default {}\n')
@@ -69,7 +72,7 @@ function createCompleteFixtureRoot(root) {
   writeText(
     path.join(root, 'test/fixture-apps.test.mjs'),
     [
-      "const fixtureApps = [",
+      'const fixtureApps = [',
       "  { id: 'native-app-demo' },",
       "  { id: 'game-ui-demo' },",
       ']',
@@ -126,14 +129,10 @@ function createCompleteFixtureRoot(root) {
 }
 
 function runChecker(root, ...args) {
-  return spawnSync(
-    process.execPath,
-    [scriptPath, '--root', root, ...args],
-    {
-      cwd: repoRoot,
-      encoding: 'utf-8',
-    },
-  )
+  return spawnSync(process.execPath, [scriptPath, '--root', root, ...args], {
+    cwd: repoRoot,
+    encoding: 'utf-8',
+  })
 }
 
 test('serious example app checker passes complete fixture apps', () => {
@@ -149,7 +148,10 @@ test('serious example app checker passes complete fixture apps', () => {
 test('serious example app checker fails missing demo wiring', () => {
   const root = makeTempRoot()
   writeText(path.join(root, 'README.md'), '# Missing demos\n')
-  writeText(path.join(root, 'test/fixture-apps.test.mjs'), 'const fixtureApps = []\n')
+  writeText(
+    path.join(root, 'test/fixture-apps.test.mjs'),
+    'const fixtureApps = []\n',
+  )
 
   const result = runChecker(root)
 
@@ -159,9 +161,24 @@ test('serious example app checker fails missing demo wiring', () => {
   assert.match(result.stderr, /fixture registry/)
 })
 
-test('serious example app checker can report incomplete current repo without failing', () => {
-  const result = runChecker(repoRoot, '--allow-incomplete')
+test('serious example app checker can report incomplete fixture without failing', () => {
+  const root = makeTempRoot()
+  writeText(path.join(root, 'README.md'), '# Missing demos\n')
+  writeText(
+    path.join(root, 'test/fixture-apps.test.mjs'),
+    'const fixtureApps = []\n',
+  )
+
+  const result = runChecker(root, '--allow-incomplete')
 
   assert.equal(result.status, 0, result.stderr)
   assert.match(result.stderr, /\[serious-examples\] incomplete/)
+})
+
+test('serious example app checker passes complete current repo with allow-incomplete', () => {
+  const result = runChecker(repoRoot, '--allow-incomplete')
+
+  assert.equal(result.status, 0, result.stderr)
+  assert.match(result.stdout, /\[serious-examples\] passed/)
+  assert.equal(result.stderr, '')
 })

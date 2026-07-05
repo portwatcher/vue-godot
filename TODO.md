@@ -11,7 +11,7 @@ When this file is complete, maintainers should be confident enough to remove wor
 - `@vue-godot/browser` exposes an initial browser API subset: `fetch`, `Request`, `Response`, `Headers`, `Blob`, `URL`, `TextEncoder`, `TextDecoder`, `AbortController`, base64 helpers, `history`, `location`, basic global event dispatch, adapter-backed `navigator.geolocation`, adapter-backed `navigator.mediaDevices.getUserMedia()`, and adapter-backed `Notification`.
 - `@vue-godot/device` exposes a capability registry, adapter contracts, feature detection helpers, and typed errors for plugin-backed native APIs.
 - The repo has build/test/CLI smoke checks, generated export-setting checks, and CI Godot smoke workflows.
-- The project is not yet production ready because platform APIs, app UI primitives, device integration, release/device smoke coverage, and end-user app examples are still incomplete.
+- The project is not yet production ready because platform APIs, app UI primitives, device integration, and release/device smoke coverage are still incomplete.
 
 ## Definition Of Done
 
@@ -22,9 +22,9 @@ The project is production ready only when all of these are true:
 - [ ] `npm run check` passes locally and in CI.
 - [ ] Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate.
 - [ ] Android and iOS export smoke apps run on real or hosted devices for the production profile.
-- [ ] At least two serious example apps exist:
-  - [ ] A native app style demo using routing, forms, network, storage, camera or geolocation, permissions, and offline/reachability handling.
-  - [ ] A game UI demo using Godot scenes plus Vue UI, controller/touch/keyboard navigation, animation, audio/video/image assets, and pause/settings/inventory style workflows.
+- [x] At least two serious example apps exist:
+  - [x] A native app style demo using routing, forms, network, storage, camera or geolocation, permissions, and offline/reachability handling.
+  - [x] A game UI demo using Godot scenes plus Vue UI, controller/touch/keyboard navigation, animation, audio/video/image assets, and pause/settings/inventory style workflows.
 - [x] Performance budgets are documented and enforced for app startup, first rendered UI, hot reload, large list rendering, asset loading, and repeated mount/unmount.
 - [x] Security and dependency audits are clean or documented with accepted risk.
 - [ ] Package READMEs, root README, generated templates, and demo apps match the final supported API surface.
@@ -298,12 +298,12 @@ The project is production ready only when all of these are true:
 - [x] Add `docs/compatibility.md`.
 - [x] Add `docs/performance.md`.
 - [x] Add `docs/troubleshooting.md`.
-- [ ] Add serious native app demo.
-  - Acceptance criteria and required owner-provided design context are tracked
-    in [docs/example-apps.md](./docs/example-apps.md).
-- [ ] Add serious game UI demo.
-  - Acceptance criteria and required owner-provided design context are tracked
-    in [docs/example-apps.md](./docs/example-apps.md).
+- [x] Add serious native app demo.
+  - Acceptance criteria are tracked in
+    [docs/example-apps.md](./docs/example-apps.md).
+- [x] Add serious game UI demo.
+  - Acceptance criteria are tracked in
+    [docs/example-apps.md](./docs/example-apps.md).
 - [x] Keep `apps/html-demo` updated for every HTML/browser/device API.
 
 ## P2: Ecosystem And Long-Term Parity

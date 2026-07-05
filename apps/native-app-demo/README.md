@@ -1,0 +1,32 @@
+# native-app-demo
+
+Reference native application built with Vue Godot, `@vue-godot/html`,
+`@vue-godot/browser`, `@vue-godot/device`, and `vue-router`.
+
+## Production Readiness Coverage
+
+This app exists to keep SDK-level native application flows exercised:
+
+| Requirement           | Coverage                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------- |
+| multi-screen routing  | Uses `vue-router` with home and device screens.                                       |
+| form input            | Renders text fields and textarea inside a `<Form>`.                                   |
+| network loading       | Runs `checkNetworkReachability()` with loading state.                                 |
+| reachability          | Uses `navigator.onLine` plus `setNavigatorOnline()` transitions.                      |
+| persistent storage    | Saves profile state with `localStorage` and `sessionStorage`.                         |
+| camera or geolocation | Calls `mediaDevices.getUserMedia()` and `navigator.geolocation.getCurrentPosition()`. |
+| permission            | Queries `navigator.permissions.query()` for camera and geolocation.                   |
+| SafeAreaView          | Wraps routed content in `<SafeAreaView>`.                                             |
+| KeyboardAvoidingView  | Wraps form input in `<KeyboardAvoidingView>`.                                         |
+| Godot smoke           | Open `project.godot` in GodotJS and press F5 after building.                          |
+| npm run build         | Builds the SDK dependencies and Vite bundle.                                          |
+
+## Commands
+
+```bash
+npm run build --workspace=native-app-demo
+npm run dev --workspace=native-app-demo
+npm run gen:types --workspace=native-app-demo
+```
+
+`npm run build` emits `dist/app.js`, which is attached by `app.tscn`.
