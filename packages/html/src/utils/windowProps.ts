@@ -1,5 +1,9 @@
 import type { GodotPropBag } from './controlStyle.js'
-import { toNumericPixels, type HtmlStyle } from './styleMapping.js'
+import {
+  toNumericPixels,
+  warnUnsupportedStyleProps,
+  type HtmlStyle,
+} from './styleMapping.js'
 
 export interface WindowLikeProps {
   modelValue?: boolean
@@ -22,7 +26,10 @@ export function isWindowOpen(value: boolean | undefined): boolean {
 export function applyWindowBaseProps(
   nodeProps: GodotPropBag,
   props: WindowLikeProps,
+  componentName = 'Window',
 ): void {
+  warnUnsupportedStyleProps(props.style, componentName)
+
   nodeProps['visible'] =
     isWindowOpen(props.modelValue) && props.style?.display !== 'none'
 

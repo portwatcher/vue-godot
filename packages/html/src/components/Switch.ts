@@ -46,7 +46,7 @@ export const Switch = defineComponent({
         nodeProps['disabled'] = true
       }
 
-      applyCommonControlStyleProps(nodeProps, props.style)
+      applyCommonControlStyleProps(nodeProps, props.style, 'Switch')
 
       return h('CheckButton', nodeProps)
     }

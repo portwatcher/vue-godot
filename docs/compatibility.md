@@ -98,7 +98,9 @@ Each entry should be evaluated with these fields:
 All HTML-like components are available through `@vue-godot/html`, `htmlPlugin`,
 and lowercase/PascalCase registration. They are marked `partial` until the
 production-grade component checklist covers accessibility, focus, keyboard,
-controller, touch behavior, and documented style limits.
+controller, touch behavior, and documented style limits. Inline style objects
+support the documented Godot-backed subset; unsupported style keys emit a
+`[vue-godot/html]` warning once per component/property pair.
 
 | Component/API | Owner | Status | Godot backend | Platforms | Permissions/export | Tests | Caveats |
 | --- | --- | --- | --- | --- | --- | --- | --- |

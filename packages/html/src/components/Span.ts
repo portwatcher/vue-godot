@@ -71,7 +71,7 @@ export const Span = defineComponent({
       const nodeProps: GodotPropBag = {}
 
       nodeProps['text'] = extractTextFromSlot(slots.default)
-      applyCommonControlStyleProps(nodeProps, style)
+      applyCommonControlStyleProps(nodeProps, style, 'Span')
 
       // textAlign → horizontal_alignment
       const hAlign = resolveTextAlign(style?.textAlign)

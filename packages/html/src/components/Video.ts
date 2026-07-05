@@ -2,24 +2,11 @@ import { defineComponent, h, ref, shallowRef, watch } from '@vue/runtime-core'
 import type { VideoStream } from 'godot'
 import { createOpacityModulate } from '../utils/godotColor.js'
 import { classifySource, loadStream } from '../utils/streamLoader.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
-
-/**
- * Helper to parse a numeric pixel value from a number or a `"<n>px"` string.
- */
-function toNumericPixels(value: number | string | undefined): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value
-  }
-  if (typeof value === 'string') {
-    const matched = value.trim().match(/^(-?\d+(?:\.\d+)?)(px)?$/)
-    if (matched) {
-      const parsed = Number(matched[1])
-      return Number.isFinite(parsed) ? parsed : null
-    }
-  }
-  return null
-}
+import {
+  toNumericPixels,
+  warnUnsupportedStyleProps,
+  type HtmlStyle,
+} from '../utils/styleMapping.js'
 
 /**
  * Converts a linear volume (0–1) to decibels for Godot's `volume_db`.
@@ -62,9 +49,9 @@ function linearToDb(linear: number): number {
  *   - `display: none`    → `visible = false`
  *
  * Usage:
- *   <Video src="./assets/intro.ogv" autoplay loop />
- *   <Video src="res://videos/clip.ogv" :volume="0.5" @ended="onEnd" />
- *   <Video src="./trailer.ogv" :style="{ width: 640, height: 360 }" />
+ *   <Video src="./assets/intro.ogv" autoplay loop></Video>
+ *   <Video src="res://videos/clip.ogv" :volume="0.5" @ended="onEnd"></Video>
+ *   <Video src="./trailer.ogv" :style="{ width: 640, height: 360 }"></Video>
  */
 export const Video = defineComponent({
   name: 'Video',
@@ -128,6 +115,7 @@ export const Video = defineComponent({
 
     return () => {
       const style = props.style
+      warnUnsupportedStyleProps(style, 'Video')
       const nodeProps: Record<string, unknown> = {}
 
       // Stream resource

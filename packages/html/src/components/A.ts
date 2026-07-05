@@ -49,7 +49,7 @@ export const A = defineComponent({
         nodeProps['disabled'] = true
       }
 
-      applyCommonControlStyleProps(nodeProps, props.style)
+      applyCommonControlStyleProps(nodeProps, props.style, 'A')
 
       return h('LinkButton', nodeProps)
     }

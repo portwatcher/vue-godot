@@ -1,6 +1,10 @@
 import { defineComponent, h, ref, shallowRef, watch } from '@vue/runtime-core'
 import type { Texture2D } from 'godot'
-import type { HtmlStyle } from '../utils/styleMapping.js'
+import {
+  toNumericPixels,
+  warnUnsupportedStyleProps,
+  type HtmlStyle,
+} from '../utils/styleMapping.js'
 import { classifySource, loadTexture } from '../utils/textureLoader.js'
 
 /**
@@ -73,20 +77,6 @@ function resolveObjectFit(
   }
 }
 
-function toNumericPixels(value: number | string | undefined): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value
-  }
-  if (typeof value === 'string') {
-    const matched = value.trim().match(/^(-?\d+(?:\.\d+)?)(px)?$/)
-    if (matched) {
-      const parsed = Number(matched[1])
-      return Number.isFinite(parsed) ? parsed : null
-    }
-  }
-  return null
-}
-
 /**
  * <Img> — image display component.
  *
@@ -104,10 +94,10 @@ function toNumericPixels(value: number | string | undefined): number | null {
  *   - `objectFit`        → `expand_mode` + `stretch_mode`
  *
  * Usage:
- *   <Img src="./assets/logo.png" />
- *   <Img src="res://icon.svg" :style="{ width: 64, height: 64, objectFit: 'contain' }" />
- *   <Img src="data:image/png;base64,iVBOR..." />
- *   <Img src="https://example.com/photo.jpg" />
+ *   <Img src="./assets/logo.png"></Img>
+ *   <Img src="res://icon.svg" :style="{ width: 64, height: 64, objectFit: 'contain' }"></Img>
+ *   <Img src="data:image/png;base64,iVBOR..."></Img>
+ *   <Img src="https://example.com/photo.jpg"></Img>
  */
 export const Img = defineComponent({
   name: 'Img',
@@ -158,6 +148,7 @@ export const Img = defineComponent({
 
     return () => {
       const style = props.style
+      warnUnsupportedStyleProps(style, 'Img')
       const nodeProps: Record<string, unknown> = {}
 
       if (texture.value) {

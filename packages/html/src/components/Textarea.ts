@@ -4,7 +4,10 @@ import {
   applyDisplayAndOpacityProps,
   applyFontStyleProps,
 } from '../utils/controlStyle.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
+import {
+  warnUnsupportedStyleProps,
+  type HtmlStyle,
+} from '../utils/styleMapping.js'
 
 /** Type guard for Godot nodes that expose a `text` property. */
 function hasTextProperty(node: unknown): node is { text: string } {
@@ -36,9 +39,9 @@ const DEFAULT_CHAR_WIDTH = 10
  *   - `@update:modelValue` — v-model update
  *
  * Usage:
- *   <Textarea v-model="message" placeholder="Enter message..." />
- *   <Textarea v-model="bio" :rows="5" :cols="40" />
- *   <Textarea v-model="notes" :disabled="true" />
+ *   <Textarea v-model="message" placeholder="Enter message..."></Textarea>
+ *   <Textarea v-model="bio" :rows="5" :cols="40"></Textarea>
+ *   <Textarea v-model="notes" :disabled="true"></Textarea>
  */
 export const Textarea = defineComponent({
   name: 'Textarea',
@@ -78,6 +81,7 @@ export const Textarea = defineComponent({
 
     return () => {
       const style = props.style
+      warnUnsupportedStyleProps(style, 'Textarea')
       const nodeProps: Record<string, unknown> = {}
 
       // Current value → Godot `text` property

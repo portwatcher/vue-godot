@@ -70,7 +70,7 @@ export const Modal = defineComponent({
         },
       }
 
-      applyWindowBaseProps(nodeProps, props)
+      applyWindowBaseProps(nodeProps, props, 'Modal')
 
       return h('Window', nodeProps, slots.default?.())
     }

@@ -5,7 +5,10 @@ import {
   applyFontStyleProps,
 } from '../utils/controlStyle.js'
 import { getRadioButtonGroup } from '../utils/radioGroups.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
+import {
+  warnUnsupportedStyleProps,
+  type HtmlStyle,
+} from '../utils/styleMapping.js'
 
 /**
  * Maps HTML `<input type="...">` to the Godot node tag and
@@ -146,6 +149,7 @@ export const Input = defineComponent({
   setup(props, { emit }) {
     return () => {
       const style = props.style
+      warnUnsupportedStyleProps(style, 'Input')
       const inputType = props.type ?? 'text'
       const mapping = INPUT_TYPE_MAP[inputType] ?? INPUT_TYPE_MAP['text']
       const nodeProps: Record<string, unknown> = {}

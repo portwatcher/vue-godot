@@ -55,8 +55,85 @@ export interface HtmlStyle {
   textAlign?: 'left' | 'center' | 'right'
   overflowWrap?: 'normal' | 'break-word'
   overflow?: 'visible' | 'hidden'
-  textOverflow?: 'clip' | 'ellipsis'
   opacity?: number
+}
+
+export const supportedHtmlStyleKeys = [
+  'alignItems',
+  'alignSelf',
+  'backgroundColor',
+  'color',
+  'columns',
+  'display',
+  'flex',
+  'flexDirection',
+  'flexWrap',
+  'fontSize',
+  'fontWeight',
+  'gap',
+  'height',
+  'justifyContent',
+  'maxHeight',
+  'maxWidth',
+  'minHeight',
+  'minWidth',
+  'objectFit',
+  'opacity',
+  'overflow',
+  'overflowWrap',
+  'padding',
+  'paddingBottom',
+  'paddingLeft',
+  'paddingRight',
+  'paddingTop',
+  'textAlign',
+  'textTransform',
+  'width',
+] as const
+
+const supportedHtmlStyleKeySet = new Set<string>(supportedHtmlStyleKeys)
+const warnedUnsupportedStyleProps = new Set<string>()
+
+export function getUnsupportedStyleKeys(
+  style: object | undefined,
+): string[] {
+  if (!style || typeof style !== 'object' || Array.isArray(style)) {
+    return []
+  }
+
+  return Object.keys(style).filter((key) => !supportedHtmlStyleKeySet.has(key))
+}
+
+export function warnUnsupportedStyleProps(
+  style: object | undefined,
+  componentName: string,
+  warn: (message: string) => void = console.warn,
+): void {
+  const unsupportedKeys = getUnsupportedStyleKeys(style)
+  const newKeys: string[] = []
+
+  for (const key of unsupportedKeys) {
+    const warningKey = `${componentName}:${key}`
+    if (!warnedUnsupportedStyleProps.has(warningKey)) {
+      warnedUnsupportedStyleProps.add(warningKey)
+      newKeys.push(key)
+    }
+  }
+
+  if (newKeys.length === 0) {
+    return
+  }
+
+  const plural = newKeys.length === 1 ? 'prop' : 'props'
+  warn(
+    `[vue-godot/html] Unsupported style ${plural} on <${componentName}>: ${newKeys
+      .map((key) => `"${key}"`)
+      .join(', ')}. Supported style props: ${supportedHtmlStyleKeys.join(', ')}.`,
+  )
+}
+
+export function clearUnsupportedStyleWarningsForTests(): void {
+  warnedUnsupportedStyleProps.clear()
 }
 
 export type GodotContainerTag =

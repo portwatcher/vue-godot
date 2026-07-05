@@ -86,7 +86,7 @@ export const Dialog = defineComponent({
         nodeProps['ok_button_text'] = props.confirmText
       }
 
-      applyWindowBaseProps(nodeProps, props)
+      applyWindowBaseProps(nodeProps, props, 'Dialog')
 
       return h('AcceptDialog', nodeProps, slots.default?.())
     }

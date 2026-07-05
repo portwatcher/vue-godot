@@ -63,7 +63,7 @@ export const Button = defineComponent({
         emit('click')
       }
 
-      applyCommonControlStyleProps(nodeProps, style)
+      applyCommonControlStyleProps(nodeProps, style, 'Button')
 
       return h('Button', nodeProps)
     }

@@ -57,7 +57,7 @@ export const ActivityIndicator = defineComponent({
         nodeProps['custom_minimum_size:y'] = props.size
       }
 
-      applyCommonControlStyleProps(nodeProps, props.style)
+      applyCommonControlStyleProps(nodeProps, props.style, 'ActivityIndicator')
 
       return h('ProgressBar', nodeProps)
     }

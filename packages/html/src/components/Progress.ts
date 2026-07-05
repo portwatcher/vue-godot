@@ -63,7 +63,7 @@ export const Progress = defineComponent({
         showPercentage: props.showPercentage,
         fill: props.fill,
       })
-      applyCommonControlStyleProps(nodeProps, props.style)
+      applyCommonControlStyleProps(nodeProps, props.style, 'Progress')
 
       return h('ProgressBar', nodeProps)
     }

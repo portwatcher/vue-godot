@@ -2,8 +2,12 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
+  clearUnsupportedStyleWarningsForTests,
+  getUnsupportedStyleKeys,
   resolveContainerTag,
   resolvePadding,
+  supportedHtmlStyleKeys,
+  warnUnsupportedStyleProps,
 } from '../dist/utils/styleMapping.js'
 
 test('maps gap to separation for non-wrapping row and column containers', () => {
@@ -156,4 +160,37 @@ test('resolves padding with directional overrides', () => {
   })
 
   assert.equal(resolvePadding({}), null)
+})
+
+test('detects unsupported style keys against the documented subset', () => {
+  assert.deepEqual(
+    getUnsupportedStyleKeys({
+      width: 120,
+      backgroundColor: '#112233',
+      borderRadius: 8,
+      margin: 12,
+    }),
+    ['borderRadius', 'margin'],
+  )
+  assert.equal(supportedHtmlStyleKeys.includes('width'), true)
+})
+
+test('warns once per unsupported style key and component', () => {
+  clearUnsupportedStyleWarningsForTests()
+  const warnings = []
+  const warn = (message) => warnings.push(message)
+  const style = {
+    width: 120,
+    boxShadow: '0 1px 2px black',
+  }
+
+  warnUnsupportedStyleProps(style, 'TestBox', warn)
+  warnUnsupportedStyleProps(style, 'TestBox', warn)
+  warnUnsupportedStyleProps(style, 'OtherBox', warn)
+
+  assert.equal(warnings.length, 2)
+  assert.match(warnings[0], /Unsupported style prop on <TestBox>/)
+  assert.match(warnings[0], /"boxShadow"/)
+  assert.match(warnings[0], /Supported style props:/)
+  assert.match(warnings[1], /Unsupported style prop on <OtherBox>/)
 })

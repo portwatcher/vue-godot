@@ -1,6 +1,10 @@
 import { defineComponent, h } from '@vue/runtime-core'
 import { createOpacityModulate } from '../utils/godotColor.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
+import {
+  toNumericPixels,
+  warnUnsupportedStyleProps,
+  type HtmlStyle,
+} from '../utils/styleMapping.js'
 
 /** Default canvas width matching the HTML `<canvas>` default. */
 const DEFAULT_WIDTH = 300
@@ -29,7 +33,7 @@ const DEFAULT_HEIGHT = 150
  *   - `style`  — subset of CSS styles
  *
  * Usage:
- *   <Canvas ref="canvasRef" :width="400" :height="300" />
+ *   <Canvas ref="canvasRef" :width="400" :height="300"></Canvas>
  *
  *   <!-- access the Godot Control node via template ref -->
  *   <script setup>
@@ -60,18 +64,13 @@ export const Canvas = defineComponent({
   setup(props) {
     return () => {
       const style = props.style
+      warnUnsupportedStyleProps(style, 'Canvas')
       const nodeProps: Record<string, unknown> = {}
 
       // Width / height → custom_minimum_size
       // Style width/height take precedence over the width/height props
-      const width =
-        typeof style?.width === 'number' && Number.isFinite(style.width)
-          ? style.width
-          : props.width
-      const height =
-        typeof style?.height === 'number' && Number.isFinite(style.height)
-          ? style.height
-          : props.height
+      const width = toNumericPixels(style?.width) ?? props.width
+      const height = toNumericPixels(style?.height) ?? props.height
 
       if (typeof width === 'number' && Number.isFinite(width)) {
         nodeProps['custom_minimum_size:x'] = width

@@ -148,13 +148,13 @@ The project is production ready only when all of these are true:
   - [ ] Camera permission and plugin docs.
   - [ ] Microphone capture UI or documented non-goal.
 - [ ] Improve styling:
-  - [ ] Define the official style subset and document every property.
+  - [x] Define the official style subset and document every property.
   - [ ] Add CSS parsing or stylesheet support if web migration requires it.
   - [ ] Support margins, border radius, borders, background images where feasible.
   - [ ] Support transforms and basic transitions/animations where feasible.
   - [ ] Support font family loading and fallback.
   - [ ] Support percent sizes where Godot layout can represent them.
-  - [ ] Add style warnings for unsupported properties.
+  - [x] Add style warnings for unsupported properties.
 - [ ] Improve accessibility and input:
   - [ ] Focus management.
   - [ ] Keyboard navigation.

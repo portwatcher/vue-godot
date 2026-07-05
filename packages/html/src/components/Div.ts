@@ -16,6 +16,7 @@ import {
   ControlSizeFlags,
   resolveContainerTag,
   resolvePadding,
+  warnUnsupportedStyleProps,
 } from '../utils/styleMapping.js'
 
 type LayoutAxis = 'horizontal' | 'vertical'
@@ -206,6 +207,7 @@ export const Div = defineComponent({
   setup(props, { slots }) {
     return () => {
       const style = props.style ?? {}
+      warnUnsupportedStyleProps(style, 'Div')
       const {
         tag,
         themeOverrides,

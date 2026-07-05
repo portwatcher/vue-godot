@@ -1,6 +1,10 @@
 import { FontVariation } from 'godot'
 import { createOpacityModulate, parseGodotColor } from './godotColor.js'
-import type { HtmlStyle } from './styleMapping.js'
+import {
+  toNumericPixels,
+  warnUnsupportedStyleProps,
+  type HtmlStyle,
+} from './styleMapping.js'
 
 export type GodotPropBag = Record<string, unknown>
 
@@ -22,11 +26,13 @@ export function applyControlSizeProps(
   nodeProps: GodotPropBag,
   style: HtmlStyle | undefined,
 ): void {
-  if (typeof style?.width === 'number' && Number.isFinite(style.width)) {
-    nodeProps['custom_minimum_size:x'] = style.width
+  const width = toNumericPixels(style?.width)
+  const height = toNumericPixels(style?.height)
+  if (width != null) {
+    nodeProps['custom_minimum_size:x'] = width
   }
-  if (typeof style?.height === 'number' && Number.isFinite(style.height)) {
-    nodeProps['custom_minimum_size:y'] = style.height
+  if (height != null) {
+    nodeProps['custom_minimum_size:y'] = height
   }
 }
 
@@ -66,7 +72,9 @@ export function applyDisplayAndOpacityProps(
 export function applyCommonControlStyleProps(
   nodeProps: GodotPropBag,
   style: HtmlStyle | undefined,
+  componentName = 'Control',
 ): void {
+  warnUnsupportedStyleProps(style, componentName)
   applyControlSizeProps(nodeProps, style)
   applyFontStyleProps(nodeProps, style)
   applyDisplayAndOpacityProps(nodeProps, style)

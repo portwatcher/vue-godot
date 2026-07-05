@@ -2,7 +2,11 @@ import { defineComponent, h, ref, shallowRef, watch } from '@vue/runtime-core'
 import type { Texture2D } from 'godot'
 import { Image, ImageTexture, ResourceLoader } from 'godot'
 import { resolveAssetPath } from '../utils/assetResolver.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
+import {
+  toNumericPixels,
+  warnUnsupportedStyleProps,
+  type HtmlStyle,
+} from '../utils/styleMapping.js'
 import { classifySource, loadSvgTextureFromFile } from '../utils/textureLoader.js'
 
 /**
@@ -75,20 +79,6 @@ function resolveObjectFit(
   }
 }
 
-function toNumericPixels(value: number | string | undefined): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value
-  }
-  if (typeof value === 'string') {
-    const matched = value.trim().match(/^(-?\d+(?:\.\d+)?)(px)?$/)
-    if (matched) {
-      const parsed = Number(matched[1])
-      return Number.isFinite(parsed) ? parsed : null
-    }
-  }
-  return null
-}
-
 // ---------------------------------------------------------------------------
 // SVG-specific loading
 // ---------------------------------------------------------------------------
@@ -159,9 +149,9 @@ function parseSvgDataUri(uri: string): ArrayBuffer | null {
  *   - `display: none`    → `visible = false`
  *
  * Usage:
- *   <Svg src="./assets/logo.svg" />
- *   <Svg src="res://icons/star.svg" :style="{ width: 48, height: 48 }" />
- *   <Svg src="data:image/svg+xml;base64,PHN2Zy…" :scale="2" />
+ *   <Svg src="./assets/logo.svg"></Svg>
+ *   <Svg src="res://icons/star.svg" :style="{ width: 48, height: 48 }"></Svg>
+ *   <Svg src="data:image/svg+xml;base64,PHN2Zy…" :scale="2"></Svg>
  */
 export const Svg = defineComponent({
   name: 'Svg',
@@ -264,6 +254,7 @@ export const Svg = defineComponent({
 
     return () => {
       const style = props.style
+      warnUnsupportedStyleProps(style, 'Svg')
       const nodeProps: Record<string, unknown> = {}
 
       if (texture.value) {

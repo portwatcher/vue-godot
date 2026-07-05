@@ -58,7 +58,7 @@ export const Overlay = defineComponent({
         },
       }
 
-      applyCommonControlStyleProps(nodeProps, props.style)
+      applyCommonControlStyleProps(nodeProps, props.style, 'Overlay')
 
       const backgroundStyle = createBackgroundPanelStyle(
         props.style?.backgroundColor,

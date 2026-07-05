@@ -5,7 +5,10 @@ import {
   applyFontStyleProps,
 } from '../utils/controlStyle.js'
 import { extractTextFromVNode } from '../utils/slotText.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
+import {
+  warnUnsupportedStyleProps,
+  type HtmlStyle,
+} from '../utils/styleMapping.js'
 
 /** Type guard for Godot OptionButton-like nodes. */
 interface OptionButtonLike {
@@ -168,6 +171,7 @@ export const Select = defineComponent({
 
     return () => {
       const style = props.style
+      warnUnsupportedStyleProps(style, 'Select')
       const nodeProps: Record<string, unknown> = {}
 
       // Extract options from <Option> children

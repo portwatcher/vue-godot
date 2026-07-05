@@ -96,6 +96,35 @@ This is intentionally a subset — not full CSS. We cover the 80% of layouts tha
 
 Color values support hex (`#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`), named CSS colors, `rgb()` / `rgba()`, and `hsl()` / `hsla()`.
 
+### Supported style props and warnings
+
+Inline style objects are intentionally limited to the Godot-backed subset below. Unsupported style keys emit a `[vue-godot/html]` warning once per component/property pair so migrations surface ignored CSS instead of failing silently.
+
+| Style prop | Godot behavior |
+| --- | --- |
+| `display` | `none` maps to `visible = false`; `flex` and `grid` affect `<Div>` container selection. |
+| `flexDirection` | Chooses row/column containers for `<Div>` and content wrappers. |
+| `flexWrap` | Chooses flow containers for wrapping `<Div>` layouts. |
+| `justifyContent` | Maps supported containers to Godot `alignment`. |
+| `alignItems` | Provides the default child cross-axis size flag in `<Div>`. |
+| `alignSelf` | Maps a child to a Godot size flag when it is inside `<Div>`. |
+| `flex` | Maps positive child values to expand/fill size flags inside `<Div>`. |
+| `gap` | Maps to Godot theme separation constants. |
+| `columns` | Maps to `GridContainer.columns` for grid `<Div>` layouts. |
+| `padding`, `paddingTop`, `paddingRight`, `paddingBottom`, `paddingLeft` | Maps to `MarginContainer` theme margin constants. |
+| `width`, `height` | Maps numeric or pixel-string values to minimum/control size. |
+| `minWidth`, `minHeight`, `maxWidth`, `maxHeight` | Clamps container minimum size where the component uses container sizing. |
+| `objectFit` | Maps media texture stretch/expand behavior for `<Img>` and `<Svg>`. |
+| `backgroundColor` | Maps to a `PanelContainer` `StyleBoxFlat` background where supported. |
+| `color` | Maps text-capable controls to `theme_override_colors/font_color`. |
+| `fontSize` | Maps text-capable controls to `theme_override_font_sizes/font_size`. |
+| `fontWeight` | Supports `'bold'` via a Godot `FontVariation` embolden override. |
+| `textTransform` | Supports `'uppercase'` on `<Span>`. |
+| `textAlign` | Maps `<Span>` to Godot horizontal alignment. |
+| `overflowWrap` | Supports `'break-word'` on `<Span>` via smart word wrapping. |
+| `overflow` | Supports `'hidden'` clipping where the backing Godot node exposes it. |
+| `opacity` | Maps to a Godot `modulate` alpha color. |
+
 ## Component Mapping
 
 | HTML-like Component | Godot Node                                                             | Key Props             |

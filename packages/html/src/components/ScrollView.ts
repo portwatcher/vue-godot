@@ -1,7 +1,10 @@
 import { defineComponent, h } from '@vue/runtime-core'
 import { createOpacityModulate } from '../utils/godotColor.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
-import { resolveContainerTag } from '../utils/styleMapping.js'
+import {
+  resolveContainerTag,
+  warnUnsupportedStyleProps,
+} from '../utils/styleMapping.js'
 import { Div } from './Div.js'
 
 export type ScrollViewScrollbarMode =
@@ -55,6 +58,8 @@ function applyStyleProps(
   if (!style) {
     return
   }
+
+  warnUnsupportedStyleProps(style, 'ScrollView')
 
   const styleProps = resolveContainerTag(style).props
   for (const propName of [

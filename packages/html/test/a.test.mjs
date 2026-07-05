@@ -51,8 +51,8 @@ test('maps common text control styles', () => {
   const { vnode } = renderA(
     {
       style: {
-        width: 120,
-        height: 32,
+        width: '120px',
+        height: '32px',
         fontSize: 18,
         color: '#ff0000',
         opacity: 0.5,
