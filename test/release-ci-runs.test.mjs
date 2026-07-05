@@ -227,6 +227,29 @@ test('release CI output reports missing commit status', () => {
   )
 })
 
+test('release CI push action dispatches preflight after unpushed commits', () => {
+  const workflows = [...requiredReleaseCiWorkflows, releasePreflightWorkflowName]
+  const result = collectReleaseCiRunEvidence([], commit, workflows, {
+    commitFound: false,
+  })
+  const output = releaseCiOutput(
+    { ...result, runs: [], commitFound: false },
+    workflows,
+  )
+  const pushAction = output.nextActions.find(
+    (action) => action.id === 'push-release-candidate',
+  )
+
+  assert.ok(pushAction)
+  assert.equal(pushAction.commands[0], 'npm run check')
+  assert.ok(pushAction.commands.includes('git push'))
+  assert.ok(
+    pushAction.commands.includes(
+      `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${commit} --include-release-preflight --dispatch-missing --wait --ref <branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
+    ),
+  )
+})
+
 test('release CI output includes local git hints for unpushed commits', () => {
   const result = collectReleaseCiRunEvidence(
     [],

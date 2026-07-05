@@ -493,6 +493,24 @@ function releaseCiCommand(output, options = {}) {
   return args.join(' ')
 }
 
+function releaseCiCommandAfterPush(output) {
+  const options = {
+    output: 'release/ci-runs.json',
+    wait: true,
+  }
+
+  if (!output.requiredWorkflowNames.includes(releasePreflightWorkflowName)) {
+    return releaseCiCommand(output, options)
+  }
+
+  return `GH_TOKEN="$(gh auth token)" ${releaseCiCommand(output, {
+    ...options,
+    dispatchMissing: true,
+    realDeviceEvidencePath: defaultRealDeviceEvidencePath,
+    ref: '<branch-or-tag>',
+  })}`
+}
+
 export function collectReleaseCiNextActions(output) {
   const actions = []
   const localGit = output.localGit
@@ -520,10 +538,7 @@ export function collectReleaseCiNextActions(output) {
       commands: [
         'npm run check',
         pushCommand,
-        releaseCiCommand(output, {
-          wait: true,
-          output: 'release/ci-runs.json',
-        }),
+        releaseCiCommandAfterPush(output),
       ],
     })
     return actions
