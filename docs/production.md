@@ -37,9 +37,10 @@ only; non-local preflight fails when either gate is skipped.
 
 `npm run release:readiness -- --allow-open` reports final-removal blockers while
 the production TODO remains open. The strict `npm run release:readiness` command
-is for the final removal commit and fails unless TODO boxes, current real-device
-evidence, `release/release-readiness-evidence.json`, and public warning wording
-are all in the final release state. Use
+is for the committed final removal candidate and fails unless the worktree is
+clean and TODO boxes, current real-device evidence,
+`release/release-readiness-evidence.json`, and public warning wording are all in
+the final release state. Use
 [`docs/release-readiness-evidence.example.json`](./release-readiness-evidence.example.json)
 as the schema reference for the post-preflight evidence file.
 

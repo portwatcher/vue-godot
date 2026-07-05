@@ -135,8 +135,10 @@ test('release readiness audit documents final removal blockers', () => {
   for (const pattern of [
     /release-readiness evidence missing/,
     /collectUncheckedTodoItems/,
+    /checkCleanWorktree/,
     /validateRealDeviceEvidence/,
     /releasePreflightWarningCount must be 0/,
+    /working tree must be clean for final release readiness/,
     /public warning markers still present/,
   ]) {
     assert.match(readiness, pattern)

@@ -172,6 +172,24 @@ function currentCommit(blockers) {
   return result.stdout.trim()
 }
 
+function checkCleanWorktree(blockers) {
+  const result = run('git', ['status', '--porcelain'])
+  if (result.status !== 0) {
+    blockers.push(`Unable to read git worktree status\n${result.stderr}`)
+    return
+  }
+
+  const status = result.stdout.trim()
+  if (status.length > 0) {
+    blockers.push(
+      [
+        'working tree must be clean for final release readiness',
+        status,
+      ].join('\n'),
+    )
+  }
+}
+
 function collectUncheckedTodoItems() {
   return readText('TODO.md')
     .split(/\r?\n/)
@@ -371,6 +389,7 @@ function main() {
   const blockers = collectUncheckedTodoItems()
   const expectedCommit = options.expectedCommit ?? currentCommit(blockers)
 
+  checkCleanWorktree(blockers)
   checkRealDeviceEvidence(blockers, options, expectedCommit ?? undefined)
   checkReleaseReadinessEvidence(blockers, options, expectedCommit ?? undefined)
 
