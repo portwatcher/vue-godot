@@ -292,11 +292,28 @@ export function validateFinalizationSummary(summary) {
     errors.push('package description warning markers must be removed first')
   }
 
-  const blockers = Array.isArray(summary.blockers) ? summary.blockers : []
+  const blockers = Array.isArray(summary.blockers) ? summary.blockers : null
   const expectedBlockers = expectedTodoBlockers(summary)
-  for (const blocker of blockers) {
-    if (typeof blocker !== 'string' || !expectedBlockers.has(blocker)) {
-      errors.push(`unexpected release-readiness blocker: ${String(blocker)}`)
+  if (!blockers) {
+    errors.push('summary.blockers must be an array')
+  } else {
+    const seenBlockers = new Set()
+    for (const blocker of blockers) {
+      if (typeof blocker !== 'string' || !expectedBlockers.has(blocker)) {
+        errors.push(`unexpected release-readiness blocker: ${String(blocker)}`)
+        continue
+      }
+
+      if (seenBlockers.has(blocker)) {
+        errors.push(`duplicate release-readiness blocker: ${blocker}`)
+      }
+      seenBlockers.add(blocker)
+    }
+
+    for (const blocker of expectedBlockers) {
+      if (!seenBlockers.has(blocker)) {
+        errors.push(`summary.blockers missing ${blocker}`)
+      }
     }
   }
 

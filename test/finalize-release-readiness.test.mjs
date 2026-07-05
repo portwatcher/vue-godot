@@ -104,6 +104,36 @@ test('release readiness finalizer rejects unsafe summaries', () => {
     missingEvidenceErrors,
     /realDeviceEvidenceReady must be ready before finalization/,
   )
+
+  const missingBlockersSummary = {
+    ...readyFinalizationSummary(),
+  }
+  delete missingBlockersSummary.blockers
+  assert.match(
+    validateFinalizationSummary(missingBlockersSummary).join('\n'),
+    /summary\.blockers must be an array/,
+  )
+
+  const incompleteBlockersSummary = {
+    ...readyFinalizationSummary(),
+    blockers: readyFinalizationSummary().blockers.slice(1),
+  }
+  assert.match(
+    validateFinalizationSummary(incompleteBlockersSummary).join('\n'),
+    /summary\.blockers missing TODO\.md:/,
+  )
+
+  const duplicateBlockersSummary = {
+    ...readyFinalizationSummary(),
+    blockers: [
+      ...readyFinalizationSummary().blockers,
+      readyFinalizationSummary().blockers[0],
+    ],
+  }
+  assert.match(
+    validateFinalizationSummary(duplicateBlockersSummary).join('\n'),
+    /duplicate release-readiness blocker: TODO\.md:/,
+  )
 })
 
 test('release readiness finalizer checks final TODOs and removes warning markers', () => {
