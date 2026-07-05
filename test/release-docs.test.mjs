@@ -294,7 +294,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
-    /validates normalized\s+platform evidence before fetching GitHub run metadata/,
+    /validates normalized\s+platform evidence\s+before fetching GitHub run metadata/,
   )
   assert.match(
     production,
