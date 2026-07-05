@@ -19,6 +19,7 @@ import {
   verifyGitHubActionsRunUrl,
 } from './release-evidence-utils.mjs'
 import { collectPublicSurfaceAuditErrors } from './public-surface-audit.mjs'
+import { collectLocalGitReleaseState } from './check-release-ci-runs.mjs'
 import {
   currentReleasePackageVersions,
   readJson,
@@ -859,7 +860,21 @@ function checkPublicSurface(blockers) {
   return false
 }
 
-function collectReadinessNextActions(checks) {
+function ciEvidenceCommands(commit, localGit) {
+  const releaseCommit = commit ?? '<release-candidate-sha>'
+  const pushCommand =
+    localGit?.currentBranch && !localGit.upstreamRef
+      ? `git push --set-upstream origin ${localGit.currentBranch}`
+      : 'git push'
+
+  return [
+    pushCommand,
+    `npm run release:ci -- --commit ${releaseCommit} --include-release-preflight --wait --output release/ci-runs.json`,
+    `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${releaseCommit} --include-release-preflight --dispatch-missing --wait --ref <branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
+  ]
+}
+
+function collectReadinessNextActions(checks, commit, localGit) {
   const actions = []
 
   if (!checks.cleanWorktree) {
@@ -869,6 +884,16 @@ function collectReadinessNextActions(checks) {
       detail:
         'Strict release readiness requires the release evidence and final wording changes to be checked from a clean worktree.',
       commands: ['git status --short'],
+    })
+  }
+
+  if (!checks.strictCiEvidence) {
+    actions.push({
+      id: 'ci-evidence',
+      title: 'Collect CI evidence for the tested release commit',
+      detail:
+        'Push the release-candidate commit, wait for Check, Godot Smoke, and Release Preflight, then write release/ci-runs.json for evidence assembly.',
+      commands: ciEvidenceCommands(commit, localGit),
     })
   }
 
@@ -954,11 +979,15 @@ function writeReadinessSummary(
   }
 
   const resolved = path.resolve(repoRoot, options.summaryOutput)
+  const localGit = expectedCommit
+    ? collectLocalGitReleaseState(expectedCommit)
+    : null
   const checkedTodoItems = todoItems.filter((item) => item.checked)
   const uncheckedTodoItems = todoItems.filter((item) => !item.checked)
   const summary = {
     commit: expectedCommit,
     allowOpen: options.allowOpen,
+    localGit,
     ready: blockers.length === 0,
     blockerCount: blockers.length,
     warningMarkerCount: warningMarkers.length,
@@ -976,7 +1005,7 @@ function writeReadinessSummary(
       })),
     },
     checks: { ...checks },
-    nextActions: collectReadinessNextActions(checks),
+    nextActions: collectReadinessNextActions(checks, expectedCommit, localGit),
     finalTodoRequirements: finalTodoRequirementStatuses.map((status) => ({
       ...status,
     })),

@@ -99,9 +99,10 @@ contact GitHub. Add
 `--summary-output release/release-readiness-summary.json` to write blockers,
 warning markers, package description warning status, release tooling/workflow
 blocker lists, TODO counts, unchecked TODO item details, final TODO proof status,
-structured readiness check status, and `nextActions` command hints for the
-remaining evidence/finalizer work, including separate Android/iOS real-device
-evidence status and CI workflow wiring status, as JSON for release handoff. The strict
+structured readiness check status, local Git state, and `nextActions` command
+hints for the remaining evidence/finalizer work, including CI evidence
+collection, push/dispatch commands, separate Android/iOS real-device evidence
+status, and CI workflow wiring status, as JSON for release handoff. The strict
 `npm run release:readiness` command is for the committed final removal
 candidate and fails unless the worktree is clean and TODO boxes, current
 real-device evidence, prematurely checked final TODO boxes, release tooling

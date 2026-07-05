@@ -402,6 +402,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.match(output, /wrote .*release-readiness-summary\.json/)
     assert.equal(summary.commit, exampleCommit)
     assert.equal(summary.allowOpen, true)
+    assert.equal(summary.localGit.commitIsHead, false)
     assert.equal(summary.ready, false)
     assert.ok(summary.blockerCount > 0)
     assert.equal(summary.warningMarkerCount, 8)
@@ -412,6 +413,19 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.equal(summary.releaseWorkflowBlockerCount, 0)
     assert.deepEqual(summary.releaseWorkflowBlockers, [])
     assert.ok(Array.isArray(summary.nextActions))
+    assert.ok(
+      summary.nextActions.some(
+        (action) =>
+          action.id === 'ci-evidence' &&
+          action.commands.some((command) => command.startsWith('git push')) &&
+          action.commands.includes(
+            `npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --wait --output release/ci-runs.json`,
+          ) &&
+          action.commands.some((command) =>
+            command.includes('--dispatch-missing --wait --ref <branch-or-tag>'),
+          ),
+      ),
+    )
     assert.ok(
       summary.nextActions.some(
         (action) =>

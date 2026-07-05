@@ -265,8 +265,11 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
-    /separate Android\/iOS real-device\s+evidence status/,
+    /separate Android\/iOS real-device\s+evidence\s+status/,
   )
+  assert.match(production, /local Git state/)
+  assert.match(production, /CI evidence\s+collection/)
+  assert.match(production, /push\/dispatch commands/)
   assert.match(production, /`nextActions` command hints/)
   assert.match(production, /package description warning/)
   assert.match(production, /release:preflight-summary/)
@@ -311,6 +314,9 @@ test('release preflight enforces real device evidence', () => {
     /tested release commit rather than current `HEAD`/,
   )
   assert.match(readme, /separate Android\/iOS real-device evidence status/)
+  assert.match(readme, /local Git state/)
+  assert.match(readme, /CI evidence collection/)
+  assert.match(readme, /push\/dispatch commands/)
   assert.match(readme, /`nextActions` command hints/)
   assert.match(readme, /package description warning/)
   assert.match(
@@ -361,12 +367,18 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /--commit <release-candidate-sha>/)
   assert.match(checklist, /follow-up evidence commit/)
   assert.match(checklist, /tested release\s+commit recorded in evidence/)
-  assert.match(checklist, /separate\s+Android\/iOS real-device evidence status/)
+  assert.match(
+    checklist,
+    /separate\s+Android\/iOS real-device\s+evidence\s+status/,
+  )
+  assert.match(checklist, /local Git state/)
+  assert.match(checklist, /CI evidence collection/)
+  assert.match(checklist, /push\/dispatch commands/)
   assert.match(checklist, /`nextActions` command hints/)
   assert.match(checklist, /unchecked TODO item details/)
   assert.match(checklist, /final TODO proof status/)
   assert.match(checklist, /CI workflow wiring status/)
-  assert.match(checklist, /release tooling\/workflow blocker lists/)
+  assert.match(checklist, /release tooling\/workflow blocker\s+lists/)
   assert.match(checklist, /local\/skip flags/)
   assert.match(checklist, /local-only/)
   assert.match(checklist, /skipped/)
