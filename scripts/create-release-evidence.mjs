@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url'
 import {
   requiredRealDeviceChecks,
   validateRealDeviceEvidence,
+  validateRealDevicePlatformEvidence,
 } from './real-device-evidence.mjs'
 import {
   fetchGitHubActionsRun,
@@ -170,10 +171,25 @@ function readPlatformEvidence(filePath) {
     )
   }
 
-  return {
+  const platformEvidence = {
     android: normalizePlatformEvidence(evidence.android),
     ios: normalizePlatformEvidence(evidence.ios),
   }
+
+  const errors = [
+    ...validateRealDevicePlatformEvidence(platformEvidence, 'android'),
+    ...validateRealDevicePlatformEvidence(platformEvidence, 'ios'),
+  ]
+  if (errors.length > 0) {
+    throw new Error(
+      [
+        `${path.relative(repoRoot, filePath)} platform evidence is incomplete`,
+        ...errors,
+      ].join('\n'),
+    )
+  }
+
+  return platformEvidence
 }
 
 export function normalizePlatformEvidence(evidence) {

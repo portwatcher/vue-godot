@@ -157,6 +157,7 @@ test('release preflight enforces real device evidence', () => {
     /Release preflight summary .*must be false/,
     /Release preflight summary contains \$\{warningCount\} warning/,
     /Release preflight summary contains \$\{failureCount\} failure/,
+    /validateRealDevicePlatformEvidence/,
     /collectCiSummaryStatusErrors/,
     /CI evidence ready must be true/,
     /CI evidence checks must be an object/,
@@ -249,6 +250,10 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
+    /validates normalized\s+platform evidence before fetching GitHub run metadata/,
+  )
+  assert.match(
+    production,
     /separate Android\/iOS real-device\s+evidence status/,
   )
   assert.match(production, /package description warning/)
@@ -279,6 +284,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(
     readme,
     /rejects not-ready or inconsistent structured CI summaries/,
+  )
+  assert.match(
+    readme,
+    /validates the normalized platform evidence before fetching GitHub run metadata/,
   )
   assert.match(readme, /separate Android\/iOS real-device evidence status/)
   assert.match(readme, /package description warning/)
@@ -317,6 +326,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(
     checklist,
     /rejects not-ready or inconsistent structured CI summaries/,
+  )
+  assert.match(
+    checklist,
+    /validates the normalized platform evidence before fetching GitHub run\s+metadata/,
   )
   assert.match(checklist, /separate\s+Android\/iOS real-device evidence status/)
   assert.match(checklist, /unchecked TODO item details/)

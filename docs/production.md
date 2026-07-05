@@ -63,8 +63,9 @@ not `skippedChecks`.
 After device testing and CI runs exist, `npm run release:evidence` assembles the
 real-device and release-readiness evidence files from the current package
 versions, Android/iOS platform evidence, CI evidence, and verified GitHub
-Actions run metadata. It rejects not-ready or inconsistent structured CI
-summaries, then strips worksheet fields from the final real-device evidence;
+Actions run metadata. It strips worksheet fields and validates normalized
+platform evidence before fetching GitHub run metadata. It rejects not-ready or
+inconsistent structured CI summaries before writing the final evidence;
 `release/real-device-evidence.json` must not contain
 `requiredChecks`, `passOnlyChecks`, or `selectedApiRequiredChecks`, and copied
 platform evidence is rejected. For final readiness evidence, fetch the

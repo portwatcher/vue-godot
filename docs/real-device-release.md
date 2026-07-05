@@ -133,6 +133,9 @@ The helper strips worksheet fields before writing final evidence. If
 `release/platform-evidence.json` is copied directly to
 `release/real-device-evidence.json`, `npm run check:real-device-evidence` and
 strict release gates reject it.
+The helper validates the normalized platform evidence before fetching GitHub run
+metadata, so missing device details, unknown selected APIs, or selected-API
+checks left in `skippedChecks` fail before network calls.
 
 After the `Release Preflight` workflow passes without warnings, refresh CI
 evidence so it includes the verified Release Preflight run URL:

@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import test from 'node:test'
 
 import {
@@ -163,6 +166,57 @@ test('create-release-evidence requires a preflight summary for readiness evidenc
     `${result.stdout}\n${result.stderr}`,
     /Missing required option: --release-preflight-summary/,
   )
+})
+
+test('create-release-evidence validates platform evidence before run metadata fetches', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-evidence-'))
+  const platformEvidencePath = path.join(tempDir, 'platform-evidence.json')
+  const realDeviceOutput = path.join(tempDir, 'real-device-evidence.json')
+  fs.writeFileSync(
+    platformEvidencePath,
+    `${JSON.stringify(
+      {
+        android: {
+          ...platformEvidence('android'),
+          selectedApis: ['fetch', 'navigator.geoLocation'],
+        },
+        ios: platformEvidence('ios'),
+      },
+      null,
+      2,
+    )}\n`,
+  )
+
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/create-release-evidence.mjs',
+      '--platform-evidence',
+      platformEvidencePath,
+      '--real-device-output',
+      realDeviceOutput,
+      '--check-run-url',
+      'https://github.com/portwatcher/vue-godot/actions/runs/1',
+      '--godot-smoke-run-url',
+      'https://github.com/portwatcher/vue-godot/actions/runs/2',
+      '--commit',
+      commit,
+    ],
+    {
+      cwd: process.cwd(),
+      encoding: 'utf-8',
+    },
+  )
+
+  const output = `${result.stdout}\n${result.stderr}`
+  assert.equal(result.status, 1)
+  assert.match(output, /platform evidence is incomplete/)
+  assert.match(
+    output,
+    /android\.selectedApis contains unknown API navigator\.geoLocation/,
+  )
+  assert.doesNotMatch(output, /GitHub API returned/)
+  assert.equal(fs.existsSync(realDeviceOutput), false)
 })
 
 test('extractCiRunUrls reads release CI evidence for the evidence commit', () => {
