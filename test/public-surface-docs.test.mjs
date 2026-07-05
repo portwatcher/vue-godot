@@ -1,0 +1,185 @@
+import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import path from 'node:path'
+import test from 'node:test'
+
+const repoRoot = process.cwd()
+
+function readDoc(relativePath) {
+  return fs.readFileSync(path.join(repoRoot, relativePath), 'utf-8')
+}
+
+function assertPatterns(relativePath, patterns) {
+  const source = readDoc(relativePath)
+
+  for (const pattern of patterns) {
+    assert.match(
+      source,
+      pattern,
+      `${relativePath} must include ${pattern.toString()}`,
+    )
+  }
+}
+
+test('root README links public support docs, packages, and checked-in examples', () => {
+  assertPatterns('README.md', [
+    /docs\/compatibility\.md/,
+    /docs\/production\.md/,
+    /docs\/permissions\.md/,
+    /docs\/plugins\.md/,
+    /docs\/real-device-release\.md/,
+    /docs\/routing\.md/,
+    /docs\/runtime\.md/,
+    /docs\/migration\.md/,
+    /docs\/troubleshooting\.md/,
+    /docs\/roadmap\.md/,
+    /packages\/runtime-tscn\/README\.md/,
+    /packages\/html\/README\.md/,
+    /packages\/browser\/README\.md/,
+    /packages\/device\/README\.md/,
+    /packages\/cli\/README\.md/,
+    /apps\/html-demo/,
+    /apps\/native-app-demo/,
+    /apps\/game-ui-demo/,
+    /docs\/example-apps\.md/,
+  ])
+})
+
+test('package READMEs link compatibility docs and document their public surface', () => {
+  const packages = [
+    {
+      path: 'packages/runtime-tscn/README.md',
+      patterns: [
+        /docs\/compatibility\.md/,
+        /docs\/runtime\.md/,
+        /Render Vue components into Godot scene nodes/,
+        /Runtime Diagnostics/,
+        /Prop Removal \/ Unset Semantics/,
+      ],
+    },
+    {
+      path: 'packages/html/README.md',
+      patterns: [
+        /docs\/compatibility\.md/,
+        /^## Provided APIs/m,
+        /htmlPlugin/,
+        /htmlTags/,
+        /<SafeAreaView>/,
+        /<KeyboardAvoidingView>/,
+        /<VirtualList>/,
+        /<CameraView>/,
+      ],
+    },
+    {
+      path: 'packages/browser/README.md',
+      patterns: [
+        /docs\/compatibility\.md/,
+        /docs\/permissions\.md/,
+        /^## Provided APIs/m,
+        /installBrowserAPIs/,
+        /navigator\.permissions\.query\(\)/,
+        /navigator\.geolocation/,
+        /navigator\.mediaDevices\.getUserMedia\(\)/,
+        /navigator\.vibrate\(\)/,
+        /Notification/,
+      ],
+    },
+    {
+      path: 'packages/device/README.md',
+      patterns: [
+        /docs\/compatibility\.md/,
+        /docs\/permissions\.md/,
+        /^## Provided APIs/m,
+        /DeviceCapabilityRegistry/,
+        /registerDeviceCapability\(adapter\)/,
+        /isSupported\(capability\)/,
+        /requireCapability\(capability\)/,
+        /GeolocationAdapter/,
+        /MediaDevicesAdapter/,
+        /PermissionAdapter/,
+      ],
+    },
+    {
+      path: 'packages/cli/README.md',
+      patterns: [
+        /docs\/compatibility\.md/,
+        /vue-godot create app my-app/,
+        /vue-godot create game-ui my-game-ui/,
+        /--router/,
+        /--storage/,
+        /--network/,
+        /--device-api/,
+        /check:exports/,
+        /doctor --exports-only/,
+        /GlobalComponents/,
+      ],
+    },
+  ]
+
+  for (const { path: relativePath, patterns } of packages) {
+    assertPatterns(relativePath, patterns)
+  }
+})
+
+test('generated project docs and Vite template preserve export-ready defaults', () => {
+  assertPatterns('packages/cli/templates/docs/production.md', [
+    /^# Production Export Guide/m,
+    /npm run build/,
+    /npm run check:exports/,
+    /npx vue-godot doctor/,
+    /dist\/app\.js/,
+    /dist\/chunks\/\*\.js/,
+    /android\.permission\.INTERNET/,
+    /android\.permission\.CAMERA/,
+    /android\.permission\.RECORD_AUDIO/,
+    /android\.permission\.VIBRATE/,
+    /android\.permission\.POST_NOTIFICATIONS/,
+    /android\.permission\.ACCESS_FINE_LOCATION/,
+    /NSCameraUsageDescription/,
+    /NSMicrophoneUsageDescription/,
+    /NSLocationWhenInUseUsageDescription/,
+    /NSPhotoLibraryUsageDescription/,
+    /real device testing/,
+  ])
+
+  assertPatterns('packages/cli/templates/vue/vite.config.ts', [
+    /isNativeTag: \(\) => false/,
+    /isCustomElement: \(tag\) => tag\[0\] === tag\[0\]\.toUpperCase\(\)/,
+    /alias: { vue: '@vue\/runtime-core' }/,
+    /entry: 'vue\/src\/main\.ts'/,
+    /formats: \['cjs'\]/,
+    /fileName: \(\) => 'app\.js'/,
+    /external: \['godot'\]/,
+    /chunkFileNames: 'chunks\/\[name\]\.js'/,
+  ])
+})
+
+test('serious example READMEs document their SDK coverage and smoke commands', () => {
+  const examples = ['apps/native-app-demo/README.md', 'apps/game-ui-demo/README.md']
+
+  for (const relativePath of examples) {
+    assertPatterns(relativePath, [
+      /^## Production Readiness Coverage/m,
+      /npm run build/,
+      /npm run dev/,
+      /npm run gen:types/,
+      /GODOT_BIN=\/path\/to\/godot npm run smoke:godot/,
+      /project\.godot/,
+      /dist\/app\.js/,
+      /app\.tscn/,
+    ])
+  }
+})
+
+test('experimental wording remains while final release gates are still open', () => {
+  assertPatterns('TODO.md', [
+    /- \[ \] `npm run check` passes locally and in CI/,
+    /- \[ \] Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate/,
+    /- \[ \] Android and iOS export smoke apps run on real or hosted devices for the production profile/,
+    /- \[ \] The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied/,
+  ])
+
+  assertPatterns('README.md', [/experimental and not production ready yet/])
+  assertPatterns('docs/compatibility.md', [/project is still experimental/])
+  assertPatterns('docs/production.md', [/Vue Godot is still experimental/])
+})
