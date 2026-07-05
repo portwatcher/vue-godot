@@ -41,9 +41,11 @@ function validEvidence() {
     ),
     godotJsVersion: 'GodotJS 1.0.0-2 / Godot 4.4.x',
     checkRunUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+    checkRunWorkflowName: 'Check',
     checkRunCommit: '0123456789abcdef0123456789abcdef01234567',
     checkRunConclusion: 'success',
     godotSmokeRunUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+    godotSmokeRunWorkflowName: 'Godot Smoke',
     godotSmokeRunCommit: '0123456789abcdef0123456789abcdef01234567',
     godotSmokeRunConclusion: 'success',
     android: platformEvidence('android'),
@@ -130,6 +132,17 @@ test('real device evidence requires GitHub Actions run URLs for this repo', () =
     errors,
     /godotSmokeRunUrl must be a GitHub Actions run URL for portwatcher\/vue-godot/,
   )
+})
+
+test('real device evidence requires the expected GitHub Actions workflows', () => {
+  const evidence = validEvidence()
+  evidence.checkRunWorkflowName = 'Publish'
+  evidence.godotSmokeRunWorkflowName = 'Check'
+
+  const errors = validateRealDeviceEvidence(evidence).join('\n')
+
+  assert.match(errors, /checkRunWorkflowName must be "Check"/)
+  assert.match(errors, /godotSmokeRunWorkflowName must be "Godot Smoke"/)
 })
 
 test('checked-in real device evidence example matches the validator schema', () => {

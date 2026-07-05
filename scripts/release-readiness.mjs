@@ -9,6 +9,7 @@ import {
   validateRealDeviceEvidence,
 } from './real-device-evidence.mjs'
 import {
+  assertExactString,
   assertGitHubActionsRunUrl,
   hasNonEmptyString,
   isRecord,
@@ -256,6 +257,13 @@ function validateReleaseReadinessEvidence(evidence, expectedCommit) {
   assertGitHubActionsRunUrl(
     evidence,
     'releasePreflightRunUrl',
+    errors,
+    'releaseReadiness',
+  )
+  assertExactString(
+    evidence,
+    'releasePreflightRunWorkflowName',
+    'Release Preflight',
     errors,
     'releaseReadiness',
   )

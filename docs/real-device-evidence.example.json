@@ -9,9 +9,11 @@
   },
   "godotJsVersion": "GodotJS 1.0.0-2 / Godot 4.4.x",
   "checkRunUrl": "https://github.com/portwatcher/vue-godot/actions/runs/0000000001",
+  "checkRunWorkflowName": "Check",
   "checkRunCommit": "0123456789abcdef0123456789abcdef01234567",
   "checkRunConclusion": "success",
   "godotSmokeRunUrl": "https://github.com/portwatcher/vue-godot/actions/runs/0000000002",
+  "godotSmokeRunWorkflowName": "Godot Smoke",
   "godotSmokeRunCommit": "0123456789abcdef0123456789abcdef01234567",
   "godotSmokeRunConclusion": "success",
   "android": {

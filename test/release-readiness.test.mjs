@@ -78,6 +78,7 @@ test('release readiness requires a GitHub Actions preflight run URL for this rep
       {
         commit: '0123456789abcdef0123456789abcdef01234567',
         releasePreflightRunUrl: 'https://example.com/actions/runs/3',
+        releasePreflightRunWorkflowName: 'Release Preflight',
         releasePreflightRunCommit:
           '0123456789abcdef0123456789abcdef01234567',
         releasePreflightRunConclusion: 'success',
@@ -104,6 +105,38 @@ test('release readiness requires a GitHub Actions preflight run URL for this rep
     assert.match(
       output,
       /releasePreflightRunUrl must be a GitHub Actions run URL for portwatcher\/vue-godot/,
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
+test('release readiness requires the Release Preflight workflow name', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
+  const readinessPath = path.join(tempDir, 'release-readiness.json')
+  const evidence = JSON.parse(
+    fs.readFileSync('docs/release-readiness-evidence.example.json', 'utf-8'),
+  )
+  evidence.releasePreflightRunWorkflowName = 'Check'
+
+  fs.writeFileSync(readinessPath, JSON.stringify(evidence, null, 2))
+
+  try {
+    const result = runReadiness([
+      '--allow-open',
+      '--real-device-path',
+      'docs/real-device-evidence.example.json',
+      '--readiness-path',
+      readinessPath,
+      '--expected-commit',
+      '0123456789abcdef0123456789abcdef01234567',
+    ])
+    const output = `${result.stdout}\n${result.stderr}`
+
+    assert.equal(result.status, 0)
+    assert.match(
+      output,
+      /releasePreflightRunWorkflowName must be "Release Preflight"/,
     )
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })

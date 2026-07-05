@@ -47,7 +47,8 @@ clean and TODO boxes, current real-device evidence,
 public-surface documentation/demo alignment,
 `release/release-readiness-evidence.json`, and public warning wording are all in
 the final release state. Evidence run URLs must be GitHub Actions run URLs for
-`portwatcher/vue-godot`, and real-device package versions must match the current
+`portwatcher/vue-godot`, workflow names must match `Check`, `Godot Smoke`, and
+`Release Preflight`, and real-device package versions must match the current
 package manifests. Use
 [`docs/release-readiness-evidence.example.json`](./release-readiness-evidence.example.json)
 as the schema reference for the post-preflight evidence file.

@@ -23,3 +23,9 @@ export function assertGitHubActionsRunUrl(record, key, errors, label) {
     )
   }
 }
+
+export function assertExactString(record, key, expected, errors, label) {
+  if (record[key] !== expected) {
+    errors.push(`${label}.${key} must be "${expected}"`)
+  }
+}

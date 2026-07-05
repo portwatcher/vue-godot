@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import {
+  assertExactString,
   assertGitHubActionsRunUrl,
   hasNonEmptyString,
   isRecord,
@@ -139,9 +140,23 @@ export function validateRealDeviceEvidence(evidence, options = {}) {
   assertString(evidence, 'commit', errors, 'evidence')
   assertString(evidence, 'godotJsVersion', errors, 'evidence')
   assertGitHubActionsRunUrl(evidence, 'checkRunUrl', errors, 'evidence')
+  assertExactString(
+    evidence,
+    'checkRunWorkflowName',
+    'Check',
+    errors,
+    'evidence',
+  )
   assertString(evidence, 'checkRunCommit', errors, 'evidence')
   assertSuccessConclusion(evidence, 'checkRunConclusion', errors, 'evidence')
   assertGitHubActionsRunUrl(evidence, 'godotSmokeRunUrl', errors, 'evidence')
+  assertExactString(
+    evidence,
+    'godotSmokeRunWorkflowName',
+    'Godot Smoke',
+    errors,
+    'evidence',
+  )
   assertString(evidence, 'godotSmokeRunCommit', errors, 'evidence')
   assertSuccessConclusion(
     evidence,

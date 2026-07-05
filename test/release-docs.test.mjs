@@ -26,6 +26,8 @@ test('real device release checklist covers required Android and iOS gates', () =
     /VUE_GODOT_REAL_DEVICE_EVIDENCE/,
     /real-device-evidence\.example\.json/,
     /GitHub Actions run URL[\s\S]*portwatcher\/vue-godot/,
+    /workflow name `Check`/,
+    /workflow name `Godot Smoke`/,
     /Release Preflight/,
     /Godot Smoke workflow/,
     /APK\/AAB/,
@@ -119,6 +121,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(preflightWorkflow, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
   assert.equal(example.checkRunConclusion, 'success')
   assert.equal(example.godotSmokeRunConclusion, 'success')
+  assert.equal(example.checkRunWorkflowName, 'Check')
+  assert.equal(example.godotSmokeRunWorkflowName, 'Godot Smoke')
   assert.equal(example.checkRunCommit, example.commit)
   assert.equal(example.godotSmokeRunCommit, example.commit)
   assert.equal('releasePreflightRunUrl' in example, false)
@@ -161,11 +165,14 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(production, /release:readiness/)
   assert.match(readme, /check:public-surface/)
   assert.match(production, /GitHub Actions run URLs for/)
+  assert.match(production, /Release Preflight/)
+  assert.match(production, /Godot Smoke/)
   assert.match(production, /release-readiness-evidence\.example\.json/)
   assert.match(readme, /release:readiness/)
   assert.match(readme, /release-readiness-evidence\.json/)
   assert.match(todo, /release:readiness/)
   assert.equal(example.releasePreflightRunConclusion, 'success')
+  assert.equal(example.releasePreflightRunWorkflowName, 'Release Preflight')
   assert.equal(example.releasePreflightWarningCount, 0)
   assert.equal(example.releasePreflightRunCommit, example.commit)
 })
