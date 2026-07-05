@@ -481,6 +481,10 @@ test('extractCiRunUrls rejects stale or incomplete CI evidence', () => {
     result.errors.join('\n'),
     /CI evidence commit must match expected release commit/,
   )
+  assert.match(
+    result.errors.join('\n'),
+    /release:evidence with --commit <release-candidate-sha>/,
+  )
   assert.match(result.errors.join('\n'), /missing Godot Smoke/)
 })
 
@@ -555,6 +559,10 @@ test('extractReleasePreflightWarningCount rejects stale or failed summaries', ()
   assert.match(
     result.errors.join('\n'),
     /summary commit must match expected release commit/,
+  )
+  assert.match(
+    result.errors.join('\n'),
+    /release:evidence with --commit <release-candidate-sha>/,
   )
   assert.match(
     result.errors.join('\n'),
