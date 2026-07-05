@@ -23,6 +23,7 @@ import { readInitialCiEvidenceStatus } from './release-ci-evidence.mjs'
 export { validateInitialCiEvidence } from './release-ci-evidence.mjs'
 import { collectPublicSurfaceAuditErrors } from './public-surface-audit.mjs'
 import { collectLocalGitReleaseState } from './check-release-ci-runs.mjs'
+import { readPlatformEvidenceAudit } from './check-platform-evidence.mjs'
 import { finalizationFiles } from './release-finalization-files.mjs'
 import {
   checkPlatformEvidenceCommand,
@@ -958,6 +959,7 @@ function collectReadinessNextActions(
   commit,
   localGit,
   initialCiEvidence,
+  platformEvidence,
 ) {
   const actions = []
   const releaseCommit = releaseCommitLabel(commit)
@@ -1008,16 +1010,39 @@ function collectReadinessNextActions(
     !checks.androidRealDeviceEvidence ||
     !checks.iosRealDeviceEvidence
   ) {
+    const platformEvidenceCommands = []
+    if (!platformEvidence?.evidencePresent) {
+      platformEvidenceCommands.push(
+        productionProfilePlatformEvidenceCommand(commit),
+      )
+    } else if (!platformEvidence.ready) {
+      platformEvidenceCommands.push(
+        checkPlatformEvidenceCommand(commit, {
+          allowOpen: true,
+          platformEvidencePath: platformEvidence.path,
+          summaryOutput: 'release/platform-evidence-summary.json',
+        }),
+      )
+    } else {
+      platformEvidenceCommands.push(
+        checkPlatformEvidenceCommand(commit, {
+          platformEvidencePath: platformEvidence.path,
+        }),
+      )
+    }
+
     actions.push({
       id: 'real-device-evidence',
       title: 'Complete Android and iOS real-device export evidence',
       detail:
-        'Run the local check and selected API export checks on real or hosted devices, then assemble and validate release/real-device-evidence.json for the tested release commit.',
+        'Run the local check and selected API export checks on real or hosted devices, reuse the platform worksheet when it exists, then assemble and validate release/real-device-evidence.json for the tested release commit.',
       commands: [
         'npm run check',
-        productionProfilePlatformEvidenceCommand(commit),
+        ...platformEvidenceCommands,
         ...(checks.initialCiEvidence ? [] : initialReleaseCiCommands(commit)),
-        checkPlatformEvidenceCommand(commit),
+        ...(platformEvidence?.ready
+          ? []
+          : [checkPlatformEvidenceCommand(commit)]),
         releaseEvidenceCommand(commit),
         checkRealDeviceEvidenceCommand(commit),
         ...commitEvidenceCommands(
@@ -1112,6 +1137,7 @@ function writeReadinessSummary(
   realDeviceEvidence,
   releaseReadinessEvidence,
   initialCiEvidence,
+  platformEvidence,
 ) {
   if (!options.summaryOutput) {
     return
@@ -1147,11 +1173,13 @@ function writeReadinessSummary(
     realDeviceEvidence: { ...realDeviceEvidence },
     releaseReadinessEvidence: { ...releaseReadinessEvidence },
     initialCiEvidence: { ...initialCiEvidence },
+    platformEvidence: { ...platformEvidence },
     nextActions: collectReadinessNextActions(
       checks,
       expectedCommit,
       localGit,
       initialCiEvidence,
+      platformEvidence,
     ),
     finalTodoRequirements: finalTodoRequirementStatuses.map((status) => ({
       ...status,
@@ -1179,6 +1207,9 @@ async function main() {
     blockers,
     options,
     expectedCommit ?? undefined,
+  )
+  const platformEvidenceStatus = readPlatformEvidenceAudit(
+    defaultPlatformEvidencePath,
   )
   const realDeviceEvidenceReady = realDeviceEvidenceStatus.ready
   const realDeviceEvidenceMetadataReady =
@@ -1274,6 +1305,7 @@ async function main() {
     releaseTooling: releaseToolingBlockers.length === 0,
     releaseWorkflows: releaseWorkflowsReady,
     releaseReadinessEvidence: releaseReadinessEvidenceReady,
+    platformEvidence: platformEvidenceStatus.ready,
     rootReadmeWarningsRemoved: rootReadmeWarningReady,
     strictCiEvidence: strictCiEvidenceReady,
   }
@@ -1292,6 +1324,7 @@ async function main() {
       realDeviceEvidenceStatus,
       releaseReadinessEvidenceStatus,
       initialCiEvidenceStatus,
+      platformEvidenceStatus,
     )
   } catch (error) {
     blockers.push(
@@ -1328,6 +1361,19 @@ async function main() {
     for (const marker of packageDescriptionWarnings) {
       console.log(`- ${marker}`)
     }
+  }
+
+  if (!platformEvidenceStatus.ready) {
+    console.log('\n[release-readiness] platform evidence worksheet open')
+    console.log(
+      `- ${platformEvidenceStatus.path}: ${platformEvidenceStatus.errorCount} blocker(s)`,
+    )
+    console.log(
+      `- ${checkPlatformEvidenceCommand(expectedCommit, {
+        allowOpen: true,
+        summaryOutput: 'release/platform-evidence-summary.json',
+      })}`,
+    )
   }
 
   if (options.allowOpen) {

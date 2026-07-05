@@ -35,12 +35,13 @@ the handoff run.
 `npm run check:real-device-evidence` validates the Android/iOS export-smoke
 evidence JSON when it exists. Add
 `--summary-output release/real-device-evidence-summary.json` to write
-validation status, errors, initial CI evidence status, and `nextActions`
-command hints for fixing or creating evidence; missing-evidence assembly and
-invalid-evidence regeneration hints begin with `npm run check`, run the
-platform worksheet audit before final evidence assembly or regeneration, then
-run any still-needed release CI wait/dispatch or evidence commands and resolve
-command placeholders to `--expected-commit` when it is supplied.
+validation status, errors, initial CI evidence status, platform worksheet
+status, and `nextActions` command hints for fixing or creating evidence;
+missing-evidence assembly and invalid-evidence regeneration hints begin with
+`npm run check`, run the platform worksheet audit before final evidence
+assembly or regeneration, then run any still-needed release CI wait/dispatch or
+evidence commands and resolve command placeholders to `--expected-commit` when
+it is supplied.
 `release:preflight` verifies package metadata,
 generated package specs, dry-run package contents including every
 `package.json` export target, registry state, publish environment assumptions,
@@ -151,9 +152,10 @@ blocker lists, TODO counts, unchecked TODO item details, final TODO proof status
 structured readiness check and evidence status, local Git state, and
 `nextActions` command hints for the remaining evidence/finalizer work, including
 the local `npm run check`, initial CI evidence collection, push/dispatch
-commands, separate Android/iOS real-device evidence status with metadata,
-platform, and read errors, release-readiness evidence status, and CI workflow
-wiring status, as JSON for release handoff. The initial CI, real-device, and
+commands, platform worksheet audit status with per-platform gaps, separate
+Android/iOS real-device evidence status with metadata, platform, and read
+errors, release-readiness evidence status, and CI workflow wiring status, as
+JSON for release handoff. The initial CI, real-device, and
 Release Preflight evidence actions begin with `npm run check` before collecting
 CI or assembling evidence.
 The initial CI action captures Check and Godot Smoke, while Release Preflight is
@@ -173,7 +175,11 @@ dispatching Release Preflight from the current evidence commit ref with
 That later action includes the `--dispatch-missing`,
 `--release-preflight-run-commit`, and `--real-device-evidence-path` inputs for
 the workflow-dispatch-only preflight workflow. The real-device evidence action
-runs the platform worksheet audit before final evidence assembly, stages
+reuses an existing platform worksheet and writes
+`release/platform-evidence-summary.json` when it still has gaps; it only emits
+`npm run release:platform-evidence -- --production-profile` when the worksheet
+is missing. Before final evidence assembly it runs the strict platform worksheet
+audit, stages
 `release/platform-evidence.json`,
 `release/ci-runs.json`, and `release/real-device-evidence.json`, commits them
 with `git commit -m "Add real-device release evidence"`, then pushes so the

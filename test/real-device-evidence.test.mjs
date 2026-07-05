@@ -500,12 +500,21 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
     assert.equal(summary.ready, false)
     assert.equal(summary.evidencePresent, false)
     assert.equal(summary.errorCount, 1)
+    assert.equal(summary.platformEvidenceReady, false)
+    assert.equal(summary.platformEvidence.evidencePresent, true)
+    assert.equal(summary.platformEvidence.ready, false)
+    assert.equal(summary.platformEvidence.path, 'release/platform-evidence.json')
+    assert.ok(
+      summary.platformEvidence.platforms.android.remainingChecks.includes(
+        'cold-launch',
+      ),
+    )
     assert.ok(
       summary.nextActions.some(
         (action) =>
-          action.id === 'create-platform-evidence' &&
+          action.id === 'complete-platform-evidence' &&
           action.commands.includes(
-            'npm run release:platform-evidence -- --production-profile --commit <release-candidate-sha>',
+            'npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit <release-candidate-sha>',
           ),
       ),
     )
@@ -556,12 +565,14 @@ test('check-real-device-evidence next actions honor expected commits', () => {
     )
 
     assert.equal(result.status, 0)
+    assert.equal(summary.platformEvidence.evidencePresent, true)
+    assert.equal(summary.platformEvidence.ready, false)
     assert.ok(
       summary.nextActions.some(
         (action) =>
-          action.id === 'create-platform-evidence' &&
+          action.id === 'complete-platform-evidence' &&
           action.commands.includes(
-            `npm run release:platform-evidence -- --production-profile --commit ${expectedCommit}`,
+            `npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit ${expectedCommit}`,
           ),
       ),
     )
@@ -620,6 +631,8 @@ test('check-real-device-evidence reuses committed initial CI evidence', () => {
 
     assert.equal(result.status, 0)
     assert.equal(summary.initialCiEvidenceReady, true)
+    assert.equal(summary.platformEvidenceReady, false)
+    assert.equal(summary.platformEvidence.evidencePresent, true)
     assert.deepEqual(summary.initialCiEvidence, {
       commit: ciEvidence.commit,
       errorCount: 0,

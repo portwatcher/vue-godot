@@ -254,12 +254,18 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /real-device-evidence-summary\.json/)
   assert.match(
     production,
-    /validation status, errors, initial CI evidence status, and `nextActions`/,
+    /validation status, errors, initial CI evidence status, platform worksheet\s+status, and `nextActions`/,
+  )
+  assert.match(production, /missing-evidence assembly/)
+  assert.match(
+    production,
+    /invalid-evidence regeneration\s+hints\s+begin with\s+`npm run check`/,
   )
   assert.match(
     production,
-    /missing-evidence assembly\s+and\s+invalid-evidence regeneration\s+hints begin with `npm run check`[\s\S]*platform worksheet audit before final evidence assembly or regeneration[\s\S]*still-needed release CI\s+wait\/dispatch/,
+    /platform worksheet audit before final\s+evidence\s+assembly or regeneration/,
   )
+  assert.match(production, /still-needed release CI wait\/dispatch/)
   assert.match(
     production,
     /resolve\s+command placeholders\s+to\s+`--expected-commit`/,
@@ -376,6 +382,12 @@ test('release preflight enforces real device evidence', () => {
     /final\s+warning-removal action\s+runs\s+`npm run check` after the finalizer/,
   )
   assert.match(production, /git commit -m "Add real-device release evidence"/)
+  assert.match(production, /reuses an existing platform worksheet/)
+  assert.match(
+    production,
+    /only emits\s+`npm run release:platform-evidence -- --production-profile` when the worksheet\s+is missing/,
+  )
+  assert.match(production, /strict platform worksheet\s+audit/)
   assert.match(production, /git commit -m "Add release readiness evidence"/)
   assert.match(production, /git add TODO\.md README\.md docs\/compatibility\.md docs\/production\.md docs\/real-device-release\.md/)
   assert.match(production, /git commit -m "Finalize production readiness"/)
@@ -403,12 +415,18 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /real-device-evidence-summary\.json/)
   assert.match(
     readme,
-    /validation status, errors, initial CI evidence status, and `nextActions`/,
+    /validation status, errors, initial CI evidence status, platform worksheet status, and `nextActions`/,
+  )
+  assert.match(readme, /missing-evidence assembly/)
+  assert.match(
+    readme,
+    /invalid-evidence regeneration\s+hints\s+begin with `npm run check`/,
   )
   assert.match(
     readme,
-    /missing-evidence assembly\s+and\s+invalid-evidence regeneration\s+hints begin with `npm run check`[\s\S]*platform worksheet audit before final evidence assembly or regeneration[\s\S]*still-needed release CI\s+wait\/dispatch/,
+    /platform worksheet audit before final\s+evidence\s+assembly or regeneration/,
   )
+  assert.match(readme, /still-needed release CI\s+wait\/dispatch/)
   assert.match(readme, /resolve\s+command placeholders\s+to\s+`--expected-commit`/)
   assert.match(readme, /release:ci/)
   assert.match(
@@ -498,6 +516,12 @@ test('release preflight enforces real device evidence', () => {
     /final\s+warning-removal action\s+runs\s+`npm run check` after the finalizer/,
   )
   assert.match(readme, /git commit -m "Add real-device release evidence"/)
+  assert.match(readme, /reuses an existing platform worksheet/)
+  assert.match(
+    readme,
+    /only emits `npm run release:platform-evidence -- --production-profile` when the worksheet is missing/,
+  )
+  assert.match(readme, /strict platform worksheet audit/)
   assert.match(readme, /git commit -m "Add release readiness evidence"/)
   assert.match(readme, /git commit -m "Finalize production readiness"/)
   assert.match(readme, /initial CI evidence collection/)
@@ -543,12 +567,18 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /real-device-evidence-summary\.json/)
   assert.match(
     checklist,
-    /validation status, errors, initial CI evidence status, and\s+`nextActions`/,
+    /validation status, errors, initial CI evidence status, platform\s+worksheet status, and\s+`nextActions`/,
+  )
+  assert.match(checklist, /missing-evidence\s+assembly/)
+  assert.match(
+    checklist,
+    /invalid-evidence\s+regeneration\s+hints\s+begin with `npm run check`/,
   )
   assert.match(
     checklist,
-    /missing-evidence\s+assembly\s+and\s+invalid-evidence\s+regeneration hints begin with `npm run check`[\s\S]*platform worksheet audit before final evidence assembly or\s+regeneration[\s\S]*still-needed release\s+CI wait\/dispatch/,
+    /platform worksheet audit before final\s+evidence\s+assembly or\s+regeneration/,
   )
+  assert.match(checklist, /still-needed release\s+CI wait\/dispatch/)
   assert.match(checklist, /ci-runs\.json/)
   assert.match(checklist, /--include-release-preflight/)
   assert.match(
@@ -634,6 +664,12 @@ test('release preflight enforces real device evidence', () => {
     /final\s+warning-removal action\s+runs\s+`npm run check` after the finalizer/,
   )
   assert.match(checklist, /git commit -m "Add real-device release evidence"/)
+  assert.match(checklist, /reuses an existing platform worksheet/)
+  assert.match(
+    checklist,
+    /only emits\s+`npm run release:platform-evidence -- --production-profile` when the worksheet\s+is missing/,
+  )
+  assert.match(checklist, /strict platform worksheet audit/)
   assert.match(checklist, /git commit -m "Add release readiness evidence"/)
   assert.match(checklist, /git add TODO\.md README\.md docs\/compatibility\.md docs\/production\.md docs\/real-device-release\.md/)
   assert.match(checklist, /git commit -m "Finalize production readiness"/)
@@ -645,6 +681,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /unchecked TODO item details/)
   assert.match(checklist, /final TODO proof status/)
   assert.match(checklist, /CI workflow wiring status/)
+  assert.match(checklist, /platform worksheet audit\s+status/)
   assert.match(checklist, /release tooling\/workflow blocker\s+lists/)
   assert.match(checklist, /local\/skip flags/)
   assert.match(checklist, /local-only/)
@@ -758,6 +795,8 @@ test('release readiness audit documents final removal blockers', () => {
     /nextActions/,
     /releaseTooling/,
     /releaseWorkflows/,
+    /readPlatformEvidenceAudit/,
+    /platformEvidence/,
     /strictCiEvidence/,
     /writeReadinessSummary/,
   ]) {
@@ -812,7 +851,8 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(production, /CI workflow wiring/)
   assert.match(production, /release tooling\/workflow\s+blocker lists/)
   assert.match(production, /structured readiness check and evidence status/)
-  assert.match(production, /metadata,\s+platform, and read errors/)
+  assert.match(production, /platform worksheet audit status/)
+  assert.match(production, /metadata,\s+platform, and read\s+errors/)
   assert.match(production, /release-readiness evidence status/)
   assert.match(production, /`nextActions` command hints/)
   assert.match(production, /release tooling\s+script wiring/)
@@ -840,6 +880,7 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(readme, /unchecked TODO item details/)
   assert.match(readme, /final TODO proof status/)
   assert.match(readme, /CI workflow wiring/)
+  assert.match(readme, /platform worksheet audit status/)
   assert.match(readme, /release tooling\/workflow blocker lists/)
   assert.match(readme, /structured readiness check and evidence status/)
   assert.match(readme, /metadata\/platform\/read errors/)

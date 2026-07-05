@@ -643,6 +643,10 @@ test('release readiness writes a machine-readable blocker summary', () => {
       runErrors: [],
       validationErrors: [],
     })
+    assert.equal(summary.platformEvidence.evidencePresent, true)
+    assert.equal(summary.platformEvidence.ready, false)
+    assert.equal(summary.platformEvidence.path, 'release/platform-evidence.json')
+    assert.ok(summary.platformEvidence.errorCount > 0)
     assert.ok(Array.isArray(summary.nextActions))
     const ciEvidenceAction = summary.nextActions.find(
       (action) => action.id === 'ci-evidence',
@@ -807,6 +811,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.equal(summary.checks.releaseTooling, true)
     assert.equal(summary.checks.releaseWorkflows, true)
     assert.equal(summary.checks.releaseReadinessEvidence, true)
+    assert.equal(summary.checks.platformEvidence, false)
     assert.equal(summary.checks.rootReadmeWarningsRemoved, false)
     assert.equal(summary.checks.strictCiEvidence, false)
     assert.ok(
@@ -850,6 +855,13 @@ test('release readiness summary includes missing evidence next actions', () => {
 
     assert.equal(result.status, 0)
     assert.equal(summary.checks.initialCiEvidence, true)
+    assert.equal(summary.platformEvidence.evidencePresent, true)
+    assert.equal(summary.platformEvidence.ready, false)
+    assert.ok(
+      summary.platformEvidence.errors.some((error) =>
+        error.includes('android.artifact must be a non-empty string'),
+      ),
+    )
     assert.equal(summary.realDeviceEvidence.evidencePresent, false)
     assert.equal(summary.realDeviceEvidence.ready, false)
     assert.equal(summary.realDeviceEvidence.androidReady, false)
@@ -874,8 +886,14 @@ test('release readiness summary includes missing evidence next actions', () => {
     assert.ok(realDeviceAction)
     assert.equal(realDeviceAction.commands[0], 'npm run check')
     assert.ok(
+      realDeviceAction.commands.every(
+        (command) =>
+          !command.includes('npm run release:platform-evidence --'),
+      ),
+    )
+    assert.ok(
       realDeviceAction.commands.includes(
-        `npm run release:platform-evidence -- --production-profile --commit ${summary.commit}`,
+        `npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit ${summary.commit}`,
       ),
     )
     assert.ok(

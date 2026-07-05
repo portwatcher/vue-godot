@@ -505,6 +505,23 @@ export function auditPlatformEvidence(evidence, options = {}) {
   return summary
 }
 
+export function readPlatformEvidenceAudit(
+  platformEvidencePath = defaultPlatformEvidencePath,
+  options = {},
+) {
+  const resolved = path.resolve(repoRoot, platformEvidencePath)
+  const { evidence, errors: readErrors } = readWorksheet(resolved)
+  const summary = auditPlatformEvidence(evidence, {
+    allowNonProductionProfile: options.allowNonProductionProfile,
+  })
+  summary.path = describePath(resolved)
+  summary.readErrors = readErrors
+  summary.errorCount += readErrors.length
+  summary.errors.push(...readErrors)
+  summary.ready = summary.ready && readErrors.length === 0
+  return summary
+}
+
 function collectNextActions(summary, options) {
   const commit = options.expectedCommit
   const actions = []
@@ -577,16 +594,9 @@ function printBlockers(summary) {
 
 function main() {
   const options = parseArgs(process.argv.slice(2))
-  const resolved = path.resolve(repoRoot, options.platformEvidencePath)
-  const { evidence, errors: readErrors } = readWorksheet(resolved)
-  const summary = auditPlatformEvidence(evidence, {
+  const summary = readPlatformEvidenceAudit(options.platformEvidencePath, {
     allowNonProductionProfile: options.allowNonProductionProfile,
   })
-  summary.path = describePath(resolved)
-  summary.readErrors = readErrors
-  summary.errorCount += readErrors.length
-  summary.errors.push(...readErrors)
-  summary.ready = summary.ready && readErrors.length === 0
   summary.nextActions = collectNextActions(summary, {
     expectedCommit: options.expectedCommit,
     platformEvidencePath: options.platformEvidencePath,

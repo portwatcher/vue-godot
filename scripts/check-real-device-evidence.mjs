@@ -9,11 +9,13 @@ import {
 import {
   checkPlatformEvidenceCommand,
   checkRealDeviceEvidenceCommand,
+  defaultPlatformEvidencePath,
   defaultReleaseCiEvidencePath,
   initialReleaseCiCommands,
   productionProfilePlatformEvidenceCommand,
   releaseEvidenceCommand,
 } from './release-handoff-commands.mjs'
+import { readPlatformEvidenceAudit } from './check-platform-evidence.mjs'
 import { readInitialCiEvidenceStatus } from './release-ci-evidence.mjs'
 import {
   currentReleasePackageVersions,
@@ -117,18 +119,36 @@ function collectNextActions(summary) {
     const ciEvidenceCommands = summary.initialCiEvidenceReady
       ? []
       : initialReleaseCiCommands(expectedCommit)
-    const assembleDetail = summary.initialCiEvidenceReady
-      ? 'After completing platform evidence, write release/real-device-evidence.json using the already validated Check/Godot Smoke CI evidence.'
-      : 'After the tested release candidate has CI runs and completed platform evidence, write release/real-device-evidence.json.'
-
-    return [
-      {
+    const platformEvidence = summary.platformEvidence
+    const platformEvidenceCommands = []
+    if (!platformEvidence?.evidencePresent) {
+      platformEvidenceCommands.push({
         id: 'create-platform-evidence',
         title: 'Create and fill Android/iOS platform evidence',
         detail:
           'Start from the platform evidence worksheet, run the selected API export checks on real or hosted devices, and record pass/skip outcomes.',
         commands: [productionProfilePlatformEvidenceCommand(expectedCommit)],
-      },
+      })
+    } else if (!platformEvidence.ready) {
+      platformEvidenceCommands.push({
+        id: 'complete-platform-evidence',
+        title: 'Complete Android/iOS platform evidence worksheet',
+        detail:
+          'The worksheet exists; fill missing metadata and record every required check as passedChecks or skippedChecks before final evidence assembly.',
+        commands: [
+          checkPlatformEvidenceCommand(expectedCommit, {
+            allowOpen: true,
+            summaryOutput: 'release/platform-evidence-summary.json',
+          }),
+        ],
+      })
+    }
+    const assembleDetail = summary.initialCiEvidenceReady
+      ? 'After completing platform evidence, write release/real-device-evidence.json using the already validated Check/Godot Smoke CI evidence.'
+      : 'After the tested release candidate has CI runs and completed platform evidence, write release/real-device-evidence.json.'
+
+    return [
+      ...platformEvidenceCommands,
       {
         id: 'assemble-real-device-evidence',
         title: 'Assemble final real-device evidence after device testing',
@@ -187,6 +207,9 @@ function main() {
     initialCiEvidencePath: defaultReleaseCiEvidencePath,
     initialCiEvidenceReady: false,
     optional: options.optional,
+    platformEvidence: null,
+    platformEvidencePath: defaultPlatformEvidencePath,
+    platformEvidenceReady: false,
     ready: false,
     errorCount: 0,
     errors: [],
@@ -197,6 +220,8 @@ function main() {
   )
   summary.initialCiEvidence = initialCiEvidence
   summary.initialCiEvidenceReady = initialCiEvidence.ready
+  summary.platformEvidence = readPlatformEvidenceAudit(defaultPlatformEvidencePath)
+  summary.platformEvidenceReady = summary.platformEvidence.ready
 
   if (!evidence) {
     const message = readErrors.join('\n')
