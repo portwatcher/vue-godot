@@ -26,7 +26,7 @@ The project is production ready only when all of these are true:
   - [ ] A native app style demo using routing, forms, network, storage, camera or geolocation, permissions, and offline/reachability handling.
   - [ ] A game UI demo using Godot scenes plus Vue UI, controller/touch/keyboard navigation, animation, audio/video/image assets, and pause/settings/inventory style workflows.
 - [ ] Performance budgets are documented and enforced for app startup, first rendered UI, hot reload, large list rendering, asset loading, and repeated mount/unmount.
-- [ ] Security and dependency audits are clean or documented with accepted risk.
+- [x] Security and dependency audits are clean or documented with accepted risk.
 - [ ] Package READMEs, root README, generated templates, and demo apps match the final supported API surface.
 - [x] Public docs include platform limits, permission setup, export setup, troubleshooting, and migration guidance from Vue web apps.
 - [ ] The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied.
@@ -370,6 +370,6 @@ Run this checklist before removing "not production ready", "alpha", or "experime
 - [ ] iOS export with selected device APIs has been tested.
 - [ ] CI passes on a clean commit.
 - [ ] Release preflight passes without warnings in the release environment.
-- [ ] `npm audit --audit-level=moderate` is clean or accepted exceptions are documented.
+- [x] `npm audit --audit-level=moderate` is clean or accepted exceptions are documented.
 - [ ] All public READMEs match the final support claims.
 - [ ] The root README warning is removed in the same commit that marks this checklist complete.
