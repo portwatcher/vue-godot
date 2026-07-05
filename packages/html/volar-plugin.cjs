@@ -27,6 +27,7 @@ const htmlTags = [
   'option',
   'progress',
   'scrollview',
+  'switch',
   'canvas',
   'video',
   'svg',

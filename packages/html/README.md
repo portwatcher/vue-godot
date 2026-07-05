@@ -106,8 +106,9 @@ Color values support hex (`#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`), named CSS co
 | `<Progress>`        | `ProgressBar`                                                          | `value`, `min`, `max`, `indeterminate`, `showPercentage` |
 | `<ScrollView>`      | `ScrollContainer`                                                      | `horizontal`, `vertical`, `scrollbarMode`, `contentStyle` |
 | `<Span>`            | `Label`                                                                | text content, `style` |
+| `<Switch>`          | `CheckButton`                                                          | `v-model`, `label`, `disabled`, `style` |
 | `<Button>`          | `Button`                                                               | `@click`, `disabled`  |
-| `<Input>`           | `LineEdit` / `CheckBox` / `HSlider`                                    | `type`, `v-model`     |
+| `<Input>`           | `LineEdit` / `CheckBox` / `HSlider`                                    | `type`, `v-model`, `label`, `name`, `value` |
 | `<Textarea>`        | `TextEdit`                                                             | `v-model`             |
 | `<Select>`          | `OptionButton`                                                         | `<Option>` children   |
 | `<Video>`           | `VideoStreamPlayer`                                                    | `src`                 |
@@ -119,7 +120,7 @@ Color values support hex (`#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`), named CSS co
 
 | API                                                                                                                                    | Description                                                                                              |
 | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Div`, `Img`, `Input`, `Option`, `Progress`, `ScrollView`, `Select`, `Span`, `Svg`, `Textarea`, `Video`) | Vue components backed by Godot nodes                                                                     |
+| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Div`, `Img`, `Input`, `Option`, `Progress`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`) | Vue components backed by Godot nodes                                                                     |
 | `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
 | `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |
@@ -234,11 +235,12 @@ export default class App extends Control {
 
 ```vue
 <script setup>
-import { Div, Img, Span, Button, Input } from '@vue-godot/html'
+import { Div, Img, Span, Button, Input, Switch } from '@vue-godot/html'
 import { ref } from '@vue/runtime-core'
 
 const name = ref('')
 const agreed = ref(false)
+const plan = ref('basic')
 const volume = ref(50)
 </script>
 
@@ -248,7 +250,10 @@ const volume = ref(50)
     <Span :style="{ fontSize: 24, color: '#333' }">Welcome!</Span>
     <Input v-model="name" placeholder="Your name"></Input>
     <Input type="password" v-model="password" placeholder="Password"></Input>
-    <Input type="checkbox" v-model="agreed"></Input>
+    <Input type="checkbox" v-model="agreed" label="I agree"></Input>
+    <Input type="radio" v-model="plan" name="plan" value="basic" label="Basic"></Input>
+    <Input type="radio" v-model="plan" name="plan" value="pro" label="Pro"></Input>
+    <Switch v-model="agreed" label="Enable sync"></Switch>
     <Input type="range" v-model="volume" :min="0" :max="100"></Input>
     <Button @click="save" :style="{ fontSize: 16 }">Save</Button>
   </Div>
@@ -306,6 +311,23 @@ It supports `value`, `min`, `max`, `step`, `indeterminate`, `showPercentage`, `f
 
 It supports `active`, `size`, `fill`, and `style`. When `active` is `false`, the indicator is hidden and the indeterminate animation is disabled.
 
+### Switch and radio input scope
+
+`<Switch>` maps to Godot `CheckButton` and supports `v-model`, `label`, `disabled`, and `style`:
+
+```vue
+<Switch v-model="enabled" label="Enable sync"></Switch>
+```
+
+`<Input type="radio">` maps to Godot `CheckBox`. When a `name` is provided, inputs with the same name share a Godot `ButtonGroup` so selection is exclusive:
+
+```vue
+<Input type="radio" v-model="plan" name="plan" value="basic" label="Basic"></Input>
+<Input type="radio" v-model="plan" name="plan" value="pro" label="Pro"></Input>
+```
+
+Checkbox inputs now also accept `label`, which maps to the underlying Godot button text.
+
 ### Global registration via plugin (new code)
 
 ```ts
@@ -345,8 +367,9 @@ This package is in early development. Currently scaffolded:
 - [x] `<ActivityIndicator>` — bar-style busy indicator (`ProgressBar` indeterminate mode)
 - [x] `<ScrollView>` — scrollable viewport (`ScrollContainer`, axis props, scrollbar modes, scroll offsets)
 - [x] `<Span>` — text display with `fontSize`, `fontWeight`, `color`, `textAlign`, `textTransform`, `overflowWrap`
+- [x] `<Switch>` — binary toggle (`CheckButton`, `v-model`, `label`, `disabled`)
 - [x] `<Button>` — click handler with `@click`, `disabled`
-- [x] `<Input>` — text, password, checkbox, range inputs with `v-model`
+- [x] `<Input>` — text, password, checkbox, radio, range inputs with `v-model`
 - [x] `<Textarea>` — multiline text (`TextEdit`, `v-model`, `placeholder`, `rows`/`cols`)
 - [x] `<Select>` / `<Option>` — dropdown (`OptionButton`, `v-model`, `<Option>` children)
 - [x] `<Canvas>` — 2D drawing surface (`Control`, `width`/`height`, template ref for draw commands; `getContext('2d')` deferred)

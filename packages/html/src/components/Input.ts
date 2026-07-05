@@ -4,6 +4,7 @@ import {
   applyDisplayAndOpacityProps,
   applyFontStyleProps,
 } from '../utils/controlStyle.js'
+import { getRadioButtonGroup } from '../utils/radioGroups.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 
 /**
@@ -18,7 +19,7 @@ interface InputTypeMapping {
   /** The Godot property that holds the current value. */
   valueProp: string
   /** Type of the modeled value. */
-  valueType: 'string' | 'boolean' | 'number'
+  valueType: 'string' | 'boolean' | 'number' | 'radio'
 }
 
 const INPUT_TYPE_MAP: Record<string, InputTypeMapping> = {
@@ -40,6 +41,12 @@ const INPUT_TYPE_MAP: Record<string, InputTypeMapping> = {
     valueProp: 'button_pressed',
     valueType: 'boolean',
   },
+  radio: {
+    tag: 'CheckBox',
+    changeEvent: 'onToggled',
+    valueProp: 'button_pressed',
+    valueType: 'radio',
+  },
   range: {
     tag: 'HSlider',
     changeEvent: 'onValueChanged',
@@ -56,6 +63,7 @@ const INPUT_TYPE_MAP: Record<string, InputTypeMapping> = {
  *   type="text"     → LineEdit
  *   type="password" → LineEdit (secret mode)
  *   type="checkbox" → CheckBox
+ *   type="radio"    → CheckBox with optional ButtonGroup
  *   type="range"    → HSlider
  *
  * Supports `v-model` via `modelValue` + `update:modelValue`.
@@ -64,6 +72,9 @@ const INPUT_TYPE_MAP: Record<string, InputTypeMapping> = {
  *   - `type`         — input type (default: `"text"`)
  *   - `modelValue`   — v-model binding value
  *   - `placeholder`  — placeholder text (text/password types)
+ *   - `value`        — submitted value for radio inputs
+ *   - `name`         — radio group name
+ *   - `label`        — text label for checkbox/radio inputs
  *   - `disabled`     — disables interaction
  *   - `maxLength`    — max character count (text/password)
  *   - `min` / `max` / `step` — range slider bounds
@@ -73,10 +84,11 @@ const INPUT_TYPE_MAP: Record<string, InputTypeMapping> = {
  *   - `@update:modelValue` — v-model update
  *
  * Usage:
- *   <Input v-model="name" placeholder="Your name" />
- *   <Input type="password" v-model="password" />
- *   <Input type="checkbox" v-model="agreed" />
- *   <Input type="range" v-model="volume" :min="0" :max="100" :step="1" />
+ *   <Input v-model="name" placeholder="Your name"></Input>
+ *   <Input type="password" v-model="password"></Input>
+ *   <Input type="checkbox" v-model="agreed"></Input>
+ *   <Input type="radio" v-model="choice" name="choice" value="a"></Input>
+ *   <Input type="range" v-model="volume" :min="0" :max="100" :step="1"></Input>
  */
 export const Input = defineComponent({
   name: 'Input',
@@ -87,6 +99,18 @@ export const Input = defineComponent({
     },
     modelValue: {
       type: [String, Number, Boolean],
+      default: undefined,
+    },
+    value: {
+      type: [String, Number, Boolean],
+      default: undefined,
+    },
+    name: {
+      type: String,
+      default: undefined,
+    },
+    label: {
+      type: String,
       default: undefined,
     },
     placeholder: {
@@ -122,11 +146,15 @@ export const Input = defineComponent({
   setup(props, { emit }) {
     return () => {
       const style = props.style
-      const mapping = INPUT_TYPE_MAP[props.type] ?? INPUT_TYPE_MAP['text']
+      const inputType = props.type ?? 'text'
+      const mapping = INPUT_TYPE_MAP[inputType] ?? INPUT_TYPE_MAP['text']
       const nodeProps: Record<string, unknown> = {}
 
       // Current value → Godot property
-      if (props.modelValue !== undefined) {
+      if (mapping.valueType === 'radio') {
+        const radioValue = props.value ?? 'on'
+        nodeProps[mapping.valueProp] = props.modelValue === radioValue
+      } else if (props.modelValue !== undefined) {
         nodeProps[mapping.valueProp] = props.modelValue
       }
 
@@ -134,11 +162,18 @@ export const Input = defineComponent({
       nodeProps[mapping.changeEvent] = (
         newValue: string | boolean | number,
       ) => {
+        if (mapping.valueType === 'radio') {
+          if (newValue === true) {
+            emit('update:modelValue', props.value ?? 'on')
+          }
+          return
+        }
+
         emit('update:modelValue', newValue)
       }
 
       // Type-specific props
-      switch (props.type) {
+      switch (inputType) {
         case 'text':
           if (props.placeholder) {
             nodeProps['placeholder_text'] = props.placeholder
@@ -159,7 +194,23 @@ export const Input = defineComponent({
           break
 
         case 'checkbox':
-          // No extra props needed — CheckBox toggle_mode is on by default
+          nodeProps['toggle_mode'] = true
+          if (props.label) {
+            nodeProps['text'] = props.label
+          }
+          break
+
+        case 'radio':
+          nodeProps['toggle_mode'] = true
+          if (props.label) {
+            nodeProps['text'] = props.label
+          }
+          {
+            const group = getRadioButtonGroup(props.name)
+            if (group) {
+              nodeProps['button_group'] = group
+            }
+          }
           break
 
         case 'range':

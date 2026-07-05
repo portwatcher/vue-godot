@@ -11,6 +11,7 @@ import type { Progress } from './components/Progress.js'
 import type { ScrollView } from './components/ScrollView.js'
 import type { Span } from './components/Span.js'
 import type { Svg } from './components/Svg.js'
+import type { Switch } from './components/Switch.js'
 import type { Textarea } from './components/Textarea.js'
 import type { Video } from './components/Video.js'
 
@@ -30,6 +31,7 @@ declare module '@vue/runtime-core' {
     Select: typeof Select
     Span: typeof Span
     Svg: typeof Svg
+    Switch: typeof Switch
     Textarea: typeof Textarea
     Video: typeof Video
     // Lowercase aliases so <div>, <button>, etc. resolve as components.
@@ -47,6 +49,7 @@ declare module '@vue/runtime-core' {
     select: typeof Select
     span: typeof Span
     svg: typeof Svg
+    switch: typeof Switch
     textarea: typeof Textarea
     video: typeof Video
   }

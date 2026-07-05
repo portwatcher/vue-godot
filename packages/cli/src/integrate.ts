@@ -274,7 +274,7 @@ import { defineConfig } from 'vite'
 const htmlTags = [
   'a', 'activityindicator', 'audio', 'div', 'img', 'span', 'button',
   'input', 'textarea', 'select', 'option', 'progress', 'scrollview',
-  'canvas', 'video', 'svg',
+  'switch', 'canvas', 'video', 'svg',
 ]
 
 export default defineConfig({

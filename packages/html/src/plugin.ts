@@ -12,6 +12,7 @@ import { Progress } from './components/Progress.js'
 import { ScrollView } from './components/ScrollView.js'
 import { Span } from './components/Span.js'
 import { Svg } from './components/Svg.js'
+import { Switch } from './components/Switch.js'
 import { Textarea } from './components/Textarea.js'
 import { Video } from './components/Video.js'
 
@@ -32,6 +33,7 @@ const components: Record<string, Component> = {
   Canvas,
   Video,
   Svg,
+  Switch,
 }
 
 /**

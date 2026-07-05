@@ -144,8 +144,37 @@
 
   <!-- ===== Section: Input (checkbox) ===== -->
   <Span>--- Input (checkbox) ---</Span>
-  <Input type="checkbox" v-model="checkboxValue"></Input>
+  <Input
+    type="checkbox"
+    v-model="checkboxValue"
+    label="Accept updates"
+  ></Input>
   <Span>{{ `Checked: ${checkboxValue}` }}</Span>
+
+  <!-- ===== Section: Input (radio) ===== -->
+  <Span>--- Input (radio) ---</Span>
+  <Div :style="{ flexDirection: 'row', gap: 8 }">
+    <Input
+      type="radio"
+      v-model="radioValue"
+      name="demo-choice"
+      value="alpha"
+      label="Alpha"
+    ></Input>
+    <Input
+      type="radio"
+      v-model="radioValue"
+      name="demo-choice"
+      value="beta"
+      label="Beta"
+    ></Input>
+  </Div>
+  <Span>{{ `Radio: ${radioValue}` }}</Span>
+
+  <!-- ===== Section: Switch ===== -->
+  <Span>--- Switch ---</Span>
+  <Switch v-model="switchValue" label="Enable sync"></Switch>
+  <Span>{{ `Switch: ${switchValue}` }}</Span>
 
   <!-- ===== Section: Input (range) ===== -->
   <Span>--- Input (range) ---</Span>
@@ -285,6 +314,8 @@ function onLinkClick() {
 const textValue = ref('')
 const passwordValue = ref('')
 const checkboxValue = ref(false)
+const radioValue = ref('alpha')
+const switchValue = ref(true)
 const rangeValue = ref(50)
 
 // --- Textarea ---

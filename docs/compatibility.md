@@ -107,8 +107,9 @@ controller, touch behavior, and documented style limits.
 | `<ScrollView>` | `html` | `partial` | `ScrollContainer` plus inner `<Div>` content wrapper | All Godot UI targets | None | Unit, html-demo | Scrollbar behavior follows Godot `ScrollContainer`; content layout uses the existing style subset. |
 | `<Progress>` | `html` | `partial` | `ProgressBar` | All Godot UI targets | None | Unit, html-demo | Uses Godot `Range` props and native indeterminate mode; not a DOM progress element. |
 | `<ActivityIndicator>` | `html` | `partial` | `ProgressBar` indeterminate mode | All Godot UI targets | None | Unit, html-demo | Bar-style busy indicator; spinner visuals are not implemented yet. |
+| `<Switch>` | `html` | `partial` | `CheckButton` | All Godot UI targets | None | Unit, html-demo | Binary toggle subset; accessibility metadata is limited. |
 | `<Button>` | `html` | `partial` | `Button` | All Godot UI targets | None | Unit, html-demo | Click maps to Godot pressed signal; accessibility is limited. |
-| `<Input>` | `html` | `partial` | `LineEdit`, `CheckBox`, `HSlider` | All Godot UI targets | None | Unit, html-demo | Supports text, password, checkbox, and range subsets. |
+| `<Input>` | `html` | `partial` | `LineEdit`, `CheckBox`, `ButtonGroup`, `HSlider` | All Godot UI targets | None | Unit, html-demo | Supports text, password, checkbox, radio, and range subsets. |
 | `<Textarea>` | `html` | `partial` | `TextEdit` | All Godot UI targets | None | Unit, html-demo | Text editing subset; browser selection APIs are not implemented. |
 | `<Select>` / `<Option>` | `html` | `partial` | `OptionButton` | All Godot UI targets | None | Unit, html-demo | Option model subset; not a native HTML select. |
 | `<Img>` | `html` | `partial` | `TextureRect`, `ResourceLoader`, browser blob/data helpers | All Godot UI targets | Asset import/export paths must be valid | Unit, html-demo | Supports Godot paths, relative `res://` resolution, data/blob/remote sources where loaders support them. |

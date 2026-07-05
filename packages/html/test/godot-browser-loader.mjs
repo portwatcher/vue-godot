@@ -49,6 +49,14 @@ export function load(url, context, nextLoad) {
           }
         }
 
+        export class ButtonGroup {
+          constructor() {
+            this.__mock = true
+            this.__kind = 'button-group'
+            this.allow_unpress = false
+          }
+        }
+
         export const ResourceLoader = {
           load(path) {
             if (!path) return null

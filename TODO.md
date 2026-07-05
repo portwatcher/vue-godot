@@ -126,8 +126,8 @@ The project is production ready only when all of these are true:
   - [ ] `<SafeAreaView>` or equivalent layout helper.
   - [ ] `<KeyboardAvoidingView>` or equivalent for mobile text input.
   - [x] `<ActivityIndicator>` / `<Progress>`.
-  - [ ] `<Switch>` / checkbox refinement.
-  - [ ] Radio input support.
+  - [x] `<Switch>` / checkbox refinement.
+  - [x] Radio input support.
   - [ ] Form and label helpers.
   - [ ] Screen/router container primitives.
 - [ ] Make existing components production-grade:
@@ -331,6 +331,8 @@ Use this backlog to seed `docs/compatibility.md`.
 | `<KeyboardAvoidingView>` | html/device | partial | virtual keyboard metrics |
 | `<ActivityIndicator>` | html | supported | `ProgressBar` indeterminate mode |
 | `<Progress>` | html | supported | `ProgressBar` |
+| `<Switch>` | html | supported | `CheckButton` |
+| `<Input type="radio">` | html | supported | `CheckBox` + `ButtonGroup` |
 | `<Canvas>` 2D context | html | partial | `CanvasItem` draw adapter |
 
 ## Final Removal Checklist
