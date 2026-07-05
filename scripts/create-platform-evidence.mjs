@@ -37,6 +37,8 @@ Options:
                                   Unknown selected API names fail validation.
   --production-profile             Add the maintained production-profile
                                   selected API set used by release evidence.
+  --commit <sha>                   Tested release-candidate commit for
+                                  nextActions command hints.
   --android-artifact <name>        Android APK/AAB or hosted build identifier.
   --ios-artifact <name>            iOS archive, TestFlight, or hosted build identifier.
   --android-export-preset <name>   Android export preset. Default: Android Release.
@@ -65,6 +67,7 @@ function parseArgs(argv) {
     output: defaultOutput,
     selectedApis: [],
     productionProfile: false,
+    commit: null,
     androidArtifact: '',
     iosArtifact: '',
     androidExportPreset: 'Android Release',
@@ -83,6 +86,7 @@ function parseArgs(argv) {
     ['--ios-artifact', 'iosArtifact'],
     ['--android-export-preset', 'androidExportPreset'],
     ['--ios-export-preset', 'iosExportPreset'],
+    ['--commit', 'commit'],
     ['--android-device', 'androidDevice'],
     ['--ios-device', 'iosDevice'],
     ['--android-os', 'androidOs'],
@@ -191,7 +195,7 @@ function buildPlatformTemplate(platform, options) {
   }
 }
 
-function buildNextActions(platformEvidencePath) {
+function buildNextActions(platformEvidencePath, commit) {
   return [
     {
       id: 'complete-platform-evidence',
@@ -214,9 +218,9 @@ function buildNextActions(platformEvidencePath) {
         'After CI runs exist for the tested release candidate, generate release/real-device-evidence.json from this worksheet.',
       commands: [
         'npm run check',
-        ...initialReleaseCiCommands(),
-        releaseEvidenceCommand(null, { platformEvidencePath }),
-        checkRealDeviceEvidenceCommand(null),
+        ...initialReleaseCiCommands(commit),
+        releaseEvidenceCommand(commit, { platformEvidencePath }),
+        checkRealDeviceEvidenceCommand(commit),
       ],
     },
   ]
@@ -249,11 +253,15 @@ export function buildPlatformEvidenceTemplate(options = {}) {
     orientation: options.orientation ?? '',
     locale: options.locale ?? '',
     output: options.output ?? defaultOutput,
+    commit:
+      typeof options.commit === 'string' && options.commit.trim().length > 0
+        ? options.commit.trim()
+        : null,
     selectedApis,
   }
 
   return {
-    nextActions: buildNextActions(normalized.output),
+    nextActions: buildNextActions(normalized.output, normalized.commit),
     android: buildPlatformTemplate('android', normalized),
     ios: buildPlatformTemplate('ios', normalized),
   }
