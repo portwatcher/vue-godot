@@ -52,6 +52,47 @@ test('release readiness accepts checked-in evidence examples for schema coverage
   assert.match(output, /`npm run check` passes locally and in CI/)
 })
 
+test('release readiness writes a machine-readable blocker summary', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
+  const summaryPath = path.join(tempDir, 'release-readiness-summary.json')
+  const exampleCommit = '0123456789abcdef0123456789abcdef01234567'
+
+  try {
+    const result = runReadiness([
+      '--allow-open',
+      '--real-device-path',
+      'docs/real-device-evidence.example.json',
+      '--readiness-path',
+      'docs/release-readiness-evidence.example.json',
+      '--expected-commit',
+      exampleCommit,
+      '--summary-output',
+      summaryPath,
+    ])
+    const output = `${result.stdout}\n${result.stderr}`
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+
+    assert.equal(result.status, 0)
+    assert.match(output, /wrote .*release-readiness-summary\.json/)
+    assert.equal(summary.commit, exampleCommit)
+    assert.equal(summary.allowOpen, true)
+    assert.equal(summary.ready, false)
+    assert.ok(summary.blockerCount > 0)
+    assert.ok(
+      summary.blockers.some((blocker) =>
+        blocker.includes('`npm run check` passes locally and in CI'),
+      ),
+    )
+    assert.ok(
+      summary.warningMarkers.some((marker) =>
+        marker.includes('README.md: root README production warning'),
+      ),
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
 test('release readiness reports a dirty worktree blocker', () => {
   const markerPath = path.join(process.cwd(), '.release-readiness-dirty-test')
   fs.writeFileSync(markerPath, 'dirty\n')

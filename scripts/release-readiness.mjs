@@ -79,6 +79,7 @@ Options:
                                 Defaults to ${releaseReadinessEvidenceEnvVar} or ${defaultReleaseReadinessEvidencePath}.
   --expected-commit <sha>       Require evidence files to match this commit.
                                 Defaults to the current git commit.
+  --summary-output <file>       Write machine-readable readiness blockers JSON.
   --help                        Show this help.
 `)
 }
@@ -89,6 +90,7 @@ function parseArgs(argv) {
     expectedCommit: null,
     realDevicePath: null,
     readinessPath: null,
+    summaryOutput: null,
   }
 
   for (let index = 0; index < argv.length; index++) {
@@ -149,6 +151,20 @@ function parseArgs(argv) {
         repoRoot,
         arg.slice('--readiness-path='.length),
       )
+      continue
+    }
+
+    if (arg === '--summary-output') {
+      const value = argv[++index]
+      if (!value) {
+        throw new Error('--summary-output requires a value')
+      }
+      options.summaryOutput = value
+      continue
+    }
+
+    if (arg.startsWith('--summary-output=')) {
+      options.summaryOutput = arg.slice('--summary-output='.length)
       continue
     }
 
@@ -445,6 +461,32 @@ function checkPublicSurface(blockers) {
   blockers.push(['public surface audit failed', ...errors].join('\n'))
 }
 
+function writeReadinessSummary(
+  options,
+  expectedCommit,
+  blockers,
+  warningMarkers,
+) {
+  if (!options.summaryOutput) {
+    return
+  }
+
+  const resolved = path.resolve(repoRoot, options.summaryOutput)
+  const summary = {
+    commit: expectedCommit,
+    allowOpen: options.allowOpen,
+    ready: blockers.length === 0,
+    blockerCount: blockers.length,
+    warningMarkerCount: warningMarkers.length,
+    blockers: [...blockers],
+    warningMarkers: [...warningMarkers],
+  }
+
+  fs.mkdirSync(path.dirname(resolved), { recursive: true })
+  fs.writeFileSync(resolved, `${JSON.stringify(summary, null, 2)}\n`)
+  console.log(`[release-readiness] wrote ${relative(resolved)}`)
+}
+
 async function main() {
   const options = parseArgs(process.argv.slice(2))
   const blockers = collectUncheckedTodoItems()
@@ -500,6 +542,15 @@ async function main() {
   checkPublicSurface(blockers)
 
   const warningMarkers = checkWarningMarkerState(blockers)
+  try {
+    writeReadinessSummary(options, expectedCommit, blockers, warningMarkers)
+  } catch (error) {
+    blockers.push(
+      `Unable to write release readiness summary: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    )
+  }
 
   if (blockers.length === 0) {
     console.log('[release-readiness] ready')

@@ -246,6 +246,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /--release-preflight-summary/)
   assert.match(checklist, /release-preflight-summary/)
   assert.match(checklist, /release:preflight-summary/)
+  assert.match(checklist, /release-readiness-summary/)
   assert.match(checklist, /release:platform-evidence/)
   assert.match(checklist, /passOnlyChecks/)
   assert.match(checklist, /selectedApiRequiredChecks/)
@@ -298,6 +299,8 @@ test('release readiness audit documents final removal blockers', () => {
     /releasePreflightWarningCount must be 0/,
     /working tree must be clean for final release readiness/,
     /public warning markers still present/,
+    /summary-output/,
+    /writeReadinessSummary/,
   ]) {
     assert.match(readiness, pattern)
   }
@@ -317,12 +320,14 @@ test('release readiness audit documents final removal blockers', () => {
   )
   assert.match(production, /check:public-surface/)
   assert.match(production, /release:readiness/)
+  assert.match(production, /release-readiness-summary/)
   assert.match(readme, /check:public-surface/)
   assert.match(production, /GitHub Actions run URLs for/)
   assert.match(production, /Release Preflight/)
   assert.match(production, /Godot Smoke/)
   assert.match(production, /release-readiness-evidence\.example\.json/)
   assert.match(readme, /release:readiness/)
+  assert.match(readme, /release-readiness-summary/)
   assert.match(readme, /release-readiness-evidence\.json/)
   assert.match(todo, /release:readiness/)
   assert.equal(example.releasePreflightRunConclusion, 'success')
