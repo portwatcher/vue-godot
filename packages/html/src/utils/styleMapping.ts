@@ -75,6 +75,7 @@ export interface HtmlStyle {
   fontWeight?: 'normal' | 'bold'
   textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize'
   textAlign?: 'left' | 'center' | 'right'
+  transform?: string
   overflowWrap?: 'normal' | 'break-word'
   overflow?: 'visible' | 'hidden'
   opacity?: number
@@ -128,6 +129,7 @@ export const supportedHtmlStyleKeys = [
   'paddingTop',
   'textAlign',
   'textTransform',
+  'transform',
   'width',
 ] as const
 

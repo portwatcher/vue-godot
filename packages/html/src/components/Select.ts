@@ -3,6 +3,7 @@ import {
   applyControlSizeProps,
   applyDisplayAndOpacityProps,
   applyFontStyleProps,
+  applyTransformStyleProps,
 } from '../utils/controlStyle.js'
 import { extractTextFromVNode } from '../utils/slotText.js'
 import {
@@ -195,6 +196,7 @@ export const Select = defineComponent({
       applyControlSizeProps(nodeProps, style)
       applyFontStyleProps(nodeProps, style)
       applyDisplayAndOpacityProps(nodeProps, style)
+      applyTransformStyleProps(nodeProps, style)
 
       // Sync items imperatively after the vnode is mounted/patched
       nodeProps['onVnodeMounted'] = (vnode: VNode) =>

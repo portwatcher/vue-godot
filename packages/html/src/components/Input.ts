@@ -3,6 +3,7 @@ import {
   applyControlSizeProps,
   applyDisplayAndOpacityProps,
   applyFontStyleProps,
+  applyTransformStyleProps,
 } from '../utils/controlStyle.js'
 import { getRadioButtonGroup } from '../utils/radioGroups.js'
 import {
@@ -245,6 +246,7 @@ export const Input = defineComponent({
         applyFontStyleProps(nodeProps, style)
       }
       applyDisplayAndOpacityProps(nodeProps, style)
+      applyTransformStyleProps(nodeProps, style)
 
       return h(mapping.tag, nodeProps)
     }

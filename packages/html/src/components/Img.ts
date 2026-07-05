@@ -1,5 +1,6 @@
 import { defineComponent, h, ref, shallowRef, watch } from '@vue/runtime-core'
 import type { Texture2D } from 'godot'
+import { applyTransformStyleProps } from '../utils/controlStyle.js'
 import {
   toNumericPixels,
   warnUnsupportedStyleProps,
@@ -190,6 +191,7 @@ export const Img = defineComponent({
       if (style?.display === 'none') {
         nodeProps['visible'] = false
       }
+      applyTransformStyleProps(nodeProps, style)
 
       return h('TextureRect', nodeProps)
     }

@@ -284,6 +284,18 @@ test('maps justifyContent and width/height to container props', () => {
   assert.equal(vnode.props['custom_minimum_size:y'], 24)
 })
 
+test('maps transform style to root container props', () => {
+  const vnode = renderDiv({
+    transform: 'translate(3px, 4px) scale(2) rotate(90deg)',
+  })
+
+  assert.equal(vnode.props['position:x'], 3)
+  assert.equal(vnode.props['position:y'], 4)
+  assert.equal(vnode.props['scale:x'], 2)
+  assert.equal(vnode.props['scale:y'], 2)
+  assert.equal(vnode.props.rotation, Math.PI / 2)
+})
+
 test('maps child flex and alignSelf to size flags in column layout', () => {
   const child = h('Control', { style: { flex: 1, alignSelf: 'flex-end' } })
   const vnode = renderDiv({ flexDirection: 'column' }, [child])

@@ -1,3 +1,4 @@
+import { applyTransformStyleProps } from './controlStyle.js'
 import { createOpacityModulate } from './godotColor.js'
 import {
   resolveContainerTag,
@@ -73,4 +74,5 @@ export function applyScrollContainerStyleProps(
   if (typeof style.opacity === 'number' && Number.isFinite(style.opacity)) {
     props['modulate'] = createOpacityModulate(style.opacity)
   }
+  applyTransformStyleProps(props, style)
 }

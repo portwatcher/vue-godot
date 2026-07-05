@@ -27,7 +27,13 @@
         <Span>fragment child {{ n }}</Span>
       </Div>
     </template>
-    <Div :style="{ flex: 2, padding: 8 }">
+    <Div
+      :style="{
+        flex: 2,
+        padding: 8,
+        transform: 'translateY(2px) scale(1.02)',
+      }"
+    >
       <Span>flex:2 child</Span>
     </Div>
   </Div>

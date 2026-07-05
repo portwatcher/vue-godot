@@ -1,5 +1,6 @@
 import { defineComponent, h, ref, shallowRef, watch } from '@vue/runtime-core'
 import type { VideoStream } from 'godot'
+import { applyTransformStyleProps } from '../utils/controlStyle.js'
 import { createOpacityModulate } from '../utils/godotColor.js'
 import { classifySource, loadStream } from '../utils/streamLoader.js'
 import {
@@ -172,6 +173,7 @@ export const Video = defineComponent({
       nodeProps['onFinished'] = () => {
         emit('ended')
       }
+      applyTransformStyleProps(nodeProps, style)
 
       return h('VideoStreamPlayer', nodeProps)
     }

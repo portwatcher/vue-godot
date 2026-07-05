@@ -3,6 +3,7 @@ import {
   applyControlSizeProps,
   applyDisplayAndOpacityProps,
   applyFontStyleProps,
+  applyTransformStyleProps,
 } from '../utils/controlStyle.js'
 import {
   warnUnsupportedStyleProps,
@@ -129,6 +130,7 @@ export const Textarea = defineComponent({
       applyControlSizeProps(nodeProps, style)
       applyFontStyleProps(nodeProps, style)
       applyDisplayAndOpacityProps(nodeProps, style)
+      applyTransformStyleProps(nodeProps, style)
 
       nodeProps['onVnodeMounted'] = (vnode: VNode) => {
         textEditNode = vnode.el

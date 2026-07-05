@@ -16,6 +16,7 @@ import {
   createBackgroundTexturePanelStyle,
 } from '../utils/backgroundStyle.js'
 import { useBackgroundTexture } from '../utils/backgroundTexture.js'
+import { applyTransformStyleProps } from '../utils/controlStyle.js'
 import type { GodotContainerTag, HtmlStyle } from '../utils/styleMapping.js'
 import {
   ControlSizeFlags,
@@ -221,6 +222,7 @@ export const Div = defineComponent({
         themeOverrides,
         props: godotProps,
       } = resolveContainerTag(style)
+      applyTransformStyleProps(godotProps, style)
       const slotChildren = slots.default?.()
       const childrenWithLayout = mapChildrenForContainerLayout(
         slotChildren,

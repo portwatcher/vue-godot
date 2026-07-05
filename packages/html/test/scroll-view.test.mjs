@@ -63,6 +63,7 @@ test('ScrollView maps style sizing, opacity, visibility, and contentStyle', () =
       width: '240px',
       height: '120px',
       opacity: 0.5,
+      transform: 'translateX(6px) scaleY(1.5)',
     },
     contentStyle: {
       flexDirection: 'row',
@@ -76,6 +77,8 @@ test('ScrollView maps style sizing, opacity, visibility, and contentStyle', () =
   assert.equal(vnode.props['custom_minimum_size:y'], 120)
   assert.equal(vnode.props.modulate.__kind, 'color')
   assert.equal(vnode.props.modulate.a, 0.5)
+  assert.equal(vnode.props['position:x'], 6)
+  assert.equal(vnode.props['scale:y'], 1.5)
   assert.deepEqual(vnode.children[0].props.style, {
     flexDirection: 'row',
     gap: 8,

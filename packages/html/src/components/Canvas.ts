@@ -1,4 +1,5 @@
 import { defineComponent, h } from '@vue/runtime-core'
+import { applyTransformStyleProps } from '../utils/controlStyle.js'
 import { createOpacityModulate } from '../utils/godotColor.js'
 import {
   toNumericPixels,
@@ -94,6 +95,7 @@ export const Canvas = defineComponent({
       ) {
         nodeProps['modulate'] = createOpacityModulate(style.opacity)
       }
+      applyTransformStyleProps(nodeProps, style)
 
       return h('Control', nodeProps)
     }

@@ -77,6 +77,7 @@ Rather than embedding a layout engine like Yoga, we map a CSS flexbox subset to 
 | `backgroundColor: <color>`                    | `PanelContainer` wrapper with `StyleBoxFlat`                    |
 | `backgroundImage: url(...)`                   | `PanelContainer` wrapper with `StyleBoxTexture`                 |
 | `borderColor` / `borderWidth` / `borderRadius` | `StyleBoxFlat` border and corner-radius props                 |
+| `transform: translate/scale/rotate(...)`       | Godot `position`, `scale`, and `rotation` props                |
 | `color: <color>`                              | `theme_override_colors/font_color` on text controls             |
 | `fontWeight: 'bold'`                          | `theme_override_fonts/font` with `FontVariation` embolden       |
 | `width` / `height`                            | `custom_minimum_size`                                           |
@@ -130,11 +131,14 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 | `fontWeight` | Supports `'bold'` via a Godot `FontVariation` embolden override. |
 | `textTransform` | Supports `'uppercase'` on `<Span>` and `<Label>`. |
 | `textAlign` | Maps `<Span>` and `<Label>` to Godot horizontal alignment. |
+| `transform` | Supports `translate()`, `translateX()`, `translateY()`, `scale()`, `scaleX()`, `scaleY()`, `rotate()`, and `rotateZ()` and maps them to Godot control transform props. |
 | `overflowWrap` | Supports `'break-word'` on `<Span>` and `<Label>` via smart word wrapping. |
 | `overflow` | Supports `'hidden'` clipping where the backing Godot node exposes it. |
 | `opacity` | Maps to a Godot `modulate` alpha color. |
 
 Background images use the same loader as `<Img>` for local Godot paths, relative paths, data URIs, blob URLs, and remote URLs. CSS gradients, multiple backgrounds, repeat modes, and precise `background-size` / `background-position` behavior are not part of the current subset; the loaded texture is stretched to the panel bounds.
+
+Transforms intentionally cover only the basic Godot-backed subset. Matrix, perspective, skew, transform-origin, CSS transitions, and keyframe animations are not part of the current style subset.
 
 ## Component Mapping
 
@@ -646,6 +650,7 @@ This package is in early development. Currently scaffolded:
 - [x] Theme override application (colors via `backgroundColor` and text `color`, bold text via `FontVariation`)
 - [x] Theme override application (margin wrappers plus `StyleBoxFlat` border and corner radius props)
 - [x] Texture-backed background images via `backgroundImage: url(...)`
+- [x] Basic transform mapping (`translate`, `scale`, `rotate`)
 - [x] Size flag mapping (flex, align-self)
 - [x] Div renderer integration tests (nested fragment/array slot layouts)
 - [x] `<style>` block support is a non-goal for the current beta; use inline style objects until a CSS-to-Godot mapping exists.

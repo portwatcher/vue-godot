@@ -5,6 +5,7 @@ import {
   warnUnsupportedStyleProps,
   type HtmlStyle,
 } from './styleMapping.js'
+import { resolveTransformStyle } from './transformStyle.js'
 
 export type GodotPropBag = Record<string, unknown>
 
@@ -69,6 +70,41 @@ export function applyDisplayAndOpacityProps(
   }
 }
 
+function addNumericProp(
+  nodeProps: GodotPropBag,
+  key: string,
+  amount: number,
+): void {
+  const current = nodeProps[key]
+  nodeProps[key] = (typeof current === 'number' ? current : 0) + amount
+}
+
+export function applyTransformStyleProps(
+  nodeProps: GodotPropBag,
+  style: HtmlStyle | undefined,
+): void {
+  const transform = resolveTransformStyle(style?.transform)
+  if (!transform) {
+    return
+  }
+
+  if (transform.translateX !== 0) {
+    addNumericProp(nodeProps, 'position:x', transform.translateX)
+  }
+  if (transform.translateY !== 0) {
+    addNumericProp(nodeProps, 'position:y', transform.translateY)
+  }
+  if (transform.scaleX !== 1) {
+    nodeProps['scale:x'] = transform.scaleX
+  }
+  if (transform.scaleY !== 1) {
+    nodeProps['scale:y'] = transform.scaleY
+  }
+  if (transform.rotation !== 0) {
+    nodeProps.rotation = transform.rotation
+  }
+}
+
 export function applyCommonControlStyleProps(
   nodeProps: GodotPropBag,
   style: HtmlStyle | undefined,
@@ -78,4 +114,5 @@ export function applyCommonControlStyleProps(
   applyControlSizeProps(nodeProps, style)
   applyFontStyleProps(nodeProps, style)
   applyDisplayAndOpacityProps(nodeProps, style)
+  applyTransformStyleProps(nodeProps, style)
 }

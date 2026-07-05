@@ -1,6 +1,7 @@
 import { defineComponent, h, ref, shallowRef, watch } from '@vue/runtime-core'
 import type { Texture2D } from 'godot'
 import { Image, ImageTexture, ResourceLoader } from 'godot'
+import { applyTransformStyleProps } from '../utils/controlStyle.js'
 import { resolveAssetPath } from '../utils/assetResolver.js'
 import {
   toNumericPixels,
@@ -293,6 +294,7 @@ export const Svg = defineComponent({
       if (style?.display === 'none') {
         nodeProps['visible'] = false
       }
+      applyTransformStyleProps(nodeProps, style)
 
       return h('TextureRect', nodeProps)
     }
