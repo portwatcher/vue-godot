@@ -195,7 +195,7 @@ function checkCleanWorktree(blockers) {
   const result = run('git', ['status', '--porcelain'])
   if (result.status !== 0) {
     blockers.push(`Unable to read git worktree status\n${result.stderr}`)
-    return
+    return false
   }
 
   const status = result.stdout.trim()
@@ -206,19 +206,39 @@ function checkCleanWorktree(blockers) {
         status,
       ].join('\n'),
     )
+    return false
   }
+
+  return true
 }
 
-function collectUncheckedTodoItems() {
-  return readText('TODO.md')
+export function collectTodoItems(source, file = 'TODO.md') {
+  return source
     .split(/\r?\n/)
     .flatMap((line, index) => {
-      const match = line.match(/^\s*- \[ \] (.+)$/)
+      const match = line.match(/^\s*- \[([ xX])\] (.+)$/)
       if (!match) {
         return []
       }
-      return [`TODO.md:${index + 1} ${match[1]}`]
+      return [
+        {
+          checked: match[1].toLowerCase() === 'x',
+          file,
+          line: index + 1,
+          text: match[2],
+        },
+      ]
     })
+}
+
+function readTodoItems() {
+  return collectTodoItems(readText('TODO.md'))
+}
+
+export function collectUncheckedTodoItems(todoItems) {
+  return todoItems
+    .filter((item) => !item.checked)
+    .map((item) => `${item.file}:${item.line} ${item.text}`)
 }
 
 function resolveReadinessEvidencePath(options) {
@@ -335,6 +355,89 @@ export function validateReleaseReadinessEvidence(evidence, expectedCommit) {
   return errors
 }
 
+const finalTodoEvidenceRequirements = [
+  {
+    text: '`npm run check` passes locally and in CI.',
+    proof: 'checkCiEvidenceReady',
+    reason:
+      'Check workflow evidence must be verified in a strict release-readiness run',
+  },
+  {
+    text: 'Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate.',
+    proof: 'godotSmokeCiEvidenceReady',
+    reason:
+      'Godot Smoke workflow evidence must be verified in a strict release-readiness run',
+  },
+  {
+    text: 'Android and iOS export smoke apps run on real or hosted devices for the production profile.',
+    proof: 'realDeviceEvidenceReady',
+    reason: 'real-device evidence must validate for both Android and iOS',
+  },
+  {
+    text: 'The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied.',
+    proof: 'warningWordingReady',
+    reason:
+      'public warning wording must remain until every readiness blocker is resolved',
+  },
+  {
+    text: 'Android export with selected device APIs has been tested.',
+    proof: 'realDeviceEvidenceReady',
+    reason: 'real-device evidence must validate the Android export checks',
+  },
+  {
+    text: 'iOS export with selected device APIs has been tested.',
+    proof: 'realDeviceEvidenceReady',
+    reason: 'real-device evidence must validate the iOS export checks',
+  },
+  {
+    text: 'CI passes on a clean commit.',
+    proof: 'ciEvidenceReady',
+    reason:
+      'strict release-readiness must verify a clean worktree and successful Check, Godot Smoke, and Release Preflight evidence',
+  },
+  {
+    text: 'Release preflight passes without warnings in the release environment.',
+    proof: 'releaseReadinessEvidenceReady',
+    reason:
+      'release-readiness evidence must validate a warning-free Release Preflight run',
+  },
+  {
+    text: 'All public READMEs match the final support claims.',
+    proof: 'publicReadmesReady',
+    reason:
+      'public-surface docs must pass and README warning markers must be removed',
+  },
+  {
+    text: 'The root README warning is removed in the same commit that marks this checklist complete.',
+    proof: 'rootReadmeWarningReady',
+    reason: 'root README warning markers must be removed',
+  },
+]
+
+export function collectCheckedTodoEvidenceBlockers(todoItems, proofs) {
+  const proofByName = {
+    checkCiEvidenceReady: proofs.checkCiEvidenceReady,
+    ciEvidenceReady: proofs.ciEvidenceReady,
+    godotSmokeCiEvidenceReady: proofs.godotSmokeCiEvidenceReady,
+    publicReadmesReady: proofs.publicReadmesReady,
+    realDeviceEvidenceReady: proofs.realDeviceEvidenceReady,
+    releaseReadinessEvidenceReady: proofs.releaseReadinessEvidenceReady,
+    rootReadmeWarningReady: proofs.rootReadmeWarningReady,
+    warningWordingReady: proofs.warningWordingReady,
+  }
+
+  return finalTodoEvidenceRequirements.flatMap((requirement) => {
+    const item = todoItems.find((candidate) => candidate.text === requirement.text)
+    if (!item?.checked || proofByName[requirement.proof]) {
+      return []
+    }
+
+    return [
+      `${item.file}:${item.line} ${item.text} is checked, but ${requirement.reason}.`,
+    ]
+  })
+}
+
 async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
   const evidencePath =
     options.realDevicePath ?? resolveRealDeviceEvidencePath(process.env)
@@ -354,7 +457,7 @@ async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
         .filter(Boolean)
         .join('\n'),
     )
-    return
+    return false
   }
 
   const errors = validateRealDeviceEvidence(evidence, {
@@ -367,7 +470,7 @@ async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
         .filter(Boolean)
         .join('\n'),
     )
-    return
+    return false
   }
 
   if (!options.allowOpen) {
@@ -381,8 +484,11 @@ async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
           ...runErrors,
         ].join('\n'),
       )
+      return false
     }
   }
+
+  return true
 }
 
 async function checkReleaseReadinessEvidence(blockers, options, expectedCommit) {
@@ -399,7 +505,7 @@ async function checkReleaseReadinessEvidence(blockers, options, expectedCommit) 
         .filter(Boolean)
         .join('\n'),
     )
-    return
+    return false
   }
 
   const errors = validateReleaseReadinessEvidence(evidence, expectedCommit)
@@ -410,7 +516,7 @@ async function checkReleaseReadinessEvidence(blockers, options, expectedCommit) 
         ...errors,
       ].join('\n'),
     )
-    return
+    return false
   }
 
   if (!options.allowOpen) {
@@ -432,8 +538,11 @@ async function checkReleaseReadinessEvidence(blockers, options, expectedCommit) 
           ...runErrors,
         ].join('\n'),
       )
+      return false
     }
   }
+
+  return true
 }
 
 function collectWarningMarkerHits() {
@@ -446,9 +555,7 @@ function collectWarningMarkerHits() {
   })
 }
 
-function checkWarningMarkerState(blockers) {
-  const markersStillPresent = collectWarningMarkerHits()
-
+function checkWarningMarkerState(blockers, markersStillPresent) {
   if (blockers.length > 0) {
     for (const marker of releaseWarningMarkers) {
       const source = readText(marker.file)
@@ -470,10 +577,11 @@ function checkWarningMarkerState(blockers) {
 function checkPublicSurface(blockers) {
   const errors = collectPublicSurfaceAuditErrors()
   if (errors.length === 0) {
-    return
+    return true
   }
 
   blockers.push(['public surface audit failed', ...errors].join('\n'))
+  return false
 }
 
 function writeReadinessSummary(
@@ -504,12 +612,17 @@ function writeReadinessSummary(
 
 async function main() {
   const options = parseArgs(process.argv.slice(2))
-  const blockers = collectUncheckedTodoItems()
+  const todoItems = readTodoItems()
+  const blockers = collectUncheckedTodoItems(todoItems)
   const expectedCommit = options.expectedCommit ?? currentCommit(blockers)
 
-  checkCleanWorktree(blockers)
-  await checkRealDeviceEvidence(blockers, options, expectedCommit ?? undefined)
-  await checkReleaseReadinessEvidence(
+  const cleanWorktreeReady = checkCleanWorktree(blockers)
+  const realDeviceEvidenceReady = await checkRealDeviceEvidence(
+    blockers,
+    options,
+    expectedCommit ?? undefined,
+  )
+  const releaseReadinessEvidenceReady = await checkReleaseReadinessEvidence(
     blockers,
     options,
     expectedCommit ?? undefined,
@@ -554,9 +667,32 @@ async function main() {
     )
   }
 
-  checkPublicSurface(blockers)
+  const publicSurfaceReady = checkPublicSurface(blockers)
 
-  const warningMarkers = checkWarningMarkerState(blockers)
+  const warningMarkers = collectWarningMarkerHits()
+  const rootReadmeWarningReady = !warningMarkers.some((marker) =>
+    marker.startsWith('README.md:'),
+  )
+  const strictCiEvidenceReady =
+    !options.allowOpen && realDeviceEvidenceReady && releaseReadinessEvidenceReady
+  blockers.push(
+    ...collectCheckedTodoEvidenceBlockers(todoItems, {
+      checkCiEvidenceReady: strictCiEvidenceReady,
+      ciEvidenceReady:
+        cleanWorktreeReady &&
+        realDeviceEvidenceReady &&
+        releaseReadinessEvidenceReady &&
+        !options.allowOpen,
+      godotSmokeCiEvidenceReady: strictCiEvidenceReady,
+      publicReadmesReady: publicSurfaceReady && rootReadmeWarningReady,
+      realDeviceEvidenceReady,
+      releaseReadinessEvidenceReady,
+      rootReadmeWarningReady,
+      warningWordingReady: blockers.length === 0 && warningMarkers.length === 0,
+    }),
+  )
+
+  checkWarningMarkerState(blockers, warningMarkers)
   try {
     writeReadinessSummary(options, expectedCommit, blockers, warningMarkers)
   } catch (error) {

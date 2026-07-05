@@ -5,12 +5,81 @@ import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
 
+import {
+  collectCheckedTodoEvidenceBlockers,
+  collectTodoItems,
+  collectUncheckedTodoItems,
+} from '../scripts/release-readiness.mjs'
+
 function runReadiness(args = []) {
   return spawnSync(process.execPath, ['scripts/release-readiness.mjs', ...args], {
     cwd: process.cwd(),
     encoding: 'utf-8',
   })
 }
+
+test('release readiness flags checked final TODO items without matching evidence', () => {
+  const todoItems = collectTodoItems(
+    [
+      '- [x] Android export with selected device APIs has been tested.',
+      '- [ ] iOS export with selected device APIs has been tested.',
+      '- [x] Release preflight passes without warnings in the release environment.',
+      '- [x] All public READMEs match the final support claims.',
+      '- [x] The root README warning is removed in the same commit that marks this checklist complete.',
+    ].join('\n'),
+    'TODO.test.md',
+  )
+
+  assert.deepEqual(collectUncheckedTodoItems(todoItems), [
+    'TODO.test.md:2 iOS export with selected device APIs has been tested.',
+  ])
+
+  const blockers = collectCheckedTodoEvidenceBlockers(todoItems, {
+    checkCiEvidenceReady: false,
+    ciEvidenceReady: false,
+    godotSmokeCiEvidenceReady: false,
+    publicReadmesReady: false,
+    realDeviceEvidenceReady: false,
+    releaseReadinessEvidenceReady: false,
+    rootReadmeWarningReady: false,
+    warningWordingReady: false,
+  })
+  const output = blockers.join('\n')
+
+  assert.match(output, /TODO\.test\.md:1 Android export/)
+  assert.match(output, /real-device evidence must validate the Android export/)
+  assert.match(output, /TODO\.test\.md:3 Release preflight/)
+  assert.match(output, /warning-free Release Preflight run/)
+  assert.match(output, /TODO\.test\.md:4 All public READMEs/)
+  assert.match(output, /public-surface docs must pass/)
+  assert.match(output, /TODO\.test\.md:5 The root README warning/)
+  assert.match(output, /root README warning markers must be removed/)
+})
+
+test('release readiness accepts checked final TODO items when evidence is proven', () => {
+  const todoItems = collectTodoItems(
+    [
+      '- [x] Android export with selected device APIs has been tested.',
+      '- [x] iOS export with selected device APIs has been tested.',
+      '- [x] CI passes on a clean commit.',
+      '- [x] Release preflight passes without warnings in the release environment.',
+    ].join('\n'),
+  )
+
+  assert.deepEqual(
+    collectCheckedTodoEvidenceBlockers(todoItems, {
+      checkCiEvidenceReady: true,
+      ciEvidenceReady: true,
+      godotSmokeCiEvidenceReady: true,
+      publicReadmesReady: true,
+      realDeviceEvidenceReady: true,
+      releaseReadinessEvidenceReady: true,
+      rootReadmeWarningReady: true,
+      warningWordingReady: true,
+    }),
+    [],
+  )
+})
 
 test('release readiness reports current blockers without failing when allowed open', () => {
   const result = runReadiness(['--allow-open'])
