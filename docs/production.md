@@ -23,9 +23,9 @@ must report zero moderate, high, or critical advisories unless an accepted
 exception is documented in the release notes.
 `npm run check:real-device-evidence` validates the Android/iOS export-smoke
 evidence JSON when it exists. `release:preflight` verifies package metadata,
-generated package specs, dry-run package contents, registry state, publish
-environment assumptions, serious example app readiness, Godot smoke, and real
-device evidence.
+generated package specs, dry-run package contents including every
+`package.json` export target, registry state, publish environment assumptions,
+serious example app readiness, Godot smoke, and real device evidence.
 
 The local preflight command may warn when Godot smoke is skipped or when package
 versions are newer than the registry. Release builds should run the full

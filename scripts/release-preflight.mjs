@@ -162,11 +162,41 @@ function parseNpmJson(stdout, label) {
   }
 }
 
+function collectPackageExportFiles(exportsField) {
+  const files = new Set()
+
+  function visit(value) {
+    if (typeof value === 'string') {
+      if (value.startsWith('./')) {
+        files.add(value.slice(2))
+      }
+      return
+    }
+
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        visit(entry)
+      }
+      return
+    }
+
+    if (value != null && typeof value === 'object') {
+      for (const entry of Object.values(value)) {
+        visit(entry)
+      }
+    }
+  }
+
+  visit(exportsField)
+  return [...files].sort()
+}
+
 function checkPackDryRun() {
   logStep('checking npm pack dry-run contents')
 
   for (const config of packageConfigs) {
     const packageDir = path.join(repoRoot, config.dir)
+    const packageJson = readJson(path.join(config.dir, 'package.json'))
     const result = runRequired(npmCommand, ['pack', '--dry-run', '--json'], {
       cwd: packageDir,
     })
@@ -182,7 +212,11 @@ function checkPackDryRun() {
     }
 
     const files = new Set((pack.files ?? []).map((entry) => entry.path))
-    for (const expectedFile of config.expectedFiles) {
+    const expectedFiles = new Set([
+      ...config.expectedFiles,
+      ...collectPackageExportFiles(packageJson.exports),
+    ])
+    for (const expectedFile of expectedFiles) {
       if (!files.has(expectedFile)) {
         failures.push(`${config.name}: package tarball missing ${expectedFile}`)
       }

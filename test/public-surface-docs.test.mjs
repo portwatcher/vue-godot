@@ -9,6 +9,14 @@ function readDoc(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), 'utf-8')
 }
 
+function readJson(relativePath) {
+  return JSON.parse(readDoc(relativePath))
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 function assertPatterns(relativePath, patterns) {
   const source = readDoc(relativePath)
 
@@ -118,6 +126,39 @@ test('package READMEs link compatibility docs and document their public surface'
 
   for (const { path: relativePath, patterns } of packages) {
     assertPatterns(relativePath, patterns)
+  }
+})
+
+test('package READMEs document npm package names and exported subpaths', () => {
+  for (const packageDir of [
+    'packages/runtime-tscn',
+    'packages/html',
+    'packages/browser',
+    'packages/device',
+    'packages/cli',
+  ]) {
+    const packageJson = readJson(`${packageDir}/package.json`)
+    const readme = readDoc(`${packageDir}/README.md`)
+    const packageName = packageJson.name
+
+    assert.match(
+      readme,
+      new RegExp(escapeRegExp(packageName)),
+      `${packageDir}/README.md must name ${packageName}`,
+    )
+
+    for (const subpath of Object.keys(packageJson.exports ?? {})) {
+      if (subpath === '.') {
+        continue
+      }
+
+      const specifier = `${packageName}${subpath.slice(1)}`
+      assert.match(
+        readme,
+        new RegExp(escapeRegExp(specifier)),
+        `${packageDir}/README.md must document exported subpath ${specifier}`,
+      )
+    }
   }
 })
 
