@@ -36,7 +36,7 @@ function platformEvidence(platform) {
     osVersion: platform === 'android' ? 'Android 15' : 'iOS 18',
     orientation: 'portrait and landscape',
     locale: 'en-US',
-    selectedApis: ['fetch', 'navigator.permissions', 'SafeAreaView'],
+    selectedApis: [...productionProfileSelectedApis],
     passedChecks: [...requiredRealDeviceChecks[platform]],
     skippedChecks: {},
   }
@@ -137,6 +137,18 @@ test('real device evidence requires permission checks for selected permission AP
   assert.match(
     validateRealDeviceEvidence(evidence).join('\n'),
     /android\.permission-prompts-if-selected must be in passedChecks because selectedApis includes navigator\.permissions\.query/,
+  )
+})
+
+test('release real device evidence requires production profile selected APIs', () => {
+  const evidence = validEvidence()
+  evidence.ios.selectedApis = ['fetch', 'SafeAreaView']
+
+  assert.match(
+    validateRealDeviceEvidence(evidence, {
+      requireProductionProfile: true,
+    }).join('\n'),
+    /ios\.selectedApis must include production profile API\(s\): WebSocket, navigator\.permissions\.query/,
   )
 })
 
@@ -410,6 +422,7 @@ test('checked-in real device evidence example matches the validator schema', () 
   assert.deepEqual(
     validateRealDeviceEvidence(evidence, {
       expectedPackageVersions: currentReleasePackageVersions(),
+      requireProductionProfile: true,
     }),
     [],
   )

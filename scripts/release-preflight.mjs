@@ -591,6 +591,7 @@ async function checkRealDeviceEvidence() {
   const errors = validateRealDeviceEvidence(evidence, {
     expectedCommit: currentCommit ?? undefined,
     expectedPackageVersions: currentReleasePackageVersions(),
+    requireProductionProfile: true,
   })
 
   if (errors.length > 0) {

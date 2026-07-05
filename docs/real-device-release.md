@@ -93,6 +93,10 @@ The `--production-profile` shortcut expands to the maintained selected API set:
 `navigator.mediaDevices.getUserMedia`, `navigator.vibrate`,
 `readDeviceMotion`, and `SafeAreaView`. Add extra `--selected-api` flags only
 for release candidates that intentionally exercise more APIs.
+Final release evidence must include every production-profile API on both
+Android and iOS; `npm run release:evidence`,
+`npm run check:real-device-evidence`, `npm run release:preflight`, and strict
+`npm run release:readiness` reject evidence that omits any profile API.
 
 The generated `requiredChecks` arrays are a worksheet only. After testing, move
 each item into `passedChecks` or into `skippedChecks` with a release-specific

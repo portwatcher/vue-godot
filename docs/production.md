@@ -68,6 +68,10 @@ The production profile currently expands to `fetch`, `WebSocket`,
 `navigator.permissions.query`, `navigator.clipboard`,
 `navigator.geolocation`, `navigator.mediaDevices.getUserMedia`,
 `navigator.vibrate`, `readDeviceMotion`, and `SafeAreaView`.
+Final release evidence must include every production-profile API on both
+Android and iOS; release evidence assembly, the real-device evidence checker,
+release preflight, and strict release readiness reject evidence that omits any
+profile API.
 Selected API names are validated, so typos or unknown names fail before
 conditional checks can be omitted.
 Its `passOnlyChecks` worksheet lists core launch/runtime checks that must not

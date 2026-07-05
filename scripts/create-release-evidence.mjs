@@ -190,8 +190,12 @@ function readPlatformEvidence(filePath) {
   }
 
   const errors = [
-    ...validateRealDevicePlatformEvidence(platformEvidence, 'android'),
-    ...validateRealDevicePlatformEvidence(platformEvidence, 'ios'),
+    ...validateRealDevicePlatformEvidence(platformEvidence, 'android', {
+      requireProductionProfile: true,
+    }),
+    ...validateRealDevicePlatformEvidence(platformEvidence, 'ios', {
+      requireProductionProfile: true,
+    }),
   ]
   if (errors.length > 0) {
     throw new Error(
@@ -604,6 +608,7 @@ function validateGeneratedRealDeviceEvidence(evidence, commit, packageVersions) 
   const errors = validateRealDeviceEvidence(evidence, {
     expectedCommit: commit,
     expectedPackageVersions: packageVersions,
+    requireProductionProfile: true,
   })
   if (errors.length > 0) {
     throw new Error(errors.join('\n'))

@@ -689,8 +689,12 @@ async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
     expectedCommit,
     expectedPackageVersions: currentReleasePackageVersions(),
   })
-  const androidErrors = validateRealDevicePlatformEvidence(evidence, 'android')
-  const iosErrors = validateRealDevicePlatformEvidence(evidence, 'ios')
+  const androidErrors = validateRealDevicePlatformEvidence(evidence, 'android', {
+    requireProductionProfile: true,
+  })
+  const iosErrors = validateRealDevicePlatformEvidence(evidence, 'ios', {
+    requireProductionProfile: true,
+  })
   const errors = [...metadataErrors, ...androidErrors, ...iosErrors]
   let metadataReady = metadataErrors.length === 0
   const androidReady = metadataReady && androidErrors.length === 0

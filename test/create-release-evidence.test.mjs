@@ -12,6 +12,7 @@ import {
   extractReleasePreflightWarningCount,
 } from '../scripts/create-release-evidence.mjs'
 import {
+  productionProfileSelectedApis,
   requiredRealDeviceChecks,
   validateRealDeviceEvidence,
 } from '../scripts/real-device-evidence.mjs'
@@ -59,7 +60,7 @@ function platformEvidence(platform) {
     osVersion: platform === 'android' ? 'Android 15' : 'iOS 18',
     orientation: 'portrait and landscape',
     locale: 'en-US',
-    selectedApis: ['fetch', 'navigator.permissions', 'SafeAreaView'],
+    selectedApis: [...productionProfileSelectedApis],
     passedChecks: [...requiredRealDeviceChecks[platform]],
     skippedChecks: {},
   }

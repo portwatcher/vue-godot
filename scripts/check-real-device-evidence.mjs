@@ -186,6 +186,7 @@ function main() {
   const errors = validateRealDeviceEvidence(evidence, {
     expectedCommit: options.expectedCommit,
     expectedPackageVersions: currentReleasePackageVersions(),
+    requireProductionProfile: true,
   })
 
   if (errors.length > 0) {

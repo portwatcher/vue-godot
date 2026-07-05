@@ -407,6 +407,17 @@ export function unknownRealDeviceSelectedApis(selectedApis) {
   ]
 }
 
+export function missingProductionProfileSelectedApis(selectedApis) {
+  const selectedApiNames = new Set(
+    selectedApis
+      .filter((apiName) => typeof apiName === 'string')
+      .map((apiName) => apiName.trim()),
+  )
+  return productionProfileSelectedApis.filter(
+    (apiName) => !selectedApiNames.has(apiName),
+  )
+}
+
 function validateCheckNames(platform, passedChecks, skippedChecks, errors) {
   const requiredChecks = new Set(requiredRealDeviceChecks[platform])
   for (const check of passedChecks) {
@@ -422,7 +433,7 @@ function validateCheckNames(platform, passedChecks, skippedChecks, errors) {
   }
 }
 
-function validatePlatformEvidence(evidence, platform, errors) {
+function validatePlatformEvidence(evidence, platform, errors, options = {}) {
   const platformEvidence = evidence[platform]
   if (!isRecord(platformEvidence)) {
     errors.push(`${platform} evidence must be an object`)
@@ -470,6 +481,16 @@ function validatePlatformEvidence(evidence, platform, errors) {
 
   for (const apiName of unknownRealDeviceSelectedApis(selectedApis)) {
     errors.push(`${platform}.selectedApis contains unknown API ${apiName}`)
+  }
+
+  if (options.requireProductionProfile) {
+    const missingProductionProfileApis =
+      missingProductionProfileSelectedApis(selectedApis)
+    if (missingProductionProfileApis.length > 0) {
+      errors.push(
+        `${platform}.selectedApis must include production profile API(s): ${missingProductionProfileApis.join(', ')}`,
+      )
+    }
   }
 
   const passedChecks = new Set(
@@ -601,7 +622,11 @@ export function validateRealDeviceEvidenceMetadata(evidence, options = {}) {
   return errors
 }
 
-export function validateRealDevicePlatformEvidence(evidence, platform) {
+export function validateRealDevicePlatformEvidence(
+  evidence,
+  platform,
+  options = {},
+) {
   if (!isRecord(evidence)) {
     return ['Real device evidence must be a JSON object']
   }
@@ -611,7 +636,7 @@ export function validateRealDevicePlatformEvidence(evidence, platform) {
   }
 
   const errors = []
-  validatePlatformEvidence(evidence, platform, errors)
+  validatePlatformEvidence(evidence, platform, errors, options)
   return errors
 }
 
@@ -622,8 +647,8 @@ export function validateRealDeviceEvidence(evidence, options = {}) {
   }
 
   errors.push(
-    ...validateRealDevicePlatformEvidence(evidence, 'android'),
-    ...validateRealDevicePlatformEvidence(evidence, 'ios'),
+    ...validateRealDevicePlatformEvidence(evidence, 'android', options),
+    ...validateRealDevicePlatformEvidence(evidence, 'ios', options),
   )
 
   return errors
