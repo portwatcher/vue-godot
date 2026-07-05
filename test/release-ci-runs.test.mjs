@@ -3,9 +3,14 @@ import test from 'node:test'
 
 import {
   collectReleaseCiRunEvidence,
+  dispatchableReleaseCiWorkflows,
+  missingReleaseCiWorkflows,
+  releaseCiWorkflowDispatches,
   releasePreflightWorkflowName,
   requiredReleaseCiWorkflows,
+  selectLatestWorkflowRun,
   selectSuccessfulWorkflowRun,
+  validateWorkflowDispatchRef,
 } from '../scripts/check-release-ci-runs.mjs'
 
 const commit = '0123456789abcdef0123456789abcdef01234567'
@@ -158,6 +163,86 @@ test('release CI run selection prefers the newest successful matching run', () =
   assert.equal(
     selected.html_url,
     'https://github.com/portwatcher/vue-godot/actions/runs/11',
+  )
+})
+
+test('release CI run selection can inspect the latest run before success', () => {
+  const selected = selectLatestWorkflowRun(
+    [
+      workflowRun({
+        id: 10,
+        status: 'completed',
+        conclusion: 'failure',
+        html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/10',
+        updated_at: '2026-01-01T00:00:00Z',
+      }),
+      workflowRun({
+        id: 11,
+        status: 'in_progress',
+        conclusion: null,
+        html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/11',
+        updated_at: '2026-01-01T01:00:00Z',
+      }),
+    ],
+    'Check',
+    commit,
+  )
+
+  assert.equal(
+    selected.html_url,
+    'https://github.com/portwatcher/vue-godot/actions/runs/11',
+  )
+})
+
+test('release CI dispatch targets missing or failed workflows, not running workflows', () => {
+  const runs = [
+    workflowRun({
+      name: 'Check',
+      status: 'in_progress',
+      conclusion: null,
+      html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+    }),
+    workflowRun({
+      name: 'Godot Smoke',
+      conclusion: 'failure',
+      html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+    }),
+  ]
+
+  assert.deepEqual(missingReleaseCiWorkflows(runs, commit), [
+    'Check',
+    'Godot Smoke',
+  ])
+  assert.deepEqual(dispatchableReleaseCiWorkflows(runs, commit), [
+    'Godot Smoke',
+  ])
+})
+
+test('release CI dispatch refuses refs that do not resolve to the release commit', () => {
+  assert.deepEqual(validateWorkflowDispatchRef('develop', commit, commit), [])
+  assert.match(
+    validateWorkflowDispatchRef('develop', commit, null).join('\n'),
+    /was not found on GitHub/,
+  )
+  assert.match(
+    validateWorkflowDispatchRef('develop', commit, otherCommit).join('\n'),
+    /points to .* not release commit/,
+  )
+})
+
+test('release CI dispatch config maps required workflows to workflow files', () => {
+  assert.equal(releaseCiWorkflowDispatches.Check.workflowId, 'check.yml')
+  assert.equal(
+    releaseCiWorkflowDispatches['Godot Smoke'].workflowId,
+    'godot-smoke.yml',
+  )
+  assert.equal(
+    releaseCiWorkflowDispatches[releasePreflightWorkflowName].workflowId,
+    'release-preflight.yml',
+  )
+  assert.equal(
+    releaseCiWorkflowDispatches[releasePreflightWorkflowName].inputName,
+    'real_device_evidence_path',
   )
 })
 

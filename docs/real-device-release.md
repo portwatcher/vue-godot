@@ -78,9 +78,20 @@ npm run release:ci -- \
 ```
 
 If the `Check` or `Godot Smoke` workflow did not run automatically for that
-commit, dispatch the workflow manually on the release-candidate ref and rerun
-the command above after it completes. If `release:ci` reports that the commit
-was not found on GitHub, push the release-candidate commit first.
+commit, dispatch and wait from the CLI:
+
+```bash
+GH_TOKEN="$(gh auth token)" npm run release:ci -- \
+  --commit "$(git rev-parse HEAD)" \
+  --dispatch-missing \
+  --wait \
+  --ref <branch-or-tag> \
+  --output release/ci-runs.json
+```
+
+The dispatch ref must resolve to the same commit on GitHub. If `release:ci`
+reports that the commit was not found on GitHub, push the release-candidate
+commit first.
 
 Then assemble the evidence file from the real device data and completed CI
 runs:
@@ -101,6 +112,20 @@ includes the verified Release Preflight run URL:
 npm run release:ci -- \
   --commit "$(git rev-parse HEAD)" \
   --include-release-preflight \
+  --output release/ci-runs.json
+```
+
+To dispatch and wait for `Release Preflight` from the same helper, add the
+workflow input:
+
+```bash
+GH_TOKEN="$(gh auth token)" npm run release:ci -- \
+  --commit "$(git rev-parse HEAD)" \
+  --include-release-preflight \
+  --dispatch-missing \
+  --wait \
+  --ref <branch-or-tag> \
+  --real-device-evidence-path release/real-device-evidence.json \
   --output release/ci-runs.json
 ```
 

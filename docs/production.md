@@ -34,13 +34,16 @@ Actions metadata for the Check/Godot Smoke run URLs recorded in that evidence.
 After pushing a release candidate,
 `npm run release:ci -- --commit <sha> --output release/ci-runs.json` checks
 GitHub Actions for completed successful Check and Godot Smoke runs on that exact
-commit and writes the run URLs used by real-device release evidence. If a
-release-candidate commit is not found on GitHub, push it before collecting CI
-evidence. If the commit only changes docs or evidence and a workflow did not run
-automatically, dispatch the Check and Godot Smoke workflows manually on that
-exact ref before collecting CI evidence. After the Release Preflight workflow
-passes, rerun it with `--include-release-preflight` so the same CI evidence file
-also includes the verified preflight run URL used by final readiness evidence.
+commit and writes the run URLs used by real-device release evidence. Add
+`--wait` to poll while workflows are still running. If a release-candidate
+commit is not found on GitHub, push it before collecting CI evidence. If the
+commit only changes docs or evidence and a workflow did not run automatically,
+use `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit <sha> --dispatch-missing --wait --ref <branch-or-tag> --output release/ci-runs.json`
+to dispatch Check and Godot Smoke from the CLI. The helper refuses to dispatch
+unless the branch or tag resolves to the same commit on GitHub. After the
+Release Preflight workflow passes, rerun it with `--include-release-preflight`
+so the same CI evidence file also includes the verified preflight run URL used
+by final readiness evidence.
 `npm run release:platform-evidence` creates a starter Android/iOS platform
 evidence file with the exact required device check names; it still must be
 filled with real artifact, device, OS, API, pass, and skip data after testing.
@@ -90,6 +93,20 @@ npm run release:ci -- --include-release-preflight --output release/ci-runs.json
 ```
 
 Run that before creating final readiness evidence.
+
+To dispatch and wait for the preflight workflow from the command line, include
+the workflow and evidence input:
+
+```bash
+GH_TOKEN="$(gh auth token)" npm run release:ci -- \
+  --commit <sha> \
+  --include-release-preflight \
+  --dispatch-missing \
+  --wait \
+  --ref <branch-or-tag> \
+  --real-device-evidence-path release/real-device-evidence.json \
+  --output release/ci-runs.json
+```
 
 The `Check`, `Godot Smoke`, `Release Preflight`, and `Publish` workflows all run
 under Node 24 with `npm@^11.15.0`, so release-candidate CI evidence is produced

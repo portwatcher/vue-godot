@@ -130,6 +130,11 @@ test('release preflight enforces real device evidence', () => {
   for (const pattern of [
     /include-release-preflight/,
     /releasePreflightWorkflowName/,
+    /releaseCiWorkflowDispatches/,
+    /dispatchGitHubActionsWorkflow/,
+    /fetchGitHubCommitSha/,
+    /dispatch-missing/,
+    /validateWorkflowDispatchRef/,
     /fetchGitHubCommitExists/,
     /was not found on GitHub/,
     /Release Preflight/,
@@ -156,8 +161,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /check:real-device-evidence/)
   assert.match(production, /release:ci/)
   assert.match(production, /--include-release-preflight/)
+  assert.match(production, /--dispatch-missing/)
+  assert.match(production, /--wait/)
+  assert.match(production, /GH_TOKEN="\$\(gh auth token\)"/)
+  assert.match(production, /resolves to the same commit on GitHub/)
   assert.match(production, /commit is not found on GitHub/)
-  assert.match(production, /dispatch the Check and Godot Smoke workflows/)
   assert.match(production, /Node 24/)
   assert.match(production, /npm@\^11\.15\.0/)
   assert.match(production, /release:platform-evidence/)
@@ -169,8 +177,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /check:real-device-evidence/)
   assert.match(readme, /release:ci/)
   assert.match(readme, /--include-release-preflight/)
+  assert.match(readme, /--dispatch-missing/)
+  assert.match(readme, /--wait/)
+  assert.match(readme, /GH_TOKEN="\$\(gh auth token\)"/)
+  assert.match(readme, /resolve to the same commit on GitHub/)
   assert.match(readme, /commit was not found on GitHub/)
-  assert.match(readme, /dispatch the `Check` and `Godot Smoke` workflows/)
   assert.match(readme, /Node 24/)
   assert.match(readme, /npm@\^11\.15\.0/)
   assert.match(readme, /--ci-evidence/)
@@ -183,8 +194,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /release:ci/)
   assert.match(checklist, /ci-runs\.json/)
   assert.match(checklist, /--include-release-preflight/)
+  assert.match(checklist, /--dispatch-missing/)
+  assert.match(checklist, /--wait/)
+  assert.match(checklist, /GH_TOKEN="\$\(gh auth token\)"/)
+  assert.match(checklist, /resolve to the same commit on GitHub/)
   assert.match(checklist, /commit\s+was not found on GitHub/)
-  assert.match(checklist, /dispatch the workflow manually/)
   assert.match(checklist, /--ci-evidence/)
   assert.match(checklist, /--release-preflight-summary/)
   assert.match(checklist, /release-preflight-summary/)

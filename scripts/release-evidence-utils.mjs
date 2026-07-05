@@ -61,20 +61,30 @@ export function githubTokenFromEnv(env = process.env) {
   return typeof token === 'string' && token.trim().length > 0 ? token : null
 }
 
-function requestJson(url, options = {}) {
+function requestGitHubApi(url, options = {}) {
   const token = options.token ?? githubTokenFromEnv()
   const userAgent = options.userAgent ?? 'vue-godot-release-evidence'
+  const method = options.method ?? 'GET'
+  const requestBody = options.body == null ? null : JSON.stringify(options.body)
 
   return new Promise((resolve, reject) => {
-    const request = https.get(
+    const headers = {
+      Accept: 'application/vnd.github+json',
+      'User-Agent': userAgent,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      'X-GitHub-Api-Version': '2022-11-28',
+    }
+
+    if (requestBody != null) {
+      headers['Content-Type'] = 'application/json'
+      headers['Content-Length'] = Buffer.byteLength(requestBody)
+    }
+
+    const request = https.request(
       url,
       {
-        headers: {
-          Accept: 'application/vnd.github+json',
-          'User-Agent': userAgent,
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
+        method,
+        headers,
       },
       (response) => {
         const chunks = []
@@ -88,6 +98,11 @@ function requestJson(url, options = {}) {
           const statusCode = response.statusCode ?? 0
           if (statusCode < 200 || statusCode >= 300) {
             reject(new GitHubApiError(statusCode, body))
+            return
+          }
+
+          if (body.trim().length === 0) {
+            resolve(null)
             return
           }
 
@@ -110,7 +125,19 @@ function requestJson(url, options = {}) {
     request.setTimeout(30_000, () => {
       request.destroy(new Error(`Timed out reading ${url}`))
     })
+    if (requestBody != null) {
+      request.write(requestBody)
+    }
+    request.end()
   })
+}
+
+async function requestJson(url, options = {}) {
+  const response = await requestGitHubApi(url, options)
+  if (response == null) {
+    throw new Error('GitHub API returned an empty response')
+  }
+  return response
 }
 
 export async function fetchGitHubActionsRun(runUrl, options = {}) {
@@ -144,27 +171,73 @@ export async function fetchGitHubActionsRunsForCommit(commit, options = {}) {
 }
 
 export async function fetchGitHubCommitExists(commit, options = {}) {
-  if (typeof commit !== 'string' || commit.trim().length === 0) {
-    throw new Error('Commit must be a non-empty string')
+  return (await fetchGitHubCommitSha(commit, options)) != null
+}
+
+export async function fetchGitHubCommitSha(ref, options = {}) {
+  if (typeof ref !== 'string' || ref.trim().length === 0) {
+    throw new Error('Git reference must be a non-empty string')
   }
 
   const apiBaseUrl = options.apiBaseUrl ?? 'https://api.github.com'
   const apiUrl = `${apiBaseUrl}/repos/${githubRepoOwner}/${githubRepoName}/commits/${encodeURIComponent(
-    commit,
+    ref,
   )}`
 
   try {
-    await requestJson(apiUrl, options)
-    return true
+    const response = await requestJson(apiUrl, options)
+    if (!isRecord(response) || !hasNonEmptyString(response, 'sha')) {
+      throw new Error('GitHub commit response did not include sha')
+    }
+    return response.sha
   } catch (error) {
     if (
       error instanceof GitHubApiError &&
       (error.statusCode === 404 || error.statusCode === 422)
     ) {
-      return false
+      return null
     }
     throw error
   }
+}
+
+export async function dispatchGitHubActionsWorkflow(
+  workflowId,
+  ref,
+  inputs = {},
+  options = {},
+) {
+  if (typeof workflowId !== 'string' || workflowId.trim().length === 0) {
+    throw new Error('Workflow id must be a non-empty string')
+  }
+  if (typeof ref !== 'string' || ref.trim().length === 0) {
+    throw new Error('Workflow dispatch ref must be a non-empty string')
+  }
+  if (!isRecord(inputs)) {
+    throw new Error('Workflow dispatch inputs must be a JSON object')
+  }
+
+  const token = options.token ?? githubTokenFromEnv()
+  if (!token) {
+    throw new Error(
+      'GITHUB_TOKEN or GH_TOKEN is required to dispatch GitHub Actions workflows',
+    )
+  }
+
+  const apiBaseUrl = options.apiBaseUrl ?? 'https://api.github.com'
+  const apiUrl = `${apiBaseUrl}/repos/${githubRepoOwner}/${githubRepoName}/actions/workflows/${encodeURIComponent(
+    workflowId,
+  )}/dispatches`
+  const body = {
+    ref,
+    ...(Object.keys(inputs).length > 0 ? { inputs } : {}),
+  }
+  await requestGitHubApi(apiUrl, {
+    ...options,
+    token,
+    method: 'POST',
+    body,
+  })
 }
 
 export function validateGitHubActionsRunMetadata(run, expected) {
@@ -194,7 +267,11 @@ export function validateGitHubActionsRunMetadata(run, expected) {
   return errors
 }
 
-export async function verifyGitHubActionsRunUrl(runUrl, expected, options = {}) {
+export async function verifyGitHubActionsRunUrl(
+  runUrl,
+  expected,
+  options = {},
+) {
   const label = expected.label ?? 'GitHub Actions run'
   if (!extractGitHubActionsRunId(runUrl)) {
     return [
