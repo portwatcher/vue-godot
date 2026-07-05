@@ -271,7 +271,7 @@ test('real device evidence rejects stale package versions when expected versions
   )
 })
 
-test('real device evidence requires successful CI runs for the evidence commit', () => {
+test('real device evidence requires successful CI runs for the recorded release commit', () => {
   const evidence = validEvidence()
   evidence.checkRunConclusion = 'failure'
   evidence.godotSmokeRunCommit = 'ffffffffffffffffffffffffffffffffffffffff'

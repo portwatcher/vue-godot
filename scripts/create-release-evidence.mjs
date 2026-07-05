@@ -53,7 +53,9 @@ Options:
                                   Required for readiness evidence. JSON written by
                                   release:preflight -- --summary-output.
   --readiness-output <file>        Write release-readiness evidence JSON.
-  --commit <sha>                   Evidence commit. Default: current HEAD.
+  --commit <sha>                   Tested release commit. Default: current HEAD.
+                                  Use the release-candidate SHA when writing
+                                  evidence from a follow-up evidence commit.
   --godot-js-version <label>       GodotJS version label.
                                   Default: ${defaultGodotJsVersion}
   --help                           Show this help.
@@ -343,7 +345,7 @@ export function extractCiRunUrls(ciResult, commit, options = {}) {
   errors.push(...collectCiSummaryStatusErrors(ciResult, options))
 
   if (ciEvidence.commit !== commit) {
-    errors.push(`CI evidence commit must match ${commit}`)
+    errors.push(`CI evidence commit must match expected release commit ${commit}`)
   }
 
   const checkRunUrl = workflowRunUrl(ciEvidence, 'Check', errors)
@@ -406,7 +408,9 @@ export function extractReleasePreflightWarningCount(summary, commit) {
   }
 
   if (summary.commit !== commit) {
-    errors.push(`Release preflight summary commit must match ${commit}`)
+    errors.push(
+      `Release preflight summary commit must match expected release commit ${commit}`,
+    )
   }
 
   if (summary.localOnly !== false) {

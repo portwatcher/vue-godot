@@ -168,6 +168,21 @@ test('create-release-evidence requires a preflight summary for readiness evidenc
   )
 })
 
+test('create-release-evidence help describes --commit as the tested release commit', () => {
+  const result = spawnSync(
+    process.execPath,
+    ['scripts/create-release-evidence.mjs', '--help'],
+    {
+      cwd: process.cwd(),
+      encoding: 'utf-8',
+    },
+  )
+
+  assert.equal(result.status, 0)
+  assert.match(result.stdout, /--commit <sha>\s+Tested release commit/)
+  assert.match(result.stdout, /follow-up evidence commit/)
+})
+
 test('create-release-evidence validates platform evidence before run metadata fetches', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-evidence-'))
   const platformEvidencePath = path.join(tempDir, 'platform-evidence.json')
@@ -219,7 +234,7 @@ test('create-release-evidence validates platform evidence before run metadata fe
   assert.equal(fs.existsSync(realDeviceOutput), false)
 })
 
-test('extractCiRunUrls reads release CI evidence for the evidence commit', () => {
+test('extractCiRunUrls reads release CI evidence for the tested release commit', () => {
   assert.deepEqual(
     extractCiRunUrls(
       ciRunResult({
@@ -462,7 +477,10 @@ test('extractCiRunUrls rejects stale or incomplete CI evidence', () => {
   assert.equal(result.godotSmokeRunUrl, null)
   assert.equal(result.releasePreflightRunUrl, null)
   assert.match(result.errors.join('\n'), /unresolved errors/)
-  assert.match(result.errors.join('\n'), /CI evidence commit must match/)
+  assert.match(
+    result.errors.join('\n'),
+    /CI evidence commit must match expected release commit/,
+  )
   assert.match(result.errors.join('\n'), /missing Godot Smoke/)
 })
 
@@ -534,7 +552,10 @@ test('extractReleasePreflightWarningCount rejects stale or failed summaries', ()
   )
 
   assert.equal(result.warningCount, null)
-  assert.match(result.errors.join('\n'), /summary commit must match/)
+  assert.match(
+    result.errors.join('\n'),
+    /summary commit must match expected release commit/,
+  )
   assert.match(
     result.errors.join('\n'),
     /warningCount must be a non-negative integer/,

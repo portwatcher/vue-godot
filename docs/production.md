@@ -64,8 +64,11 @@ After device testing and CI runs exist, `npm run release:evidence` assembles the
 real-device and release-readiness evidence files from the current package
 versions, Android/iOS platform evidence, CI evidence, and verified GitHub
 Actions run metadata. It strips worksheet fields and validates normalized
-platform evidence before fetching GitHub run metadata. It rejects not-ready or
-inconsistent structured CI summaries before writing the final evidence;
+platform evidence before fetching GitHub run metadata. Pass
+`--commit <release-candidate-sha>` when generating evidence from a follow-up
+evidence commit so the evidence records the tested release commit rather than
+current `HEAD`. It rejects not-ready or inconsistent structured CI summaries
+before writing the final evidence;
 `release/real-device-evidence.json` must not contain
 `requiredChecks`, `passOnlyChecks`, or `selectedApiRequiredChecks`, and copied
 platform evidence is rejected. For final readiness evidence, fetch the
@@ -101,9 +104,9 @@ script wiring, CI workflow wiring, public-surface documentation/demo alignment,
 the final release state. Evidence run URLs must be GitHub Actions run URLs for
 `portwatcher/vue-godot`; in strict mode the run metadata is fetched from GitHub,
 the workflow names must match `Check`, `Godot Smoke`, and `Release Preflight`,
-the run commits must match the evidence commit, the runs must be completed
-successfully, and real-device package versions must match the current package
-manifests.
+the run commits must match the tested release commit recorded in the evidence,
+the runs must be completed successfully, and real-device package versions must
+match the current package manifests.
 If evidence files are committed after testing a pushed release-candidate commit,
 pass `--expected-commit <release-candidate-sha>` so strict readiness validates
 the tested commit instead of the evidence commit.

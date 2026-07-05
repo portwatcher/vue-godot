@@ -252,6 +252,11 @@ test('release preflight enforces real device evidence', () => {
     production,
     /validates normalized\s+platform evidence before fetching GitHub run metadata/,
   )
+  assert.match(production, /--commit <release-candidate-sha>/)
+  assert.match(
+    production,
+    /tested release commit rather than\s+current `HEAD`/,
+  )
   assert.match(
     production,
     /separate Android\/iOS real-device\s+evidence status/,
@@ -288,6 +293,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(
     readme,
     /validates the normalized platform evidence before fetching GitHub run metadata/,
+  )
+  assert.match(readme, /--commit <release-candidate-sha>/)
+  assert.match(
+    readme,
+    /tested release commit rather than current `HEAD`/,
   )
   assert.match(readme, /separate Android\/iOS real-device evidence status/)
   assert.match(readme, /package description warning/)
@@ -331,6 +341,9 @@ test('release preflight enforces real device evidence', () => {
     checklist,
     /validates the normalized platform evidence before fetching GitHub run\s+metadata/,
   )
+  assert.match(checklist, /--commit <release-candidate-sha>/)
+  assert.match(checklist, /follow-up evidence commit/)
+  assert.match(checklist, /tested release\s+commit recorded in evidence/)
   assert.match(checklist, /separate\s+Android\/iOS real-device evidence status/)
   assert.match(checklist, /unchecked TODO item details/)
   assert.match(checklist, /final TODO proof status/)

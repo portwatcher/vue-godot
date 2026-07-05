@@ -51,7 +51,8 @@ When a selected API maps to a conditional check such as `network-if-selected`,
 
 Non-local `release:preflight` reads the recorded Check and Godot Smoke run URLs
 from the GitHub Actions API and fails if either run is not completed,
-successful, named for the expected workflow, or attached to the evidence commit.
+successful, named for the expected workflow, or attached to the tested release
+commit recorded in evidence.
 The final strict `release:readiness` gate applies the same check and also
 verifies the recorded Release Preflight run metadata. The `--allow-open`
 readiness audit stays offline and prints final TODO proof status so it can be
@@ -126,9 +127,12 @@ runs:
 npm run release:evidence -- \
   --platform-evidence release/platform-evidence.json \
   --ci-evidence release/ci-runs.json \
+  --commit <release-candidate-sha> \
   --real-device-output release/real-device-evidence.json
 ```
 
+Use `--commit <release-candidate-sha>` whenever the evidence is generated from
+a follow-up evidence commit instead of directly on the tested release candidate.
 The helper strips worksheet fields before writing final evidence. If
 `release/platform-evidence.json` is copied directly to
 `release/real-device-evidence.json`, `npm run check:real-device-evidence` and
@@ -176,6 +180,7 @@ readiness evidence:
 npm run release:evidence -- \
   --platform-evidence release/platform-evidence.json \
   --ci-evidence release/ci-runs.json \
+  --commit <release-candidate-sha> \
   --real-device-output release/real-device-evidence.json \
   --release-preflight-summary release/release-preflight-summary.json \
   --readiness-output release/release-readiness-evidence.json
