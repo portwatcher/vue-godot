@@ -117,9 +117,10 @@ reports that the commit was not found on GitHub, push the release-candidate
 commit first. The resulting `release/ci-runs.json` includes `ready`,
 `commitFound`, required/passed/missing workflow names, structured workflow
 checks, local Git branch/upstream diagnostics, hints for unpushed commits or
-stale upstreams, and the run URLs consumed by `release:evidence`. The evidence
-helper rejects not-ready or inconsistent structured CI summaries before writing
-final evidence.
+stale upstreams, `nextActions` command hints for pushing or dispatching missing
+workflows, and the run URLs consumed by `release:evidence`. The evidence helper
+rejects not-ready or inconsistent structured CI summaries before writing final
+evidence.
 
 Then assemble the evidence file from the real device data and completed CI
 runs:

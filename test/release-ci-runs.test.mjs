@@ -5,6 +5,7 @@ import test from 'node:test'
 
 import {
   collectReleaseCiHints,
+  collectReleaseCiNextActions,
   collectReleaseCiRunEvidence,
   dispatchableReleaseCiWorkflows,
   missingReleaseCiWorkflows,
@@ -179,6 +180,18 @@ test('release CI output reports structured workflow readiness', () => {
   })
   assert.equal(output.evidence, result.evidence)
   assert.equal(output.errors, result.errors)
+  assert.ok(
+    output.nextActions.some(
+      (action) =>
+        action.id === 'dispatch-missing-workflows' &&
+        action.commands.some((command) =>
+          command.includes('--include-release-preflight'),
+        ) &&
+        action.commands.some((command) =>
+          command.includes('--real-device-evidence-path release/real-device-evidence.json'),
+        ),
+    ),
+  )
 })
 
 test('release CI output reports missing commit status', () => {
@@ -200,6 +213,16 @@ test('release CI output reports missing commit status', () => {
   assert.equal(output.checks.commitFound, false)
   assert.equal(output.checks.checkWorkflow, false)
   assert.equal(output.checks.godotSmokeWorkflow, false)
+  assert.ok(
+    output.nextActions.some(
+      (action) =>
+        action.id === 'push-release-candidate' &&
+        action.commands.includes('git push') &&
+        action.commands.some((command) =>
+          command.includes('--commit 0123456789abcdef0123456789abcdef01234567 --wait --output release/ci-runs.json'),
+        ),
+    ),
+  )
 })
 
 test('release CI output includes local git hints for unpushed commits', () => {
@@ -230,6 +253,13 @@ test('release CI output includes local git hints for unpushed commits', () => {
   assert.equal(output.localGit.currentBranch, 'develop')
   assert.match(output.hints.join('\n'), /develop has no upstream/)
   assert.doesNotMatch(output.hints.join('\n'), /Current HEAD is/)
+  assert.ok(
+    output.nextActions.some(
+      (action) =>
+        action.id === 'push-release-candidate' &&
+        action.commands.includes('git push --set-upstream origin develop'),
+    ),
+  )
 })
 
 test('release CI hints report stale upstreams and dirty worktrees', () => {
@@ -250,6 +280,32 @@ test('release CI hints report stale upstreams and dirty worktrees', () => {
   assert.match(hints, /origin\/release does not point at release commit/)
   assert.match(hints, /Current HEAD is/)
   assert.match(hints, /Working tree has local changes/)
+})
+
+test('release CI next actions report dirty worktree cleanup', () => {
+  const actions = collectReleaseCiNextActions({
+    commit,
+    commitFound: true,
+    localGit: {
+      currentBranch: 'release',
+      currentHead: commit,
+      commitIsHead: true,
+      dirtyWorktree: true,
+      upstreamCommit: commit,
+      upstreamMatchesCommit: true,
+      upstreamRef: 'origin/release',
+    },
+    missingWorkflowNames: [],
+    requiredWorkflowNames: requiredReleaseCiWorkflows,
+  })
+
+  assert.deepEqual(actions[0], {
+    id: 'clean-worktree',
+    title: 'Commit or remove local changes before final release evidence',
+    detail:
+      'The CI run evidence can be collected with local changes present, but strict final readiness requires a clean worktree.',
+    commands: ['git status --short'],
+  })
 })
 
 test('release CI run selection prefers the newest successful matching run', () => {

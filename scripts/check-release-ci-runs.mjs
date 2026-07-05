@@ -464,6 +464,92 @@ export function collectReleaseCiHints(output) {
   return hints
 }
 
+function releaseCiCommand(output, options = {}) {
+  const args = ['npm run release:ci --', '--commit', output.commit]
+  if (output.requiredWorkflowNames.includes(releasePreflightWorkflowName)) {
+    args.push('--include-release-preflight')
+  }
+  if (options.dispatchMissing) {
+    args.push('--dispatch-missing')
+  }
+  if (options.wait) {
+    args.push('--wait')
+  }
+  if (options.ref) {
+    args.push('--ref', options.ref)
+  }
+  if (
+    options.realDeviceEvidencePath &&
+    output.requiredWorkflowNames.includes(releasePreflightWorkflowName)
+  ) {
+    args.push(
+      '--real-device-evidence-path',
+      options.realDeviceEvidencePath,
+    )
+  }
+  if (options.output) {
+    args.push('--output', options.output)
+  }
+  return args.join(' ')
+}
+
+export function collectReleaseCiNextActions(output) {
+  const actions = []
+  const localGit = output.localGit
+
+  if (localGit?.dirtyWorktree) {
+    actions.push({
+      id: 'clean-worktree',
+      title: 'Commit or remove local changes before final release evidence',
+      detail:
+        'The CI run evidence can be collected with local changes present, but strict final readiness requires a clean worktree.',
+      commands: ['git status --short'],
+    })
+  }
+
+  if (output.commitFound === false) {
+    const pushCommand =
+      localGit?.currentBranch && !localGit.upstreamRef
+        ? `git push --set-upstream origin ${localGit.currentBranch}`
+        : 'git push'
+    actions.push({
+      id: 'push-release-candidate',
+      title: 'Push the tested release-candidate commit',
+      detail:
+        'GitHub Actions evidence can only be collected after the release-candidate commit is visible on GitHub.',
+      commands: [
+        pushCommand,
+        releaseCiCommand(output, {
+          wait: true,
+          output: 'release/ci-runs.json',
+        }),
+      ],
+    })
+    return actions
+  }
+
+  if (output.missingWorkflowNames.length > 0) {
+    const commandOptions = {
+      dispatchMissing: true,
+      output: 'release/ci-runs.json',
+      realDeviceEvidencePath: defaultRealDeviceEvidencePath,
+      ref: '<branch-or-tag>',
+      wait: true,
+    }
+    actions.push({
+      id: 'dispatch-missing-workflows',
+      title: 'Dispatch and wait for missing release CI workflows',
+      detail:
+        'Use a branch or tag that resolves to the tested release commit so manually dispatched workflows attach to the right SHA.',
+      commands: [
+        `GH_TOKEN="$(gh auth token)" ${releaseCiCommand(output, commandOptions)}`,
+      ],
+    })
+  }
+
+  return actions
+}
+
 function printText(output, workflows) {
   console.log(`[release-ci] commit ${output.evidence.commit}`)
   for (const workflowName of workflows) {
@@ -475,18 +561,27 @@ function printText(output, workflows) {
 
   if (output.errors.length === 0) {
     console.log('[release-ci] all required CI runs passed')
-    return
-  }
-
-  console.log('[release-ci] missing required CI runs')
-  for (const error of output.errors) {
-    console.log(`- ${error}`)
+  } else {
+    console.log('[release-ci] missing required CI runs')
+    for (const error of output.errors) {
+      console.log(`- ${error}`)
+    }
   }
 
   if (output.hints.length > 0) {
     console.log('\n[release-ci] local git hints')
     for (const hint of output.hints) {
       console.log(`- ${hint}`)
+    }
+  }
+
+  if (output.nextActions.length > 0) {
+    console.log('\n[release-ci] next actions')
+    for (const action of output.nextActions) {
+      console.log(`- ${action.title}`)
+      for (const command of action.commands) {
+        console.log(`  ${command}`)
+      }
     }
   }
 }
@@ -575,7 +670,7 @@ export function releaseCiOutput(result, workflows = requiredReleaseCiWorkflows) 
     )
   }
 
-  return {
+  const output = {
     ready: result.errors.length === 0,
     commit: result.evidence.commit,
     commitFound: result.commitFound !== false,
@@ -591,7 +686,11 @@ export function releaseCiOutput(result, workflows = requiredReleaseCiWorkflows) 
       commitFound: result.commitFound !== false,
       localGit: result.localGit ?? null,
     }),
+    nextActions: [],
   }
+
+  output.nextActions = collectReleaseCiNextActions(output)
+  return output
 }
 
 async function main() {
