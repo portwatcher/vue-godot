@@ -10,6 +10,7 @@ import {
   collectFinalTodoStructureBlockers,
   collectPackageDescriptionWarningHits,
   collectReleaseToolingBlockers,
+  collectReleaseWorkflowBlockers,
   collectTodoItems,
   collectUncheckedTodoItems,
 } from '../scripts/release-readiness.mjs'
@@ -194,6 +195,37 @@ test('release readiness requires release tooling scripts', () => {
   assert.match(output, /check script must run npm run check:serious-examples/)
 })
 
+test('release readiness requires release workflow wiring', () => {
+  assert.deepEqual(collectReleaseWorkflowBlockers(), [])
+
+  const blockers = collectReleaseWorkflowBlockers((file) => {
+    if (file === '.github/workflows/check.yml') {
+      return ['name: Check', 'workflow_dispatch:', 'node-version: 24'].join(
+        '\n',
+      )
+    }
+    if (file === '.github/workflows/godot-smoke.yml') {
+      return [
+        'name: Godot Smoke',
+        'workflow_dispatch:',
+        'node-version: 24',
+        './.github/actions/setup-godotjs',
+        'npm run smoke:godot',
+      ].join('\n')
+    }
+    throw new Error('missing workflow')
+  })
+  const output = blockers.join('\n')
+
+  assert.match(output, /\.github\/workflows\/check\.yml/)
+  assert.match(output, /npm run check/)
+  assert.match(output, /\.github\/workflows\/godot-smoke\.yml/)
+  assert.match(output, /npm run smoke:generated-godot/)
+  assert.match(output, /npm run smoke:editor-reload/)
+  assert.match(output, /\.github\/workflows\/release-preflight\.yml/)
+  assert.match(output, /unable to read Release Preflight workflow/)
+})
+
 test('release readiness scans package descriptions for final warning wording', () => {
   assert.deepEqual(
     collectPackageDescriptionWarningHits([
@@ -322,6 +354,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.equal(summary.checks.realDeviceEvidence, true)
     assert.equal(summary.checks.realDeviceEvidenceMetadata, true)
     assert.equal(summary.checks.releaseTooling, true)
+    assert.equal(summary.checks.releaseWorkflows, true)
     assert.equal(summary.checks.releaseReadinessEvidence, true)
     assert.equal(summary.checks.rootReadmeWarningsRemoved, false)
     assert.equal(summary.checks.strictCiEvidence, false)

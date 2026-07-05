@@ -86,11 +86,11 @@ the production TODO remains open and does not contact GitHub. Add
 `--summary-output release/release-readiness-summary.json` to write blockers,
 warning markers, package description warning status, TODO counts, unchecked
 TODO item details, and structured readiness check status, including separate Android/iOS real-device
-evidence status, as JSON for release handoff. The strict
+evidence status and CI workflow wiring status, as JSON for release handoff. The strict
 `npm run release:readiness` command is for the committed final removal
 candidate and fails unless the worktree is clean and TODO boxes, current
 real-device evidence, prematurely checked final TODO boxes, release tooling
-script wiring, public-surface documentation/demo alignment,
+script wiring, CI workflow wiring, public-surface documentation/demo alignment,
 `release/release-readiness-evidence.json`, and public warning wording are all in
 the final release state. Evidence run URLs must be GitHub Actions run URLs for
 `portwatcher/vue-godot`; in strict mode the run metadata is fetched from GitHub,

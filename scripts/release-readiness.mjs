@@ -382,13 +382,13 @@ const finalTodoEvidenceRequirements = [
     text: '`npm run check` passes locally and in CI.',
     proof: 'checkCiEvidenceReady',
     reason:
-      'Check workflow evidence must be verified in a strict release-readiness run',
+      'Check workflow evidence and workflow wiring must be verified in a strict release-readiness run',
   },
   {
     text: 'Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate.',
     proof: 'godotSmokeCiEvidenceReady',
     reason:
-      'Godot Smoke workflow evidence must be verified in a strict release-readiness run',
+      'Godot Smoke workflow evidence and workflow wiring must be verified in a strict release-readiness run',
   },
   {
     text: 'Android and iOS export smoke apps run on real or hosted devices for the production profile.',
@@ -423,7 +423,7 @@ const finalTodoEvidenceRequirements = [
     text: 'Release preflight passes without warnings in the release environment.',
     proof: 'releaseReadinessEvidenceReady',
     reason:
-      'release-readiness evidence must validate a warning-free Release Preflight run',
+      'release-readiness evidence and workflow wiring must validate a warning-free Release Preflight run',
   },
   {
     text: 'All public READMEs match the final support claims.',
@@ -517,6 +517,86 @@ export function collectReleaseToolingBlockers(packageJson) {
     blockers.push(
       'package.json check script must run npm run check:serious-examples',
     )
+  }
+
+  return blockers
+}
+
+const releaseWorkflowRequirements = [
+  {
+    file: '.github/workflows/check.yml',
+    label: 'Check workflow',
+    snippets: [
+      'name: Check',
+      'workflow_dispatch:',
+      'node-version: 24',
+      'npm install -g npm@^11.15.0',
+      'npm ci',
+      'npm run check',
+    ],
+  },
+  {
+    file: '.github/workflows/godot-smoke.yml',
+    label: 'Godot Smoke workflow',
+    snippets: [
+      'name: Godot Smoke',
+      'workflow_dispatch:',
+      'node-version: 24',
+      './.github/actions/setup-godotjs',
+      'npm install -g npm@^11.15.0',
+      'npm ci',
+      'npm run build',
+      'npm run smoke:godot',
+      'npm run smoke:generated-godot',
+      'npm run smoke:editor-reload',
+      'xvfb-run',
+    ],
+  },
+  {
+    file: '.github/workflows/release-preflight.yml',
+    label: 'Release Preflight workflow',
+    snippets: [
+      'name: Release Preflight',
+      'workflow_dispatch:',
+      'real_device_evidence_path',
+      'node-version: 24',
+      'id-token: write',
+      './.github/actions/setup-godotjs',
+      'VUE_GODOT_REAL_DEVICE_EVIDENCE',
+      'npm install -g npm@^11.15.0',
+      'npm ci',
+      'npm run release:preflight',
+      '--summary-output release/release-preflight-summary.json',
+      'actions/upload-artifact@v4',
+      'release-preflight-summary',
+      'xvfb-run',
+    ],
+  },
+]
+
+export function collectReleaseWorkflowBlockers(readWorkflow = readText) {
+  const blockers = []
+
+  for (const requirement of releaseWorkflowRequirements) {
+    let source
+    try {
+      source = readWorkflow(requirement.file)
+    } catch (error) {
+      blockers.push(
+        `${requirement.file}: unable to read ${requirement.label}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      )
+      continue
+    }
+
+    for (const snippet of requirement.snippets) {
+      if (!source.includes(snippet)) {
+        blockers.push(
+          `${requirement.file}: ${requirement.label} must include ${snippet}`,
+        )
+      }
+    }
   }
 
   return blockers
@@ -796,6 +876,9 @@ async function main() {
   const packageJson = readJson('package.json')
   const releaseToolingBlockers = collectReleaseToolingBlockers(packageJson)
   blockers.push(...releaseToolingBlockers)
+  const releaseWorkflowBlockers = collectReleaseWorkflowBlockers()
+  blockers.push(...releaseWorkflowBlockers)
+  const releaseWorkflowsReady = releaseWorkflowBlockers.length === 0
 
   const publicSurfaceReady = checkPublicSurface(blockers)
 
@@ -815,17 +898,19 @@ async function main() {
 
   const checkedFinalTodoProofs = {
     androidRealDeviceEvidenceReady,
-    checkCiEvidenceReady: strictCiEvidenceReady,
+    checkCiEvidenceReady: strictCiEvidenceReady && releaseWorkflowsReady,
     ciEvidenceReady:
       cleanWorktreeReady &&
       realDeviceEvidenceReady &&
       releaseReadinessEvidenceReady &&
+      releaseWorkflowsReady &&
       !options.allowOpen,
-    godotSmokeCiEvidenceReady: strictCiEvidenceReady,
+    godotSmokeCiEvidenceReady: strictCiEvidenceReady && releaseWorkflowsReady,
     iosRealDeviceEvidenceReady,
     publicReadmesReady: publicSurfaceReady && rootReadmeWarningReady,
     realDeviceEvidenceReady,
-    releaseReadinessEvidenceReady,
+    releaseReadinessEvidenceReady:
+      releaseReadinessEvidenceReady && releaseWorkflowsReady,
     rootReadmeWarningReady,
     warningWordingReady:
       blockers.length === 0 &&
@@ -853,6 +938,7 @@ async function main() {
     realDeviceEvidence: realDeviceEvidenceReady,
     realDeviceEvidenceMetadata: realDeviceEvidenceMetadataReady,
     releaseTooling: releaseToolingBlockers.length === 0,
+    releaseWorkflows: releaseWorkflowsReady,
     releaseReadinessEvidence: releaseReadinessEvidenceReady,
     rootReadmeWarningsRemoved: rootReadmeWarningReady,
     strictCiEvidence: strictCiEvidenceReady,
