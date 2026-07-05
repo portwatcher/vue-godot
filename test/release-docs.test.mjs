@@ -92,6 +92,7 @@ test('release preflight validates package export targets in tarballs', () => {
 test('release preflight enforces real device evidence', () => {
   const preflight = readDoc('scripts/release-preflight.mjs')
   const realDeviceEvidence = readDoc('scripts/real-device-evidence.mjs')
+  const platformEvidenceHelper = readDoc('scripts/create-platform-evidence.mjs')
   const releaseCi = readDoc('scripts/check-release-ci-runs.mjs')
   const evidenceHelper = readDoc('scripts/create-release-evidence.mjs')
   const preflightSummaryHelper = readDoc(
@@ -130,9 +131,13 @@ test('release preflight enforces real device evidence', () => {
     assert.match(realDeviceEvidence, pattern)
   }
 
+  assert.match(platformEvidenceHelper, /selectedApiRequiredChecks/)
+  assert.match(platformEvidenceHelper, /selectedApiRequiredCheckMap/)
+
   for (const pattern of [
     /release-preflight-summary/,
     /extractReleasePreflightWarningCount/,
+    /selectedApiRequiredChecks/,
     /Release preflight summary commit must match/,
     /Release Preflight/,
   ]) {
@@ -195,6 +200,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /Node 24/)
   assert.match(production, /npm@\^11\.15\.0/)
   assert.match(production, /release:platform-evidence/)
+  assert.match(production, /selectedApiRequiredChecks/)
   assert.match(production, /selected APIs must be recorded in `passedChecks`/)
   assert.match(production, /release:evidence/)
   assert.match(production, /release:preflight-summary/)
@@ -216,6 +222,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /--summary-output/)
   assert.match(readme, /--release-preflight-summary/)
   assert.match(readme, /release:platform-evidence/)
+  assert.match(readme, /selectedApiRequiredChecks/)
   assert.match(readme, /must be in `passedChecks`/)
   assert.match(readme, /release:evidence/)
   assert.match(readme, /release:preflight-summary/)
@@ -234,8 +241,9 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /release-preflight-summary/)
   assert.match(checklist, /release:preflight-summary/)
   assert.match(checklist, /release:platform-evidence/)
+  assert.match(checklist, /selectedApiRequiredChecks/)
   assert.match(checklist, /selected API set/)
-  assert.match(checklist, /Conditional checks for selected APIs/)
+  assert.match(checklist, /Conditional checks for\s+selected APIs/)
   assert.match(workflow, /real_device_evidence_path/)
   assert.match(workflow, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
   assert.match(checkWorkflow, /workflow_dispatch/)

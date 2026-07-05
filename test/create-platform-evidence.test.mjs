@@ -30,8 +30,7 @@ function fullEvidence(platformEvidence) {
     godotJsVersion: 'GodotJS 1.0.0-2 / Godot 4.4.x',
     checkRunUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
     checkRun: baseRun('Check', 1),
-    godotSmokeRunUrl:
-      'https://github.com/portwatcher/vue-godot/actions/runs/2',
+    godotSmokeRunUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
     godotSmokeRun: baseRun('Godot Smoke', 2),
     platformEvidence,
   })
@@ -45,6 +44,14 @@ test('platform evidence template lists required checks without passing them', ()
   })
 
   assert.deepEqual(template.android.selectedApis, ['fetch', 'SafeAreaView'])
+  assert.deepEqual(template.android.selectedApiRequiredChecks, {
+    'network-if-selected': ['fetch'],
+    'safe-area-keyboard': ['SafeAreaView'],
+  })
+  assert.deepEqual(template.ios.selectedApiRequiredChecks, {
+    'network-if-selected': ['fetch'],
+    'safe-area-keyboard-rotation-text-input': ['SafeAreaView'],
+  })
   assert.deepEqual(template.android.passedChecks, [])
   assert.deepEqual(template.android.skippedChecks, {})
   assert.deepEqual(
@@ -89,5 +96,6 @@ test('release evidence normalization removes template-only required checks', () 
   const normalized = normalizePlatformEvidence(template.android)
 
   assert.equal('requiredChecks' in normalized, false)
+  assert.equal('selectedApiRequiredChecks' in normalized, false)
   assert.deepEqual(normalized.passedChecks, [])
 })

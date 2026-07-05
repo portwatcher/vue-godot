@@ -177,7 +177,7 @@ function selectedApiChecks(apiName, platform) {
   ]
 }
 
-function selectedApiRequiredCheckMap(selectedApis, platform) {
+export function selectedApiRequiredCheckMap(selectedApis, platform) {
   const checks = new Map()
   for (const apiName of selectedApis) {
     for (const check of selectedApiChecks(apiName, platform)) {

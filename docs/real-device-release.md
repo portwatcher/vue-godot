@@ -72,9 +72,10 @@ npm run release:platform-evidence -- \
 
 The generated `requiredChecks` arrays are a worksheet only. After testing, move
 each item into `passedChecks` or into `skippedChecks` with a release-specific
-reason. Conditional checks for selected APIs must be moved into `passedChecks`.
-Keep only complete `android` and `ios` evidence objects before running
-`npm run release:evidence`.
+reason. The generated `selectedApiRequiredChecks` object shows which
+conditional checks came from the selected API set. Conditional checks for
+selected APIs must be moved into `passedChecks`. Keep only complete `android`
+and `ios` evidence objects before running `npm run release:evidence`.
 
 After the release candidate is pushed, verify the required CI runs and capture
 their URLs:
