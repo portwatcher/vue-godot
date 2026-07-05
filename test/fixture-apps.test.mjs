@@ -86,6 +86,8 @@ const fixtureApps = [
         'installBrowserAPIs()',
         'app.use(htmlPlugin)',
         'app.use(router)',
+        'SMOKE_PASS_MARKER',
+        'this.get_tree().quit(0)',
       ],
       'vue/src/App.vue': ['<SafeAreaView', '<router-view></router-view>'],
       'vue/src/app/router.ts': ['createRouter', 'HomeScreen', 'DeviceScreen'],
@@ -116,7 +118,12 @@ const fixtureApps = [
     ],
     usesHtmlPlugin: true,
     sources: {
-      'vue/src/main.ts': ['installBrowserAPIs()', 'app.use(htmlPlugin)'],
+      'vue/src/main.ts': [
+        'installBrowserAPIs()',
+        'app.use(htmlPlugin)',
+        'SMOKE_PASS_MARKER',
+        'this.get_tree().quit(0)',
+      ],
       'vue/src/App.vue': [
         'Vue-rendered HUD',
         'controller',

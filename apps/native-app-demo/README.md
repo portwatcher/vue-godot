@@ -18,8 +18,10 @@ This app exists to keep SDK-level native application flows exercised:
 | permission            | Queries `navigator.permissions.query()` for camera and geolocation.                   |
 | SafeAreaView          | Wraps routed content in `<SafeAreaView>`.                                             |
 | KeyboardAvoidingView  | Wraps form input in `<KeyboardAvoidingView>`.                                         |
-| Godot smoke           | Open `project.godot` in GodotJS and press F5 after building.                          |
+| Godot smoke           | Covered by `npm run smoke:godot`.                                                     |
 | npm run build         | Builds the SDK dependencies and Vite bundle.                                          |
+
+You can also open `project.godot` in GodotJS and press F5 after building.
 
 ## Commands
 
@@ -27,6 +29,7 @@ This app exists to keep SDK-level native application flows exercised:
 npm run build --workspace=native-app-demo
 npm run dev --workspace=native-app-demo
 npm run gen:types --workspace=native-app-demo
+GODOT_BIN=/path/to/godot npm run smoke:godot
 ```
 
 `npm run build` emits `dist/app.js`, which is attached by `app.tscn`.

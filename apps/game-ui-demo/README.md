@@ -21,8 +21,10 @@ This app exists to keep SDK-level HUD and game menu flows exercised:
 | settings          | Volume, difficulty, and assist toggles are reactive.             |
 | inventory         | Inventory selection and item use are reactive.                   |
 | focus restoration | Closing the pause overlay restores the last focused panel label. |
-| Godot smoke       | Open `project.godot` in GodotJS and press F5 after building.     |
+| Godot smoke       | Covered by `npm run smoke:godot`.                                |
 | npm run build     | Builds the SDK dependencies and Vite bundle.                     |
+
+You can also open `project.godot` in GodotJS and press F5 after building.
 
 ## Commands
 
@@ -30,6 +32,7 @@ This app exists to keep SDK-level HUD and game menu flows exercised:
 npm run build --workspace=game-ui-demo
 npm run dev --workspace=game-ui-demo
 npm run gen:types --workspace=game-ui-demo
+GODOT_BIN=/path/to/godot npm run smoke:godot
 ```
 
 `npm run build` emits `dist/app.js`, which is attached by `app.tscn`.

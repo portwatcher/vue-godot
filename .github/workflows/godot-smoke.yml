@@ -5,7 +5,9 @@ on:
     paths:
       - '.github/actions/setup-godotjs/**'
       - '.github/workflows/godot-smoke.yml'
+      - 'apps/game-ui-demo/**'
       - 'apps/html-demo/**'
+      - 'apps/native-app-demo/**'
       - 'package*.json'
       - 'packages/**'
       - 'scripts/smoke-editor-reload.mjs'
@@ -20,7 +22,9 @@ on:
     paths:
       - '.github/actions/setup-godotjs/**'
       - '.github/workflows/godot-smoke.yml'
+      - 'apps/game-ui-demo/**'
       - 'apps/html-demo/**'
+      - 'apps/native-app-demo/**'
       - 'package*.json'
       - 'packages/**'
       - 'scripts/smoke-editor-reload.mjs'

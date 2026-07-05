@@ -59,8 +59,42 @@ test('release preflight enforces serious example app readiness', () => {
 
   assert.match(production, /serious example app readiness/i)
   assert.match(production, /--skip-serious-examples/)
-  assert.match(readme, /serious example app gate is incomplete/i)
+  assert.match(readme, /serious example app gate fails/i)
   assert.match(readme, /--skip-serious-examples/)
+})
+
+test('Godot smoke gate covers serious example apps', () => {
+  const smokeScript = readDoc('scripts/smoke-godot.mjs')
+  const preflight = readDoc('scripts/release-preflight.mjs')
+  const workflow = readDoc('.github/workflows/godot-smoke.yml')
+  const readme = readDoc('README.md')
+
+  for (const pattern of [
+    /exampleSmokeApps/,
+    /native-app-demo/,
+    /game-ui-demo/,
+    /\$\{app\.id\} smoke passed/,
+  ]) {
+    assert.match(smokeScript, pattern)
+  }
+
+  for (const pattern of [
+    /\[smoke-godot\] native-app-demo smoke passed/,
+    /\[smoke-godot\] game-ui-demo smoke passed/,
+  ]) {
+    assert.match(preflight, pattern)
+  }
+
+  for (const pattern of [
+    /apps\/native-app-demo\/\*\*/,
+    /apps\/game-ui-demo\/\*\*/,
+  ]) {
+    assert.match(workflow, pattern)
+  }
+
+  assert.match(readme, /serious example apps/)
+  assert.match(readme, /native-app-demo/)
+  assert.match(readme, /game-ui-demo/)
 })
 
 test('release documentation links the real device checklist', () => {

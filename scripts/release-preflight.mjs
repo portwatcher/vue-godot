@@ -312,8 +312,14 @@ function checkGodotSmoke() {
     return
   }
 
-  if (!output.includes('[smoke-godot] html-demo lifecycle smoke passed')) {
-    failures.push('Godot smoke completed without the lifecycle pass marker')
+  for (const marker of [
+    '[smoke-godot] html-demo lifecycle smoke passed',
+    '[smoke-godot] native-app-demo smoke passed',
+    '[smoke-godot] game-ui-demo smoke passed',
+  ]) {
+    if (!output.includes(marker)) {
+      failures.push(`Godot smoke completed without marker: ${marker}`)
+    }
   }
 
   const generatedResult = run(npmCommand, ['run', 'smoke:generated-godot'])
@@ -377,7 +383,8 @@ function checkGodotSmoke() {
 
 function checkSeriousExampleApps() {
   if (skipSeriousExamples) {
-    const message = 'Serious example app check skipped by --skip-serious-examples'
+    const message =
+      'Serious example app check skipped by --skip-serious-examples'
     if (localOnly) {
       warnings.push(message)
     } else {
