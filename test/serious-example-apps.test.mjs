@@ -57,6 +57,26 @@ function createFixtureApp(root, appId, requiredDependencies, readmeMarkers) {
 
 function createCompleteFixtureRoot(root) {
   writeText(
+    path.join(root, '.impeccable.md'),
+    [
+      '## Design Context',
+      '',
+      '### Users',
+      'Maintainers evaluating production app and game UI readiness.',
+      '',
+      '### Brand Personality',
+      'Practical, exacting, and calm.',
+      '',
+      '### Aesthetic Direction',
+      'Implementation-focused reference demos with clear state coverage.',
+      '',
+      '### Design Principles',
+      '- Make every production-readiness state visible.',
+      '- Prefer direct workflow evidence over decoration.',
+      '',
+    ].join('\n'),
+  )
+  writeText(
     path.join(root, 'README.md'),
     [
       '| App | Demonstrates |',
@@ -154,9 +174,32 @@ test('serious example app checker fails missing demo wiring', () => {
   const result = runChecker(root)
 
   assert.equal(result.status, 1)
+  assert.match(result.stderr, /\.impeccable\.md is missing/)
   assert.match(result.stderr, /apps\/native-app-demo\/README\.md is missing/)
   assert.match(result.stderr, /README\.md examples table must include/)
   assert.match(result.stderr, /fixture registry/)
+})
+
+test('serious example app checker requires complete design context', () => {
+  const root = makeTempRoot()
+  createCompleteFixtureRoot(root)
+  writeText(
+    path.join(root, '.impeccable.md'),
+    [
+      '## Design Context',
+      '',
+      '### Users',
+      'Maintainers evaluating production app and game UI readiness.',
+      '',
+    ].join('\n'),
+  )
+
+  const result = runChecker(root)
+
+  assert.equal(result.status, 1)
+  assert.match(result.stderr, /\.impeccable\.md must include "### Brand Personality"/)
+  assert.match(result.stderr, /\.impeccable\.md must include "### Aesthetic Direction"/)
+  assert.match(result.stderr, /\.impeccable\.md must include "### Design Principles"/)
 })
 
 test('serious example app checker can report incomplete current repo without failing', () => {
