@@ -27,6 +27,12 @@ function runReadiness(args = []) {
   })
 }
 
+function readCommittedReleaseCiEvidence() {
+  return JSON.parse(
+    fs.readFileSync(path.join(process.cwd(), 'release/ci-runs.json'), 'utf-8'),
+  )
+}
+
 test('release readiness rejects non-SHA expected commits', () => {
   const result = runReadiness([
     '--allow-open',
@@ -428,15 +434,24 @@ test('release readiness scans package descriptions for final warning wording', (
 })
 
 test('release readiness reports current blockers without failing when allowed open', () => {
-  const result = runReadiness(['--allow-open'])
+  const ciEvidence = readCommittedReleaseCiEvidence()
+  const result = runReadiness([
+    '--allow-open',
+    '--expected-commit',
+    ciEvidence.commit,
+  ])
   const output = `${result.stdout}\n${result.stderr}`
 
   assert.equal(result.status, 0)
-  assert.match(output, /`npm run check` passes locally and in CI/)
+  assert.doesNotMatch(output, /TODO\.md:24 `npm run check` passes locally/)
   assert.match(output, /real-device evidence missing/)
   assert.match(output, /release-readiness evidence missing/)
   assert.match(output, /final TODO proof status/)
-  assert.match(output, /TODO\.md:24 unchecked; checkCiEvidenceReady waiting/)
+  assert.match(output, /TODO\.md:24 checked; checkCiEvidenceReady ready/)
+  assert.match(
+    output,
+    /TODO\.md:25 checked; godotSmokeCiEvidenceReady ready/,
+  )
   assert.match(
     output,
     /TODO\.md:389 unchecked; androidRealDeviceEvidenceReady waiting/,
@@ -627,6 +642,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
         (status) =>
           status.text === '`npm run check` passes locally and in CI.' &&
           status.proof === 'checkCiEvidenceReady' &&
+          status.checked === true &&
           status.ready === false,
       ),
     )
@@ -647,13 +663,14 @@ test('release readiness writes a machine-readable blocker summary', () => {
           typeof status.reason === 'string',
       ),
     )
-    assert.equal(summary.todo.unchecked, 10)
-    assert.equal(summary.todo.uncheckedItems.length, 10)
+    assert.equal(summary.todo.unchecked, 8)
+    assert.equal(summary.todo.uncheckedItems.length, 8)
     assert.ok(
-      summary.todo.uncheckedItems.some(
+      summary.todo.uncheckedItems.every(
         (item) =>
-          item.file === 'TODO.md' &&
-          item.text === '`npm run check` passes locally and in CI.',
+          item.text !== '`npm run check` passes locally and in CI.' &&
+          item.text !==
+            'Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate.',
       ),
     )
     assert.ok(
@@ -665,7 +682,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
       ),
     )
     assert.equal(summary.checks.androidRealDeviceEvidence, true)
-    assert.equal(summary.checks.checkedFinalTodosBackedByEvidence, true)
+    assert.equal(summary.checks.checkedFinalTodosBackedByEvidence, false)
     assert.equal(typeof summary.checks.cleanWorktree, 'boolean')
     if (!summary.checks.cleanWorktree) {
       assert.ok(

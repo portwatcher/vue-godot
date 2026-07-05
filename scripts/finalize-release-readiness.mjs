@@ -42,13 +42,13 @@ const textReplacements = [
     label: 'TODO readiness status wording',
     file: 'TODO.md',
     before: [
-      '- The project is not yet production ready because release/device evidence, CI',
-      '  smoke evidence for the current release candidate, and final public wording',
-      '  removal are still incomplete.',
+      '- The project is not yet production ready because Android/iOS release device',
+      '  evidence, Release Preflight evidence, and final public wording removal are',
+      '  still incomplete.',
     ].join('\n'),
     after: [
-      '- Release/device evidence, CI smoke evidence for the current release candidate,',
-      '  and final public wording removal are complete for the production readiness gate.',
+      '- Android/iOS release device evidence, Release Preflight evidence, and final',
+      '  public wording removal are complete for the production readiness gate.',
     ].join('\n'),
   },
   {

@@ -11,9 +11,9 @@ When this file is complete, maintainers should be confident enough to remove wor
 - `@vue-godot/browser` exposes a broad browser API subset covering fetch primitives, URL/query helpers, files/forms, timers, animation frames, storage, history/location, global events, WebSocket, performance timing, sensor events, clipboard, haptics, reachability, and adapter-backed geolocation/media/notification APIs.
 - `@vue-godot/device` exposes a capability registry, adapter contracts, feature detection helpers, and typed errors for plugin-backed native APIs.
 - The repo has build/test/CLI smoke checks, generated export-setting checks, and CI Godot smoke workflows.
-- The project is not yet production ready because release/device evidence, CI
-  smoke evidence for the current release candidate, and final public wording
-  removal are still incomplete.
+- The project is not yet production ready because Android/iOS release device
+  evidence, Release Preflight evidence, and final public wording removal are
+  still incomplete.
 
 ## Definition Of Done
 
@@ -21,8 +21,8 @@ The project is production ready only when all of these are true:
 
 - [x] A public compatibility checklist exists and every supported, partial, plugin-backed, or intentionally unsupported web API/component is documented.
 - [x] All P0 and P1 checklist items in this file are complete.
-- [ ] `npm run check` passes locally and in CI.
-- [ ] Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate.
+- [x] `npm run check` passes locally and in CI.
+- [x] Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate.
 - [ ] Android and iOS export smoke apps run on real or hosted devices for the production profile.
 - [x] At least two serious example apps exist:
   - [x] A native app style demo using routing, forms, network, storage, camera or geolocation, permissions, and offline/reachability handling.

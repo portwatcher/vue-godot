@@ -221,10 +221,11 @@ test('serious example READMEs document their SDK coverage and smoke commands', (
 
 test('experimental wording remains while final release gates are still open', () => {
   assertPatterns('TODO.md', [
-    /- \[ \] `npm run check` passes locally and in CI/,
-    /- \[ \] Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate/,
+    /- \[x\] `npm run check` passes locally and in CI/,
+    /- \[x\] Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate/,
     /- \[ \] Android and iOS export smoke apps run on real or hosted devices for the production profile/,
     /- \[ \] The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied/,
+    /Android\/iOS release device\s+evidence, Release Preflight evidence, and final public wording removal are\s+still incomplete/,
   ])
 
   assertPatterns('README.md', [/experimental and not production ready yet/])
