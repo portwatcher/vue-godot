@@ -180,6 +180,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.equal(summary.allowOpen, true)
     assert.equal(summary.ready, false)
     assert.ok(summary.blockerCount > 0)
+    assert.equal(summary.warningMarkerCount, 8)
     assert.equal(summary.todo.unchecked, 10)
     assert.equal(summary.checks.checkedFinalTodosBackedByEvidence, true)
     assert.equal(typeof summary.checks.cleanWorktree, 'boolean')
@@ -205,6 +206,11 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.ok(
       summary.warningMarkers.some((marker) =>
         marker.includes('README.md: root README production warning'),
+      ),
+    )
+    assert.ok(
+      summary.warningMarkers.some((marker) =>
+        marker.includes('README.md: root README final-removal wording'),
       ),
     )
   } finally {

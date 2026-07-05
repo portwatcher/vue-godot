@@ -42,6 +42,11 @@ const releaseWarningMarkers = [
     pattern: /preview\/experimental language/i,
   },
   {
+    file: 'README.md',
+    label: 'root README final-removal wording',
+    pattern: /experimental\/not-production-ready text/i,
+  },
+  {
     file: 'docs/compatibility.md',
     label: 'compatibility docs experimental warning',
     pattern: /project is still experimental/i,

@@ -357,6 +357,7 @@ test('release readiness audit documents final removal blockers', () => {
     /is checked, but/,
     /working tree must be clean for final release readiness/,
     /public warning markers still present/,
+    /root README final-removal wording/,
     /summary-output/,
     /checkedFinalTodosBackedByEvidence/,
     /strictCiEvidence/,
