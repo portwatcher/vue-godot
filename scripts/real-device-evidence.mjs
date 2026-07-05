@@ -314,7 +314,7 @@ function validatePlatformEvidence(evidence, platform, errors) {
   }
 }
 
-export function validateRealDeviceEvidence(evidence, options = {}) {
+export function validateRealDeviceEvidenceMetadata(evidence, options = {}) {
   const errors = []
 
   if (!isRecord(evidence)) {
@@ -397,8 +397,33 @@ export function validateRealDeviceEvidence(evidence, options = {}) {
     }
   }
 
-  validatePlatformEvidence(evidence, 'android', errors)
-  validatePlatformEvidence(evidence, 'ios', errors)
+  return errors
+}
+
+export function validateRealDevicePlatformEvidence(evidence, platform) {
+  if (!isRecord(evidence)) {
+    return ['Real device evidence must be a JSON object']
+  }
+
+  if (!['android', 'ios'].includes(platform)) {
+    return [`Unknown real-device evidence platform: ${platform}`]
+  }
+
+  const errors = []
+  validatePlatformEvidence(evidence, platform, errors)
+  return errors
+}
+
+export function validateRealDeviceEvidence(evidence, options = {}) {
+  const errors = validateRealDeviceEvidenceMetadata(evidence, options)
+  if (!isRecord(evidence)) {
+    return errors
+  }
+
+  errors.push(
+    ...validateRealDevicePlatformEvidence(evidence, 'android'),
+    ...validateRealDevicePlatformEvidence(evidence, 'ios'),
+  )
 
   return errors
 }

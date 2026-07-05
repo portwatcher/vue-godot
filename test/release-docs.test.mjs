@@ -241,6 +241,10 @@ test('release preflight enforces real device evidence', () => {
     production,
     /rejects not-ready or\s+inconsistent structured CI summaries/,
   )
+  assert.match(
+    production,
+    /separate Android\/iOS real-device evidence status/,
+  )
   assert.match(production, /release:preflight-summary/)
   assert.match(production, /--release-preflight-summary/)
   assert.match(production, /release-preflight-summary/)
@@ -267,6 +271,7 @@ test('release preflight enforces real device evidence', () => {
     readme,
     /rejects not-ready or inconsistent structured CI summaries/,
   )
+  assert.match(readme, /separate Android\/iOS real-device evidence status/)
   assert.match(
     readme,
     /rejects local-only, skipped, failed, or warning-bearing preflight summaries/,
@@ -300,6 +305,7 @@ test('release preflight enforces real device evidence', () => {
     checklist,
     /rejects not-ready or inconsistent structured CI summaries/,
   )
+  assert.match(checklist, /separate\s+Android\/iOS real-device evidence status/)
   assert.match(checklist, /local\/skip flags/)
   assert.match(checklist, /local-only/)
   assert.match(checklist, /skipped/)

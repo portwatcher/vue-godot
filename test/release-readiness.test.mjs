@@ -37,9 +37,11 @@ test('release readiness flags checked final TODO items without matching evidence
   ])
 
   const blockers = collectCheckedTodoEvidenceBlockers(todoItems, {
+    androidRealDeviceEvidenceReady: false,
     checkCiEvidenceReady: false,
     ciEvidenceReady: false,
     godotSmokeCiEvidenceReady: false,
+    iosRealDeviceEvidenceReady: false,
     publicReadmesReady: false,
     realDeviceEvidenceReady: false,
     releaseReadinessEvidenceReady: false,
@@ -49,7 +51,10 @@ test('release readiness flags checked final TODO items without matching evidence
   const output = blockers.join('\n')
 
   assert.match(output, /TODO\.test\.md:1 Android export/)
-  assert.match(output, /real-device evidence must validate the Android export/)
+  assert.match(
+    output,
+    /Android real-device evidence must validate the selected API export checks/,
+  )
   assert.match(output, /TODO\.test\.md:3 Release preflight/)
   assert.match(output, /warning-free Release Preflight run/)
   assert.match(output, /TODO\.test\.md:4 All public READMEs/)
@@ -70,9 +75,11 @@ test('release readiness accepts checked final TODO items when evidence is proven
 
   assert.deepEqual(
     collectCheckedTodoEvidenceBlockers(todoItems, {
+      androidRealDeviceEvidenceReady: true,
       checkCiEvidenceReady: true,
       ciEvidenceReady: true,
       godotSmokeCiEvidenceReady: true,
+      iosRealDeviceEvidenceReady: true,
       publicReadmesReady: true,
       realDeviceEvidenceReady: true,
       releaseReadinessEvidenceReady: true,
@@ -80,6 +87,36 @@ test('release readiness accepts checked final TODO items when evidence is proven
       warningWordingReady: true,
     }),
     [],
+  )
+})
+
+test('release readiness backs platform TODO items with platform evidence', () => {
+  const todoItems = collectTodoItems(
+    [
+      '- [x] Android export with selected device APIs has been tested.',
+      '- [x] iOS export with selected device APIs has been tested.',
+    ].join('\n'),
+    'TODO.test.md',
+  )
+
+  const output = collectCheckedTodoEvidenceBlockers(todoItems, {
+    androidRealDeviceEvidenceReady: true,
+    checkCiEvidenceReady: false,
+    ciEvidenceReady: false,
+    godotSmokeCiEvidenceReady: false,
+    iosRealDeviceEvidenceReady: false,
+    publicReadmesReady: false,
+    realDeviceEvidenceReady: false,
+    releaseReadinessEvidenceReady: false,
+    rootReadmeWarningReady: false,
+    warningWordingReady: false,
+  }).join('\n')
+
+  assert.doesNotMatch(output, /Android export/)
+  assert.match(output, /TODO\.test\.md:2 iOS export/)
+  assert.match(
+    output,
+    /iOS real-device evidence must validate the selected API export checks/,
   )
 })
 
@@ -224,6 +261,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.ok(summary.blockerCount > 0)
     assert.equal(summary.warningMarkerCount, 8)
     assert.equal(summary.todo.unchecked, 10)
+    assert.equal(summary.checks.androidRealDeviceEvidence, true)
     assert.equal(summary.checks.checkedFinalTodosBackedByEvidence, true)
     assert.equal(typeof summary.checks.cleanWorktree, 'boolean')
     if (!summary.checks.cleanWorktree) {
@@ -234,9 +272,11 @@ test('release readiness writes a machine-readable blocker summary', () => {
       )
     }
     assert.equal(summary.checks.finalTodoStructure, true)
+    assert.equal(summary.checks.iosRealDeviceEvidence, true)
     assert.equal(summary.checks.publicSurface, true)
     assert.equal(summary.checks.publicWarningMarkersRemoved, false)
     assert.equal(summary.checks.realDeviceEvidence, true)
+    assert.equal(summary.checks.realDeviceEvidenceMetadata, true)
     assert.equal(summary.checks.releaseTooling, true)
     assert.equal(summary.checks.releaseReadinessEvidence, true)
     assert.equal(summary.checks.rootReadmeWarningsRemoved, false)

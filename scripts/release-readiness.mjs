@@ -7,7 +7,8 @@ import {
   readRealDeviceEvidence,
   realDeviceEvidenceEnvVar,
   resolveRealDeviceEvidencePath,
-  validateRealDeviceEvidence,
+  validateRealDeviceEvidenceMetadata,
+  validateRealDevicePlatformEvidence,
   verifyRealDeviceEvidenceRuns,
 } from './real-device-evidence.mjs'
 import {
@@ -386,13 +387,15 @@ const finalTodoEvidenceRequirements = [
   },
   {
     text: 'Android export with selected device APIs has been tested.',
-    proof: 'realDeviceEvidenceReady',
-    reason: 'real-device evidence must validate the Android export checks',
+    proof: 'androidRealDeviceEvidenceReady',
+    reason:
+      'Android real-device evidence must validate the selected API export checks',
   },
   {
     text: 'iOS export with selected device APIs has been tested.',
-    proof: 'realDeviceEvidenceReady',
-    reason: 'real-device evidence must validate the iOS export checks',
+    proof: 'iosRealDeviceEvidenceReady',
+    reason:
+      'iOS real-device evidence must validate the selected API export checks',
   },
   {
     text: 'CI passes on a clean commit.',
@@ -421,9 +424,11 @@ const finalTodoEvidenceRequirements = [
 
 export function collectCheckedTodoEvidenceBlockers(todoItems, proofs) {
   const proofByName = {
+    androidRealDeviceEvidenceReady: proofs.androidRealDeviceEvidenceReady,
     checkCiEvidenceReady: proofs.checkCiEvidenceReady,
     ciEvidenceReady: proofs.ciEvidenceReady,
     godotSmokeCiEvidenceReady: proofs.godotSmokeCiEvidenceReady,
+    iosRealDeviceEvidenceReady: proofs.iosRealDeviceEvidenceReady,
     publicReadmesReady: proofs.publicReadmesReady,
     realDeviceEvidenceReady: proofs.realDeviceEvidenceReady,
     releaseReadinessEvidenceReady: proofs.releaseReadinessEvidenceReady,
@@ -505,6 +510,12 @@ async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
   const evidencePath =
     options.realDevicePath ?? resolveRealDeviceEvidencePath(process.env)
   const { evidence, errors: readErrors } = readRealDeviceEvidence(evidencePath)
+  const notReady = {
+    androidReady: false,
+    iosReady: false,
+    metadataReady: false,
+    ready: false,
+  }
 
   if (!evidence) {
     blockers.push(
@@ -520,25 +531,38 @@ async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
         .filter(Boolean)
         .join('\n'),
     )
-    return false
+    return notReady
   }
 
-  const errors = validateRealDeviceEvidence(evidence, {
+  const metadataErrors = validateRealDeviceEvidenceMetadata(evidence, {
     expectedCommit,
     expectedPackageVersions: currentReleasePackageVersions(),
   })
+  const androidErrors = validateRealDevicePlatformEvidence(evidence, 'android')
+  const iosErrors = validateRealDevicePlatformEvidence(evidence, 'ios')
+  const errors = [...metadataErrors, ...androidErrors, ...iosErrors]
+  let metadataReady = metadataErrors.length === 0
+  const androidReady = metadataReady && androidErrors.length === 0
+  const iosReady = metadataReady && iosErrors.length === 0
+
   if (errors.length > 0) {
     blockers.push(
       [`real-device evidence is incomplete: ${relative(evidencePath)}`, ...errors]
         .filter(Boolean)
         .join('\n'),
     )
-    return false
+    return {
+      androidReady,
+      iosReady,
+      metadataReady,
+      ready: false,
+    }
   }
 
   if (!options.allowOpen) {
     const runErrors = await verifyRealDeviceEvidenceRuns(evidence)
     if (runErrors.length > 0) {
+      metadataReady = false
       blockers.push(
         [
           `real-device CI run evidence could not be verified: ${relative(
@@ -547,11 +571,21 @@ async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
           ...runErrors,
         ].join('\n'),
       )
-      return false
+      return {
+        androidReady: false,
+        iosReady: false,
+        metadataReady,
+        ready: false,
+      }
     }
   }
 
-  return true
+  return {
+    androidReady,
+    iosReady,
+    metadataReady,
+    ready: true,
+  }
 }
 
 async function checkReleaseReadinessEvidence(blockers, options, expectedCommit) {
@@ -688,11 +722,17 @@ async function main() {
   const expectedCommit = options.expectedCommit ?? currentCommit(blockers)
 
   const cleanWorktreeReady = checkCleanWorktree(blockers)
-  const realDeviceEvidenceReady = await checkRealDeviceEvidence(
+  const realDeviceEvidenceStatus = await checkRealDeviceEvidence(
     blockers,
     options,
     expectedCommit ?? undefined,
   )
+  const realDeviceEvidenceReady = realDeviceEvidenceStatus.ready
+  const realDeviceEvidenceMetadataReady =
+    realDeviceEvidenceStatus.metadataReady
+  const androidRealDeviceEvidenceReady =
+    realDeviceEvidenceStatus.androidReady
+  const iosRealDeviceEvidenceReady = realDeviceEvidenceStatus.iosReady
   const releaseReadinessEvidenceReady = await checkReleaseReadinessEvidence(
     blockers,
     options,
@@ -716,6 +756,7 @@ async function main() {
   blockers.push(...finalTodoStructureBlockers)
 
   const checkedFinalTodoProofs = {
+    androidRealDeviceEvidenceReady,
     checkCiEvidenceReady: strictCiEvidenceReady,
     ciEvidenceReady:
       cleanWorktreeReady &&
@@ -723,6 +764,7 @@ async function main() {
       releaseReadinessEvidenceReady &&
       !options.allowOpen,
     godotSmokeCiEvidenceReady: strictCiEvidenceReady,
+    iosRealDeviceEvidenceReady,
     publicReadmesReady: publicSurfaceReady && rootReadmeWarningReady,
     realDeviceEvidenceReady,
     releaseReadinessEvidenceReady,
@@ -737,13 +779,16 @@ async function main() {
 
   checkWarningMarkerState(blockers, warningMarkers)
   const checks = {
+    androidRealDeviceEvidence: androidRealDeviceEvidenceReady,
     checkedFinalTodosBackedByEvidence:
       checkedFinalTodoEvidenceBlockers.length === 0,
     cleanWorktree: cleanWorktreeReady,
     finalTodoStructure: finalTodoStructureBlockers.length === 0,
+    iosRealDeviceEvidence: iosRealDeviceEvidenceReady,
     publicSurface: publicSurfaceReady,
     publicWarningMarkersRemoved: warningMarkers.length === 0,
     realDeviceEvidence: realDeviceEvidenceReady,
+    realDeviceEvidenceMetadata: realDeviceEvidenceMetadataReady,
     releaseTooling: releaseToolingBlockers.length === 0,
     releaseReadinessEvidence: releaseReadinessEvidenceReady,
     rootReadmeWarningsRemoved: rootReadmeWarningReady,

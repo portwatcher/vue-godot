@@ -10,6 +10,8 @@ import {
   resolveRealDeviceEvidencePath,
   selectedApiRequiredRealDeviceChecks,
   validateRealDeviceEvidence,
+  validateRealDeviceEvidenceMetadata,
+  validateRealDevicePlatformEvidence,
 } from '../scripts/real-device-evidence.mjs'
 import {
   currentReleasePackageVersions,
@@ -115,6 +117,27 @@ test('real device evidence requires conditional checks to pass for selected APIs
     validateRealDeviceEvidence(evidence).join('\n'),
     /android\.network-if-selected must be in passedChecks because selectedApis includes fetch/,
   )
+})
+
+test('real device evidence exposes metadata and platform-specific validation', () => {
+  const evidence = validEvidence()
+  evidence.android.passedChecks = evidence.android.passedChecks.filter(
+    (check) => check !== 'network-if-selected',
+  )
+
+  assert.deepEqual(validateRealDeviceEvidenceMetadata(evidence), [])
+  assert.match(
+    validateRealDevicePlatformEvidence(evidence, 'android').join('\n'),
+    /android\.network-if-selected must be in passedChecks because selectedApis includes fetch/,
+  )
+  assert.deepEqual(validateRealDevicePlatformEvidence(evidence, 'ios'), [])
+
+  evidence.checkRunConclusion = 'failure'
+  assert.match(
+    validateRealDeviceEvidenceMetadata(evidence).join('\n'),
+    /checkRunConclusion must be "success"/,
+  )
+  assert.deepEqual(validateRealDevicePlatformEvidence(evidence, 'ios'), [])
 })
 
 test('real device evidence permits skipped conditional checks outside selected APIs', () => {
