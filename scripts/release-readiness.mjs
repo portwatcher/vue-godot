@@ -425,6 +425,25 @@ function main() {
   }
 
   if (
+    packageJson.scripts?.['check:serious-examples'] !==
+    'node scripts/check-serious-example-apps.mjs'
+  ) {
+    blockers.push(
+      'package.json must expose check:serious-examples as node scripts/check-serious-example-apps.mjs',
+    )
+  }
+
+  if (
+    !String(packageJson.scripts?.check ?? '').includes(
+      'npm run check:serious-examples',
+    )
+  ) {
+    blockers.push(
+      'package.json check script must run npm run check:serious-examples',
+    )
+  }
+
+  if (
     packageJson.scripts?.['release:readiness'] !==
     'node scripts/release-readiness.mjs'
   ) {

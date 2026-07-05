@@ -47,7 +47,7 @@ Before checking off the serious demo TODO items:
 - add both apps to the root README examples table
 - keep each app's package scripts compatible with the fixture app build contract
 - include both apps in `test/fixture-apps.test.mjs`
-- run `npm run check:serious-examples`
+- run `npm run check:serious-examples`, which is also part of `npm run check`
 - run `npm run build --workspace=<app>` for each app
 - run `npm run check`
 - run the Godot smoke path for each app when Godot is available

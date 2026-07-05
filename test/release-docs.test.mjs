@@ -54,6 +54,7 @@ test('release preflight enforces serious example app readiness', () => {
   const preflight = readDoc('scripts/release-preflight.mjs')
   const production = readDoc('docs/production.md')
   const readme = readDoc('README.md')
+  const packageJson = JSON.parse(readDoc('package.json'))
 
   for (const pattern of [
     /checkSeriousExampleApps/,
@@ -68,6 +69,11 @@ test('release preflight enforces serious example app readiness', () => {
   assert.match(production, /--skip-serious-examples/)
   assert.match(readme, /serious example app gate fails/i)
   assert.match(readme, /--skip-serious-examples/)
+  assert.equal(
+    packageJson.scripts['check:serious-examples'],
+    'node scripts/check-serious-example-apps.mjs',
+  )
+  assert.match(packageJson.scripts.check, /npm run check:serious-examples/)
 })
 
 test('release preflight validates package export targets in tarballs', () => {
@@ -157,6 +163,11 @@ test('release readiness audit documents final removal blockers', () => {
     packageJson.scripts['check:public-surface'],
     'node scripts/public-surface-audit.mjs',
   )
+  assert.equal(
+    packageJson.scripts['check:serious-examples'],
+    'node scripts/check-serious-example-apps.mjs',
+  )
+  assert.match(packageJson.scripts.check, /npm run check:serious-examples/)
   assert.equal(
     packageJson.scripts['release:readiness'],
     'node scripts/release-readiness.mjs',

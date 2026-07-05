@@ -19,7 +19,7 @@
     "release:readiness": "node scripts/release-readiness.mjs",
     "release:preflight": "node scripts/release-preflight.mjs",
     "release:publish": "node scripts/release-publish.mjs",
-    "check": "npm run build && npm run test && npm run smoke:cli && npm run bench:performance",
+    "check": "npm run build && npm run test && npm run smoke:cli && npm run check:serious-examples && npm run bench:performance",
     "vue-godot": "vue-godot"
   },
   "repository": {

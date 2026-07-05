@@ -9,7 +9,6 @@ Run the full repository check before cutting a release candidate:
 
 ```bash
 npm run check
-npm run check:serious-examples
 npm audit --audit-level=moderate
 npm run check:public-surface
 npm run check:real-device-evidence -- --optional
@@ -17,11 +16,11 @@ npm run release:preflight -- --local --skip-check --skip-godot
 ```
 
 `npm run check` builds packages, runs tests, builds demo apps, and runs clean
-CLI scaffold smoke checks. `npm run check:serious-examples` verifies the
-required serious native app and game UI demo workspaces, README coverage, root
-README links, and fixture-test registration. `npm audit --audit-level=moderate`
-must report zero moderate, high, or critical advisories unless an accepted
-exception is documented in the release notes.
+CLI scaffold smoke checks. It also runs `npm run check:serious-examples`, which
+verifies the required serious native app and game UI demo workspaces, README
+coverage, root README links, and fixture-test registration.
+`npm audit --audit-level=moderate` must report zero moderate, high, or critical
+advisories unless an accepted exception is documented in the release notes.
 `npm run check:public-surface` verifies package README exported-subpath
 coverage, root README support links, generated template release defaults,
 serious example README smoke coverage, compatibility docs, and `apps/html-demo`
