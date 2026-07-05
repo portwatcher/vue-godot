@@ -235,6 +235,8 @@ test('release readiness requires release tooling scripts', () => {
         'release:evidence': 'node scripts/create-release-evidence.mjs',
         'release:preflight-summary':
           'node scripts/download-release-preflight-summary.mjs',
+        'release:finalize-readiness':
+          'node scripts/finalize-release-readiness.mjs',
         'release:readiness': 'node scripts/release-readiness.mjs',
         'release:preflight': 'node scripts/release-preflight.mjs',
       },
@@ -254,6 +256,7 @@ test('release readiness requires release tooling scripts', () => {
   assert.match(output, /check:real-device-evidence/)
   assert.match(output, /release:ci as node scripts\/check-release-ci-runs\.mjs/)
   assert.match(output, /release:evidence/)
+  assert.match(output, /release:finalize-readiness/)
   assert.match(output, /release:preflight-summary/)
   assert.match(output, /release:preflight as node scripts\/release-preflight\.mjs/)
   assert.match(output, /check script must run npm run check:serious-examples/)

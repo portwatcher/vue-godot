@@ -32,7 +32,7 @@ const releaseReadinessEvidenceEnvVar =
 const defaultReleaseReadinessEvidencePath =
   'release/release-readiness-evidence.json'
 
-const releaseWarningMarkers = [
+export const releaseWarningMarkers = [
   {
     file: 'README.md',
     label: 'root README production warning',
@@ -377,7 +377,7 @@ export function validateReleaseReadinessEvidence(evidence, expectedCommit) {
   return errors
 }
 
-const finalTodoEvidenceRequirements = [
+export const finalTodoEvidenceRequirements = [
   {
     text: '`npm run check` passes locally and in CI.',
     proof: 'checkCiEvidenceReady',
@@ -541,6 +541,10 @@ const releaseToolingScriptRequirements = [
   [
     'release:preflight-summary',
     'node scripts/download-release-preflight-summary.mjs',
+  ],
+  [
+    'release:finalize-readiness',
+    'node scripts/finalize-release-readiness.mjs',
   ],
   ['release:readiness', 'node scripts/release-readiness.mjs'],
   ['release:preflight', 'node scripts/release-preflight.mjs'],
@@ -783,9 +787,9 @@ async function checkReleaseReadinessEvidence(blockers, options, expectedCommit) 
   return true
 }
 
-function collectWarningMarkerHits() {
+export function collectWarningMarkerHits(readFile = readText) {
   return releaseWarningMarkers.flatMap((marker) => {
-    const source = readText(marker.file)
+    const source = readFile(marker.file)
     if (!marker.pattern.test(source)) {
       return []
     }

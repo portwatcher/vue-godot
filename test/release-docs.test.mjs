@@ -357,6 +357,7 @@ test('release preflight enforces real device evidence', () => {
 
 test('release readiness audit documents final removal blockers', () => {
   const readiness = readDoc('scripts/release-readiness.mjs')
+  const finalizer = readDoc('scripts/finalize-release-readiness.mjs')
   const production = readDoc('docs/production.md')
   const readme = readDoc('README.md')
   const todo = readDoc('TODO.md')
@@ -404,6 +405,17 @@ test('release readiness audit documents final removal blockers', () => {
     assert.match(readiness, pattern)
   }
 
+  for (const pattern of [
+    /validateFinalizationSummary/,
+    /applyReleaseReadinessFinalization/,
+    /strict mode without --allow-open/,
+    /evidence-backed final TODO proof\s+status/,
+    /working tree must be clean before final release readiness finalization/,
+    /collectWarningMarkerHits/,
+  ]) {
+    assert.match(finalizer, pattern)
+  }
+
   assert.equal(
     packageJson.scripts['check:public-surface'],
     'node scripts/public-surface-audit.mjs',
@@ -417,8 +429,14 @@ test('release readiness audit documents final removal blockers', () => {
     packageJson.scripts['release:readiness'],
     'node scripts/release-readiness.mjs',
   )
+  assert.equal(
+    packageJson.scripts['release:finalize-readiness'],
+    'node scripts/finalize-release-readiness.mjs',
+  )
   assert.match(production, /check:public-surface/)
   assert.match(production, /release:readiness/)
+  assert.match(production, /release:finalize-readiness/)
+  assert.match(production, /\/tmp\/vue-godot-readiness\.json/)
   assert.match(production, /release-readiness-summary/)
   assert.match(production, /reports final-removal blockers and\s+final TODO proof status/)
   assert.match(production, /TODO counts/)
@@ -429,12 +447,15 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(production, /structured readiness check status/)
   assert.match(production, /release tooling\s+script wiring/)
   assert.match(production, /prematurely checked final TODO boxes/)
+  assert.match(production, /dirty worktree/)
   assert.match(readme, /check:public-surface/)
   assert.match(production, /GitHub Actions run URLs for/)
   assert.match(production, /Release Preflight/)
   assert.match(production, /Godot Smoke/)
   assert.match(production, /release-readiness-evidence\.example\.json/)
   assert.match(readme, /release:readiness/)
+  assert.match(readme, /release:finalize-readiness/)
+  assert.match(readme, /\/tmp\/vue-godot-readiness\.json/)
   assert.match(readme, /release-readiness-summary/)
   assert.match(readme, /release-readiness-evidence\.json/)
   assert.match(readme, /final-readiness blockers and final TODO proof status/)
@@ -446,6 +467,8 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(readme, /structured readiness check status/)
   assert.match(readme, /release tooling script wiring/)
   assert.match(readme, /prematurely checked final TODO boxes/)
+  assert.match(readme, /dirty worktree/)
+  assert.match(readDoc('docs/real-device-release.md'), /release:finalize-readiness/)
   assert.match(todo, /release:readiness/)
   assert.equal(example.releasePreflightRunConclusion, 'success')
   assert.equal(example.releasePreflightRunWorkflowName, 'Release Preflight')

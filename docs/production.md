@@ -99,7 +99,23 @@ the final release state. Evidence run URLs must be GitHub Actions run URLs for
 the workflow names must match `Check`, `Godot Smoke`, and `Release Preflight`,
 the run commits must match the evidence commit, the runs must be completed
 successfully, and real-device package versions must match the current package
-manifests. Use
+manifests.
+
+After final evidence is committed, write a strict summary outside the worktree
+and let the guarded finalizer apply only the final TODO checks and warning
+wording removal:
+
+```bash
+npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json
+npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json
+```
+
+`release:finalize-readiness` rejects summaries generated with `--allow-open`,
+unexpected readiness blockers, missing evidence-backed final TODO proof status,
+package description warning markers, or a dirty worktree. Commit the finalizer
+edits, then rerun strict `npm run release:readiness`.
+
+Use
 [`docs/release-readiness-evidence.example.json`](./release-readiness-evidence.example.json)
 as the schema reference for the post-preflight evidence file.
 
