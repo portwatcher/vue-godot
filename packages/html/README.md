@@ -186,6 +186,41 @@ Focusable controls (`<A>`, `<Button>`, `<Form>`, `<Input>`, `<Pressable>`, `<Sel
 
 This is a layout-visible minimum size, not invisible browser-style hit slop outside the Control rect. Use it for touch and controller-friendly controls, for example `:min-touch-target="48"`.
 
+### Keyboard, Controller, and Back Input
+
+Keyboard and controller input are Godot input-action driven. Vue Godot does not emulate browser `keydown`, `keyup`, tab order, or document-level shortcut bubbling for HTML-like components.
+
+Use explicit focus graph props for predictable traversal:
+
+```vue
+<Button
+  focus-next="../CancelButton"
+  focus-neighbor-right="../CancelButton"
+  :min-touch-target="48"
+  @click="save"
+>
+  Save
+</Button>
+<Button
+  focus-previous="../SaveButton"
+  focus-neighbor-left="../SaveButton"
+  @click="cancel"
+>
+  Cancel
+</Button>
+```
+
+Use Godot project input actions for shortcuts. Focused `<Pressable>` controls activate from `gui_input`; focused `<Form>` emits `submit` from `ui_accept` and optional `reset` from `ui_cancel`. For escape/back behavior, route `ui_cancel` to the current screen's `back()` handler, or handle Android/system back at the Godot project layer and call the same navigation function.
+
+```vue
+<Form :reset-on-cancel="true" @submit="save" @reset="back">
+  <Input v-model="name" auto-focus></Input>
+  <Button @click="save">Save</Button>
+</Form>
+```
+
+For controller fallback behavior, set `autoFocus` on the first interactive control in a screen, provide directional `focusNeighbor*` props when Godot's inferred neighbor is ambiguous, and keep touch/focus targets large enough with `minTouchTarget`.
+
 ## Component Mapping
 
 | HTML-like Component | Godot Node                                                             | Key Props             |

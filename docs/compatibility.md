@@ -105,11 +105,13 @@ property yet. Focusable controls support mount-time `autoFocus` / `autofocus`
 through Godot `grab_focus()` and explicit Godot focus graph paths through
 `focusNext`, `focusPrevious`, and directional `focusNeighbor*` props. The same
 focusable controls support opt-in `minTouchTarget` sizing for touch and
-controller-friendly hit rects. Focus traps, restoration, and browser tab-order
-emulation are not implemented. They are marked `partial` until the
-production-grade component checklist covers keyboard shortcuts, controller
-examples, role mapping, and documented style limits. Inline style objects
-support the documented Godot-backed subset; unsupported style keys emit a
+controller-friendly hit rects. Keyboard shortcuts, controller activation, and
+escape/back handling are Godot input-action patterns (`ui_accept`, `ui_cancel`,
+and project-defined actions), not DOM keyboard events. Focus traps,
+restoration, and browser tab-order emulation are not implemented. They are
+marked `partial` until the production-grade component checklist covers role
+mapping and documented style limits. Inline style objects support the
+documented Godot-backed subset; unsupported style keys emit a
 `[vue-godot/html]` warning once per component/property pair.
 
 | Component/API | Owner | Status | Godot backend | Platforms | Permissions/export | Tests | Caveats |

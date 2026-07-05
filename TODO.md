@@ -167,10 +167,10 @@ The project is production ready only when all of these are true:
     - [ ] Add focus traps and restoration where needed.
   - [ ] Keyboard navigation.
     - [x] Map `focusNext` / `focusPrevious` to Godot Tab focus traversal.
-    - [ ] Add higher-level keyboard shortcut and escape/back guidance.
+    - [x] Add higher-level keyboard shortcut and escape/back guidance.
   - [ ] Controller/gamepad navigation.
     - [x] Map directional focus neighbors to Godot D-pad/controller focus traversal.
-    - [ ] Add controller navigation examples and fallback guidance.
+    - [x] Add controller navigation examples and fallback guidance.
   - [x] Touch target behavior.
     - [x] Add opt-in `minTouchTarget` minimum Godot Control hit size for focusable controls.
   - [ ] Accessible names, roles, labels, and hints where Godot exposes equivalents.
