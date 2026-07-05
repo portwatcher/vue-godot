@@ -726,10 +726,13 @@ test('release readiness writes a machine-readable blocker summary', () => {
 test('release readiness summary includes missing evidence next actions', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
   const summaryPath = path.join(tempDir, 'release-readiness-summary.json')
+  const ciEvidence = readCommittedReleaseCiEvidence()
 
   try {
     const result = runReadiness([
       '--allow-open',
+      '--expected-commit',
+      ciEvidence.commit,
       '--real-device-path',
       path.join(tempDir, 'missing-real-device-evidence.json'),
       '--readiness-path',
@@ -740,39 +743,47 @@ test('release readiness summary includes missing evidence next actions', () => {
     const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
 
     assert.equal(result.status, 0)
+    assert.equal(summary.checks.initialCiEvidence, true)
+    const realDeviceAction = summary.nextActions.find(
+      (action) => action.id === 'real-device-evidence',
+    )
+    assert.ok(realDeviceAction)
+    assert.equal(realDeviceAction.commands[0], 'npm run check')
     assert.ok(
-      summary.nextActions.some(
-        (action) =>
-          action.id === 'real-device-evidence' &&
-          action.commands[0] === 'npm run check' &&
-          action.commands.includes(
-            `npm run release:platform-evidence -- --production-profile --commit ${summary.commit}`,
-          ) &&
-          action.commands.includes(
-            `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${summary.commit} --dispatch-missing --wait --ref <release-candidate-branch-or-tag> --output release/ci-runs.json`,
-          ) &&
-          action.commands.includes(
-            `npm run check:real-device-evidence -- --expected-commit ${summary.commit}`,
-          ) &&
-          action.commands.includes(
-            'git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json',
-          ) &&
-          action.commands.includes(
-            'git commit -m "Add real-device release evidence"',
-          ) &&
-          action.commands.includes(
-            'git push',
-          ),
+      realDeviceAction.commands.includes(
+        `npm run release:platform-evidence -- --production-profile --commit ${summary.commit}`,
       ),
     )
+    assert.ok(
+      realDeviceAction.commands.every(
+        (command) => !command.includes('npm run release:ci --'),
+      ),
+    )
+    assert.ok(
+      realDeviceAction.commands.includes(
+        `npm run check:real-device-evidence -- --expected-commit ${summary.commit}`,
+      ),
+    )
+    assert.ok(
+      realDeviceAction.commands.includes(
+        'git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json',
+      ),
+    )
+    assert.ok(
+      realDeviceAction.commands.includes(
+        'git commit -m "Add real-device release evidence"',
+      ),
+    )
+    assert.ok(realDeviceAction.commands.includes('git push'))
+
     const releasePreflightAction = summary.nextActions.find(
       (action) => action.id === 'release-preflight-evidence',
     )
     assert.ok(releasePreflightAction)
     assert.equal(releasePreflightAction.commands[0], 'npm run check')
     assert.ok(
-      releasePreflightAction.commands.some((command) =>
-        command.includes('--ref <release-candidate-branch-or-tag>'),
+      releasePreflightAction.commands.every(
+        (command) => !command.includes('--ref <release-candidate-branch-or-tag>'),
       ),
     )
     assert.ok(
