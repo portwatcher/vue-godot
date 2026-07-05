@@ -208,6 +208,8 @@ test('release preflight enforces real device evidence', () => {
     /fetchGitHubCommitSha/,
     /dispatch-missing/,
     /validateWorkflowDispatchRef/,
+    /collectWorkflowDispatchRefErrors/,
+    /multiple target commits/,
     /fetchGitHubCommitExists/,
     /was not found on GitHub/,
     /requiredWorkflowNames/,
@@ -339,6 +341,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /release:preflight-summary/)
   assert.match(production, /--release-preflight-summary/)
   assert.match(production, /release-preflight-summary/)
+  assert.match(
+    production,
+    /dispatch those workflows first from a release-candidate ref[\s\S]*dispatch Release Preflight from the evidence ref/,
+  )
   assert.match(production, /did not use local-only mode/)
   assert.match(production, /did not skip release\s+gates/)
   assert.match(production, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
@@ -526,6 +532,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /warning-bearing/)
   assert.match(checklist, /release-preflight-summary/)
   assert.match(checklist, /release:preflight-summary/)
+  assert.match(
+    checklist,
+    /dispatch those workflows first from a\s+release-candidate ref[\s\S]*dispatch Release Preflight from the evidence ref/,
+  )
   assert.match(checklist, /release-readiness-summary/)
   assert.match(checklist, /--expected-commit <release-candidate-sha>/)
   assert.match(checklist, /follow-up evidence commit/)
@@ -690,6 +700,10 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(readme, /\/tmp\/vue-godot-readiness\.json/)
   assert.match(readme, /release-readiness-summary/)
   assert.match(readme, /release-readiness-evidence\.json/)
+  assert.match(
+    readme,
+    /dispatch those workflows first from a release-candidate ref[\s\S]*dispatch Release Preflight from the evidence ref/,
+  )
   assert.match(readme, /--expected-commit <release-candidate-sha>/)
   assert.match(readme, /tested commit instead of the evidence commit/)
   assert.match(readme, /final-readiness blockers and final TODO proof status/)

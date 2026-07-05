@@ -8,6 +8,7 @@ import {
   collectReleaseCiHints,
   collectReleaseCiNextActions,
   collectReleaseCiRunEvidence,
+  collectWorkflowDispatchRefErrors,
   dispatchableReleaseCiWorkflows,
   missingReleaseCiWorkflows,
   releaseCiOutput,
@@ -333,6 +334,34 @@ test('release CI output carries evidence commit command hints for preflight', ()
   )
 })
 
+test('release CI next actions split dispatches for release and evidence commits', () => {
+  const workflows = [...requiredReleaseCiWorkflows, releasePreflightWorkflowName]
+  const result = collectReleaseCiRunEvidence([], commit, workflows, {
+    releasePreflightRunCommit: otherCommit,
+  })
+  const output = releaseCiOutput(
+    { ...result, runs: [], commitFound: true },
+    workflows,
+  )
+  const action = output.nextActions.find(
+    (nextAction) => nextAction.id === 'dispatch-missing-workflows',
+  )
+
+  assert.ok(action)
+  assert.match(action.detail, /ref at the tested release commit/)
+  assert.match(action.detail, /ref at the evidence commit/)
+  assert.ok(
+    action.commands.includes(
+      `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${commit} --dispatch-missing --wait --ref <release-candidate-branch-or-tag> --output release/ci-runs.json`,
+    ),
+  )
+  assert.ok(
+    action.commands.includes(
+      `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${commit} --include-release-preflight --release-preflight-run-commit ${otherCommit} --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
+    ),
+  )
+})
+
 test('release CI output reports missing commit status', () => {
   const result = collectReleaseCiRunEvidence(
     [],
@@ -595,6 +624,44 @@ test('release CI dispatch refuses refs that do not resolve to the release commit
     validateWorkflowDispatchRef('develop', commit, otherCommit).join('\n'),
     /points to .* not release commit/,
   )
+})
+
+test('release CI dispatch refuses mixed release and evidence commit targets', () => {
+  const workflows = [...requiredReleaseCiWorkflows, releasePreflightWorkflowName]
+
+  assert.deepEqual(
+    collectWorkflowDispatchRefErrors(
+      [releasePreflightWorkflowName],
+      'release/evidence',
+      commit,
+      otherCommit,
+      { releasePreflightRunCommit: otherCommit },
+    ),
+    [],
+  )
+  assert.match(
+    collectWorkflowDispatchRefErrors(
+      [releasePreflightWorkflowName],
+      'release/evidence',
+      commit,
+      commit,
+      { releasePreflightRunCommit: otherCommit },
+    ).join('\n'),
+    /not Release Preflight run commit/,
+  )
+
+  const errors = collectWorkflowDispatchRefErrors(
+    workflows,
+    'release/evidence',
+    commit,
+    otherCommit,
+    { releasePreflightRunCommit: otherCommit },
+  ).join('\n')
+
+  assert.match(errors, /multiple target commits/)
+  assert.match(errors, new RegExp(`${commit}: Check, Godot Smoke`))
+  assert.match(errors, new RegExp(`${otherCommit}: Release Preflight`))
+  assert.match(errors, /dispatch Release Preflight from the evidence commit/)
 })
 
 test('release CI dispatch config maps required workflows to workflow files', () => {

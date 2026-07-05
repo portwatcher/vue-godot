@@ -241,7 +241,9 @@ For this later preflight dispatch, the ref must resolve to the evidence commit.
 The helper sends the tested release candidate as the workflow `expected_commit`
 input, so non-local preflight validates `release/real-device-evidence.json`
 against the release commit even though the workflow run attaches to the
-evidence commit.
+evidence commit. If Check or Godot Smoke is still missing for the release
+commit, dispatch those workflows first from a release-candidate ref, then
+dispatch Release Preflight from the evidence ref.
 
 The `Check`, `Godot Smoke`, `Release Preflight`, and `Publish` workflows all run
 under Node 24 with `npm@^11.15.0`, so release-candidate CI evidence is produced

@@ -239,7 +239,9 @@ For that later preflight dispatch, `<branch-or-tag>` must resolve to the
 evidence commit that contains `release/real-device-evidence.json`. The helper
 passes the tested release candidate to the workflow as `expected_commit`, so the
 non-local preflight validates the committed evidence against the release commit
-instead of against the evidence commit itself.
+instead of against the evidence commit itself. If Check or Godot Smoke is still
+missing for the release commit, dispatch those workflows first from a
+release-candidate ref, then dispatch Release Preflight from the evidence ref.
 
 Rerun the same evidence command with the summary JSON to create the final
 readiness evidence:

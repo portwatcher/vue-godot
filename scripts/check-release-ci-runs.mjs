@@ -56,7 +56,9 @@ Options:
   --dispatch-missing   Dispatch missing or previously failed workflows before
                        waiting. Requires GITHUB_TOKEN or GH_TOKEN.
   --ref <branch|tag>   Branch or tag to dispatch. Default: current branch.
-                       The ref must resolve to --commit on GitHub.
+                       The ref must resolve to the target workflow commit on
+                       GitHub. If Release Preflight runs on an evidence commit,
+                       dispatch it separately from Check/Godot Smoke.
   --real-device-evidence-path <file>
                        Release Preflight workflow input when dispatching it.
                        Default: ${defaultRealDeviceEvidencePath}.
@@ -457,7 +459,13 @@ export function collectReleaseCiRunEvidence(
   }
 }
 
-export function validateWorkflowDispatchRef(ref, commit, refCommit) {
+export function validateWorkflowDispatchRef(
+  ref,
+  commit,
+  refCommit,
+  options = {},
+) {
+  const targetLabel = options.targetLabel ?? 'release commit'
   if (refCommit == null) {
     return [
       `Workflow dispatch ref ${ref} was not found on GitHub; push the branch or tag before dispatching release CI.`,
@@ -466,11 +474,57 @@ export function validateWorkflowDispatchRef(ref, commit, refCommit) {
 
   if (refCommit !== commit) {
     return [
-      `Workflow dispatch ref ${ref} points to ${refCommit}, not release commit ${commit}; push or update the ref before dispatching release CI.`,
+      `Workflow dispatch ref ${ref} points to ${refCommit}, not ${targetLabel} ${commit}; push or update the ref before dispatching release CI.`,
     ]
   }
 
   return []
+}
+
+function workflowTargetSummary(workflows, commit, options = {}) {
+  return workflows.map((workflowName) => ({
+    workflowName,
+    commit: workflowTargetCommit(workflowName, commit, options),
+  }))
+}
+
+export function collectWorkflowDispatchRefErrors(
+  workflows,
+  ref,
+  commit,
+  refCommit,
+  options = {},
+) {
+  const targets = workflowTargetSummary(workflows, commit, options)
+  const targetCommits = [...new Set(targets.map((target) => target.commit))]
+
+  if (targetCommits.length > 1) {
+    return [
+      [
+        `Cannot dispatch release CI workflows for multiple target commits with one ref ${ref}.`,
+        ...targetCommits.map((targetCommit) => {
+          const workflowNames = targets
+            .filter((target) => target.commit === targetCommit)
+            .map((target) => target.workflowName)
+            .join(', ')
+          return `- ${targetCommit}: ${workflowNames}`
+        }),
+        'Collect Check/Godot Smoke for the release commit first, then dispatch Release Preflight from the evidence commit with --release-preflight-run-commit and --ref pointing at that evidence commit.',
+      ].join('\n'),
+    ]
+  }
+
+  const [targetCommit] = targetCommits
+  const onlyReleasePreflight = targets.every(
+    (target) => target.workflowName === releasePreflightWorkflowName,
+  )
+  const targetLabel =
+    targetCommit !== commit && onlyReleasePreflight
+      ? 'Release Preflight run commit'
+      : 'release commit'
+  return validateWorkflowDispatchRef(ref, targetCommit ?? commit, refCommit, {
+    targetLabel,
+  })
 }
 
 function releaseCiWorkflows(options) {
@@ -603,6 +657,43 @@ export function collectReleaseCiNextActions(output) {
   }
 
   if (output.missingWorkflowNames.length > 0) {
+    const releaseCommitWorkflows = output.missingWorkflowNames.filter(
+      (workflowName) => workflowName !== releasePreflightWorkflowName,
+    )
+    const includesEvidenceCommitPreflight =
+      output.missingWorkflowNames.includes(releasePreflightWorkflowName) &&
+      output.releasePreflightRunCommit != null &&
+      output.releasePreflightRunCommit !== output.commit
+
+    if (releaseCommitWorkflows.length > 0 && includesEvidenceCommitPreflight) {
+      actions.push({
+        id: 'dispatch-missing-workflows',
+        title: 'Dispatch missing release CI workflows for each commit',
+        detail:
+          'Run the local check, dispatch Check/Godot Smoke from a ref at the tested release commit, then dispatch Release Preflight from a ref at the evidence commit.',
+        commands: [
+          'npm run check',
+          `GH_TOKEN="$(gh auth token)" ${formatReleaseCiCommand(
+            output.commit,
+            {
+              dispatchMissing: true,
+              output: defaultReleaseCiEvidencePath,
+              ref: '<release-candidate-branch-or-tag>',
+              wait: true,
+            },
+          )}`,
+          `GH_TOKEN="$(gh auth token)" ${releaseCiCommand(output, {
+            dispatchMissing: true,
+            output: defaultReleaseCiEvidencePath,
+            realDeviceEvidencePath: defaultRealDeviceEvidencePath,
+            ref: '<evidence-branch-or-tag>',
+            wait: true,
+          })}`,
+        ],
+      })
+      return actions
+    }
+
     const commandOptions = {
       dispatchMissing: true,
       output: defaultReleaseCiEvidencePath,
@@ -703,15 +794,21 @@ async function dispatchReleaseCiWorkflows(
   refCommit,
   options,
 ) {
+  const refErrors = collectWorkflowDispatchRefErrors(
+    workflows,
+    ref,
+    commit,
+    refCommit,
+    options,
+  )
+  if (refErrors.length > 0) {
+    throw new Error(refErrors.join('\n'))
+  }
+
   for (const workflowName of workflows) {
     const dispatchConfig = releaseCiWorkflowDispatches[workflowName]
     if (!dispatchConfig) {
       throw new Error(`No workflow dispatch config for ${workflowName}`)
-    }
-    const targetCommit = workflowTargetCommit(workflowName, commit, options)
-    const refErrors = validateWorkflowDispatchRef(ref, targetCommit, refCommit)
-    if (refErrors.length > 0) {
-      throw new Error(refErrors.join('\n'))
     }
 
     logProgress(options, `[release-ci] dispatching ${workflowName} on ${ref}`)
