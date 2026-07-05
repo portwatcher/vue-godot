@@ -13,6 +13,13 @@ import {
   repoRoot,
   run,
 } from './release-utils.mjs'
+import {
+  describeRealDeviceEvidencePath,
+  readRealDeviceEvidence,
+  realDeviceEvidenceEnvVar,
+  resolveRealDeviceEvidencePath,
+  validateRealDeviceEvidence,
+} from './real-device-evidence.mjs'
 
 const args = new Set(process.argv.slice(2))
 const localOnly = args.has('--local')
@@ -413,6 +420,62 @@ function checkSeriousExampleApps() {
   }
 }
 
+function readCurrentCommit() {
+  const result = run('git', ['rev-parse', 'HEAD'])
+  if (result.status !== 0) {
+    failures.push(`Unable to read current git commit\n${result.stderr}`)
+    return null
+  }
+  return result.stdout.trim()
+}
+
+function recordRealDeviceEvidenceIssue(message) {
+  if (localOnly) {
+    warnings.push(message)
+  } else {
+    failures.push(message)
+  }
+}
+
+function checkRealDeviceEvidence() {
+  logStep('checking real device evidence')
+
+  const evidencePath = resolveRealDeviceEvidencePath(process.env)
+  const relativePath = describeRealDeviceEvidencePath(evidencePath)
+  const { evidence, errors: readErrors } = readRealDeviceEvidence(evidencePath)
+
+  if (!evidence) {
+    recordRealDeviceEvidenceIssue(
+      [
+        `Real device evidence missing at ${relativePath}.`,
+        `Create release/real-device-evidence.json or set ${realDeviceEvidenceEnvVar}=path/to/evidence.json after completing docs/real-device-release.md.`,
+        readErrors.join('\n'),
+      ]
+        .filter(Boolean)
+        .join('\n'),
+    )
+    return
+  }
+
+  const currentCommit = readCurrentCommit()
+  const errors = validateRealDeviceEvidence(evidence, {
+    expectedCommit: currentCommit ?? undefined,
+  })
+
+  if (errors.length > 0) {
+    recordRealDeviceEvidenceIssue(
+      [`Real device evidence is incomplete: ${relativePath}`, ...errors].join(
+        '\n',
+      ),
+    )
+    return
+  }
+
+  console.log(
+    `[release-preflight] real device evidence passed: ${relativePath}`,
+  )
+}
+
 function printSummary() {
   if (warnings.length > 0) {
     console.log('\n[release-preflight] warnings')
@@ -452,6 +515,7 @@ async function main() {
   checkPublishEnvironment(publishNeeded)
   checkSeriousExampleApps()
   checkGodotSmoke()
+  checkRealDeviceEvidence()
   printSummary()
 }
 

@@ -11,6 +11,7 @@ Run the full repository check before cutting a release candidate:
 npm run check
 npm run check:serious-examples
 npm audit --audit-level=moderate
+npm run check:real-device-evidence -- --optional
 npm run release:preflight -- --local --skip-check --skip-godot
 ```
 
@@ -19,17 +20,20 @@ CLI scaffold smoke checks. `npm run check:serious-examples` verifies the
 required serious native app and game UI demo workspaces, README coverage, root
 README links, and fixture-test registration. `npm audit --audit-level=moderate`
 must report zero moderate, high, or critical advisories unless an accepted
-exception is documented in the release notes. `release:preflight` verifies
-package metadata, generated package specs, dry-run package contents, registry
-state, publish environment assumptions, serious example app readiness, and Godot
-smoke.
+exception is documented in the release notes.
+`npm run check:real-device-evidence` validates the Android/iOS export-smoke
+evidence JSON when it exists. `release:preflight` verifies package metadata,
+generated package specs, dry-run package contents, registry state, publish
+environment assumptions, serious example app readiness, Godot smoke, and real
+device evidence.
 
 The local preflight command may warn when Godot smoke is skipped or when package
 versions are newer than the registry. Release builds should run the full
 workflow, including serious example app readiness, Godot smoke, and
-trusted-publishing checks. `--skip-serious-examples` and `--skip-godot` are
-intended for local validation only; non-local preflight fails when either gate
-is skipped.
+trusted-publishing checks. Real-device evidence is read from
+`release/real-device-evidence.json` or `VUE_GODOT_REAL_DEVICE_EVIDENCE`.
+`--skip-serious-examples` and `--skip-godot` are intended for local validation
+only; non-local preflight fails when either gate is skipped.
 
 ## App Build Checklist
 

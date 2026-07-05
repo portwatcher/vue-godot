@@ -20,8 +20,11 @@ test('real device release checklist covers required Android and iOS gates', () =
     /^## iOS Release Smoke/m,
     /npm run check/,
     /npm run check:serious-examples/,
+    /npm run release:preflight[\s\S]*validates real-device evidence/,
     /npm audit --audit-level=moderate/,
     /npm run release:preflight/,
+    /VUE_GODOT_REAL_DEVICE_EVIDENCE/,
+    /real-device-evidence\.example\.json/,
     /Godot Smoke workflow/,
     /APK\/AAB/,
     /archive, TestFlight, or hosted-device build identifier/,
@@ -61,6 +64,35 @@ test('release preflight enforces serious example app readiness', () => {
   assert.match(production, /--skip-serious-examples/)
   assert.match(readme, /serious example app gate fails/i)
   assert.match(readme, /--skip-serious-examples/)
+})
+
+test('release preflight enforces real device evidence', () => {
+  const preflight = readDoc('scripts/release-preflight.mjs')
+  const production = readDoc('docs/production.md')
+  const readme = readDoc('README.md')
+  const packageJson = JSON.parse(readDoc('package.json'))
+  const workflow = readDoc('.github/workflows/publish.yml')
+
+  for (const pattern of [
+    /checkRealDeviceEvidence/,
+    /readRealDeviceEvidence/,
+    /validateRealDeviceEvidence/,
+    /realDeviceEvidenceEnvVar/,
+    /Real device evidence missing/,
+  ]) {
+    assert.match(preflight, pattern)
+  }
+
+  assert.equal(
+    packageJson.scripts['check:real-device-evidence'],
+    'node scripts/check-real-device-evidence.mjs',
+  )
+  assert.match(production, /check:real-device-evidence/)
+  assert.match(production, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
+  assert.match(readme, /check:real-device-evidence/)
+  assert.match(readme, /real-device-evidence\.json/)
+  assert.match(workflow, /real_device_evidence_path/)
+  assert.match(workflow, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
 })
 
 test('Godot smoke gate covers serious example apps', () => {

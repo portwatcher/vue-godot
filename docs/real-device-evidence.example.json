@@ -1,0 +1,75 @@
+{
+  "commit": "0123456789abcdef0123456789abcdef01234567",
+  "packageVersions": {
+    "@vue-godot/runtime-tscn": "0.0.2",
+    "@vue-godot/cli": "0.0.3",
+    "@vue-godot/browser": "0.0.1",
+    "@vue-godot/device": "0.0.1",
+    "@vue-godot/html": "0.0.1"
+  },
+  "godotJsVersion": "GodotJS 1.0.0-2 / Godot 4.4.x",
+  "checkRunUrl": "https://github.com/portwatcher/vue-godot/actions/runs/0000000001",
+  "godotSmokeRunUrl": "https://github.com/portwatcher/vue-godot/actions/runs/0000000002",
+  "releasePreflightRunUrl": "https://github.com/portwatcher/vue-godot/actions/runs/0000000003",
+  "android": {
+    "artifact": "vue-godot-android-release.aab",
+    "exportPreset": "Android Release",
+    "deviceModel": "Pixel 8 hosted device",
+    "osVersion": "Android 15",
+    "orientation": "portrait and landscape",
+    "locale": "en-US",
+    "selectedApis": [
+      "fetch",
+      "WebSocket",
+      "navigator.permissions",
+      "navigator.geolocation",
+      "navigator.mediaDevices.getUserMedia",
+      "SafeAreaView",
+      "KeyboardAvoidingView"
+    ],
+    "passedChecks": [
+      "cold-launch",
+      "no-godotjs-load-diagnostics",
+      "storage-restart",
+      "network-if-selected",
+      "permission-prompts-if-selected",
+      "adapter-states-if-selected",
+      "hardware-adapters-if-selected",
+      "safe-area-keyboard",
+      "android-back-handling",
+      "background-foreground"
+    ],
+    "skippedChecks": {}
+  },
+  "ios": {
+    "artifact": "TestFlight build 1",
+    "exportPreset": "iOS Release",
+    "deviceModel": "iPhone 15 hosted device",
+    "osVersion": "iOS 18",
+    "orientation": "portrait and landscape",
+    "locale": "en-US",
+    "selectedApis": [
+      "fetch",
+      "WebSocket",
+      "navigator.permissions",
+      "navigator.geolocation",
+      "navigator.mediaDevices.getUserMedia",
+      "SafeAreaView",
+      "KeyboardAvoidingView"
+    ],
+    "passedChecks": [
+      "cold-launch",
+      "no-godotjs-load-diagnostics",
+      "plist-entitlements",
+      "storage-restart",
+      "network-if-selected",
+      "permission-prompts-if-selected",
+      "adapter-states-if-selected",
+      "hardware-adapters-if-selected",
+      "safe-area-keyboard-rotation-text-input",
+      "background-foreground",
+      "deep-links-share-notifications-if-selected"
+    ],
+    "skippedChecks": {}
+  }
+}

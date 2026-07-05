@@ -24,6 +24,26 @@ marking Android or iOS device validation complete:
 Keep final production-readiness TODO entries for Android and iOS exports open
 until this evidence exists for the selected device APIs.
 
+## Machine-Readable Evidence Gate
+
+`npm run release:preflight` now validates real-device evidence in non-local
+release runs. It reads `release/real-device-evidence.json` by default, or a
+custom path from `VUE_GODOT_REAL_DEVICE_EVIDENCE`:
+
+```bash
+VUE_GODOT_REAL_DEVICE_EVIDENCE=release/real-device-evidence.json npm run release:preflight
+```
+
+Use [real-device-evidence.example.json](./real-device-evidence.example.json) as
+the schema reference. The evidence file must include the tested commit, package
+versions, GodotJS version, CI/preflight run URLs, Android and iOS artifacts or
+hosted-device build identifiers, device model/OS/orientation/locale, selected
+APIs, and passed or explicitly skipped platform checks.
+
+Local-only preflight runs (`npm run release:preflight -- --local`) warn when
+this evidence is missing. Non-local preflight runs fail until the evidence file
+exists and validates for the current commit.
+
 ## Common Gate
 
 Run this before platform-specific checks:
