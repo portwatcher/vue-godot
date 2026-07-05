@@ -92,6 +92,7 @@ Arguments:
 Options:
   -f          Force overwrite if directory already exists
   --html      Enable @vue-godot/html support (HTML-like components on Godot nodes)
+  --device    Add @vue-godot/device for native/device adapter APIs
 `,
   )
   process.exit(1)
@@ -101,6 +102,7 @@ function parseCreateArgs(argv: string[]) {
   let projectName: string | undefined
   let force = false
   let html = false
+  let device = false
 
   for (let i = 0; i < argv.length; i++) {
     switch (argv[i]) {
@@ -109,6 +111,9 @@ function parseCreateArgs(argv: string[]) {
         break
       case '--html':
         html = true
+        break
+      case '--device':
+        device = true
         break
       case '--help':
       case '-h':
@@ -127,7 +132,7 @@ function parseCreateArgs(argv: string[]) {
     }
   }
 
-  return { projectName, force, html }
+  return { projectName, force, html, device }
 }
 
 function integrateUsage(): never {
@@ -142,6 +147,7 @@ Arguments:
 Options:
   -f          Force overwrite if vue/ already exists (no prompt)
   --html      Enable @vue-godot/html support (HTML-like components on Godot nodes)
+  --device    Add @vue-godot/device for native/device adapter APIs
 `,
   )
   process.exit(1)
@@ -151,6 +157,7 @@ function parseIntegrateArgs(argv: string[]) {
   let targetDir: string | undefined
   let force = false
   let html = false
+  let device = false
 
   for (let i = 0; i < argv.length; i++) {
     switch (argv[i]) {
@@ -159,6 +166,9 @@ function parseIntegrateArgs(argv: string[]) {
         break
       case '--html':
         html = true
+        break
+      case '--device':
+        device = true
         break
       case '--help':
       case '-h':
@@ -177,7 +187,7 @@ function parseIntegrateArgs(argv: string[]) {
     }
   }
 
-  return { targetDir: targetDir ?? '.', force, html }
+  return { targetDir: targetDir ?? '.', force, html, device }
 }
 
 function doctorUsage(): never {
@@ -246,7 +256,12 @@ switch (command) {
         process.exit(1)
       }
     }
-    await create({ projectName, force: parsed.force, html: parsed.html })
+    await create({
+      projectName,
+      force: parsed.force,
+      html: parsed.html,
+      device: parsed.device,
+    })
     break
   }
   case 'gen-types': {
@@ -262,7 +277,12 @@ switch (command) {
   }
   case 'integrate': {
     const parsed = parseIntegrateArgs(args.slice(1))
-    await integrate({ targetDir: parsed.targetDir, force: parsed.force, html: parsed.html })
+    await integrate({
+      targetDir: parsed.targetDir,
+      force: parsed.force,
+      html: parsed.html,
+      device: parsed.device,
+    })
     break
   }
   case 'doctor': {

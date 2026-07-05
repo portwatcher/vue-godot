@@ -16,6 +16,7 @@ export interface CreateOptions {
   projectName: string
   force: boolean
   html?: boolean
+  device?: boolean
 }
 
 function runCommand(
@@ -46,7 +47,7 @@ function runCommand(
 }
 
 export async function create(options: CreateOptions): Promise<void> {
-  const { projectName, force, html } = options
+  const { projectName, force, html, device } = options
   const absTarget = path.resolve(projectName)
   const packageName = path.basename(absTarget)
 
@@ -155,7 +156,8 @@ export async function create(options: CreateOptions): Promise<void> {
   const pkgJsonPath = path.join(absTarget, 'package.json')
   fs.writeFileSync(
     pkgJsonPath,
-    JSON.stringify(newPackageJson(packageName, html), null, 2) + '\n',
+    JSON.stringify(newPackageJson(packageName, { html, device }), null, 2) +
+      '\n',
   )
   console.log(`  created ${path.relative(process.cwd(), pkgJsonPath)}`)
 

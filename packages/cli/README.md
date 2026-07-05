@@ -30,10 +30,11 @@ vue-godot create [name] [options]
 | -------- | ----------------------------------------------------- |
 | `name`   | Project name (used as dir name). Prompted if omitted. |
 
-| Option   | Description                                                    |
-| -------- | -------------------------------------------------------------- |
-| `-f`     | Force overwrite if directory already exists                    |
-| `--html` | Enable `@vue-godot/html` — HTML-like components on Godot nodes |
+| Option     | Description                                                       |
+| ---------- | ----------------------------------------------------------------- |
+| `-f`       | Force overwrite if directory already exists                       |
+| `--html`   | Enable `@vue-godot/html` — HTML-like components on Godot nodes    |
+| `--device` | Add `@vue-godot/device` for native/device adapter APIs            |
 
 When `--html` is set, the scaffolded project includes:
 
@@ -46,6 +47,10 @@ When `--html` is set, the scaffolded project includes:
 - `_exit_tree()` cleanup that calls `app.unmount()` for editor reload safety
 - Volar plugin in `tsconfig.json` (`vueCompilerOptions.plugins`) so the IDE resolves lowercase tags as `@vue-godot/html` components with full type-checking and hover info
 - Vite output with stable secondary chunk paths under `dist/chunks/` so Godot editor reloads do not chase content-hash filenames
+
+When `--device` is set without `--html`, the scaffolded project includes
+`@vue-godot/device` for direct native/device adapter APIs, but it does not add
+browser globals or HTML components.
 
 **Example:**
 
@@ -78,10 +83,11 @@ vue-godot integrate [dir] [options]
 | -------- | ---------------------------------- |
 | `dir`    | Target directory (defaults to `.`) |
 
-| Option   | Description                                                    |
-| -------- | -------------------------------------------------------------- |
-| `-f`     | Force overwrite if `vue/` already exists                       |
-| `--html` | Enable `@vue-godot/html` — HTML-like components on Godot nodes |
+| Option     | Description                                                       |
+| ---------- | ----------------------------------------------------------------- |
+| `-f`       | Force overwrite if `vue/` already exists                          |
+| `--html`   | Enable `@vue-godot/html` — HTML-like components on Godot nodes    |
+| `--device` | Add `@vue-godot/device` for native/device adapter APIs            |
 
 This command:
 
@@ -89,7 +95,8 @@ This command:
 2. Creates or updates `package.json` with the necessary scripts and dependencies
 3. Resolves `node_modules` paths for the generated `tsconfig.json`
 4. Adds the same HTML/browser setup as `create --html` when `--html` is provided
-5. Adds production export guidance and a non-failing export-setting warning script
+5. Adds `@vue-godot/device` when `--device` is provided, including when combined with `--html`
+6. Adds production export guidance and a non-failing export-setting warning script
 
 The copied `vue/` template and root `gen/` ignore marker keep Godot's asset scan focused on generated `dist/` output rather than Vue source/config files or GodotJS-generated TypeScript resource stubs. The Vite config also keeps secondary JavaScript chunk names stable under `dist/chunks/`, which avoids stale Godot editor resource dependencies during watch rebuilds.
 

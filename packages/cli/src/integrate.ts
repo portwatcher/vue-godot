@@ -7,6 +7,12 @@ export interface IntegrateOptions {
   targetDir: string
   force: boolean
   html?: boolean
+  device?: boolean
+}
+
+export interface ProjectFeatureOptions {
+  html?: boolean
+  device?: boolean
 }
 
 /* ------------------------------------------------------------------ */
@@ -217,10 +223,17 @@ export function copyProductionSupportFiles(targetDir: string, cwd: string): void
   }
 }
 
+function normalizeProjectFeatures(
+  options?: boolean | ProjectFeatureOptions,
+): ProjectFeatureOptions {
+  return typeof options === 'boolean' ? { html: options } : (options ?? {})
+}
+
 export function newPackageJson(
   name: string,
-  html?: boolean,
+  options?: boolean | ProjectFeatureOptions,
 ): Record<string, unknown> {
+  const { html, device } = normalizeProjectFeatures(options)
   const packageOverrides = readPackageSpecOverrides()
   const deps: Record<string, string> = {
     '@vue-godot/runtime-tscn': packageSpec(
@@ -234,11 +247,13 @@ export function newPackageJson(
       '@vue-godot/browser',
       packageOverrides,
     )
+    deps['@vue-godot/html'] = packageSpec('@vue-godot/html', packageOverrides)
+  }
+  if (html || device) {
     deps['@vue-godot/device'] = packageSpec(
       '@vue-godot/device',
       packageOverrides,
     )
-    deps['@vue-godot/html'] = packageSpec('@vue-godot/html', packageOverrides)
   }
   return {
     name,
@@ -390,7 +405,7 @@ const name = ref('')
 /* ------------------------------------------------------------------ */
 
 export async function integrate(options: IntegrateOptions): Promise<void> {
-  const { targetDir, force, html } = options
+  const { targetDir, force, html, device } = options
   const absTarget = path.resolve(targetDir)
   const vueDir = path.join(absTarget, 'vue')
 
@@ -519,12 +534,14 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
         '@vue-godot/browser',
         packageOverrides,
       )
-      existing.dependencies['@vue-godot/device'] ??= packageSpec(
-        '@vue-godot/device',
-        packageOverrides,
-      )
       existing.dependencies['@vue-godot/html'] ??= packageSpec(
         '@vue-godot/html',
+        packageOverrides,
+      )
+    }
+    if (html || device) {
+      existing.dependencies['@vue-godot/device'] ??= packageSpec(
+        '@vue-godot/device',
         packageOverrides,
       )
     }
@@ -535,7 +552,7 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     const name = path.basename(absTarget)
     fs.writeFileSync(
       pkgJsonPath,
-      JSON.stringify(newPackageJson(name, html), null, 2) + '\n',
+      JSON.stringify(newPackageJson(name, { html, device }), null, 2) + '\n',
     )
     console.log(`  created ${path.relative(process.cwd(), pkgJsonPath)}`)
   }

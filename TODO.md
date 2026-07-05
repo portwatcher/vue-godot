@@ -245,7 +245,7 @@ The project is production ready only when all of these are true:
 - [ ] Improve CLI commands.
   - [ ] `create app` profile.
   - [ ] `create game-ui` profile.
-  - [ ] `integrate --html --device`.
+  - [x] `integrate --html --device`.
   - [ ] Template option for router/storage/network/device APIs.
   - [x] Doctor command for GodotJS, Node, package versions, export settings, permissions, and missing plugins.
 - [ ] Improve Volar and TypeScript support.
