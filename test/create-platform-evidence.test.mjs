@@ -72,6 +72,7 @@ test('platform evidence template lists required checks without passing them', ()
     template.nextActions.some(
       (action) =>
         action.id === 'assemble-real-device-evidence' &&
+        action.commands[0] === 'npm run check' &&
         action.commands.includes(
           'npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --real-device-output release/real-device-evidence.json',
         ),

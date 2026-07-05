@@ -64,7 +64,8 @@ Use its `selectedApiRequiredChecks` worksheet to see which conditional checks
 the selected APIs made mandatory.
 Conditional checks required by selected APIs must be recorded in `passedChecks`,
 not `skippedChecks`. Its top-level `nextActions` section records the commands
-for assembling final evidence after the worksheet is complete.
+for running `npm run check` and assembling final evidence after the worksheet is
+complete.
 After device testing and CI runs exist, `npm run release:evidence` assembles the
 real-device and release-readiness evidence files from the current package
 versions, Android/iOS platform evidence, CI evidence, and verified GitHub

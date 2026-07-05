@@ -199,6 +199,7 @@ function buildNextActions(platformEvidencePath) {
       detail:
         'After CI runs exist for the tested release candidate, generate release/real-device-evidence.json from this worksheet.',
       commands: [
+        'npm run check',
         'npm run release:ci -- --commit <release-candidate-sha> --wait --output release/ci-runs.json',
         `npm run release:evidence -- --platform-evidence ${platformEvidencePath} --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --real-device-output release/real-device-evidence.json`,
         'npm run check:real-device-evidence -- --expected-commit <release-candidate-sha>',

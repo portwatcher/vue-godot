@@ -89,7 +89,8 @@ shows which conditional checks came from the selected API set. Selected API
 names are validated, so typos or unknown names fail before conditional checks
 can be omitted. Conditional checks for selected APIs must be moved into
 `passedChecks`. The generated top-level `nextActions` section records the
-commands for turning the completed worksheet into final real-device evidence.
+local `npm run check` and commands for turning the completed worksheet into
+final real-device evidence.
 Keep only complete `android` and `ios` evidence objects before running
 `npm run release:evidence`.
 Keep worksheet fields only in `release/platform-evidence.json`; final
