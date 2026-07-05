@@ -319,6 +319,10 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.equal(summary.warningMarkerCount, 8)
     assert.equal(summary.packageDescriptionWarningCount, 0)
     assert.deepEqual(summary.packageDescriptionWarnings, [])
+    assert.equal(summary.releaseToolingBlockerCount, 0)
+    assert.deepEqual(summary.releaseToolingBlockers, [])
+    assert.equal(summary.releaseWorkflowBlockerCount, 0)
+    assert.deepEqual(summary.releaseWorkflowBlockers, [])
     assert.equal(summary.todo.unchecked, 10)
     assert.equal(summary.todo.uncheckedItems.length, 10)
     assert.ok(

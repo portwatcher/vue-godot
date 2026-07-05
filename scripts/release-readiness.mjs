@@ -811,6 +811,8 @@ function writeReadinessSummary(
   blockers,
   warningMarkers,
   packageDescriptionWarnings,
+  releaseToolingBlockers,
+  releaseWorkflowBlockers,
   checks,
   todoItems,
 ) {
@@ -828,6 +830,8 @@ function writeReadinessSummary(
     blockerCount: blockers.length,
     warningMarkerCount: warningMarkers.length,
     packageDescriptionWarningCount: packageDescriptionWarnings.length,
+    releaseToolingBlockerCount: releaseToolingBlockers.length,
+    releaseWorkflowBlockerCount: releaseWorkflowBlockers.length,
     todo: {
       total: todoItems.length,
       checked: checkedTodoItems.length,
@@ -842,6 +846,8 @@ function writeReadinessSummary(
     blockers: [...blockers],
     warningMarkers: [...warningMarkers],
     packageDescriptionWarnings: [...packageDescriptionWarnings],
+    releaseToolingBlockers: [...releaseToolingBlockers],
+    releaseWorkflowBlockers: [...releaseWorkflowBlockers],
   }
 
   fs.mkdirSync(path.dirname(resolved), { recursive: true })
@@ -891,7 +897,10 @@ async function main() {
     marker.startsWith('README.md:'),
   )
   const strictCiEvidenceReady =
-    !options.allowOpen && realDeviceEvidenceReady && releaseReadinessEvidenceReady
+    !options.allowOpen &&
+    realDeviceEvidenceReady &&
+    releaseReadinessEvidenceReady &&
+    releaseWorkflowsReady
   const finalTodoStructureBlockers =
     collectFinalTodoStructureBlockers(todoItems)
   blockers.push(...finalTodoStructureBlockers)
@@ -950,6 +959,8 @@ async function main() {
       blockers,
       warningMarkers,
       packageDescriptionWarnings,
+      releaseToolingBlockers,
+      releaseWorkflowBlockers,
       checks,
       todoItems,
     )

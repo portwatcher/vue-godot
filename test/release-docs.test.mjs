@@ -310,6 +310,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /separate\s+Android\/iOS real-device evidence status/)
   assert.match(checklist, /unchecked TODO item details/)
   assert.match(checklist, /CI workflow wiring status/)
+  assert.match(checklist, /release tooling\/workflow blocker lists/)
   assert.match(checklist, /local\/skip flags/)
   assert.match(checklist, /local-only/)
   assert.match(checklist, /skipped/)
@@ -388,6 +389,8 @@ test('release readiness audit documents final removal blockers', () => {
     /root README final-removal wording/,
     /summary-output/,
     /uncheckedItems/,
+    /releaseToolingBlockers/,
+    /releaseWorkflowBlockers/,
     /checkedFinalTodosBackedByEvidence/,
     /releaseTooling/,
     /releaseWorkflows/,
@@ -416,6 +419,7 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(production, /TODO counts/)
   assert.match(production, /unchecked\s+TODO item details/)
   assert.match(production, /CI workflow wiring/)
+  assert.match(production, /release tooling\/workflow\s+blocker lists/)
   assert.match(production, /structured readiness check status/)
   assert.match(production, /release tooling\s+script wiring/)
   assert.match(production, /prematurely checked final TODO boxes/)
@@ -430,6 +434,7 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(readme, /TODO counts/)
   assert.match(readme, /unchecked TODO item details/)
   assert.match(readme, /CI workflow wiring/)
+  assert.match(readme, /release tooling\/workflow blocker lists/)
   assert.match(readme, /structured readiness check status/)
   assert.match(readme, /release tooling script wiring/)
   assert.match(readme, /prematurely checked final TODO boxes/)
