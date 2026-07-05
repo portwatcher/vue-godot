@@ -4,7 +4,12 @@ import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
 
-import { resolveGodotBin, resolveGodotCommand } from '../scripts/smoke-utils.mjs'
+import {
+  assertNoGodotScriptLoadErrors,
+  relevantGodotDiagnosticLines,
+  resolveGodotBin,
+  resolveGodotCommand,
+} from '../scripts/smoke-utils.mjs'
 
 function createTempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-smoke-utils-'))
@@ -95,4 +100,21 @@ test('resolveGodotBin rejects directories without a Godot executable', () => {
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true })
   }
+})
+
+test('Godot smoke diagnostics include missing resource loads', () => {
+  const output = [
+    'Godot Engine v4.4',
+    'ERROR: Resource file not found: user://tmp/vue-godot-audio/1.wav',
+    "ERROR: Error loading resource: 'user://tmp/vue-godot-audio/1.wav'.",
+  ].join('\n')
+
+  assert.match(
+    relevantGodotDiagnosticLines(output),
+    /Resource file not found/,
+  )
+  assert.throws(
+    () => assertNoGodotScriptLoadErrors(output, 'fixture smoke'),
+    /asset-load diagnostics/,
+  )
 })

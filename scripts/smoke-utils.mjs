@@ -24,6 +24,8 @@ const GODOT_SCRIPT_LOAD_ERROR_PATTERNS = [
   /javascript file is missing/,
   /something went wrong on loading/,
   /unknown module:/,
+  /Resource file not found:/,
+  /Error loading resource:/,
 ]
 
 const GODOT_IMPORT_TIMEOUT_MS = 60_000
@@ -217,7 +219,7 @@ export function assertNoGodotScriptLoadErrors(output, context) {
   const diagnostics = relevantGodotDiagnosticLines(output)
   throw new Error(
     [
-      `${context} printed GodotJS script-load diagnostics`,
+      `${context} printed GodotJS script-load or asset-load diagnostics`,
       diagnostics || output,
     ]
       .filter(Boolean)

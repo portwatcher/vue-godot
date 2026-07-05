@@ -165,7 +165,7 @@ const settingsSummary = computed(
 )
 
 const audioDataUri =
-  'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA='
+  'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQIAAAAAAA=='
 
 function selectInputMode(mode: InputMode): void {
   inputMode.value = mode

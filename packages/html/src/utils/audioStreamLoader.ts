@@ -2,6 +2,7 @@ import { fetch as godotFetch, resolveObjectURL } from '@vue-godot/browser'
 import {
   AudioStreamMP3,
   AudioStreamOggVorbis,
+  AudioStreamWAV,
   DirAccess,
   FileAccess,
   ResourceLoader,
@@ -28,6 +29,10 @@ let tempFileId = 0
 
 /** Directory under `user://` where temp audio files are stored. */
 const TEMP_DIR = 'user://tmp/vue-godot-audio'
+
+interface AudioStreamWAVBufferLoader {
+  load_from_buffer?: (streamData: ArrayBuffer) => AudioStream | null
+}
 
 // ---------------------------------------------------------------------------
 // Audio format detection
@@ -116,6 +121,15 @@ function loadAudioViaTempFile(
   return ResourceLoader.load(tempPath) as AudioStream | null
 }
 
+function loadWavFromBuffer(buffer: ArrayBuffer): AudioStream | null {
+  const wavLoader = AudioStreamWAV as unknown as AudioStreamWAVBufferLoader
+  if (typeof wavLoader.load_from_buffer === 'function') {
+    return wavLoader.load_from_buffer(buffer)
+  }
+
+  return loadAudioViaTempFile(buffer, 'wav')
+}
+
 /**
  * Create an `AudioStream` from raw binary data.
  *
@@ -143,7 +157,7 @@ export function createAudioStreamFromBuffer(
       return stream
     }
     case 'wav':
-      return loadAudioViaTempFile(buffer, 'wav')
+      return loadWavFromBuffer(buffer)
   }
 }
 
