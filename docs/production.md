@@ -79,8 +79,9 @@ only; non-local preflight fails when either gate is skipped.
 
 `npm run release:readiness -- --allow-open` reports final-removal blockers while
 the production TODO remains open and does not contact GitHub. Add
-`--summary-output release/release-readiness-summary.json` to write the same
-blocker and warning-marker list as JSON for release handoff. The strict
+`--summary-output release/release-readiness-summary.json` to write blockers,
+warning markers, TODO counts, and structured readiness check status as JSON for
+release handoff. The strict
 `npm run release:readiness` command is for the committed final removal candidate
 and fails unless the worktree is clean and TODO boxes, current real-device evidence,
 prematurely checked final TODO boxes, public-surface documentation/demo alignment,

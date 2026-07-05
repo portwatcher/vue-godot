@@ -611,6 +611,8 @@ function writeReadinessSummary(
   expectedCommit,
   blockers,
   warningMarkers,
+  checks,
+  todoItems,
 ) {
   if (!options.summaryOutput) {
     return
@@ -623,6 +625,12 @@ function writeReadinessSummary(
     ready: blockers.length === 0,
     blockerCount: blockers.length,
     warningMarkerCount: warningMarkers.length,
+    todo: {
+      total: todoItems.length,
+      checked: todoItems.filter((item) => item.checked).length,
+      unchecked: todoItems.filter((item) => !item.checked).length,
+    },
+    checks: { ...checks },
     blockers: [...blockers],
     warningMarkers: [...warningMarkers],
   }
@@ -697,27 +705,52 @@ async function main() {
   )
   const strictCiEvidenceReady =
     !options.allowOpen && realDeviceEvidenceReady && releaseReadinessEvidenceReady
-  blockers.push(...collectFinalTodoStructureBlockers(todoItems))
-  blockers.push(
-    ...collectCheckedTodoEvidenceBlockers(todoItems, {
-      checkCiEvidenceReady: strictCiEvidenceReady,
-      ciEvidenceReady:
-        cleanWorktreeReady &&
-        realDeviceEvidenceReady &&
-        releaseReadinessEvidenceReady &&
-        !options.allowOpen,
-      godotSmokeCiEvidenceReady: strictCiEvidenceReady,
-      publicReadmesReady: publicSurfaceReady && rootReadmeWarningReady,
-      realDeviceEvidenceReady,
-      releaseReadinessEvidenceReady,
-      rootReadmeWarningReady,
-      warningWordingReady: blockers.length === 0 && warningMarkers.length === 0,
-    }),
+  const finalTodoStructureBlockers =
+    collectFinalTodoStructureBlockers(todoItems)
+  blockers.push(...finalTodoStructureBlockers)
+
+  const checkedFinalTodoProofs = {
+    checkCiEvidenceReady: strictCiEvidenceReady,
+    ciEvidenceReady:
+      cleanWorktreeReady &&
+      realDeviceEvidenceReady &&
+      releaseReadinessEvidenceReady &&
+      !options.allowOpen,
+    godotSmokeCiEvidenceReady: strictCiEvidenceReady,
+    publicReadmesReady: publicSurfaceReady && rootReadmeWarningReady,
+    realDeviceEvidenceReady,
+    releaseReadinessEvidenceReady,
+    rootReadmeWarningReady,
+    warningWordingReady: blockers.length === 0 && warningMarkers.length === 0,
+  }
+  const checkedFinalTodoEvidenceBlockers = collectCheckedTodoEvidenceBlockers(
+    todoItems,
+    checkedFinalTodoProofs,
   )
+  blockers.push(...checkedFinalTodoEvidenceBlockers)
 
   checkWarningMarkerState(blockers, warningMarkers)
+  const checks = {
+    checkedFinalTodosBackedByEvidence:
+      checkedFinalTodoEvidenceBlockers.length === 0,
+    cleanWorktree: cleanWorktreeReady,
+    finalTodoStructure: finalTodoStructureBlockers.length === 0,
+    publicSurface: publicSurfaceReady,
+    publicWarningMarkersRemoved: warningMarkers.length === 0,
+    realDeviceEvidence: realDeviceEvidenceReady,
+    releaseReadinessEvidence: releaseReadinessEvidenceReady,
+    rootReadmeWarningsRemoved: rootReadmeWarningReady,
+    strictCiEvidence: strictCiEvidenceReady,
+  }
   try {
-    writeReadinessSummary(options, expectedCommit, blockers, warningMarkers)
+    writeReadinessSummary(
+      options,
+      expectedCommit,
+      blockers,
+      warningMarkers,
+      checks,
+      todoItems,
+    )
   } catch (error) {
     blockers.push(
       `Unable to write release readiness summary: ${

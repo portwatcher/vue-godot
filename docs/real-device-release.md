@@ -56,7 +56,8 @@ The final strict `release:readiness` gate applies the same check and also
 verifies the recorded Release Preflight run metadata. The `--allow-open`
 readiness audit stays offline so it can be used before final evidence exists.
 Add `--summary-output release/release-readiness-summary.json` to either form to
-capture the current blockers and public warning markers as JSON.
+capture the current blockers, TODO counts, readiness check status, and public
+warning markers as JSON.
 
 Before device testing, initialize `release/platform-evidence.json` so the exact
 Android and iOS required check names are ready to fill:

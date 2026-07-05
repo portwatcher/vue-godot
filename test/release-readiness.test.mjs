@@ -180,6 +180,23 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.equal(summary.allowOpen, true)
     assert.equal(summary.ready, false)
     assert.ok(summary.blockerCount > 0)
+    assert.equal(summary.todo.unchecked, 10)
+    assert.equal(summary.checks.checkedFinalTodosBackedByEvidence, true)
+    assert.equal(typeof summary.checks.cleanWorktree, 'boolean')
+    if (!summary.checks.cleanWorktree) {
+      assert.ok(
+        summary.blockers.some((blocker) =>
+          blocker.includes('working tree must be clean'),
+        ),
+      )
+    }
+    assert.equal(summary.checks.finalTodoStructure, true)
+    assert.equal(summary.checks.publicSurface, true)
+    assert.equal(summary.checks.publicWarningMarkersRemoved, false)
+    assert.equal(summary.checks.realDeviceEvidence, true)
+    assert.equal(summary.checks.releaseReadinessEvidence, true)
+    assert.equal(summary.checks.rootReadmeWarningsRemoved, false)
+    assert.equal(summary.checks.strictCiEvidence, false)
     assert.ok(
       summary.blockers.some((blocker) =>
         blocker.includes('`npm run check` passes locally and in CI'),

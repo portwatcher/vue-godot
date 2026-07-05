@@ -348,6 +348,8 @@ test('release readiness audit documents final removal blockers', () => {
     /working tree must be clean for final release readiness/,
     /public warning markers still present/,
     /summary-output/,
+    /checkedFinalTodosBackedByEvidence/,
+    /strictCiEvidence/,
     /writeReadinessSummary/,
   ]) {
     assert.match(readiness, pattern)
@@ -369,6 +371,8 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(production, /check:public-surface/)
   assert.match(production, /release:readiness/)
   assert.match(production, /release-readiness-summary/)
+  assert.match(production, /TODO counts/)
+  assert.match(production, /structured readiness check status/)
   assert.match(production, /prematurely checked final TODO boxes/)
   assert.match(readme, /check:public-surface/)
   assert.match(production, /GitHub Actions run URLs for/)
@@ -378,6 +382,8 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(readme, /release:readiness/)
   assert.match(readme, /release-readiness-summary/)
   assert.match(readme, /release-readiness-evidence\.json/)
+  assert.match(readme, /TODO counts/)
+  assert.match(readme, /structured readiness check status/)
   assert.match(readme, /prematurely checked final TODO boxes/)
   assert.match(todo, /release:readiness/)
   assert.equal(example.releasePreflightRunConclusion, 'success')
