@@ -180,7 +180,8 @@ export function normalizePlatformEvidence(evidence) {
   return platformEvidence
 }
 
-function workflowRunUrl(ciEvidence, workflowName, errors) {
+function workflowRunUrl(ciEvidence, workflowName, errors, options = {}) {
+  const required = options.required ?? true
   if (!isRecord(ciEvidence.workflows)) {
     errors.push('CI evidence must include evidence.workflows')
     return null
@@ -188,7 +189,9 @@ function workflowRunUrl(ciEvidence, workflowName, errors) {
 
   const workflow = ciEvidence.workflows[workflowName]
   if (!isRecord(workflow)) {
-    errors.push(`CI evidence missing ${workflowName} workflow run`)
+    if (required) {
+      errors.push(`CI evidence missing ${workflowName} workflow run`)
+    }
     return null
   }
 
@@ -202,7 +205,7 @@ function workflowRunUrl(ciEvidence, workflowName, errors) {
   return workflow.runUrl
 }
 
-export function extractCiRunUrls(ciResult, commit) {
+export function extractCiRunUrls(ciResult, commit, options = {}) {
   const errors = []
   if (!isRecord(ciResult)) {
     errors.push('CI evidence must be a JSON object')
@@ -234,7 +237,13 @@ export function extractCiRunUrls(ciResult, commit) {
 
   const checkRunUrl = workflowRunUrl(ciEvidence, 'Check', errors)
   const godotSmokeRunUrl = workflowRunUrl(ciEvidence, 'Godot Smoke', errors)
-  return { checkRunUrl, godotSmokeRunUrl, errors }
+  const releasePreflightRunUrl = workflowRunUrl(
+    ciEvidence,
+    'Release Preflight',
+    errors,
+    { required: options.requireReleasePreflight === true },
+  )
+  return { checkRunUrl, godotSmokeRunUrl, releasePreflightRunUrl, errors }
 }
 
 function mergeRunUrlOption(name, explicitUrl, evidenceUrl) {
@@ -405,13 +414,19 @@ async function main() {
     'realDeviceOutput',
   ])
 
-  if (
+  const wantsReadinessEvidence =
     options.readinessOutput ||
     options.releasePreflightRunUrl ||
     options.releasePreflightWarningCount != null ||
     options.releasePreflightSummaryPath
-  ) {
-    assertRequiredOptions(options, ['releasePreflightRunUrl', 'readinessOutput'])
+
+  if (wantsReadinessEvidence) {
+    assertRequiredOptions(options, ['readinessOutput'])
+    if (!options.releasePreflightRunUrl && !options.ciEvidencePath) {
+      throw new Error(
+        'Missing required option: --release-preflight-run-url or --ci-evidence with Release Preflight',
+      )
+    }
     if (
       options.releasePreflightWarningCount == null &&
       !options.releasePreflightSummaryPath
@@ -442,7 +457,10 @@ async function main() {
   if (options.ciEvidencePath) {
     const ciEvidencePath = resolveOutputPath(options.ciEvidencePath)
     const ciResult = readJsonFile(ciEvidencePath)
-    const ciEvidence = extractCiRunUrls(ciResult, commit)
+    const ciEvidence = extractCiRunUrls(ciResult, commit, {
+      requireReleasePreflight:
+        wantsReadinessEvidence && !options.releasePreflightRunUrl,
+    })
     if (ciEvidence.errors.length > 0) {
       throw new Error(ciEvidence.errors.join('\n'))
     }
@@ -456,8 +474,18 @@ async function main() {
       options.godotSmokeRunUrl,
       ciEvidence.godotSmokeRunUrl,
     )
+    if (ciEvidence.releasePreflightRunUrl) {
+      options.releasePreflightRunUrl = mergeRunUrlOption(
+        'releasePreflightRunUrl',
+        options.releasePreflightRunUrl,
+        ciEvidence.releasePreflightRunUrl,
+      )
+    }
   }
   assertRequiredOptions(options, ['checkRunUrl', 'godotSmokeRunUrl'])
+  if (wantsReadinessEvidence) {
+    assertRequiredOptions(options, ['releasePreflightRunUrl'])
+  }
 
   const platformEvidencePath = resolveOutputPath(options.platformEvidencePath)
   const platformEvidence = readPlatformEvidence(platformEvidencePath)

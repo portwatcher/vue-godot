@@ -8,6 +8,7 @@ import {
 } from './release-evidence-utils.mjs'
 import { repoRoot, run } from './release-utils.mjs'
 
+export const releasePreflightWorkflowName = 'Release Preflight'
 export const requiredReleaseCiWorkflows = ['Check', 'Godot Smoke']
 
 function usage() {
@@ -19,6 +20,8 @@ release evidence.
 
 Options:
   --commit <sha>       Commit to verify. Default: current HEAD.
+  --include-release-preflight
+                       Also require the Release Preflight workflow run.
   --json               Print machine-readable evidence JSON.
   --output <file>      Write machine-readable evidence JSON to a file.
   --allow-missing      Exit 0 while still reporting missing runs.
@@ -29,6 +32,7 @@ Options:
 function parseArgs(argv) {
   const options = {
     commit: null,
+    includeReleasePreflight: false,
     json: false,
     output: null,
     allowMissing: false,
@@ -44,6 +48,11 @@ function parseArgs(argv) {
 
     if (arg === '--json') {
       options.json = true
+      continue
+    }
+
+    if (arg === '--include-release-preflight') {
+      options.includeReleasePreflight = true
       continue
     }
 
@@ -164,9 +173,15 @@ export function collectReleaseCiRunEvidence(
   return { evidence, errors }
 }
 
-function printText(evidence, errors) {
+function releaseCiWorkflows(options) {
+  return options.includeReleasePreflight
+    ? [...requiredReleaseCiWorkflows, releasePreflightWorkflowName]
+    : requiredReleaseCiWorkflows
+}
+
+function printText(evidence, errors, workflows) {
   console.log(`[release-ci] commit ${evidence.commit}`)
-  for (const workflowName of requiredReleaseCiWorkflows) {
+  for (const workflowName of workflows) {
     const runEvidence = evidence.workflows[workflowName]
     if (runEvidence) {
       console.log(`[release-ci] ${workflowName}: ${runEvidence.runUrl}`)
@@ -194,8 +209,9 @@ function writeJson(filePath, data) {
 async function main() {
   const options = parseArgs(process.argv.slice(2))
   const commit = options.commit ?? currentCommit()
+  const workflows = releaseCiWorkflows(options)
   const runs = await fetchGitHubActionsRunsForCommit(commit)
-  const result = collectReleaseCiRunEvidence(runs, commit)
+  const result = collectReleaseCiRunEvidence(runs, commit, workflows)
 
   if (options.output) {
     writeJson(options.output, result)
@@ -204,7 +220,7 @@ async function main() {
   if (options.json) {
     console.log(JSON.stringify(result, null, 2))
   } else {
-    printText(result.evidence, result.errors)
+    printText(result.evidence, result.errors, workflows)
   }
 
   if (result.errors.length > 0 && !options.allowMissing) {

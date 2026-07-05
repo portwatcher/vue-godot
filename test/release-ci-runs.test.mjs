@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import {
   collectReleaseCiRunEvidence,
+  releasePreflightWorkflowName,
   requiredReleaseCiWorkflows,
   selectSuccessfulWorkflowRun,
 } from '../scripts/check-release-ci-runs.mjs'
@@ -90,6 +91,33 @@ test('release CI run evidence reports missing required workflows', () => {
   assert.match(errors.join('\n'), /No completed successful Godot Smoke/)
 })
 
+test('release CI run evidence can include Release Preflight for final readiness', () => {
+  const { evidence, errors } = collectReleaseCiRunEvidence(
+    [
+      workflowRun({
+        name: 'Check',
+        html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+      }),
+      workflowRun({
+        name: 'Godot Smoke',
+        html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+      }),
+      workflowRun({
+        name: releasePreflightWorkflowName,
+        html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/3',
+      }),
+    ],
+    commit,
+    [...requiredReleaseCiWorkflows, releasePreflightWorkflowName],
+  )
+
+  assert.deepEqual(errors, [])
+  assert.equal(
+    evidence.workflows[releasePreflightWorkflowName].runUrl,
+    'https://github.com/portwatcher/vue-godot/actions/runs/3',
+  )
+})
+
 test('release CI run selection prefers the newest successful matching run', () => {
   const selected = selectSuccessfulWorkflowRun(
     [
@@ -120,6 +148,7 @@ test('release CI run selection prefers the newest successful matching run', () =
   )
 })
 
-test('required release CI workflows match final readiness gates', () => {
+test('default release CI workflows match real-device evidence gates', () => {
   assert.deepEqual(requiredReleaseCiWorkflows, ['Check', 'Godot Smoke'])
+  assert.equal(releasePreflightWorkflowName, 'Release Preflight')
 })

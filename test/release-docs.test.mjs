@@ -91,6 +91,7 @@ test('release preflight validates package export targets in tarballs', () => {
 
 test('release preflight enforces real device evidence', () => {
   const preflight = readDoc('scripts/release-preflight.mjs')
+  const releaseCi = readDoc('scripts/check-release-ci-runs.mjs')
   const evidenceHelper = readDoc('scripts/create-release-evidence.mjs')
   const checklist = readDoc('docs/real-device-release.md')
   const production = readDoc('docs/production.md')
@@ -119,8 +120,17 @@ test('release preflight enforces real device evidence', () => {
     /release-preflight-summary/,
     /extractReleasePreflightWarningCount/,
     /Release preflight summary commit must match/,
+    /Release Preflight/,
   ]) {
     assert.match(evidenceHelper, pattern)
+  }
+
+  for (const pattern of [
+    /include-release-preflight/,
+    /releasePreflightWorkflowName/,
+    /Release Preflight/,
+  ]) {
+    assert.match(releaseCi, pattern)
   }
 
   assert.equal(
@@ -141,6 +151,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(production, /check:real-device-evidence/)
   assert.match(production, /release:ci/)
+  assert.match(production, /--include-release-preflight/)
   assert.match(production, /release:platform-evidence/)
   assert.match(production, /release:evidence/)
   assert.match(production, /--release-preflight-summary/)
@@ -149,6 +160,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /GitHub\s+Actions metadata/)
   assert.match(readme, /check:real-device-evidence/)
   assert.match(readme, /release:ci/)
+  assert.match(readme, /--include-release-preflight/)
   assert.match(readme, /--ci-evidence/)
   assert.match(readme, /--summary-output/)
   assert.match(readme, /--release-preflight-summary/)
@@ -158,6 +170,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /GitHub Actions metadata/)
   assert.match(checklist, /release:ci/)
   assert.match(checklist, /ci-runs\.json/)
+  assert.match(checklist, /--include-release-preflight/)
   assert.match(checklist, /--ci-evidence/)
   assert.match(checklist, /--release-preflight-summary/)
   assert.match(checklist, /release-preflight-summary/)

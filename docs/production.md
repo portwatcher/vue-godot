@@ -34,7 +34,10 @@ Actions metadata for the Check/Godot Smoke run URLs recorded in that evidence.
 After pushing a release candidate,
 `npm run release:ci -- --commit <sha> --output release/ci-runs.json` checks
 GitHub Actions for completed successful Check and Godot Smoke runs on that exact
-commit and writes the run URLs used by release evidence.
+commit and writes the run URLs used by real-device release evidence. After the
+Release Preflight workflow passes, rerun it with `--include-release-preflight`
+so the same CI evidence file also includes the verified preflight run URL used
+by final readiness evidence.
 `npm run release:platform-evidence` creates a starter Android/iOS platform
 evidence file with the exact required device check names; it still must be
 filled with real artifact, device, OS, API, pass, and skip data after testing.
@@ -76,7 +79,14 @@ the publish workflow and is the preferred source for the preflight run URL in
 release records. The workflow runs
 `npm run release:preflight -- --summary-output release/release-preflight-summary.json`
 and uploads the JSON as the `release-preflight-summary` artifact for
-`npm run release:evidence -- --release-preflight-summary`.
+`npm run release:evidence -- --release-preflight-summary`. Capture the matching
+workflow run URL with:
+
+```bash
+npm run release:ci -- --include-release-preflight --output release/ci-runs.json
+```
+
+Run that before creating final readiness evidence.
 
 ## App Build Checklist
 

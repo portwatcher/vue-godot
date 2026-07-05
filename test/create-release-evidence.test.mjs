@@ -118,6 +118,44 @@ test('extractCiRunUrls reads release CI evidence for the evidence commit', () =>
       checkRunUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
       godotSmokeRunUrl:
         'https://github.com/portwatcher/vue-godot/actions/runs/2',
+      releasePreflightRunUrl: null,
+      errors: [],
+    },
+  )
+})
+
+test('extractCiRunUrls can read Release Preflight evidence for final readiness', () => {
+  assert.deepEqual(
+    extractCiRunUrls(
+      {
+        evidence: {
+          commit,
+          workflows: {
+            Check: {
+              runUrl:
+                'https://github.com/portwatcher/vue-godot/actions/runs/1',
+            },
+            'Godot Smoke': {
+              runUrl:
+                'https://github.com/portwatcher/vue-godot/actions/runs/2',
+            },
+            'Release Preflight': {
+              runUrl:
+                'https://github.com/portwatcher/vue-godot/actions/runs/3',
+            },
+          },
+        },
+        errors: [],
+      },
+      commit,
+      { requireReleasePreflight: true },
+    ),
+    {
+      checkRunUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+      godotSmokeRunUrl:
+        'https://github.com/portwatcher/vue-godot/actions/runs/2',
+      releasePreflightRunUrl:
+        'https://github.com/portwatcher/vue-godot/actions/runs/3',
       errors: [],
     },
   )
@@ -144,9 +182,34 @@ test('extractCiRunUrls rejects stale or incomplete CI evidence', () => {
     'https://github.com/portwatcher/vue-godot/actions/runs/1',
   )
   assert.equal(result.godotSmokeRunUrl, null)
+  assert.equal(result.releasePreflightRunUrl, null)
   assert.match(result.errors.join('\n'), /unresolved errors/)
   assert.match(result.errors.join('\n'), /CI evidence commit must match/)
   assert.match(result.errors.join('\n'), /missing Godot Smoke/)
+})
+
+test('extractCiRunUrls rejects missing Release Preflight when required', () => {
+  const result = extractCiRunUrls(
+    {
+      evidence: {
+        commit,
+        workflows: {
+          Check: {
+            runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+          },
+          'Godot Smoke': {
+            runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+          },
+        },
+      },
+      errors: [],
+    },
+    commit,
+    { requireReleasePreflight: true },
+  )
+
+  assert.equal(result.releasePreflightRunUrl, null)
+  assert.match(result.errors.join('\n'), /missing Release Preflight/)
 })
 
 test('extractReleasePreflightWarningCount reads a matching preflight summary', () => {
