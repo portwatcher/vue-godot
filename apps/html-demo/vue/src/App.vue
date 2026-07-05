@@ -231,7 +231,13 @@
   <!-- ===== Section: Button ===== -->
   <Span>--- Button ---</Span>
   <Div :style="{ flexDirection: 'row', gap: 8 }">
-    <Button @click="onButtonClick">Click me</Button>
+    <Button
+      aria-label="Increment button demo counter"
+      accessibility-hint="Adds one to the visible click count"
+      @click="onButtonClick"
+    >
+      Click me
+    </Button>
     <Button :disabled="true">Disabled</Button>
   </Div>
   <Span>{{ `Button clicks: ${buttonClicks}` }}</Span>
@@ -239,6 +245,8 @@
   <!-- ===== Section: Pressable ===== -->
   <Span>--- Pressable ---</Span>
   <Pressable
+    accessibility-label="Pressable demo surface"
+    accessibility-hint="Activates on pointer, keyboard, or controller accept"
     :disabled="pressableDisabled"
     :long-press-delay="400"
     :style="{
@@ -310,7 +318,12 @@
       :style="{ fontWeight: 'bold', color: '#fef3c7' }"
       :content-style="{ gap: 4 }"
     >
-      <Input v-model="formName" placeholder="Ada"></Input>
+      <Input
+        v-model="formName"
+        placeholder="Ada"
+        accessibility-label="Display name"
+        accessibility-hint="Required field"
+      ></Input>
     </Label>
     <Div :style="{ flexDirection: 'row', gap: 8 }">
       <Button @click="onFormSubmit">Submit Form</Button>

@@ -96,11 +96,16 @@ Each entry should be evaluated with these fields:
 ## HTML Components
 
 All HTML-like components are available through `@vue-godot/html`, `htmlPlugin`,
-and lowercase/PascalCase registration. They are marked `partial` until the
-production-grade component checklist covers accessibility, focus, keyboard,
-controller, touch behavior, and documented style limits. Inline style objects
-support the documented Godot-backed subset; unsupported style keys emit a
-`[vue-godot/html]` warning once per component/property pair.
+and lowercase/PascalCase registration. Control-backed components support
+tooltip-backed labels and hints through `accessibilityLabel`, `ariaLabel`,
+`aria-label`, `accessibilityHint`, and `title` where those names do not conflict
+with component-specific props. Native ARIA role mapping is not implemented
+because the supported Godot bindings do not expose a portable Control role
+property yet. They are marked `partial` until the production-grade component
+checklist covers focus, keyboard, controller, touch behavior, and documented
+style limits. Inline style objects support the documented Godot-backed subset;
+unsupported style keys emit a `[vue-godot/html]` warning once per
+component/property pair.
 
 | Component/API | Owner | Status | Godot backend | Platforms | Permissions/export | Tests | Caveats |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -113,21 +118,21 @@ support the documented Godot-backed subset; unsupported style keys emit a
 | `<Overlay>` | `html` | `partial` | `PanelContainer` plus inner `<Div>` content wrapper | All Godot UI targets | None | Unit, html-demo | Godot `Control` overlay, not a DOM portal; backdrop input follows Godot `mouse_filter`. |
 | `<Modal>` | `html` | `partial` | `Window` | All Godot UI targets | None | Unit, html-demo | Window behavior follows Godot embedded/native subwindow settings; browser focus trapping is not implemented yet. |
 | `<Dialog>` | `html` | `partial` | `AcceptDialog` | All Godot UI targets | None | Unit, html-demo | Confirmation dialog subset; button layout and escape handling follow Godot `AcceptDialog`. |
-| `<Pressable>` | `html` | `partial` | `PanelContainer` with `Control.gui_input`, focus, and mouse signals | All Godot UI targets | None | Unit, html-demo | Mouse/touch/keyboard/controller activation depends on Godot focused Control input; ARIA-style roles are not implemented yet. |
+| `<Pressable>` | `html` | `partial` | `PanelContainer` with `Control.gui_input`, focus, and mouse signals | All Godot UI targets | None | Unit, html-demo | Mouse/touch/keyboard/controller activation depends on Godot focused Control input; labels and hints map to `tooltip_text`; ARIA-style roles are not implemented yet. |
 | `<Form>` | `html` | `partial` | `PanelContainer` plus inner `<Div>` content wrapper | All Godot UI targets | None | Unit, html-demo | Emits `submit` from `ui_accept` and optional `reset` from `ui_cancel`; not a browser DOM form and does not serialize controls. |
-| `<Label>` | `html` | `partial` | `Label` plus optional inner `<Div>` wrapper | All Godot UI targets | None | Unit, html-demo | Groups label text with slot content visually; browser `for` / `id` focus binding and ARIA labeling are not implemented yet. |
+| `<Label>` | `html` | `partial` | `Label` plus optional inner `<Div>` wrapper | All Godot UI targets | None | Unit, html-demo | Groups label text with slot content visually; browser `for` / `id` focus binding is not implemented; labels and hints map to `tooltip_text`. |
 | `<Screen>` | `html` | `partial` | `Control` / `PanelContainer` plus inner `<Div>` content wrapper | All Godot UI targets | None | Unit, html-demo | Full-parent app screen surface; not tied to OS windows or browser navigation. |
 | `<ScreenStack>` | `html` | `partial` | `<Screen>` plus route-name named-slot rendering | All Godot UI targets | None | Unit, html-demo | In-memory native-style screen stack helper; Vue Router, deep links, Android back handling, and tab/modal route examples are separate routing work. |
 | `<SafeAreaView>` | `html` | `partial` | `DisplayServer.get_display_safe_area()` plus `MarginContainer` | Android cutouts where Godot reports safe area; desktop/editor usually zero insets | None | Unit, html-demo | Safe-area metrics follow Godot `DisplayServer`; `fallbackInsets` can provide deterministic padding where metrics are unavailable. |
 | `<KeyboardAvoidingView>` | `html` | `partial` | `DisplayServer.virtual_keyboard_get_height()` plus `MarginContainer` | Android, iOS, and Web exports where Godot reports virtual keyboard height; desktop/editor usually zero height | None | Unit, html-demo | Default padding behavior is most reliable inside Godot containers; position/height modes depend on parent layout and explicit sizing. |
-| `<Switch>` | `html` | `partial` | `CheckButton` | All Godot UI targets | None | Unit, html-demo | Binary toggle subset; accessibility metadata is limited. |
-| `<Button>` | `html` | `partial` | `Button` | All Godot UI targets | None | Unit, html-demo | Click maps to Godot pressed signal; accessibility is limited. |
-| `<Input>` | `html` | `partial` | `LineEdit`, `CheckBox`, `ButtonGroup`, `HSlider` | All Godot UI targets | None | Unit, html-demo | Supports text, password, checkbox, radio, and range subsets. |
-| `<Textarea>` | `html` | `partial` | `TextEdit` | All Godot UI targets | None | Unit, html-demo | Text editing subset; browser selection APIs are not implemented. |
-| `<Select>` / `<Option>` | `html` | `partial` | `OptionButton` | All Godot UI targets | None | Unit, html-demo | Option model subset; not a native HTML select. |
-| `<Img>` | `html` | `partial` | `TextureRect`, `ResourceLoader`, browser blob/data helpers | All Godot UI targets | Asset import/export paths must be valid | Unit, html-demo | Supports Godot paths, relative `res://` resolution, data/blob/remote sources where loaders support them. |
-| `<Svg>` | `html` | `partial` | `TextureRect`, SVG/image loaders | All Godot UI targets | Asset import/export paths must be valid | Unit, html-demo | SVG rendering depends on Godot image support and conversion path. |
-| `<A>` | `html` | `partial` | `LinkButton` / Godot URI handling | All Godot UI targets | OS URI handling availability | Unit, html-demo | Opens through Godot link behavior; no browser navigation context. |
+| `<Switch>` | `html` | `partial` | `CheckButton` | All Godot UI targets | None | Unit, html-demo | Binary toggle subset; labels and hints map to `tooltip_text`. |
+| `<Button>` | `html` | `partial` | `Button` | All Godot UI targets | None | Unit, html-demo | Click maps to Godot pressed signal; labels and hints map to `tooltip_text`. |
+| `<Input>` | `html` | `partial` | `LineEdit`, `CheckBox`, `ButtonGroup`, `HSlider` | All Godot UI targets | None | Unit, html-demo | Supports text, password, checkbox, radio, and range subsets; labels and hints map to `tooltip_text`. |
+| `<Textarea>` | `html` | `partial` | `TextEdit` | All Godot UI targets | None | Unit, html-demo | Text editing subset with tooltip-backed labels and hints; browser selection APIs are not implemented. |
+| `<Select>` / `<Option>` | `html` | `partial` | `OptionButton` | All Godot UI targets | None | Unit, html-demo | Option model subset with tooltip-backed labels and hints; not a native HTML select. |
+| `<Img>` | `html` | `partial` | `TextureRect`, `ResourceLoader`, browser blob/data helpers | All Godot UI targets | Asset import/export paths must be valid | Unit, html-demo | Supports Godot paths, relative `res://` resolution, data/blob/remote sources where loaders support them; `alt` falls back to `tooltip_text`. |
+| `<Svg>` | `html` | `partial` | `TextureRect`, SVG/image loaders | All Godot UI targets | Asset import/export paths must be valid | Unit, html-demo | SVG rendering depends on Godot image support and conversion path; `alt` falls back to `tooltip_text`. |
+| `<A>` | `html` | `partial` | `LinkButton` / Godot URI handling | All Godot UI targets | OS URI handling availability | Unit, html-demo | Opens through Godot link behavior; no browser navigation context; `href` falls back to tooltip hint text when enabled. |
 | `<Audio>` | `html` | `partial` | `AudioStreamPlayer` | Platforms with audio output | Audio asset import/export paths | Unit, html-demo | Browser media element API is not complete. |
 | `<Video>` | `html` | `partial` | `VideoStreamPlayer` | Platforms/codecs supported by Godot | Video asset import/export paths | Unit, html-demo | Codec/platform support follows Godot. |
 | `<Canvas>` | `html` | `partial` | `Control` | All Godot UI targets | None | Unit, html-demo | No `getContext('2d')`; use Godot drawing through template refs. |

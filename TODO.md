@@ -166,6 +166,8 @@ The project is production ready only when all of these are true:
   - [ ] Controller/gamepad navigation.
   - [ ] Touch target behavior.
   - [ ] Accessible names, roles, labels, and hints where Godot exposes equivalents.
+    - [x] Map accessible names, labels, hints, and titles to Godot `tooltip_text` on Control-backed components.
+    - [ ] Map roles if supported Godot bindings expose a native accessibility role API.
   - [ ] Document platform limitations honestly.
 
 ## P0: Native Device APIs

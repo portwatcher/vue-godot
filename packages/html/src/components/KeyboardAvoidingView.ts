@@ -1,5 +1,9 @@
 import { defineComponent, h } from '@vue/runtime-core'
 import {
+  accessibilityPropOptions,
+  applyAccessibilityProps,
+} from '../utils/accessibility.js'
+import {
   createBackgroundPanelStyle,
   createBackgroundTexturePanelProps,
   createBackgroundTexturePanelStyle,
@@ -40,6 +44,7 @@ export const KeyboardAvoidingView = defineComponent({
       type: Number,
       default: 0,
     },
+    ...accessibilityPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -71,6 +76,7 @@ export const KeyboardAvoidingView = defineComponent({
         props.style,
         'KeyboardAvoidingView',
       )
+      applyAccessibilityProps(nodeProps, props)
 
       const adjustedHeight =
         behavior === 'height'

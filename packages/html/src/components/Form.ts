@@ -1,5 +1,9 @@
 import { defineComponent, h } from '@vue/runtime-core'
 import {
+  accessibilityPropOptions,
+  applyAccessibilityProps,
+} from '../utils/accessibility.js'
+import {
   createBackgroundPanelStyle,
   createBackgroundTexturePanelProps,
   createBackgroundTexturePanelStyle,
@@ -28,6 +32,7 @@ export const Form = defineComponent({
       type: Boolean,
       default: false,
     },
+    ...accessibilityPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -65,6 +70,7 @@ export const Form = defineComponent({
       }
 
       applyCommonControlStyleProps(nodeProps, props.style, 'Form')
+      applyAccessibilityProps(nodeProps, props)
 
       const backgroundStyle = createBackgroundPanelStyle(props.style)
       const backgroundTextureStyle = createBackgroundTexturePanelStyle(

@@ -158,6 +158,22 @@ registerFontFamily('Inter', './fonts/Inter.ttf', [
 
 Percent `width` and `height` values map to Godot `Control` anchors from the top-left corner, for example `width: '50%'` sets `anchor_left = 0`, `anchor_right = 0.5`, and zero horizontal offsets. Godot `Container` nodes may still override child anchors during layout; use flex and size flags for proportional container layouts.
 
+### Accessibility Metadata
+
+Most Control-backed components accept `accessibilityLabel`, `ariaLabel`, `aria-label`, `accessibilityHint`, and `title`. These map to Godot `Control.tooltip_text`, the stable metadata surface exposed by the supported Godot bindings:
+
+```vue
+<Button
+  aria-label="Save changes"
+  accessibility-hint="Writes settings to storage"
+  @click="save"
+>
+  Save
+</Button>
+```
+
+When both a label and hint are provided, the tooltip text is joined on separate lines. `<Img>` and `<Svg>` use `alt` as a fallback label, while `<A>` keeps `href` as a fallback hint. Native ARIA role mapping is not implemented because the checked-in Godot bindings do not expose a portable `Control` role property yet.
+
 ## Component Mapping
 
 | HTML-like Component | Godot Node                                                             | Key Props             |
@@ -194,6 +210,7 @@ Percent `width` and `height` values map to Godot `Control` anchors from the top-
 | API                                                                                                                                    | Description                                                                                              |
 | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Dialog`, `Div`, `Form`, `Img`, `Input`, `KeyboardAvoidingView`, `Label`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `SafeAreaView`, `Screen`, `ScreenStack`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`, `VirtualList`) | Vue components backed by Godot nodes                                                                     |
+| Shared accessibility props (`accessibilityLabel`, `ariaLabel`, `aria-label`, `accessibilityHint`, `title`)                              | Tooltip-backed labels and hints for Control-backed components                                            |
 | `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
 | `registerFontFamily`, `unregisterFontFamily`, `parseFontFamilyList`                                                                     | Registers CSS `fontFamily` names to local Godot font resources and parses CSS fallback lists              |
@@ -669,6 +686,7 @@ This package is in early development. Currently scaffolded:
 - [x] Theme override application (colors via `backgroundColor` and text `color`, bold text via `FontVariation`)
 - [x] Registered/local font family loading with fallback fonts
 - [x] Percent width/height mapping to Control anchors
+- [x] Tooltip-backed accessibility labels and hints on Control components
 - [x] Theme override application (margin wrappers plus `StyleBoxFlat` border and corner radius props)
 - [x] Texture-backed background images via `backgroundImage: url(...)`
 - [x] Basic transform mapping (`translate`, `scale`, `rotate`)

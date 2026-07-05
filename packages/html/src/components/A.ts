@@ -1,5 +1,9 @@
 import { defineComponent, h } from '@vue/runtime-core'
 import {
+  accessibilityPropOptions,
+  applyAccessibilityProps,
+} from '../utils/accessibility.js'
+import {
   applyCommonControlStyleProps,
   type GodotPropBag,
 } from '../utils/controlStyle.js'
@@ -27,6 +31,7 @@ export const A = defineComponent({
       type: Boolean,
       default: false,
     },
+    ...accessibilityPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -50,6 +55,9 @@ export const A = defineComponent({
       }
 
       applyCommonControlStyleProps(nodeProps, props.style, 'A')
+      applyAccessibilityProps(nodeProps, props, {
+        hint: props.disabled ? undefined : props.href,
+      })
 
       return h('LinkButton', nodeProps)
     }

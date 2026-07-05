@@ -1,5 +1,9 @@
 import { defineComponent, h } from '@vue/runtime-core'
 import {
+  accessibilityPropOptions,
+  applyAccessibilityProps,
+} from '../utils/accessibility.js'
+import {
   applyControlSizeProps,
   applyDisplayAndOpacityProps,
   applyFontStyleProps,
@@ -141,6 +145,7 @@ export const Input = defineComponent({
       type: Number,
       default: undefined,
     },
+    ...accessibilityPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -247,6 +252,7 @@ export const Input = defineComponent({
       }
       applyDisplayAndOpacityProps(nodeProps, style)
       applyTransformStyleProps(nodeProps, style)
+      applyAccessibilityProps(nodeProps, props)
 
       return h(mapping.tag, nodeProps)
     }

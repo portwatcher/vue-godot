@@ -11,6 +11,10 @@ import type {
   VNodeNormalizedChildren,
 } from '@vue/runtime-core'
 import {
+  accessibilityPropOptions,
+  applyAccessibilityProps,
+} from '../utils/accessibility.js'
+import {
   createBackgroundPanelStyle,
   createBackgroundTexturePanelProps,
   createBackgroundTexturePanelStyle,
@@ -206,6 +210,7 @@ function withThemeConstantOverrides(
 export const Div = defineComponent({
   name: 'Div',
   props: {
+    ...accessibilityPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: () => ({}),
@@ -222,6 +227,7 @@ export const Div = defineComponent({
         themeOverrides,
         props: godotProps,
       } = resolveContainerTag(style)
+      applyAccessibilityProps(godotProps, props)
       applyTransformStyleProps(godotProps, style)
       const slotChildren = slots.default?.()
       const childrenWithLayout = mapChildrenForContainerLayout(

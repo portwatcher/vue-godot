@@ -78,8 +78,8 @@ function setStreamLoop(stream: AudioStream, loop: boolean): void {
  * or visibility. Style props are intentionally not supported.
  *
  * Usage:
- *   <Audio src="./assets/music.ogg" autoplay loop />
- *   <Audio src="res://sfx/click.wav" :volume="0.5" @ended="onEnd" />
+ *   <Audio src="./assets/music.ogg" autoplay loop></Audio>
+ *   <Audio src="res://sfx/click.wav" :volume="0.5" @ended="onEnd"></Audio>
  */
 export const Audio = defineComponent({
   name: 'Audio',

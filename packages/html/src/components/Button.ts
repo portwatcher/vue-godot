@@ -1,4 +1,8 @@
 import { defineComponent, h } from '@vue/runtime-core'
+import {
+  accessibilityPropOptions,
+  applyAccessibilityProps,
+} from '../utils/accessibility.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
@@ -39,6 +43,7 @@ export const Button = defineComponent({
       type: Boolean,
       default: false,
     },
+    ...accessibilityPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -64,6 +69,7 @@ export const Button = defineComponent({
       }
 
       applyCommonControlStyleProps(nodeProps, style, 'Button')
+      applyAccessibilityProps(nodeProps, props)
 
       return h('Button', nodeProps)
     }

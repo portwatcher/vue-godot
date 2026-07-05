@@ -1,5 +1,9 @@
 import { defineComponent, h } from '@vue/runtime-core'
 import {
+  accessibilityPropOptions,
+  applyAccessibilityProps,
+} from '../utils/accessibility.js'
+import {
   type GodotPropBag,
 } from '../utils/controlStyle.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
@@ -32,6 +36,7 @@ import { applyLabelTextStyleProps } from '../utils/textLabel.js'
 export const Span = defineComponent({
   name: 'Span',
   props: {
+    ...accessibilityPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -44,6 +49,7 @@ export const Span = defineComponent({
 
       nodeProps['text'] = extractTextFromSlot(slots.default)
       applyLabelTextStyleProps(nodeProps, style, 'Span')
+      applyAccessibilityProps(nodeProps, props)
 
       return h('Label', nodeProps)
     }

@@ -1,5 +1,9 @@
 import { defineComponent, h } from '@vue/runtime-core'
 import {
+  accessibilityPropOptions,
+  applyAccessibilityProps,
+} from '../utils/accessibility.js'
+import {
   createBackgroundPanelStyle,
   createBackgroundTexturePanelProps,
   createBackgroundTexturePanelStyle,
@@ -32,6 +36,7 @@ export const Overlay = defineComponent({
       type: Boolean,
       default: true,
     },
+    ...accessibilityPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -66,6 +71,7 @@ export const Overlay = defineComponent({
       }
 
       applyCommonControlStyleProps(nodeProps, props.style, 'Overlay')
+      applyAccessibilityProps(nodeProps, props)
 
       const backgroundStyle = createBackgroundPanelStyle(props.style)
       const backgroundTextureStyle = createBackgroundTexturePanelStyle(

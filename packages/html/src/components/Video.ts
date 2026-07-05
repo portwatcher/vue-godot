@@ -1,6 +1,10 @@
 import { defineComponent, h, ref, shallowRef, watch } from '@vue/runtime-core'
 import type { VideoStream } from 'godot'
 import {
+  accessibilityPropOptions,
+  applyAccessibilityProps,
+} from '../utils/accessibility.js'
+import {
   applyControlSizeProps,
   applyTransformStyleProps,
 } from '../utils/controlStyle.js'
@@ -79,6 +83,7 @@ export const Video = defineComponent({
       type: Number,
       default: 1,
     },
+    ...accessibilityPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -168,6 +173,7 @@ export const Video = defineComponent({
         emit('ended')
       }
       applyTransformStyleProps(nodeProps, style)
+      applyAccessibilityProps(nodeProps, props)
 
       return h('VideoStreamPlayer', nodeProps)
     }

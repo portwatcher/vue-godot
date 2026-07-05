@@ -2,6 +2,10 @@ import { defineComponent, h, ref, shallowRef, watch } from '@vue/runtime-core'
 import type { Texture2D } from 'godot'
 import { Image, ImageTexture, ResourceLoader } from 'godot'
 import {
+  accessibilityPropOptions,
+  applyAccessibilityProps,
+} from '../utils/accessibility.js'
+import {
   applyControlSizeProps,
   applyTransformStyleProps,
 } from '../utils/controlStyle.js'
@@ -182,6 +186,7 @@ export const Svg = defineComponent({
       type: String,
       default: undefined,
     },
+    ...accessibilityPropOptions,
   },
   setup(props) {
     const texture = shallowRef<Texture2D | null>(null)
@@ -288,6 +293,9 @@ export const Svg = defineComponent({
       if (props.alt) {
         nodeProps['tooltip_text'] = props.alt
       }
+      applyAccessibilityProps(nodeProps, props, {
+        label: props.alt,
+      })
 
       // display: none
       if (style?.display === 'none') {

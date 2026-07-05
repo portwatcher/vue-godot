@@ -1,4 +1,8 @@
 import { defineComponent, h } from '@vue/runtime-core'
+import {
+  accessibilityPropOptions,
+  applyAccessibilityProps,
+} from '../utils/accessibility.js'
 import { applyTransformStyleProps } from '../utils/controlStyle.js'
 import { createOpacityModulate } from '../utils/godotColor.js'
 import {
@@ -57,6 +61,7 @@ export const Canvas = defineComponent({
       type: Number,
       default: DEFAULT_HEIGHT,
     },
+    ...accessibilityPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -101,6 +106,7 @@ export const Canvas = defineComponent({
         nodeProps['modulate'] = createOpacityModulate(style.opacity)
       }
       applyTransformStyleProps(nodeProps, style)
+      applyAccessibilityProps(nodeProps, props)
 
       return h('Control', nodeProps)
     }

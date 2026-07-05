@@ -1,5 +1,9 @@
 import { defineComponent, h } from '@vue/runtime-core'
 import {
+  accessibilityPropOptions,
+  applyAccessibilityProps,
+} from '../utils/accessibility.js'
+import {
   type GodotPropBag,
 } from '../utils/controlStyle.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
@@ -28,6 +32,7 @@ export const Label = defineComponent({
       type: String,
       default: ' *',
     },
+    ...accessibilityPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -50,6 +55,7 @@ export const Label = defineComponent({
       }
 
       applyLabelTextStyleProps(nodeProps, props.style, 'Label')
+      applyAccessibilityProps(nodeProps, props)
 
       const labelNode = h('Label', nodeProps)
       if (props.text == null || !slotChildren || slotChildren.length === 0) {

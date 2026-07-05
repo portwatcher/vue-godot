@@ -1,4 +1,8 @@
 import { defineComponent, h } from '@vue/runtime-core'
+import {
+  accessibilityPropOptions,
+  applyAccessibilityProps,
+} from '../utils/accessibility.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
@@ -21,6 +25,7 @@ export const Switch = defineComponent({
       type: Boolean,
       default: false,
     },
+    ...accessibilityPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -47,6 +52,7 @@ export const Switch = defineComponent({
       }
 
       applyCommonControlStyleProps(nodeProps, props.style, 'Switch')
+      applyAccessibilityProps(nodeProps, props)
 
       return h('CheckButton', nodeProps)
     }
