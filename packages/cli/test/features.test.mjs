@@ -4,6 +4,7 @@ import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
 
+import { resolveCreateProfile } from '../dist/create.js'
 import { integrate, newPackageJson } from '../dist/integrate.js'
 
 function createTempDir() {
@@ -36,6 +37,30 @@ test('newPackageJson keeps legacy html boolean behavior', () => {
   assert.equal(pkg.dependencies['@vue-godot/browser'], '^0.0.1')
   assert.equal(pkg.dependencies['@vue-godot/device'], '^0.0.1')
   assert.equal(pkg.dependencies['@vue-godot/html'], '^0.0.1')
+})
+
+test('create app profile enables html and device support', () => {
+  assert.deepEqual(resolveCreateProfile({ profile: 'app' }), {
+    html: true,
+    device: true,
+    htmlStarter: 'app',
+  })
+})
+
+test('create game-ui profile enables html without device by default', () => {
+  assert.deepEqual(resolveCreateProfile({ profile: 'game-ui' }), {
+    html: true,
+    device: false,
+    htmlStarter: 'game-ui',
+  })
+})
+
+test('create game-ui profile accepts explicit device support', () => {
+  assert.deepEqual(resolveCreateProfile({ profile: 'game-ui', device: true }), {
+    html: true,
+    device: true,
+    htmlStarter: 'game-ui',
+  })
 })
 
 test('integrate adds @vue-godot/device without enabling html mode', async () => {

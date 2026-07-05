@@ -12,11 +12,20 @@ import {
   newPackageJson,
 } from './integrate.js'
 
+export type CreateProfile = 'app' | 'game-ui'
+
+export interface ResolvedCreateProfile {
+  html: boolean
+  device: boolean
+  htmlStarter: 'default' | CreateProfile
+}
+
 export interface CreateOptions {
   projectName: string
   force: boolean
   html?: boolean
   device?: boolean
+  profile?: CreateProfile
 }
 
 function runCommand(
@@ -46,8 +55,38 @@ function runCommand(
   })
 }
 
+export function resolveCreateProfile(options: {
+  html?: boolean
+  device?: boolean
+  profile?: CreateProfile
+}): ResolvedCreateProfile {
+  switch (options.profile) {
+    case 'app':
+      return {
+        html: true,
+        device: true,
+        htmlStarter: 'app',
+      }
+
+    case 'game-ui':
+      return {
+        html: true,
+        device: options.device === true,
+        htmlStarter: 'game-ui',
+      }
+
+    default:
+      return {
+        html: options.html === true,
+        device: options.device === true,
+        htmlStarter: 'default',
+      }
+  }
+}
+
 export async function create(options: CreateOptions): Promise<void> {
-  const { projectName, force, html, device } = options
+  const { projectName, force } = options
+  const { html, device, htmlStarter } = resolveCreateProfile(options)
   const absTarget = path.resolve(projectName)
   const packageName = path.basename(absTarget)
 
@@ -132,7 +171,7 @@ export async function create(options: CreateOptions): Promise<void> {
     )
 
     const appVuePath = path.join(vueDir, 'src', 'App.vue')
-    fs.writeFileSync(appVuePath, generateHtmlAppVue())
+    fs.writeFileSync(appVuePath, generateHtmlAppVue(htmlStarter))
     console.log(
       `  updated ${path.relative(process.cwd(), appVuePath)} (html mode)`,
     )

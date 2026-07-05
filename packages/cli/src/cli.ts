@@ -2,7 +2,7 @@
 
 import * as path from 'node:path'
 import * as readline from 'node:readline/promises'
-import { create } from './create.js'
+import { create, type CreateProfile } from './create.js'
 import { printDoctorReport, runDoctor } from './doctor.js'
 import { generate } from './index.js'
 import { integrate } from './integrate.js'
@@ -81,16 +81,18 @@ function parseGenTypesArgs(argv: string[]) {
 
 function createUsage(): never {
   console.error(
-    `Usage: vue-godot create [name] [options]
+    `Usage: vue-godot create [profile] [name] [options]
 
 Create a new Godot project with vue-godot set up and ready to go.
 If no name is given you will be prompted for one.
 
 Arguments:
+  profile     Optional project profile: app or game-ui
   name        Project name (used as directory name)
 
 Options:
   -f          Force overwrite if directory already exists
+  --profile   Project profile: app or game-ui
   --html      Enable @vue-godot/html support (HTML-like components on Godot nodes)
   --device    Add @vue-godot/device for native/device adapter APIs
 `,
@@ -98,16 +100,48 @@ Options:
   process.exit(1)
 }
 
+function isCreateProfile(value: string): value is CreateProfile {
+  return value === 'app' || value === 'game-ui'
+}
+
+function readCreateProfile(value: string | undefined): CreateProfile {
+  if (value && isCreateProfile(value)) {
+    return value
+  }
+  console.error(
+    value
+      ? `Unknown create profile: ${value}`
+      : 'Missing profile after --profile',
+  )
+  createUsage()
+}
+
+function setCreateProfile(
+  current: CreateProfile | undefined,
+  next: CreateProfile,
+): CreateProfile {
+  if (current && current !== next) {
+    console.error(`Conflicting create profiles: ${current} and ${next}`)
+    createUsage()
+  }
+  return next
+}
+
 function parseCreateArgs(argv: string[]) {
   let projectName: string | undefined
+  let profile: CreateProfile | undefined
   let force = false
   let html = false
   let device = false
 
   for (let i = 0; i < argv.length; i++) {
-    switch (argv[i]) {
+    const arg = argv[i]
+    switch (arg) {
       case '-f':
         force = true
+        break
+      case '--profile':
+        profile = setCreateProfile(profile, readCreateProfile(argv[++i]))
         break
       case '--html':
         html = true
@@ -119,20 +153,24 @@ function parseCreateArgs(argv: string[]) {
       case '-h':
         createUsage()
       default:
-        if (argv[i].startsWith('-')) {
-          console.error(`Unknown option: ${argv[i]}`)
+        if (arg.startsWith('-')) {
+          console.error(`Unknown option: ${arg}`)
           createUsage()
         }
+        if (!projectName && !profile && isCreateProfile(arg)) {
+          profile = arg
+          break
+        }
         if (!projectName) {
-          projectName = argv[i]
+          projectName = arg
         } else {
-          console.error(`Unexpected argument: ${argv[i]}`)
+          console.error(`Unexpected argument: ${arg}`)
           createUsage()
         }
     }
   }
 
-  return { projectName, force, html, device }
+  return { projectName, profile, force, html, device }
 }
 
 function integrateUsage(): never {
@@ -261,6 +299,7 @@ switch (command) {
       force: parsed.force,
       html: parsed.html,
       device: parsed.device,
+      profile: parsed.profile,
     })
     break
   }

@@ -15,6 +15,8 @@ export interface ProjectFeatureOptions {
   device?: boolean
 }
 
+export type HtmlStarterProfile = 'default' | 'app' | 'game-ui'
+
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                           */
 /* ------------------------------------------------------------------ */
@@ -367,7 +369,7 @@ export default class Root extends VBoxContainer {
 `
 }
 
-export function generateHtmlAppVue(): string {
+function generateDefaultHtmlAppVue(): string {
   return `<template>
   <Div
     :style="{
@@ -398,6 +400,237 @@ const count = ref(0)
 const name = ref('')
 </script>
 `
+}
+
+function generateNativeAppVue(): string {
+  return `<template>
+  <SafeAreaView
+    :style="{
+      padding: 16,
+      backgroundColor: '#172033',
+      width: '100%',
+      height: '100%',
+    }"
+  >
+    <Screen
+      :style="{ backgroundColor: '#f8fafc', borderRadius: 6 }"
+      :content-style="{ gap: 12, padding: 16, width: 560 }"
+    >
+      <Span :style="{ fontSize: 22, fontWeight: 'bold', color: '#172033' }">
+        Native App Starter
+      </Span>
+      <Span :style="{ color: '#475569' }">
+        Signed in as {{ displayName || 'guest' }}
+      </Span>
+
+      <Form :content-style="{ gap: 10 }">
+        <Label>Display name</Label>
+        <Input
+          v-model="displayName"
+          placeholder="Player or account name"
+          :min-touch-target="44"
+        ></Input>
+        <Switch v-model="offlineQueue" label="Queue changes while offline"></Switch>
+        <Button @click="saveProfile">Save profile</Button>
+      </Form>
+
+      <Div
+        :style="{
+          flexDirection: 'column',
+          gap: 6,
+          padding: 12,
+          backgroundColor: '#e2e8f0',
+          borderRadius: 6,
+        }"
+      >
+        <Span :style="{ color: '#0f172a' }">Network: {{ networkLabel }}</Span>
+        <Span :style="{ color: '#0f172a' }">
+          Share adapter: {{ shareLabel }}
+        </Span>
+        <Span :style="{ color: '#0f172a' }">Saved profile: {{ savedLabel }}</Span>
+      </Div>
+
+      <Button @click="refreshCapabilities">Refresh adapter status</Button>
+    </Screen>
+  </SafeAreaView>
+</template>
+
+<script setup lang="ts">
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { isSupported } from '@vue-godot/device'
+
+const displayName = ref(localStorage.getItem('profile:name') ?? '')
+const savedName = ref(displayName.value)
+const offlineQueue = ref(localStorage.getItem('settings:offlineQueue') === 'true')
+const networkOnline = ref(navigator.onLine)
+const checkedShare = ref(false)
+const shareReady = ref(false)
+
+const networkLabel = computed(() => (networkOnline.value ? 'online' : 'offline'))
+const savedLabel = computed(() => savedName.value || 'not saved')
+const shareLabel = computed(() => {
+  if (!checkedShare.value) {
+    return 'not checked'
+  }
+  return shareReady.value ? 'registered' : 'not registered'
+})
+
+function saveProfile() {
+  localStorage.setItem('profile:name', displayName.value)
+  localStorage.setItem('settings:offlineQueue', String(offlineQueue.value))
+  savedName.value = displayName.value
+}
+
+async function refreshCapabilities() {
+  shareReady.value = await isSupported('share')
+  checkedShare.value = true
+}
+
+function handleOnline() {
+  networkOnline.value = true
+}
+
+function handleOffline() {
+  networkOnline.value = false
+}
+
+onMounted(() => {
+  addEventListener('online', handleOnline)
+  addEventListener('offline', handleOffline)
+  void refreshCapabilities()
+})
+
+onUnmounted(() => {
+  removeEventListener('online', handleOnline)
+  removeEventListener('offline', handleOffline)
+})
+</script>
+`
+}
+
+function generateGameUiAppVue(): string {
+  return `<template>
+  <Screen
+    :style="{ backgroundColor: '#111827' }"
+    :content-style="{ gap: 14, padding: 16, width: 620 }"
+  >
+    <Div
+      :style="{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        padding: 12,
+        backgroundColor: '#243447',
+        borderRadius: 6,
+      }"
+    >
+      <Div :style="{ flex: 1, gap: 4 }">
+        <Span :style="{ fontSize: 22, fontWeight: 'bold', color: '#f8fafc' }">
+          Scout HUD
+        </Span>
+        <Span :style="{ color: '#cbd5e1' }">{{ selectedActionLabel }}</Span>
+      </Div>
+      <Progress
+        :value="health"
+        :max="100"
+        :style="{ width: 180, height: 18 }"
+      ></Progress>
+    </Div>
+
+    <Div :style="{ flexDirection: 'row', gap: 10 }">
+      <Pressable
+        v-for="action in actions"
+        :key="action"
+        :style="actionStyle(action)"
+        :min-touch-target="48"
+        @press="selectAction(action)"
+      >
+        <Span :style="{ color: '#f8fafc', fontWeight: 'bold' }">
+          {{ actionLabels[action] }}
+        </Span>
+      </Pressable>
+    </Div>
+
+    <Div
+      :style="{
+        flexDirection: 'column',
+        gap: 10,
+        padding: 12,
+        backgroundColor: '#f8fafc',
+        borderRadius: 6,
+      }"
+    >
+      <Span :style="{ color: '#172033', fontWeight: 'bold' }">
+        Session Controls
+      </Span>
+      <Input
+        v-model="volume"
+        type="range"
+        :min="0"
+        :max="100"
+        :step="1"
+      ></Input>
+      <Span :style="{ color: '#475569' }">Volume {{ volume }}%</Span>
+      <Switch v-model="paused" label="Paused"></Switch>
+      <Button @click="usePotion">Use potion</Button>
+    </Div>
+  </Screen>
+</template>
+
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import type { HtmlStyle } from '@vue-godot/html'
+
+type ActionKey = 'inventory' | 'map' | 'settings'
+
+const actionLabels: Record<ActionKey, string> = {
+  inventory: 'Inventory',
+  map: 'Map',
+  settings: 'Settings',
+}
+const actions: ActionKey[] = ['inventory', 'map', 'settings']
+const selectedAction = ref<ActionKey>('inventory')
+const health = ref(72)
+const volume = ref(64)
+const paused = ref(false)
+
+const selectedActionLabel = computed(() => actionLabels[selectedAction.value])
+
+function selectAction(action: ActionKey) {
+  selectedAction.value = action
+}
+
+function actionStyle(action: ActionKey): HtmlStyle {
+  const selected = selectedAction.value === action
+  return {
+    flex: 1,
+    padding: 12,
+    backgroundColor: selected ? '#2563eb' : '#334155',
+    borderColor: selected ? '#bfdbfe' : '#475569',
+    borderStyle: 'solid',
+    borderWidth: 1,
+    borderRadius: 6,
+  }
+}
+
+function usePotion() {
+  health.value = Math.min(100, health.value + 8)
+}
+</script>
+`
+}
+
+export function generateHtmlAppVue(
+  starter: HtmlStarterProfile = 'default',
+): string {
+  switch (starter) {
+    case 'app':
+      return generateNativeAppVue()
+    case 'game-ui':
+      return generateGameUiAppVue()
+    default:
+      return generateDefaultHtmlAppVue()
+  }
 }
 
 /* ------------------------------------------------------------------ */

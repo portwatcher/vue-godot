@@ -23,16 +23,18 @@ npx @vue-godot/cli <command> [options]
 Create a new Godot project with vue-godot set up and ready to go.
 
 ```bash
-vue-godot create [name] [options]
+vue-godot create [profile] [name] [options]
 ```
 
-| Argument | Description                                           |
-| -------- | ----------------------------------------------------- |
-| `name`   | Project name (used as dir name). Prompted if omitted. |
+| Argument  | Description                                           |
+| --------- | ----------------------------------------------------- |
+| `profile` | Optional profile: `app` or `game-ui`                  |
+| `name`    | Project name (used as dir name). Prompted if omitted. |
 
 | Option     | Description                                                       |
 | ---------- | ----------------------------------------------------------------- |
 | `-f`       | Force overwrite if directory already exists                       |
+| `--profile` | Project profile: `app` or `game-ui`                             |
 | `--html`   | Enable `@vue-godot/html` — HTML-like components on Godot nodes    |
 | `--device` | Add `@vue-godot/device` for native/device adapter APIs            |
 
@@ -52,10 +54,19 @@ When `--device` is set without `--html`, the scaffolded project includes
 `@vue-godot/device` for direct native/device adapter APIs, but it does not add
 browser globals or HTML components.
 
+Profiles are shortcuts for common starter shapes:
+
+- `vue-godot create app my-app` creates an app-oriented HTML starter with
+  browser APIs and `@vue-godot/device` included for native adapter registration.
+- `vue-godot create game-ui my-game-ui` creates a game UI starter with
+  HTML-like HUD controls and no device dependency unless `--device` is also set.
+
 **Example:**
 
 ```bash
 npx @vue-godot/cli create my-game --html
+npx @vue-godot/cli create app my-native-app
+npx @vue-godot/cli create game-ui my-hud
 cd my-game
 npm run dev
 ```

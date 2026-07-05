@@ -180,9 +180,9 @@ async function smokeWatchRebuild(target, env) {
   }
 }
 
-function smokeProject(cliPath, workspaceDir, name, extraArgs, env) {
+function smokeProject(cliPath, workspaceDir, name, createArgs, env) {
   const target = path.join(workspaceDir, name)
-  run(nodeCommand, [cliPath, 'create', target, '-f', ...extraArgs], {
+  run(nodeCommand, [cliPath, 'create', ...createArgs, target, '-f'], {
     env,
     stdio: 'inherit',
   })
@@ -227,4 +227,26 @@ assertVueSourceIgnoredByGodot(htmlAppDir)
 assertGeneratedOutputIgnoredByGodot(htmlAppDir)
 assertHtmlVolarPluginConfigured(htmlAppDir)
 await smokeWatchRebuild(htmlAppDir, env)
-console.log('[smoke-cli] create and create --html smoke checks passed')
+const nativeAppDir = smokeProject(
+  cliPath,
+  workspaceDir,
+  'native-app',
+  ['app'],
+  env,
+)
+assertProductionSupportConfigured(nativeAppDir)
+assertVueSourceIgnoredByGodot(nativeAppDir)
+assertGeneratedOutputIgnoredByGodot(nativeAppDir)
+assertHtmlVolarPluginConfigured(nativeAppDir)
+const gameUiAppDir = smokeProject(
+  cliPath,
+  workspaceDir,
+  'game-ui-app',
+  ['game-ui'],
+  env,
+)
+assertProductionSupportConfigured(gameUiAppDir)
+assertVueSourceIgnoredByGodot(gameUiAppDir)
+assertGeneratedOutputIgnoredByGodot(gameUiAppDir)
+assertHtmlVolarPluginConfigured(gameUiAppDir)
+console.log('[smoke-cli] create profile smoke checks passed')
