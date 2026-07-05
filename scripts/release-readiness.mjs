@@ -962,6 +962,7 @@ function collectReadinessNextActions(checks, commit, localGit) {
       commands: [
         `npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit ${releaseCommit}`,
         'npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json',
+        'npm run check',
         `npm run release:readiness -- --expected-commit ${releaseCommit}`,
       ],
     })

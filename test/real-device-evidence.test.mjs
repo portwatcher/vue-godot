@@ -423,6 +423,7 @@ test('check-real-device-evidence writes validation errors before failing', () =>
       summary.nextActions.some(
         (action) =>
           action.id === 'fix-real-device-evidence' &&
+          action.commands[0] === 'npm run check' &&
           action.commands.some((command) =>
             command.includes('--real-device-output release/real-device-evidence.json'),
           ),

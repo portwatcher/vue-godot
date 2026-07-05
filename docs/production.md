@@ -29,8 +29,9 @@ component coverage.
 evidence JSON when it exists. Add
 `--summary-output release/real-device-evidence-summary.json` to write
 validation status, errors, and `nextActions` command hints for fixing or
-creating evidence; missing-evidence assembly hints begin with `npm run check`
-before release CI is collected. `release:preflight` verifies package metadata,
+creating evidence; missing-evidence assembly and invalid-evidence regeneration
+hints begin with `npm run check` before release CI or evidence regeneration
+runs. `release:preflight` verifies package metadata,
 generated package specs, dry-run package contents including every
 `package.json` export target, registry state, publish environment assumptions,
 dependency audit status, serious example app readiness, Godot smoke, real
@@ -106,7 +107,9 @@ hints for the remaining evidence/finalizer work, including the local
 `npm run check`, CI evidence collection, push/dispatch commands, separate
 Android/iOS real-device evidence status, and CI workflow wiring status, as JSON
 for release handoff. The CI, real-device, and Release Preflight evidence actions
-begin with `npm run check` before collecting CI or assembling evidence. When an
+begin with `npm run check` before collecting CI or assembling evidence. The
+final warning-removal action runs `npm run check` after the finalizer and before
+the final strict readiness check. When an
 expected commit is known, the summary resolves evidence and finalizer commands
 to that tested release commit. The strict
 `npm run release:readiness` command is for the committed final removal
@@ -133,12 +136,13 @@ npm run release:readiness -- \
   --summary-output /tmp/vue-godot-readiness.json \
   --expected-commit <release-candidate-sha>
 npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json
+npm run check
 ```
 
 `release:finalize-readiness` rejects summaries generated with `--allow-open`,
 unexpected readiness blockers, missing evidence-backed final TODO proof status,
 package description warning markers, finalizer source text drift, or a dirty
-worktree. Commit the finalizer edits, then rerun strict
+worktree. Run `npm run check`, commit the finalizer edits, then rerun strict
 `npm run release:readiness`.
 
 Use

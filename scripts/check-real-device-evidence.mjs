@@ -125,8 +125,9 @@ function collectNextActions(summary) {
       id: 'fix-real-device-evidence',
       title: 'Fix real-device evidence validation errors',
       detail:
-        'Use the reported validation errors to update platform evidence or regenerate final evidence for the tested release commit.',
+        'Run the local check, then use the reported validation errors to update platform evidence or regenerate final evidence for the tested release commit.',
       commands: [
+        'npm run check',
         'npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --real-device-output release/real-device-evidence.json',
         'npm run check:real-device-evidence -- --expected-commit <release-candidate-sha>',
       ],

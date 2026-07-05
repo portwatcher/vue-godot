@@ -65,7 +65,9 @@ lists, public warning markers, package description warning status, and
 `nextActions` command hints for the local `npm run check`, CI evidence
 collection, push/dispatch commands, and the remaining evidence/finalizer work as
 JSON. The CI, real-device, and Release Preflight evidence actions begin with
-`npm run check` before collecting CI or assembling evidence. When an expected
+`npm run check` before collecting CI or assembling evidence. The final
+warning-removal action runs `npm run check` after the finalizer and before the
+final strict readiness check. When an expected
 commit is known, the summary resolves evidence and
 finalizer commands to that tested release commit.
 
@@ -150,8 +152,9 @@ The helper strips worksheet fields before writing final evidence. If
 strict release gates reject it.
 Use `npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json`
 to write validation status, errors, and `nextActions` command hints for fixing
-or creating evidence; missing-evidence assembly hints begin with `npm run check`
-before release CI is collected.
+or creating evidence; missing-evidence assembly and invalid-evidence
+regeneration hints begin with `npm run check` before release CI or evidence
+regeneration runs.
 The helper validates the normalized platform evidence before fetching GitHub run
 metadata, so missing device details, unknown selected APIs, or selected-API
 checks left in `skippedChecks` fail before network calls.
@@ -219,6 +222,7 @@ npm run release:readiness -- \
   --summary-output /tmp/vue-godot-readiness.json \
   --expected-commit <release-candidate-sha>
 npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json
+npm run check
 ```
 
 Use the pushed release-candidate SHA for `--expected-commit` when the evidence
@@ -229,7 +233,7 @@ The finalizer refuses `--allow-open` summaries, unexpected readiness blockers,
 missing evidence-backed final TODO proof status, package description warning
 markers, finalizer source text drift, or a dirty worktree. It only checks the
 final TODO boxes and removes public warning wording after strict evidence is
-ready. Commit those edits, then rerun
+ready. Run `npm run check`, commit those edits, then rerun
 `npm run release:readiness -- --expected-commit <release-candidate-sha>` without
 `--allow-open`.
 

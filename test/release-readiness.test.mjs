@@ -442,17 +442,29 @@ test('release readiness writes a machine-readable blocker summary', () => {
     )
     assert.ok(
       summary.nextActions.some(
-        (action) =>
-          action.id === 'final-warning-removal' &&
-          action.commands.includes(
+        (action) => {
+          if (action.id !== 'final-warning-removal') {
+            return false
+          }
+
+          const readinessSummaryIndex = action.commands.indexOf(
             `npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit ${exampleCommit}`,
-          ) &&
-          action.commands.includes(
+          )
+          const finalizerIndex = action.commands.indexOf(
             'npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json',
-          ) &&
-          action.commands.includes(
+          )
+          const checkIndex = action.commands.indexOf('npm run check')
+          const finalReadinessIndex = action.commands.indexOf(
             `npm run release:readiness -- --expected-commit ${exampleCommit}`,
-          ),
+          )
+
+          return (
+            readinessSummaryIndex >= 0 &&
+            finalizerIndex === readinessSummaryIndex + 1 &&
+            checkIndex === finalizerIndex + 1 &&
+            finalReadinessIndex === checkIndex + 1
+          )
+        },
       ),
     )
     assert.equal(summary.finalTodoRequirements.length, 10)
