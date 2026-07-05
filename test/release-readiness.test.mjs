@@ -431,7 +431,10 @@ test('release readiness writes a machine-readable blocker summary', () => {
         (action) =>
           action.id === 'release-preflight-evidence' &&
           action.commands.includes(
-            'npm run release:ci -- --commit <release-candidate-sha> --include-release-preflight --wait --output release/ci-runs.json',
+            `npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --wait --output release/ci-runs.json`,
+          ) &&
+          action.commands.includes(
+            `npm run release:readiness -- --expected-commit ${exampleCommit}`,
           ),
       ),
     )
@@ -440,7 +443,13 @@ test('release readiness writes a machine-readable blocker summary', () => {
         (action) =>
           action.id === 'final-warning-removal' &&
           action.commands.includes(
+            `npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit ${exampleCommit}`,
+          ) &&
+          action.commands.includes(
             'npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json',
+          ) &&
+          action.commands.includes(
+            `npm run release:readiness -- --expected-commit ${exampleCommit}`,
           ),
       ),
     )
@@ -551,7 +560,7 @@ test('release readiness summary includes missing evidence next actions', () => {
         (action) =>
           action.id === 'real-device-evidence' &&
           action.commands.includes(
-            'npm run check:real-device-evidence -- --expected-commit <release-candidate-sha>',
+            `npm run check:real-device-evidence -- --expected-commit ${summary.commit}`,
           ),
       ),
     )

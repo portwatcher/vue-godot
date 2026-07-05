@@ -861,7 +861,7 @@ function checkPublicSurface(blockers) {
 }
 
 function ciEvidenceCommands(commit, localGit) {
-  const releaseCommit = commit ?? '<release-candidate-sha>'
+  const releaseCommit = releaseCommitLabel(commit)
   const pushCommand =
     localGit?.currentBranch && !localGit.upstreamRef
       ? `git push --set-upstream origin ${localGit.currentBranch}`
@@ -874,8 +874,13 @@ function ciEvidenceCommands(commit, localGit) {
   ]
 }
 
+function releaseCommitLabel(commit) {
+  return commit ?? '<release-candidate-sha>'
+}
+
 function collectReadinessNextActions(checks, commit, localGit) {
   const actions = []
+  const releaseCommit = releaseCommitLabel(commit)
 
   if (!checks.cleanWorktree) {
     actions.push({
@@ -909,9 +914,9 @@ function collectReadinessNextActions(checks, commit, localGit) {
         'Run the selected API export checks on real or hosted devices, then assemble and validate release/real-device-evidence.json for the tested release commit.',
       commands: [
         'npm run release:platform-evidence -- --selected-api <api>',
-        'npm run release:ci -- --commit <release-candidate-sha> --wait --output release/ci-runs.json',
-        'npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --real-device-output release/real-device-evidence.json',
-        'npm run check:real-device-evidence -- --expected-commit <release-candidate-sha>',
+        `npm run release:ci -- --commit ${releaseCommit} --wait --output release/ci-runs.json`,
+        `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${releaseCommit} --real-device-output release/real-device-evidence.json`,
+        `npm run check:real-device-evidence -- --expected-commit ${releaseCommit}`,
       ],
     })
   }
@@ -923,10 +928,10 @@ function collectReadinessNextActions(checks, commit, localGit) {
       detail:
         'After the tested release candidate and real-device evidence are pushed, capture Check, Godot Smoke, and Release Preflight runs, then write release-readiness evidence.',
       commands: [
-        'npm run release:ci -- --commit <release-candidate-sha> --include-release-preflight --wait --output release/ci-runs.json',
+        `npm run release:ci -- --commit ${releaseCommit} --include-release-preflight --wait --output release/ci-runs.json`,
         'GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --output release/release-preflight-summary.json',
-        'npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json',
-        'npm run release:readiness -- --expected-commit <release-candidate-sha>',
+        `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${releaseCommit} --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json`,
+        `npm run release:readiness -- --expected-commit ${releaseCommit}`,
       ],
     })
   }
@@ -952,9 +957,9 @@ function collectReadinessNextActions(checks, commit, localGit) {
       detail:
         'Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks and removes public warning wording.',
       commands: [
-        'npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit <release-candidate-sha>',
+        `npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit ${releaseCommit}`,
         'npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json',
-        'npm run release:readiness -- --expected-commit <release-candidate-sha>',
+        `npm run release:readiness -- --expected-commit ${releaseCommit}`,
       ],
     })
   }
