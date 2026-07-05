@@ -9,11 +9,14 @@ Run the full repository check before cutting a release candidate:
 
 ```bash
 npm run check
+npm audit --audit-level=moderate
 npm run release:preflight -- --local --skip-check --skip-godot
 ```
 
 `npm run check` builds packages, runs tests, builds demo apps, and runs clean
-CLI scaffold smoke checks. `release:preflight` verifies package metadata,
+CLI scaffold smoke checks. `npm audit --audit-level=moderate` must report zero
+moderate, high, or critical advisories unless an accepted exception is
+documented in the release notes. `release:preflight` verifies package metadata,
 generated package specs, dry-run package contents, registry state, and publish
 environment assumptions.
 

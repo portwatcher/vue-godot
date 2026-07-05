@@ -251,6 +251,7 @@ npm run smoke:godot  # optional: runs apps/html-demo lifecycle smoke with GODOT_
 npm run smoke:generated-godot # optional: generated create --html app under Godot + watch rebuild
 npm run smoke:editor-reload # optional: generated app played from the Godot editor before/after a watch rebuild
 npx vue-godot doctor # optional: local project diagnostics for package/export/plugin setup
+npm audit --audit-level=moderate # dependency security gate
 npm run check        # build + test + CLI smoke
 npm run release:preflight # release gate: check + pack dry-runs + registry + Godot smokes
 npm run release:publish   # publish helper used by the Publish workflow; dry-run locally
