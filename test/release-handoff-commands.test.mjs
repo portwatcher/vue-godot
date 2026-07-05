@@ -14,6 +14,7 @@ import {
   releaseCiCommand,
   releaseCommitLabel,
   releaseDispatchRefPlaceholder,
+  releasePreflightRunCommitPlaceholder,
   releasePreflightCiCommands,
 } from '../scripts/release-handoff-commands.mjs'
 
@@ -23,6 +24,7 @@ const evidenceCommit = 'abcdef0123456789abcdef0123456789abcdef01'
 test('release handoff commands format release CI waits and dispatches', () => {
   assert.equal(releaseCommitLabel(null), releaseCandidateCommitPlaceholder)
   assert.equal(releaseCommitLabel(commit), commit)
+  assert.equal(releasePreflightRunCommitPlaceholder, '<evidence-commit-sha>')
   assert.equal(defaultPlatformEvidencePath, 'release/platform-evidence.json')
   assert.equal(defaultReleaseCiEvidencePath, 'release/ci-runs.json')
 

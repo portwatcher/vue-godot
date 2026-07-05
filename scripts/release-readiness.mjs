@@ -28,6 +28,7 @@ import {
   initialReleaseCiCommands,
   releaseEvidenceCommand,
   releaseCommitLabel,
+  releasePreflightRunCommitPlaceholder,
   releasePreflightCiCommands,
 } from './release-handoff-commands.mjs'
 import {
@@ -923,7 +924,9 @@ function collectReadinessNextActions(checks, commit, localGit) {
         'Run the local check after the tested release candidate and real-device evidence are pushed, capture Check, Godot Smoke, and Release Preflight runs, dispatching Release Preflight when needed, then write release-readiness evidence.',
       commands: [
         'npm run check',
-        ...releasePreflightCiCommands(commit),
+        ...releasePreflightCiCommands(commit, {
+          releasePreflightRunCommit: releasePreflightRunCommitPlaceholder,
+        }),
         'GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --output release/release-preflight-summary.json',
         releaseEvidenceCommand(commit, {
           releasePreflightSummaryPath: defaultReleasePreflightSummaryPath,

@@ -1,4 +1,5 @@
 export const releaseCandidateCommitPlaceholder = '<release-candidate-sha>'
+export const releasePreflightRunCommitPlaceholder = '<evidence-commit-sha>'
 export const releaseDispatchRefPlaceholder = '<branch-or-tag>'
 export const defaultPlatformEvidencePath = 'release/platform-evidence.json'
 export const defaultReleaseCiEvidencePath = 'release/ci-runs.json'

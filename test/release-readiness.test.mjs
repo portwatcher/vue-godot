@@ -445,10 +445,10 @@ test('release readiness writes a machine-readable blocker summary', () => {
           action.id === 'release-preflight-evidence' &&
           action.commands[0] === 'npm run check' &&
           action.commands.includes(
-            `npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --wait --output release/ci-runs.json`,
+            `npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --release-preflight-run-commit <evidence-commit-sha> --wait --output release/ci-runs.json`,
           ) &&
           action.commands.includes(
-            `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --dispatch-missing --wait --ref <branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
+            `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --release-preflight-run-commit <evidence-commit-sha> --dispatch-missing --wait --ref <branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
           ) &&
           action.commands.includes(
             `npm run release:readiness -- --expected-commit ${exampleCommit}`,
@@ -610,6 +610,11 @@ test('release readiness summary includes missing evidence next actions', () => {
         (action) =>
           action.id === 'release-preflight-evidence' &&
           action.commands[0] === 'npm run check' &&
+          action.commands.some((command) =>
+            command.includes(
+              '--release-preflight-run-commit <evidence-commit-sha>',
+            ),
+          ) &&
           action.commands.some((command) =>
             command.includes('--readiness-output release/release-readiness-evidence.json'),
           ),
