@@ -72,7 +72,9 @@ After the release candidate is pushed, verify the required CI runs and capture
 their URLs:
 
 ```bash
-npm run release:ci -- --commit "$(git rev-parse HEAD)"
+npm run release:ci -- \
+  --commit "$(git rev-parse HEAD)" \
+  --output release/ci-runs.json
 ```
 
 Then assemble the evidence file from the real device data and completed CI
@@ -81,8 +83,7 @@ runs:
 ```bash
 npm run release:evidence -- \
   --platform-evidence release/platform-evidence.json \
-  --check-run-url https://github.com/portwatcher/vue-godot/actions/runs/CHECK_RUN_ID \
-  --godot-smoke-run-url https://github.com/portwatcher/vue-godot/actions/runs/GODOT_SMOKE_RUN_ID \
+  --ci-evidence release/ci-runs.json \
   --real-device-output release/real-device-evidence.json
 ```
 
@@ -92,8 +93,7 @@ command with the preflight run URL to create the final readiness evidence:
 ```bash
 npm run release:evidence -- \
   --platform-evidence release/platform-evidence.json \
-  --check-run-url https://github.com/portwatcher/vue-godot/actions/runs/CHECK_RUN_ID \
-  --godot-smoke-run-url https://github.com/portwatcher/vue-godot/actions/runs/GODOT_SMOKE_RUN_ID \
+  --ci-evidence release/ci-runs.json \
   --real-device-output release/real-device-evidence.json \
   --release-preflight-run-url https://github.com/portwatcher/vue-godot/actions/runs/PREFLIGHT_RUN_ID \
   --release-preflight-warning-count 0 \

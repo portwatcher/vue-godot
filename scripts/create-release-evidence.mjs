@@ -7,6 +7,7 @@ import {
 } from './real-device-evidence.mjs'
 import {
   fetchGitHubActionsRun,
+  hasGitHubActionsRunUrl,
   isRecord,
   validateGitHubActionsRunMetadata,
 } from './release-evidence-utils.mjs'
@@ -20,6 +21,7 @@ import { validateReleaseReadinessEvidence } from './release-readiness.mjs'
 const defaultGodotJsVersion = 'GodotJS 1.0.0-2 / Godot 4.4.x'
 const optionFlags = {
   platformEvidencePath: '--platform-evidence',
+  ciEvidencePath: '--ci-evidence',
   checkRunUrl: '--check-run-url',
   godotSmokeRunUrl: '--godot-smoke-run-url',
   realDeviceOutput: '--real-device-output',
@@ -37,6 +39,7 @@ pass --platform-evidence with android and ios objects after device testing.
 
 Options:
   --platform-evidence <file>       JSON with { "android": {...}, "ios": {...} }.
+  --ci-evidence <file>             JSON written by npm run release:ci -- --output.
   --check-run-url <url>            Successful Check workflow run URL.
   --godot-smoke-run-url <url>      Successful Godot Smoke workflow run URL.
   --real-device-output <file>      Write real-device evidence JSON.
@@ -53,8 +56,7 @@ Options:
 Example:
   npm run release:evidence -- \\
     --platform-evidence release/platform-evidence.json \\
-    --check-run-url https://github.com/portwatcher/vue-godot/actions/runs/1 \\
-    --godot-smoke-run-url https://github.com/portwatcher/vue-godot/actions/runs/2 \\
+    --ci-evidence release/ci-runs.json \\
     --real-device-output release/real-device-evidence.json
 `)
 }
@@ -62,6 +64,7 @@ Example:
 function parseArgs(argv) {
   const options = {
     platformEvidencePath: null,
+    ciEvidencePath: null,
     checkRunUrl: null,
     godotSmokeRunUrl: null,
     realDeviceOutput: null,
@@ -74,6 +77,7 @@ function parseArgs(argv) {
 
   const valueOptions = [
     ['--platform-evidence', 'platformEvidencePath'],
+    ['--ci-evidence', 'ciEvidencePath'],
     ['--check-run-url', 'checkRunUrl'],
     ['--godot-smoke-run-url', 'godotSmokeRunUrl'],
     ['--real-device-output', 'realDeviceOutput'],
@@ -169,6 +173,72 @@ function readPlatformEvidence(filePath) {
 export function normalizePlatformEvidence(evidence) {
   const { requiredChecks, ...platformEvidence } = evidence
   return platformEvidence
+}
+
+function workflowRunUrl(ciEvidence, workflowName, errors) {
+  if (!isRecord(ciEvidence.workflows)) {
+    errors.push('CI evidence must include evidence.workflows')
+    return null
+  }
+
+  const workflow = ciEvidence.workflows[workflowName]
+  if (!isRecord(workflow)) {
+    errors.push(`CI evidence missing ${workflowName} workflow run`)
+    return null
+  }
+
+  if (!hasGitHubActionsRunUrl(workflow, 'runUrl')) {
+    errors.push(
+      `CI evidence ${workflowName}.runUrl must be a GitHub Actions run URL for portwatcher/vue-godot`,
+    )
+    return null
+  }
+
+  return workflow.runUrl
+}
+
+export function extractCiRunUrls(ciResult, commit) {
+  const errors = []
+  if (!isRecord(ciResult)) {
+    errors.push('CI evidence must be a JSON object')
+    return { checkRunUrl: null, godotSmokeRunUrl: null, errors }
+  }
+
+  const ciEvidence = isRecord(ciResult.evidence) ? ciResult.evidence : ciResult
+  if (!isRecord(ciEvidence)) {
+    errors.push('CI evidence must include an evidence object')
+    return { checkRunUrl: null, godotSmokeRunUrl: null, errors }
+  }
+
+  if (Array.isArray(ciResult.errors)) {
+    const unresolvedErrors = ciResult.errors.filter(
+      (error) => typeof error === 'string' && error.trim().length > 0,
+    )
+    if (unresolvedErrors.length > 0) {
+      errors.push(
+        ['CI evidence contains unresolved errors:', ...unresolvedErrors].join(
+          '\n',
+        ),
+      )
+    }
+  }
+
+  if (ciEvidence.commit !== commit) {
+    errors.push(`CI evidence commit must match ${commit}`)
+  }
+
+  const checkRunUrl = workflowRunUrl(ciEvidence, 'Check', errors)
+  const godotSmokeRunUrl = workflowRunUrl(ciEvidence, 'Godot Smoke', errors)
+  return { checkRunUrl, godotSmokeRunUrl, errors }
+}
+
+function mergeRunUrlOption(name, explicitUrl, evidenceUrl) {
+  if (explicitUrl && evidenceUrl && explicitUrl !== evidenceUrl) {
+    throw new Error(
+      `${optionFlags[name]} does not match ${optionFlags.ciEvidencePath}`,
+    )
+  }
+  return explicitUrl ?? evidenceUrl
 }
 
 function assertRequiredOptions(options, names) {
@@ -268,8 +338,6 @@ async function main() {
   const options = parseArgs(process.argv.slice(2))
   assertRequiredOptions(options, [
     'platformEvidencePath',
-    'checkRunUrl',
-    'godotSmokeRunUrl',
     'realDeviceOutput',
   ])
 
@@ -287,6 +355,26 @@ async function main() {
 
   const commit = options.commit ?? currentCommit()
   const packageVersions = currentReleasePackageVersions()
+  if (options.ciEvidencePath) {
+    const ciEvidencePath = resolveOutputPath(options.ciEvidencePath)
+    const ciResult = readJsonFile(ciEvidencePath)
+    const ciEvidence = extractCiRunUrls(ciResult, commit)
+    if (ciEvidence.errors.length > 0) {
+      throw new Error(ciEvidence.errors.join('\n'))
+    }
+    options.checkRunUrl = mergeRunUrlOption(
+      'checkRunUrl',
+      options.checkRunUrl,
+      ciEvidence.checkRunUrl,
+    )
+    options.godotSmokeRunUrl = mergeRunUrlOption(
+      'godotSmokeRunUrl',
+      options.godotSmokeRunUrl,
+      ciEvidence.godotSmokeRunUrl,
+    )
+  }
+  assertRequiredOptions(options, ['checkRunUrl', 'godotSmokeRunUrl'])
+
   const platformEvidencePath = resolveOutputPath(options.platformEvidencePath)
   const platformEvidence = readPlatformEvidence(platformEvidencePath)
   const checkRun = await readSuccessfulRun(

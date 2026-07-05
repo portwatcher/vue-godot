@@ -31,16 +31,17 @@ generated package specs, dry-run package contents including every
 `package.json` export target, registry state, publish environment assumptions,
 serious example app readiness, Godot smoke, real device evidence, and GitHub
 Actions metadata for the Check/Godot Smoke run URLs recorded in that evidence.
-After pushing a release candidate, `npm run release:ci -- --commit <sha>`
-checks GitHub Actions for completed successful Check and Godot Smoke runs on
-that exact commit and prints the run URLs used by release evidence.
+After pushing a release candidate,
+`npm run release:ci -- --commit <sha> --output release/ci-runs.json` checks
+GitHub Actions for completed successful Check and Godot Smoke runs on that exact
+commit and writes the run URLs used by release evidence.
 `npm run release:platform-evidence` creates a starter Android/iOS platform
 evidence file with the exact required device check names; it still must be
 filled with real artifact, device, OS, API, pass, and skip data after testing.
 After device testing and CI runs exist, `npm run release:evidence` assembles the
 real-device and release-readiness evidence files from the current package
-versions, Android/iOS platform evidence, and verified GitHub Actions run
-metadata.
+versions, Android/iOS platform evidence, CI evidence, and verified GitHub
+Actions run metadata.
 
 The local preflight command may warn when Godot smoke is skipped or when package
 versions are newer than the registry. Release builds should run the full

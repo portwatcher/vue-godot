@@ -4,6 +4,7 @@ import test from 'node:test'
 import {
   buildRealDeviceEvidence,
   buildReleaseReadinessEvidence,
+  extractCiRunUrls,
 } from '../scripts/create-release-evidence.mjs'
 import {
   requiredRealDeviceChecks,
@@ -89,4 +90,60 @@ test('buildReleaseReadinessEvidence records release preflight run metadata', () 
     releasePreflightWarningCount: 0,
   })
   assert.deepEqual(validateReleaseReadinessEvidence(evidence, commit), [])
+})
+
+test('extractCiRunUrls reads release CI evidence for the evidence commit', () => {
+  assert.deepEqual(
+    extractCiRunUrls(
+      {
+        evidence: {
+          commit,
+          workflows: {
+            Check: {
+              runUrl:
+                'https://github.com/portwatcher/vue-godot/actions/runs/1',
+            },
+            'Godot Smoke': {
+              runUrl:
+                'https://github.com/portwatcher/vue-godot/actions/runs/2',
+            },
+          },
+        },
+        errors: [],
+      },
+      commit,
+    ),
+    {
+      checkRunUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+      godotSmokeRunUrl:
+        'https://github.com/portwatcher/vue-godot/actions/runs/2',
+      errors: [],
+    },
+  )
+})
+
+test('extractCiRunUrls rejects stale or incomplete CI evidence', () => {
+  const result = extractCiRunUrls(
+    {
+      evidence: {
+        commit: 'ffffffffffffffffffffffffffffffffffffffff',
+        workflows: {
+          Check: {
+            runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+          },
+        },
+      },
+      errors: ['No completed successful Godot Smoke workflow run found'],
+    },
+    commit,
+  )
+
+  assert.equal(
+    result.checkRunUrl,
+    'https://github.com/portwatcher/vue-godot/actions/runs/1',
+  )
+  assert.equal(result.godotSmokeRunUrl, null)
+  assert.match(result.errors.join('\n'), /unresolved errors/)
+  assert.match(result.errors.join('\n'), /CI evidence commit must match/)
+  assert.match(result.errors.join('\n'), /missing Godot Smoke/)
 })

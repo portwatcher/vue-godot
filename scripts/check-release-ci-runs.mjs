@@ -1,10 +1,12 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import {
   fetchGitHubActionsRunsForCommit,
   hasGitHubActionsRunUrl,
   validateGitHubActionsRunMetadata,
 } from './release-evidence-utils.mjs'
-import { run } from './release-utils.mjs'
+import { repoRoot, run } from './release-utils.mjs'
 
 export const requiredReleaseCiWorkflows = ['Check', 'Godot Smoke']
 
@@ -18,6 +20,7 @@ release evidence.
 Options:
   --commit <sha>       Commit to verify. Default: current HEAD.
   --json               Print machine-readable evidence JSON.
+  --output <file>      Write machine-readable evidence JSON to a file.
   --allow-missing      Exit 0 while still reporting missing runs.
   --help               Show this help.
 `)
@@ -27,6 +30,7 @@ function parseArgs(argv) {
   const options = {
     commit: null,
     json: false,
+    output: null,
     allowMissing: false,
   }
 
@@ -40,6 +44,20 @@ function parseArgs(argv) {
 
     if (arg === '--json') {
       options.json = true
+      continue
+    }
+
+    if (arg === '--output') {
+      const value = argv[++index]
+      if (!value) {
+        throw new Error('--output requires a value')
+      }
+      options.output = value
+      continue
+    }
+
+    if (arg.startsWith('--output=')) {
+      options.output = arg.slice('--output='.length)
       continue
     }
 
@@ -166,11 +184,22 @@ function printText(evidence, errors) {
   }
 }
 
+function writeJson(filePath, data) {
+  const resolved = path.resolve(repoRoot, filePath)
+  fs.mkdirSync(path.dirname(resolved), { recursive: true })
+  fs.writeFileSync(resolved, `${JSON.stringify(data, null, 2)}\n`)
+  console.log(`[release-ci] wrote ${path.relative(repoRoot, resolved)}`)
+}
+
 async function main() {
   const options = parseArgs(process.argv.slice(2))
   const commit = options.commit ?? currentCommit()
   const runs = await fetchGitHubActionsRunsForCommit(commit)
   const result = collectReleaseCiRunEvidence(runs, commit)
+
+  if (options.output) {
+    writeJson(options.output, result)
+  }
 
   if (options.json) {
     console.log(JSON.stringify(result, null, 2))
