@@ -324,10 +324,6 @@ function applyTextReplacement(source, replacement) {
     return { error: null, source }
   }
 
-  if (replacement.after === '') {
-    return { error: null, source }
-  }
-
   return {
     error: `${replacement.file}: finalization source text drift for ${replacement.label}`,
     source,

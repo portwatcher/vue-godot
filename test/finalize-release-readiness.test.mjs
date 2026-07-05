@@ -168,3 +168,21 @@ test('release readiness finalizer rejects unexpected source text drift', () => {
     /README\.md: finalization source text drift for root README example coverage wording/,
   )
 })
+
+test('release readiness finalizer rejects missing delete-only warning text', () => {
+  const sources = readSources()
+  sources['README.md'] = sources['README.md'].replace(
+    'This project is experimental and not production ready yet. Follow [@juryxiong](https://x.com/juryxiong) for updates.\n\n',
+    '',
+  )
+
+  const result = applyReleaseReadinessFinalization(
+    sources,
+    readyFinalizationSummary(),
+  )
+
+  assert.match(
+    result.errors.join('\n'),
+    /README\.md: finalization source text drift for root README experimental warning/,
+  )
+})
