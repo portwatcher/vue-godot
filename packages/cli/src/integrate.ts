@@ -273,7 +273,8 @@ import { defineConfig } from 'vite'
 // Listed here to avoid importing at config-load time (Node ESM resolution).
 const htmlTags = [
   'a', 'audio', 'div', 'img', 'span', 'button',
-  'input', 'textarea', 'select', 'option', 'canvas', 'video', 'svg',
+  'input', 'textarea', 'select', 'option', 'scrollview', 'canvas',
+  'video', 'svg',
 ]
 
 export default defineConfig({

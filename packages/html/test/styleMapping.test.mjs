@@ -113,6 +113,19 @@ test('ignores unsupported non-pixel width values', () => {
   assert.equal('custom_minimum_size:y' in size.props, false)
 })
 
+test('maps display:none alongside supported size props', () => {
+  const hidden = resolveContainerTag({
+    display: 'none',
+    width: '240px',
+    height: 120,
+  })
+
+  assert.equal(hidden.tag, 'Control')
+  assert.equal(hidden.props.visible, false)
+  assert.equal(hidden.props['custom_minimum_size:x'], 240)
+  assert.equal(hidden.props['custom_minimum_size:y'], 120)
+})
+
 test('resolves padding with directional overrides', () => {
   assert.deepEqual(resolvePadding({ padding: 20 }), {
     top: 20,

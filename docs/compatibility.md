@@ -104,6 +104,7 @@ controller, touch behavior, and documented style limits.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `<Div>` | `html` | `partial` | Godot containers and style wrappers | All Godot UI targets | None | Unit, html-demo | CSS flex/grid subset only; not a DOM element. |
 | `<Span>` | `html` | `partial` | `Label` | All Godot UI targets | None | Unit, html-demo | Text/style subset only. |
+| `<ScrollView>` | `html` | `partial` | `ScrollContainer` plus inner `<Div>` content wrapper | All Godot UI targets | None | Unit, html-demo | Scrollbar behavior follows Godot `ScrollContainer`; content layout uses the existing style subset. |
 | `<Button>` | `html` | `partial` | `Button` | All Godot UI targets | None | Unit, html-demo | Click maps to Godot pressed signal; accessibility is limited. |
 | `<Input>` | `html` | `partial` | `LineEdit`, `CheckBox`, `HSlider` | All Godot UI targets | None | Unit, html-demo | Supports text, password, checkbox, and range subsets. |
 | `<Textarea>` | `html` | `partial` | `TextEdit` | All Godot UI targets | None | Unit, html-demo | Text editing subset; browser selection APIs are not implemented. |

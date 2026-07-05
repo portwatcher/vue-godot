@@ -174,14 +174,12 @@ function resolveContainerAlignment(
 export function resolveContainerTag(style: HtmlStyle): ContainerMapping {
   const themeOverrides: Record<string, number> = {}
   const props: Record<string, unknown> = {}
-
-  if (style.display === 'none') {
-    return { tag: 'Control', themeOverrides, props: { visible: false } }
-  }
-
   let tag: GodotContainerTag
 
-  if (style.display === 'grid') {
+  if (style.display === 'none') {
+    tag = 'Control'
+    props['visible'] = false
+  } else if (style.display === 'grid') {
     tag = 'GridContainer'
   } else {
     const isRow = !style.flexDirection || style.flexDirection === 'row'
@@ -193,7 +191,7 @@ export function resolveContainerTag(style: HtmlStyle): ContainerMapping {
     }
   }
 
-  if (style.gap != null) {
+  if (style.display !== 'none' && style.gap != null) {
     if (tag === 'HBoxContainer' || tag === 'VBoxContainer') {
       themeOverrides['separation'] = style.gap
     } else if (
@@ -206,13 +204,19 @@ export function resolveContainerTag(style: HtmlStyle): ContainerMapping {
     }
   }
 
-  if (tag === 'GridContainer' && style.columns != null) {
+  if (
+    style.display !== 'none' &&
+    tag === 'GridContainer' &&
+    style.columns != null
+  ) {
     props['columns'] = style.columns
   }
 
-  const alignment = resolveContainerAlignment(tag, style.justifyContent)
-  if (alignment != null) {
-    props['alignment'] = alignment
+  if (style.display !== 'none') {
+    const alignment = resolveContainerAlignment(tag, style.justifyContent)
+    if (alignment != null) {
+      props['alignment'] = alignment
+    }
   }
 
   const minWidth = resolveMinimumAxisSize(

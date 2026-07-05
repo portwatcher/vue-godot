@@ -7,6 +7,7 @@ import { Div } from './components/Div.js'
 import { Img } from './components/Img.js'
 import { Input } from './components/Input.js'
 import { Option, Select } from './components/Select.js'
+import { ScrollView } from './components/ScrollView.js'
 import { Span } from './components/Span.js'
 import { Svg } from './components/Svg.js'
 import { Textarea } from './components/Textarea.js'
@@ -23,6 +24,7 @@ const components: Record<string, Component> = {
   Textarea,
   Select,
   Option,
+  ScrollView,
   Canvas,
   Video,
   Svg,

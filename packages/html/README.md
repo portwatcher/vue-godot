@@ -102,6 +102,7 @@ Color values support hex (`#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`), named CSS co
 | ------------------- | ---------------------------------------------------------------------- | --------------------- |
 | `<Div>`             | `HBoxContainer` / `VBoxContainer` / `*FlowContainer` / `GridContainer` | `style` (layout)      |
 | `<Img>`             | `TextureRect`                                                          | `src`, `alt`, `style` |
+| `<ScrollView>`      | `ScrollContainer`                                                      | `horizontal`, `vertical`, `scrollbarMode`, `contentStyle` |
 | `<Span>`            | `Label`                                                                | text content, `style` |
 | `<Button>`          | `Button`                                                               | `@click`, `disabled`  |
 | `<Input>`           | `LineEdit` / `CheckBox` / `HSlider`                                    | `type`, `v-model`     |
@@ -116,7 +117,7 @@ Color values support hex (`#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`), named CSS co
 
 | API                                                                                                                                    | Description                                                                                              |
 | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| HTML-like components (`A`, `Audio`, `Button`, `Canvas`, `Div`, `Img`, `Input`, `Option`, `Select`, `Span`, `Svg`, `Textarea`, `Video`) | Vue components backed by Godot nodes                                                                     |
+| HTML-like components (`A`, `Audio`, `Button`, `Canvas`, `Div`, `Img`, `Input`, `Option`, `ScrollView`, `Select`, `Span`, `Svg`, `Textarea`, `Video`) | Vue components backed by Godot nodes                                                                     |
 | `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
 | `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |
@@ -262,6 +263,24 @@ const volume = ref(50)
 
 `canvas.getContext('2d')` is intentionally deferred. A future Canvas2D adapter should wrap Godot `CanvasItem` draw commands and define clear lifecycle ownership for retained drawing state, but that is not part of the beta surface.
 
+### ScrollView scrolling scope
+
+`<ScrollView>` maps to a Godot `ScrollContainer` and wraps slot content in one inner `<Div>` so the existing layout style subset works inside the viewport:
+
+```vue
+<ScrollView
+  :style="{ width: 320, height: 160 }"
+  :content-style="{ flexDirection: 'column', gap: 8, padding: 8 }"
+  scrollbar-mode="auto"
+>
+  <Div v-for="item in items" :key="item.id">
+    <Span>{{ item.label }}</Span>
+  </Div>
+</ScrollView>
+```
+
+The component supports `horizontal`, `vertical`, `scrollbarMode`, `horizontalScrollbar`, `verticalScrollbar`, `scrollHorizontal`, `scrollVertical`, `scrollStep`, `horizontalStep`, `verticalStep`, `followFocus`, `style`, and `contentStyle`. Scrollbar modes are `'auto'`, `'always'`, `'never'`, and `'disabled'`.
+
 ### Global registration via plugin (new code)
 
 ```ts
@@ -297,6 +316,7 @@ This package is in early development. Currently scaffolded:
 
 - [x] `<Div>` — layout container with style → Godot container mapping
 - [x] `<Img>` — image display with `src` → texture loading
+- [x] `<ScrollView>` — scrollable viewport (`ScrollContainer`, axis props, scrollbar modes, scroll offsets)
 - [x] `<Span>` — text display with `fontSize`, `fontWeight`, `color`, `textAlign`, `textTransform`, `overflowWrap`
 - [x] `<Button>` — click handler with `@click`, `disabled`
 - [x] `<Input>` — text, password, checkbox, range inputs with `v-model`

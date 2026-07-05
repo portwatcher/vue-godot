@@ -24,6 +24,7 @@ const htmlTags = [
   'textarea',
   'select',
   'option',
+  'scrollview',
   'canvas',
   'video',
   'svg',

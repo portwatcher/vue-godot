@@ -4,12 +4,15 @@ import test from 'node:test'
 
 register(new URL('./godot-browser-loader.mjs', import.meta.url).href)
 
-const { A, Div, htmlPlugin, htmlTags } = await import('../dist/index.js')
+const { A, Div, ScrollView, htmlPlugin, htmlTags } = await import(
+  '../dist/index.js'
+)
 
 test('htmlTags includes every lowercase component tag', () => {
   assert.ok(htmlTags.includes('a'))
   assert.ok(htmlTags.includes('div'))
   assert.ok(htmlTags.includes('button'))
+  assert.ok(htmlTags.includes('scrollview'))
   assert.ok(htmlTags.includes('video'))
 })
 
@@ -28,4 +31,6 @@ test('htmlPlugin registers PascalCase and lowercase components', () => {
   assert.equal(registered.get('a'), A)
   assert.equal(registered.get('Div'), Div)
   assert.equal(registered.get('div'), Div)
+  assert.equal(registered.get('ScrollView'), ScrollView)
+  assert.equal(registered.get('scrollview'), ScrollView)
 })

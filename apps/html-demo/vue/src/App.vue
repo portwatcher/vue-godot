@@ -38,6 +38,27 @@
     }}
   </Span>
 
+  <!-- ===== Section: ScrollView ===== -->
+  <Span>--- ScrollView ---</Span>
+  <ScrollView
+    :style="{ width: 360, height: 120 }"
+    :content-style="{ flexDirection: 'column', gap: 6, padding: 8 }"
+    :vertical="true"
+    scrollbar-mode="auto"
+    :follow-focus="true"
+  >
+    <Div
+      v-for="n in 12"
+      :key="n"
+      :style="{
+        padding: 6,
+        backgroundColor: n % 2 === 0 ? '#1f2937' : '#111827',
+      }"
+    >
+      <Span>{{ `Scrollable row ${n}` }}</Span>
+    </Div>
+  </ScrollView>
+
   <!-- ===== Section: Span (text styling) ===== -->
   <Span>--- Span ---</Span>
   <Span
