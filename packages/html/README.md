@@ -619,7 +619,7 @@ It supports `visible`, `fullRect`, `style`, and `contentStyle`. By default, it a
 </ScreenStack>
 ```
 
-Routes are plain objects with `name`, optional `title`, `params`, and `meta`. Slot props include `{ route, routeName, index, routes, canGoBack, navigate, back }`. The component manages a small in-memory back stack and emits `update:modelValue`, `navigate`, and `back`. It is a screen container primitive for native-style app shells; Vue Router integration, deep links, Android back handling, and tab/modal route examples are tracked separately in the routing TODOs.
+Routes are plain objects with `name`, optional `title`, `params`, and `meta`. Slot props include `{ route, routeName, index, routes, canGoBack, navigate, back }`. The component manages a small in-memory back stack and emits `update:modelValue`, `navigate`, and `back`. It is a screen container primitive for native-style app shells; Vue Router integration, deep links, Android back handling, and tab/modal route examples are covered in the repository [routing and navigation guide](../../docs/routing.md).
 
 ### Pressable interaction scope
 

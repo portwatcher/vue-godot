@@ -117,6 +117,10 @@ These are the same globals that `createWebHistory()` from Vue Router (and simila
 
 ### Usage with Vue Router
 
+For route architecture, stacks, deep links, back handling, persistence, and
+error handling patterns, see the repository
+[routing and navigation guide](../../docs/routing.md).
+
 ```ts
 import { installBrowserAPIs } from '@vue-godot/browser'
 installBrowserAPIs()

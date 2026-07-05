@@ -232,13 +232,13 @@ The project is production ready only when all of these are true:
 
 ## P1: Routing, Navigation, And App Architecture
 
-- [ ] Provide a recommended Vue Router setup.
-- [ ] Make `createWebHistory()` work for in-app navigation or document the preferred alternative.
-- [ ] Provide navigation examples for stacked screens, tabs, modal routes, and deep links.
-- [ ] Add back button handling on Android and controller/keyboard escape behavior.
-- [ ] Provide app state persistence patterns with storage APIs.
-- [ ] Provide error boundaries or recommended Vue error handling.
-- [ ] Add project architecture guidance for apps, games, and mixed Godot/Vue projects.
+- [x] Provide a recommended Vue Router setup.
+- [x] Make `createWebHistory()` work for in-app navigation or document the preferred alternative.
+- [x] Provide navigation examples for stacked screens, tabs, modal routes, and deep links.
+- [x] Add back button handling on Android and controller/keyboard escape behavior.
+- [x] Provide app state persistence patterns with storage APIs.
+- [x] Provide error boundaries or recommended Vue error handling.
+- [x] Add project architecture guidance for apps, games, and mixed Godot/Vue projects.
 
 ## P1: Tooling And Developer Experience
 
