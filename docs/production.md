@@ -88,6 +88,26 @@ permissions, and plugin-backed API hints. Treat warnings as release-review
 items; real device tests still decide whether native plugins and permissions are
 actually correct.
 
+## GodotJS Version Pin
+
+CI installs GodotJS through the shared
+[setup action](../.github/actions/setup-godotjs/action.yml). The action pins:
+
+| Input | Current value | Purpose |
+| --- | --- | --- |
+| `release` | `GodotJS_1.0.0-2` | Release tag from `ialex32x/GodotJS-Build`. |
+| `asset` | `prebuilt_linux_x64_v8` | Linux x64 V8 editor bundle used by CI smoke tests. |
+
+When updating GodotJS:
+
+1. Change the default `release` and, if needed, `asset` in the setup action.
+2. Open the project locally in the matching GodotJS editor and regenerate
+   typings for any committed fixture/demo apps that need new engine types.
+3. Run `npm run check`.
+4. Run the Godot smoke workflows, including generated app and editor reload
+   smoke, before publishing.
+5. Note any GodotJS behavior or typing changes in the release notes.
+
 ## Release Criteria
 
 Before removing experimental/not-production-ready language, the repository still

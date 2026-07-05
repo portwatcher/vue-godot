@@ -1,6 +1,16 @@
 name: Setup GodotJS
 description: Install runtime dependencies and expose the pinned GodotJS editor as GODOT_BIN.
 
+inputs:
+  release:
+    description: GodotJS release tag from ialex32x/GodotJS-Build.
+    required: false
+    default: GodotJS_1.0.0-2
+  asset:
+    description: GodotJS release asset without the .zip suffix.
+    required: false
+    default: prebuilt_linux_x64_v8
+
 runs:
   using: composite
   steps:
@@ -8,8 +18,8 @@ runs:
       id: cache-godotjs
       uses: actions/cache@v4
       with:
-        path: .cache/godotjs/GodotJS_1.0.0-2/prebuilt_linux_x64_v8
-        key: godotjs-${{ runner.os }}-GodotJS_1.0.0-2-prebuilt_linux_x64_v8
+        path: .cache/godotjs/${{ inputs.release }}/${{ inputs.asset }}
+        key: godotjs-${{ runner.os }}-${{ inputs.release }}-${{ inputs.asset }}
 
     - name: Install Godot runtime dependencies
       shell: bash
@@ -36,17 +46,21 @@ runs:
       if: steps.cache-godotjs.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        GODOTJS_CACHE_DIR=".cache/godotjs/GodotJS_1.0.0-2/prebuilt_linux_x64_v8"
+        GODOTJS_RELEASE="${{ inputs.release }}"
+        GODOTJS_ASSET="${{ inputs.asset }}"
+        GODOTJS_CACHE_DIR=".cache/godotjs/$GODOTJS_RELEASE/$GODOTJS_ASSET"
         mkdir -p "$GODOTJS_CACHE_DIR"
         curl --fail --location --retry 3 \
           --output "$RUNNER_TEMP/godotjs.zip" \
-          "https://github.com/ialex32x/GodotJS-Build/releases/download/GodotJS_1.0.0-2/prebuilt_linux_x64_v8.zip"
+          "https://github.com/ialex32x/GodotJS-Build/releases/download/$GODOTJS_RELEASE/$GODOTJS_ASSET.zip"
         unzip -q "$RUNNER_TEMP/godotjs.zip" -d "$GODOTJS_CACHE_DIR"
 
     - name: Locate GodotJS executable
       shell: bash
       run: |
-        GODOTJS_CACHE_DIR=".cache/godotjs/GodotJS_1.0.0-2/prebuilt_linux_x64_v8"
+        GODOTJS_RELEASE="${{ inputs.release }}"
+        GODOTJS_ASSET="${{ inputs.asset }}"
+        GODOTJS_CACHE_DIR=".cache/godotjs/$GODOTJS_RELEASE/$GODOTJS_ASSET"
         GODOT_BIN="$(find "$GODOTJS_CACHE_DIR" -type f -name 'godot.linuxbsd.editor.*.x86_64' | sort | head -n 1)"
         if [ -z "$GODOT_BIN" ]; then
           echo "Unable to locate GodotJS editor executable in $GODOTJS_CACHE_DIR" >&2
@@ -55,5 +69,7 @@ runs:
         fi
 
         chmod +x "$GODOT_BIN"
+        echo "GODOTJS_RELEASE=$GODOTJS_RELEASE" >> "$GITHUB_ENV"
+        echo "GODOTJS_ASSET=$GODOTJS_ASSET" >> "$GITHUB_ENV"
         echo "GODOT_BIN=$GODOT_BIN" >> "$GITHUB_ENV"
         "$GODOT_BIN" --version

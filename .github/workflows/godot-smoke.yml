@@ -3,6 +3,7 @@ name: Godot Smoke
 on:
   pull_request:
     paths:
+      - '.github/actions/setup-godotjs/**'
       - '.github/workflows/godot-smoke.yml'
       - 'apps/html-demo/**'
       - 'package*.json'
@@ -17,6 +18,7 @@ on:
       - develop
       - main
     paths:
+      - '.github/actions/setup-godotjs/**'
       - '.github/workflows/godot-smoke.yml'
       - 'apps/html-demo/**'
       - 'package*.json'

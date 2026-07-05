@@ -265,7 +265,7 @@ npm run release:publish   # publish helper used by the Publish workflow; dry-run
 
 `npm run smoke:cli` uses locally packed workspace packages, creates both basic and HTML projects in a temp directory, builds them, then starts the generated HTML app's `npm run dev` watcher, edits `vue/src/App.vue`, and fails unless the generated `dist` output contains the edited marker and stable JavaScript chunk paths.
 
-The `Godot Smoke` GitHub Actions workflow installs the pinned `GodotJS_1.0.0-2` Linux x64 V8 editor bundle, caches it, sets `GODOT_BIN`, and runs `npm run smoke:godot`, `npm run smoke:generated-godot`, and `npm run smoke:editor-reload` on PRs and pushes that touch the HTML demo, package code, or smoke workflow. The editor reload smoke runs under Xvfb on Linux because `EditorInterface.play_main_scene()` starts a played-scene process that needs a display server.
+The `Godot Smoke` GitHub Actions workflow installs the pinned `GodotJS_1.0.0-2` Linux x64 V8 editor bundle from [`.github/actions/setup-godotjs`](./.github/actions/setup-godotjs/action.yml), caches it, sets `GODOT_BIN`, and runs `npm run smoke:godot`, `npm run smoke:generated-godot`, and `npm run smoke:editor-reload` on PRs and pushes that touch the HTML demo, package code, smoke workflow, or shared GodotJS setup action. The editor reload smoke runs under Xvfb on Linux because `EditorInterface.play_main_scene()` starts a played-scene process that needs a display server.
 
 `npm run smoke:public-cli` must be run after publishing. It uses `npx @vue-godot/cli@latest create --html` with no local package overrides, then builds the generated app. Set `VUE_GODOT_PUBLIC_CLI_SPEC=@vue-godot/cli@<version>` to test a specific published CLI version.
 

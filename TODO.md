@@ -280,7 +280,7 @@ The project is production ready only when all of these are true:
 - [ ] Add fixture apps for regression testing.
 - [x] Make release preflight fail on skipped Godot smoke in non-local release contexts.
 - [x] Keep `npm audit` clean for moderate and high issues, or document accepted exceptions.
-- [ ] Pin and periodically update GodotJS versions.
+- [x] Pin and periodically update GodotJS versions.
 
 ## P1: Documentation And Examples
 
