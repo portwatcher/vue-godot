@@ -704,14 +704,23 @@ async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
   const evidencePath =
     options.realDevicePath ?? resolveRealDeviceEvidencePath(process.env)
   const { evidence, errors: readErrors } = readRealDeviceEvidence(evidencePath)
-  const notReady = {
+  const status = {
     androidReady: false,
+    androidErrors: [],
+    errorCount: 0,
+    evidencePresent: Boolean(evidence),
     iosReady: false,
+    iosErrors: [],
+    metadataErrors: [],
     metadataReady: false,
+    path: describeRealDeviceEvidencePath(evidencePath),
     ready: false,
+    readErrors: [...readErrors],
+    runErrors: [],
   }
 
   if (!evidence) {
+    status.errorCount = readErrors.length
     blockers.push(
       [
         `real-device evidence missing at ${describeRealDeviceEvidencePath(
@@ -725,7 +734,7 @@ async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
         .filter(Boolean)
         .join('\n'),
     )
-    return notReady
+    return status
   }
 
   const metadataErrors = validateRealDeviceEvidenceMetadata(evidence, {
@@ -739,28 +748,31 @@ async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
     requireProductionProfile: true,
   })
   const errors = [...metadataErrors, ...androidErrors, ...iosErrors]
-  let metadataReady = metadataErrors.length === 0
-  const androidReady = metadataReady && androidErrors.length === 0
-  const iosReady = metadataReady && iosErrors.length === 0
+  status.metadataErrors = metadataErrors
+  status.androidErrors = androidErrors
+  status.iosErrors = iosErrors
+  status.metadataReady = metadataErrors.length === 0
+  status.androidReady = status.metadataReady && androidErrors.length === 0
+  status.iosReady = status.metadataReady && iosErrors.length === 0
 
   if (errors.length > 0) {
+    status.errorCount = errors.length
     blockers.push(
       [`real-device evidence is incomplete: ${relative(evidencePath)}`, ...errors]
         .filter(Boolean)
         .join('\n'),
     )
-    return {
-      androidReady,
-      iosReady,
-      metadataReady,
-      ready: false,
-    }
+    return status
   }
 
   if (!options.allowOpen) {
     const runErrors = await verifyRealDeviceEvidenceRuns(evidence)
     if (runErrors.length > 0) {
-      metadataReady = false
+      status.runErrors = runErrors
+      status.errorCount = runErrors.length
+      status.metadataReady = false
+      status.androidReady = false
+      status.iosReady = false
       blockers.push(
         [
           `real-device CI run evidence could not be verified: ${relative(
@@ -769,28 +781,29 @@ async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
           ...runErrors,
         ].join('\n'),
       )
-      return {
-        androidReady: false,
-        iosReady: false,
-        metadataReady,
-        ready: false,
-      }
+      return status
     }
   }
 
-  return {
-    androidReady,
-    iosReady,
-    metadataReady,
-    ready: true,
-  }
+  status.ready = true
+  return status
 }
 
 async function checkReleaseReadinessEvidence(blockers, options, expectedCommit) {
   const evidencePath = resolveReadinessEvidencePath(options)
   const { evidence, errors: readErrors } = readJsonEvidence(evidencePath)
+  const status = {
+    errorCount: 0,
+    evidencePresent: Boolean(evidence),
+    path: relative(evidencePath),
+    ready: false,
+    readErrors: [...readErrors],
+    runErrors: [],
+    validationErrors: [],
+  }
 
   if (!evidence) {
+    status.errorCount = readErrors.length
     blockers.push(
       [
         `release-readiness evidence missing at ${relative(evidencePath)}`,
@@ -800,18 +813,20 @@ async function checkReleaseReadinessEvidence(blockers, options, expectedCommit) 
         .filter(Boolean)
         .join('\n'),
     )
-    return false
+    return status
   }
 
   const errors = validateReleaseReadinessEvidence(evidence, expectedCommit)
+  status.validationErrors = errors
   if (errors.length > 0) {
+    status.errorCount = errors.length
     blockers.push(
       [
         `release-readiness evidence is incomplete: ${relative(evidencePath)}`,
         ...errors,
       ].join('\n'),
     )
-    return false
+    return status
   }
 
   if (!options.allowOpen) {
@@ -825,6 +840,8 @@ async function checkReleaseReadinessEvidence(blockers, options, expectedCommit) 
       },
     )
     if (runErrors.length > 0) {
+      status.runErrors = runErrors
+      status.errorCount = runErrors.length
       blockers.push(
         [
           `release-readiness CI run evidence could not be verified: ${relative(
@@ -833,11 +850,12 @@ async function checkReleaseReadinessEvidence(blockers, options, expectedCommit) 
           ...runErrors,
         ].join('\n'),
       )
-      return false
+      return status
     }
   }
 
-  return true
+  status.ready = true
+  return status
 }
 
 export function collectWarningMarkerHits(readFile = readText) {
@@ -1088,6 +1106,8 @@ function writeReadinessSummary(
   finalTodoRequirementStatuses,
   checks,
   todoItems,
+  realDeviceEvidence,
+  releaseReadinessEvidence,
   initialCiEvidence,
 ) {
   if (!options.summaryOutput) {
@@ -1121,6 +1141,8 @@ function writeReadinessSummary(
       })),
     },
     checks: { ...checks },
+    realDeviceEvidence: { ...realDeviceEvidence },
+    releaseReadinessEvidence: { ...releaseReadinessEvidence },
     initialCiEvidence: { ...initialCiEvidence },
     nextActions: collectReadinessNextActions(
       checks,
@@ -1161,11 +1183,12 @@ async function main() {
   const androidRealDeviceEvidenceReady =
     realDeviceEvidenceStatus.androidReady
   const iosRealDeviceEvidenceReady = realDeviceEvidenceStatus.iosReady
-  const releaseReadinessEvidenceReady = await checkReleaseReadinessEvidence(
+  const releaseReadinessEvidenceStatus = await checkReleaseReadinessEvidence(
     blockers,
     options,
     expectedCommit ?? undefined,
   )
+  const releaseReadinessEvidenceReady = releaseReadinessEvidenceStatus.ready
 
   const packageJson = readJson('package.json')
   const releaseToolingBlockers = collectReleaseToolingBlockers(packageJson)
@@ -1263,6 +1286,8 @@ async function main() {
       finalTodoRequirementStatuses,
       checks,
       todoItems,
+      realDeviceEvidenceStatus,
+      releaseReadinessEvidenceStatus,
       initialCiEvidenceStatus,
     )
   } catch (error) {

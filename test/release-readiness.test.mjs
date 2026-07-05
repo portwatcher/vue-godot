@@ -617,6 +617,29 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.deepEqual(summary.releaseToolingBlockers, [])
     assert.equal(summary.releaseWorkflowBlockerCount, 0)
     assert.deepEqual(summary.releaseWorkflowBlockers, [])
+    assert.deepEqual(summary.realDeviceEvidence, {
+      androidErrors: [],
+      androidReady: true,
+      errorCount: 0,
+      evidencePresent: true,
+      iosErrors: [],
+      iosReady: true,
+      metadataErrors: [],
+      metadataReady: true,
+      path: 'docs/real-device-evidence.example.json',
+      readErrors: [],
+      ready: true,
+      runErrors: [],
+    })
+    assert.deepEqual(summary.releaseReadinessEvidence, {
+      errorCount: 0,
+      evidencePresent: true,
+      path: 'docs/release-readiness-evidence.example.json',
+      readErrors: [],
+      ready: true,
+      runErrors: [],
+      validationErrors: [],
+    })
     assert.ok(Array.isArray(summary.nextActions))
     const ciEvidenceAction = summary.nextActions.find(
       (action) => action.id === 'ci-evidence',
@@ -824,6 +847,24 @@ test('release readiness summary includes missing evidence next actions', () => {
 
     assert.equal(result.status, 0)
     assert.equal(summary.checks.initialCiEvidence, true)
+    assert.equal(summary.realDeviceEvidence.evidencePresent, false)
+    assert.equal(summary.realDeviceEvidence.ready, false)
+    assert.equal(summary.realDeviceEvidence.androidReady, false)
+    assert.equal(summary.realDeviceEvidence.iosReady, false)
+    assert.equal(summary.realDeviceEvidence.errorCount, 1)
+    assert.ok(
+      summary.realDeviceEvidence.readErrors.some((error) =>
+        error.includes('missing-real-device-evidence.json'),
+      ),
+    )
+    assert.equal(summary.releaseReadinessEvidence.evidencePresent, false)
+    assert.equal(summary.releaseReadinessEvidence.ready, false)
+    assert.equal(summary.releaseReadinessEvidence.errorCount, 1)
+    assert.ok(
+      summary.releaseReadinessEvidence.readErrors.some((error) =>
+        error.includes('missing-release-readiness-evidence.json'),
+      ),
+    )
     const realDeviceAction = summary.nextActions.find(
       (action) => action.id === 'real-device-evidence',
     )

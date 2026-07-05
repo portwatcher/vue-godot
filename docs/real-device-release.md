@@ -61,12 +61,14 @@ readiness audit stays offline and prints final TODO proof status so it can be
 used before final evidence exists.
 Add `--summary-output release/release-readiness-summary.json` to either form to
 capture the current blockers, TODO counts, unchecked TODO item details, final TODO proof status,
-readiness check status, local Git state, separate Android/iOS real-device
-evidence status, CI workflow wiring status, release tooling/workflow blocker
-lists, public warning markers, package description warning status, and
-`nextActions` command hints for the local `npm run check`, initial CI evidence
-collection, push/dispatch commands, and the remaining evidence/finalizer work as
-JSON. The initial CI, real-device, and Release Preflight evidence actions begin
+readiness check and evidence status, local Git state, separate Android/iOS
+real-device evidence status with metadata, platform, and read errors,
+release-readiness evidence status, CI workflow wiring status,
+release tooling/workflow blocker lists, public warning markers, package
+description warning status, and `nextActions` command hints for the local
+`npm run check`, initial CI evidence collection, push/dispatch commands, and the
+remaining evidence/finalizer work as JSON. The initial CI, real-device, and
+Release Preflight evidence actions begin
 with `npm run check` before collecting CI or assembling evidence. The initial CI
 action captures Check and Godot Smoke, while Release Preflight is captured later
 after real-device evidence is committed. When `release/ci-runs.json`, or the

@@ -326,13 +326,13 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
-    /separate\s+Android\/iOS real-device\s+evidence\s+status/,
+    /separate\s+Android\/iOS\s+real-device\s+evidence\s+status/,
   )
   assert.match(production, /local Git state/)
   assert.match(production, /local\s+`npm run check`/)
   assert.match(
     production,
-    /initial CI, real-device, and Release Preflight evidence\s+actions begin with `npm run check`/,
+    /initial CI, real-device, and\s+Release Preflight evidence\s+actions begin with `npm run check`/,
   )
   assert.match(
     production,
@@ -374,7 +374,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /git commit -m "Finalize production readiness"/)
   assert.match(production, /before pushing or dispatching missing workflows/)
   assert.match(production, /initial CI evidence\s+collection/)
-  assert.match(production, /push\/dispatch commands/)
+  assert.match(production, /push\/dispatch\s+commands/)
   assert.match(production, /resolves evidence and finalizer commands/)
   assert.match(production, /tested release commit/)
   assert.match(production, /`nextActions` command hints/)
@@ -452,7 +452,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /local `npm run check`/)
   assert.match(
     readme,
-    /initial CI, real-device, and Release Preflight evidence actions begin with `npm run check`/,
+    /initial CI, real-device, and\s+Release Preflight evidence actions begin with `npm run check`/,
   )
   assert.match(
     readme,
@@ -492,7 +492,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /git commit -m "Add release readiness evidence"/)
   assert.match(readme, /git commit -m "Finalize production readiness"/)
   assert.match(readme, /initial CI evidence collection/)
-  assert.match(readme, /push\/dispatch commands/)
+  assert.match(readme, /push\/dispatch\s+commands/)
   assert.match(readme, /resolves evidence and finalizer commands/)
   assert.match(readme, /tested release commit/)
   assert.match(readme, /`nextActions` command hints/)
@@ -581,13 +581,13 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /tested release\s+commit recorded in evidence/)
   assert.match(
     checklist,
-    /separate\s+Android\/iOS real-device\s+evidence\s+status/,
+    /separate\s+Android\/iOS\s+real-device\s+evidence\s+status/,
   )
   assert.match(checklist, /local Git state/)
   assert.match(checklist, /local `npm run check`/)
   assert.match(
     checklist,
-    /initial CI, real-device, and Release Preflight evidence actions[\s\S]*begin\s+with `npm run check`/,
+    /initial CI, real-device, and\s+Release Preflight evidence actions[\s\S]*begin\s+with `npm run check`/,
   )
   assert.match(
     checklist,
@@ -628,7 +628,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /git add TODO\.md README\.md docs\/compatibility\.md docs\/production\.md docs\/real-device-release\.md/)
   assert.match(checklist, /git commit -m "Finalize production readiness"/)
   assert.match(checklist, /initial CI evidence\s+collection/)
-  assert.match(checklist, /push\/dispatch commands/)
+  assert.match(checklist, /push\/dispatch\s+commands/)
   assert.match(checklist, /resolves evidence and\s+finalizer commands/)
   assert.match(checklist, /tested\s+release commit/)
   assert.match(checklist, /`nextActions` command hints/)
@@ -798,7 +798,9 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(production, /final TODO proof status/)
   assert.match(production, /CI workflow wiring/)
   assert.match(production, /release tooling\/workflow\s+blocker lists/)
-  assert.match(production, /structured readiness check status/)
+  assert.match(production, /structured readiness check and evidence status/)
+  assert.match(production, /metadata,\s+platform, and read errors/)
+  assert.match(production, /release-readiness evidence status/)
   assert.match(production, /`nextActions` command hints/)
   assert.match(production, /release tooling\s+script wiring/)
   assert.match(production, /prematurely checked final TODO boxes/)
@@ -826,7 +828,9 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(readme, /final TODO proof status/)
   assert.match(readme, /CI workflow wiring/)
   assert.match(readme, /release tooling\/workflow blocker lists/)
-  assert.match(readme, /structured readiness check status/)
+  assert.match(readme, /structured readiness check and evidence status/)
+  assert.match(readme, /metadata\/platform\/read errors/)
+  assert.match(readme, /release-readiness evidence status/)
   assert.match(readme, /`nextActions` command hints/)
   assert.match(readme, /release tooling script wiring/)
   assert.match(readme, /prematurely checked final TODO boxes/)

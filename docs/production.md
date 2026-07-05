@@ -138,12 +138,14 @@ contact GitHub. Add
 `--summary-output release/release-readiness-summary.json` to write blockers,
 warning markers, package description warning status, release tooling/workflow
 blocker lists, TODO counts, unchecked TODO item details, final TODO proof status,
-structured readiness check status, local Git state, and `nextActions` command
-hints for the remaining evidence/finalizer work, including the local
-`npm run check`, initial CI evidence collection, push/dispatch commands, separate
-Android/iOS real-device evidence status, and CI workflow wiring status, as JSON
-for release handoff. The initial CI, real-device, and Release Preflight evidence
-actions begin with `npm run check` before collecting CI or assembling evidence.
+structured readiness check and evidence status, local Git state, and
+`nextActions` command hints for the remaining evidence/finalizer work, including
+the local `npm run check`, initial CI evidence collection, push/dispatch
+commands, separate Android/iOS real-device evidence status with metadata,
+platform, and read errors, release-readiness evidence status, and CI workflow
+wiring status, as JSON for release handoff. The initial CI, real-device, and
+Release Preflight evidence actions begin with `npm run check` before collecting
+CI or assembling evidence.
 The initial CI action captures Check and Godot Smoke, while Release Preflight is
 captured later after real-device evidence is committed. When
 `release/ci-runs.json`, or the file passed with `--ci-evidence <file>`,
