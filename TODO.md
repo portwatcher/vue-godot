@@ -142,7 +142,7 @@ The project is production ready only when all of these are true:
   - [x] `<A>`
   - [x] `<Audio>`
   - [x] `<Video>`
-  - [ ] `<Canvas>`
+  - [x] `<Canvas>`
 - [x] Add media/device UI:
   - [x] `<CameraView>` backed by `CameraServer` / `CameraFeed` / `CameraTexture` where available.
   - [x] Camera permission and plugin docs.

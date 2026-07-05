@@ -513,7 +513,13 @@
 
   <!-- ===== Section: Canvas ===== -->
   <Span>--- Canvas ---</Span>
-  <Canvas ref="canvasRef" :width="200" :height="80"></Canvas>
+  <Canvas
+    ref="canvasRef"
+    :width="200"
+    :height="80"
+    title="Canvas draw target"
+    :style="{ opacity: 0.95 }"
+  ></Canvas>
 
   <!-- ===== Section: Audio ===== -->
   <Span>--- Audio ---</Span>
