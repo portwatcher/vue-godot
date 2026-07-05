@@ -299,7 +299,11 @@ The project is production ready only when all of these are true:
 - [x] Add `docs/performance.md`.
 - [x] Add `docs/troubleshooting.md`.
 - [ ] Add serious native app demo.
+  - Acceptance criteria and required owner-provided design context are tracked
+    in [docs/example-apps.md](./docs/example-apps.md).
 - [ ] Add serious game UI demo.
+  - Acceptance criteria and required owner-provided design context are tracked
+    in [docs/example-apps.md](./docs/example-apps.md).
 - [x] Keep `apps/html-demo` updated for every HTML/browser/device API.
 
 ## P2: Ecosystem And Long-Term Parity

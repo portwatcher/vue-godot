@@ -151,6 +151,10 @@ export default class App extends Control {
 | [`apps/anchor-ordering`](./apps/anchor-ordering) | Anchor and layout ordering behavior                        |
 | [`apps/html-demo`](./apps/html-demo)             | `@vue-godot/html` components and `@vue-godot/browser` APIs |
 
+The remaining production-readiness examples must satisfy the
+[serious example app criteria](./docs/example-apps.md) before the project can
+remove preview/experimental language.
+
 ## How It Works
 
 Vue Godot is a custom Vue renderer that targets Godot's scene tree instead of the DOM.

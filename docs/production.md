@@ -49,6 +49,7 @@ Follow the dedicated permission and adapter docs before shipping:
 - [Permissions and export setup](./permissions.md)
 - [Plugin adapter guide](./plugins.md)
 - [Compatibility matrix](./compatibility.md)
+- [Serious example app criteria](./example-apps.md)
 - [Real device release checklist](./real-device-release.md)
 - [Migration guide](./migration.md)
 - [Performance guide](./performance.md)
@@ -119,7 +120,8 @@ needs:
 - real Godot smoke coverage in CI for supported APIs
 - Android and iOS export smoke coverage for selected device APIs
 - documented performance budgets
-- serious native app and game UI demos
+- serious native app and game UI demos that satisfy
+  [the example app criteria](./example-apps.md)
 - clean or documented security/dependency audit results
 
 Until those are complete, treat release builds as preview/alpha-quality and

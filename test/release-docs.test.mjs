@@ -58,3 +58,36 @@ test('release documentation links the real device checklist', () => {
     )
   }
 })
+
+test('serious example app criteria are documented and linked', () => {
+  const criteria = readDoc('docs/example-apps.md')
+
+  for (const pattern of [
+    /^# Serious Example App Criteria/m,
+    /^## Required Design Context/m,
+    /target audience and usage context/,
+    /primary jobs the user is trying to complete/,
+    /brand personality and interface tone/,
+    /^## Native App Demo/m,
+    /multi-screen routing/,
+    /network loading, failure, retry, and reachability\/offline states/,
+    /permission query\/request-denied flows/,
+    /^## Game UI Demo/m,
+    /Godot scene with Vue-rendered HUD or menu UI/,
+    /controller, keyboard, and touch-oriented navigation paths/,
+    /pause, settings, and inventory or loadout workflows/,
+    /^## Verification/m,
+    /test\/fixture-apps\.test\.mjs/,
+    /npm run check/,
+  ]) {
+    assert.match(criteria, pattern)
+  }
+
+  for (const relativePath of ['README.md', 'docs/production.md', 'TODO.md']) {
+    assert.match(
+      readDoc(relativePath),
+      /docs\/example-apps\.md|example-apps\.md|example app criteria/i,
+      `${relativePath} must link the serious example app criteria`,
+    )
+  }
+})
