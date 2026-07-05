@@ -180,6 +180,12 @@ Focusable controls (`<A>`, `<Button>`, `<Form>`, `<Input>`, `<Pressable>`, `<Sel
 
 The same controls also accept Godot focus graph NodePath strings: `focusNext`, `focusPrevious`, `focusNeighborLeft`, `focusNeighborTop`, `focusNeighborRight`, and `focusNeighborBottom`. These map to `focus_next`, `focus_previous`, and directional `focus_neighbor_*` props, so keyboard Tab traversal and controller/D-pad traversal can be made explicit. Focus traps, restoration, browser tab-order emulation, and modal focus containment are not implemented yet.
 
+### Touch Targets
+
+Focusable controls (`<A>`, `<Button>`, `<Form>`, `<Input>`, `<Pressable>`, `<Select>`, `<Switch>`, and `<Textarea>`) accept `minTouchTarget`. When provided, it clamps the backing Godot `Control` minimum width and height to at least that many pixels while preserving any larger explicit `style.width` or `style.height`.
+
+This is a layout-visible minimum size, not invisible browser-style hit slop outside the Control rect. Use it for touch and controller-friendly controls, for example `:min-touch-target="48"`.
+
 ## Component Mapping
 
 | HTML-like Component | Godot Node                                                             | Key Props             |
@@ -193,7 +199,7 @@ The same controls also accept Godot focus graph NodePath strings: `focusNext`, `
 | `<Label>`           | `Label` / inner `<Div>` wrapper                                        | `text`, `required`, `requiredIndicator`, `contentStyle` |
 | `<Modal>`           | `Window`                                                               | `v-model`, `title`, `width`, `height` |
 | `<Overlay>`         | `PanelContainer` plus inner `<Div>`                                    | `v-model`, `closeOnClick`, `blockInput`, `contentStyle` |
-| `<Pressable>`       | `PanelContainer`                                                       | `disabled`, `longPressDelay`, interaction events |
+| `<Pressable>`       | `PanelContainer`                                                       | `disabled`, `longPressDelay`, `minTouchTarget`, interaction events |
 | `<Progress>`        | `ProgressBar`                                                          | `value`, `min`, `max`, `indeterminate`, `showPercentage` |
 | `<SafeAreaView>`    | `MarginContainer` / `PanelContainer`                                   | `edges`, `fallbackInsets`, `contentStyle` |
 | `<Screen>`          | `Control` / `PanelContainer` plus inner `<Div>`                        | `visible`, `fullRect`, `contentStyle` |
@@ -218,6 +224,7 @@ The same controls also accept Godot focus graph NodePath strings: `focusNext`, `
 | HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Dialog`, `Div`, `Form`, `Img`, `Input`, `KeyboardAvoidingView`, `Label`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `SafeAreaView`, `Screen`, `ScreenStack`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`, `VirtualList`) | Vue components backed by Godot nodes                                                                     |
 | Shared accessibility props (`accessibilityLabel`, `ariaLabel`, `aria-label`, `accessibilityHint`, `title`)                              | Tooltip-backed labels and hints for Control-backed components                                            |
 | Shared focus props (`autoFocus`, `autofocus`, `focusNext`, `focusPrevious`, `focusNeighbor*`)                                            | Mount-time focus and explicit Godot focus graph traversal for focusable controls                         |
+| Shared touch target prop (`minTouchTarget`)                                                                                            | Minimum Godot Control hit size for focusable controls                                                    |
 | `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
 | `registerFontFamily`, `unregisterFontFamily`, `parseFontFamilyList`                                                                     | Registers CSS `fontFamily` names to local Godot font resources and parses CSS fallback lists              |
@@ -537,6 +544,7 @@ Routes are plain objects with `name`, optional `title`, `params`, and `meta`. Sl
 ```vue
 <Pressable
   :long-press-delay="500"
+  :min-touch-target="48"
   :style="{ width: 240, backgroundColor: '#1f2937' }"
   @press="save"
   @long-press="openMenu"
@@ -548,7 +556,7 @@ Routes are plain objects with `name`, optional `title`, `params`, and `meta`. Sl
 </Pressable>
 ```
 
-It supports `disabled`, `longPressDelay`, `style`, and default slot content. Events are `press`, `click`, `longPress`, `pressIn`, `pressOut`, `hoverIn`, `hoverOut`, `focus`, `blur`, and `stateChange`. The default slot also receives `{ hovered, pressed, focused, disabled }`.
+It supports `disabled`, `longPressDelay`, `minTouchTarget`, `style`, and default slot content. Events are `press`, `click`, `longPress`, `pressIn`, `pressOut`, `hoverIn`, `hoverOut`, `focus`, `blur`, and `stateChange`. The default slot also receives `{ hovered, pressed, focused, disabled }`.
 
 ### SafeAreaView layout scope
 
@@ -696,6 +704,7 @@ This package is in early development. Currently scaffolded:
 - [x] Tooltip-backed accessibility labels and hints on Control components
 - [x] Mount-time `autoFocus` / `autofocus` on focusable controls
 - [x] Explicit focus traversal NodePath props on focusable controls
+- [x] Opt-in minimum touch target sizing on focusable controls
 - [x] Theme override application (margin wrappers plus `StyleBoxFlat` border and corner radius props)
 - [x] Texture-backed background images via `backgroundImage: url(...)`
 - [x] Basic transform mapping (`translate`, `scale`, `rotate`)

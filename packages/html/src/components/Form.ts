@@ -17,6 +17,10 @@ import {
   focusPropOptions,
 } from '../utils/focus.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
+import {
+  applyMinTouchTargetProps,
+  touchTargetPropOptions,
+} from '../utils/touchTarget.js'
 import { Div } from './Div.js'
 
 /**
@@ -39,6 +43,7 @@ export const Form = defineComponent({
     },
     ...accessibilityPropOptions,
     ...focusPropOptions,
+    ...touchTargetPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -76,6 +81,7 @@ export const Form = defineComponent({
       }
 
       applyCommonControlStyleProps(nodeProps, props.style, 'Form')
+      applyMinTouchTargetProps(nodeProps, props)
       applyAccessibilityProps(nodeProps, props)
       applyFocusTraversalProps(nodeProps, props)
       if (props.disabled !== true) {

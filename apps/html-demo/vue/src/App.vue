@@ -249,6 +249,7 @@
     accessibility-hint="Activates on pointer, keyboard, or controller accept"
     :disabled="pressableDisabled"
     :long-press-delay="400"
+    :min-touch-target="48"
     :style="{
       width: 320,
       backgroundColor: pressableState.pressed

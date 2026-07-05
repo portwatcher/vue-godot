@@ -18,6 +18,10 @@ import {
   warnUnsupportedStyleProps,
   type HtmlStyle,
 } from '../utils/styleMapping.js'
+import {
+  applyMinTouchTargetProps,
+  touchTargetPropOptions,
+} from '../utils/touchTarget.js'
 
 /** Type guard for Godot nodes that expose a `text` property. */
 function hasTextProperty(node: unknown): node is { text: string } {
@@ -82,6 +86,7 @@ export const Textarea = defineComponent({
     },
     ...accessibilityPropOptions,
     ...focusPropOptions,
+    ...touchTargetPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -140,6 +145,7 @@ export const Textarea = defineComponent({
 
       applyControlSizeProps(nodeProps, style)
       applyFontStyleProps(nodeProps, style)
+      applyMinTouchTargetProps(nodeProps, props)
       applyDisplayAndOpacityProps(nodeProps, style)
       applyTransformStyleProps(nodeProps, style)
       applyAccessibilityProps(nodeProps, props)

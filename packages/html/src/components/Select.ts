@@ -19,6 +19,10 @@ import {
   warnUnsupportedStyleProps,
   type HtmlStyle,
 } from '../utils/styleMapping.js'
+import {
+  applyMinTouchTargetProps,
+  touchTargetPropOptions,
+} from '../utils/touchTarget.js'
 
 /** Type guard for Godot OptionButton-like nodes. */
 interface OptionButtonLike {
@@ -146,6 +150,7 @@ export const Select = defineComponent({
     },
     ...accessibilityPropOptions,
     ...focusPropOptions,
+    ...touchTargetPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -206,6 +211,7 @@ export const Select = defineComponent({
 
       applyControlSizeProps(nodeProps, style)
       applyFontStyleProps(nodeProps, style)
+      applyMinTouchTargetProps(nodeProps, props)
       applyDisplayAndOpacityProps(nodeProps, style)
       applyTransformStyleProps(nodeProps, style)
       applyAccessibilityProps(nodeProps, props)

@@ -14,6 +14,10 @@ import {
 } from '../utils/focus.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
+import {
+  applyMinTouchTargetProps,
+  touchTargetPropOptions,
+} from '../utils/touchTarget.js'
 
 /**
  * <A> — link component.
@@ -38,6 +42,7 @@ export const A = defineComponent({
     },
     ...accessibilityPropOptions,
     ...focusPropOptions,
+    ...touchTargetPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -61,6 +66,7 @@ export const A = defineComponent({
       }
 
       applyCommonControlStyleProps(nodeProps, props.style, 'A')
+      applyMinTouchTargetProps(nodeProps, props)
       applyAccessibilityProps(nodeProps, props, {
         hint: props.disabled ? undefined : props.href,
       })

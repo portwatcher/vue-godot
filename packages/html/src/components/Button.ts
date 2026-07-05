@@ -11,6 +11,10 @@ import {
 } from '../utils/focus.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
+import {
+  applyMinTouchTargetProps,
+  touchTargetPropOptions,
+} from '../utils/touchTarget.js'
 
 /**
  * <Button> — interactive button component.
@@ -50,6 +54,7 @@ export const Button = defineComponent({
     },
     ...accessibilityPropOptions,
     ...focusPropOptions,
+    ...touchTargetPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -75,6 +80,7 @@ export const Button = defineComponent({
       }
 
       applyCommonControlStyleProps(nodeProps, style, 'Button')
+      applyMinTouchTargetProps(nodeProps, props)
       applyAccessibilityProps(nodeProps, props)
       applyFocusTraversalProps(nodeProps, props)
       if (props.disabled !== true) {

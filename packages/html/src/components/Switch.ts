@@ -11,6 +11,10 @@ import {
 } from '../utils/focus.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
+import {
+  applyMinTouchTargetProps,
+  touchTargetPropOptions,
+} from '../utils/touchTarget.js'
 
 /**
  * <Switch> — binary toggle backed by Godot CheckButton.
@@ -32,6 +36,7 @@ export const Switch = defineComponent({
     },
     ...accessibilityPropOptions,
     ...focusPropOptions,
+    ...touchTargetPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -58,6 +63,7 @@ export const Switch = defineComponent({
       }
 
       applyCommonControlStyleProps(nodeProps, props.style, 'Switch')
+      applyMinTouchTargetProps(nodeProps, props)
       applyAccessibilityProps(nodeProps, props)
       applyFocusTraversalProps(nodeProps, props)
       if (props.disabled !== true) {

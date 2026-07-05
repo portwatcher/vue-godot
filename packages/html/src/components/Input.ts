@@ -19,6 +19,10 @@ import {
   warnUnsupportedStyleProps,
   type HtmlStyle,
 } from '../utils/styleMapping.js'
+import {
+  applyMinTouchTargetProps,
+  touchTargetPropOptions,
+} from '../utils/touchTarget.js'
 
 /**
  * Maps HTML `<input type="...">` to the Godot node tag and
@@ -152,6 +156,7 @@ export const Input = defineComponent({
     },
     ...accessibilityPropOptions,
     ...focusPropOptions,
+    ...touchTargetPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -256,6 +261,7 @@ export const Input = defineComponent({
       if (mapping.tag === 'LineEdit') {
         applyFontStyleProps(nodeProps, style)
       }
+      applyMinTouchTargetProps(nodeProps, props)
       applyDisplayAndOpacityProps(nodeProps, style)
       applyTransformStyleProps(nodeProps, style)
       applyAccessibilityProps(nodeProps, props)
