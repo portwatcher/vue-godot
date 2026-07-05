@@ -1,4 +1,4 @@
-import { FontVariation } from 'godot'
+import { createFontStyleOverride } from './fontLoader.js'
 import { createOpacityModulate, parseGodotColor } from './godotColor.js'
 import {
   toNumericPixels,
@@ -8,20 +8,6 @@ import {
 import { resolveTransformStyle } from './transformStyle.js'
 
 export type GodotPropBag = Record<string, unknown>
-
-const BOLD_EMBOLDEN_STRENGTH = 0.7
-
-let boldFontVariation: FontVariation | null = null
-
-function getBoldFontVariation(): FontVariation {
-  if (!boldFontVariation) {
-    // Godot does not provide CSS-style font matching here. A FontVariation with
-    // embolden gives a native bold approximation using the active theme font.
-    boldFontVariation = new FontVariation()
-    boldFontVariation.variation_embolden = BOLD_EMBOLDEN_STRENGTH
-  }
-  return boldFontVariation
-}
 
 export function applyControlSizeProps(
   nodeProps: GodotPropBag,
@@ -45,8 +31,12 @@ export function applyFontStyleProps(
     nodeProps['theme_override_font_sizes/font_size'] = style.fontSize
   }
 
-  if (style?.fontWeight === 'bold') {
-    nodeProps['theme_override_fonts/font'] = getBoldFontVariation()
+  const fontOverride = createFontStyleOverride(
+    style?.fontFamily,
+    style?.fontWeight,
+  )
+  if (fontOverride) {
+    nodeProps['theme_override_fonts/font'] = fontOverride
   }
 
   if (typeof style?.color === 'string') {

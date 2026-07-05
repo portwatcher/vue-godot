@@ -79,6 +79,7 @@ Rather than embedding a layout engine like Yoga, we map a CSS flexbox subset to 
 | `borderColor` / `borderWidth` / `borderRadius` | `StyleBoxFlat` border and corner-radius props                 |
 | `transform: translate/scale/rotate(...)`       | Godot `position`, `scale`, and `rotation` props                |
 | `color: <color>`                              | `theme_override_colors/font_color` on text controls             |
+| `fontFamily: <family list>`                   | Registered/local Godot fonts with fallback `FontVariation`      |
 | `fontWeight: 'bold'`                          | `theme_override_fonts/font` with `FontVariation` embolden       |
 | `width` / `height`                            | `custom_minimum_size`                                           |
 | `display: none`                               | `visible = false`                                               |
@@ -128,6 +129,7 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 | `borderRadius`, `borderTopLeftRadius`, `borderTopRightRadius`, `borderBottomRightRadius`, `borderBottomLeftRadius` | Maps to `StyleBoxFlat` corner radii. |
 | `color` | Maps text-capable controls to `theme_override_colors/font_color`. |
 | `fontSize` | Maps text-capable controls to `theme_override_font_sizes/font_size`. |
+| `fontFamily` | Supports registered family names from `registerFontFamily()` and direct local font paths in CSS fallback-list order. |
 | `fontWeight` | Supports `'bold'` via a Godot `FontVariation` embolden override. |
 | `textTransform` | Supports `'uppercase'` on `<Span>` and `<Label>`. |
 | `textAlign` | Maps `<Span>` and `<Label>` to Godot horizontal alignment. |
@@ -139,6 +141,20 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 Background images use the same loader as `<Img>` for local Godot paths, relative paths, data URIs, blob URLs, and remote URLs. CSS gradients, multiple backgrounds, repeat modes, and precise `background-size` / `background-position` behavior are not part of the current subset; the loaded texture is stretched to the panel bounds.
 
 Transforms intentionally cover only the basic Godot-backed subset. Matrix, perspective, skew, transform-origin, CSS transitions, and keyframe animations are not part of the current style subset.
+
+Font family loading is local and Godot-backed. Register CSS family names with `registerFontFamily(name, source, fallbacks)` or pass direct local font paths such as `./fonts/Inter.ttf` in `fontFamily`; remote font downloads and CSS `@font-face` parsing are not part of the current subset.
+
+```ts
+import { registerFontFamily } from '@vue-godot/html'
+
+registerFontFamily('Inter', './fonts/Inter.ttf', [
+  './fonts/NotoSansSymbols.ttf',
+])
+```
+
+```vue
+<Span :style="{ fontFamily: 'Inter, sans-serif', fontSize: 18 }">Hello</Span>
+```
 
 ## Component Mapping
 
@@ -178,6 +194,7 @@ Transforms intentionally cover only the basic Godot-backed subset. Matrix, persp
 | HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Dialog`, `Div`, `Form`, `Img`, `Input`, `KeyboardAvoidingView`, `Label`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `SafeAreaView`, `Screen`, `ScreenStack`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`, `VirtualList`) | Vue components backed by Godot nodes                                                                     |
 | `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
+| `registerFontFamily`, `unregisterFontFamily`, `parseFontFamilyList`                                                                     | Registers CSS `fontFamily` names to local Godot font resources and parses CSS fallback lists              |
 | `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |
 
 ### Lowercase tag compatibility (migrating existing SPAs)
@@ -443,7 +460,7 @@ It supports `disabled`, `submitOnAccept`, `resetOnCancel`, `style`, and `content
 </Label>
 ```
 
-It supports `text`, `required`, `requiredIndicator`, `style`, and `contentStyle`. Text styling uses the same Godot-backed subset as `<Span>`: `fontSize`, `fontWeight`, `color`, `textAlign`, `textTransform`, `overflowWrap`, and `overflow`. The component groups label text with slot content visually; browser `for` / `id` focus binding is not implemented.
+It supports `text`, `required`, `requiredIndicator`, `style`, and `contentStyle`. Text styling uses the same Godot-backed subset as `<Span>`: `fontSize`, `fontFamily`, `fontWeight`, `color`, `textAlign`, `textTransform`, `overflowWrap`, and `overflow`. The component groups label text with slot content visually; browser `for` / `id` focus binding is not implemented.
 
 ### Screen and screen stack scope
 
@@ -635,7 +652,7 @@ This package is in early development. Currently scaffolded:
 - [x] `<Pressable>` — focusable interactive wrapper (`PanelContainer`, hover/focus/press/long-press state)
 - [x] `<SafeAreaView>` — safe-area layout helper (`DisplayServer.get_display_safe_area()`, margin padding, fallback insets)
 - [x] `<KeyboardAvoidingView>` — virtual keyboard layout helper (`DisplayServer.virtual_keyboard_get_height()`, padding/position/height behavior, fallback height)
-- [x] `<Span>` — text display with `fontSize`, `fontWeight`, `color`, `textAlign`, `textTransform`, `overflowWrap`
+- [x] `<Span>` — text display with `fontSize`, `fontFamily`, `fontWeight`, `color`, `textAlign`, `textTransform`, `overflowWrap`
 - [x] `<Switch>` — binary toggle (`CheckButton`, `v-model`, `label`, `disabled`)
 - [x] `<Button>` — click handler with `@click`, `disabled`
 - [x] `<Input>` — text, password, checkbox, radio, range inputs with `v-model`
@@ -648,6 +665,7 @@ This package is in early development. Currently scaffolded:
 - [x] `<A>` — link/anchor (`LinkButton`, `href`, `@click`)
 - [x] Theme override application (gap, padding)
 - [x] Theme override application (colors via `backgroundColor` and text `color`, bold text via `FontVariation`)
+- [x] Registered/local font family loading with fallback fonts
 - [x] Theme override application (margin wrappers plus `StyleBoxFlat` border and corner radius props)
 - [x] Texture-backed background images via `backgroundImage: url(...)`
 - [x] Basic transform mapping (`translate`, `scale`, `rotate`)

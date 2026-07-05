@@ -71,6 +71,7 @@ export interface HtmlStyle {
   borderBottomRightRadius?: StyleLength
   borderBottomLeftRadius?: StyleLength
   color?: string
+  fontFamily?: string
   fontSize?: number
   fontWeight?: 'normal' | 'bold'
   textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize'
@@ -104,6 +105,7 @@ export const supportedHtmlStyleKeys = [
   'flex',
   'flexDirection',
   'flexWrap',
+  'fontFamily',
   'fontSize',
   'fontWeight',
   'gap',

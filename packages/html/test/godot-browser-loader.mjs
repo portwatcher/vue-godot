@@ -52,11 +52,34 @@ export function load(url, context, nextLoad) {
           }
         }
 
-        export class FontVariation {
+        export class Font {
           constructor() {
+            this.__mock = true
+            this.__kind = 'font'
+            this.path = ''
+            this.fallbacks = []
+          }
+
+          get_font_name() {
+            return this.path
+          }
+        }
+
+        export class FontFile extends Font {
+          constructor() {
+            super()
+            this.__kind = 'font-file'
+          }
+        }
+
+        export class FontVariation extends Font {
+          constructor() {
+            super()
             this.__mock = true
             this.__kind = 'font-variation'
             this.variation_embolden = 0
+            this.base_font = null
+            this.fallbacks = []
           }
         }
 
@@ -105,6 +128,11 @@ export function load(url, context, nextLoad) {
         export const ResourceLoader = {
           load(path) {
             if (!path) return null
+            if (/\\.(ttf|otf|woff2?|pfb|pfm|fnt|font|tres|res)$/i.test(path)) {
+              const font = new FontFile()
+              font.path = path
+              return font
+            }
             if (path.endsWith('.wav')) {
               return { __mock: true, __kind: 'wav', path, loop_mode: 0 }
             }

@@ -210,6 +210,7 @@
   <Span
     :style="{
       fontSize: 24,
+      fontFamily: 'system-ui, sans-serif',
       fontWeight: 'bold',
       color: 'orange',
       textAlign: 'center',

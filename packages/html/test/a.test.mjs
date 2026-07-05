@@ -6,6 +6,16 @@ import { h } from '@vue/runtime-core'
 register(new URL('./godot-browser-loader.mjs', import.meta.url).href)
 
 const { A } = await import('../dist/components/A.js')
+const {
+  clearFontFamilyRegistryForTests,
+  clearFontLoaderCacheForTests,
+  registerFontFamily,
+} = await import('../dist/utils/fontLoader.js')
+
+test.beforeEach(() => {
+  clearFontFamilyRegistryForTests()
+  clearFontLoaderCacheForTests()
+})
 
 function renderA(props = {}, slotChildren = []) {
   const emitted = []
@@ -48,11 +58,13 @@ test('forwards pressed signal as click event', () => {
 })
 
 test('maps common text control styles', () => {
+  registerFontFamily('Demo Sans', './fonts/DemoSans.ttf')
   const { vnode } = renderA(
     {
       style: {
         width: '120px',
         height: '32px',
+        fontFamily: 'Demo Sans, sans-serif',
         fontSize: 18,
         color: '#ff0000',
         opacity: 0.5,
@@ -63,6 +75,10 @@ test('maps common text control styles', () => {
 
   assert.equal(vnode.props['custom_minimum_size:x'], 120)
   assert.equal(vnode.props['custom_minimum_size:y'], 32)
+  assert.equal(
+    vnode.props['theme_override_fonts/font'].path,
+    'res://fonts/DemoSans.ttf',
+  )
   assert.equal(vnode.props['theme_override_font_sizes/font_size'], 18)
   const fontColor = vnode.props['theme_override_colors/font_color']
   assert.equal(fontColor.__mock, true)

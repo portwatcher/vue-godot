@@ -219,6 +219,7 @@ test('detects unsupported style keys against the documented subset', () => {
       margin: 12,
       backgroundImage: 'url(panel.png)',
       transform: 'scale(1.1)',
+      fontFamily: 'Inter, sans-serif',
       boxShadow: '0 0 4px black',
     }),
     ['boxShadow'],
@@ -228,6 +229,7 @@ test('detects unsupported style keys against the documented subset', () => {
   assert.equal(supportedHtmlStyleKeys.includes('borderRadius'), true)
   assert.equal(supportedHtmlStyleKeys.includes('margin'), true)
   assert.equal(supportedHtmlStyleKeys.includes('transform'), true)
+  assert.equal(supportedHtmlStyleKeys.includes('fontFamily'), true)
 })
 
 test('warns once per unsupported style key and component', () => {

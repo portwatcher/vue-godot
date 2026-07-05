@@ -56,6 +56,11 @@ export { parseHexColor } from './utils/colorParser.js'
 export { parseDataUri } from './utils/dataUri.js'
 export type { DataUriParts } from './utils/dataUri.js'
 export {
+  parseFontFamilyList,
+  registerFontFamily,
+  unregisterFontFamily,
+} from './utils/fontLoader.js'
+export {
   createStreamFromBuffer,
   fetchRemoteStream,
   loadStream,
