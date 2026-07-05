@@ -15,6 +15,9 @@ document scroll restoration, server fallback, or page reload navigation.
 
 Install browser globals before creating the router. `createWebHistory()` works
 against the in-memory history/location pair supplied by `@vue-godot/browser`.
+For a generated starter with this wiring, run `vue-godot create app my-app
+--router`; add `--storage`, `--network`, and `--device-api` when you also want
+those helper modules scaffolded.
 
 ```ts
 import { createApp } from '@vue-godot/runtime-tscn'

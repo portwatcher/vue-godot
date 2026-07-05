@@ -10,6 +10,9 @@ import {
   generateHtmlViteConfig,
   getTemplatesDir,
   newPackageJson,
+  resolveProjectFeatures,
+  writeStarterFeatureFiles,
+  type ProjectFeatureOptions,
 } from './integrate.js'
 
 export type CreateProfile = 'app' | 'game-ui'
@@ -17,14 +20,16 @@ export type CreateProfile = 'app' | 'game-ui'
 export interface ResolvedCreateProfile {
   html: boolean
   device: boolean
+  router: boolean
+  storage: boolean
+  network: boolean
+  deviceApi: boolean
   htmlStarter: 'default' | CreateProfile
 }
 
-export interface CreateOptions {
+export interface CreateOptions extends ProjectFeatureOptions {
   projectName: string
   force: boolean
-  html?: boolean
-  device?: boolean
   profile?: CreateProfile
 }
 
@@ -58,35 +63,61 @@ function runCommand(
 export function resolveCreateProfile(options: {
   html?: boolean
   device?: boolean
+  router?: boolean
+  storage?: boolean
+  network?: boolean
+  deviceApi?: boolean
   profile?: CreateProfile
 }): ResolvedCreateProfile {
+  const baseFeatures = {
+    router: options.router,
+    storage: options.storage,
+    network: options.network,
+    deviceApi: options.deviceApi,
+  }
   switch (options.profile) {
-    case 'app':
-      return {
+    case 'app': {
+      const features = resolveProjectFeatures({
+        ...baseFeatures,
         html: true,
         device: true,
+      })
+      return {
+        ...features,
         htmlStarter: 'app',
       }
+    }
 
-    case 'game-ui':
-      return {
+    case 'game-ui': {
+      const features = resolveProjectFeatures({
+        ...baseFeatures,
         html: true,
-        device: options.device === true,
+        device: options.device,
+      })
+      return {
+        ...features,
         htmlStarter: 'game-ui',
       }
+    }
 
-    default:
+    default: {
+      const features = resolveProjectFeatures({
+        ...baseFeatures,
+        html: options.html,
+        device: options.device,
+      })
       return {
-        html: options.html === true,
-        device: options.device === true,
+        ...features,
         htmlStarter: 'default',
       }
+    }
   }
 }
 
 export async function create(options: CreateOptions): Promise<void> {
   const { projectName, force } = options
-  const { html, device, htmlStarter } = resolveCreateProfile(options)
+  const { html, device, htmlStarter, router, storage, network, deviceApi } =
+    resolveCreateProfile(options)
   const absTarget = path.resolve(projectName)
   const packageName = path.basename(absTarget)
 
@@ -165,18 +196,29 @@ export async function create(options: CreateOptions): Promise<void> {
     )
 
     const mainTsPath = path.join(vueDir, 'src', 'main.ts')
-    fs.writeFileSync(mainTsPath, generateHtmlMainTs())
+    fs.writeFileSync(
+      mainTsPath,
+      generateHtmlMainTs({ router, storage, network, deviceApi }),
+    )
     console.log(
       `  updated ${path.relative(process.cwd(), mainTsPath)} (html mode)`,
     )
 
     const appVuePath = path.join(vueDir, 'src', 'App.vue')
-    fs.writeFileSync(appVuePath, generateHtmlAppVue(htmlStarter))
+    fs.writeFileSync(
+      appVuePath,
+      generateHtmlAppVue(htmlStarter, { router, storage, network, deviceApi }),
+    )
     console.log(
       `  updated ${path.relative(process.cwd(), appVuePath)} (html mode)`,
     )
 
     addHtmlVolarPlugin(vueDir, process.cwd())
+    writeStarterFeatureFiles(
+      vueDir,
+      { router, storage, network, deviceApi },
+      process.cwd(),
+    )
   }
 
   /* --- package.json --- */
@@ -195,8 +237,18 @@ export async function create(options: CreateOptions): Promise<void> {
   const pkgJsonPath = path.join(absTarget, 'package.json')
   fs.writeFileSync(
     pkgJsonPath,
-    JSON.stringify(newPackageJson(packageName, { html, device }), null, 2) +
-      '\n',
+    JSON.stringify(
+      newPackageJson(packageName, {
+        html,
+        device,
+        router,
+        storage,
+        network,
+        deviceApi,
+      }),
+      null,
+      2,
+    ) + '\n',
   )
   console.log(`  created ${path.relative(process.cwd(), pkgJsonPath)}`)
 

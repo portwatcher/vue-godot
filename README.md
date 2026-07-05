@@ -37,12 +37,13 @@ For app and game UI starters, use a named profile:
 ```bash
 npx vue-godot create app my-native-app
 npx vue-godot create game-ui my-hud
+npx vue-godot create app my-routed-app --router --storage --network --device-api
 ```
 
 The `app` profile enables HTML-like components, browser APIs, and
 `@vue-godot/device` for native adapter registration. The `game-ui` profile
-creates an HTML-like HUD/control starter; add `--device` if that project also
-needs native adapter APIs.
+creates an HTML-like HUD/control starter. Use `--router`, `--storage`,
+`--network`, and `--device-api` to scaffold starter modules for those app APIs.
 
 ### Add Vue to an existing Godot project
 
@@ -257,7 +258,7 @@ Vite compiles `vue/src/main.ts` into `dist/app.js` (CJS format, `godot` external
 ```bash
 npm run build        # packages + demo apps
 npm run test         # package tests plus script utility tests
-npm run smoke:cli    # clean create/create --html/create app/create game-ui plus generated HTML watch rebuild
+npm run smoke:cli    # clean create/create --html/create app/create game-ui/feature starter plus generated HTML watch rebuild
 npm run smoke:public-cli # post-publish create --html smoke using public npm packages
 npm run smoke:godot  # optional: runs apps/html-demo lifecycle smoke with GODOT_BIN/godot4/godot
 npm run smoke:generated-godot # optional: generated create --html app under Godot + watch rebuild

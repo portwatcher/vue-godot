@@ -85,6 +85,28 @@ function assertProductionSupportConfigured(target) {
   }
 }
 
+function assertStarterFeatureFilesConfigured(target) {
+  const packageJsonPath = path.join(target, 'package.json')
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
+  if (packageJson.dependencies?.['vue-router'] !== '~4.5.1') {
+    throw new Error(`${packageJsonPath} must include vue-router`)
+  }
+
+  for (const relativePath of [
+    'vue/src/app/router.ts',
+    'vue/src/app/storage.ts',
+    'vue/src/app/network.ts',
+    'vue/src/app/device.ts',
+    'vue/src/screens/HomeScreen.vue',
+    'vue/src/screens/SettingsScreen.vue',
+  ]) {
+    const filePath = path.join(target, relativePath)
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`${filePath} must be generated`)
+    }
+  }
+}
+
 async function waitForWatchCondition(state, description, predicate) {
   const startedAt = Date.now()
   while (Date.now() - startedAt < 30_000) {
@@ -249,4 +271,16 @@ assertProductionSupportConfigured(gameUiAppDir)
 assertVueSourceIgnoredByGodot(gameUiAppDir)
 assertGeneratedOutputIgnoredByGodot(gameUiAppDir)
 assertHtmlVolarPluginConfigured(gameUiAppDir)
+const featureAppDir = smokeProject(
+  cliPath,
+  workspaceDir,
+  'feature-app',
+  ['app', '--router', '--storage', '--network', '--device-api'],
+  env,
+)
+assertProductionSupportConfigured(featureAppDir)
+assertVueSourceIgnoredByGodot(featureAppDir)
+assertGeneratedOutputIgnoredByGodot(featureAppDir)
+assertHtmlVolarPluginConfigured(featureAppDir)
+assertStarterFeatureFilesConfigured(featureAppDir)
 console.log('[smoke-cli] create profile smoke checks passed')

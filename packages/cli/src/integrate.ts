@@ -8,11 +8,28 @@ export interface IntegrateOptions {
   force: boolean
   html?: boolean
   device?: boolean
+  router?: boolean
+  storage?: boolean
+  network?: boolean
+  deviceApi?: boolean
 }
 
 export interface ProjectFeatureOptions {
   html?: boolean
   device?: boolean
+  router?: boolean
+  storage?: boolean
+  network?: boolean
+  deviceApi?: boolean
+}
+
+export interface ResolvedProjectFeatures {
+  html: boolean
+  device: boolean
+  router: boolean
+  storage: boolean
+  network: boolean
+  deviceApi: boolean
 }
 
 export type HtmlStarterProfile = 'default' | 'app' | 'game-ui'
@@ -31,6 +48,7 @@ const PACKAGE_SPECS = {
   '@vue-godot/html': '^0.0.1',
   '@vue-godot/runtime-tscn': '^0.0.2',
   '@vue/runtime-core': '^3.5.14',
+  'vue-router': '~4.5.1',
 } as const
 
 function isStringRecord(value: unknown): value is Record<string, string> {
@@ -225,17 +243,38 @@ export function copyProductionSupportFiles(targetDir: string, cwd: string): void
   }
 }
 
-function normalizeProjectFeatures(
+function normalizeProjectFeaturesInput(
   options?: boolean | ProjectFeatureOptions,
 ): ProjectFeatureOptions {
   return typeof options === 'boolean' ? { html: options } : (options ?? {})
+}
+
+export function resolveProjectFeatures(
+  options?: boolean | ProjectFeatureOptions,
+): ResolvedProjectFeatures {
+  const normalized = normalizeProjectFeaturesInput(options)
+  const router = normalized.router === true
+  const storage = normalized.storage === true
+  const network = normalized.network === true
+  const deviceApi = normalized.deviceApi === true
+  const usesFeatureStarter = router || storage || network || deviceApi
+  const html = normalized.html === true || usesFeatureStarter
+
+  return {
+    html,
+    device: normalized.device === true || html || deviceApi,
+    router,
+    storage,
+    network,
+    deviceApi,
+  }
 }
 
 export function newPackageJson(
   name: string,
   options?: boolean | ProjectFeatureOptions,
 ): Record<string, unknown> {
-  const { html, device } = normalizeProjectFeatures(options)
+  const { html, device, router } = resolveProjectFeatures(options)
   const packageOverrides = readPackageSpecOverrides()
   const deps: Record<string, string> = {
     '@vue-godot/runtime-tscn': packageSpec(
@@ -250,6 +289,9 @@ export function newPackageJson(
       packageOverrides,
     )
     deps['@vue-godot/html'] = packageSpec('@vue-godot/html', packageOverrides)
+  }
+  if (router) {
+    deps['vue-router'] = packageSpec('vue-router', packageOverrides)
   }
   if (html || device) {
     deps['@vue-godot/device'] = packageSpec(
@@ -341,12 +383,34 @@ export default defineConfig({
 `
 }
 
-export function generateHtmlMainTs(): string {
+type StarterModuleOptions = Pick<
+  ResolvedProjectFeatures,
+  'router' | 'storage' | 'network' | 'deviceApi'
+>
+
+const defaultStarterModuleOptions: StarterModuleOptions = {
+  router: false,
+  storage: false,
+  network: false,
+  deviceApi: false,
+}
+
+function normalizeStarterModuleOptions(
+  options?: Partial<StarterModuleOptions>,
+): StarterModuleOptions {
+  return { ...defaultStarterModuleOptions, ...(options ?? {}) }
+}
+
+export function generateHtmlMainTs(
+  options?: Partial<StarterModuleOptions>,
+): string {
+  const features = normalizeStarterModuleOptions(options)
   return `import { installBrowserAPIs } from '@vue-godot/browser'
 import { createApp } from '@vue-godot/runtime-tscn'
 import { htmlPlugin } from '@vue-godot/html'
 import { VBoxContainer } from 'godot'
 import App from './App.vue'
+${features.router ? "import { router } from './app/router'\n" : ''}
 
 installBrowserAPIs()
 
@@ -357,7 +421,7 @@ export default class Root extends VBoxContainer {
     this.app?.unmount()
     const app = createApp(App)
     app.use(htmlPlugin)
-    app.mount(this)
+${features.router ? '    app.use(router)\n' : ''}    app.mount(this)
     this.app = app
   }
 
@@ -620,9 +684,33 @@ function usePotion() {
 `
 }
 
+function generateRouterShellAppVue(): string {
+  return `<template>
+  <SafeAreaView
+    :style="{
+      padding: 16,
+      backgroundColor: '#172033',
+      width: '100%',
+      height: '100%',
+    }"
+  >
+    <router-view></router-view>
+  </SafeAreaView>
+</template>
+
+<script setup lang="ts"></script>
+`
+}
+
 export function generateHtmlAppVue(
   starter: HtmlStarterProfile = 'default',
+  options?: Partial<StarterModuleOptions>,
 ): string {
+  const features = normalizeStarterModuleOptions(options)
+  if (features.router) {
+    return generateRouterShellAppVue()
+  }
+
   switch (starter) {
     case 'app':
       return generateNativeAppVue()
@@ -633,12 +721,255 @@ export function generateHtmlAppVue(
   }
 }
 
+function generateRouterTs(): string {
+  return `import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import HomeScreen from '../screens/HomeScreen.vue'
+import SettingsScreen from '../screens/SettingsScreen.vue'
+
+const routes: RouteRecordRaw[] = [
+  { path: '/', name: 'home', component: HomeScreen },
+  { path: '/settings', name: 'settings', component: SettingsScreen },
+]
+
+export const router = createRouter({
+  history: createWebHistory('/'),
+  routes,
+})
+`
+}
+
+function generateStorageTs(): string {
+  return `const preferencePrefix = 'vue-godot:preference:'
+
+export function readPreference(key: string, fallback = ''): string {
+  return localStorage.getItem(preferencePrefix + key) ?? fallback
+}
+
+export function writePreference(key: string, value: string): void {
+  localStorage.setItem(preferencePrefix + key, value)
+}
+`
+}
+
+function generateNetworkTs(): string {
+  return `import { checkNetworkReachability } from '@vue-godot/browser'
+
+export async function readNetworkStatus(): Promise<string> {
+  return (await checkNetworkReachability()) ? 'reachable' : 'offline'
+}
+`
+}
+
+function generateDeviceTs(): string {
+  return `import { isSupported, type DeviceCapabilityName } from '@vue-godot/device'
+
+export async function readDeviceApiStatus(
+  capability: DeviceCapabilityName = 'share',
+): Promise<string> {
+  return (await isSupported(capability)) ? 'registered' : 'not registered'
+}
+`
+}
+
+function generateHomeScreenVue(options: StarterModuleOptions): string {
+  const vueImports = ['computed']
+  if (options.network || options.deviceApi) {
+    vueImports.push('onMounted')
+  }
+  if (options.storage || options.network || options.deviceApi) {
+    vueImports.push('ref')
+  }
+
+  const storageImport = options.storage
+    ? "import { readPreference, writePreference } from '../app/storage'\n"
+    : ''
+  const networkImport = options.network
+    ? "import { readNetworkStatus } from '../app/network'\n"
+    : ''
+  const deviceImport = options.deviceApi
+    ? "import { readDeviceApiStatus } from '../app/device'\n"
+    : ''
+
+  const storageTemplate = options.storage
+    ? `\n      <Div :style="{ flexDirection: 'column', gap: 8 }">
+        <Span :style="{ color: '#475569' }">Preference</Span>
+        <Input v-model="mode" placeholder="Display mode"></Input>
+        <Button @click="saveMode">Save preference</Button>
+        <Span :style="{ color: '#475569' }">Saved: {{ savedMode }}</Span>
+      </Div>`
+    : ''
+  const networkTemplate = options.network
+    ? `\n      <Div :style="{ flexDirection: 'column', gap: 8 }">
+        <Button @click="refreshNetwork">Refresh network</Button>
+        <Span :style="{ color: '#475569' }">Network: {{ networkStatus }}</Span>
+      </Div>`
+    : ''
+  const deviceTemplate = options.deviceApi
+    ? `\n      <Div :style="{ flexDirection: 'column', gap: 8 }">
+        <Button @click="refreshDeviceApi">Refresh device API</Button>
+        <Span :style="{ color: '#475569' }">Share API: {{ deviceStatus }}</Span>
+      </Div>`
+    : ''
+
+  const storageSetup = options.storage
+    ? `
+const mode = ref(readPreference('mode', 'balanced'))
+const savedMode = ref(mode.value)
+
+function saveMode() {
+  writePreference('mode', mode.value)
+  savedMode.value = mode.value
+}
+`
+    : ''
+  const networkSetup = options.network
+    ? `
+const networkStatus = ref('unchecked')
+
+async function refreshNetwork() {
+  networkStatus.value = await readNetworkStatus()
+}
+`
+    : ''
+  const deviceSetup = options.deviceApi
+    ? `
+const deviceStatus = ref('unchecked')
+
+async function refreshDeviceApi() {
+  deviceStatus.value = await readDeviceApiStatus()
+}
+`
+    : ''
+  const mountedCalls = [
+    options.network ? 'void refreshNetwork()' : '',
+    options.deviceApi ? 'void refreshDeviceApi()' : '',
+  ].filter(Boolean)
+  const mountedSetup =
+    mountedCalls.length > 0
+      ? `
+onMounted(() => {
+  ${mountedCalls.join('\n  ')}
+})
+`
+      : ''
+
+  return `<template>
+  <Div
+    :style="{
+      flexDirection: 'column',
+      gap: 12,
+      padding: 16,
+      backgroundColor: '#f8fafc',
+      borderRadius: 6,
+      width: 560,
+    }"
+  >
+    <Span :style="{ fontSize: 22, fontWeight: 'bold', color: '#172033' }">
+      Home
+    </Span>
+    <Span :style="{ color: '#475569' }">Route: {{ routePath }}</Span>${storageTemplate}${networkTemplate}${deviceTemplate}
+    <Button @click="openSettings">Open settings</Button>
+  </Div>
+</template>
+
+<script setup lang="ts">
+import { ${vueImports.join(', ')} } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+${storageImport}${networkImport}${deviceImport}
+const route = useRoute()
+const router = useRouter()
+const routePath = computed(() => route.fullPath)
+${storageSetup}${networkSetup}${deviceSetup}
+function openSettings() {
+  void router.push('/settings')
+}
+${mountedSetup}</script>
+`
+}
+
+function generateSettingsScreenVue(): string {
+  return `<template>
+  <Div
+    :style="{
+      flexDirection: 'column',
+      gap: 12,
+      padding: 16,
+      backgroundColor: '#f8fafc',
+      borderRadius: 6,
+      width: 560,
+    }"
+  >
+    <Span :style="{ fontSize: 22, fontWeight: 'bold', color: '#172033' }">
+      Settings
+    </Span>
+    <Span :style="{ color: '#475569' }">
+      Route-backed screens can still render Godot-backed HTML components.
+    </Span>
+    <Button @click="goHome">Done</Button>
+  </Div>
+</template>
+
+<script setup lang="ts">
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+function goHome() {
+  void router.push('/')
+}
+</script>
+`
+}
+
+export function writeStarterFeatureFiles(
+  vueDir: string,
+  options?: Partial<StarterModuleOptions>,
+  cwd = process.cwd(),
+): void {
+  const features = normalizeStarterModuleOptions(options)
+  if (
+    !features.router &&
+    !features.storage &&
+    !features.network &&
+    !features.deviceApi
+  ) {
+    return
+  }
+
+  const appDir = path.join(vueDir, 'src', 'app')
+  fs.mkdirSync(appDir, { recursive: true })
+
+  function writeGenerated(relativePath: string, content: string): void {
+    const filePath = path.join(vueDir, 'src', relativePath)
+    fs.mkdirSync(path.dirname(filePath), { recursive: true })
+    fs.writeFileSync(filePath, content)
+    console.log(`  created ${path.relative(cwd, filePath)}`)
+  }
+
+  if (features.router) {
+    writeGenerated('app/router.ts', generateRouterTs())
+    writeGenerated('screens/HomeScreen.vue', generateHomeScreenVue(features))
+    writeGenerated('screens/SettingsScreen.vue', generateSettingsScreenVue())
+  }
+  if (features.storage) {
+    writeGenerated('app/storage.ts', generateStorageTs())
+  }
+  if (features.network) {
+    writeGenerated('app/network.ts', generateNetworkTs())
+  }
+  if (features.deviceApi) {
+    writeGenerated('app/device.ts', generateDeviceTs())
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /*  Main                                                              */
 /* ------------------------------------------------------------------ */
 
 export async function integrate(options: IntegrateOptions): Promise<void> {
-  const { targetDir, force, html, device } = options
+  const { targetDir, force } = options
+  const { html, device, router, storage, network, deviceApi } =
+    resolveProjectFeatures(options)
   const absTarget = path.resolve(targetDir)
   const vueDir = path.join(absTarget, 'vue')
 
@@ -717,18 +1048,29 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     )
 
     const mainTsPath = path.join(vueDir, 'src', 'main.ts')
-    fs.writeFileSync(mainTsPath, generateHtmlMainTs())
+    fs.writeFileSync(
+      mainTsPath,
+      generateHtmlMainTs({ router, storage, network, deviceApi }),
+    )
     console.log(
       `  updated ${path.relative(process.cwd(), mainTsPath)} (html mode)`,
     )
 
     const appVuePath = path.join(vueDir, 'src', 'App.vue')
-    fs.writeFileSync(appVuePath, generateHtmlAppVue())
+    fs.writeFileSync(
+      appVuePath,
+      generateHtmlAppVue('default', { router, storage, network, deviceApi }),
+    )
     console.log(
       `  updated ${path.relative(process.cwd(), appVuePath)} (html mode)`,
     )
 
     addHtmlVolarPlugin(vueDir, process.cwd())
+    writeStarterFeatureFiles(
+      vueDir,
+      { router, storage, network, deviceApi },
+      process.cwd(),
+    )
   }
 
   /* --- package.json --- */
@@ -778,6 +1120,12 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
         packageOverrides,
       )
     }
+    if (router) {
+      existing.dependencies['vue-router'] ??= packageSpec(
+        'vue-router',
+        packageOverrides,
+      )
+    }
 
     fs.writeFileSync(pkgJsonPath, JSON.stringify(existing, null, 2) + '\n')
     console.log(`  updated ${path.relative(process.cwd(), pkgJsonPath)}`)
@@ -785,7 +1133,18 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     const name = path.basename(absTarget)
     fs.writeFileSync(
       pkgJsonPath,
-      JSON.stringify(newPackageJson(name, { html, device }), null, 2) + '\n',
+      JSON.stringify(
+        newPackageJson(name, {
+          html,
+          device,
+          router,
+          storage,
+          network,
+          deviceApi,
+        }),
+        null,
+        2,
+      ) + '\n',
     )
     console.log(`  created ${path.relative(process.cwd(), pkgJsonPath)}`)
   }

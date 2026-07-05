@@ -5,7 +5,11 @@ import path from 'node:path'
 import test from 'node:test'
 
 import { resolveCreateProfile } from '../dist/create.js'
-import { integrate, newPackageJson } from '../dist/integrate.js'
+import {
+  integrate,
+  newPackageJson,
+  resolveProjectFeatures,
+} from '../dist/integrate.js'
 
 function createTempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-cli-features-'))
@@ -39,18 +43,45 @@ test('newPackageJson keeps legacy html boolean behavior', () => {
   assert.equal(pkg.dependencies['@vue-godot/html'], '^0.0.1')
 })
 
+test('newPackageJson adds router starter dependencies', () => {
+  const pkg = newPackageJson('router-app', { router: true })
+  assert.equal(pkg.dependencies['@vue-godot/browser'], '^0.0.1')
+  assert.equal(pkg.dependencies['@vue-godot/device'], '^0.0.1')
+  assert.equal(pkg.dependencies['@vue-godot/html'], '^0.0.1')
+  assert.equal(pkg.dependencies['vue-router'], '~4.5.1')
+})
+
+test('project feature flags imply html starter mode', () => {
+  assert.deepEqual(resolveProjectFeatures({ storage: true }), {
+    html: true,
+    device: true,
+    router: false,
+    storage: true,
+    network: false,
+    deviceApi: false,
+  })
+})
+
 test('create app profile enables html and device support', () => {
   assert.deepEqual(resolveCreateProfile({ profile: 'app' }), {
     html: true,
     device: true,
+    router: false,
+    storage: false,
+    network: false,
+    deviceApi: false,
     htmlStarter: 'app',
   })
 })
 
-test('create game-ui profile enables html without device by default', () => {
+test('create game-ui profile enables html browser support', () => {
   assert.deepEqual(resolveCreateProfile({ profile: 'game-ui' }), {
     html: true,
-    device: false,
+    device: true,
+    router: false,
+    storage: false,
+    network: false,
+    deviceApi: false,
     htmlStarter: 'game-ui',
   })
 })
@@ -59,7 +90,23 @@ test('create game-ui profile accepts explicit device support', () => {
   assert.deepEqual(resolveCreateProfile({ profile: 'game-ui', device: true }), {
     html: true,
     device: true,
+    router: false,
+    storage: false,
+    network: false,
+    deviceApi: false,
     htmlStarter: 'game-ui',
+  })
+})
+
+test('create profiles preserve starter feature flags', () => {
+  assert.deepEqual(resolveCreateProfile({ profile: 'app', router: true }), {
+    html: true,
+    device: true,
+    router: true,
+    storage: false,
+    network: false,
+    deviceApi: false,
+    htmlStarter: 'app',
   })
 })
 
@@ -74,6 +121,74 @@ test('integrate adds @vue-godot/device without enabling html mode', async () => 
     assert.equal(pkg.dependencies['@vue-godot/device'], '^0.0.1')
     assert.equal(pkg.dependencies['@vue-godot/browser'], undefined)
     assert.equal(pkg.dependencies['@vue-godot/html'], undefined)
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('integrate writes router and helper starter files', async () => {
+  const tempDir = createTempDir()
+  try {
+    await withMutedConsole(() =>
+      integrate({
+        targetDir: tempDir,
+        force: true,
+        router: true,
+        storage: true,
+        network: true,
+        deviceApi: true,
+      }),
+    )
+    const pkg = readJson(path.join(tempDir, 'package.json'))
+    const mainTs = fs.readFileSync(path.join(tempDir, 'vue/src/main.ts'), 'utf-8')
+    const appVue = fs.readFileSync(path.join(tempDir, 'vue/src/App.vue'), 'utf-8')
+
+    assert.equal(pkg.dependencies['vue-router'], '~4.5.1')
+    assert.match(mainTs, /app\.use\(router\)/)
+    assert.ok(appVue.includes('<router-view></router-view>'))
+    assert.ok(fs.existsSync(path.join(tempDir, 'vue/src/app/router.ts')))
+    assert.ok(fs.existsSync(path.join(tempDir, 'vue/src/app/storage.ts')))
+    assert.ok(fs.existsSync(path.join(tempDir, 'vue/src/app/network.ts')))
+    assert.ok(fs.existsSync(path.join(tempDir, 'vue/src/app/device.ts')))
+    assert.ok(fs.existsSync(path.join(tempDir, 'vue/src/screens/HomeScreen.vue')))
+    assert.ok(
+      fs.existsSync(path.join(tempDir, 'vue/src/screens/SettingsScreen.vue')),
+    )
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('integrate writes a lean router-only home screen', async () => {
+  const tempDir = createTempDir()
+  try {
+    await withMutedConsole(() =>
+      integrate({
+        targetDir: tempDir,
+        force: true,
+        router: true,
+      }),
+    )
+    const homeScreen = fs.readFileSync(
+      path.join(tempDir, 'vue/src/screens/HomeScreen.vue'),
+      'utf-8',
+    )
+
+    assert.match(homeScreen, /import \{ computed \} from 'vue'/)
+    assert.doesNotMatch(homeScreen, /onMounted/)
+    assert.doesNotMatch(homeScreen, /\bref\(/)
+    assert.equal(
+      fs.existsSync(path.join(tempDir, 'vue/src/app/storage.ts')),
+      false,
+    )
+    assert.equal(
+      fs.existsSync(path.join(tempDir, 'vue/src/app/network.ts')),
+      false,
+    )
+    assert.equal(
+      fs.existsSync(path.join(tempDir, 'vue/src/app/device.ts')),
+      false,
+    )
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true })
   }

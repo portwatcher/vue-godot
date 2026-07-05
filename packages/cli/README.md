@@ -37,6 +37,10 @@ vue-godot create [profile] [name] [options]
 | `--profile` | Project profile: `app` or `game-ui`                             |
 | `--html`   | Enable `@vue-godot/html` — HTML-like components on Godot nodes    |
 | `--device` | Add `@vue-godot/device` for native/device adapter APIs            |
+| `--router` | Add a Vue Router starter module and route screens                 |
+| `--storage` | Add a Web Storage helper module                                  |
+| `--network` | Add a network reachability helper module                         |
+| `--device-api` | Add a native/device adapter status helper module             |
 
 When `--html` is set, the scaffolded project includes:
 
@@ -59,7 +63,20 @@ Profiles are shortcuts for common starter shapes:
 - `vue-godot create app my-app` creates an app-oriented HTML starter with
   browser APIs and `@vue-godot/device` included for native adapter registration.
 - `vue-godot create game-ui my-game-ui` creates a game UI starter with
-  HTML-like HUD controls and no device dependency unless `--device` is also set.
+  HTML-like HUD controls. Add `--device-api` when the starter should include
+  direct native/device adapter helper code.
+
+Starter feature flags imply HTML/browser scaffold mode and can be combined with
+profiles:
+
+- `--router` adds `vue-router`, `vue/src/app/router.ts`, route screens, and
+  `app.use(router)` in `main.ts`.
+- `--storage` adds a typed Web Storage helper module backed by the installed
+  browser polyfills.
+- `--network` adds a network reachability helper using
+  `checkNetworkReachability()`.
+- `--device-api` adds a native adapter status helper using
+  `@vue-godot/device` capability detection.
 
 **Example:**
 
@@ -67,6 +84,7 @@ Profiles are shortcuts for common starter shapes:
 npx @vue-godot/cli create my-game --html
 npx @vue-godot/cli create app my-native-app
 npx @vue-godot/cli create game-ui my-hud
+npx @vue-godot/cli create app my-routed-app --router --storage --network --device-api
 cd my-game
 npm run dev
 ```
@@ -99,6 +117,10 @@ vue-godot integrate [dir] [options]
 | `-f`       | Force overwrite if `vue/` already exists                          |
 | `--html`   | Enable `@vue-godot/html` — HTML-like components on Godot nodes    |
 | `--device` | Add `@vue-godot/device` for native/device adapter APIs            |
+| `--router` | Add a Vue Router starter module and route screens                 |
+| `--storage` | Add a Web Storage helper module                                  |
+| `--network` | Add a network reachability helper module                         |
+| `--device-api` | Add a native/device adapter status helper module             |
 
 This command:
 
@@ -107,7 +129,8 @@ This command:
 3. Resolves `node_modules` paths for the generated `tsconfig.json`
 4. Adds the same HTML/browser setup as `create --html` when `--html` is provided
 5. Adds `@vue-godot/device` when `--device` is provided, including when combined with `--html`
-6. Adds production export guidance and a non-failing export-setting warning script
+6. Adds starter feature modules when `--router`, `--storage`, `--network`, or `--device-api` are provided
+7. Adds production export guidance and a non-failing export-setting warning script
 
 The copied `vue/` template and root `gen/` ignore marker keep Godot's asset scan focused on generated `dist/` output rather than Vue source/config files or GodotJS-generated TypeScript resource stubs. The Vite config also keeps secondary JavaScript chunk names stable under `dist/chunks/`, which avoids stale Godot editor resource dependencies during watch rebuilds.
 

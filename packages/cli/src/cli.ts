@@ -95,6 +95,10 @@ Options:
   --profile   Project profile: app or game-ui
   --html      Enable @vue-godot/html support (HTML-like components on Godot nodes)
   --device    Add @vue-godot/device for native/device adapter APIs
+  --router    Add a Vue Router starter module and route screens
+  --storage   Add a Web Storage helper module
+  --network   Add a network reachability helper module
+  --device-api Add a native/device adapter status helper module
 `,
   )
   process.exit(1)
@@ -133,6 +137,10 @@ function parseCreateArgs(argv: string[]) {
   let force = false
   let html = false
   let device = false
+  let router = false
+  let storage = false
+  let network = false
+  let deviceApi = false
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]
@@ -148,6 +156,18 @@ function parseCreateArgs(argv: string[]) {
         break
       case '--device':
         device = true
+        break
+      case '--router':
+        router = true
+        break
+      case '--storage':
+        storage = true
+        break
+      case '--network':
+        network = true
+        break
+      case '--device-api':
+        deviceApi = true
         break
       case '--help':
       case '-h':
@@ -170,7 +190,17 @@ function parseCreateArgs(argv: string[]) {
     }
   }
 
-  return { projectName, profile, force, html, device }
+  return {
+    projectName,
+    profile,
+    force,
+    html,
+    device,
+    router,
+    storage,
+    network,
+    deviceApi,
+  }
 }
 
 function integrateUsage(): never {
@@ -186,6 +216,10 @@ Options:
   -f          Force overwrite if vue/ already exists (no prompt)
   --html      Enable @vue-godot/html support (HTML-like components on Godot nodes)
   --device    Add @vue-godot/device for native/device adapter APIs
+  --router    Add a Vue Router starter module and route screens
+  --storage   Add a Web Storage helper module
+  --network   Add a network reachability helper module
+  --device-api Add a native/device adapter status helper module
 `,
   )
   process.exit(1)
@@ -196,6 +230,10 @@ function parseIntegrateArgs(argv: string[]) {
   let force = false
   let html = false
   let device = false
+  let router = false
+  let storage = false
+  let network = false
+  let deviceApi = false
 
   for (let i = 0; i < argv.length; i++) {
     switch (argv[i]) {
@@ -207,6 +245,18 @@ function parseIntegrateArgs(argv: string[]) {
         break
       case '--device':
         device = true
+        break
+      case '--router':
+        router = true
+        break
+      case '--storage':
+        storage = true
+        break
+      case '--network':
+        network = true
+        break
+      case '--device-api':
+        deviceApi = true
         break
       case '--help':
       case '-h':
@@ -225,7 +275,16 @@ function parseIntegrateArgs(argv: string[]) {
     }
   }
 
-  return { targetDir: targetDir ?? '.', force, html, device }
+  return {
+    targetDir: targetDir ?? '.',
+    force,
+    html,
+    device,
+    router,
+    storage,
+    network,
+    deviceApi,
+  }
 }
 
 function doctorUsage(): never {
@@ -299,6 +358,10 @@ switch (command) {
       force: parsed.force,
       html: parsed.html,
       device: parsed.device,
+      router: parsed.router,
+      storage: parsed.storage,
+      network: parsed.network,
+      deviceApi: parsed.deviceApi,
       profile: parsed.profile,
     })
     break
@@ -321,6 +384,10 @@ switch (command) {
       force: parsed.force,
       html: parsed.html,
       device: parsed.device,
+      router: parsed.router,
+      storage: parsed.storage,
+      network: parsed.network,
+      deviceApi: parsed.deviceApi,
     })
     break
   }
