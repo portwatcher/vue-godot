@@ -140,7 +140,7 @@ The project is production ready only when all of these are true:
   - [ ] `<Img>`
   - [ ] `<Svg>`
   - [ ] `<A>`
-  - [ ] `<Audio>`
+  - [x] `<Audio>`
   - [ ] `<Video>`
   - [ ] `<Canvas>`
 - [x] Add media/device UI:

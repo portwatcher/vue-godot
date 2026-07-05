@@ -28,6 +28,14 @@ test('html-demo renders every registered html component', () => {
   }
 })
 
+test('html-demo exercises Audio with a real source and playback props', () => {
+  assert.match(appSource, /const demoAudioDataUri =/)
+  assert.match(appSource, /<Audio[\s\S]*:src="demoAudioDataUri"/)
+  assert.match(appSource, /<Audio[\s\S]*:autoplay="true"/)
+  assert.match(appSource, /<Audio[\s\S]*@ended="onAudioEnded"/)
+  assert.doesNotMatch(appSource, /Audio \(no src in demo\)/)
+})
+
 test('html-demo wires browser and device smoke coverage into the app', () => {
   assert.match(appSource, /runBrowserSmokeTests/)
   assert.match(appSource, /Browser API smoke tests/)

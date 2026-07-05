@@ -513,8 +513,33 @@
   <Canvas ref="canvasRef" :width="200" :height="80"></Canvas>
 
   <!-- ===== Section: Audio ===== -->
-  <Span>--- Audio (no src in demo) ---</Span>
-  <Audio :volume="0.5" :loop="false" :muted="true"></Audio>
+  <Span>--- Audio ---</Span>
+  <Audio
+    :key="audioRenderKey"
+    :src="demoAudioDataUri"
+    :autoplay="true"
+    :loop="audioLoop"
+    :muted="audioMuted"
+    :volume="audioVolume"
+    @ended="onAudioEnded"
+  ></Audio>
+  <Div :style="{ flexDirection: 'row', gap: 8, alignItems: 'center' }">
+    <Button @click="replayAudio">Replay Audio</Button>
+    <Button @click="toggleAudioMuted">
+      {{ audioMuted ? 'Unmute' : 'Mute' }}
+    </Button>
+    <Button @click="toggleAudioLoop">
+      {{ audioLoop ? 'Loop Off' : 'Loop On' }}
+    </Button>
+    <Button @click="cycleAudioVolume">
+      {{ `Volume ${Math.round(audioVolume * 100)}%` }}
+    </Button>
+  </Div>
+  <Span>
+    {{
+      `Audio data URI autoplay=on muted=${audioMuted} loop=${audioLoop} ended=${audioEndedCount}`
+    }}
+  </Span>
 
   <!-- ===== Section: Video ===== -->
   <Span>--- Video (no src in demo) ---</Span>
@@ -690,6 +715,51 @@ const selectedFruit = ref('apple')
 // --- Img / Svg ---
 const demoSvgDataUri =
   'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2212%22%20fill%3D%22%23478cbf%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2218%22%20fill%3D%22%23ffffff%22%2F%3E%3C%2Fsvg%3E'
+
+// --- Audio ---
+const demoAudioDataUri =
+  'data:audio/wav;base64,' +
+  [
+    'UklGRqQCAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YYACAAAAAGwAeAGPAv4C',
+    'OwIpADT9PPpU+Gb42fpb/+EE4QnDDFsMVwhyAVT5MfIw7sXuN/Rv/SoIiBHPFjcWeQ8BBKb2',
+    '9upD5LTkm+w++joKUxiWIHYgjBfRBzb1oeSq2k7aF+TQ9c8K9hyCJ6wnah1tC3D29uPa2AfY',
+    'teFY804IFhvAJjwoJR/gDfX45OWv2YzXCeDs8MUFGxnXJaMowSBEEIH77ees2jnXfd6Q7jcD',
+    'BhfIJOEoPCKYEhL+DurN2xDXFN1F7KUA2hSUI/UolCPaFKUARewU3RDXzdsO6hL+mBI8IuEo',
+    'yCQGFzcDkO593jnXrNrt54H7RBDBIKMo1yUbGcUF7PAJ4IzXr9nk5fX44A0lHzwowCYWG04I',
+    'WPO14QfY2tj243D2bQtqHawngif2HM8K0PV/46vYLNgk4vXz7wiRG/QmHCi5HkQNU/hm5XbZ',
+    'p9dx4IbxaAacGRUmjShdIK0P3vpo52naStfd3iXv2wONFxAl1SjgIQUSbv2D6YHbFtdr3dbs',
+    'SQFnFeQj9ChBI0sUAAC167/cDNcc3Jnqt/4qE5Ui6ih/JH0WkgL77SDeK9fw2nPoJfzbECMh',
+    'tiiXJZgYIgVT8KPfc9fr2WTmmPl6Do8fWSiKJpoarQe88kfh5NcM2W/kEfcLDNwd1CdVJ4Ec',
+    'MAox9QrjfthU2Jbik/SQCQocJif5J0seqAyy9+rkQNnE19vgIPILBxwaUSZ0KPcfFA9Z+vHn',
+    'htzA2qjixPHXAxAUVR5IINUZFA2o/bHvtubA5OTpYfQqAc0MXRQtFjAS3gmx/3L2b/Dv7uvx',
+    'LvjG/5QG6grxC84JfQVxACD8lfkw+aP6H/2q/3QBGAKzAccA',
+  ].join('')
+const audioRenderKey = ref(0)
+const audioMuted = ref(true)
+const audioLoop = ref(false)
+const audioVolume = ref(0.5)
+const audioEndedCount = ref(0)
+
+function replayAudio() {
+  audioRenderKey.value++
+}
+
+function toggleAudioMuted() {
+  audioMuted.value = !audioMuted.value
+}
+
+function toggleAudioLoop() {
+  audioLoop.value = !audioLoop.value
+}
+
+function cycleAudioVolume() {
+  audioVolume.value =
+    audioVolume.value >= 1 ? 0.25 : Math.min(1, audioVolume.value + 0.25)
+}
+
+function onAudioEnded() {
+  audioEndedCount.value++
+}
 
 // --- Canvas ---
 const canvasRef = ref<{ queue_redraw: () => void } | null>(null)
