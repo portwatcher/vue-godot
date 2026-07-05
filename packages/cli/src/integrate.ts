@@ -272,8 +272,9 @@ import { defineConfig } from 'vite'
 // Tags provided by @vue-godot/html — kept in sync with htmlTags from the package.
 // Listed here to avoid importing at config-load time (Node ESM resolution).
 const htmlTags = [
-  'a', 'activityindicator', 'audio', 'dialog', 'div', 'form', 'img', 'span',
-  'button', 'input', 'modal', 'textarea', 'select', 'option', 'overlay',
+  'a', 'activityindicator', 'audio', 'cameraview', 'dialog', 'div', 'form',
+  'img', 'span', 'button', 'input', 'modal', 'textarea', 'select', 'option',
+  'overlay',
   'keyboardavoidingview', 'label', 'pressable', 'progress', 'safeareaview',
   'screen', 'screenstack', 'scrollview', 'switch', 'canvas', 'video', 'svg',
   'virtuallist',

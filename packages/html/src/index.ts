@@ -5,6 +5,7 @@ export { ActivityIndicator } from './components/ActivityIndicator.js'
 export type { ActivityIndicatorFillMode } from './components/ActivityIndicator.js'
 export { Audio } from './components/Audio.js'
 export { Button } from './components/Button.js'
+export { CameraView } from './components/CameraView.js'
 export { Canvas } from './components/Canvas.js'
 export { Dialog } from './components/Dialog.js'
 export { Div } from './components/Div.js'
@@ -52,6 +53,16 @@ export {
   fetchRemoteAudioStream,
   loadAudioStream,
 } from './utils/audioStreamLoader.js'
+export {
+  createCameraTexture,
+  listCameraFeeds,
+  resolveCameraFeedId,
+} from './utils/camera.js'
+export type {
+  CameraFeedInfo,
+  CameraFeedPosition,
+  CameraTextureOptions,
+} from './utils/camera.js'
 export { parseHexColor } from './utils/colorParser.js'
 export { parseDataUri } from './utils/dataUri.js'
 export type { DataUriParts } from './utils/dataUri.js'

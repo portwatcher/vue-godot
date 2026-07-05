@@ -144,8 +144,8 @@ The project is production ready only when all of these are true:
   - [ ] `<Video>`
   - [ ] `<Canvas>`
 - [ ] Add media/device UI:
-  - [ ] `<CameraView>` backed by `CameraServer` / `CameraFeed` / `CameraTexture` where available.
-  - [ ] Camera permission and plugin docs.
+  - [x] `<CameraView>` backed by `CameraServer` / `CameraFeed` / `CameraTexture` where available.
+  - [x] Camera permission and plugin docs.
   - [ ] Microphone capture UI or documented non-goal.
 - [ ] Improve styling:
   - [x] Define the official style subset and document every property.
@@ -192,12 +192,12 @@ The project is production ready only when all of these are true:
   - [x] Add export permission docs.
   - [x] Install `navigator.geolocation` only when an adapter is registered.
 - [ ] Camera:
-  - [ ] Wrap `CameraServer` for feed enumeration where available.
-  - [ ] Add camera feed selection.
-  - [ ] Add `<CameraView>`.
+  - [x] Wrap `CameraServer` for feed enumeration where available.
+  - [x] Add camera feed selection.
+  - [x] Add `<CameraView>`.
   - [ ] Add snapshot/capture API if feasible.
   - [ ] Add Android/iOS plugin fallback where core Godot is insufficient.
-  - [ ] Document platform limits.
+  - [x] Document platform limits.
 - [ ] Microphone:
   - [ ] Wrap Godot audio input where feasible.
   - [ ] Add permission/export docs.

@@ -120,7 +120,7 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 | `margin`, `marginTop`, `marginRight`, `marginBottom`, `marginLeft` | Maps to an outer `MarginContainer` where supported. |
 | `width`, `height` | Maps numeric or pixel-string values to minimum/control size; maps percent strings to Godot Control anchor ratios with zero offsets. |
 | `minWidth`, `minHeight`, `maxWidth`, `maxHeight` | Clamps container minimum size where the component uses container sizing. |
-| `objectFit` | Maps media texture stretch/expand behavior for `<Img>` and `<Svg>`. |
+| `objectFit` | Maps media texture stretch/expand behavior for `<Img>`, `<CameraView>`, and `<Svg>`. |
 | `backgroundColor` | Maps to a `PanelContainer` `StyleBoxFlat` background where supported. |
 | `backgroundImage` | Supports a single `url(...)` image and maps loaded textures to a stretched `StyleBoxTexture` background where supported. |
 | `borderColor` | Maps to `StyleBoxFlat.border_color` where the component uses a panel style. |
@@ -158,6 +158,29 @@ registerFontFamily('Inter', './fonts/Inter.ttf', [
 
 Percent `width` and `height` values map to Godot `Control` anchors from the top-left corner, for example `width: '50%'` sets `anchor_left = 0`, `anchor_right = 0.5`, and zero horizontal offsets. Godot `Container` nodes may still override child anchors during layout; use flex and size flags for proportional container layouts.
 
+### CameraView camera feed scope
+
+`<CameraView>` previews a Godot camera feed by creating a `CameraTexture` and rendering it in a `TextureRect`. It selects the first feed by default, or you can choose a feed with `feedIndex` or `feedId`. The `active` prop maps to `camera_is_active`, and `whichFeed` maps to Godot's split-feed image selection.
+
+Use `listCameraFeeds()` before rendering selection UI:
+
+```ts
+import { listCameraFeeds } from '@vue-godot/html'
+
+const feeds = listCameraFeeds()
+```
+
+```vue
+<CameraView
+  :feed-index="0"
+  :active="true"
+  alt="Camera preview"
+  :style="{ width: 320, height: 180, objectFit: 'cover' }"
+></CameraView>
+```
+
+Camera permissions, export settings, and native camera plugins remain app responsibilities. This package does not request permissions, bundle Android/iOS plugins, or expose snapshot/capture APIs; it only uses `CameraServer` feeds that Godot already reports.
+
 ### Accessibility Metadata
 
 Most Control-backed components accept `accessibilityLabel`, `ariaLabel`, `aria-label`, `accessibilityHint`, and `title`. These map to Godot `Control.tooltip_text`, the stable metadata surface exposed by the supported Godot bindings:
@@ -172,7 +195,7 @@ Most Control-backed components accept `accessibilityLabel`, `ariaLabel`, `aria-l
 </Button>
 ```
 
-When both a label and hint are provided, the tooltip text is joined on separate lines. `<Img>` and `<Svg>` use `alt` as a fallback label, while `<A>` keeps `href` as a fallback hint. Native ARIA role mapping is not implemented because the checked-in Godot bindings do not expose a portable `Control` role property yet.
+When both a label and hint are provided, the tooltip text is joined on separate lines. `<Img>`, `<CameraView>`, and `<Svg>` use `alt` as a fallback label, while `<A>` keeps `href` as a fallback hint. Native ARIA role mapping is not implemented because the checked-in Godot bindings do not expose a portable `Control` role property yet.
 
 ### Focus Management
 
@@ -239,6 +262,7 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 | `<Dialog>`          | `AcceptDialog`                                                         | `v-model`, `title`, `message`, `confirmText` |
 | `<Div>`             | `HBoxContainer` / `VBoxContainer` / `*FlowContainer` / `GridContainer` | `style` (layout)      |
 | `<Form>`            | `PanelContainer` plus inner `<Div>`                                    | `disabled`, `submitOnAccept`, `resetOnCancel`, `contentStyle` |
+| `<CameraView>`      | `TextureRect` with `CameraTexture`                                     | `feedId`, `feedIndex`, `active`, `whichFeed`, `style` |
 | `<Img>`             | `TextureRect`                                                          | `src`, `alt`, `style` |
 | `<KeyboardAvoidingView>` | `MarginContainer` / `PanelContainer`                              | `behavior`, `keyboardVerticalOffset`, `fallbackKeyboardHeight`, `contentStyle` |
 | `<Label>`           | `Label` / inner `<Div>` wrapper                                        | `text`, `required`, `requiredIndicator`, `contentStyle` |
@@ -266,10 +290,11 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 
 | API                                                                                                                                    | Description                                                                                              |
 | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Dialog`, `Div`, `Form`, `Img`, `Input`, `KeyboardAvoidingView`, `Label`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `SafeAreaView`, `Screen`, `ScreenStack`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`, `VirtualList`) | Vue components backed by Godot nodes                                                                     |
+| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `CameraView`, `Canvas`, `Dialog`, `Div`, `Form`, `Img`, `Input`, `KeyboardAvoidingView`, `Label`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `SafeAreaView`, `Screen`, `ScreenStack`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`, `VirtualList`) | Vue components backed by Godot nodes                                                                     |
 | Shared accessibility props (`accessibilityLabel`, `ariaLabel`, `aria-label`, `accessibilityHint`, `title`)                              | Tooltip-backed labels and hints for Control-backed components                                            |
 | Shared focus props (`autoFocus`, `autofocus`, `focusNext`, `focusPrevious`, `focusNeighbor*`)                                            | Mount-time focus and explicit Godot focus graph traversal for focusable controls                         |
 | Shared touch target prop (`minTouchTarget`)                                                                                            | Minimum Godot Control hit size for focusable controls                                                    |
+| `listCameraFeeds`, `resolveCameraFeedId`, `createCameraTexture`                                                                         | Camera feed discovery and `CameraTexture` creation helpers for Godot `CameraServer`                      |
 | `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
 | `registerFontFamily`, `unregisterFontFamily`, `parseFontFamilyList`                                                                     | Registers CSS `fontFamily` names to local Godot font resources and parses CSS fallback lists              |
@@ -731,6 +756,7 @@ This package is in early development. Currently scaffolded:
 - [x] `<Pressable>` — focusable interactive wrapper (`PanelContainer`, hover/focus/press/long-press state)
 - [x] `<SafeAreaView>` — safe-area layout helper (`DisplayServer.get_display_safe_area()`, margin padding, fallback insets)
 - [x] `<KeyboardAvoidingView>` — virtual keyboard layout helper (`DisplayServer.virtual_keyboard_get_height()`, padding/position/height behavior, fallback height)
+- [x] `<CameraView>` — camera preview (`CameraServer` feed selection plus `CameraTexture`)
 - [x] `<Span>` — text display with `fontSize`, `fontFamily`, `fontWeight`, `color`, `textAlign`, `textTransform`, `overflowWrap`
 - [x] `<Switch>` — binary toggle (`CheckButton`, `v-model`, `label`, `disabled`)
 - [x] `<Button>` — click handler with `@click`, `disabled`

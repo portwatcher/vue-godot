@@ -468,6 +468,13 @@
     :style="{ width: 64, height: 64 }"
   ></Img>
 
+  <!-- ===== Section: CameraView ===== -->
+  <Span>--- CameraView ---</Span>
+  <CameraView
+    alt="Camera preview"
+    :style="{ width: 320, height: 180, objectFit: 'cover' }"
+  ></CameraView>
+
   <!-- ===== Section: Svg ===== -->
   <Span>--- Svg ---</Span>
   <Svg

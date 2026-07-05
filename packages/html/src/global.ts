@@ -2,6 +2,7 @@ import type { A } from './components/A.js'
 import type { ActivityIndicator } from './components/ActivityIndicator.js'
 import type { Audio } from './components/Audio.js'
 import type { Button } from './components/Button.js'
+import type { CameraView } from './components/CameraView.js'
 import type { Canvas } from './components/Canvas.js'
 import type { Dialog } from './components/Dialog.js'
 import type { Div } from './components/Div.js'
@@ -32,6 +33,7 @@ declare module '@vue/runtime-core' {
     ActivityIndicator: typeof ActivityIndicator
     Audio: typeof Audio
     Button: typeof Button
+    CameraView: typeof CameraView
     Canvas: typeof Canvas
     Dialog: typeof Dialog
     Div: typeof Div
@@ -61,6 +63,7 @@ declare module '@vue/runtime-core' {
     activityindicator: typeof ActivityIndicator
     audio: typeof Audio
     button: typeof Button
+    cameraview: typeof CameraView
     canvas: typeof Canvas
     dialog: typeof Dialog
     div: typeof Div

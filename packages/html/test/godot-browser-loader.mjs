@@ -91,6 +91,81 @@ export function load(url, context, nextLoad) {
           }
         }
 
+        export class CameraFeed {
+          constructor(input = {}) {
+            this.__mock = true
+            this.__kind = 'camera-feed'
+            this.id = input.id ?? 0
+            this.name = input.name ?? ''
+            this.position = input.position ?? 0
+            this.feed_is_active = input.active ?? false
+          }
+
+          get_id() {
+            return this.id
+          }
+
+          get_name() {
+            return this.name
+          }
+
+          get_position() {
+            return this.position
+          }
+        }
+
+        export class CameraTexture {
+          constructor() {
+            this.__mock = true
+            this.__kind = 'camera-texture'
+            this.camera_feed_id = -1
+            this.which_feed = 0
+            this.camera_is_active = false
+          }
+        }
+
+        function mockCameraServerState() {
+          const key = '__vueGodotHtmlMockCameraServer'
+          if (!globalThis[key]) {
+            globalThis[key] = {
+              feeds: [
+                { id: 1, name: 'Mock Camera', position: 0, active: false },
+              ],
+            }
+          }
+          return globalThis[key]
+        }
+
+        function toCameraFeed(value, index) {
+          if (value instanceof CameraFeed) {
+            return value
+          }
+
+          return new CameraFeed({
+            id: value?.id ?? index,
+            name: value?.name ?? '',
+            position: value?.position ?? 0,
+            active: value?.active ?? false,
+          })
+        }
+
+        export class CameraServer {
+          static get_feed_count() {
+            return mockCameraServerState().feeds.length
+          }
+
+          static get_feed(index) {
+            const feed = mockCameraServerState().feeds[index]
+            return feed == null ? null : toCameraFeed(feed, index)
+          }
+
+          static feeds() {
+            return mockCameraServerState().feeds.map((feed, index) =>
+              toCameraFeed(feed, index),
+            )
+          }
+        }
+
         function mockDisplayServerState() {
           const key = '__vueGodotHtmlMockDisplayServer'
           if (!globalThis[key]) {

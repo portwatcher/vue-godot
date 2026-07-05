@@ -3,6 +3,7 @@ import { A } from './components/A.js'
 import { ActivityIndicator } from './components/ActivityIndicator.js'
 import { Audio } from './components/Audio.js'
 import { Button } from './components/Button.js'
+import { CameraView } from './components/CameraView.js'
 import { Canvas } from './components/Canvas.js'
 import { Dialog } from './components/Dialog.js'
 import { Div } from './components/Div.js'
@@ -31,6 +32,7 @@ const components: Record<string, Component> = {
   A,
   ActivityIndicator,
   Audio,
+  CameraView,
   Dialog,
   Div,
   Form,

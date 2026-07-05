@@ -7,6 +7,7 @@ register(new URL('./godot-browser-loader.mjs', import.meta.url).href)
 const {
   A,
   ActivityIndicator,
+  CameraView,
   Dialog,
   Div,
   Form,
@@ -33,6 +34,7 @@ test('htmlTags includes every lowercase component tag', () => {
   assert.ok(htmlTags.includes('div'))
   assert.ok(htmlTags.includes('form'))
   assert.ok(htmlTags.includes('button'))
+  assert.ok(htmlTags.includes('cameraview'))
   assert.ok(htmlTags.includes('keyboardavoidingview'))
   assert.ok(htmlTags.includes('label'))
   assert.ok(htmlTags.includes('modal'))
@@ -63,6 +65,8 @@ test('htmlPlugin registers PascalCase and lowercase components', () => {
   assert.equal(registered.get('a'), A)
   assert.equal(registered.get('ActivityIndicator'), ActivityIndicator)
   assert.equal(registered.get('activityindicator'), ActivityIndicator)
+  assert.equal(registered.get('CameraView'), CameraView)
+  assert.equal(registered.get('cameraview'), CameraView)
   assert.equal(registered.get('Dialog'), Dialog)
   assert.equal(registered.get('dialog'), Dialog)
   assert.equal(registered.get('Div'), Div)

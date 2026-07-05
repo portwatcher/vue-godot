@@ -12,77 +12,8 @@ import {
   warnUnsupportedStyleProps,
   type HtmlStyle,
 } from '../utils/styleMapping.js'
+import { applyTextureRectObjectFitProps } from '../utils/textureRectFit.js'
 import { classifySource, loadTexture } from '../utils/textureLoader.js'
-
-/**
- * TextureRect.ExpandMode enum values (Godot 4.x).
- *
- * @see https://docs.godotengine.org/en/4.4/classes/class_texturerect.html#enum-texturerect-expandmode
- */
-const ExpandMode = {
-  EXPAND_KEEP_SIZE: 0,
-  EXPAND_IGNORE_SIZE: 1,
-  EXPAND_FIT_WIDTH: 2,
-  EXPAND_FIT_WIDTH_PROPORTIONAL: 3,
-  EXPAND_FIT_HEIGHT: 4,
-  EXPAND_FIT_HEIGHT_PROPORTIONAL: 5,
-} as const
-
-/**
- * TextureRect.StretchMode enum values (Godot 4.x).
- *
- * @see https://docs.godotengine.org/en/4.4/classes/class_texturerect.html#enum-texturerect-stretchmode
- */
-const StretchMode = {
-  STRETCH_SCALE: 0,
-  STRETCH_TILE: 1,
-  STRETCH_KEEP: 2,
-  STRETCH_KEEP_CENTERED: 3,
-  STRETCH_KEEP_ASPECT: 4,
-  STRETCH_KEEP_ASPECT_CENTERED: 5,
-  STRETCH_KEEP_ASPECT_COVERED: 6,
-} as const
-
-/**
- * Maps CSS `object-fit` values to Godot TextureRect expand_mode / stretch_mode.
- *
- *   CSS object-fit   → Godot
- *   ───────────────   ───────────────────────────────────────────
- *   fill             → EXPAND_IGNORE_SIZE + STRETCH_SCALE
- *   contain          → EXPAND_IGNORE_SIZE + STRETCH_KEEP_ASPECT_CENTERED
- *   cover            → EXPAND_IGNORE_SIZE + STRETCH_KEEP_ASPECT_COVERED
- *   none             → EXPAND_IGNORE_SIZE + STRETCH_KEEP_CENTERED
- *   scale-down       → EXPAND_IGNORE_SIZE + STRETCH_KEEP_ASPECT_CENTERED
- */
-function resolveObjectFit(
-  fit: HtmlStyle['objectFit'] | undefined,
-): { expand_mode: number; stretch_mode: number } | null {
-  switch (fit) {
-    case 'fill':
-      return {
-        expand_mode: ExpandMode.EXPAND_IGNORE_SIZE,
-        stretch_mode: StretchMode.STRETCH_SCALE,
-      }
-    case 'contain':
-    case 'scale-down':
-      return {
-        expand_mode: ExpandMode.EXPAND_IGNORE_SIZE,
-        stretch_mode: StretchMode.STRETCH_KEEP_ASPECT_CENTERED,
-      }
-    case 'cover':
-      return {
-        expand_mode: ExpandMode.EXPAND_IGNORE_SIZE,
-        stretch_mode: StretchMode.STRETCH_KEEP_ASPECT_COVERED,
-      }
-    case 'none':
-      return {
-        expand_mode: ExpandMode.EXPAND_IGNORE_SIZE,
-        stretch_mode: StretchMode.STRETCH_KEEP_CENTERED,
-      }
-    default:
-      return null
-  }
-}
 
 /**
  * <Img> — image display component.
@@ -170,18 +101,7 @@ export const Img = defineComponent({
         resolvedSize.widthRatio != null ||
         resolvedSize.heightRatio != null
 
-      // object-fit → expand_mode + stretch_mode
-      const fitMapping = resolveObjectFit(style?.objectFit)
-      if (fitMapping) {
-        nodeProps['expand_mode'] = fitMapping.expand_mode
-        nodeProps['stretch_mode'] = fitMapping.stretch_mode
-      } else if (hasExplicitSize) {
-        // When explicit size is set but no objectFit, default to
-        // EXPAND_IGNORE_SIZE so the TextureRect respects the size
-        // and STRETCH_KEEP_ASPECT_CENTERED to avoid distortion.
-        nodeProps['expand_mode'] = ExpandMode.EXPAND_IGNORE_SIZE
-        nodeProps['stretch_mode'] = StretchMode.STRETCH_KEEP_ASPECT_CENTERED
-      }
+      applyTextureRectObjectFitProps(nodeProps, style, hasExplicitSize)
 
       // Flip — not supported; use CSS transform: scaleX(-1)/scaleY(-1)
       // in a future style update if needed.
