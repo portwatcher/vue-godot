@@ -20,8 +20,11 @@ import {
 import { validateReleaseReadinessEvidence } from './release-readiness.mjs'
 
 const defaultGodotJsVersion = 'GodotJS 1.0.0-2 / Godot 4.4.x'
-const followUpEvidenceCommitHint =
-  'If this evidence is generated from a follow-up evidence commit, rerun release:evidence with --commit <release-candidate-sha>.'
+
+function followUpEvidenceCommitHint(commit) {
+  return `If this evidence is generated from a follow-up evidence commit, rerun release:evidence with --commit ${commit}.`
+}
+
 const optionFlags = {
   platformEvidencePath: '--platform-evidence',
   ciEvidencePath: '--ci-evidence',
@@ -350,7 +353,7 @@ export function extractCiRunUrls(ciResult, commit, options = {}) {
     errors.push(
       [
         `CI evidence commit must match expected release commit ${commit}.`,
-        followUpEvidenceCommitHint,
+        followUpEvidenceCommitHint(commit),
       ].join('\n'),
     )
   }
@@ -418,7 +421,7 @@ export function extractReleasePreflightWarningCount(summary, commit) {
     errors.push(
       [
         `Release preflight summary commit must match expected release commit ${commit}.`,
-        followUpEvidenceCommitHint,
+        followUpEvidenceCommitHint(commit),
       ].join('\n'),
     )
   }

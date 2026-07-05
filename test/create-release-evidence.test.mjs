@@ -483,7 +483,7 @@ test('extractCiRunUrls rejects stale or incomplete CI evidence', () => {
   )
   assert.match(
     result.errors.join('\n'),
-    /release:evidence with --commit <release-candidate-sha>/,
+    new RegExp(`release:evidence with --commit ${commit}`),
   )
   assert.match(result.errors.join('\n'), /missing Godot Smoke/)
 })
@@ -562,7 +562,7 @@ test('extractReleasePreflightWarningCount rejects stale or failed summaries', ()
   )
   assert.match(
     result.errors.join('\n'),
-    /release:evidence with --commit <release-candidate-sha>/,
+    new RegExp(`release:evidence with --commit ${commit}`),
   )
   assert.match(
     result.errors.join('\n'),
