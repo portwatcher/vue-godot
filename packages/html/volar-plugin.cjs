@@ -37,6 +37,7 @@ const htmlTags = [
   'canvas',
   'video',
   'svg',
+  'virtuallist',
 ]
 
 /** @returns {import('@volar/language-service').VueLanguagePlugin} */

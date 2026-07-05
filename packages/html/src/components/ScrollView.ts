@@ -1,83 +1,14 @@
 import { defineComponent, h } from '@vue/runtime-core'
-import { createOpacityModulate } from '../utils/godotColor.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
 import {
-  resolveContainerTag,
-  warnUnsupportedStyleProps,
-} from '../utils/styleMapping.js'
+  applyFiniteNumberProp,
+  applyScrollContainerStyleProps,
+  toScrollMode,
+  type ScrollViewScrollbarMode,
+} from '../utils/scrollContainer.js'
+import type { HtmlStyle } from '../utils/styleMapping.js'
 import { Div } from './Div.js'
 
-export type ScrollViewScrollbarMode =
-  | 'auto'
-  | 'always'
-  | 'never'
-  | 'disabled'
-
-const ScrollMode = {
-  DISABLED: 0,
-  AUTO: 1,
-  SHOW_ALWAYS: 2,
-  SHOW_NEVER: 3,
-} as const
-
-function toScrollMode(
-  enabled: boolean,
-  mode: ScrollViewScrollbarMode | undefined,
-): number {
-  if (!enabled) {
-    return ScrollMode.DISABLED
-  }
-
-  switch (mode) {
-    case 'always':
-      return ScrollMode.SHOW_ALWAYS
-    case 'never':
-      return ScrollMode.SHOW_NEVER
-    case 'disabled':
-      return ScrollMode.DISABLED
-    case 'auto':
-    case undefined:
-      return ScrollMode.AUTO
-  }
-}
-
-function applyFiniteNumberProp(
-  props: Record<string, unknown>,
-  name: string,
-  value: number | undefined,
-): void {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    props[name] = value
-  }
-}
-
-function applyStyleProps(
-  props: Record<string, unknown>,
-  style: HtmlStyle | undefined,
-): void {
-  if (!style) {
-    return
-  }
-
-  warnUnsupportedStyleProps(style, 'ScrollView')
-
-  const styleProps = resolveContainerTag(style).props
-  for (const propName of [
-    'visible',
-    'custom_minimum_size:x',
-    'custom_minimum_size:y',
-  ]) {
-    if (propName in styleProps) {
-      props[propName] = styleProps[propName]
-    }
-  }
-  if (
-    typeof style.opacity === 'number' &&
-    Number.isFinite(style.opacity)
-  ) {
-    props['modulate'] = createOpacityModulate(style.opacity)
-  }
-}
+export type { ScrollViewScrollbarMode } from '../utils/scrollContainer.js'
 
 function defaultContentStyle(horizontal: boolean, vertical: boolean): HtmlStyle {
   return {
@@ -165,7 +96,7 @@ export const ScrollView = defineComponent({
         ),
       }
 
-      applyStyleProps(nodeProps, props.style)
+      applyScrollContainerStyleProps(nodeProps, props.style, 'ScrollView')
       applyFiniteNumberProp(
         nodeProps,
         'scroll_horizontal',

@@ -107,6 +107,7 @@ support the documented Godot-backed subset; unsupported style keys emit a
 | `<Div>` | `html` | `partial` | Godot containers and style wrappers | All Godot UI targets | None | Unit, html-demo | CSS flex/grid subset only; not a DOM element. |
 | `<Span>` | `html` | `partial` | `Label` | All Godot UI targets | None | Unit, html-demo | Text/style subset only. |
 | `<ScrollView>` | `html` | `partial` | `ScrollContainer` plus inner `<Div>` content wrapper | All Godot UI targets | None | Unit, html-demo | Scrollbar behavior follows Godot `ScrollContainer`; content layout uses the existing style subset. |
+| `<VirtualList>` | `html` | `partial` | `ScrollContainer` plus fixed-height row wrappers and spacer `Control` nodes | All Godot UI targets | None | Unit, html-demo | Fixed row heights only; dynamic-height measurement and horizontal virtualization are not implemented. |
 | `<Progress>` | `html` | `partial` | `ProgressBar` | All Godot UI targets | None | Unit, html-demo | Uses Godot `Range` props and native indeterminate mode; not a DOM progress element. |
 | `<ActivityIndicator>` | `html` | `partial` | `ProgressBar` indeterminate mode | All Godot UI targets | None | Unit, html-demo | Bar-style busy indicator; spinner visuals are not implemented yet. |
 | `<Overlay>` | `html` | `partial` | `PanelContainer` plus inner `<Div>` content wrapper | All Godot UI targets | None | Unit, html-demo | Godot `Control` overlay, not a DOM portal; backdrop input follows Godot `mouse_filter`. |

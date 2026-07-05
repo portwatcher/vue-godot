@@ -17,6 +17,7 @@ const {
   SafeAreaView,
   ScrollView,
   Switch,
+  VirtualList,
   htmlPlugin,
   htmlTags,
 } = await import('../dist/index.js')
@@ -36,6 +37,7 @@ test('htmlTags includes every lowercase component tag', () => {
   assert.ok(htmlTags.includes('scrollview'))
   assert.ok(htmlTags.includes('switch'))
   assert.ok(htmlTags.includes('video'))
+  assert.ok(htmlTags.includes('virtuallist'))
 })
 
 test('htmlPlugin registers PascalCase and lowercase components', () => {
@@ -73,4 +75,6 @@ test('htmlPlugin registers PascalCase and lowercase components', () => {
   assert.equal(registered.get('scrollview'), ScrollView)
   assert.equal(registered.get('Switch'), Switch)
   assert.equal(registered.get('switch'), Switch)
+  assert.equal(registered.get('VirtualList'), VirtualList)
+  assert.equal(registered.get('virtuallist'), VirtualList)
 })

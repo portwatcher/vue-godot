@@ -275,7 +275,7 @@ const htmlTags = [
   'a', 'activityindicator', 'audio', 'dialog', 'div', 'img', 'span',
   'button', 'input', 'modal', 'textarea', 'select', 'option', 'overlay',
   'keyboardavoidingview', 'pressable', 'progress', 'safeareaview',
-  'scrollview', 'switch', 'canvas', 'video', 'svg',
+  'scrollview', 'switch', 'canvas', 'video', 'svg', 'virtuallist',
 ]
 
 export default defineConfig({

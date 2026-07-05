@@ -27,6 +27,7 @@ const htmlTags = [
   'canvas',
   'video',
   'svg',
+  'virtuallist',
 ]
 
 export default defineConfig({

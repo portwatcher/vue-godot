@@ -120,7 +120,7 @@ The project is production ready only when all of these are true:
 - [ ] Expand `@vue-godot/html` beyond the current demo component surface.
 - [ ] Add core app primitives:
   - [x] `<ScrollView>` backed by Godot scroll containers.
-  - [ ] `<VirtualList>` or `<FlatList>` equivalent for large data sets.
+  - [x] `<VirtualList>` or `<FlatList>` equivalent for large data sets.
   - [x] `<Pressable>` with mouse, touch, keyboard, controller, focus, disabled, hover, pressed, and long-press states.
   - [x] `<Modal>` / `<Dialog>` / `<Overlay>`.
   - [x] `<SafeAreaView>` or equivalent layout helper.

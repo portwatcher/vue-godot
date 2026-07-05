@@ -21,6 +21,7 @@ import { Svg } from './components/Svg.js'
 import { Switch } from './components/Switch.js'
 import { Textarea } from './components/Textarea.js'
 import { Video } from './components/Video.js'
+import { VirtualList } from './components/VirtualList.js'
 
 const components: Record<string, Component> = {
   A,
@@ -46,6 +47,7 @@ const components: Record<string, Component> = {
   Video,
   Svg,
   Switch,
+  VirtualList,
 }
 
 /**

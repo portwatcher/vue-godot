@@ -140,6 +140,7 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 | `<Progress>`        | `ProgressBar`                                                          | `value`, `min`, `max`, `indeterminate`, `showPercentage` |
 | `<SafeAreaView>`    | `MarginContainer` / `PanelContainer`                                   | `edges`, `fallbackInsets`, `contentStyle` |
 | `<ScrollView>`      | `ScrollContainer`                                                      | `horizontal`, `vertical`, `scrollbarMode`, `contentStyle` |
+| `<VirtualList>`     | `ScrollContainer` plus spacer `Control` nodes                          | `items`, `itemHeight`, `height`, `overscan`, slot props |
 | `<Span>`            | `Label`                                                                | text content, `style` |
 | `<Switch>`          | `CheckButton`                                                          | `v-model`, `label`, `disabled`, `style` |
 | `<Button>`          | `Button`                                                               | `@click`, `disabled`  |
@@ -155,7 +156,7 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 
 | API                                                                                                                                    | Description                                                                                              |
 | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Dialog`, `Div`, `Img`, `Input`, `KeyboardAvoidingView`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `SafeAreaView`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`) | Vue components backed by Godot nodes                                                                     |
+| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Dialog`, `Div`, `Img`, `Input`, `KeyboardAvoidingView`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `SafeAreaView`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`, `VirtualList`) | Vue components backed by Godot nodes                                                                     |
 | `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
 | `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |
@@ -322,6 +323,27 @@ const volume = ref(50)
 ```
 
 The component supports `horizontal`, `vertical`, `scrollbarMode`, `horizontalScrollbar`, `verticalScrollbar`, `scrollHorizontal`, `scrollVertical`, `scrollStep`, `horizontalStep`, `verticalStep`, `followFocus`, `style`, and `contentStyle`. Scrollbar modes are `'auto'`, `'always'`, `'never'`, and `'disabled'`.
+
+### VirtualList large-list scope
+
+`<VirtualList>` maps to a vertical Godot `ScrollContainer`, renders only the fixed-height visible row window, and fills the rest of the scroll range with top and bottom spacer `Control` nodes:
+
+```vue
+<VirtualList
+  :items="items"
+  key-field="id"
+  :item-height="32"
+  :height="240"
+  :overscan="2"
+  @update:scroll-offset="scrollOffset = $event"
+>
+  <template #default="{ index }">
+    <Span>{{ items[index].label }}</Span>
+  </template>
+</VirtualList>
+```
+
+It supports `items` or `itemCount`, `itemHeight`, `height`, `overscan`, `scrollOffset`, `keyField`, `keyExtractor`, `scrollbarMode`, `scrollStep`, `style`, `contentStyle`, and `itemStyle`. The default slot receives `{ item, index, key, range }`. Godot's `scrolling` signal updates the rendered range and emits `scroll` plus `update:scrollOffset`.
 
 ### Progress and loading indicators
 
@@ -500,6 +522,7 @@ This package is in early development. Currently scaffolded:
 - [x] `<Progress>` — determinate or indeterminate progress (`ProgressBar`, range props, fill direction)
 - [x] `<ActivityIndicator>` — bar-style busy indicator (`ProgressBar` indeterminate mode)
 - [x] `<ScrollView>` — scrollable viewport (`ScrollContainer`, axis props, scrollbar modes, scroll offsets)
+- [x] `<VirtualList>` — fixed-height large-list virtualization (`ScrollContainer`, spacer controls, scroll offset updates)
 - [x] `<Overlay>` — full-parent backdrop/control layer (`PanelContainer`, `v-model`, backdrop events)
 - [x] `<Modal>` — modal window primitive (`Window`, close requests, sizing props)
 - [x] `<Dialog>` — confirmation dialog (`AcceptDialog`, confirm/cancel/close events)

@@ -20,6 +20,7 @@ import type { Svg } from './components/Svg.js'
 import type { Switch } from './components/Switch.js'
 import type { Textarea } from './components/Textarea.js'
 import type { Video } from './components/Video.js'
+import type { VirtualList } from './components/VirtualList.js'
 
 declare module '@vue/runtime-core' {
   interface GlobalComponents {
@@ -46,6 +47,7 @@ declare module '@vue/runtime-core' {
     Switch: typeof Switch
     Textarea: typeof Textarea
     Video: typeof Video
+    VirtualList: typeof VirtualList
     // Lowercase aliases so <div>, <button>, etc. resolve as components.
     a: typeof A
     activityindicator: typeof ActivityIndicator
@@ -70,5 +72,6 @@ declare module '@vue/runtime-core' {
     switch: typeof Switch
     textarea: typeof Textarea
     video: typeof Video
+    virtuallist: typeof VirtualList
   }
 }

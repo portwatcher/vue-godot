@@ -31,6 +31,11 @@ export { Svg } from './components/Svg.js'
 export { Switch } from './components/Switch.js'
 export { Textarea } from './components/Textarea.js'
 export { Video } from './components/Video.js'
+export { VirtualList } from './components/VirtualList.js'
+export type {
+  VirtualListItemSlotProps,
+  VirtualListKeyExtractor,
+} from './components/VirtualList.js'
 export { htmlPlugin, htmlTags } from './plugin.js'
 export { classifySource, resolveAssetPath } from './utils/assetResolver.js'
 export type { SourceKind } from './utils/assetResolver.js'
@@ -54,3 +59,8 @@ export {
   loadTexture,
   loadTextureFromBinary,
 } from './utils/textureLoader.js'
+export {
+  resolveVirtualListRange,
+  type VirtualListRange,
+  type VirtualListRangeInput,
+} from './utils/virtualList.js'

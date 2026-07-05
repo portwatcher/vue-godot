@@ -94,6 +94,35 @@
     </Div>
   </ScrollView>
 
+  <!-- ===== Section: VirtualList ===== -->
+  <Span>--- VirtualList ---</Span>
+  <Div :style="{ flexDirection: 'row', gap: 8 }">
+    <Button @click="scrollVirtualList(-84)">Virtual Up</Button>
+    <Button @click="scrollVirtualList(84)">Virtual Down</Button>
+  </Div>
+  <VirtualList
+    :items="virtualRows"
+    key-field="id"
+    :item-height="28"
+    :height="140"
+    :scroll-offset="virtualScrollOffset"
+    :overscan="1"
+    :style="{ width: 360, height: 140 }"
+    :item-style="{ padding: 4 }"
+    @update:scroll-offset="virtualScrollOffset = $event"
+  >
+    <template #default="{ index }">
+      <Span>{{ virtualRows[index]?.title }}</Span>
+    </template>
+  </VirtualList>
+  <Span>
+    {{
+      `VirtualList offset=${virtualScrollOffset} rendered around row ${Math.floor(
+        virtualScrollOffset / 28,
+      ) + 1}`
+    }}
+  </Span>
+
   <!-- ===== Section: Progress ===== -->
   <Span>--- Progress ---</Span>
   <Div :style="{ flexDirection: 'row', gap: 10, alignItems: 'center' }">
@@ -377,6 +406,11 @@ const wrap = ref<'nowrap' | 'wrap'>('nowrap')
 const justify = ref<'flex-start' | 'center' | 'flex-end'>('flex-start')
 const align = ref<'flex-start' | 'center' | 'flex-end' | 'stretch'>('stretch')
 const keyboardSample = ref('')
+const virtualRows = Array.from({ length: 200 }, (_, index) => ({
+  id: `row-${index}`,
+  title: `Virtual row ${index + 1}`,
+}))
+const virtualScrollOffset = ref(0)
 
 function toggleDirection() {
   direction.value = direction.value === 'row' ? 'column' : 'row'
@@ -401,6 +435,13 @@ function cycleAlign() {
         : align.value === 'center'
           ? 'flex-end'
           : 'stretch'
+}
+function scrollVirtualList(delta: number) {
+  const maxOffset = Math.max(0, virtualRows.length * 28 - 140)
+  virtualScrollOffset.value = Math.min(
+    maxOffset,
+    Math.max(0, virtualScrollOffset.value + delta),
+  )
 }
 
 // --- Progress ---
