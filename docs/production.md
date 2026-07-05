@@ -9,12 +9,16 @@ Run the full repository check before cutting a release candidate:
 
 ```bash
 npm run check
+npm run check:serious-examples
 npm audit --audit-level=moderate
 npm run release:preflight -- --local --skip-check --skip-godot
 ```
 
 `npm run check` builds packages, runs tests, builds demo apps, and runs clean
-CLI scaffold smoke checks. `npm audit --audit-level=moderate` must report zero
+CLI scaffold smoke checks. `npm run check:serious-examples` verifies the
+required serious native app and game UI demo workspaces, README coverage, root
+README links, and fixture-test registration. It is expected to fail until those
+P1 examples exist. `npm audit --audit-level=moderate` must report zero
 moderate, high, or critical advisories unless an accepted exception is
 documented in the release notes. `release:preflight` verifies package metadata,
 generated package specs, dry-run package contents, registry state, and publish
@@ -121,7 +125,8 @@ needs:
 - Android and iOS export smoke coverage for selected device APIs
 - documented performance budgets
 - serious native app and game UI demos that satisfy
-  [the example app criteria](./example-apps.md)
+  [the example app criteria](./example-apps.md) and pass
+  `npm run check:serious-examples`
 - clean or documented security/dependency audit results
 
 Until those are complete, treat release builds as preview/alpha-quality and

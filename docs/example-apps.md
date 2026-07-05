@@ -20,8 +20,8 @@ before UI direction, copy, layout, color, and motion are finalized.
 
 ## Native App Demo
 
-The native app style demo should be checked in under `apps/` and registered in
-the fixture app coverage. It must demonstrate:
+The native app style demo should be checked in at `apps/native-app-demo` and
+registered in the fixture app coverage. It must demonstrate:
 
 - multi-screen routing with back/forward behavior
 - form input, validation states, disabled or read-only states, and submission
@@ -35,8 +35,8 @@ the fixture app coverage. It must demonstrate:
 
 ## Game UI Demo
 
-The game UI demo should be checked in under `apps/` and registered in the
-fixture app coverage. It must demonstrate:
+The game UI demo should be checked in at `apps/game-ui-demo` and registered in
+the fixture app coverage. It must demonstrate:
 
 - a Godot scene with Vue-rendered HUD or menu UI
 - controller, keyboard, and touch-oriented navigation paths
@@ -53,6 +53,7 @@ Before checking off the serious demo TODO items:
 - add both apps to the root README examples table
 - keep each app's package scripts compatible with the fixture app build contract
 - include both apps in `test/fixture-apps.test.mjs`
+- run `npm run check:serious-examples`
 - run `npm run build --workspace=<app>` for each app
 - run `npm run check`
 - run the Godot smoke path for each app when Godot is available
