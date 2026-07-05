@@ -182,6 +182,13 @@ or evidence regeneration runs.
 The helper validates the normalized platform evidence before fetching GitHub run
 metadata, so missing device details, unknown selected APIs, or selected-API
 checks left in `skippedChecks` fail before network calls.
+Commit and push the completed evidence before dispatching Release Preflight:
+
+```bash
+git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json
+git commit -m "Add real-device release evidence"
+git push
+```
 
 After the `Release Preflight` workflow passes without warnings, refresh CI
 evidence so it includes the verified Release Preflight run URL:
@@ -259,6 +266,12 @@ the Release Preflight workflow as ready; otherwise pass
 the preflight run attached to a follow-up evidence commit.
 `--release-preflight-warning-count 0` is only an optional consistency check when
 the summary artifact is also supplied.
+Commit the final evidence files before running strict readiness:
+
+```bash
+git add release/ci-runs.json release/release-preflight-summary.json release/real-device-evidence.json release/release-readiness-evidence.json
+git commit -m "Add release readiness evidence"
+```
 
 After committing the final evidence files, generate a strict readiness summary
 outside the worktree and run the guarded finalizer:

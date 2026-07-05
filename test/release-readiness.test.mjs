@@ -465,6 +465,12 @@ test('release readiness writes a machine-readable blocker summary', () => {
             `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --release-preflight-run-commit <evidence-commit-sha> --dispatch-missing --wait --ref <branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
           ) &&
           action.commands.includes(
+            'git add release/ci-runs.json release/release-preflight-summary.json release/real-device-evidence.json release/release-readiness-evidence.json',
+          ) &&
+          action.commands.includes(
+            'git commit -m "Add release readiness evidence"',
+          ) &&
+          action.commands.includes(
             `npm run release:readiness -- --expected-commit ${exampleCommit}`,
           ),
       ),
@@ -619,6 +625,15 @@ test('release readiness summary includes missing evidence next actions', () => {
           ) &&
           action.commands.includes(
             `npm run check:real-device-evidence -- --expected-commit ${summary.commit}`,
+          ) &&
+          action.commands.includes(
+            'git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json',
+          ) &&
+          action.commands.includes(
+            'git commit -m "Add real-device release evidence"',
+          ) &&
+          action.commands.includes(
+            'git push',
           ),
       ),
     )
@@ -634,6 +649,12 @@ test('release readiness summary includes missing evidence next actions', () => {
           ) &&
           action.commands.some((command) =>
             command.includes('--readiness-output release/release-readiness-evidence.json'),
+          ) &&
+          action.commands.includes(
+            'git add release/ci-runs.json release/release-preflight-summary.json release/real-device-evidence.json release/release-readiness-evidence.json',
+          ) &&
+          action.commands.includes(
+            'git commit -m "Add release readiness evidence"',
           ),
       ),
     )

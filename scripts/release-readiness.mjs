@@ -23,6 +23,8 @@ import { collectLocalGitReleaseState } from './check-release-ci-runs.mjs'
 import { finalizationFiles } from './release-finalization-files.mjs'
 import {
   checkRealDeviceEvidenceCommand,
+  defaultPlatformEvidencePath,
+  defaultReleaseCiEvidencePath,
   defaultReleasePreflightSummaryPath,
   defaultReleaseReadinessEvidencePath,
   initialReleaseCiCommands,
@@ -881,6 +883,19 @@ function ciEvidenceCommands(commit, localGit) {
   ]
 }
 
+function commitEvidenceCommands(files, message, options = {}) {
+  const commands = [
+    `git add ${files.join(' ')}`,
+    `git commit -m "${message}"`,
+  ]
+
+  if (options.push) {
+    commands.push('git push')
+  }
+
+  return commands
+}
+
 function collectReadinessNextActions(checks, commit, localGit) {
   const actions = []
   const releaseCommit = releaseCommitLabel(commit)
@@ -921,6 +936,15 @@ function collectReadinessNextActions(checks, commit, localGit) {
         ...initialReleaseCiCommands(commit),
         releaseEvidenceCommand(commit),
         checkRealDeviceEvidenceCommand(commit),
+        ...commitEvidenceCommands(
+          [
+            defaultPlatformEvidencePath,
+            defaultReleaseCiEvidencePath,
+            defaultRealDeviceEvidencePath,
+          ],
+          'Add real-device release evidence',
+          { push: true },
+        ),
       ],
     })
   }
@@ -941,6 +965,15 @@ function collectReadinessNextActions(checks, commit, localGit) {
           releasePreflightSummaryPath: defaultReleasePreflightSummaryPath,
           readinessEvidencePath: defaultReleaseReadinessEvidencePath,
         }),
+        ...commitEvidenceCommands(
+          [
+            defaultReleaseCiEvidencePath,
+            defaultReleasePreflightSummaryPath,
+            defaultRealDeviceEvidencePath,
+            defaultReleaseReadinessEvidencePath,
+          ],
+          'Add release readiness evidence',
+        ),
         `npm run release:readiness -- --expected-commit ${releaseCommit}`,
       ],
     })
