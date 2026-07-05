@@ -40,9 +40,9 @@ After pushing a release candidate,
 GitHub Actions for completed successful Check and Godot Smoke runs on that exact
 commit and writes `ready`, `commitFound`, required/passed/missing workflow
 names, structured workflow checks, local Git branch/upstream diagnostics, hints
-for unpushed commits or stale upstreams, `nextActions` command hints for
-pushing or dispatching missing workflows, and the run URLs used by real-device
-release evidence. Add
+for unpushed commits or stale upstreams, `nextActions` command hints for running
+`npm run check` before pushing or dispatching missing workflows, and the run
+URLs used by real-device release evidence. Add
 `--wait` to poll while workflows are still running. If a release-candidate
 commit is not found on GitHub, push it before collecting CI evidence. If the
 commit only changes docs or evidence and a workflow did not run automatically,

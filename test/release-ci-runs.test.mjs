@@ -184,6 +184,7 @@ test('release CI output reports structured workflow readiness', () => {
     output.nextActions.some(
       (action) =>
         action.id === 'dispatch-missing-workflows' &&
+        action.commands[0] === 'npm run check' &&
         action.commands.some((command) =>
           command.includes('--include-release-preflight'),
         ) &&
@@ -217,6 +218,7 @@ test('release CI output reports missing commit status', () => {
     output.nextActions.some(
       (action) =>
         action.id === 'push-release-candidate' &&
+        action.commands[0] === 'npm run check' &&
         action.commands.includes('git push') &&
         action.commands.some((command) =>
           command.includes('--commit 0123456789abcdef0123456789abcdef01234567 --wait --output release/ci-runs.json'),

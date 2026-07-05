@@ -516,8 +516,9 @@ export function collectReleaseCiNextActions(output) {
       id: 'push-release-candidate',
       title: 'Push the tested release-candidate commit',
       detail:
-        'GitHub Actions evidence can only be collected after the release-candidate commit is visible on GitHub.',
+        'Run the local check, then push the release-candidate commit so GitHub Actions evidence can be collected.',
       commands: [
+        'npm run check',
         pushCommand,
         releaseCiCommand(output, {
           wait: true,
@@ -540,8 +541,9 @@ export function collectReleaseCiNextActions(output) {
       id: 'dispatch-missing-workflows',
       title: 'Dispatch and wait for missing release CI workflows',
       detail:
-        'Use a branch or tag that resolves to the tested release commit so manually dispatched workflows attach to the right SHA.',
+        'Run the local check, then use a branch or tag that resolves to the tested release commit so manually dispatched workflows attach to the right SHA.',
       commands: [
+        'npm run check',
         `GH_TOKEN="$(gh auth token)" ${releaseCiCommand(output, commandOptions)}`,
       ],
     })
