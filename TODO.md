@@ -293,7 +293,7 @@ The project is production ready only when all of these are true:
 - [x] Add `docs/permissions.md`.
 - [x] Add `docs/plugins.md`.
 - [x] Add `docs/compatibility.md`.
-- [ ] Add `docs/performance.md`.
+- [x] Add `docs/performance.md`.
 - [x] Add `docs/troubleshooting.md`.
 - [ ] Add serious native app demo.
 - [ ] Add serious game UI demo.
