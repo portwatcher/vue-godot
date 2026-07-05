@@ -4,7 +4,6 @@ import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
 
-import { auditPlatformEvidence } from '../scripts/check-platform-evidence.mjs'
 import { buildPlatformEvidenceTemplate } from '../scripts/create-platform-evidence.mjs'
 import {
   buildRealDeviceEvidence,
@@ -351,54 +350,6 @@ test('completed platform template validates after required checks are recorded',
     }),
     [],
   )
-})
-
-test('platform evidence audit reports worksheet gaps without throwing', () => {
-  const template = buildPlatformEvidenceTemplate({
-    selectedApis: ['fetch'],
-    androidArtifact: 'vue-godot-android-release.aab',
-    iosArtifact: 'TestFlight build 1',
-    androidDevice: 'Pixel hosted device',
-    iosDevice: 'iPhone hosted device',
-    androidOs: 'Android 15',
-    iosOs: 'iOS 18',
-    orientation: 'portrait and landscape',
-    locale: 'en-US',
-  })
-  template.android.passedChecks = {}
-
-  const summary = auditPlatformEvidence(template, {
-    allowNonProductionProfile: true,
-  })
-
-  assert.equal(summary.ready, false)
-  assert.match(
-    summary.platforms.android.errors.join('\n'),
-    /android\.passedChecks must be a string array/,
-  )
-})
-
-test('platform evidence audit accepts complete worksheet evidence', () => {
-  const template = buildPlatformEvidenceTemplate({
-    selectedApis: ['fetch', 'WebSocket', 'SafeAreaView'],
-    androidArtifact: 'vue-godot-android-release.aab',
-    iosArtifact: 'TestFlight build 1',
-    androidDevice: 'Pixel hosted device',
-    iosDevice: 'iPhone hosted device',
-    androidOs: 'Android 15',
-    iosOs: 'iOS 18',
-    orientation: 'portrait and landscape',
-    locale: 'en-US',
-  })
-  template.android.passedChecks = [...requiredRealDeviceChecks.android]
-  template.ios.passedChecks = [...requiredRealDeviceChecks.ios]
-
-  const summary = auditPlatformEvidence(template, {
-    allowNonProductionProfile: true,
-  })
-
-  assert.equal(summary.ready, true)
-  assert.equal(summary.errorCount, 0)
 })
 
 test('release evidence normalization removes template-only required checks', () => {

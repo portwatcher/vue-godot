@@ -312,6 +312,7 @@ test('release readiness requires release tooling scripts', () => {
   const output = blockers.join('\n')
 
   assert.match(output, /check:public-surface/)
+  assert.match(output, /check:platform-evidence/)
   assert.match(output, /check:real-device-evidence/)
   assert.match(output, /release:ci as node scripts\/check-release-ci-runs\.mjs/)
   assert.match(output, /release:evidence/)

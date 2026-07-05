@@ -225,6 +225,10 @@ test('release preflight enforces real device evidence', () => {
   }
 
   assert.equal(
+    packageJson.scripts['check:platform-evidence'],
+    'node scripts/check-platform-evidence.mjs',
+  )
+  assert.equal(
     packageJson.scripts['check:real-device-evidence'],
     'node scripts/check-real-device-evidence.mjs',
   )
@@ -245,6 +249,8 @@ test('release preflight enforces real device evidence', () => {
     'node scripts/download-release-preflight-summary.mjs',
   )
   assert.match(production, /check:real-device-evidence/)
+  assert.match(production, /check:platform-evidence/)
+  assert.match(production, /platform-evidence-summary\.json/)
   assert.match(production, /real-device-evidence-summary\.json/)
   assert.match(
     production,
@@ -392,6 +398,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
   assert.match(production, /GitHub\s+Actions metadata/)
   assert.match(readme, /check:real-device-evidence/)
+  assert.match(readme, /check:platform-evidence/)
+  assert.match(readme, /platform-evidence-summary\.json/)
   assert.match(readme, /real-device-evidence-summary\.json/)
   assert.match(
     readme,
@@ -516,6 +524,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /must be in `passedChecks`/)
   assert.match(readme, /top-level `nextActions` section/)
   assert.match(readme, /release CI wait\/dispatch commands/)
+  assert.match(readme, /worksheet audit command/)
   assert.match(readme, /final evidence assembly commands/)
   assert.match(readme, /worksheet fields/)
   assert.match(
@@ -651,6 +660,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /--expected-commit <release-candidate-sha>/)
   assert.match(checklist, /follow-up evidence commit/)
   assert.match(checklist, /release:platform-evidence/)
+  assert.match(checklist, /check:platform-evidence/)
+  assert.match(checklist, /platform-evidence-summary\.json/)
   assert.match(checklist, /--production-profile/)
   assert.match(
     checklist,

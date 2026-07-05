@@ -496,8 +496,8 @@ export function auditPlatformEvidence(evidence, options = {}) {
   )
   summary.platforms.ios = auditPlatformWorksheet(evidence.ios, 'ios', options)
   errors.push(
-    ...summary.platforms.android.errors.map((error) => `android: ${error}`),
-    ...summary.platforms.ios.errors.map((error) => `ios: ${error}`),
+    ...summary.platforms.android.errors,
+    ...summary.platforms.ios.errors,
   )
 
   summary.errorCount = errors.length
