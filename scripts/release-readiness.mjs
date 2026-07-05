@@ -620,6 +620,7 @@ const releaseWorkflowRequirements = [
       'name: Release Preflight',
       'workflow_dispatch:',
       'real_device_evidence_path',
+      'expected_commit',
       'node-version: 24',
       'id-token: write',
       './.github/actions/setup-godotjs',
@@ -627,6 +628,7 @@ const releaseWorkflowRequirements = [
       'npm install -g npm@^11.15.0',
       'npm ci',
       'npm run release:preflight',
+      '--expected-commit "${{ inputs.expected_commit }}"',
       '--summary-output release/release-preflight-summary.json',
       'actions/upload-artifact@v4',
       'release-preflight-summary',
@@ -954,9 +956,10 @@ function collectReadinessNextActions(checks, commit, localGit) {
       id: 'release-preflight-evidence',
       title: 'Collect CI and warning-free Release Preflight evidence',
       detail:
-        'Run the local check after the tested release candidate and real-device evidence are pushed, capture Check, Godot Smoke, and Release Preflight runs, dispatching Release Preflight when needed, then write release-readiness evidence.',
+        'Run the local check after the tested release candidate and real-device evidence are pushed, refresh Check and Godot Smoke from the release-candidate ref when CI evidence is still missing, then dispatch Release Preflight from the evidence ref and write release-readiness evidence.',
       commands: [
         'npm run check',
+        ...(checks.strictCiEvidence ? [] : initialReleaseCiCommands(commit)),
         ...releasePreflightCiCommands(commit, {
           releasePreflightRunCommit: releasePreflightRunCommitPlaceholder,
         }),

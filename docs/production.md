@@ -137,10 +137,13 @@ Android/iOS real-device evidence status, and CI workflow wiring status, as JSON
 for release handoff. The initial CI, real-device, and Release Preflight evidence
 actions begin with `npm run check` before collecting CI or assembling evidence.
 The initial CI action captures Check and Godot Smoke, while Release Preflight is
-captured later after real-device evidence is committed. That later action
-includes the `--dispatch-missing`, `--release-preflight-run-commit`, and
-`--real-device-evidence-path` inputs for the workflow-dispatch-only preflight
-workflow. The real-device evidence action stages `release/platform-evidence.json`,
+captured later after real-device evidence is committed. If strict CI evidence is
+still missing, the release-readiness evidence action refreshes Check and Godot
+Smoke from the release-candidate ref before dispatching Release Preflight from
+the evidence ref. That later action includes the `--dispatch-missing`,
+`--release-preflight-run-commit`, and `--real-device-evidence-path` inputs for
+the workflow-dispatch-only preflight workflow. The real-device evidence action
+stages `release/platform-evidence.json`,
 `release/ci-runs.json`, and `release/real-device-evidence.json`, commits them
 with `git commit -m "Add real-device release evidence"`, then pushes so the
 Release Preflight workflow can run from that evidence ref. The

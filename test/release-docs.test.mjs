@@ -315,6 +315,10 @@ test('release preflight enforces real device evidence', () => {
     production,
     /initial CI action captures Check and Godot Smoke[\s\S]*Release Preflight is\s+captured later after real-device evidence is committed/,
   )
+  assert.match(
+    production,
+    /strict CI evidence is\s+still missing[\s\S]*refreshes Check and Godot\s+Smoke from the release-candidate ref[\s\S]*Release Preflight from\s+the evidence ref/,
+  )
   assert.match(production, /--real-device-evidence-path/)
   assert.match(production, /--release-preflight-run-commit/)
   assert.match(production, /--ref <release-candidate-branch-or-tag>/)
@@ -322,12 +326,12 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /expected_commit/)
   assert.match(
     production,
-    /includes the `--dispatch-missing`, `--release-preflight-run-commit`, and\s+`--real-device-evidence-path` inputs/,
+    /includes the\s+`--dispatch-missing`,\s+`--release-preflight-run-commit`,\s+and\s+`--real-device-evidence-path` inputs/,
   )
   assert.match(production, /workflow-dispatch-only preflight\s+workflow/)
   assert.match(
     production,
-    /final warning-removal action runs `npm run check` after the finalizer/,
+    /final\s+warning-removal action\s+runs\s+`npm run check` after the finalizer/,
   )
   assert.match(production, /git commit -m "Add real-device release evidence"/)
   assert.match(production, /git commit -m "Add release readiness evidence"/)
@@ -406,6 +410,10 @@ test('release preflight enforces real device evidence', () => {
     readme,
     /initial CI action captures Check and Godot Smoke, while Release Preflight is captured later after real-device evidence is committed/,
   )
+  assert.match(
+    readme,
+    /strict CI evidence is still missing[\s\S]*refreshes Check and Godot Smoke from the release-candidate ref[\s\S]*Release Preflight from the evidence ref/,
+  )
   assert.match(readme, /--real-device-evidence-path/)
   assert.match(readme, /--release-preflight-run-commit/)
   assert.match(readme, /--ref <release-candidate-branch-or-tag>/)
@@ -413,12 +421,12 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /expected_commit/)
   assert.match(
     readme,
-    /includes the `--dispatch-missing`, `--release-preflight-run-commit`, and `--real-device-evidence-path` inputs/,
+    /includes the\s+`--dispatch-missing`,\s+`--release-preflight-run-commit`,\s+and\s+`--real-device-evidence-path` inputs/,
   )
   assert.match(readme, /workflow-dispatch-only preflight\s+workflow/)
   assert.match(
     readme,
-    /final warning-removal action runs `npm run check` after the finalizer/,
+    /final\s+warning-removal action\s+runs\s+`npm run check` after the finalizer/,
   )
   assert.match(readme, /git commit -m "Add real-device release evidence"/)
   assert.match(readme, /git commit -m "Add release readiness evidence"/)
@@ -505,6 +513,10 @@ test('release preflight enforces real device evidence', () => {
     checklist,
     /initial CI\s+action captures Check and Godot Smoke[\s\S]*Release Preflight is captured later\s+after real-device evidence is committed/,
   )
+  assert.match(
+    checklist,
+    /strict CI evidence is still missing[\s\S]*refreshes Check and Godot Smoke from the\s+release-candidate ref[\s\S]*Release Preflight from the evidence\s+ref/,
+  )
   assert.match(checklist, /--real-device-evidence-path/)
   assert.match(checklist, /--release-preflight-run-commit/)
   assert.match(checklist, /--ref <release-candidate-branch-or-tag>/)
@@ -512,12 +524,12 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /expected_commit/)
   assert.match(
     checklist,
-    /includes the\s+`--dispatch-missing`, `--release-preflight-run-commit`, and\s+`--real-device-evidence-path` inputs/,
+    /includes the\s+`--dispatch-missing`,\s+`--release-preflight-run-commit`,\s+and\s+`--real-device-evidence-path` inputs/,
   )
   assert.match(checklist, /workflow-dispatch-only preflight\s+workflow/)
   assert.match(
     checklist,
-    /final\s+warning-removal action runs\s+`npm run check` after the finalizer/,
+    /final\s+warning-removal action\s+runs\s+`npm run check` after the finalizer/,
   )
   assert.match(checklist, /git commit -m "Add real-device release evidence"/)
   assert.match(checklist, /git commit -m "Add release readiness evidence"/)

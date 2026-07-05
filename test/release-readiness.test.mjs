@@ -308,6 +308,57 @@ test('release readiness requires release workflow wiring', () => {
   assert.match(output, /unable to read Release Preflight workflow/)
 })
 
+test('release readiness requires Release Preflight expected commit wiring', () => {
+  const blockers = collectReleaseWorkflowBlockers((file) => {
+    if (file === '.github/workflows/check.yml') {
+      return [
+        'name: Check',
+        'workflow_dispatch:',
+        'node-version: 24',
+        'npm install -g npm@^11.15.0',
+        'npm ci',
+        'npm run check',
+      ].join('\n')
+    }
+    if (file === '.github/workflows/godot-smoke.yml') {
+      return [
+        'name: Godot Smoke',
+        'workflow_dispatch:',
+        'node-version: 24',
+        './.github/actions/setup-godotjs',
+        'npm install -g npm@^11.15.0',
+        'npm ci',
+        'npm run build',
+        'npm run smoke:godot',
+        'npm run smoke:generated-godot',
+        'npm run smoke:editor-reload',
+        'xvfb-run',
+      ].join('\n')
+    }
+    return [
+      'name: Release Preflight',
+      'workflow_dispatch:',
+      'real_device_evidence_path',
+      'node-version: 24',
+      'id-token: write',
+      './.github/actions/setup-godotjs',
+      'VUE_GODOT_REAL_DEVICE_EVIDENCE',
+      'npm install -g npm@^11.15.0',
+      'npm ci',
+      'npm run release:preflight',
+      '--summary-output release/release-preflight-summary.json',
+      'actions/upload-artifact@v4',
+      'release-preflight-summary',
+      'xvfb-run',
+    ].join('\n')
+  })
+  const output = blockers.join('\n')
+
+  assert.match(output, /\.github\/workflows\/release-preflight\.yml/)
+  assert.match(output, /expected_commit/)
+  assert.match(output, /--expected-commit "\$\{\{ inputs\.expected_commit \}\}"/)
+})
+
 test('release readiness scans package descriptions for final warning wording', () => {
   assert.deepEqual(
     collectPackageDescriptionWarningHits([
@@ -455,26 +506,40 @@ test('release readiness writes a machine-readable blocker summary', () => {
         (command) => !command.includes('--include-release-preflight'),
       ),
     )
+    const releasePreflightAction = summary.nextActions.find(
+      (action) => action.id === 'release-preflight-evidence',
+    )
+    assert.ok(releasePreflightAction)
+    assert.equal(releasePreflightAction.commands[0], 'npm run check')
+    const releaseCiWaitIndex = releasePreflightAction.commands.indexOf(
+      `npm run release:ci -- --commit ${exampleCommit} --wait --output release/ci-runs.json`,
+    )
+    const releaseCiDispatchIndex = releasePreflightAction.commands.indexOf(
+      `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${exampleCommit} --dispatch-missing --wait --ref <release-candidate-branch-or-tag> --output release/ci-runs.json`,
+    )
+    const preflightWaitIndex = releasePreflightAction.commands.indexOf(
+      `npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --release-preflight-run-commit <evidence-commit-sha> --wait --output release/ci-runs.json`,
+    )
+    const preflightDispatchIndex = releasePreflightAction.commands.indexOf(
+      `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --release-preflight-run-commit <evidence-commit-sha> --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
+    )
+    assert.ok(releaseCiWaitIndex > 0)
+    assert.ok(releaseCiDispatchIndex > releaseCiWaitIndex)
+    assert.ok(preflightWaitIndex > releaseCiDispatchIndex)
+    assert.ok(preflightDispatchIndex > preflightWaitIndex)
     assert.ok(
-      summary.nextActions.some(
-        (action) =>
-          action.id === 'release-preflight-evidence' &&
-          action.commands[0] === 'npm run check' &&
-          action.commands.includes(
-            `npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --release-preflight-run-commit <evidence-commit-sha> --wait --output release/ci-runs.json`,
-          ) &&
-          action.commands.includes(
-            `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --release-preflight-run-commit <evidence-commit-sha> --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
-          ) &&
-          action.commands.includes(
-            'git add release/ci-runs.json release/release-preflight-summary.json release/real-device-evidence.json release/release-readiness-evidence.json',
-          ) &&
-          action.commands.includes(
-            'git commit -m "Add release readiness evidence"',
-          ) &&
-          action.commands.includes(
-            `npm run release:readiness -- --expected-commit ${exampleCommit}`,
-          ),
+      releasePreflightAction.commands.includes(
+        'git add release/ci-runs.json release/release-preflight-summary.json release/real-device-evidence.json release/release-readiness-evidence.json',
+      ),
+    )
+    assert.ok(
+      releasePreflightAction.commands.includes(
+        'git commit -m "Add release readiness evidence"',
+      ),
+    )
+    assert.ok(
+      releasePreflightAction.commands.includes(
+        `npm run release:readiness -- --expected-commit ${exampleCommit}`,
       ),
     )
     assert.ok(
@@ -639,25 +704,39 @@ test('release readiness summary includes missing evidence next actions', () => {
           ),
       ),
     )
+    const releasePreflightAction = summary.nextActions.find(
+      (action) => action.id === 'release-preflight-evidence',
+    )
+    assert.ok(releasePreflightAction)
+    assert.equal(releasePreflightAction.commands[0], 'npm run check')
     assert.ok(
-      summary.nextActions.some(
-        (action) =>
-          action.id === 'release-preflight-evidence' &&
-          action.commands[0] === 'npm run check' &&
-          action.commands.some((command) =>
-            command.includes(
-              '--release-preflight-run-commit <evidence-commit-sha>',
-            ),
-          ) &&
-          action.commands.some((command) =>
-            command.includes('--readiness-output release/release-readiness-evidence.json'),
-          ) &&
-          action.commands.includes(
-            'git add release/ci-runs.json release/release-preflight-summary.json release/real-device-evidence.json release/release-readiness-evidence.json',
-          ) &&
-          action.commands.includes(
-            'git commit -m "Add release readiness evidence"',
-          ),
+      releasePreflightAction.commands.some((command) =>
+        command.includes('--ref <release-candidate-branch-or-tag>'),
+      ),
+    )
+    assert.ok(
+      releasePreflightAction.commands.some((command) =>
+        command.includes('--ref <evidence-branch-or-tag>'),
+      ),
+    )
+    assert.ok(
+      releasePreflightAction.commands.some((command) =>
+        command.includes('--release-preflight-run-commit <evidence-commit-sha>'),
+      ),
+    )
+    assert.ok(
+      releasePreflightAction.commands.some((command) =>
+        command.includes('--readiness-output release/release-readiness-evidence.json'),
+      ),
+    )
+    assert.ok(
+      releasePreflightAction.commands.includes(
+        'git add release/ci-runs.json release/release-preflight-summary.json release/real-device-evidence.json release/release-readiness-evidence.json',
+      ),
+    )
+    assert.ok(
+      releasePreflightAction.commands.includes(
+        'git commit -m "Add release readiness evidence"',
       ),
     )
   } finally {
