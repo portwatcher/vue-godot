@@ -317,6 +317,8 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(production, /--real-device-evidence-path/)
   assert.match(production, /--release-preflight-run-commit/)
+  assert.match(production, /--ref <release-candidate-branch-or-tag>/)
+  assert.match(production, /--ref <evidence-branch-or-tag>/)
   assert.match(production, /expected_commit/)
   assert.match(
     production,
@@ -406,6 +408,8 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(readme, /--real-device-evidence-path/)
   assert.match(readme, /--release-preflight-run-commit/)
+  assert.match(readme, /--ref <release-candidate-branch-or-tag>/)
+  assert.match(readme, /--ref <evidence-branch-or-tag>/)
   assert.match(readme, /expected_commit/)
   assert.match(
     readme,
@@ -503,6 +507,8 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(checklist, /--real-device-evidence-path/)
   assert.match(checklist, /--release-preflight-run-commit/)
+  assert.match(checklist, /--ref <release-candidate-branch-or-tag>/)
+  assert.match(checklist, /--ref <evidence-branch-or-tag>/)
   assert.match(checklist, /expected_commit/)
   assert.match(
     checklist,

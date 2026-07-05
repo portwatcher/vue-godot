@@ -1,6 +1,9 @@
 export const releaseCandidateCommitPlaceholder = '<release-candidate-sha>'
 export const releasePreflightRunCommitPlaceholder = '<evidence-commit-sha>'
 export const releaseDispatchRefPlaceholder = '<branch-or-tag>'
+export const releaseCandidateDispatchRefPlaceholder =
+  '<release-candidate-branch-or-tag>'
+export const evidenceDispatchRefPlaceholder = '<evidence-branch-or-tag>'
 export const defaultPlatformEvidencePath = 'release/platform-evidence.json'
 export const defaultReleaseCiEvidencePath = 'release/ci-runs.json'
 export const defaultRealDeviceEvidencePath = 'release/real-device-evidence.json'
@@ -64,7 +67,7 @@ export function initialReleaseCiCommands(commit, options = {}) {
     releaseCiCommand(commit, {
       dispatchMissing: true,
       output,
-      ref: options.ref ?? releaseDispatchRefPlaceholder,
+      ref: options.ref ?? releaseCandidateDispatchRefPlaceholder,
       wait: true,
       withGitHubToken: true,
     }),
@@ -74,6 +77,14 @@ export function initialReleaseCiCommands(commit, options = {}) {
 export function releasePreflightCiCommands(commit, options = {}) {
   const output = options.output ?? defaultReleaseCiEvidencePath
   const releasePreflightRunCommit = options.releasePreflightRunCommit
+  const usesEvidenceCommit =
+    releasePreflightRunCommit != null &&
+    releasePreflightRunCommit !== releaseCommitLabel(commit)
+  const dispatchRef =
+    options.ref ??
+    (usesEvidenceCommit
+      ? evidenceDispatchRefPlaceholder
+      : releaseDispatchRefPlaceholder)
   return [
     releaseCiCommand(commit, {
       includeReleasePreflight: true,
@@ -87,7 +98,7 @@ export function releasePreflightCiCommands(commit, options = {}) {
       output,
       realDeviceEvidencePath:
         options.realDeviceEvidencePath ?? defaultRealDeviceEvidencePath,
-      ref: options.ref ?? releaseDispatchRefPlaceholder,
+      ref: dispatchRef,
       releasePreflightRunCommit,
       wait: true,
       withGitHubToken: true,

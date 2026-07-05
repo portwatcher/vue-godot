@@ -52,7 +52,7 @@ URLs used by real-device release evidence. Add
 `--wait` to poll while workflows are still running. If a release-candidate
 commit is not found on GitHub, push it before collecting CI evidence. If the
 commit only changes docs or evidence and a workflow did not run automatically,
-use `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit <sha> --dispatch-missing --wait --ref <branch-or-tag> --output release/ci-runs.json`
+use `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit <sha> --dispatch-missing --wait --ref <release-candidate-branch-or-tag> --output release/ci-runs.json`
 to dispatch Check and Godot Smoke from the CLI. The helper refuses to dispatch
 unless the branch or tag resolves to the same commit on GitHub. After the
 Release Preflight workflow passes, rerun it with `--include-release-preflight`
@@ -232,7 +232,7 @@ GH_TOKEN="$(gh auth token)" npm run release:ci -- \
   --release-preflight-run-commit <evidence-commit-sha> \
   --dispatch-missing \
   --wait \
-  --ref <branch-or-tag> \
+  --ref <evidence-branch-or-tag> \
   --real-device-evidence-path release/real-device-evidence.json \
   --output release/ci-runs.json
 ```

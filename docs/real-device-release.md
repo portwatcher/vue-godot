@@ -139,7 +139,7 @@ GH_TOKEN="$(gh auth token)" npm run release:ci -- \
   --commit "$(git rev-parse HEAD)" \
   --dispatch-missing \
   --wait \
-  --ref <branch-or-tag> \
+  --ref <release-candidate-branch-or-tag> \
   --output release/ci-runs.json
 ```
 
@@ -230,12 +230,12 @@ GH_TOKEN="$(gh auth token)" npm run release:ci -- \
   --release-preflight-run-commit <evidence-commit-sha> \
   --dispatch-missing \
   --wait \
-  --ref <branch-or-tag> \
+  --ref <evidence-branch-or-tag> \
   --real-device-evidence-path release/real-device-evidence.json \
   --output release/ci-runs.json
 ```
 
-For that later preflight dispatch, `<branch-or-tag>` must resolve to the
+For that later preflight dispatch, `<evidence-branch-or-tag>` must resolve to the
 evidence commit that contains `release/real-device-evidence.json`. The helper
 passes the tested release candidate to the workflow as `expected_commit`, so the
 non-local preflight validates the committed evidence against the release commit

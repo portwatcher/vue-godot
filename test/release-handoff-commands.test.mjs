@@ -8,10 +8,12 @@ import {
   defaultReleasePreflightSummaryPath,
   defaultReleaseReadinessEvidencePath,
   defaultReleaseCiEvidencePath,
+  evidenceDispatchRefPlaceholder,
   initialReleaseCiCommands,
   productionProfilePlatformEvidenceCommand,
   releaseEvidenceCommand,
   releaseCandidateCommitPlaceholder,
+  releaseCandidateDispatchRefPlaceholder,
   releaseCiCommand,
   releaseCommitLabel,
   releaseDispatchRefPlaceholder,
@@ -26,6 +28,11 @@ test('release handoff commands format release CI waits and dispatches', () => {
   assert.equal(releaseCommitLabel(null), releaseCandidateCommitPlaceholder)
   assert.equal(releaseCommitLabel(commit), commit)
   assert.equal(releasePreflightRunCommitPlaceholder, '<evidence-commit-sha>')
+  assert.equal(
+    releaseCandidateDispatchRefPlaceholder,
+    '<release-candidate-branch-or-tag>',
+  )
+  assert.equal(evidenceDispatchRefPlaceholder, '<evidence-branch-or-tag>')
   assert.equal(defaultPlatformEvidencePath, 'release/platform-evidence.json')
   assert.equal(defaultReleaseCiEvidencePath, 'release/ci-runs.json')
   assert.equal(
@@ -39,7 +46,7 @@ test('release handoff commands format release CI waits and dispatches', () => {
 
   assert.deepEqual(initialReleaseCiCommands(commit), [
     `npm run release:ci -- --commit ${commit} --wait --output release/ci-runs.json`,
-    `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${commit} --dispatch-missing --wait --ref ${releaseDispatchRefPlaceholder} --output release/ci-runs.json`,
+    `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${commit} --dispatch-missing --wait --ref ${releaseCandidateDispatchRefPlaceholder} --output release/ci-runs.json`,
   ])
 })
 
@@ -79,7 +86,7 @@ test('release handoff commands include preflight evidence input only for preflig
     }),
     [
       `npm run release:ci -- --commit ${commit} --include-release-preflight --release-preflight-run-commit ${evidenceCommit} --wait --output release/ci-runs.json`,
-      `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${commit} --include-release-preflight --release-preflight-run-commit ${evidenceCommit} --dispatch-missing --wait --ref ${releaseDispatchRefPlaceholder} --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
+      `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${commit} --include-release-preflight --release-preflight-run-commit ${evidenceCommit} --dispatch-missing --wait --ref ${evidenceDispatchRefPlaceholder} --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
     ],
   )
 

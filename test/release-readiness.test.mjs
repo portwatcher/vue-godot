@@ -445,7 +445,9 @@ test('release readiness writes a machine-readable blocker summary', () => {
     )
     assert.ok(
       ciEvidenceAction.commands.some((command) =>
-        command.includes('--dispatch-missing --wait --ref <branch-or-tag>'),
+        command.includes(
+          '--dispatch-missing --wait --ref <release-candidate-branch-or-tag>',
+        ),
       ),
     )
     assert.ok(
@@ -462,7 +464,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
             `npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --release-preflight-run-commit <evidence-commit-sha> --wait --output release/ci-runs.json`,
           ) &&
           action.commands.includes(
-            `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --release-preflight-run-commit <evidence-commit-sha> --dispatch-missing --wait --ref <branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
+            `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --release-preflight-run-commit <evidence-commit-sha> --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
           ) &&
           action.commands.includes(
             'git add release/ci-runs.json release/release-preflight-summary.json release/real-device-evidence.json release/release-readiness-evidence.json',
@@ -621,7 +623,7 @@ test('release readiness summary includes missing evidence next actions', () => {
             `npm run release:platform-evidence -- --production-profile --commit ${summary.commit}`,
           ) &&
           action.commands.includes(
-            `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${summary.commit} --dispatch-missing --wait --ref <branch-or-tag> --output release/ci-runs.json`,
+            `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${summary.commit} --dispatch-missing --wait --ref <release-candidate-branch-or-tag> --output release/ci-runs.json`,
           ) &&
           action.commands.includes(
             `npm run check:real-device-evidence -- --expected-commit ${summary.commit}`,
