@@ -94,9 +94,38 @@ export function load(url, context, nextLoad) {
             globalThis[key] = {
               clipboard: '',
               clipboardImage: null,
+              displayServerName: 'mock-display',
               features: new Set([5, 18]),
               primaryClipboard: '',
+              shellOpenCalls: [],
+              shellOpenResult: 0,
               throwOnClipboard: false,
+              throwOnWindowCallbacks: false,
+              windowCallbackCalls: [],
+              windowCallbacks: new Map(),
+            }
+          }
+          return globalThis[key]
+        }
+
+        function mockOSState() {
+          const key = '__vueGodotDeviceMockOS'
+          if (!globalThis[key]) {
+            globalThis[key] = {
+              cmdlineArgs: [],
+              cmdlineUserArgs: [],
+              debugBuild: false,
+              distributionName: 'Mock Linux',
+              features: new Set(['linux', 'pc', 'debug']),
+              locale: 'en_US',
+              localeLanguage: 'en',
+              modelName: 'MockDevice',
+              name: 'Linux',
+              sandboxed: false,
+              shellOpenCalls: [],
+              shellOpenResult: 0,
+              userfsPersistent: true,
+              version: '6.0.0',
             }
           }
           return globalThis[key]
@@ -184,6 +213,60 @@ export function load(url, context, nextLoad) {
         }
 
         export class OS {
+          static get_name() {
+            return mockOSState().name
+          }
+
+          static get_distribution_name() {
+            return mockOSState().distributionName
+          }
+
+          static get_version() {
+            return mockOSState().version
+          }
+
+          static get_model_name() {
+            return mockOSState().modelName
+          }
+
+          static get_cmdline_args() {
+            return new MockPackedStringArray(mockOSState().cmdlineArgs)
+          }
+
+          static get_cmdline_user_args() {
+            return new MockPackedStringArray(mockOSState().cmdlineUserArgs)
+          }
+
+          static get_locale() {
+            return mockOSState().locale
+          }
+
+          static get_locale_language() {
+            return mockOSState().localeLanguage
+          }
+
+          static has_feature(tagName) {
+            return mockOSState().features.has(String(tagName))
+          }
+
+          static is_debug_build() {
+            return mockOSState().debugBuild
+          }
+
+          static is_sandboxed() {
+            return mockOSState().sandboxed
+          }
+
+          static is_userfs_persistent() {
+            return mockOSState().userfsPersistent
+          }
+
+          static shell_open(uri) {
+            const state = mockOSState()
+            state.shellOpenCalls.push(String(uri))
+            return state.shellOpenResult
+          }
+
           static get_granted_permissions() {
             return new MockPackedStringArray(mockPermissionState().granted)
           }
@@ -212,6 +295,10 @@ export function load(url, context, nextLoad) {
         }
 
         export class DisplayServer {
+          static get_name() {
+            return mockDisplayServerState().displayServerName
+          }
+
           static has_feature(feature) {
             return mockDisplayServerState().features.has(feature)
           }
@@ -262,6 +349,26 @@ export function load(url, context, nextLoad) {
               throw new Error('clipboard unavailable')
             }
             return String(state.primaryClipboard ?? '')
+          }
+
+          static window_set_window_event_callback(callable, window_id = 0) {
+            const state = mockDisplayServerState()
+            if (state.throwOnWindowCallbacks) {
+              throw new Error('window callbacks unavailable')
+            }
+            state.windowCallbackCalls.push({ callable, windowId: window_id })
+            state.windowCallbacks.set(window_id, callable)
+          }
+
+          static WindowEvent = {
+            WINDOW_EVENT_MOUSE_ENTER: 0,
+            WINDOW_EVENT_MOUSE_EXIT: 1,
+            WINDOW_EVENT_FOCUS_IN: 2,
+            WINDOW_EVENT_FOCUS_OUT: 3,
+            WINDOW_EVENT_CLOSE_REQUEST: 4,
+            WINDOW_EVENT_GO_BACK_REQUEST: 5,
+            WINDOW_EVENT_DPI_CHANGE: 6,
+            WINDOW_EVENT_TITLEBAR_CHANGE: 7,
           }
 
           static Feature = {

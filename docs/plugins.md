@@ -1,9 +1,10 @@
 # Plugin And Adapter Guide
 
-Vue Godot does not bundle native camera, microphone, location, notification, or
-share-sheet plugins. Instead, native integrations register adapters through
-`@vue-godot/device`, and browser-like wrappers in `@vue-godot/browser` expose
-those capabilities only when a real backend is present.
+Vue Godot does not bundle native camera, microphone, location, deep-link,
+notification, or share-sheet plugins. Instead, native integrations register
+adapters through `@vue-godot/device`, and browser-like wrappers in
+`@vue-godot/browser` expose those capabilities only when a real backend is
+present.
 
 ## Adapter Lifecycle
 
@@ -79,14 +80,59 @@ Current first-party contracts:
 
 | Capability | Adapter | Browser wrapper |
 | --- | --- | --- |
+| `deep-links` | `DeepLinkAdapter` | Direct `@vue-godot/device/system` helpers |
 | `geolocation` | `GeolocationAdapter` | `navigator.geolocation` |
 | `media-devices` | `MediaDevicesAdapter` | `navigator.mediaDevices.getUserMedia()` and `MediaStream` subset |
-| `notifications` | `NotificationAdapter` | `Notification` |
+| `notifications` | `NotificationAdapter` | `Notification` and direct `@vue-godot/device/system` helper |
 | `permissions` | `PermissionAdapter` | `navigator.permissions.query()` adapter-first lookup |
+| `share` | `ShareAdapter` | Direct `@vue-godot/device/system` helper |
 
 Adapters may be implemented by a Godot script plugin, a native Android/iOS
 plugin, desktop integration code, or app-specific JavaScript that bridges to a
 known runtime object.
+
+## System Adapters
+
+Deep links and share sheets are plugin-backed because core Godot does not expose
+a portable incoming URL event stream or native share sheet API. Register adapters
+for those capabilities and use `@vue-godot/device/system` helpers from app code:
+
+```ts
+import { onOpenUrl, share } from '@vue-godot/device/system'
+import { registerDeviceCapability } from '@vue-godot/device'
+
+registerDeviceCapability({
+  capability: 'deep-links',
+  pluginName: 'my-links-plugin',
+  getInitialUrl() {
+    return myLinksPlugin.getInitialUrl()
+  },
+  subscribeUrlOpen(handler) {
+    return myLinksPlugin.onOpenUrl((url) => handler({ url }))
+  },
+})
+
+registerDeviceCapability({
+  capability: 'share',
+  pluginName: 'my-share-plugin',
+  async share(data) {
+    await mySharePlugin.share(data)
+  },
+})
+
+onOpenUrl((event) => {
+  console.log(event.url)
+})
+
+await share({
+  text: 'Share this from Vue Godot',
+  url: 'https://example.com',
+})
+```
+
+Native notification plugins can either be used through the browser-shaped
+`Notification` wrapper or directly through
+`showNativeNotification()` from `@vue-godot/device/system`.
 
 ## Media Stream Shape
 

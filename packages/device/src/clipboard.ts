@@ -1,13 +1,6 @@
 import { DisplayServer } from 'godot'
 import type { Image as GodotImage } from 'godot'
-
-function hasDisplayServerFeature(feature: DisplayServer.Feature): boolean {
-  try {
-    return DisplayServer.has_feature(feature)
-  } catch {
-    return false
-  }
-}
+import { hasDisplayServerFeature } from './utils/displayServer.js'
 
 export function isClipboardSupported(): boolean {
   return hasDisplayServerFeature(DisplayServer.Feature.FEATURE_CLIPBOARD)

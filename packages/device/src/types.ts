@@ -1,6 +1,7 @@
 import type { DeviceCapabilityErrorCode } from './errors.js'
 
 export type CoreDeviceCapabilityName =
+  | 'deep-links'
   | 'geolocation'
   | 'camera'
   | 'microphone'

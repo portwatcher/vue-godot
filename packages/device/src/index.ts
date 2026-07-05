@@ -17,6 +17,11 @@ export {
   requireCapability,
   unregisterDeviceCapability,
 } from './registry.js'
+export {
+  isDeepLinkAdapter,
+  isNotificationAdapter,
+  isShareAdapter,
+} from './adapterGuards.js'
 export type {
   CoreDeviceCapabilityName,
   DeviceCapabilityAdapter,
@@ -26,6 +31,7 @@ export type {
   PluginBackedDeviceAdapter,
 } from './types.js'
 export type {
+  DeepLinkAdapter,
   DeviceAdapter,
   DeviceGeolocationCoordinates,
   DeviceGeolocationOptions,
@@ -37,7 +43,12 @@ export type {
   DevicePermissionState,
   GeolocationAdapter,
   MediaDevicesAdapter,
+  NativeOpenUrlEvent,
+  NativeOpenUrlHandler,
+  NativeOpenUrlSubscription,
   NativeNotificationOptions,
+  NativeShareData,
   NotificationAdapter,
   PermissionAdapter,
+  ShareAdapter,
 } from './adapters.js'

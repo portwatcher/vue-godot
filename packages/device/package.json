@@ -41,6 +41,11 @@
       "types": "./dist/sensors.d.ts",
       "import": "./dist/sensors.js",
       "default": "./dist/sensors.js"
+    },
+    "./system": {
+      "types": "./dist/system.d.ts",
+      "import": "./dist/system.js",
+      "default": "./dist/system.js"
     }
   },
   "files": [

@@ -86,9 +86,41 @@ export interface NotificationAdapter
   notify: (title: string, options?: NativeNotificationOptions) => Promise<void>
 }
 
+export interface NativeShareData {
+  data?: unknown
+  files?: readonly string[]
+  text?: string
+  title?: string
+  url?: string
+}
+
+export interface ShareAdapter extends PluginBackedDeviceAdapter<'share'> {
+  share: (data: NativeShareData) => Promise<void>
+}
+
+export interface NativeOpenUrlEvent {
+  source?: string
+  url: string
+}
+
+export type NativeOpenUrlHandler = (event: NativeOpenUrlEvent) => void
+
+export interface NativeOpenUrlSubscription {
+  disconnect(): void
+}
+
+export interface DeepLinkAdapter extends PluginBackedDeviceAdapter<'deep-links'> {
+  getInitialUrl?: () => string | null | Promise<string | null>
+  subscribeUrlOpen?: (
+    handler: NativeOpenUrlHandler,
+  ) => NativeOpenUrlSubscription | (() => void)
+}
+
 export type DeviceAdapter =
   | DeviceCapabilityAdapter
+  | DeepLinkAdapter
   | GeolocationAdapter
   | MediaDevicesAdapter
   | NotificationAdapter
   | PermissionAdapter
+  | ShareAdapter

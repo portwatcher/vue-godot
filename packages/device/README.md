@@ -59,12 +59,14 @@ unregister()
 | `DeviceCapabilityError` | Typed error with `code` and `capability` fields. |
 | `createDeviceCapabilityError()` | Constructs a typed capability error. |
 | `normalizeDeviceCapabilityError()` | Preserves typed errors and wraps unknown errors. |
-| Adapter interfaces | `GeolocationAdapter`, `MediaDevicesAdapter`, `NotificationAdapter`, `PermissionAdapter`, and generic `DeviceCapabilityAdapter`. |
+| Adapter interfaces | `DeepLinkAdapter`, `GeolocationAdapter`, `MediaDevicesAdapter`, `NotificationAdapter`, `PermissionAdapter`, `ShareAdapter`, and generic `DeviceCapabilityAdapter`. |
+| Adapter type guards | `isDeepLinkAdapter()`, `isNotificationAdapter()`, and `isShareAdapter()` for safely narrowing registry adapters. |
 | `@vue-godot/device/clipboard` | Godot-backed text, primary-selection text, and image-read clipboard helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/haptics` | Godot-backed handheld and joypad/controller vibration helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/microphone` | Godot-backed microphone and audio-bus capture helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/permissions` | Godot-backed permission helpers for Android runtime requests, permission result events, and granted-permission lists. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/sensors` | Godot-backed accelerometer, gravity, gyroscope, magnetometer, motion, and orientation snapshot helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
+| `@vue-godot/device/system` | Godot-backed platform, feature, URL open, window lifecycle, deep-link, share, and native-notification helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 
 ## Capability Status
 
@@ -102,15 +104,62 @@ try {
 
 ## Adapter Interfaces
 
-The package defines generic and plugin-backed adapter contracts, plus initial
-interfaces for geolocation, media capture, notifications, and permissions. These
-interfaces are intentionally backend-neutral: Android, iOS, desktop, and Godot
-plugin implementations can all register through the same capability registry.
+The package defines generic and plugin-backed adapter contracts, plus interfaces
+for deep links, geolocation, media capture, notifications, permissions, and
+share sheets. These interfaces are intentionally backend-neutral: Android, iOS,
+desktop, and Godot plugin implementations can all register through the same
+capability registry.
 
 Native implementations should return a `DeviceCapabilityStatus` from
 `getStatus()` when they can distinguish permission denial, missing plugins, and
 export misconfiguration. Simple adapters can provide `isSupported()` and let the
 registry map `false` to `unsupported-platform`.
+
+## Godot System Helpers
+
+Import the built-in Godot system helpers from the `system` subpath:
+
+```ts
+import {
+  onAppLifecycleEvent,
+  openExternalUrl,
+  readPlatformInfo,
+  share,
+} from '@vue-godot/device/system'
+
+const platform = readPlatformInfo()
+openExternalUrl('https://example.com')
+
+const subscription = onAppLifecycleEvent((event) => {
+  if (event.type === 'back-request') {
+    console.log('Android back button requested')
+  }
+})
+
+await share({
+  title: 'Report',
+  text: 'Report ready',
+  url: 'https://example.com/report',
+})
+
+subscription?.disconnect()
+```
+
+Platform helpers wrap `OS.get_name()`, `OS.has_feature()`, command-line
+argument reads, locale/model/debug/sandbox probes, and
+`DisplayServer.get_name()`. `openExternalUrl()` wraps `OS.shell_open()`.
+
+`onAppLifecycleEvent()` installs a shared dispatcher through
+`DisplayServer.window_set_window_event_callback()` and normalizes window focus,
+blur, close-request, Android back-request, mouse-enter/exit, DPI-change, and
+titlebar-change events. Godot exposes that as one callback slot per window; keep
+all app-level listeners on this helper instead of installing competing callbacks.
+Mobile pause/resume notifications are not synthesized by this helper.
+
+`readInitialOpenUrl()` and `onOpenUrl()` use a registered `DeepLinkAdapter`.
+`share()` uses a registered `ShareAdapter`. `showNativeNotification()` uses a
+registered `NotificationAdapter`. Native plugins still own platform URL intent,
+universal/app link, share sheet, notification channel, prompt, and export setup.
 
 ## Godot Microphone Helpers
 

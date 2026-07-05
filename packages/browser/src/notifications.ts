@@ -2,6 +2,7 @@ import {
   createDeviceCapabilityError,
   deviceCapabilities,
   getCapabilityStatus,
+  isNotificationAdapter,
   isDeviceCapabilityError,
   requireCapability,
   type NativeNotificationOptions,
@@ -63,18 +64,6 @@ export class GodotNotificationErrorEvent extends GodotEvent {
 }
 
 let notificationPermission: GodotNotificationPermission = 'default'
-
-function isNotificationAdapter(value: unknown): value is NotificationAdapter {
-  if (typeof value !== 'object' || value === null) {
-    return false
-  }
-
-  const candidate = value as Partial<NotificationAdapter>
-  return (
-    candidate.capability === 'notifications' &&
-    typeof candidate.notify === 'function'
-  )
-}
 
 export function getRegisteredNotificationAdapter(): NotificationAdapter | null {
   const adapter = deviceCapabilities.getAdapter('notifications')

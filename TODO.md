@@ -223,12 +223,12 @@ The project is production ready only when all of these are true:
 - [x] Clipboard:
   - [x] Text read/write.
   - [x] Image read/write where feasible.
-- [ ] App/system:
-  - [ ] Platform and feature detection.
-  - [ ] App lifecycle events: focus, pause, resume, quit where feasible.
-  - [ ] Deep links / URL open events if feasible.
-  - [ ] Share sheet plugin support if feasible.
-  - [ ] Native notifications plugin support if feasible.
+- [x] App/system:
+  - [x] Platform and feature detection.
+  - [x] App lifecycle events: focus, pause, resume, quit where feasible.
+  - [x] Deep links / URL open events if feasible.
+  - [x] Share sheet plugin support if feasible.
+  - [x] Native notifications plugin support if feasible.
 
 ## P1: Routing, Navigation, And App Architecture
 
@@ -333,8 +333,10 @@ Use this backlog to seed `docs/compatibility.md`.
 | `navigator.geolocation` | browser/device | requires-plugin | `@vue-godot/device` `GeolocationAdapter` |
 | `navigator.mediaDevices.getUserMedia` | browser/device | requires-plugin | `@vue-godot/device` `MediaDevicesAdapter` |
 | `<CameraView>` | html/device | partial | `CameraServer` / `CameraTexture` |
+| App/system helpers | device | partial | `OS` / `DisplayServer` / adapter registry |
+| Deep links / URL open events | device | requires-plugin | `@vue-godot/device` `DeepLinkAdapter` |
 | Notifications | browser/device | requires-plugin | `@vue-godot/device` `NotificationAdapter` |
-| Share sheet | device | requires-plugin | native plugins |
+| Share sheet | device | requires-plugin | `@vue-godot/device` `ShareAdapter` |
 | DOM `document` | browser | skipped | no DOM in Godot |
 | Service workers | browser | skipped | no browser worker/service worker runtime |
 | IndexedDB | browser | planned or skipped | storage engine required |
