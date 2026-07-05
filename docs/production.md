@@ -49,6 +49,7 @@ Follow the dedicated permission and adapter docs before shipping:
 - [Permissions and export setup](./permissions.md)
 - [Plugin adapter guide](./plugins.md)
 - [Compatibility matrix](./compatibility.md)
+- [Real device release checklist](./real-device-release.md)
 - [Migration guide](./migration.md)
 - [Performance guide](./performance.md)
 - [Android platform guide](./platforms/android.md)

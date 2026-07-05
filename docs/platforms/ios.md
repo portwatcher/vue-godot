@@ -1,9 +1,10 @@
 # iOS And Apple Platform Guide
 
 Use this guide with the shared [production](../production.md),
-[permissions](../permissions.md), [plugin adapter](../plugins.md), and
-[compatibility](../compatibility.md) docs when preparing iOS, iPadOS, visionOS,
-or other Apple-platform exports.
+[permissions](../permissions.md), [plugin adapter](../plugins.md),
+[compatibility](../compatibility.md), and
+[real device release checklist](../real-device-release.md) docs when preparing
+iOS, iPadOS, visionOS, or other Apple-platform exports.
 
 ## Build Checklist
 
