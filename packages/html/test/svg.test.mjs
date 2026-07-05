@@ -147,6 +147,15 @@ test('maps alt prop to tooltip_text', async () => {
   assert.equal(vnode.props.tooltip_text, 'Application icon')
 })
 
+test('combines alt fallback label with accessibility hints', async () => {
+  const vnode = await renderSvg({
+    src: './icon.svg',
+    alt: 'Application icon',
+    accessibilityHint: 'Vector asset',
+  })
+  assert.equal(vnode.props.tooltip_text, 'Application icon\nVector asset')
+})
+
 test('does not set tooltip_text when alt is absent', async () => {
   const vnode = await renderSvg({ src: './icon.svg' })
   assert.equal(vnode.props.tooltip_text, undefined)
@@ -226,6 +235,16 @@ test('defaults scale to 1 when not specified', async () => {
   const dataUri = `data:image/svg+xml;base64,${b64}`
 
   const vnode = await renderSvg({ src: dataUri })
+  assert.ok(vnode.props.texture != null)
+  assert.equal(vnode.props.texture._scale, 1)
+})
+
+test('falls back to scale 1 for invalid scale values', async () => {
+  const svgContent = '<svg xmlns="http://www.w3.org/2000/svg"></svg>'
+  const b64 = globalThis.btoa(svgContent)
+  const dataUri = `data:image/svg+xml;base64,${b64}`
+
+  const vnode = await renderSvg({ src: dataUri, scale: -2 })
   assert.ok(vnode.props.texture != null)
   assert.equal(vnode.props.texture._scale, 1)
 })

@@ -138,7 +138,7 @@ The project is production ready only when all of these are true:
   - [ ] `<Textarea>`
   - [ ] `<Select>` / `<Option>`
   - [ ] `<Img>`
-  - [ ] `<Svg>`
+  - [x] `<Svg>`
   - [x] `<A>`
   - [x] `<Audio>`
   - [x] `<Video>`

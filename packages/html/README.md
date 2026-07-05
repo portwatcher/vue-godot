@@ -348,7 +348,7 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 | `<Select>`          | `OptionButton`                                                         | `<Option>` children   |
 | `<Video>`           | `VideoStreamPlayer`                                                    | `src`, `autoplay`, `loop`, `muted`, `volume`, `style`, `@ended` |
 | `<Audio>`           | `AudioStreamPlayer`                                                    | `src`, `autoplay`, `loop`, `muted`, `volume`, `@ended` |
-| `<Svg>`             | `TextureRect` (SVG resource)                                           | `src`                 |
+| `<Svg>`             | `TextureRect` (SVG resource)                                           | `src`, `scale`, `alt`, `style` |
 | `<A>`               | `LinkButton`                                                           | `href`, `target` (accepted but ignored), `disabled`, `style`, `@click` |
 
 ## Provided APIs
