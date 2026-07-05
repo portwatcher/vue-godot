@@ -1,14 +1,14 @@
 {
   "ready": true,
-  "commit": "4ff5dbcc7692e1b1e07356b446af9fabd9c3df0a",
+  "commit": "4c7be398d99cc7d6175fdbad5cec74795f91c7d8",
   "commitFound": true,
   "releasePreflightRunCommit": null,
   "localGit": {
     "currentBranch": "develop",
-    "currentHead": "4ff5dbcc7692e1b1e07356b446af9fabd9c3df0a",
+    "currentHead": "4c7be398d99cc7d6175fdbad5cec74795f91c7d8",
     "commitIsHead": true,
     "upstreamRef": "origin/develop",
-    "upstreamCommit": "4ff5dbcc7692e1b1e07356b446af9fabd9c3df0a",
+    "upstreamCommit": "4c7be398d99cc7d6175fdbad5cec74795f91c7d8",
     "upstreamMatchesCommit": true,
     "dirtyWorktree": false
   },
@@ -27,24 +27,24 @@
     "godotSmokeWorkflow": true
   },
   "evidence": {
-    "commit": "4ff5dbcc7692e1b1e07356b446af9fabd9c3df0a",
+    "commit": "4c7be398d99cc7d6175fdbad5cec74795f91c7d8",
     "workflows": {
       "Check": {
         "workflowName": "Check",
-        "runUrl": "https://github.com/portwatcher/vue-godot/actions/runs/28756534438",
-        "runId": 28756534438,
-        "runNumber": 30,
+        "runUrl": "https://github.com/portwatcher/vue-godot/actions/runs/28757665256",
+        "runId": 28757665256,
+        "runNumber": 32,
         "runAttempt": 1,
-        "runCommit": "4ff5dbcc7692e1b1e07356b446af9fabd9c3df0a",
+        "runCommit": "4c7be398d99cc7d6175fdbad5cec74795f91c7d8",
         "runConclusion": "success"
       },
       "Godot Smoke": {
         "workflowName": "Godot Smoke",
-        "runUrl": "https://github.com/portwatcher/vue-godot/actions/runs/28756582145",
-        "runId": 28756582145,
-        "runNumber": 16,
+        "runUrl": "https://github.com/portwatcher/vue-godot/actions/runs/28757720304",
+        "runId": 28757720304,
+        "runNumber": 17,
         "runAttempt": 1,
-        "runCommit": "4ff5dbcc7692e1b1e07356b446af9fabd9c3df0a",
+        "runCommit": "4c7be398d99cc7d6175fdbad5cec74795f91c7d8",
         "runConclusion": "success"
       }
     }
