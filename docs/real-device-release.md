@@ -68,8 +68,9 @@ JSON. The initial CI, real-device, and Release Preflight evidence actions begin
 with `npm run check` before collecting CI or assembling evidence. The initial CI
 action captures Check and Godot Smoke, while Release Preflight is captured later
 after real-device evidence is committed. That later action includes the
-`--dispatch-missing` command and `--real-device-evidence-path` input for the
-workflow-dispatch-only preflight workflow. The final warning-removal action runs
+`--dispatch-missing`, `--release-preflight-run-commit`, and
+`--real-device-evidence-path` inputs for the workflow-dispatch-only preflight
+workflow. The final warning-removal action runs
 `npm run check` after the finalizer, stages the finalizer files, commits them,
 and then runs the final strict readiness check. When an expected
 commit is known, the summary resolves evidence and

@@ -309,6 +309,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /--real-device-evidence-path/)
   assert.match(production, /--release-preflight-run-commit/)
   assert.match(production, /expected_commit/)
+  assert.match(
+    production,
+    /includes the `--dispatch-missing`, `--release-preflight-run-commit`, and\s+`--real-device-evidence-path` inputs/,
+  )
   assert.match(production, /workflow-dispatch-only preflight\s+workflow/)
   assert.match(
     production,
@@ -384,6 +388,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /--real-device-evidence-path/)
   assert.match(readme, /--release-preflight-run-commit/)
   assert.match(readme, /expected_commit/)
+  assert.match(
+    readme,
+    /includes the `--dispatch-missing`, `--release-preflight-run-commit`, and `--real-device-evidence-path` inputs/,
+  )
   assert.match(readme, /workflow-dispatch-only preflight\s+workflow/)
   assert.match(
     readme,
@@ -468,7 +476,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /--real-device-evidence-path/)
   assert.match(checklist, /--release-preflight-run-commit/)
   assert.match(checklist, /expected_commit/)
-  assert.match(checklist, /workflow-dispatch-only preflight workflow/)
+  assert.match(
+    checklist,
+    /includes the\s+`--dispatch-missing`, `--release-preflight-run-commit`, and\s+`--real-device-evidence-path` inputs/,
+  )
+  assert.match(checklist, /workflow-dispatch-only preflight\s+workflow/)
   assert.match(
     checklist,
     /final\s+warning-removal action runs\s+`npm run check` after the finalizer/,

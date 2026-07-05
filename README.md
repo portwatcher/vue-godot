@@ -282,7 +282,7 @@ npm run check:serious-examples # verifies native/game example app readiness and 
 npm run check:public-surface # verifies READMEs, compatibility docs, templates, and demos match public APIs
 npm run check:real-device-evidence # validates Android/iOS export-smoke evidence JSON
 npm run check        # build + test + CLI smoke + serious examples + performance budgets
-npm run release:ci   # verifies Check/Godot Smoke, optionally Release Preflight, for the release commit
+npm run release:ci   # verifies Check/Godot Smoke for the release commit; can capture Release Preflight separately
 npm run release:platform-evidence -- --help # creates the Android/iOS device evidence template
 npm run release:evidence -- --help # assembles release evidence JSON from device results + CI run URLs
 npm run release:finalize-readiness -- --help # applies final TODO checks + warning removal after strict evidence
