@@ -195,7 +195,7 @@ The project is production ready only when all of these are true:
   - [x] Wrap `CameraServer` for feed enumeration where available.
   - [x] Add camera feed selection.
   - [x] Add `<CameraView>`.
-  - [ ] Add snapshot/capture API if feasible.
+  - [x] Add snapshot/capture API if feasible.
   - [ ] Add Android/iOS plugin fallback where core Godot is insufficient.
   - [x] Document platform limits.
 - [ ] Microphone:
@@ -333,6 +333,7 @@ Use this backlog to seed `docs/compatibility.md`.
 | `navigator.geolocation` | browser/device | requires-plugin | `@vue-godot/device` `GeolocationAdapter` |
 | `navigator.mediaDevices.getUserMedia` | browser/device | requires-plugin | `@vue-godot/device` `MediaDevicesAdapter` |
 | `<CameraView>` | html/device | partial | `CameraServer` / `CameraTexture` |
+| Camera snapshot helpers | html/device | partial | `CameraTexture` / `Texture2D.get_image()` |
 | App/system helpers | device | partial | `OS` / `DisplayServer` / adapter registry |
 | Deep links / URL open events | device | requires-plugin | `@vue-godot/device` `DeepLinkAdapter` |
 | Notifications | browser/device | requires-plugin | `@vue-godot/device` `NotificationAdapter` |

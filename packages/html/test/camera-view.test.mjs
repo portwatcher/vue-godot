@@ -6,13 +6,24 @@ register(new URL('./godot-browser-loader.mjs', import.meta.url).href)
 
 const {
   CameraView,
+  captureCameraImage,
+  captureCameraTextureImage,
   createCameraTexture,
   listCameraFeeds,
   resolveCameraFeedId,
 } = await import('../dist/index.js')
 
+function setMockCameraServer(state) {
+  globalThis.__vueGodotHtmlMockCameraServer = {
+    feeds: [],
+    snapshotImage: null,
+    throwOnSnapshot: false,
+    ...state,
+  }
+}
+
 function setMockFeeds(feeds) {
-  globalThis.__vueGodotHtmlMockCameraServer = { feeds }
+  setMockCameraServer({ feeds })
 }
 
 function renderCameraView(props = {}) {
@@ -77,6 +88,48 @@ test('createCameraTexture returns null when no camera feed is available', () => 
   setMockFeeds([])
 
   assert.equal(createCameraTexture(), null)
+})
+
+test('captureCameraImage returns a camera texture image snapshot', () => {
+  setMockFeeds([{ id: 4, name: 'Default Camera', position: 0, active: true }])
+
+  const image = captureCameraImage({ feedIndex: 0, whichFeed: 1 })
+
+  assert.equal(image.__kind, 'camera-image')
+  assert.equal(image.feedId, 4)
+  assert.equal(image.whichFeed, 1)
+  assert.equal(image.active, true)
+})
+
+test('captureCameraTextureImage captures from an existing texture', () => {
+  const texture = createCameraTexture({
+    feedId: 9,
+    whichFeed: 1,
+    active: false,
+  })
+
+  const image = captureCameraTextureImage(texture)
+
+  assert.equal(image.__kind, 'camera-image')
+  assert.equal(image.feedId, 9)
+  assert.equal(image.whichFeed, 1)
+  assert.equal(image.active, false)
+})
+
+test('camera snapshot helpers return null when unavailable', () => {
+  setMockCameraServer({
+    feeds: [],
+  })
+
+  assert.equal(captureCameraImage(), null)
+  assert.equal(captureCameraTextureImage(null), null)
+
+  setMockCameraServer({
+    feeds: [{ id: 5, name: 'Default Camera', position: 0, active: true }],
+    throwOnSnapshot: true,
+  })
+
+  assert.equal(captureCameraImage({ feedIndex: 0 }), null)
 })
 
 test('CameraView renders a selected CameraTexture in a TextureRect', () => {

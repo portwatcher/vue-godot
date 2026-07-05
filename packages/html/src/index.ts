@@ -54,6 +54,8 @@ export {
   loadAudioStream,
 } from './utils/audioStreamLoader.js'
 export {
+  captureCameraImage,
+  captureCameraTextureImage,
   createCameraTexture,
   listCameraFeeds,
   resolveCameraFeedId,

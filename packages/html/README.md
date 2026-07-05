@@ -162,12 +162,15 @@ Percent `width` and `height` values map to Godot `Control` anchors from the top-
 
 `<CameraView>` previews a Godot camera feed by creating a `CameraTexture` and rendering it in a `TextureRect`. It selects the first feed by default, or you can choose a feed with `feedIndex` or `feedId`. The `active` prop maps to `camera_is_active`, and `whichFeed` maps to Godot's split-feed image selection.
 
-Use `listCameraFeeds()` before rendering selection UI:
+Use `listCameraFeeds()` before rendering selection UI. Use
+`captureCameraImage()` when you need a best-effort `Image` snapshot from a
+selected `CameraTexture`:
 
 ```ts
-import { listCameraFeeds } from '@vue-godot/html'
+import { captureCameraImage, listCameraFeeds } from '@vue-godot/html'
 
 const feeds = listCameraFeeds()
+const snapshot = captureCameraImage({ feedIndex: 0 })
 ```
 
 ```vue
@@ -179,7 +182,12 @@ const feeds = listCameraFeeds()
 ></CameraView>
 ```
 
-Camera permissions, export settings, and native camera plugins remain app responsibilities. This package does not request permissions, bundle Android/iOS plugins, or expose snapshot/capture APIs; it only uses `CameraServer` feeds that Godot already reports.
+Camera permissions, export settings, and native camera plugins remain app
+responsibilities. Snapshot helpers call Godot `Texture2D.get_image()` on a
+selected `CameraTexture` where the runtime exposes it. This package does not
+request permissions, bundle Android/iOS plugins, save image files, or provide a
+native still-photo capture pipeline; it only uses `CameraServer` feeds that
+Godot already reports.
 
 ### Microphone capture UI non-goal
 
@@ -762,7 +770,7 @@ This package is in early development. Currently scaffolded:
 - [x] `<Pressable>` — focusable interactive wrapper (`PanelContainer`, hover/focus/press/long-press state)
 - [x] `<SafeAreaView>` — safe-area layout helper (`DisplayServer.get_display_safe_area()`, margin padding, fallback insets)
 - [x] `<KeyboardAvoidingView>` — virtual keyboard layout helper (`DisplayServer.virtual_keyboard_get_height()`, padding/position/height behavior, fallback height)
-- [x] `<CameraView>` — camera preview (`CameraServer` feed selection plus `CameraTexture`)
+- [x] `<CameraView>` — camera preview and snapshot helpers (`CameraServer` feed selection plus `CameraTexture`)
 - [x] `<Span>` — text display with `fontSize`, `fontFamily`, `fontWeight`, `color`, `textAlign`, `textTransform`, `overflowWrap`
 - [x] `<Switch>` — binary toggle (`CheckButton`, `v-model`, `label`, `disabled`)
 - [x] `<Button>` — click handler with `@click`, `disabled`

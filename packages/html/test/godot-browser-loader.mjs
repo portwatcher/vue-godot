@@ -122,6 +122,22 @@ export function load(url, context, nextLoad) {
             this.which_feed = 0
             this.camera_is_active = false
           }
+
+          get_image() {
+            const state = mockCameraServerState()
+            if (state.throwOnSnapshot) {
+              throw new Error('camera snapshot unavailable')
+            }
+            return (
+              state.snapshotImage ?? {
+                __mock: true,
+                __kind: 'camera-image',
+                feedId: this.camera_feed_id,
+                whichFeed: this.which_feed,
+                active: this.camera_is_active,
+              }
+            )
+          }
         }
 
         function mockCameraServerState() {
@@ -131,6 +147,8 @@ export function load(url, context, nextLoad) {
               feeds: [
                 { id: 1, name: 'Mock Camera', position: 0, active: false },
               ],
+              snapshotImage: null,
+              throwOnSnapshot: false,
             }
           }
           return globalThis[key]

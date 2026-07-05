@@ -1,5 +1,5 @@
 import { CameraServer, CameraTexture } from 'godot'
-import type { CameraFeed, Texture2D } from 'godot'
+import type { CameraFeed, Image as GodotImage, Texture2D } from 'godot'
 
 export type CameraFeedPosition = 'unspecified' | 'front' | 'back'
 
@@ -134,4 +134,24 @@ export function createCameraTexture(
   texture.which_feed = finiteInteger(options.whichFeed) ?? 0
   texture.camera_is_active = options.active !== false
   return texture
+}
+
+export function captureCameraTextureImage(
+  texture: Texture2D | null | undefined,
+): GodotImage | null {
+  if (!texture) {
+    return null
+  }
+
+  try {
+    return texture.get_image()
+  } catch {
+    return null
+  }
+}
+
+export function captureCameraImage(
+  options: CameraTextureOptions = {},
+): GodotImage | null {
+  return captureCameraTextureImage(createCameraTexture(options))
 }
