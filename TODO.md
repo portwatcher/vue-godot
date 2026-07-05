@@ -118,7 +118,7 @@ The project is production ready only when all of these are true:
 ## P0: HTML And Native UI Components
 
 - [ ] Expand `@vue-godot/html` beyond the current demo component surface.
-- [ ] Add core app primitives:
+- [x] Add core app primitives:
   - [x] `<ScrollView>` backed by Godot scroll containers.
   - [x] `<VirtualList>` or `<FlatList>` equivalent for large data sets.
   - [x] `<Pressable>` with mouse, touch, keyboard, controller, focus, disabled, hover, pressed, and long-press states.
@@ -143,7 +143,7 @@ The project is production ready only when all of these are true:
   - [ ] `<Audio>`
   - [ ] `<Video>`
   - [ ] `<Canvas>`
-- [ ] Add media/device UI:
+- [x] Add media/device UI:
   - [x] `<CameraView>` backed by `CameraServer` / `CameraFeed` / `CameraTexture` where available.
   - [x] Camera permission and plugin docs.
   - [x] Microphone capture UI or documented non-goal.
@@ -161,14 +161,14 @@ The project is production ready only when all of these are true:
   - [x] Support percent sizes where Godot layout can represent them.
   - [x] Add style warnings for unsupported properties.
 - [ ] Improve accessibility and input:
-  - [ ] Focus management.
+  - [x] Focus management.
     - [x] Add `autoFocus` / `autofocus` mount-time focus for focusable controls.
     - [x] Map explicit focus traversal NodePaths to Godot focus graph props.
     - [x] Add focus traps and restoration where needed.
-  - [ ] Keyboard navigation.
+  - [x] Keyboard navigation.
     - [x] Map `focusNext` / `focusPrevious` to Godot Tab focus traversal.
     - [x] Add higher-level keyboard shortcut and escape/back guidance.
-  - [ ] Controller/gamepad navigation.
+  - [x] Controller/gamepad navigation.
     - [x] Map directional focus neighbors to Godot D-pad/controller focus traversal.
     - [x] Add controller navigation examples and fallback guidance.
   - [x] Touch target behavior.
@@ -198,7 +198,7 @@ The project is production ready only when all of these are true:
   - [x] Add snapshot/capture API if feasible.
   - [ ] Add Android/iOS plugin fallback where core Godot is insufficient.
   - [x] Document platform limits.
-- [ ] Microphone:
+- [x] Microphone:
   - [x] Wrap Godot audio input where feasible.
   - [x] Add permission/export docs.
   - [x] Define whether a browser `MediaStream` subset is supported or skipped.
@@ -242,7 +242,7 @@ The project is production ready only when all of these are true:
 
 ## P1: Tooling And Developer Experience
 
-- [ ] Improve CLI commands.
+- [x] Improve CLI commands.
   - [x] `create app` profile.
   - [x] `create game-ui` profile.
   - [x] `integrate --html --device`.
