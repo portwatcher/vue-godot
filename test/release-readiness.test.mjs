@@ -282,6 +282,8 @@ test('release readiness requires release tooling scripts', () => {
         check:
           'npm run build && npm run test && npm run smoke:cli && npm run check:serious-examples && npm run bench:performance',
         'check:public-surface': 'node scripts/public-surface-audit.mjs',
+        'check:platform-evidence':
+          'node scripts/check-platform-evidence.mjs',
         'check:real-device-evidence':
           'node scripts/check-real-device-evidence.mjs',
         'check:serious-examples':

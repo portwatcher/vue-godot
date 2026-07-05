@@ -4,6 +4,7 @@ import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
 
+import { auditPlatformEvidence } from '../scripts/check-platform-evidence.mjs'
 import { buildPlatformEvidenceTemplate } from '../scripts/create-platform-evidence.mjs'
 import {
   buildRealDeviceEvidence,
@@ -112,6 +113,9 @@ test('platform evidence template lists required checks without passing them', ()
           'GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit <release-candidate-sha> --dispatch-missing --wait --ref <release-candidate-branch-or-tag> --output release/ci-runs.json',
         ) &&
         action.commands.includes(
+          'npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit <release-candidate-sha>',
+        ) &&
+        action.commands.includes(
           'npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --real-device-output release/real-device-evidence.json',
         ),
     ),
@@ -143,6 +147,11 @@ test('platform evidence template next actions honor custom output paths', () => 
   assert.ok(
     assembleAction.commands.includes(
       `npm run release:ci -- --commit ${commit} --wait --output release/ci-runs.json`,
+    ),
+  )
+  assert.ok(
+    assembleAction.commands.includes(
+      `npm run check:platform-evidence -- --platform-evidence 'release/custom platform'\\''s evidence.json' --expected-commit ${commit}`,
     ),
   )
   assert.ok(
@@ -342,6 +351,54 @@ test('completed platform template validates after required checks are recorded',
     }),
     [],
   )
+})
+
+test('platform evidence audit reports worksheet gaps without throwing', () => {
+  const template = buildPlatformEvidenceTemplate({
+    selectedApis: ['fetch'],
+    androidArtifact: 'vue-godot-android-release.aab',
+    iosArtifact: 'TestFlight build 1',
+    androidDevice: 'Pixel hosted device',
+    iosDevice: 'iPhone hosted device',
+    androidOs: 'Android 15',
+    iosOs: 'iOS 18',
+    orientation: 'portrait and landscape',
+    locale: 'en-US',
+  })
+  template.android.passedChecks = {}
+
+  const summary = auditPlatformEvidence(template, {
+    allowNonProductionProfile: true,
+  })
+
+  assert.equal(summary.ready, false)
+  assert.match(
+    summary.platforms.android.errors.join('\n'),
+    /android\.passedChecks must be a string array/,
+  )
+})
+
+test('platform evidence audit accepts complete worksheet evidence', () => {
+  const template = buildPlatformEvidenceTemplate({
+    selectedApis: ['fetch', 'WebSocket', 'SafeAreaView'],
+    androidArtifact: 'vue-godot-android-release.aab',
+    iosArtifact: 'TestFlight build 1',
+    androidDevice: 'Pixel hosted device',
+    iosDevice: 'iPhone hosted device',
+    androidOs: 'Android 15',
+    iosOs: 'iOS 18',
+    orientation: 'portrait and landscape',
+    locale: 'en-US',
+  })
+  template.android.passedChecks = [...requiredRealDeviceChecks.android]
+  template.ios.passedChecks = [...requiredRealDeviceChecks.ios]
+
+  const summary = auditPlatformEvidence(template, {
+    allowNonProductionProfile: true,
+  })
+
+  assert.equal(summary.ready, true)
+  assert.equal(summary.errorCount, 0)
 })
 
 test('release evidence normalization removes template-only required checks', () => {

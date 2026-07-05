@@ -299,7 +299,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /selected APIs must be recorded in `passedChecks`/)
   assert.match(production, /top-level `nextActions` section/)
   assert.match(production, /release CI wait\/dispatch commands/)
-  assert.match(production, /final evidence assembly commands/)
+  assert.match(production, /worksheet audit command/)
+  assert.match(production, /final\s+evidence assembly commands/)
   assert.match(production, /worksheet fields/)
   assert.match(
     production,
@@ -653,7 +654,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /--production-profile/)
   assert.match(
     checklist,
-    /reads `release\/ci-runs\.json` by default[\s\S]*`--ci-evidence <file>`[\s\S]*records an `initialCiEvidence` status object[\s\S]*duplicate Check\/Godot Smoke collection\s+commands/,
+    /[Ii]t reads\s+`release\/ci-runs\.json` by default[\s\S]*`--ci-evidence <file>`[\s\S]*records an `initialCiEvidence` status object[\s\S]*duplicate Check\/Godot Smoke collection\s+commands/,
   )
   assert.match(checklist, /fetch[\s\S]*WebSocket[\s\S]*navigator\.permissions\.query/)
   assert.match(checklist, /Final release evidence must include every production-profile API/)
@@ -661,6 +662,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /selectedApiRequiredChecks/)
   assert.match(checklist, /top-level `nextActions`/)
   assert.match(checklist, /release CI wait\/dispatch commands/)
+  assert.match(checklist, /worksheet audit command/)
   assert.match(checklist, /local `npm run check`/)
   assert.match(checklist, /final evidence\s+assembly commands/)
   assert.match(checklist, /worksheet fields/)

@@ -125,21 +125,37 @@ shows which conditional checks came from the selected API set. Selected API
 names are validated, so typos or unknown names fail before conditional checks
 can be omitted. Conditional checks for selected APIs must be moved into
 `passedChecks`. The generated top-level `nextActions` section records the
-local `npm run check`, any still-needed release CI wait/dispatch commands, and
-final evidence assembly commands for turning the completed worksheet into final
-real-device evidence. It reads `release/ci-runs.json` by default, or
+local `npm run check`, any still-needed release CI wait/dispatch commands, the
+worksheet audit command, and final evidence assembly commands for turning the
+completed worksheet into final real-device evidence. It reads
+`release/ci-runs.json` by default, or
 `--ci-evidence <file>`, records an `initialCiEvidence` status object, and omits
 duplicate Check/Godot Smoke collection commands when that file already validates
 initial CI for the tested commit.
 Pass `--commit <release-candidate-sha>` when creating the worksheet if the
 tested release commit is known; it must be the full 40-character commit SHA.
 Generated `nextActions` commands will use that commit for CI collection,
-evidence assembly, and validation instead of the placeholder.
+worksheet audit, evidence assembly, and validation instead of the placeholder.
 Keep only complete `android` and `ios` evidence objects before running
 `npm run release:evidence`.
 Keep worksheet fields only in `release/platform-evidence.json`; final
 `release/real-device-evidence.json` must not contain `requiredChecks`,
 `passOnlyChecks`, or `selectedApiRequiredChecks`.
+
+During device testing, audit worksheet progress without failing the handoff:
+
+```bash
+npm run check:platform-evidence -- \
+  --allow-open \
+  --expected-commit <release-candidate-sha> \
+  --summary-output release/platform-evidence-summary.json
+```
+
+The summary reports Android and iOS metadata gaps, remaining required checks,
+pass-only and selected-API checks that still must be in `passedChecks`, worksheet
+drift from the maintained check lists, and follow-up `nextActions`. Before
+assembling final evidence, run the same command without `--allow-open`; it must
+pass.
 
 After the release candidate is pushed, verify the required CI runs and capture
 their URLs and structured workflow readiness status:

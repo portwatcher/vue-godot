@@ -44,6 +44,29 @@ export function productionProfilePlatformEvidenceCommand(commit) {
   ])
 }
 
+export function checkPlatformEvidenceCommand(commit, options = {}) {
+  const args = [
+    'npm',
+    'run',
+    'check:platform-evidence',
+    '--',
+    '--platform-evidence',
+    options.platformEvidencePath ?? defaultPlatformEvidencePath,
+  ]
+
+  if (options.summaryOutput) {
+    args.push('--summary-output', options.summaryOutput)
+  }
+
+  if (options.allowOpen) {
+    args.push('--allow-open')
+  }
+
+  args.push('--expected-commit', releaseCommitLabel(commit))
+
+  return shellCommand(args)
+}
+
 export function releaseCiCommand(commit, options = {}) {
   const args = [
     'npm',

@@ -11,6 +11,7 @@ Run the full repository check before cutting a release candidate:
 npm run check
 npm audit --audit-level=moderate
 npm run check:public-surface
+npm run check:platform-evidence -- --allow-open
 npm run check:real-device-evidence -- --optional
 npm run release:preflight -- --local --skip-check --skip-godot
 ```
@@ -25,6 +26,12 @@ advisories unless an accepted exception is documented in the release notes.
 coverage, root README support links, generated template release defaults,
 serious example README smoke coverage, compatibility docs, and `apps/html-demo`
 component coverage.
+`npm run check:platform-evidence` audits the Android/iOS worksheet before final
+evidence assembly. Use `--allow-open --summary-output
+release/platform-evidence-summary.json` during device testing to report
+metadata gaps, remaining required checks, pass-only or selected-API checks that
+must move to `passedChecks`, worksheet drift, and nextActions without failing
+the handoff run.
 `npm run check:real-device-evidence` validates the Android/iOS export-smoke
 evidence JSON when it exists. Add
 `--summary-output release/real-device-evidence-summary.json` to write
@@ -70,7 +77,7 @@ for the maintained production-profile selected API set; it still must be filled
 with real artifact, device, OS, API, pass, and skip data after testing. Pass
 `--commit <release-candidate-sha>` with the full 40-character tested commit SHA
 when it is known so generated `nextActions` commands use that commit for CI
-collection, evidence assembly, and validation.
+collection, worksheet audit, evidence assembly, and validation.
 The worksheet reads `release/ci-runs.json` by default, or
 `--ci-evidence <file>`, records an `initialCiEvidence` status object, and omits
 duplicate Check/Godot Smoke collection commands when that file already validates
@@ -95,8 +102,10 @@ audio-input, sensor, hardware-adapter, permission, and safe-area/keyboard
 checks.
 Conditional checks required by selected APIs must be recorded in `passedChecks`,
 not `skippedChecks`. Its top-level `nextActions` section records `npm run check`,
-release CI wait/dispatch commands, and final evidence assembly commands for
-after the worksheet is complete.
+release CI wait/dispatch commands, the worksheet audit command, and final
+evidence assembly commands for after the worksheet is complete. Run
+`npm run check:platform-evidence` without `--allow-open` before
+`npm run release:evidence`.
 After device testing and CI runs exist, `npm run release:evidence` assembles the
 real-device and release-readiness evidence files from the current package
 versions, Android/iOS platform evidence, CI evidence, and verified GitHub

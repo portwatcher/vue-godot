@@ -10,6 +10,7 @@ import {
   unknownRealDeviceSelectedApis,
 } from './real-device-evidence.mjs'
 import {
+  checkPlatformEvidenceCommand,
   checkRealDeviceEvidenceCommand,
   defaultReleaseCiEvidencePath,
   initialReleaseCiCommands,
@@ -233,6 +234,9 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
       commands: [
         'npm run check',
         ...ciEvidenceCommands,
+        checkPlatformEvidenceCommand(commit, {
+          platformEvidencePath,
+        }),
         releaseEvidenceCommand(commit, {
           ciEvidencePath,
           platformEvidencePath,

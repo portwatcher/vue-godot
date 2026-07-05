@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
+  checkPlatformEvidenceCommand,
   checkRealDeviceEvidenceCommand,
   currentHeadCommitCommand,
   defaultPlatformEvidencePath,
@@ -56,6 +57,10 @@ test('release handoff commands format real-device evidence assembly', () => {
   assert.equal(
     releaseEvidenceCommand(commit),
     `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${commit} --real-device-output release/real-device-evidence.json`,
+  )
+  assert.equal(
+    checkPlatformEvidenceCommand(commit),
+    `npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit ${commit}`,
   )
   assert.equal(
     checkRealDeviceEvidenceCommand(commit),
@@ -141,5 +146,14 @@ test('release handoff commands quote custom refs and evidence paths', () => {
       releasePreflightSummaryPath: 'release/preflight summary.json',
     }),
     `npm run release:evidence -- --platform-evidence 'release/platform evidence'\\''s draft.json' --ci-evidence 'release/ci runs.json' --commit ${commit} --real-device-output 'release/real device evidence.json' --release-preflight-summary 'release/preflight summary.json' --readiness-output 'release/readiness evidence.json'`,
+  )
+
+  assert.equal(
+    checkPlatformEvidenceCommand(commit, {
+      allowOpen: true,
+      platformEvidencePath: "release/platform evidence's draft.json",
+      summaryOutput: 'release/platform summary.json',
+    }),
+    `npm run check:platform-evidence -- --platform-evidence 'release/platform evidence'\\''s draft.json' --summary-output 'release/platform summary.json' --allow-open --expected-commit ${commit}`,
   )
 })
