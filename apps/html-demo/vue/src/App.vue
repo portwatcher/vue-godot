@@ -384,6 +384,9 @@
     v-model="textValue"
     placeholder="Type something..."
     auto-focus
+    focus-next="."
+    focus-previous="."
+    focus-neighbor-right="."
   ></Input>
   <Span>{{ `Text input: ${textValue}` }}</Span>
 

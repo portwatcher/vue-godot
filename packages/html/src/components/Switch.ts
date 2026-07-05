@@ -4,7 +4,11 @@ import {
   applyAccessibilityProps,
 } from '../utils/accessibility.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
-import { applyAutoFocusProp, focusPropOptions } from '../utils/focus.js'
+import {
+  applyAutoFocusProp,
+  applyFocusTraversalProps,
+  focusPropOptions,
+} from '../utils/focus.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 
@@ -55,6 +59,7 @@ export const Switch = defineComponent({
 
       applyCommonControlStyleProps(nodeProps, props.style, 'Switch')
       applyAccessibilityProps(nodeProps, props)
+      applyFocusTraversalProps(nodeProps, props)
       if (props.disabled !== true) {
         applyAutoFocusProp(nodeProps, props)
       }

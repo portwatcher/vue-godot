@@ -102,6 +102,24 @@ test('Button and Input install auto-focus vnode hooks', () => {
   assert.equal(inputFocused, true)
 })
 
+test('focusable controls map focus traversal node paths', () => {
+  const button = renderButton({
+    focusNext: '../Next',
+    focusPrevious: '  ../Previous  ',
+    focusNeighborLeft: '../Left',
+    focusNeighborTop: '',
+    focusNeighborRight: '../Right',
+    focusNeighborBottom: '   ',
+  })
+
+  assert.equal(button.props.focus_next, '../Next')
+  assert.equal(button.props.focus_previous, '../Previous')
+  assert.equal(button.props.focus_neighbor_left, '../Left')
+  assert.equal(button.props.focus_neighbor_right, '../Right')
+  assert.equal('focus_neighbor_top' in button.props, false)
+  assert.equal('focus_neighbor_bottom' in button.props, false)
+})
+
 test('disabled controls do not install auto-focus vnode hooks', () => {
   const button = renderButton({ disabled: true, autoFocus: true }, ['Save'])
   const input = renderInput({

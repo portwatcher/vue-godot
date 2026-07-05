@@ -176,7 +176,9 @@ When both a label and hint are provided, the tooltip text is joined on separate 
 
 ### Focus Management
 
-Focusable controls (`<A>`, `<Button>`, `<Form>`, `<Input>`, `<Pressable>`, `<Select>`, `<Switch>`, and `<Textarea>`) accept `autoFocus` and `autofocus`. When enabled, the component calls Godot `grab_focus()` on the mounted backing node. Disabled controls skip auto-focus. Focus traps, restoration, browser tab-order emulation, and modal focus containment are not implemented yet.
+Focusable controls (`<A>`, `<Button>`, `<Form>`, `<Input>`, `<Pressable>`, `<Select>`, `<Switch>`, and `<Textarea>`) accept `autoFocus` and `autofocus`. When enabled, the component calls Godot `grab_focus()` on the mounted backing node. Disabled controls skip auto-focus.
+
+The same controls also accept Godot focus graph NodePath strings: `focusNext`, `focusPrevious`, `focusNeighborLeft`, `focusNeighborTop`, `focusNeighborRight`, and `focusNeighborBottom`. These map to `focus_next`, `focus_previous`, and directional `focus_neighbor_*` props, so keyboard Tab traversal and controller/D-pad traversal can be made explicit. Focus traps, restoration, browser tab-order emulation, and modal focus containment are not implemented yet.
 
 ## Component Mapping
 
@@ -215,7 +217,7 @@ Focusable controls (`<A>`, `<Button>`, `<Form>`, `<Input>`, `<Pressable>`, `<Sel
 | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Dialog`, `Div`, `Form`, `Img`, `Input`, `KeyboardAvoidingView`, `Label`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `SafeAreaView`, `Screen`, `ScreenStack`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`, `VirtualList`) | Vue components backed by Godot nodes                                                                     |
 | Shared accessibility props (`accessibilityLabel`, `ariaLabel`, `aria-label`, `accessibilityHint`, `title`)                              | Tooltip-backed labels and hints for Control-backed components                                            |
-| Shared focus props (`autoFocus`, `autofocus`)                                                                                           | Mount-time `grab_focus()` behavior for focusable controls                                                |
+| Shared focus props (`autoFocus`, `autofocus`, `focusNext`, `focusPrevious`, `focusNeighbor*`)                                            | Mount-time focus and explicit Godot focus graph traversal for focusable controls                         |
 | `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
 | `registerFontFamily`, `unregisterFontFamily`, `parseFontFamilyList`                                                                     | Registers CSS `fontFamily` names to local Godot font resources and parses CSS fallback lists              |
@@ -693,6 +695,7 @@ This package is in early development. Currently scaffolded:
 - [x] Percent width/height mapping to Control anchors
 - [x] Tooltip-backed accessibility labels and hints on Control components
 - [x] Mount-time `autoFocus` / `autofocus` on focusable controls
+- [x] Explicit focus traversal NodePath props on focusable controls
 - [x] Theme override application (margin wrappers plus `StyleBoxFlat` border and corner radius props)
 - [x] Texture-backed background images via `backgroundImage: url(...)`
 - [x] Basic transform mapping (`translate`, `scale`, `rotate`)

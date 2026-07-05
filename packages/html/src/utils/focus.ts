@@ -4,6 +4,12 @@ import type { GodotPropBag } from './controlStyle.js'
 export interface FocusProps {
   autoFocus?: boolean
   autofocus?: boolean
+  focusNext?: string
+  focusPrevious?: string
+  focusNeighborLeft?: string
+  focusNeighborTop?: string
+  focusNeighborRight?: string
+  focusNeighborBottom?: string
 }
 
 export const focusPropOptions = {
@@ -14,6 +20,30 @@ export const focusPropOptions = {
   autofocus: {
     type: Boolean,
     default: false,
+  },
+  focusNext: {
+    type: String,
+    default: undefined,
+  },
+  focusPrevious: {
+    type: String,
+    default: undefined,
+  },
+  focusNeighborLeft: {
+    type: String,
+    default: undefined,
+  },
+  focusNeighborTop: {
+    type: String,
+    default: undefined,
+  },
+  focusNeighborRight: {
+    type: String,
+    default: undefined,
+  },
+  focusNeighborBottom: {
+    type: String,
+    default: undefined,
   },
 } satisfies Record<keyof FocusProps, object>
 
@@ -50,6 +80,50 @@ export function focusGodotControl(node: unknown): void {
   if (hasCallMethod(node)) {
     node.call('grab_focus')
   }
+}
+
+function nonEmptyNodePath(value: string | undefined): string | null {
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
+function applyNodePathProp(
+  nodeProps: GodotPropBag,
+  propName: string,
+  value: string | undefined,
+): void {
+  const nodePath = nonEmptyNodePath(value)
+  if (nodePath) {
+    nodeProps[propName] = nodePath
+  }
+}
+
+export function applyFocusTraversalProps(
+  nodeProps: GodotPropBag,
+  props: FocusProps,
+): void {
+  applyNodePathProp(nodeProps, 'focus_next', props.focusNext)
+  applyNodePathProp(nodeProps, 'focus_previous', props.focusPrevious)
+  applyNodePathProp(
+    nodeProps,
+    'focus_neighbor_left',
+    props.focusNeighborLeft,
+  )
+  applyNodePathProp(nodeProps, 'focus_neighbor_top', props.focusNeighborTop)
+  applyNodePathProp(
+    nodeProps,
+    'focus_neighbor_right',
+    props.focusNeighborRight,
+  )
+  applyNodePathProp(
+    nodeProps,
+    'focus_neighbor_bottom',
+    props.focusNeighborBottom,
+  )
 }
 
 function readMountedHandler(value: unknown): VNodeMountedHandler | null {

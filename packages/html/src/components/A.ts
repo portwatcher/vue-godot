@@ -7,7 +7,11 @@ import {
   applyCommonControlStyleProps,
   type GodotPropBag,
 } from '../utils/controlStyle.js'
-import { applyAutoFocusProp, focusPropOptions } from '../utils/focus.js'
+import {
+  applyAutoFocusProp,
+  applyFocusTraversalProps,
+  focusPropOptions,
+} from '../utils/focus.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 
@@ -60,6 +64,7 @@ export const A = defineComponent({
       applyAccessibilityProps(nodeProps, props, {
         hint: props.disabled ? undefined : props.href,
       })
+      applyFocusTraversalProps(nodeProps, props)
       if (props.disabled !== true) {
         applyAutoFocusProp(nodeProps, props)
       }

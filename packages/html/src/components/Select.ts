@@ -9,7 +9,11 @@ import {
   applyFontStyleProps,
   applyTransformStyleProps,
 } from '../utils/controlStyle.js'
-import { applyAutoFocusProp, focusPropOptions } from '../utils/focus.js'
+import {
+  applyAutoFocusProp,
+  applyFocusTraversalProps,
+  focusPropOptions,
+} from '../utils/focus.js'
 import { extractTextFromVNode } from '../utils/slotText.js'
 import {
   warnUnsupportedStyleProps,
@@ -211,6 +215,7 @@ export const Select = defineComponent({
         syncItems(vnode.el, options)
       nodeProps['onVnodeUpdated'] = (vnode: VNode) =>
         syncItems(vnode.el, options)
+      applyFocusTraversalProps(nodeProps, props)
       if (props.disabled !== true) {
         applyAutoFocusProp(nodeProps, props)
       }

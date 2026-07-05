@@ -11,7 +11,11 @@ import {
 import { useBackgroundTexture } from '../utils/backgroundTexture.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
 import { FocusMode, readPressedState } from '../utils/controlInput.js'
-import { applyAutoFocusProp, focusPropOptions } from '../utils/focus.js'
+import {
+  applyAutoFocusProp,
+  applyFocusTraversalProps,
+  focusPropOptions,
+} from '../utils/focus.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 
 export interface PressableState {
@@ -186,6 +190,7 @@ export const Pressable = defineComponent({
 
       applyCommonControlStyleProps(nodeProps, props.style, 'Pressable')
       applyAccessibilityProps(nodeProps, props)
+      applyFocusTraversalProps(nodeProps, props)
       if (props.disabled !== true) {
         applyAutoFocusProp(nodeProps, props)
       }

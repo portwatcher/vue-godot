@@ -163,9 +163,14 @@ The project is production ready only when all of these are true:
 - [ ] Improve accessibility and input:
   - [ ] Focus management.
     - [x] Add `autoFocus` / `autofocus` mount-time focus for focusable controls.
-    - [ ] Add focus traps, restoration, and explicit focus traversal helpers where needed.
+    - [x] Map explicit focus traversal NodePaths to Godot focus graph props.
+    - [ ] Add focus traps and restoration where needed.
   - [ ] Keyboard navigation.
+    - [x] Map `focusNext` / `focusPrevious` to Godot Tab focus traversal.
+    - [ ] Add higher-level keyboard shortcut and escape/back guidance.
   - [ ] Controller/gamepad navigation.
+    - [x] Map directional focus neighbors to Godot D-pad/controller focus traversal.
+    - [ ] Add controller navigation examples and fallback guidance.
   - [ ] Touch target behavior.
   - [ ] Accessible names, roles, labels, and hints where Godot exposes equivalents.
     - [x] Map accessible names, labels, hints, and titles to Godot `tooltip_text` on Control-backed components.
