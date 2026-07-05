@@ -71,21 +71,21 @@ The project is production ready only when all of these are true:
 
 ## P0: Browser API Compatibility
 
-- [ ] Expand `@vue-godot/browser` into a serious compatibility layer.
-- [ ] Preserve and harden existing APIs:
-  - [ ] `fetch`
-  - [ ] `Request`
-  - [ ] `Response`
-  - [ ] `Headers`
-  - [ ] `Blob`
-  - [ ] `URL`
-  - [ ] `TextEncoder`
-  - [ ] `TextDecoder`
-  - [ ] `AbortController`
-  - [ ] `history`
-  - [ ] `location`
-  - [ ] global `addEventListener` / `removeEventListener` / `dispatchEvent`
-- [ ] Add high-priority web APIs:
+- [x] Expand `@vue-godot/browser` into a serious compatibility layer.
+- [x] Preserve and harden existing APIs:
+  - [x] `fetch`
+  - [x] `Request`
+  - [x] `Response`
+  - [x] `Headers`
+  - [x] `Blob`
+  - [x] `URL`
+  - [x] `TextEncoder`
+  - [x] `TextDecoder`
+  - [x] `AbortController`
+  - [x] `history`
+  - [x] `location`
+  - [x] global `addEventListener` / `removeEventListener` / `dispatchEvent`
+- [x] Add high-priority web APIs:
   - [x] `setTimeout`, `clearTimeout`, `setInterval`, `clearInterval` if missing in target runtimes.
   - [x] `queueMicrotask` if missing.
   - [x] `requestAnimationFrame` and `cancelAnimationFrame` backed by Godot frame timing.
@@ -103,7 +103,7 @@ The project is production ready only when all of these are true:
   - [x] Limited `navigator.permissions.query()` for supported mapped permissions.
   - [x] `navigator.vibrate()` backed by Godot handheld vibration where available.
   - [x] Device motion/orientation events backed by `Input.get_accelerometer()`, `get_gyroscope()`, `get_magnetometer()`, and `get_gravity()`.
-- [ ] Add plugin-backed browser-like APIs:
+- [x] Add plugin-backed browser-like APIs:
   - [x] `navigator.geolocation` through a registered geolocation adapter.
   - [x] `navigator.mediaDevices.getUserMedia()` through camera/microphone adapters where available.
   - [x] `MediaStream` subset if camera/microphone support needs browser compatibility.
