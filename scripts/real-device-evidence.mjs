@@ -57,6 +57,12 @@ export const passOnlyRealDeviceChecks = {
   ],
 }
 
+export const realDeviceWorksheetFields = [
+  'requiredChecks',
+  'passOnlyChecks',
+  'selectedApiRequiredChecks',
+]
+
 export const selectedApiRequiredRealDeviceChecks = {
   fetch: {
     all: ['network-if-selected'],
@@ -238,6 +244,14 @@ function validatePlatformEvidence(evidence, platform, errors) {
     'locale',
   ]) {
     assertString(platformEvidence, key, errors, platform)
+  }
+
+  for (const field of realDeviceWorksheetFields) {
+    if (field in platformEvidence) {
+      errors.push(
+        `${platform}.${field} is a platform-evidence worksheet field; remove it from final real-device evidence with npm run release:evidence`,
+      )
+    }
   }
 
   const selectedApisValid =

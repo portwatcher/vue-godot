@@ -33,7 +33,10 @@ function fullEvidence(platformEvidence) {
     checkRun: baseRun('Check', 1),
     godotSmokeRunUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
     godotSmokeRun: baseRun('Godot Smoke', 2),
-    platformEvidence,
+    platformEvidence: {
+      android: normalizePlatformEvidence(platformEvidence.android),
+      ios: normalizePlatformEvidence(platformEvidence.ios),
+    },
   })
 }
 

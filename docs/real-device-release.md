@@ -79,6 +79,9 @@ that must not be skipped. The generated `selectedApiRequiredChecks` object
 shows which conditional checks came from the selected API set. Conditional
 checks for selected APIs must be moved into `passedChecks`. Keep only complete
 `android` and `ios` evidence objects before running `npm run release:evidence`.
+Keep worksheet fields only in `release/platform-evidence.json`; final
+`release/real-device-evidence.json` must not contain `requiredChecks`,
+`passOnlyChecks`, or `selectedApiRequiredChecks`.
 
 After the release candidate is pushed, verify the required CI runs and capture
 their URLs:
@@ -114,6 +117,11 @@ npm run release:evidence -- \
   --ci-evidence release/ci-runs.json \
   --real-device-output release/real-device-evidence.json
 ```
+
+The helper strips worksheet fields before writing final evidence. If
+`release/platform-evidence.json` is copied directly to
+`release/real-device-evidence.json`, `npm run check:real-device-evidence` and
+strict release gates reject it.
 
 After the `Release Preflight` workflow passes without warnings, refresh CI
 evidence so it includes the verified Release Preflight run URL:

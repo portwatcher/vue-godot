@@ -125,8 +125,10 @@ test('release preflight enforces real device evidence', () => {
 
   for (const pattern of [
     /passOnlyRealDeviceChecks/,
+    /realDeviceWorksheetFields/,
     /selectedApiRequiredRealDeviceChecks/,
     /selectedApiRequiredCheckMap/,
+    /platform-evidence worksheet field/,
     /must be in passedChecks because selectedApis includes/,
     /must be in passedChecks/,
   ]) {
@@ -207,6 +209,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /passOnlyChecks/)
   assert.match(production, /selectedApiRequiredChecks/)
   assert.match(production, /selected APIs must be recorded in `passedChecks`/)
+  assert.match(production, /worksheet fields/)
+  assert.match(
+    production,
+    /requiredChecks[\s\S]*passOnlyChecks[\s\S]*selectedApiRequiredChecks/,
+  )
   assert.match(production, /release:evidence/)
   assert.match(production, /release:preflight-summary/)
   assert.match(production, /--release-preflight-summary/)
@@ -230,6 +237,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /passOnlyChecks/)
   assert.match(readme, /selectedApiRequiredChecks/)
   assert.match(readme, /must be in `passedChecks`/)
+  assert.match(readme, /worksheet fields/)
+  assert.match(
+    readme,
+    /requiredChecks[\s\S]*passOnlyChecks[\s\S]*selectedApiRequiredChecks/,
+  )
   assert.match(readme, /release:evidence/)
   assert.match(readme, /release:preflight-summary/)
   assert.match(readme, /real-device-evidence\.json/)
@@ -250,6 +262,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /release:platform-evidence/)
   assert.match(checklist, /passOnlyChecks/)
   assert.match(checklist, /selectedApiRequiredChecks/)
+  assert.match(checklist, /worksheet fields/)
+  assert.match(
+    checklist,
+    /requiredChecks[\s\S]*passOnlyChecks[\s\S]*selectedApiRequiredChecks/,
+  )
   assert.match(checklist, /selected API set/)
   assert.match(checklist, /Conditional\s+checks for\s+selected APIs/)
   assert.match(workflow, /real_device_evidence_path/)

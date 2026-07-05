@@ -5,6 +5,7 @@ import test from 'node:test'
 import {
   passOnlyRealDeviceChecks,
   readRealDeviceEvidence,
+  realDeviceWorksheetFields,
   requiredRealDeviceChecks,
   resolveRealDeviceEvidencePath,
   selectedApiRequiredRealDeviceChecks,
@@ -142,7 +143,30 @@ test('real device evidence rejects unknown check names', () => {
   assert.match(errors, /ios\.skippedChecks contains unknown check another-typo/)
 })
 
+test('real device evidence rejects worksheet-only platform fields', () => {
+  const evidence = validEvidence()
+  evidence.android.requiredChecks = [...requiredRealDeviceChecks.android]
+  evidence.android.passOnlyChecks = [...passOnlyRealDeviceChecks.android]
+  evidence.android.selectedApiRequiredChecks = {
+    'network-if-selected': ['fetch'],
+  }
+
+  const errors = validateRealDeviceEvidence(evidence).join('\n')
+
+  assert.match(errors, /android\.requiredChecks is a platform-evidence worksheet field/)
+  assert.match(errors, /android\.passOnlyChecks is a platform-evidence worksheet field/)
+  assert.match(
+    errors,
+    /android\.selectedApiRequiredChecks is a platform-evidence worksheet field/,
+  )
+})
+
 test('selected API release checks cover public conditional release gates', () => {
+  assert.deepEqual(realDeviceWorksheetFields, [
+    'requiredChecks',
+    'passOnlyChecks',
+    'selectedApiRequiredChecks',
+  ])
   assert.deepEqual(passOnlyRealDeviceChecks.android, [
     'cold-launch',
     'no-godotjs-load-diagnostics',

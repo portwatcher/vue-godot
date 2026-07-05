@@ -56,7 +56,10 @@ not `skippedChecks`.
 After device testing and CI runs exist, `npm run release:evidence` assembles the
 real-device and release-readiness evidence files from the current package
 versions, Android/iOS platform evidence, CI evidence, and verified GitHub
-Actions run metadata. For final readiness evidence, fetch the
+Actions run metadata. It strips worksheet fields from the final real-device
+evidence; `release/real-device-evidence.json` must not contain
+`requiredChecks`, `passOnlyChecks`, or `selectedApiRequiredChecks`, and copied
+platform evidence is rejected. For final readiness evidence, fetch the
 `release-preflight-summary` artifact from the Release Preflight workflow with
 `GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --output release/release-preflight-summary.json`,
 then pass it to `release:evidence` with
