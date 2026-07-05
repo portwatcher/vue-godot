@@ -80,9 +80,11 @@ The generated `requiredChecks` arrays are a worksheet only. After testing, move
 each item into `passedChecks` or into `skippedChecks` with a release-specific
 reason. The generated `passOnlyChecks` object lists core launch/runtime checks
 that must not be skipped. The generated `selectedApiRequiredChecks` object
-shows which conditional checks came from the selected API set. Conditional
-checks for selected APIs must be moved into `passedChecks`. Keep only complete
-`android` and `ios` evidence objects before running `npm run release:evidence`.
+shows which conditional checks came from the selected API set. Selected API
+names are validated, so typos or unknown names fail before conditional checks
+can be omitted. Conditional checks for selected APIs must be moved into
+`passedChecks`. Keep only complete `android` and `ios` evidence objects before
+running `npm run release:evidence`.
 Keep worksheet fields only in `release/platform-evidence.json`; final
 `release/real-device-evidence.json` must not contain `requiredChecks`,
 `passOnlyChecks`, or `selectedApiRequiredChecks`.

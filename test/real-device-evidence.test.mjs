@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import test from 'node:test'
 import {
+  knownRealDeviceSelectedApis,
   passOnlyRealDeviceChecks,
   readRealDeviceEvidence,
   realDeviceWorksheetFields,
@@ -166,6 +167,18 @@ test('real device evidence rejects unknown check names', () => {
   assert.match(errors, /ios\.skippedChecks contains unknown check another-typo/)
 })
 
+test('real device evidence rejects unknown selected API names', () => {
+  const evidence = validEvidence()
+  evidence.android.selectedApis = ['fetch', 'navigator.geoLocation']
+
+  const errors = validateRealDeviceEvidence(evidence).join('\n')
+
+  assert.match(
+    errors,
+    /android\.selectedApis contains unknown API navigator\.geoLocation/,
+  )
+})
+
 test('real device evidence rejects worksheet-only platform fields', () => {
   const evidence = validEvidence()
   evidence.android.requiredChecks = [...requiredRealDeviceChecks.android]
@@ -185,6 +198,10 @@ test('real device evidence rejects worksheet-only platform fields', () => {
 })
 
 test('selected API release checks cover public conditional release gates', () => {
+  assert.ok(knownRealDeviceSelectedApis.includes('navigator.permissions'))
+  for (const apiName of Object.keys(selectedApiRequiredRealDeviceChecks)) {
+    assert.ok(knownRealDeviceSelectedApis.includes(apiName))
+  }
   assert.deepEqual(realDeviceWorksheetFields, [
     'requiredChecks',
     'passOnlyChecks',

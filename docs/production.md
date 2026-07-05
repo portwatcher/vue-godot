@@ -52,6 +52,8 @@ inconsistent structured CI summaries before writing evidence.
 `npm run release:platform-evidence` creates a starter Android/iOS platform
 evidence file with the exact required device check names; it still must be
 filled with real artifact, device, OS, API, pass, and skip data after testing.
+Selected API names are validated, so typos or unknown names fail before
+conditional checks can be omitted.
 Its `passOnlyChecks` worksheet lists core launch/runtime checks that must not
 be skipped.
 Use its `selectedApiRequiredChecks` worksheet to see which conditional checks

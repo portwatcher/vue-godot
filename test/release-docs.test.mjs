@@ -235,6 +235,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /release:platform-evidence/)
   assert.match(production, /passOnlyChecks/)
   assert.match(production, /selectedApiRequiredChecks/)
+  assert.match(production, /Selected API names are validated/)
   assert.match(production, /selected APIs must be recorded in `passedChecks`/)
   assert.match(production, /worksheet fields/)
   assert.match(
@@ -288,6 +289,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /release:platform-evidence/)
   assert.match(readme, /passOnlyChecks/)
   assert.match(readme, /selectedApiRequiredChecks/)
+  assert.match(readme, /Selected API names are validated/)
   assert.match(readme, /must be in `passedChecks`/)
   assert.match(readme, /worksheet fields/)
   assert.match(
@@ -337,6 +339,7 @@ test('release preflight enforces real device evidence', () => {
     /requiredChecks[\s\S]*passOnlyChecks[\s\S]*selectedApiRequiredChecks/,
   )
   assert.match(checklist, /selected API set/)
+  assert.match(checklist, /Selected API\s+names are validated/)
   assert.match(checklist, /Conditional\s+checks for\s+selected APIs/)
   assert.match(workflow, /real_device_evidence_path/)
   assert.match(workflow, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)

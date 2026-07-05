@@ -2,9 +2,11 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import {
+  knownRealDeviceSelectedApis,
   passOnlyRealDeviceChecks,
   requiredRealDeviceChecks,
   selectedApiRequiredCheckMap,
+  unknownRealDeviceSelectedApis,
 } from './real-device-evidence.mjs'
 import { repoRoot } from './release-utils.mjs'
 
@@ -24,6 +26,7 @@ Options:
   --output <file>                  Output path. Default: ${defaultOutput}
   --selected-api <name>            Add a selected API. Can be repeated.
   --selected-apis <csv>            Add comma-separated selected APIs.
+                                  Unknown selected API names fail validation.
   --android-artifact <name>        Android APK/AAB or hosted build identifier.
   --ios-artifact <name>            iOS archive, TestFlight, or hosted build identifier.
   --android-export-preset <name>   Android export preset. Default: Android Release.
@@ -150,7 +153,7 @@ function selectedApiRequiredChecks(selectedApis, platform) {
 
 function buildPlatformTemplate(platform, options) {
   const isAndroid = platform === 'android'
-  const selectedApis = uniqueStrings(options.selectedApis)
+  const selectedApis = options.selectedApis
   return {
     artifact: isAndroid ? options.androidArtifact : options.iosArtifact,
     exportPreset: isAndroid
@@ -173,6 +176,17 @@ function buildPlatformTemplate(platform, options) {
 }
 
 export function buildPlatformEvidenceTemplate(options = {}) {
+  const selectedApis = uniqueStrings(options.selectedApis ?? [])
+  const unknownSelectedApis = unknownRealDeviceSelectedApis(selectedApis)
+  if (unknownSelectedApis.length > 0) {
+    throw new Error(
+      [
+        `Unknown selected API(s): ${unknownSelectedApis.join(', ')}`,
+        `Known selected APIs: ${knownRealDeviceSelectedApis.join(', ')}`,
+      ].join('\n'),
+    )
+  }
+
   const normalized = {
     androidArtifact: options.androidArtifact ?? '',
     iosArtifact: options.iosArtifact ?? '',
@@ -184,7 +198,7 @@ export function buildPlatformEvidenceTemplate(options = {}) {
     iosOs: options.iosOs ?? '',
     orientation: options.orientation ?? '',
     locale: options.locale ?? '',
-    selectedApis: options.selectedApis ?? [],
+    selectedApis,
   }
 
   return {

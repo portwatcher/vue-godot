@@ -74,6 +74,16 @@ test('platform evidence template lists required checks without passing them', ()
   assert.match(errors, /ios must pass cold-launch/)
 })
 
+test('platform evidence template rejects unknown selected APIs', () => {
+  assert.throws(
+    () =>
+      buildPlatformEvidenceTemplate({
+        selectedApis: ['fetch', 'navigator.geoLocation'],
+      }),
+    /Unknown selected API\(s\): navigator\.geoLocation/,
+  )
+})
+
 test('completed platform template validates after required checks are recorded', () => {
   const template = buildPlatformEvidenceTemplate({
     selectedApis: ['fetch', 'WebSocket', 'SafeAreaView'],

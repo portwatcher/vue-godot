@@ -148,6 +148,11 @@ export const selectedApiRequiredRealDeviceChecks = {
   },
 }
 
+export const knownRealDeviceSelectedApis = [
+  ...Object.keys(selectedApiRequiredRealDeviceChecks),
+  'navigator.permissions',
+].sort()
+
 export function resolveRealDeviceEvidencePath(env = process.env) {
   const configured = env[realDeviceEvidenceEnvVar]
   return path.resolve(repoRoot, configured || defaultRealDeviceEvidencePath)
@@ -213,6 +218,19 @@ export function selectedApiRequiredCheckMap(selectedApis, platform) {
   return checks
 }
 
+export function unknownRealDeviceSelectedApis(selectedApis) {
+  const knownApis = new Set(knownRealDeviceSelectedApis)
+  return [
+    ...new Set(
+      selectedApis
+        .filter((apiName) => typeof apiName === 'string')
+        .map((apiName) => apiName.trim())
+        .filter((apiName) => !knownApis.has(apiName))
+        .filter((apiName) => apiName.length > 0),
+    ),
+  ]
+}
+
 function validateCheckNames(platform, passedChecks, skippedChecks, errors) {
   const requiredChecks = new Set(requiredRealDeviceChecks[platform])
   for (const check of passedChecks) {
@@ -273,6 +291,10 @@ function validatePlatformEvidence(evidence, platform, errors) {
   const selectedApis = selectedApisValid
     ? [...new Set(platformEvidence.selectedApis.map((api) => api.trim()))]
     : []
+
+  for (const apiName of unknownRealDeviceSelectedApis(selectedApis)) {
+    errors.push(`${platform}.selectedApis contains unknown API ${apiName}`)
+  }
 
   const passedChecks = new Set(
     Array.isArray(platformEvidence.passedChecks)
