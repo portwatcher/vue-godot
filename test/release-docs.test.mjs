@@ -157,6 +157,10 @@ test('release preflight enforces real device evidence', () => {
     /Release preflight summary .*must be false/,
     /Release preflight summary contains \$\{warningCount\} warning/,
     /Release preflight summary contains \$\{failureCount\} failure/,
+    /collectCiSummaryStatusErrors/,
+    /CI evidence ready must be true/,
+    /CI evidence checks must be an object/,
+    /missingWorkflowNames includes required workflow/,
     /Release Preflight/,
   ]) {
     assert.match(evidenceHelper, pattern)
@@ -233,6 +237,10 @@ test('release preflight enforces real device evidence', () => {
     /requiredChecks[\s\S]*passOnlyChecks[\s\S]*selectedApiRequiredChecks/,
   )
   assert.match(production, /release:evidence/)
+  assert.match(
+    production,
+    /rejects not-ready or\s+inconsistent structured CI summaries/,
+  )
   assert.match(production, /release:preflight-summary/)
   assert.match(production, /--release-preflight-summary/)
   assert.match(production, /release-preflight-summary/)
@@ -255,6 +263,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /--ci-evidence/)
   assert.match(readme, /--summary-output/)
   assert.match(readme, /--release-preflight-summary/)
+  assert.match(
+    readme,
+    /rejects not-ready or inconsistent structured CI summaries/,
+  )
   assert.match(
     readme,
     /rejects local-only, skipped, failed, or warning-bearing preflight summaries/,
@@ -284,6 +296,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /structured workflow\s+checks/)
   assert.match(checklist, /--ci-evidence/)
   assert.match(checklist, /--release-preflight-summary/)
+  assert.match(
+    checklist,
+    /rejects not-ready or inconsistent structured CI summaries/,
+  )
   assert.match(checklist, /local\/skip flags/)
   assert.match(checklist, /local-only/)
   assert.match(checklist, /skipped/)

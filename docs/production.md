@@ -46,7 +46,8 @@ to dispatch Check and Godot Smoke from the CLI. The helper refuses to dispatch
 unless the branch or tag resolves to the same commit on GitHub. After the
 Release Preflight workflow passes, rerun it with `--include-release-preflight`
 so the same CI evidence file also includes the verified preflight run URL used
-by final readiness evidence.
+by final readiness evidence. `release:evidence` rejects not-ready or
+inconsistent structured CI summaries before writing evidence.
 `npm run release:platform-evidence` creates a starter Android/iOS platform
 evidence file with the exact required device check names; it still must be
 filled with real artifact, device, OS, API, pass, and skip data after testing.
@@ -59,8 +60,9 @@ not `skippedChecks`.
 After device testing and CI runs exist, `npm run release:evidence` assembles the
 real-device and release-readiness evidence files from the current package
 versions, Android/iOS platform evidence, CI evidence, and verified GitHub
-Actions run metadata. It strips worksheet fields from the final real-device
-evidence; `release/real-device-evidence.json` must not contain
+Actions run metadata. It rejects not-ready or inconsistent structured CI
+summaries, then strips worksheet fields from the final real-device evidence;
+`release/real-device-evidence.json` must not contain
 `requiredChecks`, `passOnlyChecks`, or `selectedApiRequiredChecks`, and copied
 platform evidence is rejected. For final readiness evidence, fetch the
 `release-preflight-summary` artifact from the Release Preflight workflow with

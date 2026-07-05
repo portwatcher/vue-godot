@@ -206,6 +206,99 @@ function workflowRunUrl(ciEvidence, workflowName, errors, options = {}) {
   return workflow.runUrl
 }
 
+function collectCiSummaryStatusErrors(ciResult, options = {}) {
+  const errors = []
+  const statusFieldNames = [
+    'ready',
+    'commitFound',
+    'requiredWorkflowNames',
+    'passedWorkflowNames',
+    'missingWorkflowNames',
+    'checks',
+  ]
+  const hasStructuredStatus = statusFieldNames.some(
+    (fieldName) => fieldName in ciResult,
+  )
+  if (!hasStructuredStatus) {
+    return errors
+  }
+
+  const requiredWorkflowNames = ['Check', 'Godot Smoke']
+  if (options.requireReleasePreflight === true) {
+    requiredWorkflowNames.push('Release Preflight')
+  }
+
+  if (ciResult.ready !== true) {
+    errors.push('CI evidence ready must be true')
+  }
+
+  if (ciResult.commitFound !== true) {
+    errors.push('CI evidence commitFound must be true')
+  }
+
+  if (!isRecord(ciResult.checks)) {
+    errors.push('CI evidence checks must be an object')
+  } else {
+    const requiredChecks = [
+      ['commitFound', 'commitFound'],
+      ['checkWorkflow', 'Check'],
+      ['godotSmokeWorkflow', 'Godot Smoke'],
+    ]
+    if (options.requireReleasePreflight === true) {
+      requiredChecks.push([
+        'releasePreflightWorkflow',
+        'Release Preflight',
+      ])
+    }
+
+    for (const [checkName, workflowName] of requiredChecks) {
+      if (ciResult.checks[checkName] !== true) {
+        errors.push(
+          `CI evidence checks.${checkName} must be true for ${workflowName}`,
+        )
+      }
+    }
+  }
+
+  for (const [fieldName, label] of [
+    ['requiredWorkflowNames', 'required workflow'],
+    ['passedWorkflowNames', 'passed workflow'],
+  ]) {
+    const workflowNames = ciResult[fieldName]
+    if (!Array.isArray(workflowNames)) {
+      errors.push(`CI evidence ${fieldName} must be an array`)
+      continue
+    }
+
+    for (const workflowName of requiredWorkflowNames) {
+      if (!workflowNames.includes(workflowName)) {
+        errors.push(
+          `CI evidence ${fieldName} must include ${label} ${workflowName}`,
+        )
+      }
+    }
+  }
+
+  const missingWorkflowNames = ciResult.missingWorkflowNames
+  if (!Array.isArray(missingWorkflowNames)) {
+    errors.push('CI evidence missingWorkflowNames must be an array')
+  } else {
+    const missingRequiredWorkflowNames = requiredWorkflowNames.filter(
+      (workflowName) => missingWorkflowNames.includes(workflowName),
+    )
+    if (missingRequiredWorkflowNames.length > 0) {
+      errors.push(
+        [
+          'CI evidence missingWorkflowNames includes required workflow(s):',
+          missingRequiredWorkflowNames.join(', '),
+        ].join(' '),
+      )
+    }
+  }
+
+  return errors
+}
+
 export function extractCiRunUrls(ciResult, commit, options = {}) {
   const errors = []
   if (!isRecord(ciResult)) {
@@ -231,6 +324,7 @@ export function extractCiRunUrls(ciResult, commit, options = {}) {
       )
     }
   }
+  errors.push(...collectCiSummaryStatusErrors(ciResult, options))
 
   if (ciEvidence.commit !== commit) {
     errors.push(`CI evidence commit must match ${commit}`)

@@ -17,6 +17,32 @@ import { currentReleasePackageVersions } from '../scripts/release-utils.mjs'
 
 const commit = '0123456789abcdef0123456789abcdef01234567'
 
+function ciRunResult(workflows, overrides = {}) {
+  const workflowNames = Object.keys(workflows)
+  return {
+    ready: true,
+    commit,
+    commitFound: true,
+    requiredWorkflowNames: workflowNames,
+    passedWorkflowNames: workflowNames,
+    missingWorkflowNames: [],
+    checks: {
+      checkWorkflow: workflowNames.includes('Check'),
+      commitFound: true,
+      godotSmokeWorkflow: workflowNames.includes('Godot Smoke'),
+      ...(workflowNames.includes('Release Preflight')
+        ? { releasePreflightWorkflow: true }
+        : {}),
+    },
+    evidence: {
+      commit,
+      workflows,
+    },
+    errors: [],
+    ...overrides,
+  }
+}
+
 function platformEvidence(platform) {
   return {
     artifact:
@@ -142,6 +168,167 @@ test('create-release-evidence requires a preflight summary for readiness evidenc
 test('extractCiRunUrls reads release CI evidence for the evidence commit', () => {
   assert.deepEqual(
     extractCiRunUrls(
+      ciRunResult({
+        Check: {
+          runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+        },
+        'Godot Smoke': {
+          runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+        },
+      }),
+      commit,
+    ),
+    {
+      checkRunUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+      godotSmokeRunUrl:
+        'https://github.com/portwatcher/vue-godot/actions/runs/2',
+      releasePreflightRunUrl: null,
+      errors: [],
+    },
+  )
+})
+
+test('extractCiRunUrls rejects not-ready release CI summaries', () => {
+  const result = extractCiRunUrls(
+    ciRunResult(
+      {
+        Check: {
+          runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+        },
+        'Godot Smoke': {
+          runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+        },
+      },
+      {
+        ready: false,
+        commitFound: false,
+        passedWorkflowNames: ['Check'],
+        missingWorkflowNames: ['Godot Smoke'],
+        checks: {
+          checkWorkflow: true,
+          commitFound: false,
+          godotSmokeWorkflow: false,
+        },
+        errors: [],
+      },
+    ),
+    commit,
+  )
+
+  assert.equal(
+    result.checkRunUrl,
+    'https://github.com/portwatcher/vue-godot/actions/runs/1',
+  )
+  assert.equal(
+    result.godotSmokeRunUrl,
+    'https://github.com/portwatcher/vue-godot/actions/runs/2',
+  )
+  assert.match(result.errors.join('\n'), /ready must be true/)
+  assert.match(result.errors.join('\n'), /commitFound must be true/)
+  assert.match(
+    result.errors.join('\n'),
+    /checks\.godotSmokeWorkflow must be true/,
+  )
+  assert.match(
+    result.errors.join('\n'),
+    /passedWorkflowNames must include passed workflow Godot Smoke/,
+  )
+  assert.match(
+    result.errors.join('\n'),
+    /missingWorkflowNames includes required workflow\(s\): Godot Smoke/,
+  )
+})
+
+test('extractCiRunUrls rejects partial structured CI summaries', () => {
+  const result = extractCiRunUrls(
+    {
+      ready: true,
+      evidence: {
+        commit,
+        workflows: {
+          Check: {
+            runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+          },
+          'Godot Smoke': {
+            runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+          },
+        },
+      },
+      errors: [],
+    },
+    commit,
+  )
+
+  assert.equal(
+    result.checkRunUrl,
+    'https://github.com/portwatcher/vue-godot/actions/runs/1',
+  )
+  assert.match(result.errors.join('\n'), /commitFound must be true/)
+  assert.match(result.errors.join('\n'), /checks must be an object/)
+  assert.match(
+    result.errors.join('\n'),
+    /requiredWorkflowNames must be an array/,
+  )
+  assert.match(
+    result.errors.join('\n'),
+    /passedWorkflowNames must be an array/,
+  )
+  assert.match(
+    result.errors.join('\n'),
+    /missingWorkflowNames must be an array/,
+  )
+})
+
+test('extractCiRunUrls requires structured Release Preflight readiness when requested', () => {
+  const result = extractCiRunUrls(
+    ciRunResult(
+      {
+        Check: {
+          runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+        },
+        'Godot Smoke': {
+          runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+        },
+        'Release Preflight': {
+          runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/3',
+        },
+      },
+      {
+        checks: {
+          checkWorkflow: true,
+          commitFound: true,
+          godotSmokeWorkflow: true,
+          releasePreflightWorkflow: false,
+        },
+        passedWorkflowNames: ['Check', 'Godot Smoke'],
+        missingWorkflowNames: ['Release Preflight'],
+      },
+    ),
+    commit,
+    { requireReleasePreflight: true },
+  )
+
+  assert.equal(
+    result.releasePreflightRunUrl,
+    'https://github.com/portwatcher/vue-godot/actions/runs/3',
+  )
+  assert.match(
+    result.errors.join('\n'),
+    /checks\.releasePreflightWorkflow must be true/,
+  )
+  assert.match(
+    result.errors.join('\n'),
+    /passedWorkflowNames must include passed workflow Release Preflight/,
+  )
+  assert.match(
+    result.errors.join('\n'),
+    /missingWorkflowNames includes required workflow\(s\): Release Preflight/,
+  )
+})
+
+test('extractCiRunUrls accepts legacy CI evidence with verified workflow URLs', () => {
+  assert.deepEqual(
+    extractCiRunUrls(
       {
         evidence: {
           commit,
@@ -173,26 +360,17 @@ test('extractCiRunUrls reads release CI evidence for the evidence commit', () =>
 test('extractCiRunUrls can read Release Preflight evidence for final readiness', () => {
   assert.deepEqual(
     extractCiRunUrls(
-      {
-        evidence: {
-          commit,
-          workflows: {
-            Check: {
-              runUrl:
-                'https://github.com/portwatcher/vue-godot/actions/runs/1',
-            },
-            'Godot Smoke': {
-              runUrl:
-                'https://github.com/portwatcher/vue-godot/actions/runs/2',
-            },
-            'Release Preflight': {
-              runUrl:
-                'https://github.com/portwatcher/vue-godot/actions/runs/3',
-            },
-          },
+      ciRunResult({
+        Check: {
+          runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
         },
-        errors: [],
-      },
+        'Godot Smoke': {
+          runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+        },
+        'Release Preflight': {
+          runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/3',
+        },
+      }),
       commit,
       { requireReleasePreflight: true },
     ),

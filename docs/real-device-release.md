@@ -109,7 +109,9 @@ The dispatch ref must resolve to the same commit on GitHub. If `release:ci`
 reports that the commit was not found on GitHub, push the release-candidate
 commit first. The resulting `release/ci-runs.json` includes `ready`,
 `commitFound`, required/passed/missing workflow names, structured workflow
-checks, and the run URLs consumed by `release:evidence`.
+checks, and the run URLs consumed by `release:evidence`. The evidence helper
+rejects not-ready or inconsistent structured CI summaries before writing final
+evidence.
 
 Then assemble the evidence file from the real device data and completed CI
 runs:
@@ -175,9 +177,10 @@ failure count, and warning count from
 `npm run release:preflight -- --summary-output`. It rejects stale, local-only,
 skipped, failed, or warning-bearing summaries before writing readiness evidence.
 `--ci-evidence` supplies the Release Preflight run URL when it was generated
-with `--include-release-preflight`; otherwise pass `--release-preflight-run-url`
-manually. `--release-preflight-warning-count 0` is only an optional consistency
-check when the summary artifact is also supplied.
+with `--include-release-preflight`, and the structured CI summary must report
+the Release Preflight workflow as ready; otherwise pass
+`--release-preflight-run-url` manually. `--release-preflight-warning-count 0` is
+only an optional consistency check when the summary artifact is also supplied.
 
 Local-only preflight runs (`npm run release:preflight -- --local`) warn when
 this evidence is missing. Non-local preflight runs fail until the evidence file
