@@ -1,8 +1,12 @@
 # Vue Godot
 
-Use Vue Single File Components to build UI for Godot.
+Vue Godot is an SDK for building Godot interfaces with Vue Single File
+Components.
 
-Vue Godot renders Vue components into Godot's scene tree, so you can use Vue reactivity, templates, props, events, and TypeScript tooling while Godot still owns the runtime, nodes, resources, and editor workflow.
+It provides a Vue custom renderer, HTML-like Godot components, browser API
+polyfills, native capability adapter contracts, and project tooling for apps
+that need Vue ergonomics without giving up Godot's runtime, nodes, resources,
+and editor workflow.
 
 This project is experimental and not production ready yet. Follow [@juryxiong](https://x.com/juryxiong) for updates.
 

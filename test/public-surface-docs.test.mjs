@@ -36,6 +36,8 @@ test('public surface audit passes for package READMEs, docs, templates, and demo
 
 test('root README links public support docs, packages, and checked-in examples', () => {
   assertPatterns('README.md', [
+    /SDK for building Godot interfaces with Vue Single File\s+Components/,
+    /Vue custom renderer, HTML-like Godot components, browser API\s+polyfills, native capability adapter contracts, and project tooling/,
     /docs\/compatibility\.md/,
     /docs\/production\.md/,
     /docs\/permissions\.md/,

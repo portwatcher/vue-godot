@@ -20,7 +20,7 @@ When this file is complete, maintainers should be confident enough to remove wor
 The project is production ready only when all of these are true:
 
 - [x] A public compatibility checklist exists and every supported, partial, plugin-backed, or intentionally unsupported web API/component is documented.
-- [ ] All P0 and P1 checklist items in this file are complete.
+- [x] All P0 and P1 checklist items in this file are complete.
 - [ ] `npm run check` passes locally and in CI.
 - [ ] Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate.
 - [ ] Android and iOS export smoke apps run on real or hosted devices for the production profile.
@@ -291,7 +291,7 @@ The project is production ready only when all of these are true:
 
 ## P1: Documentation And Examples
 
-- [ ] Update root README to lead with stable value proposition once ready.
+- [x] Update root README to lead with stable value proposition once ready.
 - [x] Keep package READMEs accurate for every public API change.
 - [x] Add `docs/production.md`.
 - [x] Add `docs/platforms/android.md`.
@@ -382,7 +382,7 @@ blockers remain, then run `npm run release:readiness` without `--allow-open` in
 the final removal commit.
 
 - [x] Every P0 item is complete.
-- [ ] Every P1 item is complete or explicitly moved to P2 with maintainer approval.
+- [x] Every P1 item is complete or explicitly moved to P2 with maintainer approval.
 - [x] `docs/compatibility.md` is complete and linked from root README and package READMEs.
 - [ ] Serious native app demo is complete and passes build/smoke.
 - [ ] Serious game UI demo is complete and passes build/smoke.
