@@ -739,6 +739,8 @@ function writeReadinessSummary(
   }
 
   const resolved = path.resolve(repoRoot, options.summaryOutput)
+  const checkedTodoItems = todoItems.filter((item) => item.checked)
+  const uncheckedTodoItems = todoItems.filter((item) => !item.checked)
   const summary = {
     commit: expectedCommit,
     allowOpen: options.allowOpen,
@@ -748,8 +750,13 @@ function writeReadinessSummary(
     packageDescriptionWarningCount: packageDescriptionWarnings.length,
     todo: {
       total: todoItems.length,
-      checked: todoItems.filter((item) => item.checked).length,
-      unchecked: todoItems.filter((item) => !item.checked).length,
+      checked: checkedTodoItems.length,
+      unchecked: uncheckedTodoItems.length,
+      uncheckedItems: uncheckedTodoItems.map((item) => ({
+        file: item.file,
+        line: item.line,
+        text: item.text,
+      })),
     },
     checks: { ...checks },
     blockers: [...blockers],

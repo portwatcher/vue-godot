@@ -288,6 +288,22 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.equal(summary.packageDescriptionWarningCount, 0)
     assert.deepEqual(summary.packageDescriptionWarnings, [])
     assert.equal(summary.todo.unchecked, 10)
+    assert.equal(summary.todo.uncheckedItems.length, 10)
+    assert.ok(
+      summary.todo.uncheckedItems.some(
+        (item) =>
+          item.file === 'TODO.md' &&
+          item.text === '`npm run check` passes locally and in CI.',
+      ),
+    )
+    assert.ok(
+      summary.todo.uncheckedItems.some(
+        (item) =>
+          item.file === 'TODO.md' &&
+          item.text ===
+            'Android export with selected device APIs has been tested.',
+      ),
+    )
     assert.equal(summary.checks.androidRealDeviceEvidence, true)
     assert.equal(summary.checks.checkedFinalTodosBackedByEvidence, true)
     assert.equal(typeof summary.checks.cleanWorktree, 'boolean')
