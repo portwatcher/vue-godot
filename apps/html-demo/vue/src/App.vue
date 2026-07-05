@@ -31,7 +31,12 @@
       :style="{
         flex: 2,
         padding: 8,
-        transform: 'translateY(2px) scale(1.02)',
+        opacity: wrap === 'wrap' ? 0.92 : 1,
+        transform:
+          wrap === 'wrap'
+            ? 'translateY(6px) scale(1.04)'
+            : 'translateY(2px) scale(1.02)',
+        transition: 'opacity 120ms linear, transform 180ms ease-out',
       }"
     >
       <Span>flex:2 child</Span>

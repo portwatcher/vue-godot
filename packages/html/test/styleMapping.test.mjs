@@ -239,6 +239,8 @@ test('detects unsupported style keys against the documented subset', () => {
       margin: 12,
       backgroundImage: 'url(panel.png)',
       transform: 'scale(1.1)',
+      transition: 'opacity 150ms ease-out',
+      transitionDuration: '150ms',
       fontFamily: 'Inter, sans-serif',
       boxShadow: '0 0 4px black',
     }),
@@ -249,6 +251,8 @@ test('detects unsupported style keys against the documented subset', () => {
   assert.equal(supportedHtmlStyleKeys.includes('borderRadius'), true)
   assert.equal(supportedHtmlStyleKeys.includes('margin'), true)
   assert.equal(supportedHtmlStyleKeys.includes('transform'), true)
+  assert.equal(supportedHtmlStyleKeys.includes('transition'), true)
+  assert.equal(supportedHtmlStyleKeys.includes('transitionDuration'), true)
   assert.equal(supportedHtmlStyleKeys.includes('fontFamily'), true)
 })
 

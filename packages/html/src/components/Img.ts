@@ -7,6 +7,7 @@ import {
 import {
   applyControlSizeProps,
   applyTransformStyleProps,
+  applyTransitionStyleProps,
 } from '../utils/controlStyle.js'
 import {
   warnUnsupportedStyleProps,
@@ -119,6 +120,7 @@ export const Img = defineComponent({
         nodeProps['visible'] = false
       }
       applyTransformStyleProps(nodeProps, style)
+      applyTransitionStyleProps(nodeProps, style)
 
       return h('TextureRect', nodeProps)
     }

@@ -1,4 +1,7 @@
-import { applyTransformStyleProps } from './controlStyle.js'
+import {
+  applyTransformStyleProps,
+  applyTransitionStyleProps,
+} from './controlStyle.js'
 import { createOpacityModulate } from './godotColor.js'
 import {
   resolveContainerTag,
@@ -83,4 +86,5 @@ export function applyScrollContainerStyleProps(
     props['modulate'] = createOpacityModulate(style.opacity)
   }
   applyTransformStyleProps(props, style)
+  applyTransitionStyleProps(props, style)
 }

@@ -63,6 +63,9 @@ const divStyle: NonNullable<DivProps['style']> = {
   gap: 8,
   width: '50%',
   transform: 'translateY(2px)',
+  transitionProperty: ['opacity', 'transform'],
+  transitionDuration: ['120ms', 0.2],
+  transitionTimingFunction: 'ease-out',
 }
 const htmlStyle: HtmlStyle = divStyle
 const lowercaseStyle: NonNullable<LowercaseDivProps['style']> = htmlStyle

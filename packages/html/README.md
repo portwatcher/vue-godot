@@ -78,6 +78,7 @@ Rather than embedding a layout engine like Yoga, we map a CSS flexbox subset to 
 | `backgroundImage: url(...)`                   | `PanelContainer` wrapper with `StyleBoxTexture`                 |
 | `borderColor` / `borderWidth` / `borderRadius` | `StyleBoxFlat` border and corner-radius props                 |
 | `transform: translate/scale/rotate(...)`       | Godot `position`, `scale`, and `rotation` props                |
+| `transition: opacity/transform/width/height ...` | Godot `Tween` property tweens on supported style updates     |
 | `color: <color>`                              | `theme_override_colors/font_color` on text controls             |
 | `fontFamily: <family list>`                   | Registered/local Godot fonts with fallback `FontVariation`      |
 | `fontWeight: 'bold'`                          | `theme_override_fonts/font` with `FontVariation` embolden       |
@@ -134,13 +135,20 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 | `textTransform` | Supports `'uppercase'` on `<Span>` and `<Label>`. |
 | `textAlign` | Maps `<Span>` and `<Label>` to Godot horizontal alignment. |
 | `transform` | Supports `translate()`, `translateX()`, `translateY()`, `scale()`, `scaleX()`, `scaleY()`, `rotate()`, and `rotateZ()` and maps them to Godot control transform props. |
+| `transition` | Supports CSS-like shorthand for `opacity`, `transform`, `width`, `height`, and `all`; durations accept seconds, `s`, or `ms`; timing supports `linear`, `ease`, `ease-in`, `ease-out`, and `ease-in-out`. |
+| `transitionProperty`, `transitionDuration`, `transitionDelay`, `transitionTimingFunction` | Longhand transition props for the same Godot-backed property subset. |
 | `overflowWrap` | Supports `'break-word'` on `<Span>` and `<Label>` via smart word wrapping. |
 | `overflow` | Supports `'hidden'` clipping where the backing Godot node exposes it. |
 | `opacity` | Maps to a Godot `modulate` alpha color. |
 
 Background images use the same loader as `<Img>` for local Godot paths, relative paths, data URIs, blob URLs, and remote URLs. CSS gradients, multiple backgrounds, repeat modes, and precise `background-size` / `background-position` behavior are not part of the current subset; the loaded texture is stretched to the panel bounds.
 
-Transforms intentionally cover only the basic Godot-backed subset. Matrix, perspective, skew, transform-origin, CSS transitions, and keyframe animations are not part of the current style subset.
+Transforms and transitions intentionally cover only the basic Godot-backed
+subset. Transitions run through bound Godot `Tween`s for changed `opacity`,
+`transform`, `width`, and `height` style targets. Matrix, perspective, skew,
+transform-origin, cubic-bezier/steps timing functions, and CSS keyframe
+animations are not part of the current style subset. Use `transition: 'none'`
+or zero-duration longhands to stop active style tweens on the next update.
 
 Font family loading is local and Godot-backed. Register CSS family names with `registerFontFamily(name, source, fallbacks)` or pass direct local font paths such as `./fonts/Inter.ttf` in `fontFamily`; remote font downloads and CSS `@font-face` parsing are not part of the current subset.
 

@@ -156,7 +156,8 @@ The project is production ready only when all of these are true:
     - [x] Background images.
   - [ ] Support transforms and basic transitions/animations where feasible.
     - [x] Basic transform mapping (`translate`, `scale`, `rotate`).
-    - [ ] Transitions and animations.
+    - [x] Transitions for `opacity`, `transform`, `width`, and `height`.
+    - [ ] Keyframe-style animations.
   - [x] Support font family loading and fallback.
   - [x] Support percent sizes where Godot layout can represent them.
   - [x] Add style warnings for unsupported properties.

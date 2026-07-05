@@ -7,6 +7,7 @@ import {
   type ResolvedStyleSize,
 } from './styleMapping.js'
 import { resolveTransformStyle } from './transformStyle.js'
+import { applyTransitionStyleProps } from './styleTransition.js'
 
 export type GodotPropBag = Record<string, unknown>
 
@@ -99,4 +100,7 @@ export function applyCommonControlStyleProps(
   applyFontStyleProps(nodeProps, style)
   applyDisplayAndOpacityProps(nodeProps, style)
   applyTransformStyleProps(nodeProps, style)
+  applyTransitionStyleProps(nodeProps, style)
 }
+
+export { applyTransitionStyleProps } from './styleTransition.js'

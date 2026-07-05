@@ -47,7 +47,7 @@ not emulate a real DOM.
 | Scoped CSS host scope IDs | Unsupported | `setScopeId` warns; styling should map to Godot props or HTML package style helpers. |
 | `v-html` / parsed HTML strings | Unsupported | Compose Vue components directly. Static HTML-like strings become placeholders. |
 | Native browser form controls | Unsupported in runtime | Use Godot controls directly or `@vue-godot/html` components such as `<Input></Input>`. |
-| CSS transitions and DOM transition hooks | Unsupported in runtime | Use Godot animation systems or explicit reactive prop updates. |
+| CSS transitions and DOM transition hooks | DOM transition lifecycle is unsupported in runtime | Use Godot animation systems or explicit reactive prop updates. `@vue-godot/html` supports a limited Tween-backed inline style transition subset for `opacity`, `transform`, `width`, and `height`. |
 | Browser focus, accessibility tree, and ARIA semantics | Unsupported in runtime | Use Godot focus APIs and document platform-specific limitations. |
 
 ## Template Compiler Requirements

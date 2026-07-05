@@ -28,6 +28,19 @@
  */
 
 export type StyleLength = number | string
+export type StyleTime = number | string
+export type StyleTransitionProperty =
+  | 'all'
+  | 'opacity'
+  | 'transform'
+  | 'width'
+  | 'height'
+export type StyleTransitionTimingFunction =
+  | 'linear'
+  | 'ease'
+  | 'ease-in'
+  | 'ease-out'
+  | 'ease-in-out'
 
 export interface HtmlStyle {
   display?: 'flex' | 'grid' | 'none'
@@ -77,6 +90,17 @@ export interface HtmlStyle {
   textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize'
   textAlign?: 'left' | 'center' | 'right'
   transform?: string
+  transition?: string
+  transitionProperty?:
+    | StyleTransitionProperty
+    | string
+    | readonly (StyleTransitionProperty | string)[]
+  transitionDuration?: StyleTime | readonly StyleTime[]
+  transitionDelay?: StyleTime | readonly StyleTime[]
+  transitionTimingFunction?:
+    | StyleTransitionTimingFunction
+    | string
+    | readonly (StyleTransitionTimingFunction | string)[]
   overflowWrap?: 'normal' | 'break-word'
   overflow?: 'visible' | 'hidden'
   opacity?: number
@@ -132,6 +156,11 @@ export const supportedHtmlStyleKeys = [
   'textAlign',
   'textTransform',
   'transform',
+  'transition',
+  'transitionDelay',
+  'transitionDuration',
+  'transitionProperty',
+  'transitionTimingFunction',
   'width',
 ] as const
 

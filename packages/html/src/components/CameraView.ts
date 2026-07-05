@@ -7,6 +7,7 @@ import {
 import {
   applyControlSizeProps,
   applyTransformStyleProps,
+  applyTransitionStyleProps,
 } from '../utils/controlStyle.js'
 import { createCameraTexture } from '../utils/camera.js'
 import {
@@ -89,6 +90,7 @@ export const CameraView = defineComponent({
       applyAccessibilityProps(nodeProps, props, {
         label: props.alt,
       })
+      applyTransitionStyleProps(nodeProps, style)
 
       return h('TextureRect', nodeProps)
     }
