@@ -6,6 +6,7 @@ import {
   finalTodoEvidenceRequirements,
 } from './release-readiness.mjs'
 import { isRecord } from './release-evidence-utils.mjs'
+import { finalizationFiles } from './release-finalization-files.mjs'
 import { repoRoot, run } from './release-utils.mjs'
 
 const defaultSummaryPath = 'release/release-readiness-summary.json'
@@ -34,14 +35,6 @@ const requiredReadyChecks = [
   'releaseTooling',
   'releaseWorkflows',
   'strictCiEvidence',
-]
-
-const finalizationFiles = [
-  'TODO.md',
-  'README.md',
-  'docs/compatibility.md',
-  'docs/production.md',
-  'docs/real-device-release.md',
 ]
 
 const textReplacements = [
@@ -152,6 +145,8 @@ a follow-up commit:
   npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit <release-candidate-sha>
   npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json
   npm run check
+  git add ${finalizationFiles.join(' ')}
+  git commit -m "Finalize production readiness"
   npm run release:readiness -- --expected-commit <release-candidate-sha>
 
 Options:

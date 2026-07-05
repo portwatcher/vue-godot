@@ -66,8 +66,9 @@ lists, public warning markers, package description warning status, and
 collection, push/dispatch commands, and the remaining evidence/finalizer work as
 JSON. The CI, real-device, and Release Preflight evidence actions begin with
 `npm run check` before collecting CI or assembling evidence. The final
-warning-removal action runs `npm run check` after the finalizer and before the
-final strict readiness check. When an expected
+warning-removal action runs `npm run check` after the finalizer, stages the
+finalizer files, commits them, and then runs the final strict readiness check.
+When an expected
 commit is known, the summary resolves evidence and
 finalizer commands to that tested release commit.
 
@@ -223,6 +224,9 @@ npm run release:readiness -- \
   --expected-commit <release-candidate-sha>
 npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json
 npm run check
+git add TODO.md README.md docs/compatibility.md docs/production.md docs/real-device-release.md
+git commit -m "Finalize production readiness"
+npm run release:readiness -- --expected-commit <release-candidate-sha>
 ```
 
 Use the pushed release-candidate SHA for `--expected-commit` when the evidence

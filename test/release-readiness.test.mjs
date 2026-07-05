@@ -454,6 +454,12 @@ test('release readiness writes a machine-readable blocker summary', () => {
             'npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json',
           )
           const checkIndex = action.commands.indexOf('npm run check')
+          const gitAddIndex = action.commands.indexOf(
+            'git add TODO.md README.md docs/compatibility.md docs/production.md docs/real-device-release.md',
+          )
+          const gitCommitIndex = action.commands.indexOf(
+            'git commit -m "Finalize production readiness"',
+          )
           const finalReadinessIndex = action.commands.indexOf(
             `npm run release:readiness -- --expected-commit ${exampleCommit}`,
           )
@@ -462,7 +468,9 @@ test('release readiness writes a machine-readable blocker summary', () => {
             readinessSummaryIndex >= 0 &&
             finalizerIndex === readinessSummaryIndex + 1 &&
             checkIndex === finalizerIndex + 1 &&
-            finalReadinessIndex === checkIndex + 1
+            gitAddIndex === checkIndex + 1 &&
+            gitCommitIndex === gitAddIndex + 1 &&
+            finalReadinessIndex === gitCommitIndex + 1
           )
         },
       ),

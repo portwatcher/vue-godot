@@ -20,6 +20,7 @@ import {
 } from './release-evidence-utils.mjs'
 import { collectPublicSurfaceAuditErrors } from './public-surface-audit.mjs'
 import { collectLocalGitReleaseState } from './check-release-ci-runs.mjs'
+import { finalizationFiles } from './release-finalization-files.mjs'
 import {
   currentReleasePackageVersions,
   readJson,
@@ -958,11 +959,13 @@ function collectReadinessNextActions(checks, commit, localGit) {
       id: 'final-warning-removal',
       title: 'Remove public warning wording through the guarded finalizer',
       detail:
-        'Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks and removes public warning wording.',
+        'Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks, removes public warning wording, then stages and commits those edits before the final strict readiness check.',
       commands: [
         `npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit ${releaseCommit}`,
         'npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json',
         'npm run check',
+        `git add ${finalizationFiles.join(' ')}`,
+        'git commit -m "Finalize production readiness"',
         `npm run release:readiness -- --expected-commit ${releaseCommit}`,
       ],
     })

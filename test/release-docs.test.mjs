@@ -282,6 +282,8 @@ test('release preflight enforces real device evidence', () => {
     production,
     /final warning-removal action runs `npm run check` after the finalizer/,
   )
+  assert.match(production, /git add TODO\.md README\.md docs\/compatibility\.md docs\/production\.md docs\/real-device-release\.md/)
+  assert.match(production, /git commit -m "Finalize production readiness"/)
   assert.match(production, /before pushing or dispatching missing workflows/)
   assert.match(production, /CI evidence\s+collection/)
   assert.match(production, /push\/dispatch commands/)
@@ -346,6 +348,7 @@ test('release preflight enforces real device evidence', () => {
     readme,
     /final warning-removal action runs `npm run check` after the finalizer/,
   )
+  assert.match(readme, /git commit -m "Finalize production readiness"/)
   assert.match(readme, /CI evidence collection/)
   assert.match(readme, /push\/dispatch commands/)
   assert.match(readme, /resolves evidence and finalizer commands/)
@@ -420,6 +423,8 @@ test('release preflight enforces real device evidence', () => {
     checklist,
     /final\s+warning-removal action runs `npm run check` after the finalizer/,
   )
+  assert.match(checklist, /git add TODO\.md README\.md docs\/compatibility\.md docs\/production\.md docs\/real-device-release\.md/)
+  assert.match(checklist, /git commit -m "Finalize production readiness"/)
   assert.match(checklist, /CI evidence\s+collection/)
   assert.match(checklist, /push\/dispatch commands/)
   assert.match(checklist, /resolves evidence and\s+finalizer commands/)
@@ -539,6 +544,8 @@ test('release readiness audit documents final removal blockers', () => {
     /collectWarningMarkerHits/,
     /--expected-commit <release-candidate-sha>/,
     /npm run check/,
+    /git add \${finalizationFiles\.join\(' '\)}/,
+    /git commit -m "Finalize production readiness"/,
     /release:finalize-readiness -- --summary/,
   ]) {
     assert.match(finalizer, pattern)
