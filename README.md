@@ -8,7 +8,7 @@ This project is experimental and not production ready yet. Follow [@juryxiong](h
 
 See the [compatibility checklist](./docs/compatibility.md) for the current support status, platform caveats, and intentionally skipped browser APIs. See the [production readiness guide](./docs/production.md), [permissions and export setup](./docs/permissions.md), the [plugin adapter guide](./docs/plugins.md), and the [real device release checklist](./docs/real-device-release.md) for release and native capability requirements, the [routing and navigation guide](./docs/routing.md) for app architecture patterns, [runtime renderer support](./docs/runtime.md) for supported Vue features and unsupported browser/DOM assumptions, and the [migration guide](./docs/migration.md) for porting existing Vue, React Native, or Godot UI code.
 
-For build, editor, export, and runtime debugging, see [troubleshooting](./docs/troubleshooting.md).
+For build, editor, export, and runtime debugging, see [troubleshooting](./docs/troubleshooting.md). For long-term ecosystem decisions that are deferred from the current production gate, see [roadmap decisions](./docs/roadmap.md).
 
 ![demo](./intro-medias/demo.gif)
 

@@ -52,6 +52,7 @@ Follow the dedicated permission and adapter docs before shipping:
 - [Real device release checklist](./real-device-release.md)
 - [Migration guide](./migration.md)
 - [Performance guide](./performance.md)
+- [Roadmap decisions](./roadmap.md)
 - [Android platform guide](./platforms/android.md)
 - [iOS and Apple platform guide](./platforms/ios.md)
 - [Desktop platform guide](./platforms/desktop.md)

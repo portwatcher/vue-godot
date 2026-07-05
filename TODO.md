@@ -304,12 +304,18 @@ The project is production ready only when all of these are true:
 
 ## P2: Ecosystem And Long-Term Parity
 
-- [ ] Evaluate a layout engine such as Yoga or Taffy only if Godot-native containers cannot cover production app layouts.
-- [ ] Consider a CSS-to-Godot compiler for real stylesheet support.
-- [ ] Consider package adapters for common Vue ecosystem libraries.
-- [ ] Consider a plugin marketplace/list for supported native capability plugins.
-- [ ] Consider devtools integration.
-- [ ] Consider SSR/static pre-render only if there is a real product need.
+- [x] Evaluate a layout engine such as Yoga or Taffy only if Godot-native containers cannot cover production app layouts.
+  - Decision: deferred; see [roadmap decisions](./docs/roadmap.md).
+- [x] Consider a CSS-to-Godot compiler for real stylesheet support.
+  - Decision: deferred; see [roadmap decisions](./docs/roadmap.md).
+- [x] Consider package adapters for common Vue ecosystem libraries.
+  - Decision: deferred; see [roadmap decisions](./docs/roadmap.md).
+- [x] Consider a plugin marketplace/list for supported native capability plugins.
+  - Decision: deferred; see [roadmap decisions](./docs/roadmap.md).
+- [x] Consider devtools integration.
+  - Decision: deferred; see [roadmap decisions](./docs/roadmap.md).
+- [x] Consider SSR/static pre-render only if there is a real product need.
+  - Decision: deferred; see [roadmap decisions](./docs/roadmap.md).
 
 ## API Compatibility Backlog
 
