@@ -217,9 +217,9 @@ The project is production ready only when all of these are true:
   - [x] Magnetometer.
   - [x] Gravity vector.
   - [x] Device orientation events.
-- [ ] Haptics:
-  - [ ] Handheld vibration.
-  - [ ] Controller vibration where available.
+- [x] Haptics:
+  - [x] Handheld vibration.
+  - [x] Controller vibration where available.
 - [ ] Clipboard:
   - [ ] Text read/write.
   - [ ] Image read/write where feasible.

@@ -60,6 +60,7 @@ unregister()
 | `createDeviceCapabilityError()` | Constructs a typed capability error. |
 | `normalizeDeviceCapabilityError()` | Preserves typed errors and wraps unknown errors. |
 | Adapter interfaces | `GeolocationAdapter`, `MediaDevicesAdapter`, `NotificationAdapter`, `PermissionAdapter`, and generic `DeviceCapabilityAdapter`. |
+| `@vue-godot/device/haptics` | Godot-backed handheld and joypad/controller vibration helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/microphone` | Godot-backed microphone and audio-bus capture helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/permissions` | Godot-backed permission helpers for Android runtime requests, permission result events, and granted-permission lists. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/sensors` | Godot-backed accelerometer, gravity, gyroscope, magnetometer, motion, and orientation snapshot helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
@@ -174,6 +175,37 @@ reports granted dangerous permissions. On sandboxed macOS, Godot uses the same
 method for user-selected folder grants; `revokeGrantedPermissions()` clears
 those saved grants where Godot supports it. iOS, visionOS, and plugin-specific
 permission prompts still require explicit native/plugin adapters.
+
+## Godot Haptics Helpers
+
+Import the built-in Godot haptics helpers from the `haptics` subpath:
+
+```ts
+import {
+  readJoypadVibration,
+  startJoypadVibration,
+  stopJoypadVibration,
+  vibrateHandheld,
+} from '@vue-godot/device/haptics'
+
+vibrateHandheld(40)
+startJoypadVibration({
+  device: 0,
+  weakMagnitude: 0.3,
+  strongMagnitude: 0.8,
+  durationSeconds: 0.4,
+})
+
+const rumble = readJoypadVibration(0)
+stopJoypadVibration(0)
+```
+
+`vibrateHandheld()` wraps `Input.vibrate_handheld()`. On Android, the export
+preset must enable the `VIBRATE` permission for hardware vibration to have an
+effect. Joypad helpers wrap `Input.start_joy_vibration()`,
+`Input.stop_joy_vibration()`, `Input.get_joy_vibration_strength()`, and
+`Input.get_joy_vibration_duration()`. Controller support depends on platform,
+driver, and connected device capabilities.
 
 ## Godot Sensor Helpers
 

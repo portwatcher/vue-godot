@@ -101,7 +101,11 @@ export function load(url, context, nextLoad) {
               accelerometer: { x: 0, y: 0, z: 0 },
               gravity: { x: 0, y: 0, z: 0 },
               gyroscope: { x: 0, y: 0, z: 0 },
+              handheldVibrations: [],
+              joypadVibrations: new Map(),
               magnetometer: { x: 0, y: 0, z: 0 },
+              throwOnHandheldVibration: false,
+              throwOnJoypadVibration: false,
               throwOnSensors: new Set(),
             }
           }
@@ -186,6 +190,57 @@ export function load(url, context, nextLoad) {
         }
 
         export class Input {
+          static vibrate_handheld(duration_ms = 500, amplitude = -1) {
+            const state = mockInputState()
+            if (state.throwOnHandheldVibration) {
+              throw new Error('handheld vibration unavailable')
+            }
+            state.handheldVibrations.push({
+              durationMs: duration_ms,
+              amplitude,
+            })
+          }
+
+          static get_joy_vibration_strength(device) {
+            const vibration = mockInputState().joypadVibrations.get(device)
+            return {
+              x: vibration?.weakMagnitude ?? 0,
+              y: vibration?.strongMagnitude ?? 0,
+            }
+          }
+
+          static get_joy_vibration_duration(device) {
+            return (
+              mockInputState().joypadVibrations.get(device)?.durationSeconds ??
+              0
+            )
+          }
+
+          static start_joy_vibration(
+            device,
+            weakMagnitude,
+            strongMagnitude,
+            durationSeconds = 0,
+          ) {
+            const state = mockInputState()
+            if (state.throwOnJoypadVibration) {
+              throw new Error('joypad vibration unavailable')
+            }
+            state.joypadVibrations.set(device, {
+              weakMagnitude,
+              strongMagnitude,
+              durationSeconds,
+            })
+          }
+
+          static stop_joy_vibration(device) {
+            const state = mockInputState()
+            if (state.throwOnJoypadVibration) {
+              throw new Error('joypad vibration unavailable')
+            }
+            state.joypadVibrations.delete(device)
+          }
+
           static get_accelerometer() {
             return readMockSensor('get_accelerometer', 'accelerometer')
           }

@@ -17,6 +17,11 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./haptics": {
+      "types": "./dist/haptics.d.ts",
+      "import": "./dist/haptics.js",
+      "default": "./dist/haptics.js"
+    },
     "./microphone": {
       "types": "./dist/microphone.d.ts",
       "import": "./dist/microphone.js",

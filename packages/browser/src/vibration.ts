@@ -4,7 +4,10 @@
 // Implements `navigator.vibrate()` on top of Godot's handheld vibration API.
 // ---------------------------------------------------------------------------
 
-import { Input } from 'godot'
+import {
+  isHandheldVibrationSupported,
+  vibrateHandheld,
+} from '@vue-godot/device/haptics'
 import {
   clearTimeout as clearGodotTimeout,
   setTimeout as setGodotTimeout,
@@ -47,20 +50,11 @@ function clearScheduledVibrations(): void {
 }
 
 function vibrateHardware(durationMs: number): boolean {
-  try {
-    Input.vibrate_handheld(durationMs, DEFAULT_AMPLITUDE)
-    return true
-  } catch {
-    return false
-  }
+  return vibrateHandheld(durationMs, DEFAULT_AMPLITUDE)
 }
 
 export function isVibrationSupported(): boolean {
-  try {
-    return typeof Input.vibrate_handheld === 'function'
-  } catch {
-    return false
-  }
+  return isHandheldVibrationSupported()
 }
 
 /**
