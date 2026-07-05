@@ -195,15 +195,22 @@ After committing the final evidence files, generate a strict readiness summary
 outside the worktree and run the guarded finalizer:
 
 ```bash
-npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json
+npm run release:readiness -- \
+  --summary-output /tmp/vue-godot-readiness.json \
+  --expected-commit <release-candidate-sha>
 npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json
 ```
+
+Use the pushed release-candidate SHA for `--expected-commit` when the evidence
+files are committed in a follow-up evidence commit; strict readiness validates
+the tested commit and still requires the current worktree to be clean.
 
 The finalizer refuses `--allow-open` summaries, unexpected readiness blockers,
 missing evidence-backed final TODO proof status, package description warning
 markers, finalizer source text drift, or a dirty worktree. It only checks the
 final TODO boxes and removes public warning wording after strict evidence is
-ready. Commit those edits, then rerun `npm run release:readiness` without
+ready. Commit those edits, then rerun
+`npm run release:readiness -- --expected-commit <release-candidate-sha>` without
 `--allow-open`.
 
 Local-only preflight runs (`npm run release:preflight -- --local`) warn when

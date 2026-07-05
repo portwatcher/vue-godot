@@ -99,8 +99,10 @@ Options:
                                 Defaults to ${realDeviceEvidenceEnvVar} or ${defaultRealDeviceEvidencePath}.
   --readiness-path <file>       Read release-readiness evidence from a specific file.
                                 Defaults to ${releaseReadinessEvidenceEnvVar} or ${defaultReleaseReadinessEvidencePath}.
-  --expected-commit <sha>       Require evidence files to match this commit.
-                                Defaults to the current git commit.
+  --expected-commit <sha>       Require evidence files to match this release
+                                commit. Defaults to the current git commit.
+                                Use this when evidence files are committed
+                                after testing a release-candidate commit.
   --summary-output <file>       Write machine-readable readiness blockers JSON.
   --help                        Show this help.
 `)
@@ -370,7 +372,10 @@ export function validateReleaseReadinessEvidence(evidence, expectedCommit) {
     evidence.commit !== expectedCommit
   ) {
     errors.push(
-      `releaseReadiness.commit must match current commit ${expectedCommit}`,
+      [
+        `releaseReadiness.commit must match expected release commit ${expectedCommit}`,
+        'If this evidence was committed after testing a release-candidate commit, rerun the readiness check with --expected-commit <release-candidate-sha>.',
+      ].join('\n'),
     )
   }
 

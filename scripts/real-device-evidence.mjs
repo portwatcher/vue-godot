@@ -377,7 +377,10 @@ export function validateRealDeviceEvidenceMetadata(evidence, options = {}) {
     evidence.commit !== options.expectedCommit
   ) {
     errors.push(
-      `evidence.commit must match current commit ${options.expectedCommit}`,
+      [
+        `evidence.commit must match expected release commit ${options.expectedCommit}`,
+        'If this evidence was committed after testing a release-candidate commit, rerun the readiness check with --expected-commit <release-candidate-sha>.',
+      ].join('\n'),
     )
   }
 

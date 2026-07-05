@@ -363,6 +363,21 @@ test('release readiness accepts checked-in evidence examples for schema coverage
   assert.match(output, /`npm run check` passes locally and in CI/)
 })
 
+test('release readiness explains evidence commits for tested release candidates', () => {
+  const result = runReadiness([
+    '--allow-open',
+    '--real-device-path',
+    'docs/real-device-evidence.example.json',
+    '--readiness-path',
+    'docs/release-readiness-evidence.example.json',
+  ])
+  const output = `${result.stdout}\n${result.stderr}`
+
+  assert.equal(result.status, 0)
+  assert.match(output, /must match expected release commit/)
+  assert.match(output, /--expected-commit <release-candidate-sha>/)
+})
+
 test('release readiness writes a machine-readable blocker summary', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
   const summaryPath = path.join(tempDir, 'release-readiness-summary.json')

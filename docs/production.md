@@ -104,13 +104,18 @@ the workflow names must match `Check`, `Godot Smoke`, and `Release Preflight`,
 the run commits must match the evidence commit, the runs must be completed
 successfully, and real-device package versions must match the current package
 manifests.
+If evidence files are committed after testing a pushed release-candidate commit,
+pass `--expected-commit <release-candidate-sha>` so strict readiness validates
+the tested commit instead of the evidence commit.
 
 After final evidence is committed, write a strict summary outside the worktree
 and let the guarded finalizer apply only the final TODO checks and warning
 wording removal:
 
 ```bash
-npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json
+npm run release:readiness -- \
+  --summary-output /tmp/vue-godot-readiness.json \
+  --expected-commit <release-candidate-sha>
 npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json
 ```
 

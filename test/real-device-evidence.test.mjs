@@ -241,11 +241,20 @@ test('selected API release checks cover public conditional release gates', () =>
 })
 
 test('real device evidence rejects stale commit evidence', () => {
-  assert.match(
+  const errors = validateRealDeviceEvidence(validEvidence(), {
+    expectedCommit: 'ffffffffffffffffffffffffffffffffffffffff',
+  }).join('\n')
+
+  assert.match(errors, /must match expected release commit/)
+  assert.match(errors, /--expected-commit <release-candidate-sha>/)
+})
+
+test('real device evidence accepts an explicit tested release commit', () => {
+  assert.deepEqual(
     validateRealDeviceEvidence(validEvidence(), {
-      expectedCommit: 'ffffffffffffffffffffffffffffffffffffffff',
-    }).join('\n'),
-    /must match current commit/,
+      expectedCommit: '0123456789abcdef0123456789abcdef01234567',
+    }),
+    [],
   )
 })
 
