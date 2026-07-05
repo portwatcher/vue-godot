@@ -11,6 +11,7 @@ Run the full repository check before cutting a release candidate:
 npm run check
 npm run check:serious-examples
 npm audit --audit-level=moderate
+npm run check:public-surface
 npm run check:real-device-evidence -- --optional
 npm run release:preflight -- --local --skip-check --skip-godot
 ```
@@ -21,6 +22,10 @@ required serious native app and game UI demo workspaces, README coverage, root
 README links, and fixture-test registration. `npm audit --audit-level=moderate`
 must report zero moderate, high, or critical advisories unless an accepted
 exception is documented in the release notes.
+`npm run check:public-surface` verifies package README exported-subpath
+coverage, root README support links, generated template release defaults,
+serious example README smoke coverage, compatibility docs, and `apps/html-demo`
+component coverage.
 `npm run check:real-device-evidence` validates the Android/iOS export-smoke
 evidence JSON when it exists. `release:preflight` verifies package metadata,
 generated package specs, dry-run package contents including every
@@ -39,6 +44,7 @@ only; non-local preflight fails when either gate is skipped.
 the production TODO remains open. The strict `npm run release:readiness` command
 is for the committed final removal candidate and fails unless the worktree is
 clean and TODO boxes, current real-device evidence,
+public-surface documentation/demo alignment,
 `release/release-readiness-evidence.json`, and public warning wording are all in
 the final release state. Evidence run URLs must be GitHub Actions run URLs for
 `portwatcher/vue-godot`, and real-device package versions must match the current

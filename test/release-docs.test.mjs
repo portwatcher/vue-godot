@@ -138,6 +138,7 @@ test('release readiness audit documents final removal blockers', () => {
     /release-readiness evidence missing/,
     /collectUncheckedTodoItems/,
     /checkCleanWorktree/,
+    /collectPublicSurfaceAuditErrors/,
     /currentReleasePackageVersions/,
     /validateRealDeviceEvidence/,
     /release-evidence-utils/,
@@ -149,10 +150,16 @@ test('release readiness audit documents final removal blockers', () => {
   }
 
   assert.equal(
+    packageJson.scripts['check:public-surface'],
+    'node scripts/public-surface-audit.mjs',
+  )
+  assert.equal(
     packageJson.scripts['release:readiness'],
     'node scripts/release-readiness.mjs',
   )
+  assert.match(production, /check:public-surface/)
   assert.match(production, /release:readiness/)
+  assert.match(readme, /check:public-surface/)
   assert.match(production, /GitHub Actions run URLs for/)
   assert.match(production, /release-readiness-evidence\.example\.json/)
   assert.match(readme, /release:readiness/)

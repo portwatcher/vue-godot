@@ -13,6 +13,7 @@ import {
   hasNonEmptyString,
   isRecord,
 } from './release-evidence-utils.mjs'
+import { collectPublicSurfaceAuditErrors } from './public-surface-audit.mjs'
 import {
   currentReleasePackageVersions,
   readJson,
@@ -386,6 +387,15 @@ function checkWarningMarkerState(blockers) {
   return markersStillPresent
 }
 
+function checkPublicSurface(blockers) {
+  const errors = collectPublicSurfaceAuditErrors()
+  if (errors.length === 0) {
+    return
+  }
+
+  blockers.push(['public surface audit failed', ...errors].join('\n'))
+}
+
 function main() {
   const options = parseArgs(process.argv.slice(2))
   const blockers = collectUncheckedTodoItems()
@@ -395,8 +405,16 @@ function main() {
   checkRealDeviceEvidence(blockers, options, expectedCommit ?? undefined)
   checkReleaseReadinessEvidence(blockers, options, expectedCommit ?? undefined)
 
-  const warningMarkers = checkWarningMarkerState(blockers)
   const packageJson = readJson('package.json')
+
+  if (
+    packageJson.scripts?.['check:public-surface'] !==
+    'node scripts/public-surface-audit.mjs'
+  ) {
+    blockers.push(
+      'package.json must expose check:public-surface as node scripts/public-surface-audit.mjs',
+    )
+  }
 
   if (
     packageJson.scripts?.['release:readiness'] !==
@@ -406,6 +424,10 @@ function main() {
       'package.json must expose release:readiness as node scripts/release-readiness.mjs',
     )
   }
+
+  checkPublicSurface(blockers)
+
+  const warningMarkers = checkWarningMarkerState(blockers)
 
   if (blockers.length === 0) {
     console.log('[release-readiness] ready')

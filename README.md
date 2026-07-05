@@ -273,6 +273,7 @@ npm run smoke:generated-godot # optional: generated create --html app under Godo
 npm run smoke:editor-reload # optional: generated app played from the Godot editor before/after a watch rebuild
 npx vue-godot doctor # optional: local project diagnostics for package/export/plugin setup
 npm audit --audit-level=moderate # dependency security gate
+npm run check:public-surface # verifies READMEs, compatibility docs, templates, and demos match public APIs
 npm run check:real-device-evidence # validates Android/iOS export-smoke evidence JSON
 npm run check        # build + test + CLI smoke
 npm run release:preflight # release gate: check + pack dry-runs + registry + Godot smokes
@@ -291,9 +292,11 @@ The `Godot Smoke` GitHub Actions workflow installs the pinned `GodotJS_1.0.0-2` 
 
 `npm run smoke:public-cli` must be run after publishing. It uses `npx @vue-godot/cli@latest create --html` with no local package overrides, then builds the generated app. Set `VUE_GODOT_PUBLIC_CLI_SPEC=@vue-godot/cli@<version>` to test a specific published CLI version.
 
+`npm run check:public-surface` verifies that package READMEs name their package and exported subpaths, the root README links support docs and examples, generated templates keep export-ready defaults, serious example READMEs document their smoke paths, and `apps/html-demo` renders every registered `@vue-godot/html` component.
+
 `npm run check:real-device-evidence` reads `release/real-device-evidence.json` by default, or `VUE_GODOT_REAL_DEVICE_EVIDENCE` when the release evidence lives elsewhere. It validates the current Android/iOS export-smoke evidence format, including package versions against the current manifests, documented in [real device release checklist](./docs/real-device-release.md).
 
-`npm run release:readiness -- --allow-open` prints the remaining final-readiness blockers without failing while the production-readiness TODO is still open. The strict form, `npm run release:readiness`, is for the committed final removal candidate: it checks for a clean worktree, open TODO boxes, current real-device evidence, `release/release-readiness-evidence.json` for a successful warning-free Release Preflight workflow run, and public warning wording before experimental/not-production-ready text is removed.
+`npm run release:readiness -- --allow-open` prints the remaining final-readiness blockers without failing while the production-readiness TODO is still open. The strict form, `npm run release:readiness`, is for the committed final removal candidate: it checks for a clean worktree, open TODO boxes, current real-device evidence, public-surface documentation/demo drift, `release/release-readiness-evidence.json` for a successful warning-free Release Preflight workflow run, and public warning wording before experimental/not-production-ready text is removed.
 
 `npm run release:preflight` is strict by default: it fails when packages need publishing and the process is not running in the GitHub Actions trusted-publishing environment, when the serious example app gate fails, when the Godot smokes skip instead of running, or when real-device evidence is missing/incomplete. Use `npm run release:preflight -- --local` to validate the local build, tests, pack contents including every `package.json` export target, generated package specs, registry read checks, and serious example app readiness while treating missing trusted publishing, missing Godot, or missing real-device evidence as warnings. `--skip-serious-examples` and `--skip-godot` are only warning-level with `--local`; in non-local preflight they fail the release gate.
 

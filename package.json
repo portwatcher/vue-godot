@@ -14,6 +14,7 @@
     "smoke:editor-reload": "node scripts/smoke-editor-reload.mjs",
     "bench:performance": "node scripts/performance-benchmarks.mjs",
     "check:serious-examples": "node scripts/check-serious-example-apps.mjs",
+    "check:public-surface": "node scripts/public-surface-audit.mjs",
     "check:real-device-evidence": "node scripts/check-real-device-evidence.mjs",
     "release:readiness": "node scripts/release-readiness.mjs",
     "release:preflight": "node scripts/release-preflight.mjs",

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
 import test from 'node:test'
+import { collectPublicSurfaceAuditErrors } from '../scripts/public-surface-audit.mjs'
 
 const repoRoot = process.cwd()
 
@@ -28,6 +29,10 @@ function assertPatterns(relativePath, patterns) {
     )
   }
 }
+
+test('public surface audit passes for package READMEs, docs, templates, and demos', () => {
+  assert.deepEqual(collectPublicSurfaceAuditErrors(), [])
+})
 
 test('root README links public support docs, packages, and checked-in examples', () => {
   assertPatterns('README.md', [
