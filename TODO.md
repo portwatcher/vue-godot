@@ -266,7 +266,7 @@ The project is production ready only when all of these are true:
 ## P1: Testing And CI
 
 - [x] Add a compatibility test suite organized by API.
-- [ ] Add real Godot smoke coverage for each supported browser/device API.
+- [x] Add real Godot smoke coverage for each supported browser/device API.
 - [x] Add real device CI/manual release checklist for Android and iOS.
 - [x] Add memory leak checks for repeated mount/unmount and navigation.
 - [x] Add performance benchmarks:

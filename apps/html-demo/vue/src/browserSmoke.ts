@@ -3,10 +3,18 @@ import {
   GodotMediaDevicesError,
   GodotNotification,
   GodotNotificationError,
+  checkNetworkReachability,
+  configureDeviceSensorEvents,
+  configureNetworkReachability,
   geolocation,
+  getDeviceSensorEventOptions,
+  getNetworkReachabilityOptions,
+  isClipboardSupported,
+  isVibrationSupported,
   mediaDevices,
   readDeviceMotion,
   readDeviceOrientation,
+  setNavigatorOnline,
   startDeviceSensorEvents,
   stopDeviceSensorEvents,
 } from '@vue-godot/browser'
@@ -21,6 +29,46 @@ export interface BrowserSmokeOptions {
   fetchUrl?: string
   fetchText?: string
 }
+
+export const requiredBrowserSmokeNames = [
+  'URL',
+  'URLSearchParams',
+  'Blob',
+  'File',
+  'FormData',
+  'FileReader',
+  'base64',
+  'encoding',
+  'Headers',
+  'Request',
+  'WebSocket',
+  'AbortController',
+  'navigator.onLine',
+  'navigator online events',
+  'network reachability helpers',
+  'navigator.permissions.query',
+  'navigator.geolocation',
+  'navigator.mediaDevices',
+  'Notification',
+  'clipboard support probe',
+  'navigator.clipboard.readText',
+  'vibration support probe',
+  'navigator.vibrate',
+  'device sensor helpers',
+  'device sensors',
+  'localStorage',
+  'sessionStorage',
+  'queueMicrotask',
+  'setTimeout',
+  'setInterval',
+  'requestAnimationFrame',
+  'performance',
+  'ObjectURL',
+  'Response',
+  'History',
+  'fetch(Request)',
+  'network reachability probe',
+] as const
 
 function pass(name: string, detail: string): BrowserSmokeResult {
   return { name, ok: true, detail }
@@ -55,6 +103,17 @@ export function assertBrowserSmokeResults(
   }
 
   throw new Error(formatBrowserSmokeResults(failures))
+}
+
+function assertRequiredBrowserSmokeCoverage(
+  results: BrowserSmokeResult[],
+): void {
+  const seen = new Set(results.map((result) => result.name))
+  const missing = requiredBrowserSmokeNames.filter((name) => !seen.has(name))
+
+  if (missing.length > 0) {
+    results.push(fail('browser smoke coverage', missing.join(', ')))
+  }
 }
 
 export async function runBrowserSmokeTests(
@@ -221,6 +280,58 @@ export async function runBrowserSmokeTests(
   }
 
   try {
+    let onlineSeen = false
+    let offlineSeen = false
+    const onlineListener = () => {
+      onlineSeen = true
+    }
+    const offlineListener = () => {
+      offlineSeen = true
+    }
+
+    addEventListener('online', onlineListener)
+    addEventListener('offline', offlineListener)
+    setNavigatorOnline(false)
+    setNavigatorOnline(true)
+    removeEventListener('online', onlineListener)
+    removeEventListener('offline', offlineListener)
+
+    results.push(
+      onlineSeen && offlineSeen && navigator.onLine
+        ? pass('navigator online events', 'ok')
+        : fail(
+            'navigator online events',
+            `online=${onlineSeen} offline=${offlineSeen} state=${navigator.onLine}`,
+          ),
+    )
+  } catch (error) {
+    results.push(failFromError('navigator online events', error))
+  }
+
+  try {
+    const previous = getNetworkReachabilityOptions()
+    configureNetworkReachability({
+      url: 'https://example.com/vue-godot-reachability-smoke',
+      method: 'GET',
+      expectedStatus: 204,
+      timeoutMs: 1234,
+    })
+    const configured = getNetworkReachabilityOptions()
+    configureNetworkReachability(previous)
+
+    results.push(
+      configured.url.endsWith('/vue-godot-reachability-smoke') &&
+        configured.method === 'GET' &&
+        configured.expectedStatus === 204 &&
+        configured.timeoutMs === 1234
+        ? pass('network reachability helpers', 'ok')
+        : fail('network reachability helpers', JSON.stringify(configured)),
+    )
+  } catch (error) {
+    results.push(failFromError('network reachability helpers', error))
+  }
+
+  try {
     const status = await navigator.permissions.query({ name: 'camera' })
     results.push(
       ['granted', 'denied', 'prompt'].includes(status.state)
@@ -329,6 +440,29 @@ export async function runBrowserSmokeTests(
   }
 
   try {
+    const supported = isClipboardSupported()
+    results.push(
+      typeof supported === 'boolean' &&
+        Reflect.get(navigator.clipboard, 'supported') === supported
+        ? pass('clipboard support probe', `supported=${supported} ok`)
+        : fail('clipboard support probe', String(supported)),
+    )
+  } catch (error) {
+    results.push(failFromError('clipboard support probe', error))
+  }
+
+  try {
+    const supported = isVibrationSupported()
+    results.push(
+      typeof supported === 'boolean'
+        ? pass('vibration support probe', `supported=${supported} ok`)
+        : fail('vibration support probe', String(supported)),
+    )
+  } catch (error) {
+    results.push(failFromError('vibration support probe', error))
+  }
+
+  try {
     const accepted = navigator.vibrate(0)
     results.push(
       typeof accepted === 'boolean'
@@ -337,6 +471,27 @@ export async function runBrowserSmokeTests(
     )
   } catch (error) {
     results.push(failFromError('navigator.vibrate', error))
+  }
+
+  try {
+    const previous = getDeviceSensorEventOptions()
+    configureDeviceSensorEvents({
+      intervalMs: 120,
+      motion: true,
+      orientation: true,
+    })
+    const configured = getDeviceSensorEventOptions()
+    configureDeviceSensorEvents(previous)
+
+    results.push(
+      configured.intervalMs === 120 &&
+        configured.motion === true &&
+        configured.orientation === true
+        ? pass('device sensor helpers', 'ok')
+        : fail('device sensor helpers', JSON.stringify(configured)),
+    )
+  } catch (error) {
+    results.push(failFromError('device sensor helpers', error))
   }
 
   try {
@@ -535,6 +690,27 @@ export async function runBrowserSmokeTests(
     } catch (error) {
       results.push(failFromError('fetch(Request)', error))
     }
+
+    try {
+      const reachable = await checkNetworkReachability({
+        url: options.fetchUrl,
+        method: 'GET',
+        expectedStatus: 200,
+        timeoutMs: 5000,
+      })
+      results.push(
+        reachable && navigator.onLine
+          ? pass('network reachability probe', 'ok')
+          : fail(
+              'network reachability probe',
+              `reachable=${reachable} online=${navigator.onLine}`,
+            ),
+      )
+    } catch (error) {
+      results.push(failFromError('network reachability probe', error))
+    }
+
+    assertRequiredBrowserSmokeCoverage(results)
   }
 
   return results
