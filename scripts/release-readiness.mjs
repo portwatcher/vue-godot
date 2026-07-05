@@ -859,6 +859,84 @@ function checkPublicSurface(blockers) {
   return false
 }
 
+function collectReadinessNextActions(checks) {
+  const actions = []
+
+  if (!checks.cleanWorktree) {
+    actions.push({
+      id: 'clean-worktree',
+      title: 'Commit or remove local changes before strict readiness',
+      detail:
+        'Strict release readiness requires the release evidence and final wording changes to be checked from a clean worktree.',
+      commands: ['git status --short'],
+    })
+  }
+
+  if (
+    !checks.realDeviceEvidence ||
+    !checks.androidRealDeviceEvidence ||
+    !checks.iosRealDeviceEvidence
+  ) {
+    actions.push({
+      id: 'real-device-evidence',
+      title: 'Complete Android and iOS real-device export evidence',
+      detail:
+        'Run the selected API export checks on real or hosted devices, then assemble and validate release/real-device-evidence.json for the tested release commit.',
+      commands: [
+        'npm run release:platform-evidence -- --selected-api <api>',
+        'npm run release:ci -- --commit <release-candidate-sha> --wait --output release/ci-runs.json',
+        'npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --real-device-output release/real-device-evidence.json',
+        'npm run check:real-device-evidence -- --expected-commit <release-candidate-sha>',
+      ],
+    })
+  }
+
+  if (!checks.strictCiEvidence || !checks.releaseReadinessEvidence) {
+    actions.push({
+      id: 'release-preflight-evidence',
+      title: 'Collect CI and warning-free Release Preflight evidence',
+      detail:
+        'After the tested release candidate and real-device evidence are pushed, capture Check, Godot Smoke, and Release Preflight runs, then write release-readiness evidence.',
+      commands: [
+        'npm run release:ci -- --commit <release-candidate-sha> --include-release-preflight --wait --output release/ci-runs.json',
+        'GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --output release/release-preflight-summary.json',
+        'npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json',
+        'npm run release:readiness -- --expected-commit <release-candidate-sha>',
+      ],
+    })
+  }
+
+  if (!checks.publicSurface) {
+    actions.push({
+      id: 'public-surface',
+      title: 'Fix public README, compatibility, template, or demo drift',
+      detail:
+        'Public surface documentation must match the final support claims before warning wording is removed.',
+      commands: ['npm run check:public-surface'],
+    })
+  }
+
+  if (
+    !checks.publicWarningMarkersRemoved ||
+    !checks.packageDescriptionWarningsRemoved ||
+    !checks.rootReadmeWarningsRemoved
+  ) {
+    actions.push({
+      id: 'final-warning-removal',
+      title: 'Remove public warning wording through the guarded finalizer',
+      detail:
+        'Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks and removes public warning wording.',
+      commands: [
+        'npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit <release-candidate-sha>',
+        'npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json',
+        'npm run release:readiness -- --expected-commit <release-candidate-sha>',
+      ],
+    })
+  }
+
+  return actions
+}
+
 function writeReadinessSummary(
   options,
   expectedCommit,
@@ -898,6 +976,7 @@ function writeReadinessSummary(
       })),
     },
     checks: { ...checks },
+    nextActions: collectReadinessNextActions(checks),
     finalTodoRequirements: finalTodoRequirementStatuses.map((status) => ({
       ...status,
     })),

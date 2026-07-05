@@ -411,6 +411,25 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.deepEqual(summary.releaseToolingBlockers, [])
     assert.equal(summary.releaseWorkflowBlockerCount, 0)
     assert.deepEqual(summary.releaseWorkflowBlockers, [])
+    assert.ok(Array.isArray(summary.nextActions))
+    assert.ok(
+      summary.nextActions.some(
+        (action) =>
+          action.id === 'release-preflight-evidence' &&
+          action.commands.includes(
+            'npm run release:ci -- --commit <release-candidate-sha> --include-release-preflight --wait --output release/ci-runs.json',
+          ),
+      ),
+    )
+    assert.ok(
+      summary.nextActions.some(
+        (action) =>
+          action.id === 'final-warning-removal' &&
+          action.commands.includes(
+            'npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json',
+          ),
+      ),
+    )
     assert.equal(summary.finalTodoRequirements.length, 10)
     assert.ok(
       summary.finalTodoRequirements.some(
@@ -489,6 +508,46 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.ok(
       summary.warningMarkers.some((marker) =>
         marker.includes('README.md: root README final-removal wording'),
+      ),
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
+test('release readiness summary includes missing evidence next actions', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
+  const summaryPath = path.join(tempDir, 'release-readiness-summary.json')
+
+  try {
+    const result = runReadiness([
+      '--allow-open',
+      '--real-device-path',
+      path.join(tempDir, 'missing-real-device-evidence.json'),
+      '--readiness-path',
+      path.join(tempDir, 'missing-release-readiness-evidence.json'),
+      '--summary-output',
+      summaryPath,
+    ])
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+
+    assert.equal(result.status, 0)
+    assert.ok(
+      summary.nextActions.some(
+        (action) =>
+          action.id === 'real-device-evidence' &&
+          action.commands.includes(
+            'npm run check:real-device-evidence -- --expected-commit <release-candidate-sha>',
+          ),
+      ),
+    )
+    assert.ok(
+      summary.nextActions.some(
+        (action) =>
+          action.id === 'release-preflight-evidence' &&
+          action.commands.some((command) =>
+            command.includes('--readiness-output release/release-readiness-evidence.json'),
+          ),
       ),
     )
   } finally {
