@@ -17,6 +17,11 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./clipboard": {
+      "types": "./dist/clipboard.d.ts",
+      "import": "./dist/clipboard.js",
+      "default": "./dist/clipboard.js"
+    },
     "./haptics": {
       "types": "./dist/haptics.d.ts",
       "import": "./dist/haptics.js",

@@ -2,12 +2,14 @@
 // Clipboard polyfill for GodotJS
 // ---------------------------------------------------------------------------
 // Implements the text subset of the async Clipboard API on top of Godot's
-// DisplayServer clipboard methods.
+// @vue-godot/device clipboard helpers.
 // ---------------------------------------------------------------------------
 
-import { DisplayServer } from 'godot'
-
-const DISPLAY_SERVER_FEATURE_CLIPBOARD = 5 as DisplayServer.Feature
+import {
+  isClipboardSupported as isGodotClipboardSupported,
+  readClipboardText,
+  writeClipboardText,
+} from '@vue-godot/device/clipboard'
 
 export class GodotClipboardError extends Error {
   constructor(
@@ -20,11 +22,7 @@ export class GodotClipboardError extends Error {
 }
 
 export function isClipboardSupported(): boolean {
-  try {
-    return DisplayServer.has_feature(DISPLAY_SERVER_FEATURE_CLIPBOARD)
-  } catch {
-    return false
-  }
+  return isGodotClipboardSupported()
 }
 
 function assertClipboardSupported(): void {
@@ -43,30 +41,27 @@ export class GodotClipboard {
 
   async readText(): Promise<string> {
     assertClipboardSupported()
-    try {
-      return DisplayServer.clipboard_get()
-    } catch (error) {
-      throw new GodotClipboardError(
-        error instanceof Error
-          ? error.message
-          : 'DisplayServer refused clipboard read access.',
-        'not-allowed',
-      )
+    const text = readClipboardText()
+    if (text !== null) {
+      return text
     }
+
+    throw new GodotClipboardError(
+      'DisplayServer refused clipboard read access.',
+      'not-allowed',
+    )
   }
 
   async writeText(data: string): Promise<void> {
     assertClipboardSupported()
-    try {
-      DisplayServer.clipboard_set(String(data))
-    } catch (error) {
-      throw new GodotClipboardError(
-        error instanceof Error
-          ? error.message
-          : 'DisplayServer refused clipboard write access.',
-        'not-allowed',
-      )
+    if (writeClipboardText(String(data))) {
+      return
     }
+
+    throw new GodotClipboardError(
+      'DisplayServer refused clipboard write access.',
+      'not-allowed',
+    )
   }
 }
 

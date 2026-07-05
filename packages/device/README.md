@@ -60,6 +60,7 @@ unregister()
 | `createDeviceCapabilityError()` | Constructs a typed capability error. |
 | `normalizeDeviceCapabilityError()` | Preserves typed errors and wraps unknown errors. |
 | Adapter interfaces | `GeolocationAdapter`, `MediaDevicesAdapter`, `NotificationAdapter`, `PermissionAdapter`, and generic `DeviceCapabilityAdapter`. |
+| `@vue-godot/device/clipboard` | Godot-backed text, primary-selection text, and image-read clipboard helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/haptics` | Godot-backed handheld and joypad/controller vibration helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/microphone` | Godot-backed microphone and audio-bus capture helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/permissions` | Godot-backed permission helpers for Android runtime requests, permission result events, and granted-permission lists. Imported from a subpath so the root package stays backend-neutral outside Godot. |
@@ -175,6 +176,33 @@ reports granted dangerous permissions. On sandboxed macOS, Godot uses the same
 method for user-selected folder grants; `revokeGrantedPermissions()` clears
 those saved grants where Godot supports it. iOS, visionOS, and plugin-specific
 permission prompts still require explicit native/plugin adapters.
+
+## Godot Clipboard Helpers
+
+Import the built-in Godot clipboard helpers from the `clipboard` subpath:
+
+```ts
+import {
+  hasClipboardImage,
+  readClipboardImage,
+  readClipboardText,
+  writeClipboardText,
+} from '@vue-godot/device/clipboard'
+
+writeClipboardText('Copied')
+const text = readClipboardText()
+
+if (hasClipboardImage()) {
+  const image = readClipboardImage()
+}
+```
+
+These helpers wrap `DisplayServer` clipboard methods. Text read/write uses
+`clipboard_get()` and `clipboard_set()`. Linux primary selection helpers use
+`clipboard_get_primary()` and `clipboard_set_primary()` when the display server
+reports `FEATURE_CLIPBOARD_PRIMARY`. Image clipboard support is read-only
+because the current Godot typings expose `clipboard_get_image()` and
+`clipboard_has_image()`, but no image clipboard setter.
 
 ## Godot Haptics Helpers
 

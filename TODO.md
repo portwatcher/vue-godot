@@ -220,9 +220,9 @@ The project is production ready only when all of these are true:
 - [x] Haptics:
   - [x] Handheld vibration.
   - [x] Controller vibration where available.
-- [ ] Clipboard:
-  - [ ] Text read/write.
-  - [ ] Image read/write where feasible.
+- [x] Clipboard:
+  - [x] Text read/write.
+  - [x] Image read/write where feasible.
 - [ ] App/system:
   - [ ] Platform and feature detection.
   - [ ] App lifecycle events: focus, pause, resume, quit where feasible.

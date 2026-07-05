@@ -41,6 +41,14 @@ export function load(url, context, nextLoad) {
           }
         }
 
+        class MockImage {
+          constructor(label = 'clipboard-image') {
+            this.__mock = true
+            this.__kind = 'image'
+            this.label = label
+          }
+        }
+
         class MockSignal2 {
           constructor() {
             this.callables = []
@@ -75,6 +83,20 @@ export function load(url, context, nextLoad) {
               inputDevices: ['Default'],
               buses: ['Master'],
               busEffects: [],
+            }
+          }
+          return globalThis[key]
+        }
+
+        function mockDisplayServerState() {
+          const key = '__vueGodotDeviceMockDisplayServer'
+          if (!globalThis[key]) {
+            globalThis[key] = {
+              clipboard: '',
+              clipboardImage: null,
+              features: new Set([5, 18]),
+              primaryClipboard: '',
+              throwOnClipboard: false,
             }
           }
           return globalThis[key]
@@ -187,6 +209,68 @@ export function load(url, context, nextLoad) {
             state.revoked = true
             state.granted = []
           }
+        }
+
+        export class DisplayServer {
+          static has_feature(feature) {
+            return mockDisplayServerState().features.has(feature)
+          }
+
+          static clipboard_set(clipboard) {
+            const state = mockDisplayServerState()
+            if (state.throwOnClipboard) {
+              throw new Error('clipboard unavailable')
+            }
+            state.clipboard = String(clipboard)
+          }
+
+          static clipboard_get() {
+            const state = mockDisplayServerState()
+            if (state.throwOnClipboard) {
+              throw new Error('clipboard unavailable')
+            }
+            return String(state.clipboard ?? '')
+          }
+
+          static clipboard_has() {
+            return String(mockDisplayServerState().clipboard ?? '').length > 0
+          }
+
+          static clipboard_get_image() {
+            const state = mockDisplayServerState()
+            if (state.throwOnClipboard) {
+              throw new Error('clipboard unavailable')
+            }
+            return state.clipboardImage ?? new MockImage()
+          }
+
+          static clipboard_has_image() {
+            return mockDisplayServerState().clipboardImage !== null
+          }
+
+          static clipboard_set_primary(clipboardPrimary) {
+            const state = mockDisplayServerState()
+            if (state.throwOnClipboard) {
+              throw new Error('clipboard unavailable')
+            }
+            state.primaryClipboard = String(clipboardPrimary)
+          }
+
+          static clipboard_get_primary() {
+            const state = mockDisplayServerState()
+            if (state.throwOnClipboard) {
+              throw new Error('clipboard unavailable')
+            }
+            return String(state.primaryClipboard ?? '')
+          }
+
+          static Feature = {
+            FEATURE_CLIPBOARD: 5,
+            FEATURE_CLIPBOARD_PRIMARY: 18,
+          }
+
+          static FEATURE_CLIPBOARD = 5
+          static FEATURE_CLIPBOARD_PRIMARY = 18
         }
 
         export class Input {

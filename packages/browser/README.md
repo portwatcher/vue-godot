@@ -453,7 +453,7 @@ const text = await navigator.clipboard.readText()
 console.log(text)
 ```
 
-Only text clipboard access is supported. Image clipboard APIs and permission prompts are not synthesized.
+`navigator.clipboard` is text-only. Direct Godot image clipboard reads are available from `@vue-godot/device/clipboard` where `DisplayServer` exposes them, but browser `ClipboardItem` APIs and permission prompts are not synthesized.
 
 For direct imports, use `clipboard` or `isClipboardSupported()`:
 
