@@ -1,9 +1,9 @@
 {
   "initialCiEvidence": {
-    "commit": "92c5d36719fc9bd7329766dfd6ead1a8d7af0357",
+    "commit": "0b39df28603439db8e295cbeab9143a94ffc42bd",
     "errorCount": 0,
     "errors": [],
-    "expectedCommit": "92c5d36719fc9bd7329766dfd6ead1a8d7af0357",
+    "expectedCommit": "0b39df28603439db8e295cbeab9143a94ffc42bd",
     "path": "release/ci-runs.json",
     "ready": true,
     "validForCommit": null
@@ -27,8 +27,8 @@
       "detail": "Committed CI evidence already validates Check and Godot Smoke for the tested release candidate; generate release/real-device-evidence.json from this worksheet after device testing.",
       "commands": [
         "npm run check",
-        "npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 92c5d36719fc9bd7329766dfd6ead1a8d7af0357 --real-device-output release/real-device-evidence.json",
-        "npm run check:real-device-evidence -- --expected-commit 92c5d36719fc9bd7329766dfd6ead1a8d7af0357"
+        "npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 0b39df28603439db8e295cbeab9143a94ffc42bd --real-device-output release/real-device-evidence.json",
+        "npm run check:real-device-evidence -- --expected-commit 0b39df28603439db8e295cbeab9143a94ffc42bd"
       ]
     }
   ],
