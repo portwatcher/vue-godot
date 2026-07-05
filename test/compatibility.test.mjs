@@ -212,6 +212,16 @@ test('html compatibility rows cover every registered component and tool API', ()
   }
 })
 
+test('html README documents every registered component', () => {
+  for (const componentName of readHtmlComponentNames()) {
+    assert.match(
+      htmlReadme,
+      new RegExp(`<${componentName}>`),
+      `Expected packages/html/README.md to document <${componentName}>`,
+    )
+  }
+})
+
 test('html accessibility docs match the checked-in Godot role support', () => {
   const typingsDir = path.join(repoRoot, 'packages/runtime-tscn/typings')
   const typingFiles = fs
