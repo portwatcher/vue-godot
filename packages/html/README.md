@@ -100,8 +100,10 @@ Color values support hex (`#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`), named CSS co
 
 | HTML-like Component | Godot Node                                                             | Key Props             |
 | ------------------- | ---------------------------------------------------------------------- | --------------------- |
+| `<ActivityIndicator>` | `ProgressBar`                                                        | `active`, `size`, `fill`, `style` |
 | `<Div>`             | `HBoxContainer` / `VBoxContainer` / `*FlowContainer` / `GridContainer` | `style` (layout)      |
 | `<Img>`             | `TextureRect`                                                          | `src`, `alt`, `style` |
+| `<Progress>`        | `ProgressBar`                                                          | `value`, `min`, `max`, `indeterminate`, `showPercentage` |
 | `<ScrollView>`      | `ScrollContainer`                                                      | `horizontal`, `vertical`, `scrollbarMode`, `contentStyle` |
 | `<Span>`            | `Label`                                                                | text content, `style` |
 | `<Button>`          | `Button`                                                               | `@click`, `disabled`  |
@@ -117,7 +119,7 @@ Color values support hex (`#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`), named CSS co
 
 | API                                                                                                                                    | Description                                                                                              |
 | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| HTML-like components (`A`, `Audio`, `Button`, `Canvas`, `Div`, `Img`, `Input`, `Option`, `ScrollView`, `Select`, `Span`, `Svg`, `Textarea`, `Video`) | Vue components backed by Godot nodes                                                                     |
+| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Div`, `Img`, `Input`, `Option`, `Progress`, `ScrollView`, `Select`, `Span`, `Svg`, `Textarea`, `Video`) | Vue components backed by Godot nodes                                                                     |
 | `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
 | `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |
@@ -281,6 +283,29 @@ const volume = ref(50)
 
 The component supports `horizontal`, `vertical`, `scrollbarMode`, `horizontalScrollbar`, `verticalScrollbar`, `scrollHorizontal`, `scrollVertical`, `scrollStep`, `horizontalStep`, `verticalStep`, `followFocus`, `style`, and `contentStyle`. Scrollbar modes are `'auto'`, `'always'`, `'never'`, and `'disabled'`.
 
+### Progress and loading indicators
+
+`<Progress>` maps to Godot `ProgressBar` for determinate and indeterminate progress:
+
+```vue
+<Progress
+  :value="uploadPercent"
+  :max="100"
+  :show-percentage="true"
+  :style="{ width: 280, height: 18 }"
+></Progress>
+```
+
+It supports `value`, `min`, `max`, `step`, `indeterminate`, `showPercentage`, `fill`, and `style`. `fill` accepts `'begin-to-end'`, `'end-to-begin'`, `'top-to-bottom'`, and `'bottom-to-top'`.
+
+`<ActivityIndicator>` is a bar-style busy indicator backed by the same native `ProgressBar` indeterminate mode:
+
+```vue
+<ActivityIndicator :active="isLoading" :style="{ width: 120, height: 18 }"></ActivityIndicator>
+```
+
+It supports `active`, `size`, `fill`, and `style`. When `active` is `false`, the indicator is hidden and the indeterminate animation is disabled.
+
 ### Global registration via plugin (new code)
 
 ```ts
@@ -316,6 +341,8 @@ This package is in early development. Currently scaffolded:
 
 - [x] `<Div>` — layout container with style → Godot container mapping
 - [x] `<Img>` — image display with `src` → texture loading
+- [x] `<Progress>` — determinate or indeterminate progress (`ProgressBar`, range props, fill direction)
+- [x] `<ActivityIndicator>` — bar-style busy indicator (`ProgressBar` indeterminate mode)
 - [x] `<ScrollView>` — scrollable viewport (`ScrollContainer`, axis props, scrollbar modes, scroll offsets)
 - [x] `<Span>` — text display with `fontSize`, `fontWeight`, `color`, `textAlign`, `textTransform`, `overflowWrap`
 - [x] `<Button>` — click handler with `@click`, `disabled`

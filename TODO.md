@@ -125,7 +125,7 @@ The project is production ready only when all of these are true:
   - [ ] `<Modal>` / `<Dialog>` / `<Overlay>`.
   - [ ] `<SafeAreaView>` or equivalent layout helper.
   - [ ] `<KeyboardAvoidingView>` or equivalent for mobile text input.
-  - [ ] `<ActivityIndicator>` / `<Progress>`.
+  - [x] `<ActivityIndicator>` / `<Progress>`.
   - [ ] `<Switch>` / checkbox refinement.
   - [ ] Radio input support.
   - [ ] Form and label helpers.
@@ -329,6 +329,8 @@ Use this backlog to seed `docs/compatibility.md`.
 | `<Modal>` / `<Dialog>` | html | supported | Godot popup/window/control stack |
 | `<SafeAreaView>` | html/device | partial | platform/display metrics |
 | `<KeyboardAvoidingView>` | html/device | partial | virtual keyboard metrics |
+| `<ActivityIndicator>` | html | supported | `ProgressBar` indeterminate mode |
+| `<Progress>` | html | supported | `ProgressBar` |
 | `<Canvas>` 2D context | html | partial | `CanvasItem` draw adapter |
 
 ## Final Removal Checklist

@@ -59,6 +59,30 @@
     </Div>
   </ScrollView>
 
+  <!-- ===== Section: Progress ===== -->
+  <Span>--- Progress ---</Span>
+  <Div :style="{ flexDirection: 'row', gap: 10, alignItems: 'center' }">
+    <Progress
+      :value="progressValue"
+      :max="100"
+      :show-percentage="true"
+      :style="{ width: 260, height: 18 }"
+    ></Progress>
+    <ActivityIndicator
+      :active="activityActive"
+      :style="{ width: 120, height: 18 }"
+    ></ActivityIndicator>
+  </Div>
+  <Div :style="{ flexDirection: 'row', gap: 8 }">
+    <Button @click="advanceProgress">Advance</Button>
+    <Button @click="toggleActivity">Toggle Activity</Button>
+  </Div>
+  <Span>
+    {{
+      `Progress: ${progressValue}% activity=${activityActive ? 'on' : 'off'}`
+    }}
+  </Span>
+
   <!-- ===== Section: Span (text styling) ===== -->
   <Span>--- Span ---</Span>
   <Span
@@ -225,6 +249,19 @@ function cycleAlign() {
         : align.value === 'center'
           ? 'flex-end'
           : 'stretch'
+}
+
+// --- Progress ---
+const progressValue = ref(45)
+const activityActive = ref(true)
+
+function advanceProgress() {
+  progressValue.value =
+    progressValue.value >= 100 ? 0 : progressValue.value + 10
+}
+
+function toggleActivity() {
+  activityActive.value = !activityActive.value
 }
 
 // --- Button ---

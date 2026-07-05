@@ -1,5 +1,6 @@
 import type { App, Component } from '@vue/runtime-core'
 import { A } from './components/A.js'
+import { ActivityIndicator } from './components/ActivityIndicator.js'
 import { Audio } from './components/Audio.js'
 import { Button } from './components/Button.js'
 import { Canvas } from './components/Canvas.js'
@@ -7,6 +8,7 @@ import { Div } from './components/Div.js'
 import { Img } from './components/Img.js'
 import { Input } from './components/Input.js'
 import { Option, Select } from './components/Select.js'
+import { Progress } from './components/Progress.js'
 import { ScrollView } from './components/ScrollView.js'
 import { Span } from './components/Span.js'
 import { Svg } from './components/Svg.js'
@@ -15,6 +17,7 @@ import { Video } from './components/Video.js'
 
 const components: Record<string, Component> = {
   A,
+  ActivityIndicator,
   Audio,
   Div,
   Img,
@@ -24,6 +27,7 @@ const components: Record<string, Component> = {
   Textarea,
   Select,
   Option,
+  Progress,
   ScrollView,
   Canvas,
   Video,

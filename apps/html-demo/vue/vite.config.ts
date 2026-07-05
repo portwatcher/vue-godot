@@ -5,6 +5,7 @@ import { defineConfig } from 'vite'
 // Listed here to avoid importing at config-load time (Node ESM resolution).
 const htmlTags = [
   'a',
+  'activityindicator',
   'audio',
   'div',
   'img',
@@ -14,6 +15,7 @@ const htmlTags = [
   'textarea',
   'select',
   'option',
+  'progress',
   'scrollview',
   'canvas',
   'video',

@@ -15,6 +15,7 @@
 
 const htmlTags = [
   'a',
+  'activityindicator',
   'audio',
   'div',
   'img',
@@ -24,6 +25,7 @@ const htmlTags = [
   'textarea',
   'select',
   'option',
+  'progress',
   'scrollview',
   'canvas',
   'video',
