@@ -477,6 +477,9 @@
     placeholder="Multi-line text..."
     :rows="3"
     :cols="40"
+    title="Multiline text demo"
+    :min-touch-target="72"
+    :style="{ fontSize: 14 }"
   ></Textarea>
   <Span>{{ `Textarea lines: ${textareaValue.split('\n').length}` }}</Span>
 

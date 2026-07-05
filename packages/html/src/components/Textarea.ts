@@ -110,7 +110,7 @@ export const Textarea = defineComponent({
       // Godot's TextEdit.text_changed fires with no arguments, so we read
       // the current text directly from the host node captured by vnode hooks.
       nodeProps['onTextChanged'] = () => {
-        if (hasTextProperty(textEditNode)) {
+        if (!props.disabled && !props.readonly && hasTextProperty(textEditNode)) {
           emit('update:modelValue', textEditNode.text)
         }
       }
