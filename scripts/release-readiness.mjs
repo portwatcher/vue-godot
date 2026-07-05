@@ -473,6 +473,27 @@ export function collectFinalTodoRequirementStatuses(todoItems, proofs) {
   })
 }
 
+export function formatFinalTodoRequirementStatus(status) {
+  const location =
+    status.file && status.line != null
+      ? `${status.file}:${status.line}`
+      : 'missing final TODO item'
+  const proofState = status.ready ? 'ready' : 'waiting'
+
+  if (status.itemCount === 0) {
+    return `${location}; ${status.proof} ${proofState}: ${status.reason}`
+  }
+
+  const todoState =
+    status.itemCount === 1
+        ? status.checked
+          ? 'checked'
+          : 'unchecked'
+        : `${status.itemCount} matching TODO items`
+
+  return `${location} ${todoState}; ${status.proof} ${proofState}: ${status.reason}`
+}
+
 export function collectCheckedTodoEvidenceBlockers(todoItems, proofs) {
   const proofByName = finalTodoProofsByName(proofs)
 
@@ -1013,6 +1034,11 @@ async function main() {
   console.log('[release-readiness] blockers')
   for (const blocker of blockers) {
     console.log(`- ${blocker}`)
+  }
+
+  console.log('\n[release-readiness] final TODO proof status')
+  for (const status of finalTodoRequirementStatuses) {
+    console.log(`- ${formatFinalTodoRequirementStatus(status)}`)
   }
 
   if (warningMarkers.length > 0) {

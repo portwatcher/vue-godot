@@ -81,8 +81,9 @@ trusted-publishing checks. Real-device evidence is read from
 `--skip-serious-examples` and `--skip-godot` are intended for local validation
 only; non-local preflight fails when either gate is skipped.
 
-`npm run release:readiness -- --allow-open` reports final-removal blockers while
-the production TODO remains open and does not contact GitHub. Add
+`npm run release:readiness -- --allow-open` reports final-removal blockers and
+final TODO proof status while the production TODO remains open and does not
+contact GitHub. Add
 `--summary-output release/release-readiness-summary.json` to write blockers,
 warning markers, package description warning status, release tooling/workflow
 blocker lists, TODO counts, unchecked TODO item details, final TODO proof status,

@@ -54,7 +54,8 @@ from the GitHub Actions API and fails if either run is not completed,
 successful, named for the expected workflow, or attached to the evidence commit.
 The final strict `release:readiness` gate applies the same check and also
 verifies the recorded Release Preflight run metadata. The `--allow-open`
-readiness audit stays offline so it can be used before final evidence exists.
+readiness audit stays offline and prints final TODO proof status so it can be
+used before final evidence exists.
 Add `--summary-output release/release-readiness-summary.json` to either form to
 capture the current blockers, TODO counts, unchecked TODO item details, final TODO proof status,
 readiness check status, separate Android/iOS real-device evidence status, CI workflow wiring status,

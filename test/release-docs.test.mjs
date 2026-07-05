@@ -371,6 +371,7 @@ test('release readiness audit documents final removal blockers', () => {
     /collectUncheckedTodoItems/,
     /collectFinalTodoStructureBlockers/,
     /collectCheckedTodoEvidenceBlockers/,
+    /formatFinalTodoRequirementStatus/,
     /collectReleaseToolingBlockers/,
     /collectReleaseWorkflowBlockers/,
     /checkCleanWorktree/,
@@ -387,6 +388,7 @@ test('release readiness audit documents final removal blockers', () => {
     /is checked, but/,
     /working tree must be clean for final release readiness/,
     /public warning markers still present/,
+    /final TODO proof status/,
     /root README final-removal wording/,
     /summary-output/,
     /uncheckedItems/,
@@ -418,6 +420,7 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(production, /check:public-surface/)
   assert.match(production, /release:readiness/)
   assert.match(production, /release-readiness-summary/)
+  assert.match(production, /reports final-removal blockers and\s+final TODO proof status/)
   assert.match(production, /TODO counts/)
   assert.match(production, /unchecked\s+TODO item details/)
   assert.match(production, /final TODO proof status/)
@@ -434,6 +437,7 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(readme, /release:readiness/)
   assert.match(readme, /release-readiness-summary/)
   assert.match(readme, /release-readiness-evidence\.json/)
+  assert.match(readme, /final-readiness blockers and final TODO proof status/)
   assert.match(readme, /TODO counts/)
   assert.match(readme, /unchecked TODO item details/)
   assert.match(readme, /final TODO proof status/)

@@ -14,6 +14,7 @@ import {
   collectReleaseWorkflowBlockers,
   collectTodoItems,
   collectUncheckedTodoItems,
+  formatFinalTodoRequirementStatus,
 } from '../scripts/release-readiness.mjs'
 
 function runReadiness(args = []) {
@@ -171,6 +172,18 @@ test('release readiness reports final TODO proof status', () => {
   assert.equal(ciStatus?.itemCount, 0)
   assert.equal(ciStatus?.file, null)
   assert.equal(ciStatus?.line, null)
+  assert.match(
+    formatFinalTodoRequirementStatus(androidStatus),
+    /TODO\.test\.md:1 checked; androidRealDeviceEvidenceReady ready/,
+  )
+  assert.match(
+    formatFinalTodoRequirementStatus(iosStatus),
+    /TODO\.test\.md:2 unchecked; iosRealDeviceEvidenceReady waiting/,
+  )
+  assert.match(
+    formatFinalTodoRequirementStatus(ciStatus),
+    /missing final TODO item; ciEvidenceReady waiting/,
+  )
 })
 
 test('release readiness requires the final TODO evidence checklist shape', () => {
@@ -309,6 +322,12 @@ test('release readiness reports current blockers without failing when allowed op
   assert.match(output, /`npm run check` passes locally and in CI/)
   assert.match(output, /real-device evidence missing/)
   assert.match(output, /release-readiness evidence missing/)
+  assert.match(output, /final TODO proof status/)
+  assert.match(output, /TODO\.md:24 unchecked; checkCiEvidenceReady waiting/)
+  assert.match(
+    output,
+    /TODO\.md:389 unchecked; androidRealDeviceEvidenceReady waiting/,
+  )
   assert.match(output, /public warning markers still present/)
   assert.match(output, /open gates remain/)
 })
