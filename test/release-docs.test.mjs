@@ -188,6 +188,9 @@ test('release preflight enforces real device evidence', () => {
     /was not found on GitHub/,
     /requiredWorkflowNames/,
     /missingWorkflowNames/,
+    /collectLocalGitReleaseState/,
+    /collectReleaseCiHints/,
+    /local git hints/,
     /checkWorkflow/,
     /godotSmokeWorkflow/,
     /Release Preflight/,
@@ -225,6 +228,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /commit is not found on GitHub/)
   assert.match(production, /required\/passed\/missing workflow/)
   assert.match(production, /structured workflow\s+checks/)
+  assert.match(production, /local Git branch\/upstream diagnostics/)
+  assert.match(production, /hints\s+for unpushed commits or stale upstreams/)
   assert.match(production, /Node 24/)
   assert.match(production, /npm@\^11\.15\.0/)
   assert.match(production, /release:platform-evidence/)
@@ -263,6 +268,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /commit was not found on GitHub/)
   assert.match(readme, /required\/passed\/missing workflow/)
   assert.match(readme, /structured workflow\s+checks/)
+  assert.match(readme, /local Git branch\/upstream diagnostics/)
+  assert.match(readme, /hints for unpushed commits or stale upstreams/)
   assert.match(readme, /Node 24/)
   assert.match(readme, /npm@\^11\.15\.0/)
   assert.match(readme, /--ci-evidence/)
@@ -301,6 +308,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /commit\s+was not found on GitHub/)
   assert.match(checklist, /required\/passed\/missing workflow/)
   assert.match(checklist, /structured workflow\s+checks/)
+  assert.match(checklist, /local Git branch\/upstream diagnostics/)
+  assert.match(checklist, /hints for unpushed commits or\s+stale upstreams/)
   assert.match(checklist, /--ci-evidence/)
   assert.match(checklist, /--release-preflight-summary/)
   assert.match(

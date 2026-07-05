@@ -235,6 +235,42 @@ function currentBranchRef() {
   return branch
 }
 
+function readGitValue(args) {
+  const result = run('git', args)
+  if (result.status !== 0) {
+    return null
+  }
+
+  const value = result.stdout.trim()
+  return value.length > 0 ? value : null
+}
+
+export function collectLocalGitReleaseState(commit) {
+  const currentHead = readGitValue(['rev-parse', 'HEAD'])
+  const branch = readGitValue(['rev-parse', '--abbrev-ref', 'HEAD'])
+  const currentBranch = branch && branch !== 'HEAD' ? branch : null
+  const upstreamRef = readGitValue([
+    'rev-parse',
+    '--abbrev-ref',
+    '--symbolic-full-name',
+    '@{u}',
+  ])
+  const upstreamCommit = upstreamRef ? readGitValue(['rev-parse', '@{u}']) : null
+  const statusResult = run('git', ['status', '--porcelain'])
+  const dirtyWorktree =
+    statusResult.status === 0 && statusResult.stdout.trim().length > 0
+
+  return {
+    currentBranch,
+    currentHead,
+    commitIsHead: currentHead === commit,
+    upstreamRef,
+    upstreamCommit,
+    upstreamMatchesCommit: upstreamCommit === commit,
+    dirtyWorktree,
+  }
+}
+
 function runTime(runMetadata) {
   for (const key of ['updated_at', 'run_started_at', 'created_at']) {
     const timestamp = Date.parse(runMetadata[key])
@@ -390,23 +426,68 @@ function logProgress(options, message) {
   console.log(message)
 }
 
-function printText(evidence, errors, workflows) {
-  console.log(`[release-ci] commit ${evidence.commit}`)
+export function collectReleaseCiHints(output) {
+  const hints = []
+  const localGit = output.localGit
+
+  if (!localGit) {
+    return hints
+  }
+
+  if (output.commitFound === false) {
+    if (localGit.currentBranch && !localGit.upstreamRef) {
+      hints.push(
+        `Current branch ${localGit.currentBranch} has no upstream; push a branch or pass --ref to a branch or tag that exists on GitHub before collecting CI evidence.`,
+      )
+    } else if (
+      localGit.upstreamRef &&
+      localGit.upstreamMatchesCommit === false
+    ) {
+      hints.push(
+        `Upstream ${localGit.upstreamRef} does not point at release commit ${output.commit}; push the release-candidate commit before collecting CI evidence.`,
+      )
+    }
+
+    if (localGit.currentHead && !localGit.commitIsHead) {
+      hints.push(
+        `Current HEAD is ${localGit.currentHead}, but release:ci is checking ${output.commit}; make sure the pushed ref contains the checked commit.`,
+      )
+    }
+  }
+
+  if (localGit.dirtyWorktree) {
+    hints.push(
+      'Working tree has local changes; final release readiness still requires a clean worktree.',
+    )
+  }
+
+  return hints
+}
+
+function printText(output, workflows) {
+  console.log(`[release-ci] commit ${output.evidence.commit}`)
   for (const workflowName of workflows) {
-    const runEvidence = evidence.workflows[workflowName]
+    const runEvidence = output.evidence.workflows[workflowName]
     if (runEvidence) {
       console.log(`[release-ci] ${workflowName}: ${runEvidence.runUrl}`)
     }
   }
 
-  if (errors.length === 0) {
+  if (output.errors.length === 0) {
     console.log('[release-ci] all required CI runs passed')
     return
   }
 
   console.log('[release-ci] missing required CI runs')
-  for (const error of errors) {
+  for (const error of output.errors) {
     console.log(`- ${error}`)
+  }
+
+  if (output.hints.length > 0) {
+    console.log('\n[release-ci] local git hints')
+    for (const hint of output.hints) {
+      console.log(`- ${hint}`)
+    }
   }
 }
 
@@ -498,12 +579,18 @@ export function releaseCiOutput(result, workflows = requiredReleaseCiWorkflows) 
     ready: result.errors.length === 0,
     commit: result.evidence.commit,
     commitFound: result.commitFound !== false,
+    localGit: result.localGit ?? null,
     requiredWorkflowNames: [...workflows],
     passedWorkflowNames,
     missingWorkflowNames,
     checks,
     evidence: result.evidence,
     errors: result.errors,
+    hints: collectReleaseCiHints({
+      commit: result.evidence.commit,
+      commitFound: result.commitFound !== false,
+      localGit: result.localGit ?? null,
+    }),
   }
 }
 
@@ -536,7 +623,10 @@ async function main() {
     result = await waitForReleaseCiRunResult(commit, workflows, options)
   }
 
-  const output = releaseCiOutput(result, workflows)
+  const output = releaseCiOutput(
+    { ...result, localGit: collectLocalGitReleaseState(commit) },
+    workflows,
+  )
   if (options.output) {
     writeJson(options.output, output, options)
   }
@@ -544,7 +634,7 @@ async function main() {
   if (options.json) {
     console.log(JSON.stringify(output, null, 2))
   } else {
-    printText(output.evidence, output.errors, workflows)
+    printText(output, workflows)
   }
 
   if (result.errors.length > 0 && !options.allowMissing) {
