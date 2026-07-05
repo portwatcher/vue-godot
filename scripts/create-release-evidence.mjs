@@ -14,6 +14,7 @@ import {
 } from './release-evidence-utils.mjs'
 import {
   currentReleasePackageVersions,
+  isFullCommitSha,
   normalizeCommitSha,
   repoRoot,
   run,
@@ -245,14 +246,22 @@ function workflowRunUrl(ciEvidence, workflowName, errors, options = {}) {
   return workflow.runUrl
 }
 
-function workflowRunCommit(ciEvidence, workflowName) {
+function workflowRunCommit(ciEvidence, workflowName, errors) {
   const workflow = isRecord(ciEvidence.workflows?.[workflowName])
     ? ciEvidence.workflows[workflowName]
     : null
-  return typeof workflow?.runCommit === 'string' &&
-    workflow.runCommit.trim().length > 0
-    ? workflow.runCommit
-    : null
+  if (!workflow || !('runCommit' in workflow)) {
+    return null
+  }
+
+  if (!isFullCommitSha(workflow.runCommit)) {
+    errors.push(
+      `CI evidence ${workflowName}.runCommit must be a full 40-character git commit SHA`,
+    )
+    return null
+  }
+
+  return workflow.runCommit
 }
 
 function collectCiSummaryStatusErrors(ciResult, options = {}) {
@@ -404,8 +413,10 @@ export function extractCiRunUrls(ciResult, commit, options = {}) {
     errors,
     { required: options.requireReleasePreflight === true },
   )
+  workflowRunCommit(ciEvidence, 'Check', errors)
+  workflowRunCommit(ciEvidence, 'Godot Smoke', errors)
   const releasePreflightRunCommit = releasePreflightRunUrl
-    ? workflowRunCommit(ciEvidence, 'Release Preflight')
+    ? workflowRunCommit(ciEvidence, 'Release Preflight', errors)
     : null
   return {
     checkRunUrl,

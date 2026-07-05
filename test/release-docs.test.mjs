@@ -292,6 +292,7 @@ test('release preflight enforces real device evidence', () => {
     production,
     /rejects not-ready or\s+inconsistent structured CI summaries/,
   )
+  assert.match(production, /malformed workflow run commit SHAs/)
   assert.match(
     production,
     /validates normalized\s+platform evidence\s+before fetching GitHub run metadata/,
@@ -394,6 +395,7 @@ test('release preflight enforces real device evidence', () => {
     readme,
     /rejects not-ready or inconsistent structured CI summaries/,
   )
+  assert.match(readme, /malformed workflow run commit SHAs/)
   assert.match(
     readme,
     /validates the normalized platform evidence before fetching GitHub run metadata/,
@@ -497,6 +499,7 @@ test('release preflight enforces real device evidence', () => {
     checklist,
     /rejects not-ready or inconsistent structured CI summaries/,
   )
+  assert.match(checklist, /malformed workflow run commit SHAs/)
   assert.match(
     checklist,
     /validates the normalized platform evidence before fetching GitHub run\s+metadata/,

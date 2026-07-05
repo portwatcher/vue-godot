@@ -101,8 +101,8 @@ commits. It strips worksheet fields and validates normalized platform evidence
 before fetching GitHub run metadata. Pass
 `--commit <release-candidate-sha>` when generating evidence from a follow-up
 evidence commit so the evidence records the tested release commit rather than
-current `HEAD`. It rejects not-ready or inconsistent structured CI summaries
-before writing the final evidence;
+current `HEAD`. It rejects not-ready or inconsistent structured CI summaries,
+including malformed workflow run commit SHAs, before writing the final evidence;
 `release/real-device-evidence.json` must not contain
 `requiredChecks`, `passOnlyChecks`, or `selectedApiRequiredChecks`, and copied
 platform evidence is rejected. For final readiness evidence, fetch the

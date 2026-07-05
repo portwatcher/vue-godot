@@ -158,9 +158,8 @@ pushing or dispatching missing workflows, and the run URLs consumed by
 `release:evidence`. Release commit options (`--commit`, `--expected-commit`,
 and `--release-preflight-run-commit`) require full 40-character git commit SHAs;
 use `git rev-parse HEAD` or the full pushed release-candidate/evidence commit.
-The evidence helper
-rejects not-ready or inconsistent structured CI summaries before writing final
-evidence.
+The evidence helper rejects not-ready or inconsistent structured CI summaries,
+including malformed workflow run commit SHAs, before writing final evidence.
 
 Then assemble the evidence file from the real device data and completed CI
 runs:

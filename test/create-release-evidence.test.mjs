@@ -526,6 +526,37 @@ test('extractCiRunUrls can read Release Preflight evidence for final readiness',
   )
 })
 
+test('extractCiRunUrls rejects malformed workflow run commits', () => {
+  const result = extractCiRunUrls(
+    ciRunResult({
+      Check: {
+        runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+        runCommit: 'main',
+      },
+      'Godot Smoke': {
+        runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+        runCommit: commit,
+      },
+      'Release Preflight': {
+        runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/3',
+        runCommit: '123456789abc',
+      },
+    }),
+    commit,
+    { requireReleasePreflight: true },
+  )
+
+  assert.equal(result.releasePreflightRunCommit, null)
+  assert.match(
+    result.errors.join('\n'),
+    /CI evidence Check\.runCommit must be a full 40-character git commit SHA/,
+  )
+  assert.match(
+    result.errors.join('\n'),
+    /CI evidence Release Preflight\.runCommit must be a full 40-character git commit SHA/,
+  )
+})
+
 test('extractCiRunUrls rejects stale or incomplete CI evidence', () => {
   const result = extractCiRunUrls(
     {
