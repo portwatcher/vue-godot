@@ -1,0 +1,204 @@
+{
+  "nextActions": [
+    {
+      "id": "complete-platform-evidence",
+      "title": "Fill Android and iOS device evidence fields",
+      "detail": "Record artifact IDs, export presets, device models, OS versions, orientation, locale, selected APIs, and real test outcomes before assembling final evidence.",
+      "commands": []
+    },
+    {
+      "id": "record-required-checks",
+      "title": "Move worksheet checks into passedChecks or skippedChecks",
+      "detail": "Every requiredChecks entry must move to passedChecks or skippedChecks with a release-specific reason; passOnlyChecks and selectedApiRequiredChecks must move to passedChecks.",
+      "commands": []
+    },
+    {
+      "id": "assemble-real-device-evidence",
+      "title": "Assemble and validate final real-device evidence",
+      "detail": "After CI runs exist for the tested release candidate, generate release/real-device-evidence.json from this worksheet.",
+      "commands": [
+        "npm run check",
+        "npm run release:ci -- --commit 43996e97a7280e22da2404de823d1784c252295b --wait --output release/ci-runs.json",
+        "GH_TOKEN=\"$(gh auth token)\" npm run release:ci -- --commit 43996e97a7280e22da2404de823d1784c252295b --dispatch-missing --wait --ref <release-candidate-branch-or-tag> --output release/ci-runs.json",
+        "npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 43996e97a7280e22da2404de823d1784c252295b --real-device-output release/real-device-evidence.json",
+        "npm run check:real-device-evidence -- --expected-commit 43996e97a7280e22da2404de823d1784c252295b"
+      ]
+    }
+  ],
+  "android": {
+    "artifact": "",
+    "exportPreset": "Android Release",
+    "deviceModel": "",
+    "osVersion": "",
+    "orientation": "",
+    "locale": "",
+    "selectedApis": [
+      "fetch",
+      "WebSocket",
+      "checkNetworkReachability",
+      "navigator.onLine",
+      "localStorage",
+      "sessionStorage",
+      "navigator.permissions.query",
+      "navigator.clipboard",
+      "navigator.geolocation",
+      "navigator.mediaDevices.getUserMedia",
+      "navigator.vibrate",
+      "readDeviceMotion",
+      "SafeAreaView",
+      "KeyboardAvoidingView"
+    ],
+    "passedChecks": [],
+    "skippedChecks": {},
+    "requiredChecks": [
+      "cold-launch",
+      "no-godotjs-load-diagnostics",
+      "storage-restart",
+      "network-if-selected",
+      "clipboard-if-selected",
+      "permission-prompts-if-selected",
+      "adapter-states-if-selected",
+      "hardware-adapters-if-selected",
+      "haptics-if-selected",
+      "audio-input-if-selected",
+      "sensors-if-selected",
+      "safe-area-keyboard",
+      "android-back-handling",
+      "background-foreground"
+    ],
+    "passOnlyChecks": [
+      "cold-launch",
+      "no-godotjs-load-diagnostics",
+      "storage-restart",
+      "android-back-handling",
+      "background-foreground"
+    ],
+    "selectedApiRequiredChecks": {
+      "network-if-selected": [
+        "fetch",
+        "WebSocket",
+        "checkNetworkReachability",
+        "navigator.onLine"
+      ],
+      "storage-restart": [
+        "localStorage",
+        "sessionStorage"
+      ],
+      "permission-prompts-if-selected": [
+        "navigator.permissions.query",
+        "navigator.geolocation",
+        "navigator.mediaDevices.getUserMedia",
+        "navigator.vibrate"
+      ],
+      "clipboard-if-selected": [
+        "navigator.clipboard"
+      ],
+      "adapter-states-if-selected": [
+        "navigator.geolocation",
+        "navigator.mediaDevices.getUserMedia"
+      ],
+      "hardware-adapters-if-selected": [
+        "navigator.geolocation",
+        "navigator.mediaDevices.getUserMedia"
+      ],
+      "haptics-if-selected": [
+        "navigator.vibrate"
+      ],
+      "sensors-if-selected": [
+        "readDeviceMotion"
+      ],
+      "safe-area-keyboard": [
+        "SafeAreaView",
+        "KeyboardAvoidingView"
+      ]
+    }
+  },
+  "ios": {
+    "artifact": "",
+    "exportPreset": "iOS Release",
+    "deviceModel": "",
+    "osVersion": "",
+    "orientation": "",
+    "locale": "",
+    "selectedApis": [
+      "fetch",
+      "WebSocket",
+      "checkNetworkReachability",
+      "navigator.onLine",
+      "localStorage",
+      "sessionStorage",
+      "navigator.permissions.query",
+      "navigator.clipboard",
+      "navigator.geolocation",
+      "navigator.mediaDevices.getUserMedia",
+      "navigator.vibrate",
+      "readDeviceMotion",
+      "SafeAreaView",
+      "KeyboardAvoidingView"
+    ],
+    "passedChecks": [],
+    "skippedChecks": {},
+    "requiredChecks": [
+      "cold-launch",
+      "no-godotjs-load-diagnostics",
+      "plist-entitlements",
+      "storage-restart",
+      "network-if-selected",
+      "clipboard-if-selected",
+      "permission-prompts-if-selected",
+      "adapter-states-if-selected",
+      "hardware-adapters-if-selected",
+      "haptics-if-selected",
+      "audio-input-if-selected",
+      "sensors-if-selected",
+      "safe-area-keyboard-rotation-text-input",
+      "background-foreground",
+      "deep-links-share-notifications-if-selected"
+    ],
+    "passOnlyChecks": [
+      "cold-launch",
+      "no-godotjs-load-diagnostics",
+      "plist-entitlements",
+      "storage-restart",
+      "background-foreground"
+    ],
+    "selectedApiRequiredChecks": {
+      "network-if-selected": [
+        "fetch",
+        "WebSocket",
+        "checkNetworkReachability",
+        "navigator.onLine"
+      ],
+      "storage-restart": [
+        "localStorage",
+        "sessionStorage"
+      ],
+      "permission-prompts-if-selected": [
+        "navigator.permissions.query",
+        "navigator.geolocation",
+        "navigator.mediaDevices.getUserMedia"
+      ],
+      "clipboard-if-selected": [
+        "navigator.clipboard"
+      ],
+      "adapter-states-if-selected": [
+        "navigator.geolocation",
+        "navigator.mediaDevices.getUserMedia"
+      ],
+      "hardware-adapters-if-selected": [
+        "navigator.geolocation",
+        "navigator.mediaDevices.getUserMedia"
+      ],
+      "haptics-if-selected": [
+        "navigator.vibrate"
+      ],
+      "sensors-if-selected": [
+        "readDeviceMotion"
+      ],
+      "safe-area-keyboard-rotation-text-input": [
+        "SafeAreaView",
+        "KeyboardAvoidingView"
+      ]
+    }
+  }
+}
