@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import path from 'node:path'
 import test from 'node:test'
 
 import {
@@ -15,6 +17,7 @@ import {
 
 const commit = '0123456789abcdef0123456789abcdef01234567'
 const otherCommit = 'abcdef0123456789abcdef0123456789abcdef01'
+const workflowDir = path.join(process.cwd(), '.github/workflows')
 
 function workflowRun(overrides) {
   return {
@@ -244,6 +247,31 @@ test('release CI dispatch config maps required workflows to workflow files', () 
     releaseCiWorkflowDispatches[releasePreflightWorkflowName].inputName,
     'real_device_evidence_path',
   )
+})
+
+test('release CI dispatch config matches workflow files', () => {
+  const dispatchableWorkflows = [
+    ...requiredReleaseCiWorkflows,
+    releasePreflightWorkflowName,
+  ]
+
+  for (const workflowName of dispatchableWorkflows) {
+    const dispatchConfig = releaseCiWorkflowDispatches[workflowName]
+    assert.ok(dispatchConfig, `${workflowName} must have dispatch config`)
+
+    const workflowPath = path.join(workflowDir, dispatchConfig.workflowId)
+    const workflow = fs.readFileSync(workflowPath, 'utf-8')
+
+    assert.match(workflow, new RegExp(`^name: ${workflowName}$`, 'm'))
+    assert.match(workflow, /^\s+workflow_dispatch:/m)
+
+    if (dispatchConfig.inputName) {
+      assert.match(
+        workflow,
+        new RegExp(`^\\s{6}${dispatchConfig.inputName}:$`, 'm'),
+      )
+    }
+  }
 })
 
 test('default release CI workflows match real-device evidence gates', () => {
