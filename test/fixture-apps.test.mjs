@@ -46,7 +46,9 @@ const fixtureApps = [
       'vue/src/App.vue': [
         '<Div',
         '<Input',
-        '<Select v-model="selectedFruit">',
+        '<Select',
+        'v-model="selectedFruit"',
+        '<Option value="cherry" :disabled="true">Cherry</Option>',
         '<CameraView',
         '<Canvas',
         '<Audio',

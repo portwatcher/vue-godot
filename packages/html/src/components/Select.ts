@@ -32,6 +32,13 @@ interface OptionButtonLike {
   call(method: string, ...args: unknown[]): unknown
 }
 
+interface SelectOptionEntry {
+  value: string
+  label: string
+  disabled: boolean
+  selected: boolean
+}
+
 function isOptionButton(node: unknown): node is OptionButtonLike {
   if (typeof node !== 'object' || node === null) {
     return false
@@ -46,14 +53,14 @@ function isOptionButton(node: unknown): node is OptionButtonLike {
  *
  * Each `<Option>` child is expected to have:
  *   - `value` prop — the option value string
+ *   - `disabled` prop — disables selection for that item
+ *   - `selected` prop — default selected item when `modelValue` is undefined
  *   - text slot children — the display label
  *
- * Returns an array of `{ value, label }` pairs in slot order.
+ * Returns option metadata in slot order.
  */
-function extractOptions(
-  children: VNode[],
-): Array<{ value: string; label: string }> {
-  const result: Array<{ value: string; label: string }> = []
+function extractOptions(children: VNode[]): SelectOptionEntry[] {
+  const result: SelectOptionEntry[] = []
 
   for (const vnode of children) {
     // Skip non-element vnodes (text, comments, fragments)
@@ -64,7 +71,12 @@ function extractOptions(
           ? vnodeProps['value']
           : String(result.length)
       const label = extractTextFromVNode(vnode)
-      result.push({ value, label })
+      result.push({
+        value,
+        label,
+        disabled: vnodeProps?.['disabled'] === true,
+        selected: vnodeProps?.['selected'] === true,
+      })
     } else if (Array.isArray(vnode.children)) {
       // Fragment — recurse into children
       result.push(...extractOptions(vnode.children as VNode[]))
@@ -72,6 +84,17 @@ function extractOptions(
   }
 
   return result
+}
+
+function resolveSelectedOptionIndex(
+  options: SelectOptionEntry[],
+  modelValue: string | undefined,
+): number {
+  if (modelValue !== undefined) {
+    return options.findIndex((opt) => opt.value === modelValue)
+  }
+
+  return options.findIndex((opt) => opt.selected)
 }
 
 /**
@@ -83,8 +106,8 @@ function extractOptions(
  *
  * Props:
  *   - `value`    — the option value (string)
- *   - `disabled` — marks the option as disabled (currently informational)
- *   - `selected` — marks the option as initially selected (currently informational)
+ *   - `disabled` — marks the option as disabled in the backing OptionButton
+ *   - `selected` — marks the option as initially selected without modelValue
  *
  * Usage:
  *   <Select v-model="choice">
@@ -166,23 +189,22 @@ export const Select = defineComponent({
      */
     function syncItems(
       node: unknown,
-      options: Array<{ value: string; label: string }>,
+      options: SelectOptionEntry[],
     ): void {
       if (!isOptionButton(node)) return
 
       node.call('clear')
       for (let i = 0; i < options.length; i++) {
         node.call('add_item', options[i].label, i)
+        if (options[i].disabled) {
+          node.call('set_item_disabled', i, true)
+        }
       }
 
       // Restore selection
-      if (props.modelValue !== undefined) {
-        const selectedIdx = options.findIndex(
-          (opt) => opt.value === props.modelValue,
-        )
-        if (selectedIdx >= 0) {
-          node.call('select', selectedIdx)
-        }
+      const selectedIdx = resolveSelectedOptionIndex(options, props.modelValue)
+      if (selectedIdx >= 0) {
+        node.call('select', selectedIdx)
       }
     }
 
@@ -197,10 +219,14 @@ export const Select = defineComponent({
 
       // item_selected signal → v-model update + change event
       nodeProps['onItemSelected'] = (index: number) => {
-        const selectedOption = options[index]
-        if (selectedOption) {
-          emit('update:modelValue', selectedOption.value)
+        if (props.disabled) {
+          return
         }
+        const selectedOption = options[index]
+        if (!selectedOption || selectedOption.disabled) {
+          return
+        }
+        emit('update:modelValue', selectedOption.value)
         emit('change', index)
       }
 

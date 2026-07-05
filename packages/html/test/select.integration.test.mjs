@@ -136,6 +136,9 @@ test('syncs OptionButton items through Godot Object.call()', async () => {
             h(Option, { value: 'banana' }, {
               default: () => [createTextVNode('Banana')],
             }),
+            h(Option, { value: 'cherry', disabled: true }, {
+              default: () => [createTextVNode('Cherry')],
+            }),
           ],
         },
       )
@@ -151,8 +154,124 @@ test('syncs OptionButton items through Godot Object.call()', async () => {
     ['clear'],
     ['add_item', 'Apple', 0],
     ['add_item', 'Banana', 1],
+    ['add_item', 'Cherry', 2],
+    ['set_item_disabled', 2, true],
     ['select', 1],
   ])
+})
+
+test('syncs selected Option when modelValue is unset', async () => {
+  const root = createHostNode('root')
+  const app = renderer.createApp({
+    render() {
+      return h(
+        Select,
+        {},
+        {
+          default: () => [
+            h(Option, { value: 'apple' }, {
+              default: () => [createTextVNode('Apple')],
+            }),
+            h(Option, { value: 'banana', selected: true }, {
+              default: () => [createTextVNode('Banana')],
+            }),
+          ],
+        },
+      )
+    },
+  })
+
+  app.mount(root)
+  await nextTick()
+
+  const optionButton = root.children[0]
+  assert.deepEqual(optionButton.calls, [
+    ['clear'],
+    ['add_item', 'Apple', 0],
+    ['add_item', 'Banana', 1],
+    ['select', 1],
+  ])
+})
+
+function renderSelect(props = {}, children = [], emitted = []) {
+  const render = Select.setup(props, {
+    emit: (event, ...args) => emitted.push({ event, args }),
+    slots: {
+      default: () => children,
+    },
+  })
+
+  return render()
+}
+
+function option(props, label) {
+  return h(Option, props, {
+    default: () => [createTextVNode(label)],
+  })
+}
+
+test('emits model updates and change only for enabled options', () => {
+  const emitted = []
+  const vnode = renderSelect(
+    {},
+    [
+      option({ value: 'apple' }, 'Apple'),
+      option({ value: 'banana', disabled: true }, 'Banana'),
+    ],
+    emitted,
+  )
+
+  vnode.props.onItemSelected(0)
+  vnode.props.onItemSelected(1)
+  vnode.props.onItemSelected(99)
+
+  assert.deepEqual(emitted, [
+    { event: 'update:modelValue', args: ['apple'] },
+    { event: 'change', args: [0] },
+  ])
+})
+
+test('suppresses selection events when Select is disabled', () => {
+  const emitted = []
+  const vnode = renderSelect(
+    { disabled: true },
+    [option({ value: 'apple' }, 'Apple')],
+    emitted,
+  )
+
+  assert.equal(vnode.props.disabled, true)
+  vnode.props.onItemSelected(0)
+  assert.deepEqual(emitted, [])
+})
+
+test('maps style, touch target, and accessibility props', () => {
+  const vnode = renderSelect({
+    minTouchTarget: 72,
+    title: 'Fruit selector',
+    style: `
+      width: 120px;
+      height: 32px;
+      color: #00ff00;
+      opacity: 0.5;
+      display: none;
+    `,
+  })
+
+  assert.equal(vnode.type, 'OptionButton')
+  assert.equal(vnode.props['custom_minimum_size:x'], 120)
+  assert.equal(vnode.props['custom_minimum_size:y'], 72)
+  assert.equal(vnode.props.visible, false)
+  assert.equal(vnode.props.tooltip_text, 'Fruit selector')
+
+  const fontColor = vnode.props['theme_override_colors/font_color']
+  assert.equal(fontColor.__mock, true)
+  assert.equal(fontColor.__kind, 'color')
+  assert.equal(fontColor.g, 1)
+
+  const modulate = vnode.props.modulate
+  assert.equal(modulate.__mock, true)
+  assert.equal(modulate.__kind, 'color')
+  assert.equal(modulate.a, 0.5)
 })
 
 test('reads Textarea text from vnode host node on text_changed', async () => {

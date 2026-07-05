@@ -485,10 +485,15 @@
 
   <!-- ===== Section: Select ===== -->
   <Span>--- Select ---</Span>
-  <Select v-model="selectedFruit">
+  <Select
+    v-model="selectedFruit"
+    title="Fruit selector"
+    :min-touch-target="48"
+    :style="{ width: 180, fontSize: 14 }"
+  >
     <Option value="apple">Apple</Option>
     <Option value="banana">Banana</Option>
-    <Option value="cherry">Cherry</Option>
+    <Option value="cherry" :disabled="true">Cherry</Option>
   </Select>
   <Span>{{ `Selected: ${selectedFruit}` }}</Span>
 

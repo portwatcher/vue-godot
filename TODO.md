@@ -136,7 +136,7 @@ The project is production ready only when all of these are true:
   - [x] `<Button>`
   - [ ] `<Input>`
   - [x] `<Textarea>`
-  - [ ] `<Select>` / `<Option>`
+  - [x] `<Select>` / `<Option>`
   - [x] `<Img>`
   - [x] `<Svg>`
   - [x] `<A>`
