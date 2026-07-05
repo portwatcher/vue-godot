@@ -1,6 +1,7 @@
 import { defineComponent, h } from '@vue/runtime-core'
 import { createBackgroundPanelStyle } from '../utils/backgroundStyle.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
+import { createMarginThemeOverrides } from '../utils/edgeInsets.js'
 import {
   allSafeAreaEdges,
   readDisplayServerSafeAreaInsets,
@@ -10,17 +11,6 @@ import {
 } from '../utils/safeArea.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 import { Div } from './Div.js'
-
-function withSafeAreaMargins(
-  insets: SafeAreaInsets,
-): Record<string, unknown> {
-  return {
-    'theme_override_constants/margin_top': insets.top,
-    'theme_override_constants/margin_right': insets.right,
-    'theme_override_constants/margin_bottom': insets.bottom,
-    'theme_override_constants/margin_left': insets.left,
-  }
-}
 
 /**
  * <SafeAreaView> — pads content away from display cutouts and unsafe edges.
@@ -59,7 +49,7 @@ export const SafeAreaView = defineComponent({
       applyCommonControlStyleProps(nodeProps, props.style, 'SafeAreaView')
 
       const content = h(Div, { style: props.contentStyle ?? {} }, slots.default?.())
-      const marginProps = withSafeAreaMargins(padding)
+      const marginProps = createMarginThemeOverrides(padding)
       const backgroundStyle = createBackgroundPanelStyle(
         props.style?.backgroundColor,
       )

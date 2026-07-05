@@ -54,6 +54,25 @@
     </Span>
   </SafeAreaView>
 
+  <!-- ===== Section: KeyboardAvoidingView ===== -->
+  <Span>--- KeyboardAvoidingView ---</Span>
+  <KeyboardAvoidingView
+    behavior="padding"
+    :fallback-keyboard-height="36"
+    :keyboard-vertical-offset="8"
+    :style="{ width: 420, backgroundColor: '#1f2937', padding: 4 }"
+    :content-style="{ flexDirection: 'row', gap: 8, alignItems: 'center' }"
+  >
+    <Input
+      v-model="keyboardSample"
+      placeholder="Keyboard test"
+      :style="{ width: 180 }"
+    ></Input>
+    <Span :style="{ color: '#fde68a' }">
+      fallback avoidance smoke test
+    </Span>
+  </KeyboardAvoidingView>
+
   <!-- ===== Section: ScrollView ===== -->
   <Span>--- ScrollView ---</Span>
   <ScrollView
@@ -357,6 +376,7 @@ const direction = ref<'row' | 'column'>('row')
 const wrap = ref<'nowrap' | 'wrap'>('nowrap')
 const justify = ref<'flex-start' | 'center' | 'flex-end'>('flex-start')
 const align = ref<'flex-start' | 'center' | 'flex-end' | 'stretch'>('stretch')
+const keyboardSample = ref('')
 
 function toggleDirection() {
   direction.value = direction.value === 'row' ? 'column' : 'row'

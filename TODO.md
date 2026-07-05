@@ -124,7 +124,7 @@ The project is production ready only when all of these are true:
   - [x] `<Pressable>` with mouse, touch, keyboard, controller, focus, disabled, hover, pressed, and long-press states.
   - [x] `<Modal>` / `<Dialog>` / `<Overlay>`.
   - [x] `<SafeAreaView>` or equivalent layout helper.
-  - [ ] `<KeyboardAvoidingView>` or equivalent for mobile text input.
+  - [x] `<KeyboardAvoidingView>` or equivalent for mobile text input.
   - [x] `<ActivityIndicator>` / `<Progress>`.
   - [x] `<Switch>` / checkbox refinement.
   - [x] Radio input support.

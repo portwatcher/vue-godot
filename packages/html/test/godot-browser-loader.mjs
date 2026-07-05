@@ -67,6 +67,7 @@ export function load(url, context, nextLoad) {
               },
               windowSize: { x: 1000, y: 1000 },
               screenSize: { x: 1000, y: 1000 },
+              virtualKeyboardHeight: 0,
             }
           }
           return globalThis[key]
@@ -83,6 +84,10 @@ export function load(url, context, nextLoad) {
 
           static screen_get_size() {
             return mockDisplayServerState().screenSize
+          }
+
+          static virtual_keyboard_get_height() {
+            return mockDisplayServerState().virtualKeyboardHeight
           }
         }
 

@@ -133,6 +133,7 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 | `<Dialog>`          | `AcceptDialog`                                                         | `v-model`, `title`, `message`, `confirmText` |
 | `<Div>`             | `HBoxContainer` / `VBoxContainer` / `*FlowContainer` / `GridContainer` | `style` (layout)      |
 | `<Img>`             | `TextureRect`                                                          | `src`, `alt`, `style` |
+| `<KeyboardAvoidingView>` | `MarginContainer` / `PanelContainer`                              | `behavior`, `keyboardVerticalOffset`, `fallbackKeyboardHeight`, `contentStyle` |
 | `<Modal>`           | `Window`                                                               | `v-model`, `title`, `width`, `height` |
 | `<Overlay>`         | `PanelContainer` plus inner `<Div>`                                    | `v-model`, `closeOnClick`, `blockInput`, `contentStyle` |
 | `<Pressable>`       | `PanelContainer`                                                       | `disabled`, `longPressDelay`, interaction events |
@@ -154,7 +155,7 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 
 | API                                                                                                                                    | Description                                                                                              |
 | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Dialog`, `Div`, `Img`, `Input`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `SafeAreaView`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`) | Vue components backed by Godot nodes                                                                     |
+| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Dialog`, `Div`, `Img`, `Input`, `KeyboardAvoidingView`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `SafeAreaView`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`) | Vue components backed by Godot nodes                                                                     |
 | `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
 | `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |
@@ -399,6 +400,24 @@ It supports `disabled`, `longPressDelay`, `style`, and default slot content. Eve
 
 It supports `edges`, `fallbackInsets`, `style`, and `contentStyle`. `style.padding*` values are added to the platform safe-area insets; `fallbackInsets` are used when safe-area metrics are unavailable or invalid.
 
+### KeyboardAvoidingView layout scope
+
+`<KeyboardAvoidingView>` reads `DisplayServer.virtual_keyboard_get_height()` and adjusts its content when the on-screen keyboard is visible. The default `padding` behavior adds bottom padding, which works inside Godot container layouts:
+
+```vue
+<KeyboardAvoidingView
+  behavior="padding"
+  :keyboard-vertical-offset="24"
+  :fallback-keyboard-height="240"
+  :style="{ backgroundColor: '#111827', padding: 8 }"
+  :content-style="{ flexDirection: 'column', gap: 8 }"
+>
+  <Input v-model="name" placeholder="Name"></Input>
+</KeyboardAvoidingView>
+```
+
+It supports `behavior` (`"padding"`, `"position"`, or `"height"`), `enabled`, `keyboardVerticalOffset`, `fallbackKeyboardHeight`, `style`, and `contentStyle`. `padding` adds the keyboard inset to `style.paddingBottom`; `position` shifts the view up with `position:y`; `height` subtracts the keyboard inset from an explicit `style.height` and falls back to padding when no height is set.
+
 ### Modal, dialog, and overlay scope
 
 `<Overlay>` maps to a full-parent `PanelContainer` backdrop with one inner `<Div>` content wrapper:
@@ -486,6 +505,7 @@ This package is in early development. Currently scaffolded:
 - [x] `<Dialog>` — confirmation dialog (`AcceptDialog`, confirm/cancel/close events)
 - [x] `<Pressable>` — focusable interactive wrapper (`PanelContainer`, hover/focus/press/long-press state)
 - [x] `<SafeAreaView>` — safe-area layout helper (`DisplayServer.get_display_safe_area()`, margin padding, fallback insets)
+- [x] `<KeyboardAvoidingView>` — virtual keyboard layout helper (`DisplayServer.virtual_keyboard_get_height()`, padding/position/height behavior, fallback height)
 - [x] `<Span>` — text display with `fontSize`, `fontWeight`, `color`, `textAlign`, `textTransform`, `overflowWrap`
 - [x] `<Switch>` — binary toggle (`CheckButton`, `v-model`, `label`, `disabled`)
 - [x] `<Button>` — click handler with `@click`, `disabled`

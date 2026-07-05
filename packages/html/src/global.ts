@@ -7,6 +7,7 @@ import type { Dialog } from './components/Dialog.js'
 import type { Div } from './components/Div.js'
 import type { Img } from './components/Img.js'
 import type { Input } from './components/Input.js'
+import type { KeyboardAvoidingView } from './components/KeyboardAvoidingView.js'
 import type { Modal } from './components/Modal.js'
 import type { Option, Select } from './components/Select.js'
 import type { Overlay } from './components/Overlay.js'
@@ -31,6 +32,7 @@ declare module '@vue/runtime-core' {
     Div: typeof Div
     Img: typeof Img
     Input: typeof Input
+    KeyboardAvoidingView: typeof KeyboardAvoidingView
     Modal: typeof Modal
     Option: typeof Option
     Overlay: typeof Overlay
@@ -54,6 +56,7 @@ declare module '@vue/runtime-core' {
     div: typeof Div
     img: typeof Img
     input: typeof Input
+    keyboardavoidingview: typeof KeyboardAvoidingView
     modal: typeof Modal
     option: typeof Option
     overlay: typeof Overlay

@@ -13,6 +13,7 @@ const {
   Overlay,
   Pressable,
   Progress,
+  KeyboardAvoidingView,
   SafeAreaView,
   ScrollView,
   Switch,
@@ -26,6 +27,7 @@ test('htmlTags includes every lowercase component tag', () => {
   assert.ok(htmlTags.includes('dialog'))
   assert.ok(htmlTags.includes('div'))
   assert.ok(htmlTags.includes('button'))
+  assert.ok(htmlTags.includes('keyboardavoidingview'))
   assert.ok(htmlTags.includes('modal'))
   assert.ok(htmlTags.includes('overlay'))
   assert.ok(htmlTags.includes('pressable'))
@@ -55,6 +57,8 @@ test('htmlPlugin registers PascalCase and lowercase components', () => {
   assert.equal(registered.get('dialog'), Dialog)
   assert.equal(registered.get('Div'), Div)
   assert.equal(registered.get('div'), Div)
+  assert.equal(registered.get('KeyboardAvoidingView'), KeyboardAvoidingView)
+  assert.equal(registered.get('keyboardavoidingview'), KeyboardAvoidingView)
   assert.equal(registered.get('Modal'), Modal)
   assert.equal(registered.get('modal'), Modal)
   assert.equal(registered.get('Overlay'), Overlay)

@@ -13,6 +13,7 @@ const htmlTags = [
   'span',
   'button',
   'input',
+  'keyboardavoidingview',
   'modal',
   'textarea',
   'select',

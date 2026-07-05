@@ -8,6 +8,7 @@ import { Dialog } from './components/Dialog.js'
 import { Div } from './components/Div.js'
 import { Img } from './components/Img.js'
 import { Input } from './components/Input.js'
+import { KeyboardAvoidingView } from './components/KeyboardAvoidingView.js'
 import { Modal } from './components/Modal.js'
 import { Option, Select } from './components/Select.js'
 import { Overlay } from './components/Overlay.js'
@@ -31,6 +32,7 @@ const components: Record<string, Component> = {
   Span,
   Button,
   Input,
+  KeyboardAvoidingView,
   Modal,
   Overlay,
   Pressable,
