@@ -181,6 +181,12 @@ const feeds = listCameraFeeds()
 
 Camera permissions, export settings, and native camera plugins remain app responsibilities. This package does not request permissions, bundle Android/iOS plugins, or expose snapshot/capture APIs; it only uses `CameraServer` feeds that Godot already reports.
 
+### Microphone capture UI non-goal
+
+`@vue-godot/html` does not provide a microphone capture component such as `<MicrophoneRecorder>` for the current beta. `<Audio>` is playback-only.
+
+Use `navigator.mediaDevices.getUserMedia({ audio: true })` through a registered `@vue-godot/device` `MediaDevicesAdapter` when an app needs microphone input. Native plugins or app-specific adapters still own permission prompts, capture format, recording/encoding, storage, and platform resource cleanup. See `docs/permissions.md` and `docs/plugins.md` for the adapter and export setup.
+
 ### Accessibility Metadata
 
 Most Control-backed components accept `accessibilityLabel`, `ariaLabel`, `aria-label`, `accessibilityHint`, and `title`. These map to Godot `Control.tooltip_text`, the stable metadata surface exposed by the supported Godot bindings:
@@ -766,6 +772,7 @@ This package is in early development. Currently scaffolded:
 - [x] `<Canvas>` — 2D drawing surface (`Control`, `width`/`height`, template ref for draw commands; `getContext('2d')` deferred)
 - [x] `<Video>` — video playback (`VideoStreamPlayer`, `src`, `autoplay`, `loop`, `muted`, `volume`, `@ended`)
 - [x] `<Audio>` — audio playback (`AudioStreamPlayer`, `src`, `autoplay`, `loop`, `muted`, `volume`, `@ended`)
+- [x] Microphone capture UI is a non-goal for the current beta; use adapter-backed `navigator.mediaDevices.getUserMedia({ audio: true })` instead.
 - [x] `<Svg>` — SVG display (`TextureRect`, `src`, `scale` for rasterisation quality, `alt`)
 - [x] `<A>` — link/anchor (`LinkButton`, `href`, `@click`)
 - [x] Theme override application (gap, padding)
