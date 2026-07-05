@@ -150,7 +150,10 @@ commit first. The resulting `release/ci-runs.json` includes `ready`,
 checks, local Git branch/upstream diagnostics, hints for unpushed commits or
 stale upstreams, `nextActions` command hints for running `npm run check` before
 pushing or dispatching missing workflows, and the run URLs consumed by
-`release:evidence`. The evidence helper
+`release:evidence`. Release commit options (`--commit`, `--expected-commit`,
+and `--release-preflight-run-commit`) require full 40-character git commit SHAs;
+use `git rev-parse HEAD` or the full pushed release-candidate/evidence commit.
+The evidence helper
 rejects not-ready or inconsistent structured CI summaries before writing final
 evidence.
 

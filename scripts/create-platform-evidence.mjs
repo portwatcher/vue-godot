@@ -14,7 +14,7 @@ import {
   initialReleaseCiCommands,
   releaseEvidenceCommand,
 } from './release-handoff-commands.mjs'
-import { repoRoot } from './release-utils.mjs'
+import { normalizeCommitSha, repoRoot } from './release-utils.mjs'
 
 const defaultOutput = 'release/platform-evidence.json'
 
@@ -167,18 +167,6 @@ function uniqueStrings(values) {
   ]
 }
 
-function normalizeCommit(value) {
-  if (typeof value !== 'string' || value.trim().length === 0) {
-    return null
-  }
-
-  const commit = value.trim()
-  if (!/^[0-9a-f]{40}$/i.test(commit)) {
-    throw new Error('--commit must be a full 40-character git commit SHA')
-  }
-  return commit
-}
-
 function selectedApiRequiredChecks(selectedApis, platform) {
   return Object.fromEntries(selectedApiRequiredCheckMap(selectedApis, platform))
 }
@@ -265,7 +253,7 @@ export function buildPlatformEvidenceTemplate(options = {}) {
     orientation: options.orientation ?? '',
     locale: options.locale ?? '',
     output: options.output ?? defaultOutput,
-    commit: normalizeCommit(options.commit),
+    commit: normalizeCommitSha(options.commit, '--commit'),
     selectedApis,
   }
 

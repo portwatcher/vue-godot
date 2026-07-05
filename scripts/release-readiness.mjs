@@ -34,6 +34,7 @@ import {
 } from './release-handoff-commands.mjs'
 import {
   currentReleasePackageVersions,
+  normalizeCommitSha,
   readJson,
   releasePackageConfigs,
   repoRoot,
@@ -146,12 +147,15 @@ function parseArgs(argv) {
       if (!value) {
         throw new Error('--expected-commit requires a value')
       }
-      options.expectedCommit = value
+      options.expectedCommit = normalizeCommitSha(value, '--expected-commit')
       continue
     }
 
     if (arg.startsWith('--expected-commit=')) {
-      options.expectedCommit = arg.slice('--expected-commit='.length)
+      options.expectedCommit = normalizeCommitSha(
+        arg.slice('--expected-commit='.length),
+        '--expected-commit',
+      )
       continue
     }
 

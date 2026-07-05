@@ -97,6 +97,21 @@ export function run(command, commandArgs, options = {}) {
   })
 }
 
+export function normalizeCommitSha(value, optionName = '--commit') {
+  if (value == null) {
+    return null
+  }
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new Error(`${optionName} requires a value`)
+  }
+
+  const commit = value.trim()
+  if (!/^[0-9a-f]{40}$/i.test(commit)) {
+    throw new Error(`${optionName} must be a full 40-character git commit SHA`)
+  }
+  return commit
+}
+
 export function formatCommandFailure(command, commandArgs, result) {
   const rendered = [command, ...commandArgs].join(' ')
   return [

@@ -209,6 +209,48 @@ test('create-release-evidence help describes --commit as the tested release comm
   assert.match(result.stdout, /follow-up evidence commit/)
 })
 
+test('create-release-evidence rejects non-SHA release commit inputs', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/create-release-evidence.mjs',
+      '--commit',
+      'release-candidate',
+    ],
+    {
+      cwd: process.cwd(),
+      encoding: 'utf-8',
+    },
+  )
+
+  assert.equal(result.status, 1)
+  assert.match(
+    `${result.stdout}\n${result.stderr}`,
+    /--commit must be a full 40-character git commit SHA/,
+  )
+})
+
+test('create-release-evidence rejects non-SHA release preflight run commits', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/create-release-evidence.mjs',
+      '--release-preflight-run-commit',
+      'release-candidate',
+    ],
+    {
+      cwd: process.cwd(),
+      encoding: 'utf-8',
+    },
+  )
+
+  assert.equal(result.status, 1)
+  assert.match(
+    `${result.stdout}\n${result.stderr}`,
+    /--release-preflight-run-commit must be a full 40-character git commit SHA/,
+  )
+})
+
 test('create-release-evidence validates platform evidence before run metadata fetches', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-evidence-'))
   const platformEvidencePath = path.join(tempDir, 'platform-evidence.json')

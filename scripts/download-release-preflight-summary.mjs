@@ -13,7 +13,7 @@ import {
   isRecord,
   validateGitHubActionsRunMetadata,
 } from './release-evidence-utils.mjs'
-import { repoRoot, run } from './release-utils.mjs'
+import { normalizeCommitSha, repoRoot, run } from './release-utils.mjs'
 
 export const releasePreflightSummaryArtifactName = 'release-preflight-summary'
 export const releasePreflightSummaryEntryNames = [
@@ -95,6 +95,7 @@ function parseArgs(argv) {
     throw new Error(`Unknown option: ${arg}`)
   }
 
+  options.commit = normalizeCommitSha(options.commit, '--commit')
   return options
 }
 

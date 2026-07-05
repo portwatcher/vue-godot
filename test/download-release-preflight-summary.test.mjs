@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
 import test from 'node:test'
 import zlib from 'node:zlib'
 
@@ -10,6 +11,26 @@ import {
 } from '../scripts/download-release-preflight-summary.mjs'
 
 const commit = '0123456789abcdef0123456789abcdef01234567'
+
+test('release preflight summary rejects non-SHA commit inputs', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/download-release-preflight-summary.mjs',
+      '--run-url',
+      'https://github.com/portwatcher/vue-godot/actions/runs/1',
+      '--commit',
+      'release-candidate',
+    ],
+    { cwd: process.cwd(), encoding: 'utf-8' },
+  )
+
+  assert.equal(result.status, 1)
+  assert.match(
+    `${result.stdout}\n${result.stderr}`,
+    /--commit must be a full 40-character git commit SHA/,
+  )
+})
 
 function zipEntry(name, contents) {
   const nameBuffer = Buffer.from(name)

@@ -561,6 +561,25 @@ test('check-real-device-evidence next actions honor expected commits', () => {
   }
 })
 
+test('check-real-device-evidence rejects non-SHA expected commits', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/check-real-device-evidence.mjs',
+      '--optional',
+      '--expected-commit',
+      'release-candidate',
+    ],
+    { cwd: repoRoot, encoding: 'utf-8' },
+  )
+
+  assert.equal(result.status, 1)
+  assert.match(
+    `${result.stdout}\n${result.stderr}`,
+    /--expected-commit must be a full 40-character git commit SHA/,
+  )
+})
+
 test('check-real-device-evidence writes validation errors before failing', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-evidence-'))
   const evidencePath = path.join(tempDir, 'real-device-evidence.json')

@@ -25,6 +25,20 @@ function runReadiness(args = []) {
   })
 }
 
+test('release readiness rejects non-SHA expected commits', () => {
+  const result = runReadiness([
+    '--allow-open',
+    '--expected-commit',
+    'release-candidate',
+  ])
+
+  assert.equal(result.status, 1)
+  assert.match(
+    `${result.stdout}\n${result.stderr}`,
+    /--expected-commit must be a full 40-character git commit SHA/,
+  )
+})
+
 test('release readiness flags checked final TODO items without matching evidence', () => {
   const todoItems = collectTodoItems(
     [

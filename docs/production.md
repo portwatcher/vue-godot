@@ -41,7 +41,10 @@ recorded in that evidence.
 After pushing a release candidate,
 `npm run release:ci -- --commit <sha> --output release/ci-runs.json` checks
 GitHub Actions for completed successful Check and Godot Smoke runs on that exact
-commit and writes `ready`, `commitFound`, required/passed/missing workflow
+commit. Release commit options (`--commit`, `--expected-commit`, and
+`--release-preflight-run-commit`) require full 40-character git commit SHAs; use
+`git rev-parse HEAD` or the full pushed release-candidate/evidence commit. The
+helper writes `ready`, `commitFound`, required/passed/missing workflow
 names, structured workflow checks, local Git branch/upstream diagnostics, hints
 for unpushed commits or stale upstreams, `nextActions` command hints for running
 `npm run check` before pushing or dispatching missing workflows, and the run

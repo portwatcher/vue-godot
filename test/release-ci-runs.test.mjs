@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import test from 'node:test'
@@ -21,6 +22,47 @@ import {
 const commit = '0123456789abcdef0123456789abcdef01234567'
 const otherCommit = 'abcdef0123456789abcdef0123456789abcdef01'
 const workflowDir = path.join(process.cwd(), '.github/workflows')
+
+test('release CI rejects non-SHA commit inputs before GitHub lookup', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/check-release-ci-runs.mjs',
+      '--commit',
+      'release-candidate',
+      '--allow-missing',
+    ],
+    { cwd: process.cwd(), encoding: 'utf-8' },
+  )
+
+  assert.equal(result.status, 1)
+  assert.match(
+    `${result.stdout}\n${result.stderr}`,
+    /--commit must be a full 40-character git commit SHA/,
+  )
+})
+
+test('release CI rejects non-SHA release preflight run commits', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/check-release-ci-runs.mjs',
+      '--commit',
+      commit,
+      '--include-release-preflight',
+      '--release-preflight-run-commit',
+      'release-candidate',
+      '--allow-missing',
+    ],
+    { cwd: process.cwd(), encoding: 'utf-8' },
+  )
+
+  assert.equal(result.status, 1)
+  assert.match(
+    `${result.stdout}\n${result.stderr}`,
+    /--release-preflight-run-commit must be a full 40-character git commit SHA/,
+  )
+})
 
 function workflowRun(overrides) {
   return {

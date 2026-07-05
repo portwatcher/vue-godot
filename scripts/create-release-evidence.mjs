@@ -14,6 +14,7 @@ import {
 } from './release-evidence-utils.mjs'
 import {
   currentReleasePackageVersions,
+  normalizeCommitSha,
   repoRoot,
   run,
 } from './release-utils.mjs'
@@ -142,6 +143,11 @@ function parseArgs(argv) {
     throw new Error(`Unknown option: ${arg}`)
   }
 
+  options.commit = normalizeCommitSha(options.commit, '--commit')
+  options.releasePreflightRunCommit = normalizeCommitSha(
+    options.releasePreflightRunCommit,
+    '--release-preflight-run-commit',
+  )
   return options
 }
 

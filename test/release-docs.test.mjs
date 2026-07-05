@@ -251,6 +251,10 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(production, /resolve command placeholders to `--expected-commit`/)
   assert.match(production, /release:ci/)
+  assert.match(
+    production,
+    /Release commit options \(`--commit`, `--expected-commit`, and\s+`--release-preflight-run-commit`\) require full 40-character git commit SHAs/,
+  )
   assert.match(production, /--include-release-preflight/)
   assert.match(production, /--dispatch-missing/)
   assert.match(production, /--wait/)
@@ -346,6 +350,10 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(readme, /resolve command placeholders to `--expected-commit`/)
   assert.match(readme, /release:ci/)
+  assert.match(
+    readme,
+    /Release commit options \(`--commit`, `--expected-commit`, and `--release-preflight-run-commit`\) require full 40-character git commit SHAs/,
+  )
   assert.match(readme, /--include-release-preflight/)
   assert.match(readme, /--dispatch-missing/)
   assert.match(readme, /--wait/)
@@ -432,6 +440,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /real-device-evidence\.json/)
   assert.match(readme, /GitHub Actions metadata/)
   assert.match(checklist, /release:ci/)
+  assert.match(
+    checklist,
+    /Release commit options \(`--commit`, `--expected-commit`,\s+and `--release-preflight-run-commit`\) require full 40-character git commit SHAs/,
+  )
   assert.match(checklist, /real-device-evidence-summary\.json/)
   assert.match(checklist, /validation status, errors, and `nextActions`/)
   assert.match(

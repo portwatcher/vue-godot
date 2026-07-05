@@ -15,7 +15,7 @@ import {
   releaseCiCommand as formatReleaseCiCommand,
   releaseDispatchRefPlaceholder,
 } from './release-handoff-commands.mjs'
-import { repoRoot, run } from './release-utils.mjs'
+import { normalizeCommitSha, repoRoot, run } from './release-utils.mjs'
 
 export const releasePreflightWorkflowName = 'Release Preflight'
 export const requiredReleaseCiWorkflows = ['Check', 'Godot Smoke']
@@ -106,13 +106,17 @@ function parseArgs(argv) {
       if (!value) {
         throw new Error('--release-preflight-run-commit requires a value')
       }
-      options.releasePreflightRunCommit = value
+      options.releasePreflightRunCommit = normalizeCommitSha(
+        value,
+        '--release-preflight-run-commit',
+      )
       continue
     }
 
     if (arg.startsWith('--release-preflight-run-commit=')) {
-      options.releasePreflightRunCommit = arg.slice(
-        '--release-preflight-run-commit='.length,
+      options.releasePreflightRunCommit = normalizeCommitSha(
+        arg.slice('--release-preflight-run-commit='.length),
+        '--release-preflight-run-commit',
       )
       continue
     }
@@ -215,12 +219,15 @@ function parseArgs(argv) {
       if (!value) {
         throw new Error('--commit requires a value')
       }
-      options.commit = value
+      options.commit = normalizeCommitSha(value, '--commit')
       continue
     }
 
     if (arg.startsWith('--commit=')) {
-      options.commit = arg.slice('--commit='.length)
+      options.commit = normalizeCommitSha(
+        arg.slice('--commit='.length),
+        '--commit',
+      )
       continue
     }
 
