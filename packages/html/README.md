@@ -342,7 +342,7 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 | `<VirtualList>`     | `ScrollContainer` plus spacer `Control` nodes                          | `items`, `itemHeight`, `height`, `overscan`, slot props |
 | `<Span>`            | `Label`                                                                | text content, `style` |
 | `<Switch>`          | `CheckButton`                                                          | `v-model`, `label`, `disabled`, `style` |
-| `<Button>`          | `Button`                                                               | `@click`, `disabled`  |
+| `<Button>`          | `Button`                                                               | `@click`, `disabled`, `style`, shared focus/touch/accessibility props |
 | `<Input>`           | `LineEdit` / `CheckBox` / `HSlider`                                    | `type`, `v-model`, `label`, `name`, `value` |
 | `<Textarea>`        | `TextEdit`                                                             | `v-model`             |
 | `<Select>`          | `OptionButton`                                                         | `<Option>` children   |

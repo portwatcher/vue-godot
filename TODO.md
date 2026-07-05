@@ -133,7 +133,7 @@ The project is production ready only when all of these are true:
 - [ ] Make existing components production-grade:
   - [ ] `<Div>`
   - [ ] `<Span>`
-  - [ ] `<Button>`
+  - [x] `<Button>`
   - [ ] `<Input>`
   - [ ] `<Textarea>`
   - [ ] `<Select>` / `<Option>`

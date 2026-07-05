@@ -74,7 +74,9 @@ export const Button = defineComponent({
       // Signal forwarding:
       // Godot `pressed` signal → Vue `@click`
       nodeProps['onPressed'] = () => {
-        emit('click')
+        if (props.disabled !== true) {
+          emit('click')
+        }
       }
 
       applyCommonControlStyleProps(nodeProps, style, 'Button')

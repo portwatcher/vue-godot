@@ -258,6 +258,8 @@
     <Button
       aria-label="Increment button demo counter"
       accessibility-hint="Adds one to the visible click count"
+      :min-touch-target="44"
+      :style="{ fontWeight: 'bold' }"
       @click="onButtonClick"
     >
       Click me
