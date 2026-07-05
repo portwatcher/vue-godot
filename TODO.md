@@ -297,7 +297,7 @@ The project is production ready only when all of these are true:
 - [x] Add `docs/troubleshooting.md`.
 - [ ] Add serious native app demo.
 - [ ] Add serious game UI demo.
-- [ ] Keep `apps/html-demo` updated for every HTML/browser/device API.
+- [x] Keep `apps/html-demo` updated for every HTML/browser/device API.
 
 ## P2: Ecosystem And Long-Term Parity
 

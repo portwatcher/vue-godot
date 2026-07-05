@@ -18,6 +18,22 @@ import {
   startDeviceSensorEvents,
   stopDeviceSensorEvents,
 } from '@vue-godot/browser'
+import {
+  DeviceCapabilityError,
+  DeviceCapabilityRegistry,
+  createDeviceCapabilityError,
+  getCapabilityStatus,
+  isDeepLinkAdapter,
+  isDeviceCapabilityError,
+  isNotificationAdapter,
+  isShareAdapter,
+  isSupported,
+  normalizeDeviceCapabilityError,
+  registerDeviceCapability,
+  requireCapability,
+  unregisterDeviceCapability,
+  type DeviceCapabilityAdapter,
+} from '@vue-godot/device'
 
 export interface BrowserSmokeResult {
   name: string
@@ -56,6 +72,9 @@ export const requiredBrowserSmokeNames = [
   'navigator.vibrate',
   'device sensor helpers',
   'device sensors',
+  'device capability registry',
+  'device capability errors',
+  'device adapter guards',
   'localStorage',
   'sessionStorage',
   'queueMicrotask',
@@ -514,6 +533,128 @@ export async function runBrowserSmokeTests(
     )
   } catch (error) {
     results.push(failFromError('device sensors', error))
+  }
+
+  try {
+    const capability = 'html-demo-device-smoke'
+    const missingCapability = 'html-demo-device-missing'
+    const adapter = {
+      capability,
+      pluginName: 'html-demo',
+      getStatus: () => ({
+        capability,
+        state: 'supported',
+        pluginName: 'html-demo',
+      }),
+    } satisfies DeviceCapabilityAdapter<typeof capability>
+
+    const registry = new DeviceCapabilityRegistry()
+    const unregisterLocal = registry.register(adapter)
+    registerDeviceCapability(adapter)
+
+    try {
+      const localRequired = await registry.requireCapability(capability)
+      const sharedSupported = await isSupported(capability)
+      const sharedStatus = await getCapabilityStatus(capability)
+      const sharedRequired = await requireCapability(capability)
+      const missingStatus = await registry.getStatus(missingCapability)
+      const removedShared = unregisterDeviceCapability(capability, adapter)
+
+      results.push(
+        localRequired.state === 'supported' &&
+          sharedSupported &&
+          sharedStatus.state === 'supported' &&
+          sharedRequired.state === 'supported' &&
+          missingStatus.state === 'missing-plugin' &&
+          removedShared
+          ? pass('device capability registry', 'ok')
+          : fail(
+              'device capability registry',
+              JSON.stringify({
+                local: localRequired.state,
+                sharedSupported,
+                shared: sharedStatus.state,
+                required: sharedRequired.state,
+                missing: missingStatus.state,
+                removedShared,
+              }),
+            ),
+      )
+    } finally {
+      unregisterDeviceCapability(capability, adapter)
+      unregisterLocal()
+    }
+  } catch (error) {
+    results.push(failFromError('device capability registry', error))
+  }
+
+  try {
+    const typedError = createDeviceCapabilityError(
+      'permission-denied',
+      'geolocation',
+      { message: 'Demo permission denied' },
+    )
+    const normalizedTyped = normalizeDeviceCapabilityError(
+      'geolocation',
+      typedError,
+    )
+    const normalizedUnknown = normalizeDeviceCapabilityError(
+      'camera',
+      new Error('Camera probe failed'),
+    )
+    let missingCode = ''
+
+    try {
+      await new DeviceCapabilityRegistry().requireCapability('camera')
+    } catch (error) {
+      if (isDeviceCapabilityError(error)) {
+        missingCode = error.code
+      }
+    }
+
+    results.push(
+      typedError instanceof DeviceCapabilityError &&
+        isDeviceCapabilityError(typedError) &&
+        normalizedTyped === typedError &&
+        normalizedUnknown instanceof DeviceCapabilityError &&
+        normalizedUnknown.code === 'unsupported-platform' &&
+        missingCode === 'missing-plugin'
+        ? pass('device capability errors', 'ok')
+        : fail(
+            'device capability errors',
+            `normalized=${normalizedUnknown.code} missing=${missingCode}`,
+          ),
+    )
+  } catch (error) {
+    results.push(failFromError('device capability errors', error))
+  }
+
+  try {
+    const deepLinkAdapter = {
+      capability: 'deep-links',
+      pluginName: 'html-demo',
+      getInitialUrl: () => 'vue-godot://demo',
+    }
+    const notificationAdapter = {
+      capability: 'notifications',
+      pluginName: 'html-demo',
+      notify: async () => undefined,
+    }
+    const shareAdapter = {
+      capability: 'share',
+      pluginName: 'html-demo',
+      share: async () => undefined,
+    }
+
+    results.push(
+      isDeepLinkAdapter(deepLinkAdapter) &&
+        isNotificationAdapter(notificationAdapter) &&
+        isShareAdapter(shareAdapter)
+        ? pass('device adapter guards', 'ok')
+        : fail('device adapter guards', 'guard mismatch'),
+    )
+  } catch (error) {
+    results.push(failFromError('device adapter guards', error))
   }
 
   try {
