@@ -41,7 +41,11 @@ filled with real artifact, device, OS, API, pass, and skip data after testing.
 After device testing and CI runs exist, `npm run release:evidence` assembles the
 real-device and release-readiness evidence files from the current package
 versions, Android/iOS platform evidence, CI evidence, and verified GitHub
-Actions run metadata.
+Actions run metadata. For final readiness evidence, pass the downloaded
+`release-preflight-summary` artifact from the Release Preflight workflow with
+`--release-preflight-summary release/release-preflight-summary.json`; the helper
+checks that the summary commit matches and that the preflight had zero failures
+before using its warning count.
 
 The local preflight command may warn when Godot smoke is skipped or when package
 versions are newer than the registry. Release builds should run the full
@@ -69,7 +73,10 @@ as the schema reference for the post-preflight evidence file.
 Use the `Release Preflight` GitHub Actions workflow to run non-local preflight
 without publishing packages. It accepts the same real-device evidence path as
 the publish workflow and is the preferred source for the preflight run URL in
-release records.
+release records. The workflow runs
+`npm run release:preflight -- --summary-output release/release-preflight-summary.json`
+and uploads the JSON as the `release-preflight-summary` artifact for
+`npm run release:evidence -- --release-preflight-summary`.
 
 ## App Build Checklist
 

@@ -91,6 +91,7 @@ test('release preflight validates package export targets in tarballs', () => {
 
 test('release preflight enforces real device evidence', () => {
   const preflight = readDoc('scripts/release-preflight.mjs')
+  const evidenceHelper = readDoc('scripts/create-release-evidence.mjs')
   const checklist = readDoc('docs/real-device-release.md')
   const production = readDoc('docs/production.md')
   const readme = readDoc('README.md')
@@ -108,8 +109,18 @@ test('release preflight enforces real device evidence', () => {
     /realDeviceEvidenceEnvVar/,
     /Real device evidence missing/,
     /Real device CI run evidence could not be verified/,
+    /summary-output/,
+    /buildPreflightSummary/,
   ]) {
     assert.match(preflight, pattern)
+  }
+
+  for (const pattern of [
+    /release-preflight-summary/,
+    /extractReleasePreflightWarningCount/,
+    /Release preflight summary commit must match/,
+  ]) {
+    assert.match(evidenceHelper, pattern)
   }
 
   assert.equal(
@@ -132,11 +143,15 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /release:ci/)
   assert.match(production, /release:platform-evidence/)
   assert.match(production, /release:evidence/)
+  assert.match(production, /--release-preflight-summary/)
+  assert.match(production, /release-preflight-summary/)
   assert.match(production, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
   assert.match(production, /GitHub\s+Actions metadata/)
   assert.match(readme, /check:real-device-evidence/)
   assert.match(readme, /release:ci/)
   assert.match(readme, /--ci-evidence/)
+  assert.match(readme, /--summary-output/)
+  assert.match(readme, /--release-preflight-summary/)
   assert.match(readme, /release:platform-evidence/)
   assert.match(readme, /release:evidence/)
   assert.match(readme, /real-device-evidence\.json/)
@@ -144,6 +159,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /release:ci/)
   assert.match(checklist, /ci-runs\.json/)
   assert.match(checklist, /--ci-evidence/)
+  assert.match(checklist, /--release-preflight-summary/)
+  assert.match(checklist, /release-preflight-summary/)
   assert.match(checklist, /release:platform-evidence/)
   assert.match(workflow, /real_device_evidence_path/)
   assert.match(workflow, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
@@ -152,6 +169,9 @@ test('release preflight enforces real device evidence', () => {
   assert.match(preflightWorkflow, /name: Release Preflight/)
   assert.match(preflightWorkflow, /id-token: write/)
   assert.match(preflightWorkflow, /npm run release:preflight/)
+  assert.match(preflightWorkflow, /summary-output/)
+  assert.match(preflightWorkflow, /actions\/upload-artifact@v4/)
+  assert.match(preflightWorkflow, /release-preflight-summary/)
   assert.match(preflightWorkflow, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
   assert.equal(example.checkRunConclusion, 'success')
   assert.equal(example.godotSmokeRunConclusion, 'success')

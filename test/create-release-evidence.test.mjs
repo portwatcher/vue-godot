@@ -5,6 +5,7 @@ import {
   buildRealDeviceEvidence,
   buildReleaseReadinessEvidence,
   extractCiRunUrls,
+  extractReleasePreflightWarningCount,
 } from '../scripts/create-release-evidence.mjs'
 import {
   requiredRealDeviceChecks,
@@ -146,4 +147,48 @@ test('extractCiRunUrls rejects stale or incomplete CI evidence', () => {
   assert.match(result.errors.join('\n'), /unresolved errors/)
   assert.match(result.errors.join('\n'), /CI evidence commit must match/)
   assert.match(result.errors.join('\n'), /missing Godot Smoke/)
+})
+
+test('extractReleasePreflightWarningCount reads a matching preflight summary', () => {
+  assert.deepEqual(
+    extractReleasePreflightWarningCount(
+      {
+        commit,
+        localOnly: false,
+        skipCheck: false,
+        skipGodot: false,
+        skipSeriousExamples: false,
+        warningCount: 0,
+        failureCount: 0,
+        warnings: [],
+        failures: [],
+      },
+      commit,
+    ),
+    {
+      warningCount: 0,
+      errors: [],
+    },
+  )
+})
+
+test('extractReleasePreflightWarningCount rejects stale or failed summaries', () => {
+  const result = extractReleasePreflightWarningCount(
+    {
+      commit: 'ffffffffffffffffffffffffffffffffffffffff',
+      warningCount: '0',
+      failureCount: 1,
+      failures: ['Godot smoke skipped by --skip-godot'],
+    },
+    commit,
+  )
+
+  assert.equal(result.warningCount, null)
+  assert.match(result.errors.join('\n'), /summary commit must match/)
+  assert.match(
+    result.errors.join('\n'),
+    /warningCount must be a non-negative integer/,
+  )
+  assert.match(result.errors.join('\n'), /contains 1 failure/)
+  assert.match(result.errors.join('\n'), /Godot smoke skipped/)
 })

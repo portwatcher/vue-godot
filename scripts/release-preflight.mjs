@@ -23,11 +23,75 @@ import {
   verifyRealDeviceEvidenceRuns,
 } from './real-device-evidence.mjs'
 
-const args = new Set(process.argv.slice(2))
-const localOnly = args.has('--local')
-const skipCheck = args.has('--skip-check')
-const skipGodot = args.has('--skip-godot')
-const skipSeriousExamples = args.has('--skip-serious-examples')
+function usage() {
+  console.log(`Usage: node scripts/release-preflight.mjs [options]
+
+Options:
+  --local                         Treat release-environment blockers as warnings.
+  --skip-check                    Skip npm run check.
+  --skip-godot                    Skip Godot smoke checks.
+  --skip-serious-examples         Skip serious example app readiness checks.
+  --summary-output <file>         Write machine-readable preflight summary JSON.
+  --help                          Show this help.
+`)
+}
+
+function parseArgs(argv) {
+  const options = {
+    localOnly: false,
+    skipCheck: false,
+    skipGodot: false,
+    skipSeriousExamples: false,
+    summaryOutput: null,
+  }
+
+  for (let index = 0; index < argv.length; index++) {
+    const arg = argv[index]
+
+    if (arg === '--help' || arg === '-h') {
+      usage()
+      process.exit(0)
+    }
+    if (arg === '--local') {
+      options.localOnly = true
+      continue
+    }
+    if (arg === '--skip-check') {
+      options.skipCheck = true
+      continue
+    }
+    if (arg === '--skip-godot') {
+      options.skipGodot = true
+      continue
+    }
+    if (arg === '--skip-serious-examples') {
+      options.skipSeriousExamples = true
+      continue
+    }
+    if (arg === '--summary-output') {
+      const value = argv[++index]
+      if (!value) {
+        throw new Error('--summary-output requires a value')
+      }
+      options.summaryOutput = value
+      continue
+    }
+    if (arg.startsWith('--summary-output=')) {
+      options.summaryOutput = arg.slice('--summary-output='.length)
+      continue
+    }
+
+    throw new Error(`Unknown option: ${arg}`)
+  }
+
+  return options
+}
+
+const options = parseArgs(process.argv.slice(2))
+const localOnly = options.localOnly
+const skipCheck = options.skipCheck
+const skipGodot = options.skipGodot
+const skipSeriousExamples = options.skipSeriousExamples
 
 const failures = []
 const warnings = []
@@ -465,6 +529,11 @@ function readCurrentCommit() {
   return result.stdout.trim()
 }
 
+function readSummaryCommit() {
+  const result = run('git', ['rev-parse', 'HEAD'])
+  return result.status === 0 ? result.stdout.trim() : null
+}
+
 function recordRealDeviceEvidenceIssue(message) {
   if (localOnly) {
     warnings.push(message)
@@ -524,7 +593,47 @@ async function checkRealDeviceEvidence() {
   )
 }
 
+function buildPreflightSummary() {
+  return {
+    commit: readSummaryCommit(),
+    localOnly,
+    skipCheck,
+    skipGodot,
+    skipSeriousExamples,
+    warningCount: warnings.length,
+    failureCount: failures.length,
+    warnings: [...warnings],
+    failures: [...failures],
+  }
+}
+
+function writePreflightSummary() {
+  if (!options.summaryOutput) {
+    return
+  }
+
+  const resolved = path.resolve(repoRoot, options.summaryOutput)
+  fs.mkdirSync(path.dirname(resolved), { recursive: true })
+  fs.writeFileSync(
+    resolved,
+    `${JSON.stringify(buildPreflightSummary(), null, 2)}\n`,
+  )
+  console.log(
+    `[release-preflight] wrote ${path.relative(repoRoot, resolved)}`,
+  )
+}
+
 function printSummary() {
+  try {
+    writePreflightSummary()
+  } catch (error) {
+    failures.push(
+      `Unable to write release preflight summary: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    )
+  }
+
   if (warnings.length > 0) {
     console.log('\n[release-preflight] warnings')
     for (const warning of warnings) {

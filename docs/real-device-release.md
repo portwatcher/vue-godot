@@ -87,8 +87,10 @@ npm run release:evidence -- \
   --real-device-output release/real-device-evidence.json
 ```
 
-After the `Release Preflight` workflow passes without warnings, rerun the same
-command with the preflight run URL to create the final readiness evidence:
+After the `Release Preflight` workflow passes without warnings, download its
+`release-preflight-summary` artifact as
+`release/release-preflight-summary.json`. Rerun the same command with the
+preflight run URL and summary JSON to create the final readiness evidence:
 
 ```bash
 npm run release:evidence -- \
@@ -96,9 +98,15 @@ npm run release:evidence -- \
   --ci-evidence release/ci-runs.json \
   --real-device-output release/real-device-evidence.json \
   --release-preflight-run-url https://github.com/portwatcher/vue-godot/actions/runs/PREFLIGHT_RUN_ID \
-  --release-preflight-warning-count 0 \
+  --release-preflight-summary release/release-preflight-summary.json \
   --readiness-output release/release-readiness-evidence.json
 ```
+
+`--release-preflight-summary` reads the preflight commit, failure count, and
+warning count from `npm run release:preflight -- --summary-output`. It rejects
+stale or failed summaries before writing readiness evidence; the older
+`--release-preflight-warning-count 0` flag remains available only as a manual
+fallback when no summary artifact exists.
 
 Local-only preflight runs (`npm run release:preflight -- --local`) warn when
 this evidence is missing. Non-local preflight runs fail until the evidence file
