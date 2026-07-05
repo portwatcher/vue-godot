@@ -21,6 +21,8 @@ artifact/device details and move each requiredChecks entry into passedChecks or
 skippedChecks with a release-specific reason after testing.
 Checks listed in passOnlyChecks and selectedApiRequiredChecks must be recorded
 in passedChecks.
+The top-level nextActions array records the follow-up commands for assembling
+final real-device evidence after the worksheet is complete.
 
 Options:
   --output <file>                  Output path. Default: ${defaultOutput}
@@ -175,6 +177,36 @@ function buildPlatformTemplate(platform, options) {
   }
 }
 
+function buildNextActions(platformEvidencePath) {
+  return [
+    {
+      id: 'complete-platform-evidence',
+      title: 'Fill Android and iOS device evidence fields',
+      detail:
+        'Record artifact IDs, export presets, device models, OS versions, orientation, locale, selected APIs, and real test outcomes before assembling final evidence.',
+      commands: [],
+    },
+    {
+      id: 'record-required-checks',
+      title: 'Move worksheet checks into passedChecks or skippedChecks',
+      detail:
+        'Every requiredChecks entry must move to passedChecks or skippedChecks with a release-specific reason; passOnlyChecks and selectedApiRequiredChecks must move to passedChecks.',
+      commands: [],
+    },
+    {
+      id: 'assemble-real-device-evidence',
+      title: 'Assemble and validate final real-device evidence',
+      detail:
+        'After CI runs exist for the tested release candidate, generate release/real-device-evidence.json from this worksheet.',
+      commands: [
+        'npm run release:ci -- --commit <release-candidate-sha> --wait --output release/ci-runs.json',
+        `npm run release:evidence -- --platform-evidence ${platformEvidencePath} --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --real-device-output release/real-device-evidence.json`,
+        'npm run check:real-device-evidence -- --expected-commit <release-candidate-sha>',
+      ],
+    },
+  ]
+}
+
 export function buildPlatformEvidenceTemplate(options = {}) {
   const selectedApis = uniqueStrings(options.selectedApis ?? [])
   const unknownSelectedApis = unknownRealDeviceSelectedApis(selectedApis)
@@ -198,10 +230,12 @@ export function buildPlatformEvidenceTemplate(options = {}) {
     iosOs: options.iosOs ?? '',
     orientation: options.orientation ?? '',
     locale: options.locale ?? '',
+    output: options.output ?? defaultOutput,
     selectedApis,
   }
 
   return {
+    nextActions: buildNextActions(normalized.output),
     android: buildPlatformTemplate('android', normalized),
     ios: buildPlatformTemplate('ios', normalized),
   }

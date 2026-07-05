@@ -146,6 +146,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(platformEvidenceHelper, /passOnlyChecks/)
   assert.match(platformEvidenceHelper, /selectedApiRequiredChecks/)
   assert.match(platformEvidenceHelper, /selectedApiRequiredCheckMap/)
+  assert.match(platformEvidenceHelper, /nextActions/)
 
   for (const pattern of [
     /release-preflight-summary/,
@@ -240,6 +241,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /selectedApiRequiredChecks/)
   assert.match(production, /Selected API names are validated/)
   assert.match(production, /selected APIs must be recorded in `passedChecks`/)
+  assert.match(production, /top-level `nextActions` section/)
   assert.match(production, /worksheet fields/)
   assert.match(
     production,
@@ -316,6 +318,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /selectedApiRequiredChecks/)
   assert.match(readme, /Selected API names are validated/)
   assert.match(readme, /must be in `passedChecks`/)
+  assert.match(readme, /top-level `nextActions` section/)
   assert.match(readme, /worksheet fields/)
   assert.match(
     readme,
@@ -370,6 +373,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /release:platform-evidence/)
   assert.match(checklist, /passOnlyChecks/)
   assert.match(checklist, /selectedApiRequiredChecks/)
+  assert.match(checklist, /top-level `nextActions`/)
   assert.match(checklist, /worksheet fields/)
   assert.match(
     checklist,

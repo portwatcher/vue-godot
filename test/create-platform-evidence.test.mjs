@@ -68,10 +68,36 @@ test('platform evidence template lists required checks without passing them', ()
   )
   assert.deepEqual(template.ios.requiredChecks, requiredRealDeviceChecks.ios)
   assert.deepEqual(template.ios.passOnlyChecks, passOnlyRealDeviceChecks.ios)
+  assert.ok(
+    template.nextActions.some(
+      (action) =>
+        action.id === 'assemble-real-device-evidence' &&
+        action.commands.includes(
+          'npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --real-device-output release/real-device-evidence.json',
+        ),
+    ),
+  )
 
   const errors = validateRealDeviceEvidence(fullEvidence(template)).join('\n')
   assert.match(errors, /android must pass cold-launch/)
   assert.match(errors, /ios must pass cold-launch/)
+})
+
+test('platform evidence template next actions honor custom output paths', () => {
+  const template = buildPlatformEvidenceTemplate({
+    output: 'release/custom-platform-evidence.json',
+    selectedApis: ['fetch'],
+  })
+
+  const assembleAction = template.nextActions.find(
+    (action) => action.id === 'assemble-real-device-evidence',
+  )
+  assert.ok(assembleAction)
+  assert.ok(
+    assembleAction.commands.some((command) =>
+      command.includes('--platform-evidence release/custom-platform-evidence.json'),
+    ),
+  )
 })
 
 test('platform evidence template rejects unknown selected APIs', () => {
@@ -117,5 +143,6 @@ test('release evidence normalization removes template-only required checks', () 
   assert.equal('requiredChecks' in normalized, false)
   assert.equal('passOnlyChecks' in normalized, false)
   assert.equal('selectedApiRequiredChecks' in normalized, false)
+  assert.equal('nextActions' in normalized, false)
   assert.deepEqual(normalized.passedChecks, [])
 })
