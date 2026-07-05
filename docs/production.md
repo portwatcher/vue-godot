@@ -85,9 +85,9 @@ only; non-local preflight fails when either gate is skipped.
 the production TODO remains open and does not contact GitHub. Add
 `--summary-output release/release-readiness-summary.json` to write blockers,
 warning markers, package description warning status, release tooling/workflow
-blocker lists, TODO counts, unchecked TODO item details, and structured readiness check status,
-including separate Android/iOS real-device evidence status and CI workflow wiring
-status, as JSON for release handoff. The strict
+blocker lists, TODO counts, unchecked TODO item details, final TODO proof status,
+and structured readiness check status, including separate Android/iOS real-device
+evidence status and CI workflow wiring status, as JSON for release handoff. The strict
 `npm run release:readiness` command is for the committed final removal
 candidate and fails unless the worktree is clean and TODO boxes, current
 real-device evidence, prematurely checked final TODO boxes, release tooling

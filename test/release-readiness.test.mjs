@@ -8,6 +8,7 @@ import test from 'node:test'
 import {
   collectCheckedTodoEvidenceBlockers,
   collectFinalTodoStructureBlockers,
+  collectFinalTodoRequirementStatuses,
   collectPackageDescriptionWarningHits,
   collectReleaseToolingBlockers,
   collectReleaseWorkflowBlockers,
@@ -120,6 +121,56 @@ test('release readiness backs platform TODO items with platform evidence', () =>
     output,
     /iOS real-device evidence must validate the selected API export checks/,
   )
+})
+
+test('release readiness reports final TODO proof status', () => {
+  const todoItems = collectTodoItems(
+    [
+      '- [x] Android export with selected device APIs has been tested.',
+      '- [ ] iOS export with selected device APIs has been tested.',
+    ].join('\n'),
+    'TODO.test.md',
+  )
+
+  const statuses = collectFinalTodoRequirementStatuses(todoItems, {
+    androidRealDeviceEvidenceReady: true,
+    checkCiEvidenceReady: false,
+    ciEvidenceReady: false,
+    godotSmokeCiEvidenceReady: false,
+    iosRealDeviceEvidenceReady: false,
+    publicReadmesReady: false,
+    realDeviceEvidenceReady: false,
+    releaseReadinessEvidenceReady: false,
+    rootReadmeWarningReady: false,
+    warningWordingReady: false,
+  })
+  const androidStatus = statuses.find((status) =>
+    status.text.startsWith('Android export'),
+  )
+  const iosStatus = statuses.find((status) =>
+    status.text.startsWith('iOS export'),
+  )
+  const ciStatus = statuses.find((status) =>
+    status.text.startsWith('CI passes'),
+  )
+
+  assert.deepEqual(androidStatus, {
+    text: 'Android export with selected device APIs has been tested.',
+    proof: 'androidRealDeviceEvidenceReady',
+    ready: true,
+    checked: true,
+    file: 'TODO.test.md',
+    line: 1,
+    itemCount: 1,
+    reason:
+      'Android real-device evidence must validate the selected API export checks',
+  })
+  assert.equal(iosStatus?.ready, false)
+  assert.equal(iosStatus?.checked, false)
+  assert.equal(iosStatus?.line, 2)
+  assert.equal(ciStatus?.itemCount, 0)
+  assert.equal(ciStatus?.file, null)
+  assert.equal(ciStatus?.line, null)
 })
 
 test('release readiness requires the final TODO evidence checklist shape', () => {
@@ -323,6 +374,32 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.deepEqual(summary.releaseToolingBlockers, [])
     assert.equal(summary.releaseWorkflowBlockerCount, 0)
     assert.deepEqual(summary.releaseWorkflowBlockers, [])
+    assert.equal(summary.finalTodoRequirements.length, 10)
+    assert.ok(
+      summary.finalTodoRequirements.some(
+        (status) =>
+          status.text === '`npm run check` passes locally and in CI.' &&
+          status.proof === 'checkCiEvidenceReady' &&
+          status.ready === false,
+      ),
+    )
+    assert.ok(
+      summary.finalTodoRequirements.some(
+        (status) =>
+          status.text ===
+            'Android export with selected device APIs has been tested.' &&
+          status.proof === 'androidRealDeviceEvidenceReady' &&
+          status.ready === true,
+      ),
+    )
+    assert.ok(
+      summary.finalTodoRequirements.every(
+        (status) =>
+          typeof status.checked === 'boolean' &&
+          typeof status.itemCount === 'number' &&
+          typeof status.reason === 'string',
+      ),
+    )
     assert.equal(summary.todo.unchecked, 10)
     assert.equal(summary.todo.uncheckedItems.length, 10)
     assert.ok(

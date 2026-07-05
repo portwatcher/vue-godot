@@ -438,8 +438,8 @@ const finalTodoEvidenceRequirements = [
   },
 ]
 
-export function collectCheckedTodoEvidenceBlockers(todoItems, proofs) {
-  const proofByName = {
+function finalTodoProofsByName(proofs) {
+  return {
     androidRealDeviceEvidenceReady: proofs.androidRealDeviceEvidenceReady,
     checkCiEvidenceReady: proofs.checkCiEvidenceReady,
     ciEvidenceReady: proofs.ciEvidenceReady,
@@ -451,6 +451,30 @@ export function collectCheckedTodoEvidenceBlockers(todoItems, proofs) {
     rootReadmeWarningReady: proofs.rootReadmeWarningReady,
     warningWordingReady: proofs.warningWordingReady,
   }
+}
+
+export function collectFinalTodoRequirementStatuses(todoItems, proofs) {
+  const proofByName = finalTodoProofsByName(proofs)
+
+  return finalTodoEvidenceRequirements.map((requirement) => {
+    const matches = todoItems.filter((item) => item.text === requirement.text)
+    const item = matches[0] ?? null
+
+    return {
+      text: requirement.text,
+      proof: requirement.proof,
+      ready: proofByName[requirement.proof] === true,
+      checked: item?.checked === true,
+      file: item?.file ?? null,
+      line: item?.line ?? null,
+      itemCount: matches.length,
+      reason: requirement.reason,
+    }
+  })
+}
+
+export function collectCheckedTodoEvidenceBlockers(todoItems, proofs) {
+  const proofByName = finalTodoProofsByName(proofs)
 
   return finalTodoEvidenceRequirements.flatMap((requirement) => {
     const item = todoItems.find((candidate) => candidate.text === requirement.text)
@@ -813,6 +837,7 @@ function writeReadinessSummary(
   packageDescriptionWarnings,
   releaseToolingBlockers,
   releaseWorkflowBlockers,
+  finalTodoRequirementStatuses,
   checks,
   todoItems,
 ) {
@@ -843,6 +868,9 @@ function writeReadinessSummary(
       })),
     },
     checks: { ...checks },
+    finalTodoRequirements: finalTodoRequirementStatuses.map((status) => ({
+      ...status,
+    })),
     blockers: [...blockers],
     warningMarkers: [...warningMarkers],
     packageDescriptionWarnings: [...packageDescriptionWarnings],
@@ -930,6 +958,10 @@ async function main() {
     todoItems,
     checkedFinalTodoProofs,
   )
+  const finalTodoRequirementStatuses = collectFinalTodoRequirementStatuses(
+    todoItems,
+    checkedFinalTodoProofs,
+  )
   blockers.push(...checkedFinalTodoEvidenceBlockers)
 
   checkWarningMarkerState(blockers, warningMarkers)
@@ -961,6 +993,7 @@ async function main() {
       packageDescriptionWarnings,
       releaseToolingBlockers,
       releaseWorkflowBlockers,
+      finalTodoRequirementStatuses,
       checks,
       todoItems,
     )
