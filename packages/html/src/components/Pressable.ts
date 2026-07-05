@@ -1,0 +1,204 @@
+import { defineComponent, h, ref } from '@vue/runtime-core'
+import { createBackgroundPanelStyle } from '../utils/backgroundStyle.js'
+import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
+import type { HtmlStyle } from '../utils/styleMapping.js'
+
+export interface PressableState {
+  hovered: boolean
+  pressed: boolean
+  focused: boolean
+  disabled: boolean
+}
+
+const FocusMode = {
+  NONE: 0,
+  ALL: 2,
+} as const
+
+const MouseFilter = {
+  STOP: 0,
+  IGNORE: 2,
+} as const
+
+const DEFAULT_LONG_PRESS_DELAY = 500
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null
+    ? (value as Record<string, unknown>)
+    : null
+}
+
+function readPressedState(event: unknown): boolean | null {
+  const record = asRecord(event)
+  if (!record || typeof record.pressed !== 'boolean') {
+    return null
+  }
+  if (record.echo === true) {
+    return null
+  }
+  return record.pressed
+}
+
+function normalizeDelay(value: number | undefined): number {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0
+    ? value
+    : DEFAULT_LONG_PRESS_DELAY
+}
+
+/**
+ * <Pressable> — generic interactive wrapper backed by Godot Control input.
+ */
+export const Pressable = defineComponent({
+  name: 'Pressable',
+  props: {
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
+    longPressDelay: {
+      type: Number,
+      default: DEFAULT_LONG_PRESS_DELAY,
+    },
+    style: {
+      type: Object as () => HtmlStyle,
+      default: undefined,
+    },
+  },
+  emits: [
+    'press',
+    'click',
+    'longPress',
+    'pressIn',
+    'pressOut',
+    'hoverIn',
+    'hoverOut',
+    'focus',
+    'blur',
+    'stateChange',
+  ],
+  setup(props, { slots, emit }) {
+    const hovered = ref(false)
+    const pressed = ref(false)
+    const focused = ref(false)
+    let longPressTimer: ReturnType<typeof setTimeout> | null = null
+    let longPressFired = false
+
+    function state(): PressableState {
+      return {
+        hovered: hovered.value,
+        pressed: pressed.value,
+        focused: focused.value,
+        disabled: props.disabled === true,
+      }
+    }
+
+    function emitStateChange(): void {
+      emit('stateChange', state())
+    }
+
+    function clearLongPressTimer(): void {
+      if (longPressTimer) {
+        clearTimeout(longPressTimer)
+        longPressTimer = null
+      }
+    }
+
+    function startLongPressTimer(event: unknown): void {
+      clearLongPressTimer()
+      longPressTimer = setTimeout(() => {
+        longPressTimer = null
+        if (pressed.value && props.disabled !== true) {
+          longPressFired = true
+          emit('longPress', event)
+        }
+      }, normalizeDelay(props.longPressDelay))
+    }
+
+    function beginPress(event: unknown): void {
+      if (props.disabled === true || pressed.value) {
+        return
+      }
+      pressed.value = true
+      longPressFired = false
+      emit('pressIn', event)
+      emitStateChange()
+      startLongPressTimer(event)
+    }
+
+    function endPress(event: unknown, shouldPress: boolean): void {
+      if (!pressed.value) {
+        return
+      }
+      clearLongPressTimer()
+      pressed.value = false
+      emit('pressOut', event)
+      emitStateChange()
+      if (shouldPress && !longPressFired && props.disabled !== true) {
+        emit('press', event)
+        emit('click', event)
+      }
+    }
+
+    function setHovered(value: boolean): void {
+      if (props.disabled === true || hovered.value === value) {
+        return
+      }
+      hovered.value = value
+      emit(value ? 'hoverIn' : 'hoverOut')
+      emitStateChange()
+    }
+
+    function setFocused(value: boolean): void {
+      if (props.disabled === true || focused.value === value) {
+        return
+      }
+      focused.value = value
+      emit(value ? 'focus' : 'blur')
+      emitStateChange()
+    }
+
+    return () => {
+      const nodeProps: Record<string, unknown> = {
+        focus_mode: props.disabled === true ? FocusMode.NONE : FocusMode.ALL,
+        mouse_filter:
+          props.disabled === true ? MouseFilter.IGNORE : MouseFilter.STOP,
+        onMouseEntered: () => {
+          setHovered(true)
+        },
+        onMouseExited: () => {
+          setHovered(false)
+          endPress(undefined, false)
+        },
+        onFocusEntered: () => {
+          setFocused(true)
+        },
+        onFocusExited: () => {
+          setFocused(false)
+          endPress(undefined, false)
+        },
+        onGuiInput: (event: unknown) => {
+          if (props.disabled === true) {
+            return
+          }
+          const pressedState = readPressedState(event)
+          if (pressedState === true) {
+            beginPress(event)
+          } else if (pressedState === false) {
+            endPress(event, true)
+          }
+        },
+      }
+
+      applyCommonControlStyleProps(nodeProps, props.style, 'Pressable')
+
+      const backgroundStyle = createBackgroundPanelStyle(
+        props.style?.backgroundColor,
+      )
+      if (backgroundStyle) {
+        nodeProps['theme_override_styles/panel'] = backgroundStyle
+      }
+
+      return h('PanelContainer', nodeProps, slots.default?.(state()))
+    }
+  },
+})

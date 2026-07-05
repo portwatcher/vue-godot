@@ -135,6 +135,7 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 | `<Img>`             | `TextureRect`                                                          | `src`, `alt`, `style` |
 | `<Modal>`           | `Window`                                                               | `v-model`, `title`, `width`, `height` |
 | `<Overlay>`         | `PanelContainer` plus inner `<Div>`                                    | `v-model`, `closeOnClick`, `blockInput`, `contentStyle` |
+| `<Pressable>`       | `PanelContainer`                                                       | `disabled`, `longPressDelay`, interaction events |
 | `<Progress>`        | `ProgressBar`                                                          | `value`, `min`, `max`, `indeterminate`, `showPercentage` |
 | `<ScrollView>`      | `ScrollContainer`                                                      | `horizontal`, `vertical`, `scrollbarMode`, `contentStyle` |
 | `<Span>`            | `Label`                                                                | text content, `style` |
@@ -152,7 +153,7 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 
 | API                                                                                                                                    | Description                                                                                              |
 | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Dialog`, `Div`, `Img`, `Input`, `Modal`, `Option`, `Overlay`, `Progress`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`) | Vue components backed by Godot nodes                                                                     |
+| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Dialog`, `Div`, `Img`, `Input`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`) | Vue components backed by Godot nodes                                                                     |
 | `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
 | `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |
@@ -360,6 +361,26 @@ It supports `active`, `size`, `fill`, and `style`. When `active` is `false`, the
 
 Checkbox inputs now also accept `label`, which maps to the underlying Godot button text.
 
+### Pressable interaction scope
+
+`<Pressable>` maps to a focusable Godot `PanelContainer` and exposes mouse/touch/key/controller activation through Godot `gui_input`, focus, and mouse-enter/exit signals:
+
+```vue
+<Pressable
+  :long-press-delay="500"
+  :style="{ width: 240, backgroundColor: '#1f2937' }"
+  @press="save"
+  @long-press="openMenu"
+  @state-change="pressableState = $event"
+>
+  <Div :style="{ padding: 10 }">
+    <Span>Save</Span>
+  </Div>
+</Pressable>
+```
+
+It supports `disabled`, `longPressDelay`, `style`, and default slot content. Events are `press`, `click`, `longPress`, `pressIn`, `pressOut`, `hoverIn`, `hoverOut`, `focus`, `blur`, and `stateChange`. The default slot also receives `{ hovered, pressed, focused, disabled }`.
+
 ### Modal, dialog, and overlay scope
 
 `<Overlay>` maps to a full-parent `PanelContainer` backdrop with one inner `<Div>` content wrapper:
@@ -445,6 +466,7 @@ This package is in early development. Currently scaffolded:
 - [x] `<Overlay>` — full-parent backdrop/control layer (`PanelContainer`, `v-model`, backdrop events)
 - [x] `<Modal>` — modal window primitive (`Window`, close requests, sizing props)
 - [x] `<Dialog>` — confirmation dialog (`AcceptDialog`, confirm/cancel/close events)
+- [x] `<Pressable>` — focusable interactive wrapper (`PanelContainer`, hover/focus/press/long-press state)
 - [x] `<Span>` — text display with `fontSize`, `fontWeight`, `color`, `textAlign`, `textTransform`, `overflowWrap`
 - [x] `<Switch>` — binary toggle (`CheckButton`, `v-model`, `label`, `disabled`)
 - [x] `<Button>` — click handler with `@click`, `disabled`

@@ -11,6 +11,7 @@ const {
   Div,
   Modal,
   Overlay,
+  Pressable,
   Progress,
   ScrollView,
   Switch,
@@ -26,6 +27,7 @@ test('htmlTags includes every lowercase component tag', () => {
   assert.ok(htmlTags.includes('button'))
   assert.ok(htmlTags.includes('modal'))
   assert.ok(htmlTags.includes('overlay'))
+  assert.ok(htmlTags.includes('pressable'))
   assert.ok(htmlTags.includes('progress'))
   assert.ok(htmlTags.includes('scrollview'))
   assert.ok(htmlTags.includes('switch'))
@@ -55,6 +57,8 @@ test('htmlPlugin registers PascalCase and lowercase components', () => {
   assert.equal(registered.get('modal'), Modal)
   assert.equal(registered.get('Overlay'), Overlay)
   assert.equal(registered.get('overlay'), Overlay)
+  assert.equal(registered.get('Pressable'), Pressable)
+  assert.equal(registered.get('pressable'), Pressable)
   assert.equal(registered.get('Progress'), Progress)
   assert.equal(registered.get('progress'), Progress)
   assert.equal(registered.get('ScrollView'), ScrollView)

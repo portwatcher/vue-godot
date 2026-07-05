@@ -112,6 +112,7 @@ support the documented Godot-backed subset; unsupported style keys emit a
 | `<Overlay>` | `html` | `partial` | `PanelContainer` plus inner `<Div>` content wrapper | All Godot UI targets | None | Unit, html-demo | Godot `Control` overlay, not a DOM portal; backdrop input follows Godot `mouse_filter`. |
 | `<Modal>` | `html` | `partial` | `Window` | All Godot UI targets | None | Unit, html-demo | Window behavior follows Godot embedded/native subwindow settings; browser focus trapping is not implemented yet. |
 | `<Dialog>` | `html` | `partial` | `AcceptDialog` | All Godot UI targets | None | Unit, html-demo | Confirmation dialog subset; button layout and escape handling follow Godot `AcceptDialog`. |
+| `<Pressable>` | `html` | `partial` | `PanelContainer` with `Control.gui_input`, focus, and mouse signals | All Godot UI targets | None | Unit, html-demo | Mouse/touch/keyboard/controller activation depends on Godot focused Control input; ARIA-style roles are not implemented yet. |
 | `<Switch>` | `html` | `partial` | `CheckButton` | All Godot UI targets | None | Unit, html-demo | Binary toggle subset; accessibility metadata is limited. |
 | `<Button>` | `html` | `partial` | `Button` | All Godot UI targets | None | Unit, html-demo | Click maps to Godot pressed signal; accessibility is limited. |
 | `<Input>` | `html` | `partial` | `LineEdit`, `CheckBox`, `ButtonGroup`, `HSlider` | All Godot UI targets | None | Unit, html-demo | Supports text, password, checkbox, radio, and range subsets. |

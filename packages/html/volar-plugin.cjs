@@ -28,6 +28,7 @@ const htmlTags = [
   'select',
   'option',
   'overlay',
+  'pressable',
   'progress',
   'scrollview',
   'switch',

@@ -160,6 +160,46 @@
   </Div>
   <Span>{{ `Button clicks: ${buttonClicks}` }}</Span>
 
+  <!-- ===== Section: Pressable ===== -->
+  <Span>--- Pressable ---</Span>
+  <Pressable
+    :disabled="pressableDisabled"
+    :long-press-delay="400"
+    :style="{
+      width: 320,
+      backgroundColor: pressableState.pressed
+        ? '#065f46'
+        : pressableState.hovered
+          ? '#1d4ed8'
+          : '#374151',
+      opacity: pressableDisabled ? 0.5 : 1,
+    }"
+    @press="pressablePresses++"
+    @long-press="pressableLongPresses++"
+    @state-change="onPressableStateChange"
+  >
+    <Div :style="{ flexDirection: 'column', gap: 4, padding: 10 }">
+      <Span :style="{ color: '#ffffff', fontWeight: 'bold' }">
+        Pressable surface
+      </Span>
+      <Span :style="{ color: '#dbeafe' }">
+        {{
+          `hover=${pressableState.hovered} pressed=${pressableState.pressed} focused=${pressableState.focused}`
+        }}
+      </Span>
+    </Div>
+  </Pressable>
+  <Div :style="{ flexDirection: 'row', gap: 8 }">
+    <Button @click="pressableDisabled = !pressableDisabled">
+      {{ pressableDisabled ? 'Enable' : 'Disable' }}
+    </Button>
+  </Div>
+  <Span>
+    {{
+      `Presses: ${pressablePresses} long presses: ${pressableLongPresses}`
+    }}
+  </Span>
+
   <!-- ===== Section: PascalCase HTML components ===== -->
   <Label text="--- PascalCase HTML components ---"></Label>
   <Div :style="{ flexDirection: 'row', gap: 8, padding: 8 }">
@@ -351,6 +391,28 @@ const dialogCancelCount = ref(0)
 const buttonClicks = ref(0)
 function onButtonClick() {
   buttonClicks.value++
+}
+
+// --- Pressable ---
+interface PressableDemoState {
+  hovered: boolean
+  pressed: boolean
+  focused: boolean
+  disabled: boolean
+}
+
+const pressableDisabled = ref(false)
+const pressablePresses = ref(0)
+const pressableLongPresses = ref(0)
+const pressableState = ref<PressableDemoState>({
+  hovered: false,
+  pressed: false,
+  focused: false,
+  disabled: false,
+})
+
+function onPressableStateChange(state: PressableDemoState) {
+  pressableState.value = state
 }
 
 const pascalButtonClicks = ref(0)

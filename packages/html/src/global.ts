@@ -10,6 +10,7 @@ import type { Input } from './components/Input.js'
 import type { Modal } from './components/Modal.js'
 import type { Option, Select } from './components/Select.js'
 import type { Overlay } from './components/Overlay.js'
+import type { Pressable } from './components/Pressable.js'
 import type { Progress } from './components/Progress.js'
 import type { ScrollView } from './components/ScrollView.js'
 import type { Span } from './components/Span.js'
@@ -32,6 +33,7 @@ declare module '@vue/runtime-core' {
     Modal: typeof Modal
     Option: typeof Option
     Overlay: typeof Overlay
+    Pressable: typeof Pressable
     Progress: typeof Progress
     ScrollView: typeof ScrollView
     Select: typeof Select
@@ -53,6 +55,7 @@ declare module '@vue/runtime-core' {
     modal: typeof Modal
     option: typeof Option
     overlay: typeof Overlay
+    pressable: typeof Pressable
     progress: typeof Progress
     scrollview: typeof ScrollView
     select: typeof Select
