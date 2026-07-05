@@ -37,6 +37,11 @@
       "import": "./dist/microphone.js",
       "default": "./dist/microphone.js"
     },
+    "./media-devices": {
+      "types": "./dist/mediaDevices.d.ts",
+      "import": "./dist/mediaDevices.js",
+      "default": "./dist/mediaDevices.js"
+    },
     "./permissions": {
       "types": "./dist/permissions.d.ts",
       "import": "./dist/permissions.js",

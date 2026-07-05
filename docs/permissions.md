@@ -71,6 +71,9 @@ For Android/iOS location plugins, prefer
 `createGeolocationAdapter()` from `@vue-godot/device/geolocation`; it normalizes
 native plugin positions and maps missing plugins, denied permission, unsupported
 platforms, and missing export/plist setup to the same typed capability states.
+For Android/iOS camera or microphone plugins, use `createMediaDevicesAdapter()`
+from `@vue-godot/device/media-devices` for the same status mapping around
+`navigator.mediaDevices.getUserMedia()`.
 
 Adapters should implement `getStatus()` when they can distinguish:
 

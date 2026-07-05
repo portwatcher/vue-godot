@@ -147,6 +147,51 @@ Android plugins still own runtime permission prompts and manifest/export
 settings. iOS plugins still own Core Location prompts, plist usage strings, and
 authorization mode.
 
+## Camera And Media Plugins On Android And iOS
+
+Use `createMediaDevicesAdapter()` from `@vue-godot/device/media-devices` to
+adapt Android, iOS, or desktop camera/microphone plugins to the shared
+`MediaDevicesAdapter` contract:
+
+```ts
+import { installBrowserAPIs } from '@vue-godot/browser'
+import { registerDeviceCapability } from '@vue-godot/device'
+import { createMediaDevicesAdapter } from '@vue-godot/device/media-devices'
+
+registerDeviceCapability(
+  createMediaDevicesAdapter(
+    {
+      pluginName: 'native-camera',
+      isAvailable() {
+        return nativeCamera.is_available()
+      },
+      hasPermission() {
+        return nativeCamera.has_camera_permission()
+      },
+      async getUserMedia(constraints) {
+        return nativeCamera.get_user_media(constraints)
+      },
+    },
+    {
+      isExportConfigured() {
+        return nativeCamera.has_required_export_settings()
+      },
+    },
+  ),
+)
+
+installBrowserAPIs()
+```
+
+The bridge expects a native stream with an optional `id`, `tracks` or
+`getTracks()`, and tracks with `id`, `kind` (`audio` or `video`), optional
+`label`, and optional `stop()`. It maps plugin availability, permission,
+export setup, and platform checks to the device capability states that
+`navigator.mediaDevices.getUserMedia()` already understands. Android plugins
+still own camera/microphone runtime permission prompts, manifest entries, and
+camera resource cleanup. iOS plugins still own AVFoundation permission prompts,
+plist usage strings, capture session lifecycle, and camera resource cleanup.
+
 ## System Adapters
 
 Deep links and share sheets are plugin-backed because core Godot does not expose

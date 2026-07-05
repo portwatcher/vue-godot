@@ -33,6 +33,20 @@ export type {
   NativeGeolocationPlugin,
   NativeGeolocationPluginPosition,
 } from './geolocation.js'
+export {
+  createMediaDevicesAdapter,
+  normalizeMediaDeviceStream,
+  normalizeMediaDeviceTrack,
+  normalizeMediaDevicesPluginError,
+} from './mediaDevices.js'
+export type {
+  NativeMediaDeviceStream,
+  NativeMediaDeviceTrack,
+  NativeMediaDeviceTrackKind,
+  NativeMediaDevicesAdapter,
+  NativeMediaDevicesAdapterOptions,
+  NativeMediaDevicesPlugin,
+} from './mediaDevices.js'
 export type {
   CoreDeviceCapabilityName,
   DeviceCapabilityAdapter,

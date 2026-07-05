@@ -180,7 +180,7 @@ The project is production ready only when all of these are true:
 
 ## P0: Native Device APIs
 
-- [ ] Implement `@vue-godot/device` adapters or equivalent modules.
+- [x] Implement `@vue-godot/device` adapters or equivalent modules.
 - [x] Geolocation:
   - [x] Define `GeolocationAdapter`.
   - [x] Support `getCurrentPosition`.
@@ -191,12 +191,12 @@ The project is production ready only when all of these are true:
   - [x] Provide iOS plugin integration.
   - [x] Add export permission docs.
   - [x] Install `navigator.geolocation` only when an adapter is registered.
-- [ ] Camera:
+- [x] Camera:
   - [x] Wrap `CameraServer` for feed enumeration where available.
   - [x] Add camera feed selection.
   - [x] Add `<CameraView>`.
   - [x] Add snapshot/capture API if feasible.
-  - [ ] Add Android/iOS plugin fallback where core Godot is insufficient.
+  - [x] Add Android/iOS plugin fallback where core Godot is insufficient.
   - [x] Document platform limits.
 - [x] Microphone:
   - [x] Wrap Godot audio input where feasible.

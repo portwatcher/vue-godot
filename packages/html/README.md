@@ -183,11 +183,12 @@ const snapshot = captureCameraImage({ feedIndex: 0 })
 ```
 
 Camera permissions, export settings, and native camera plugins remain app
-responsibilities. Snapshot helpers call Godot `Texture2D.get_image()` on a
-selected `CameraTexture` where the runtime exposes it. This package does not
-request permissions, bundle Android/iOS plugins, save image files, or provide a
-native still-photo capture pipeline; it only uses `CameraServer` feeds that
-Godot already reports.
+responsibilities. Use `@vue-godot/device/media-devices` when an Android/iOS
+plugin needs to back `navigator.mediaDevices.getUserMedia()`. Snapshot helpers
+call Godot `Texture2D.get_image()` on a selected `CameraTexture` where the
+runtime exposes it. This package does not request permissions, bundle
+Android/iOS plugins, save image files, or provide a native still-photo capture
+pipeline; it only uses `CameraServer` feeds that Godot already reports.
 
 ### Microphone capture UI non-goal
 

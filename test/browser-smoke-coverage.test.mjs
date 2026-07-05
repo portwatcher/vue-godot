@@ -40,6 +40,7 @@ const expectedSmokeNames = [
   'device capability errors',
   'device adapter guards',
   'device geolocation adapter',
+  'device media devices adapter',
   'localStorage',
   'sessionStorage',
   'queueMicrotask',

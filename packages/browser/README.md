@@ -378,14 +378,16 @@ tracks.
 ```ts
 import { installBrowserAPIs } from '@vue-godot/browser'
 import { registerDeviceCapability } from '@vue-godot/device'
+import { createMediaDevicesAdapter } from '@vue-godot/device/media-devices'
 
-registerDeviceCapability({
-  capability: 'media-devices',
-  pluginName: 'my-camera-plugin',
-  async getUserMedia(constraints) {
-    return myCameraPlugin.getUserMedia(constraints)
-  },
-})
+registerDeviceCapability(
+  createMediaDevicesAdapter({
+    pluginName: 'my-camera-plugin',
+    async getUserMedia(constraints) {
+      return myCameraPlugin.getUserMedia(constraints)
+    },
+  }),
+)
 
 installBrowserAPIs()
 
@@ -404,9 +406,10 @@ The returned stream supports `id`, `active`, `getTracks()`,
 `id`, `kind`, `label`, `enabled`, `muted`, `readyState`, and `stop()`.
 Permission failures reject with `NotAllowedError`; missing adapters or
 unsupported platforms reject with `NotFoundError`; export misconfiguration
-rejects with `NotReadableError`. Native camera and microphone plugins still own
-device enumeration, permission prompts, platform entitlements, and capture
-implementation.
+rejects with `NotReadableError`. Use
+`@vue-godot/device/media-devices` to bridge native camera/microphone plugins;
+plugins still own device enumeration, permission prompts, platform entitlements,
+and capture implementation.
 
 ## Notifications
 

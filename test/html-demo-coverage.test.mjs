@@ -37,6 +37,7 @@ test('html-demo wires browser and device smoke coverage into the app', () => {
     'device capability errors',
     'device adapter guards',
     'device geolocation adapter',
+    'device media devices adapter',
   ]) {
     assert.match(
       browserSmokeSource,

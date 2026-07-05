@@ -33,6 +33,7 @@ import {
   requireCapability,
   unregisterDeviceCapability,
   createGeolocationAdapter,
+  createMediaDevicesAdapter,
   type DeviceCapabilityAdapter,
 } from '@vue-godot/device'
 
@@ -77,6 +78,7 @@ export const requiredBrowserSmokeNames = [
   'device capability errors',
   'device adapter guards',
   'device geolocation adapter',
+  'device media devices adapter',
   'localStorage',
   'sessionStorage',
   'queueMicrotask',
@@ -710,6 +712,54 @@ export async function runBrowserSmokeTests(
     )
   } catch (error) {
     results.push(failFromError('device geolocation adapter', error))
+  }
+
+  try {
+    let stoppedTrack = false
+    const adapter = createMediaDevicesAdapter({
+      pluginName: 'html-demo-camera',
+      hasPermission() {
+        return true
+      },
+      getUserMedia(constraints) {
+        if (constraints.video !== true) {
+          throw new Error('Expected video constraint')
+        }
+        return {
+          id: 'html-demo-camera-stream',
+          tracks: [
+            {
+              id: 'html-demo-video-track',
+              kind: 'video',
+              label: 'Demo Camera',
+              stop() {
+                stoppedTrack = true
+              },
+            },
+          ],
+        }
+      },
+    })
+    const status = adapter.getStatus ? await adapter.getStatus() : null
+    const stream = await adapter.getUserMedia({ video: true })
+    const tracks = stream.getTracks()
+    tracks[0]?.stop()
+
+    results.push(
+      status?.state === 'supported' &&
+        stream.id === 'html-demo-camera-stream' &&
+        tracks.length === 1 &&
+        tracks[0]?.kind === 'video' &&
+        tracks[0]?.label === 'Demo Camera' &&
+        stoppedTrack
+        ? pass('device media devices adapter', 'ok')
+        : fail(
+            'device media devices adapter',
+            `status=${status?.state} tracks=${tracks.length}`,
+          ),
+    )
+  } catch (error) {
+    results.push(failFromError('device media devices adapter', error))
   }
 
   try {

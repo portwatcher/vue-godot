@@ -64,6 +64,7 @@ unregister()
 | `@vue-godot/device/clipboard` | Godot-backed text, primary-selection text, and image-read clipboard helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/haptics` | Godot-backed handheld and joypad/controller vibration helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/geolocation` | Backend-neutral bridge for Android/iOS/native geolocation plugins that implement the `GeolocationAdapter` contract. |
+| `@vue-godot/device/media-devices` | Backend-neutral bridge for Android/iOS/native camera and microphone plugins that implement the `MediaDevicesAdapter` contract. |
 | `@vue-godot/device/microphone` | Godot-backed microphone and audio-bus capture helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/permissions` | Godot-backed permission helpers for Android runtime requests, permission result events, and granted-permission lists. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/sensors` | Godot-backed accelerometer, gravity, gyroscope, magnetometer, motion, and orientation snapshot helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
@@ -165,6 +166,46 @@ installBrowserAPIs()
 `DeviceGeolocationPosition`, maps unavailable plugins, denied permission, and
 missing export settings to `DeviceCapabilityError` states, and implements the
 `GeolocationAdapter` contract consumed by `navigator.geolocation`.
+
+## Native Camera And Media Plugin Bridge
+
+Import the media-devices bridge from the `media-devices` subpath when an
+Android, iOS, or desktop plugin exposes camera or microphone capture:
+
+```ts
+import { installBrowserAPIs } from '@vue-godot/browser'
+import { registerDeviceCapability } from '@vue-godot/device'
+import { createMediaDevicesAdapter } from '@vue-godot/device/media-devices'
+
+const mediaDevicesAdapter = createMediaDevicesAdapter(
+  {
+    pluginName: 'com.example.camera',
+    isAvailable() {
+      return cameraPlugin.is_available()
+    },
+    hasPermission() {
+      return cameraPlugin.has_camera_permission()
+    },
+    async getUserMedia(constraints) {
+      return cameraPlugin.get_user_media(constraints)
+    },
+  },
+  {
+    isExportConfigured() {
+      return cameraPlugin.has_required_export_settings()
+    },
+  },
+)
+
+registerDeviceCapability(mediaDevicesAdapter)
+installBrowserAPIs()
+```
+
+`createMediaDevicesAdapter()` normalizes native plugin streams and tracks to
+`DeviceMediaStream` / `DeviceMediaTrack`, maps unavailable plugins, denied
+permission, and missing export settings to typed capability states, and
+implements the `MediaDevicesAdapter` contract consumed by
+`navigator.mediaDevices.getUserMedia()`.
 
 ## Godot System Helpers
 
