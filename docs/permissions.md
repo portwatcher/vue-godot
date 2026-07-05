@@ -9,6 +9,8 @@ GodotJS, or an explicit `@vue-godot/device` adapter.
 
 - `navigator.permissions.query()` is query-only. It never calls
   `OS.request_permission()` and never opens a native prompt.
+- Direct Godot permission requests live in the
+  `@vue-godot/device/permissions` subpath, not in the browser package.
 - `installBrowserAPIs()` does not install fake plugin-backed globals when there
   is no native backend. `navigator.geolocation`, `navigator.mediaDevices`, and
   `Notification` require registered adapters.
@@ -89,13 +91,38 @@ Common Android permissions used by Vue Godot APIs:
 
 Runtime requests such as `OS.request_permission()` are not called by the browser
 package. Request permissions from your app or native plugin, then expose the
-result through a `PermissionAdapter` or capability-specific adapter.
+result through a `PermissionAdapter` or capability-specific adapter. Apps that
+want to call Godot directly can import:
+
+```ts
+import {
+  AndroidPermissions,
+  onPermissionResult,
+  requestPermission,
+} from '@vue-godot/device/permissions'
+
+const subscription = onPermissionResult(({ name, granted }) => {
+  console.log(`${name}: ${granted ? 'granted' : 'denied'}`)
+})
+
+requestPermission(AndroidPermissions.Camera)
+```
+
+`requestPermission(name)` wraps `OS.request_permission(name)`.
+`requestDangerousPermissions()` wraps `OS.request_permissions()` for Android's
+dangerous permission set. `onPermissionResult()` listens to
+`MainLoop.on_request_permissions_result`; disconnect the returned subscription
+when the screen or integration module is torn down.
 
 ## iOS And Apple Platforms
 
 Godot and native plugins own iOS, macOS, and visionOS permission prompts and
-entitlements. Plugin-backed adapters should document the exact plist keys or
-entitlements they need. Typical examples include:
+entitlements. `OS.get_granted_permissions()` exposes saved sandbox folder
+grants on macOS, and `@vue-godot/device/permissions` exposes
+`listGrantedPermissions()` plus `revokeGrantedPermissions()` for that Godot
+surface. General camera, microphone, location, notification, and visionOS
+prompts still need platform-native code or plugin-backed adapters that document
+the exact plist keys or entitlements they need. Typical examples include:
 
 | API | Common Apple setup |
 | --- | --- |

@@ -21,6 +21,11 @@
       "types": "./dist/microphone.d.ts",
       "import": "./dist/microphone.js",
       "default": "./dist/microphone.js"
+    },
+    "./permissions": {
+      "types": "./dist/permissions.d.ts",
+      "import": "./dist/permissions.js",
+      "default": "./dist/permissions.js"
     }
   },
   "files": [

@@ -61,6 +61,7 @@ unregister()
 | `normalizeDeviceCapabilityError()` | Preserves typed errors and wraps unknown errors. |
 | Adapter interfaces | `GeolocationAdapter`, `MediaDevicesAdapter`, `NotificationAdapter`, `PermissionAdapter`, and generic `DeviceCapabilityAdapter`. |
 | `@vue-godot/device/microphone` | Godot-backed microphone and audio-bus capture helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
+| `@vue-godot/device/permissions` | Godot-backed permission helpers for Android runtime requests, permission result events, and granted-permission lists. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 
 ## Capability Status
 
@@ -137,3 +138,38 @@ These helpers wrap `AudioServer`, `AudioStreamMicrophone`,
 `AudioStreamPlayer`, and `AudioEffectCapture`. They do not request runtime
 permissions, enable `ProjectSettings.audio/driver/enable_input`, add nodes to a
 scene tree, encode recordings, or provide native Android/iOS plugin fallbacks.
+
+## Godot Permission Helpers
+
+Import the built-in Godot permission helpers from the `permissions` subpath:
+
+```ts
+import {
+  AndroidPermissions,
+  listGrantedPermissions,
+  onPermissionResult,
+  requestPermission,
+} from '@vue-godot/device/permissions'
+
+const subscription = onPermissionResult(({ name, granted }) => {
+  console.log(`${name}: ${granted ? 'granted' : 'denied'}`)
+})
+
+const alreadyGranted = requestPermission(AndroidPermissions.RecordAudio)
+const current = listGrantedPermissions()
+
+subscription.disconnect()
+```
+
+`requestPermission(name)` wraps `OS.request_permission(name)` and
+`requestDangerousPermissions()` wraps `OS.request_permissions()`. Godot exposes
+those runtime prompts on Android; the helpers return `false` when the request
+cannot be started or is not already granted. `onPermissionResult()` subscribes
+to `Engine.get_main_loop().on_request_permissions_result` by default and
+returns a `disconnect()` handle.
+
+`listGrantedPermissions()` wraps `OS.get_granted_permissions()`. On Android it
+reports granted dangerous permissions. On sandboxed macOS, Godot uses the same
+method for user-selected folder grants; `revokeGrantedPermissions()` clears
+those saved grants where Godot supports it. iOS, visionOS, and plugin-specific
+permission prompts still require explicit native/plugin adapters.

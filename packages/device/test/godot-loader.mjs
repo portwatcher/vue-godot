@@ -13,6 +13,8 @@ export function load(url, context, nextLoad) {
       format: 'module',
       shortCircuit: true,
       source: `
+        let nextCallableId = 1
+
         class MockPackedStringArray {
           constructor(items) {
             this.items = items
@@ -39,6 +41,33 @@ export function load(url, context, nextLoad) {
           }
         }
 
+        class MockSignal2 {
+          constructor() {
+            this.callables = []
+            this.connectCalls = []
+            this.disconnectCalls = []
+          }
+
+          connect(callable) {
+            this.callables.push(callable)
+            this.connectCalls.push(callable)
+          }
+
+          disconnect(callable) {
+            const index = this.callables.indexOf(callable)
+            if (index >= 0) {
+              this.callables.splice(index, 1)
+            }
+            this.disconnectCalls.push(callable)
+          }
+
+          emit(name, granted) {
+            for (const callable of this.callables) {
+              callable.handler(name, granted)
+            }
+          }
+        }
+
         function mockAudioServerState() {
           const key = '__vueGodotDeviceMockAudioServer'
           if (!globalThis[key]) {
@@ -49,6 +78,89 @@ export function load(url, context, nextLoad) {
             }
           }
           return globalThis[key]
+        }
+
+        function mockPermissionState() {
+          const key = '__vueGodotDeviceMockPermissions'
+          if (!globalThis[key]) {
+            globalThis[key] = {
+              granted: [],
+              requested: [],
+              requestAllCalls: 0,
+              revoked: false,
+              requestResults: new Map(),
+            }
+          }
+          return globalThis[key]
+        }
+
+        function mockMainLoop() {
+          const key = '__vueGodotDeviceMockMainLoop'
+          if (!globalThis[key]) {
+            globalThis[key] = {
+              on_request_permissions_result: new MockSignal2(),
+            }
+          }
+          return globalThis[key]
+        }
+
+        export class Callable {
+          constructor(value) {
+            if (value instanceof Callable) {
+              this.id = value.id
+              this.target = value.target
+              this.handler = value.handler
+              return
+            }
+
+            this.id = value?.id ?? nextCallableId++
+            this.target = value?.target
+            this.handler = value?.handler
+          }
+
+          static create(targetOrHandler, maybeHandler) {
+            const target =
+              typeof maybeHandler === 'function' ? targetOrHandler : undefined
+            const handler =
+              typeof maybeHandler === 'function'
+                ? maybeHandler
+                : targetOrHandler
+            return new Callable({ id: nextCallableId++, target, handler })
+          }
+        }
+
+        export class Engine {
+          static get_main_loop() {
+            return mockMainLoop()
+          }
+        }
+
+        export class OS {
+          static get_granted_permissions() {
+            return new MockPackedStringArray(mockPermissionState().granted)
+          }
+
+          static request_permission(name) {
+            const state = mockPermissionState()
+            const permission = String(name)
+            state.requested.push(permission)
+            if (state.granted.includes(permission)) {
+              return true
+            }
+            return state.requestResults.get(permission) ?? false
+          }
+
+          static request_permissions() {
+            const state = mockPermissionState()
+            state.requestAllCalls += 1
+            return state.requestAllResult ?? false
+          }
+
+          static revoke_granted_permissions() {
+            const state = mockPermissionState()
+            state.revoked = true
+            state.granted = []
+          }
         }
 
         export class AudioStreamMicrophone {

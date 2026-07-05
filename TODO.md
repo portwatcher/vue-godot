@@ -206,10 +206,10 @@ The project is production ready only when all of these are true:
   - [x] Implement adapter using local interfaces, DNS, HTTP probe, and timeout.
   - [x] Expose current state and events.
   - [x] Document that internet reachability is best-effort.
-- [ ] Permissions:
+- [x] Permissions:
   - [x] Define permission names and mappings.
-  - [ ] Support Android `OS.request_permission()` and permission result events.
-  - [ ] Support macOS/iOS/visionOS permissions where Godot exposes them.
+  - [x] Support Android `OS.request_permission()` and permission result events.
+  - [x] Support macOS/iOS/visionOS permissions where Godot exposes them.
   - [x] Provide fallback behavior for plugin-managed permissions.
 - [ ] Sensors:
   - [ ] Accelerometer.

@@ -10,6 +10,7 @@ import type {
   AudioStreamPlayer as GodotAudioStreamPlayer,
   PackedVector2Array,
 } from 'godot'
+import { packedStringArrayToStrings } from './utils/packedStringArray.js'
 
 export interface MicrophonePlayerOptions {
   busName?: string
@@ -48,34 +49,9 @@ function finiteNumber(value: number | undefined): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null
 }
 
-function normalizePackedStringArray(value: unknown): string[] {
-  if (Array.isArray(value)) {
-    return value.map((item) => String(item))
-  }
-
-  if (typeof value !== 'object' || value === null) {
-    return []
-  }
-
-  const record = value as Record<string, unknown>
-  const size = record['size']
-  const getIndexed = record['get_indexed']
-  if (typeof size !== 'function' || typeof getIndexed !== 'function') {
-    return []
-  }
-
-  const count = Math.max(0, Math.trunc(Number(size.call(value))))
-  const items: string[] = []
-  for (let index = 0; index < count; index++) {
-    items.push(String(getIndexed.call(value, index)))
-  }
-
-  return items
-}
-
 export function listAudioInputDevices(): string[] {
   try {
-    return normalizePackedStringArray(AudioServer.get_input_device_list())
+    return packedStringArrayToStrings(AudioServer.get_input_device_list())
   } catch {
     return []
   }
