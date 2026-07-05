@@ -355,6 +355,28 @@ test('real device evidence rejects stale commit evidence', () => {
   assert.match(errors, /--expected-commit <release-candidate-sha>/)
 })
 
+test('real device evidence requires full commit SHAs in metadata', () => {
+  const evidence = validEvidence()
+  evidence.commit = 'release-candidate'
+  evidence.checkRunCommit = '123456789abc'
+  evidence.godotSmokeRunCommit = 'main'
+
+  const errors = validateRealDeviceEvidence(evidence).join('\n')
+
+  assert.match(
+    errors,
+    /evidence\.commit must be a full 40-character git commit SHA/,
+  )
+  assert.match(
+    errors,
+    /evidence\.checkRunCommit must be a full 40-character git commit SHA/,
+  )
+  assert.match(
+    errors,
+    /evidence\.godotSmokeRunCommit must be a full 40-character git commit SHA/,
+  )
+})
+
 test('real device evidence accepts an explicit tested release commit', () => {
   assert.deepEqual(
     validateRealDeviceEvidence(validEvidence(), {

@@ -518,10 +518,10 @@ test('release readiness writes a machine-readable blocker summary', () => {
       `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${exampleCommit} --dispatch-missing --wait --ref <release-candidate-branch-or-tag> --output release/ci-runs.json`,
     )
     const preflightWaitIndex = releasePreflightAction.commands.indexOf(
-      `npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --release-preflight-run-commit <evidence-commit-sha> --wait --output release/ci-runs.json`,
+      `npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --wait --output release/ci-runs.json`,
     )
     const preflightDispatchIndex = releasePreflightAction.commands.indexOf(
-      `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --release-preflight-run-commit <evidence-commit-sha> --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
+      `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
     )
     assert.ok(releaseCiWaitIndex > 0)
     assert.ok(releaseCiDispatchIndex > releaseCiWaitIndex)
@@ -721,7 +721,9 @@ test('release readiness summary includes missing evidence next actions', () => {
     )
     assert.ok(
       releasePreflightAction.commands.some((command) =>
-        command.includes('--release-preflight-run-commit <evidence-commit-sha>'),
+        command.includes(
+          '--release-preflight-run-commit "$(git rev-parse HEAD)"',
+        ),
       ),
     )
     assert.ok(
@@ -821,6 +823,25 @@ test('release readiness allows Release Preflight to run on evidence commits', ()
       '0123456789abcdef0123456789abcdef01234567',
     ),
     [],
+  )
+})
+
+test('release readiness evidence requires full commit SHAs', () => {
+  const evidence = JSON.parse(
+    fs.readFileSync('docs/release-readiness-evidence.example.json', 'utf-8'),
+  )
+  evidence.commit = 'release-candidate'
+  evidence.releasePreflightRunCommit = 'main'
+
+  const errors = validateReleaseReadinessEvidence(evidence).join('\n')
+
+  assert.match(
+    errors,
+    /releaseReadiness\.commit must be a full 40-character git commit SHA/,
+  )
+  assert.match(
+    errors,
+    /releaseReadiness\.releasePreflightRunCommit must be a full 40-character git commit SHA/,
   )
 })
 

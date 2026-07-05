@@ -97,6 +97,10 @@ export function run(command, commandArgs, options = {}) {
   })
 }
 
+export function isFullCommitSha(value) {
+  return typeof value === 'string' && /^[0-9a-f]{40}$/i.test(value)
+}
+
 export function normalizeCommitSha(value, optionName = '--commit') {
   if (value == null) {
     return null
@@ -106,7 +110,7 @@ export function normalizeCommitSha(value, optionName = '--commit') {
   }
 
   const commit = value.trim()
-  if (!/^[0-9a-f]{40}$/i.test(commit)) {
+  if (!isFullCommitSha(commit)) {
     throw new Error(`${optionName} must be a full 40-character git commit SHA`)
   }
   return commit

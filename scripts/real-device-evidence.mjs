@@ -7,7 +7,11 @@ import {
   isRecord,
   verifyGitHubActionsRunUrl,
 } from './release-evidence-utils.mjs'
-import { releasePackageConfigs, repoRoot } from './release-utils.mjs'
+import {
+  isFullCommitSha,
+  releasePackageConfigs,
+  repoRoot,
+} from './release-utils.mjs'
 
 export const realDeviceEvidenceEnvVar = 'VUE_GODOT_REAL_DEVICE_EVIDENCE'
 export const defaultRealDeviceEvidencePath = 'release/real-device-evidence.json'
@@ -368,6 +372,13 @@ function assertString(record, key, errors, label) {
   }
 }
 
+function assertCommitSha(record, key, errors, label) {
+  assertString(record, key, errors, label)
+  if (hasNonEmptyString(record, key) && !isFullCommitSha(record[key])) {
+    errors.push(`${label}.${key} must be a full 40-character git commit SHA`)
+  }
+}
+
 function assertSuccessConclusion(record, key, errors, label) {
   if (record[key] !== 'success') {
     errors.push(`${label}.${key} must be "success"`)
@@ -545,7 +556,7 @@ export function validateRealDeviceEvidenceMetadata(evidence, options = {}) {
     return ['Real device evidence must be a JSON object']
   }
 
-  assertString(evidence, 'commit', errors, 'evidence')
+  assertCommitSha(evidence, 'commit', errors, 'evidence')
   assertString(evidence, 'godotJsVersion', errors, 'evidence')
   assertGitHubActionsRunUrl(evidence, 'checkRunUrl', errors, 'evidence')
   assertExactString(
@@ -555,7 +566,7 @@ export function validateRealDeviceEvidenceMetadata(evidence, options = {}) {
     errors,
     'evidence',
   )
-  assertString(evidence, 'checkRunCommit', errors, 'evidence')
+  assertCommitSha(evidence, 'checkRunCommit', errors, 'evidence')
   assertSuccessConclusion(evidence, 'checkRunConclusion', errors, 'evidence')
   assertGitHubActionsRunUrl(evidence, 'godotSmokeRunUrl', errors, 'evidence')
   assertExactString(
@@ -565,7 +576,7 @@ export function validateRealDeviceEvidenceMetadata(evidence, options = {}) {
     errors,
     'evidence',
   )
-  assertString(evidence, 'godotSmokeRunCommit', errors, 'evidence')
+  assertCommitSha(evidence, 'godotSmokeRunCommit', errors, 'evidence')
   assertSuccessConclusion(
     evidence,
     'godotSmokeRunConclusion',

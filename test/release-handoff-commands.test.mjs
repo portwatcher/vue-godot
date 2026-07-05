@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import {
   checkRealDeviceEvidenceCommand,
+  currentHeadCommitCommand,
   defaultPlatformEvidencePath,
   defaultRealDeviceEvidencePath,
   defaultReleasePreflightSummaryPath,
@@ -28,6 +29,7 @@ test('release handoff commands format release CI waits and dispatches', () => {
   assert.equal(releaseCommitLabel(null), releaseCandidateCommitPlaceholder)
   assert.equal(releaseCommitLabel(commit), commit)
   assert.equal(releasePreflightRunCommitPlaceholder, '<evidence-commit-sha>')
+  assert.equal(currentHeadCommitCommand, '"$(git rev-parse HEAD)"')
   assert.equal(
     releaseCandidateDispatchRefPlaceholder,
     '<release-candidate-branch-or-tag>',

@@ -1,11 +1,18 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { normalizeCommitSha } from '../scripts/release-utils.mjs'
+import {
+  isFullCommitSha,
+  normalizeCommitSha,
+} from '../scripts/release-utils.mjs'
 
 const commit = '0123456789abcdef0123456789abcdef01234567'
 
 test('normalizeCommitSha accepts optional and full SHA values', () => {
+  assert.equal(isFullCommitSha(commit), true)
+  assert.equal(isFullCommitSha(commit.toUpperCase()), true)
+  assert.equal(isFullCommitSha(` ${commit} `), false)
+  assert.equal(isFullCommitSha(commit.slice(0, 12)), false)
   assert.equal(normalizeCommitSha(null), null)
   assert.equal(normalizeCommitSha(` ${commit} `), commit)
   assert.equal(normalizeCommitSha(commit.toUpperCase()), commit.toUpperCase())

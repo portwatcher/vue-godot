@@ -95,8 +95,10 @@ after the worksheet is complete.
 After device testing and CI runs exist, `npm run release:evidence` assembles the
 real-device and release-readiness evidence files from the current package
 versions, Android/iOS platform evidence, CI evidence, and verified GitHub
-Actions run metadata. It strips worksheet fields and validates normalized
-platform evidence before fetching GitHub run metadata. Pass
+Actions run metadata. Real-device and release-readiness evidence must record
+full 40-character commit SHAs for the tested release commit and workflow run
+commits. It strips worksheet fields and validates normalized platform evidence
+before fetching GitHub run metadata. Pass
 `--commit <release-candidate-sha>` when generating evidence from a follow-up
 evidence commit so the evidence records the tested release commit rather than
 current `HEAD`. It rejects not-ready or inconsistent structured CI summaries
@@ -140,7 +142,8 @@ The initial CI action captures Check and Godot Smoke, while Release Preflight is
 captured later after real-device evidence is committed. If strict CI evidence is
 still missing, the release-readiness evidence action refreshes Check and Godot
 Smoke from the release-candidate ref before dispatching Release Preflight from
-the evidence ref. That later action includes the `--dispatch-missing`,
+the current evidence commit ref with `--release-preflight-run-commit "$(git rev-parse HEAD)"`.
+That later action includes the `--dispatch-missing`,
 `--release-preflight-run-commit`, and `--real-device-evidence-path` inputs for
 the workflow-dispatch-only preflight workflow. The real-device evidence action
 stages `release/platform-evidence.json`,

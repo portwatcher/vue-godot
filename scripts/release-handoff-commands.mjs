@@ -1,5 +1,6 @@
 export const releaseCandidateCommitPlaceholder = '<release-candidate-sha>'
 export const releasePreflightRunCommitPlaceholder = '<evidence-commit-sha>'
+export const currentHeadCommitCommand = '"$(git rev-parse HEAD)"'
 export const releaseDispatchRefPlaceholder = '<branch-or-tag>'
 export const releaseCandidateDispatchRefPlaceholder =
   '<release-candidate-branch-or-tag>'

@@ -37,10 +37,11 @@ VUE_GODOT_REAL_DEVICE_EVIDENCE=release/real-device-evidence.json npm run release
 ```
 
 Use [real-device-evidence.example.json](./real-device-evidence.example.json) as
-the schema reference. The evidence file must include the tested commit, package
-versions matching the current package manifests, GodotJS version, successful
-Check and Godot Smoke GitHub Actions run URLs, workflow names, and commit SHAs
-for `portwatcher/vue-godot`, Android and iOS artifacts or hosted-device build
+the schema reference. The evidence file must include the full 40-character
+tested commit SHA, package versions matching the current package manifests,
+GodotJS version, successful Check and Godot Smoke GitHub Actions run URLs,
+workflow names, and full 40-character run commit SHAs for
+`portwatcher/vue-godot`, Android and iOS artifacts or hosted-device build
 identifiers, device model/OS/orientation/locale, selected APIs, and passed or
 explicitly skipped platform checks.
 When a selected API maps to a conditional check such as `network-if-selected`,
@@ -71,7 +72,9 @@ action captures Check and Godot Smoke, while Release Preflight is captured later
 after real-device evidence is committed. If strict CI evidence is still missing,
 the release-readiness evidence action refreshes Check and Godot Smoke from the
 release-candidate ref before dispatching Release Preflight from the evidence
-ref. That later action includes the `--dispatch-missing`,
+ref. In generated `nextActions`, that preflight dispatch uses
+`--release-preflight-run-commit "$(git rev-parse HEAD)"` after the evidence
+commit is current `HEAD`. That later action includes the `--dispatch-missing`,
 `--release-preflight-run-commit`, and `--real-device-evidence-path` inputs for
 the workflow-dispatch-only preflight workflow. The final warning-removal action runs
 `npm run check` after the finalizer, stages the finalizer files, commits them,

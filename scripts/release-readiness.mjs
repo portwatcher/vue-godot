@@ -23,6 +23,7 @@ import { collectLocalGitReleaseState } from './check-release-ci-runs.mjs'
 import { finalizationFiles } from './release-finalization-files.mjs'
 import {
   checkRealDeviceEvidenceCommand,
+  currentHeadCommitCommand,
   defaultPlatformEvidencePath,
   defaultReleaseCiEvidencePath,
   defaultReleasePreflightSummaryPath,
@@ -31,11 +32,11 @@ import {
   productionProfilePlatformEvidenceCommand,
   releaseEvidenceCommand,
   releaseCommitLabel,
-  releasePreflightRunCommitPlaceholder,
   releasePreflightCiCommands,
 } from './release-handoff-commands.mjs'
 import {
   currentReleasePackageVersions,
+  isFullCommitSha,
   normalizeCommitSha,
   readJson,
   releasePackageConfigs,
@@ -317,6 +318,17 @@ function readJsonEvidence(evidencePath) {
   }
 }
 
+function assertCommitSha(record, key, errors, label) {
+  if (!hasNonEmptyString(record, key)) {
+    errors.push(`${label}.${key} must be a non-empty string`)
+    return
+  }
+
+  if (!isFullCommitSha(record[key])) {
+    errors.push(`${label}.${key} must be a full 40-character git commit SHA`)
+  }
+}
+
 export function validateReleaseReadinessEvidence(evidence, expectedCommit) {
   const errors = []
 
@@ -324,14 +336,13 @@ export function validateReleaseReadinessEvidence(evidence, expectedCommit) {
     return ['Release-readiness evidence must be a JSON object']
   }
 
-  for (const key of [
-    'commit',
-    'releasePreflightRunCommit',
-    'releasePreflightRunConclusion',
-  ]) {
-    if (!hasNonEmptyString(evidence, key)) {
-      errors.push(`releaseReadiness.${key} must be a non-empty string`)
-    }
+  for (const key of ['commit', 'releasePreflightRunCommit']) {
+    assertCommitSha(evidence, key, errors, 'releaseReadiness')
+  }
+  if (!hasNonEmptyString(evidence, 'releasePreflightRunConclusion')) {
+    errors.push(
+      'releaseReadiness.releasePreflightRunConclusion must be a non-empty string',
+    )
   }
 
   assertGitHubActionsRunUrl(
@@ -956,12 +967,12 @@ function collectReadinessNextActions(checks, commit, localGit) {
       id: 'release-preflight-evidence',
       title: 'Collect CI and warning-free Release Preflight evidence',
       detail:
-        'Run the local check after the tested release candidate and real-device evidence are pushed, refresh Check and Godot Smoke from the release-candidate ref when CI evidence is still missing, then dispatch Release Preflight from the evidence ref and write release-readiness evidence.',
+        'Run the local check after the tested release candidate and real-device evidence are pushed, refresh Check and Godot Smoke from the release-candidate ref when CI evidence is still missing, then dispatch Release Preflight from the current evidence commit ref and write release-readiness evidence.',
       commands: [
         'npm run check',
         ...(checks.strictCiEvidence ? [] : initialReleaseCiCommands(commit)),
         ...releasePreflightCiCommands(commit, {
-          releasePreflightRunCommit: releasePreflightRunCommitPlaceholder,
+          releasePreflightRunCommit: currentHeadCommitCommand,
         }),
         'GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --output release/release-preflight-summary.json',
         releaseEvidenceCommand(commit, {
