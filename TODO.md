@@ -141,7 +141,7 @@ The project is production ready only when all of these are true:
   - [ ] `<Svg>`
   - [ ] `<A>`
   - [x] `<Audio>`
-  - [ ] `<Video>`
+  - [x] `<Video>`
   - [ ] `<Canvas>`
 - [x] Add media/device UI:
   - [x] `<CameraView>` backed by `CameraServer` / `CameraFeed` / `CameraTexture` where available.

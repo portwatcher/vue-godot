@@ -36,6 +36,16 @@ test('html-demo exercises Audio with a real source and playback props', () => {
   assert.doesNotMatch(appSource, /Audio \(no src in demo\)/)
 })
 
+test('html-demo exercises Video with a checked-in source and playback props', () => {
+  assert.ok(
+    fs.existsSync(path.join(repoRoot, 'apps/html-demo/assets/demo-video.ogv')),
+  )
+  assert.match(appSource, /<Video[\s\S]*src="\.\/assets\/demo-video\.ogv"/)
+  assert.match(appSource, /<Video[\s\S]*:autoplay="true"/)
+  assert.match(appSource, /<Video[\s\S]*@ended="onVideoEnded"/)
+  assert.doesNotMatch(appSource, /Video \(no src in demo\)/)
+})
+
 test('html-demo wires browser and device smoke coverage into the app', () => {
   assert.match(appSource, /runBrowserSmokeTests/)
   assert.match(appSource, /Browser API smoke tests/)

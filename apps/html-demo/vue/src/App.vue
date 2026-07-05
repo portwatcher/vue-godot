@@ -542,12 +542,35 @@
   </Span>
 
   <!-- ===== Section: Video ===== -->
-  <Span>--- Video (no src in demo) ---</Span>
+  <Span>--- Video ---</Span>
   <Video
-    :style="{ width: 320, height: 180 }"
-    :volume="0.8"
-    :muted="true"
+    :key="videoRenderKey"
+    src="./assets/demo-video.ogv"
+    :autoplay="true"
+    :loop="videoLoop"
+    :muted="videoMuted"
+    :volume="videoVolume"
+    title="Demo video"
+    :style="{ width: 160, height: 120, opacity: videoMuted ? 0.85 : 1 }"
+    @ended="onVideoEnded"
   ></Video>
+  <Div :style="{ flexDirection: 'row', gap: 8, alignItems: 'center' }">
+    <Button @click="replayVideo">Replay Video</Button>
+    <Button @click="toggleVideoMuted">
+      {{ videoMuted ? 'Unmute Video' : 'Mute Video' }}
+    </Button>
+    <Button @click="toggleVideoLoop">
+      {{ videoLoop ? 'Video Loop Off' : 'Video Loop On' }}
+    </Button>
+    <Button @click="cycleVideoVolume">
+      {{ `Video Volume ${Math.round(videoVolume * 100)}%` }}
+    </Button>
+  </Div>
+  <Span>
+    {{
+      `Video asset autoplay=on muted=${videoMuted} loop=${videoLoop} ended=${videoEndedCount}`
+    }}
+  </Span>
 
   <!-- ===== Section: Browser APIs ===== -->
   <Span>--- Browser API smoke tests ---</Span>
@@ -759,6 +782,34 @@ function cycleAudioVolume() {
 
 function onAudioEnded() {
   audioEndedCount.value++
+}
+
+// --- Video ---
+const videoRenderKey = ref(0)
+const videoMuted = ref(true)
+const videoLoop = ref(false)
+const videoVolume = ref(0.75)
+const videoEndedCount = ref(0)
+
+function replayVideo() {
+  videoRenderKey.value++
+}
+
+function toggleVideoMuted() {
+  videoMuted.value = !videoMuted.value
+}
+
+function toggleVideoLoop() {
+  videoLoop.value = !videoLoop.value
+}
+
+function cycleVideoVolume() {
+  videoVolume.value =
+    videoVolume.value >= 1 ? 0.25 : Math.min(1, videoVolume.value + 0.25)
+}
+
+function onVideoEnded() {
+  videoEndedCount.value++
 }
 
 // --- Canvas ---

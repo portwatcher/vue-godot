@@ -345,8 +345,8 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 | `<Input>`           | `LineEdit` / `CheckBox` / `HSlider`                                    | `type`, `v-model`, `label`, `name`, `value` |
 | `<Textarea>`        | `TextEdit`                                                             | `v-model`             |
 | `<Select>`          | `OptionButton`                                                         | `<Option>` children   |
-| `<Video>`           | `VideoStreamPlayer`                                                    | `src`                 |
-| `<Audio>`           | `AudioStreamPlayer`                                                    | `src`                 |
+| `<Video>`           | `VideoStreamPlayer`                                                    | `src`, `autoplay`, `loop`, `muted`, `volume`, `style`, `@ended` |
+| `<Audio>`           | `AudioStreamPlayer`                                                    | `src`, `autoplay`, `loop`, `muted`, `volume`, `@ended` |
 | `<Svg>`             | `TextureRect` (SVG resource)                                           | `src`                 |
 | `<A>`               | `LinkButton`                                                           | `href`, `@click`      |
 
