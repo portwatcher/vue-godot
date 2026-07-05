@@ -153,6 +153,8 @@ test('release preflight enforces real device evidence', () => {
     /passOnlyChecks/,
     /selectedApiRequiredChecks/,
     /Release preflight summary commit must match/,
+    /Release preflight summary .*non-local/,
+    /Release preflight summary .*must be false/,
     /Release Preflight/,
   ]) {
     assert.match(evidenceHelper, pattern)
@@ -226,6 +228,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /release:preflight-summary/)
   assert.match(production, /--release-preflight-summary/)
   assert.match(production, /release-preflight-summary/)
+  assert.match(production, /did not use local-only mode/)
+  assert.match(production, /did not skip release gates/)
   assert.match(production, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
   assert.match(production, /GitHub\s+Actions metadata/)
   assert.match(readme, /check:real-device-evidence/)
@@ -241,6 +245,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /--ci-evidence/)
   assert.match(readme, /--summary-output/)
   assert.match(readme, /--release-preflight-summary/)
+  assert.match(readme, /rejects local-only or skipped preflight summaries/)
   assert.match(readme, /release:platform-evidence/)
   assert.match(readme, /passOnlyChecks/)
   assert.match(readme, /selectedApiRequiredChecks/)
@@ -264,6 +269,9 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /commit\s+was not found on GitHub/)
   assert.match(checklist, /--ci-evidence/)
   assert.match(checklist, /--release-preflight-summary/)
+  assert.match(checklist, /local\/skip flags/)
+  assert.match(checklist, /local-only/)
+  assert.match(checklist, /skipped/)
   assert.match(checklist, /release-preflight-summary/)
   assert.match(checklist, /release:preflight-summary/)
   assert.match(checklist, /release-readiness-summary/)

@@ -290,6 +290,18 @@ export function extractReleasePreflightWarningCount(summary, commit) {
     errors.push(`Release preflight summary commit must match ${commit}`)
   }
 
+  if (summary.localOnly !== false) {
+    errors.push(
+      'Release preflight summary must come from a non-local release preflight run',
+    )
+  }
+
+  for (const key of ['skipCheck', 'skipGodot', 'skipSeriousExamples']) {
+    if (summary[key] !== false) {
+      errors.push(`Release preflight summary ${key} must be false`)
+    }
+  }
+
   const warningCount = summary.warningCount
   if (!Number.isInteger(warningCount) || warningCount < 0) {
     errors.push(

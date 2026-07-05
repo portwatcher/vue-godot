@@ -239,6 +239,10 @@ test('extractReleasePreflightWarningCount rejects stale or failed summaries', ()
   const result = extractReleasePreflightWarningCount(
     {
       commit: 'ffffffffffffffffffffffffffffffffffffffff',
+      localOnly: false,
+      skipCheck: false,
+      skipGodot: false,
+      skipSeriousExamples: false,
       warningCount: '0',
       failureCount: 1,
       failures: ['Godot smoke skipped by --skip-godot'],
@@ -254,4 +258,27 @@ test('extractReleasePreflightWarningCount rejects stale or failed summaries', ()
   )
   assert.match(result.errors.join('\n'), /contains 1 failure/)
   assert.match(result.errors.join('\n'), /Godot smoke skipped/)
+})
+
+test('extractReleasePreflightWarningCount rejects local or skipped preflight summaries', () => {
+  const result = extractReleasePreflightWarningCount(
+    {
+      commit,
+      localOnly: true,
+      skipCheck: true,
+      skipGodot: true,
+      skipSeriousExamples: true,
+      warningCount: 0,
+      failureCount: 0,
+      warnings: [],
+      failures: [],
+    },
+    commit,
+  )
+
+  assert.equal(result.warningCount, 0)
+  assert.match(result.errors.join('\n'), /non-local release preflight run/)
+  assert.match(result.errors.join('\n'), /skipCheck must be false/)
+  assert.match(result.errors.join('\n'), /skipGodot must be false/)
+  assert.match(result.errors.join('\n'), /skipSeriousExamples must be false/)
 })

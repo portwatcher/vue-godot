@@ -167,9 +167,10 @@ npm run release:evidence -- \
   --readiness-output release/release-readiness-evidence.json
 ```
 
-`--release-preflight-summary` reads the preflight commit, failure count, and
-warning count from `npm run release:preflight -- --summary-output`. It rejects
-stale or failed summaries before writing readiness evidence. `--ci-evidence`
+`--release-preflight-summary` reads the preflight commit, local/skip flags,
+failure count, and warning count from
+`npm run release:preflight -- --summary-output`. It rejects stale, local-only,
+skipped, or failed summaries before writing readiness evidence. `--ci-evidence`
 supplies the Release Preflight run URL when it was generated with
 `--include-release-preflight`; otherwise pass `--release-preflight-run-url`
 manually. The older `--release-preflight-warning-count 0` flag remains available
