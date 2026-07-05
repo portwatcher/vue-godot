@@ -117,7 +117,7 @@ The project is production ready only when all of these are true:
 
 ## P0: HTML And Native UI Components
 
-- [ ] Expand `@vue-godot/html` beyond the current demo component surface.
+- [x] Expand `@vue-godot/html` beyond the current demo component surface.
 - [x] Add core app primitives:
   - [x] `<ScrollView>` backed by Godot scroll containers.
   - [x] `<VirtualList>` or `<FlatList>` equivalent for large data sets.
@@ -130,7 +130,7 @@ The project is production ready only when all of these are true:
   - [x] Radio input support.
   - [x] Form and label helpers.
   - [x] Screen/router container primitives.
-- [ ] Make existing components production-grade:
+- [x] Make existing components production-grade:
   - [x] `<Div>`
   - [x] `<Span>`
   - [x] `<Button>`
