@@ -139,7 +139,7 @@ The project is production ready only when all of these are true:
   - [ ] `<Select>` / `<Option>`
   - [ ] `<Img>`
   - [ ] `<Svg>`
-  - [ ] `<A>`
+  - [x] `<A>`
   - [x] `<Audio>`
   - [x] `<Video>`
   - [ ] `<Canvas>`

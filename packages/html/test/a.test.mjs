@@ -49,6 +49,19 @@ test('does not set uri when disabled', () => {
   assert.equal(vnode.props.uri, undefined)
 })
 
+test('accepts target as a browser-compatibility prop without mapping it to Godot', () => {
+  const { vnode } = renderA(
+    {
+      href: 'https://example.com',
+      target: '_blank',
+    },
+    ['External'],
+  )
+
+  assert.equal(vnode.props.uri, 'https://example.com')
+  assert.equal('target' in vnode.props, false)
+})
+
 test('forwards pressed signal as click event', () => {
   const { vnode, emitted } = renderA({}, ['Click'])
 

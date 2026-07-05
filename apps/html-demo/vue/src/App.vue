@@ -321,6 +321,9 @@
   <Label text="--- Anchor ---"></Label>
   <A
     href="https://godotengine.org"
+    target="_blank"
+    title="Godot website"
+    :min-touch-target="44"
     :style="{ fontSize: 18, color: '#44aaff' }"
     @click="onLinkClick"
   >
