@@ -28,7 +28,7 @@ The project is production ready only when all of these are true:
 - [ ] Performance budgets are documented and enforced for app startup, first rendered UI, hot reload, large list rendering, asset loading, and repeated mount/unmount.
 - [ ] Security and dependency audits are clean or documented with accepted risk.
 - [ ] Package READMEs, root README, generated templates, and demo apps match the final supported API surface.
-- [ ] Public docs include platform limits, permission setup, export setup, troubleshooting, and migration guidance from Vue web apps.
+- [x] Public docs include platform limits, permission setup, export setup, troubleshooting, and migration guidance from Vue web apps.
 - [ ] The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied.
 
 ## Compatibility Strategy
@@ -258,10 +258,10 @@ The project is production ready only when all of these are true:
   - [x] Source maps.
   - [x] Runtime warnings.
   - [x] Common GodotJS failure modes.
-- [ ] Add migration docs.
-  - [ ] Vue SPA to Vue Godot.
-  - [ ] React Native mental model to Vue Godot.
-  - [ ] Godot UI to Vue components.
+- [x] Add migration docs.
+  - [x] Vue SPA to Vue Godot.
+  - [x] React Native mental model to Vue Godot.
+  - [x] Godot UI to Vue components.
 
 ## P1: Testing And CI
 

@@ -361,6 +361,9 @@ With this setup, existing SPAs using `<div>`, `<img>`, `<span>`, etc. work witho
 
 ### Migrating an existing Vue SPA (lowercase tags, no renaming)
 
+For broader migration strategy, routing, browser API, and Godot UI guidance,
+see the repository [migration guide](../../docs/migration.md).
+
 ```ts
 // vite.config.ts
 import vue from '@vitejs/plugin-vue'

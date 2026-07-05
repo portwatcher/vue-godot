@@ -43,6 +43,7 @@ Follow the dedicated permission and adapter docs before shipping:
 - [Permissions and export setup](./permissions.md)
 - [Plugin adapter guide](./plugins.md)
 - [Compatibility matrix](./compatibility.md)
+- [Migration guide](./migration.md)
 - [Android platform guide](./platforms/android.md)
 - [iOS and Apple platform guide](./platforms/ios.md)
 - [Desktop platform guide](./platforms/desktop.md)
