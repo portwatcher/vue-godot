@@ -101,8 +101,11 @@ Color values support hex (`#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`), named CSS co
 | HTML-like Component | Godot Node                                                             | Key Props             |
 | ------------------- | ---------------------------------------------------------------------- | --------------------- |
 | `<ActivityIndicator>` | `ProgressBar`                                                        | `active`, `size`, `fill`, `style` |
+| `<Dialog>`          | `AcceptDialog`                                                         | `v-model`, `title`, `message`, `confirmText` |
 | `<Div>`             | `HBoxContainer` / `VBoxContainer` / `*FlowContainer` / `GridContainer` | `style` (layout)      |
 | `<Img>`             | `TextureRect`                                                          | `src`, `alt`, `style` |
+| `<Modal>`           | `Window`                                                               | `v-model`, `title`, `width`, `height` |
+| `<Overlay>`         | `PanelContainer` plus inner `<Div>`                                    | `v-model`, `closeOnClick`, `blockInput`, `contentStyle` |
 | `<Progress>`        | `ProgressBar`                                                          | `value`, `min`, `max`, `indeterminate`, `showPercentage` |
 | `<ScrollView>`      | `ScrollContainer`                                                      | `horizontal`, `vertical`, `scrollbarMode`, `contentStyle` |
 | `<Span>`            | `Label`                                                                | text content, `style` |
@@ -120,7 +123,7 @@ Color values support hex (`#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`), named CSS co
 
 | API                                                                                                                                    | Description                                                                                              |
 | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Div`, `Img`, `Input`, `Option`, `Progress`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`) | Vue components backed by Godot nodes                                                                     |
+| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Dialog`, `Div`, `Img`, `Input`, `Modal`, `Option`, `Overlay`, `Progress`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`) | Vue components backed by Godot nodes                                                                     |
 | `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
 | `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |
@@ -328,6 +331,50 @@ It supports `active`, `size`, `fill`, and `style`. When `active` is `false`, the
 
 Checkbox inputs now also accept `label`, which maps to the underlying Godot button text.
 
+### Modal, dialog, and overlay scope
+
+`<Overlay>` maps to a full-parent `PanelContainer` backdrop with one inner `<Div>` content wrapper:
+
+```vue
+<Overlay
+  v-model="showOverlay"
+  :close-on-click="true"
+  :style="{ backgroundColor: '#0008' }"
+  :content-style="{ flexDirection: 'column', gap: 8, padding: 16 }"
+>
+  <Span>Overlay content</Span>
+  <Button @click="showOverlay = false">Close</Button>
+</Overlay>
+```
+
+It supports `v-model`, `closeOnClick`, `blockInput`, `style`, and `contentStyle`, and emits `click` and `backdropClick`. It is a Godot `Control` overlay, not a DOM portal.
+
+`<Modal>` maps to Godot `Window` and supports `v-model`, `title`, `width`, `height`, `minWidth`, `minHeight`, `exclusive`, `transient`, `popup`, `unresizable`, and `style`:
+
+```vue
+<Modal v-model="showModal" title="Settings" :width="420" :height="260">
+  <Div :style="{ flexDirection: 'column', gap: 8, padding: 12 }">
+    <Span>Window-backed modal content</Span>
+    <Button @click="showModal = false">Done</Button>
+  </Div>
+</Modal>
+```
+
+`<Dialog>` maps to Godot `AcceptDialog` and supports `v-model`, `title`, `message`, `confirmText`, `closeOnEscape`, `hideOnOk`, sizing props, and `style`:
+
+```vue
+<Dialog
+  v-model="confirmOpen"
+  title="Delete item"
+  message="This cannot be undone."
+  confirm-text="Delete"
+  @confirm="deleteItem"
+  @cancel="confirmOpen = false"
+></Dialog>
+```
+
+Dialog and modal close requests emit `update:modelValue` with `false` plus `close`. Dialog confirmation emits `confirm`; cancellation emits `cancel`.
+
 ### Global registration via plugin (new code)
 
 ```ts
@@ -366,6 +413,9 @@ This package is in early development. Currently scaffolded:
 - [x] `<Progress>` — determinate or indeterminate progress (`ProgressBar`, range props, fill direction)
 - [x] `<ActivityIndicator>` — bar-style busy indicator (`ProgressBar` indeterminate mode)
 - [x] `<ScrollView>` — scrollable viewport (`ScrollContainer`, axis props, scrollbar modes, scroll offsets)
+- [x] `<Overlay>` — full-parent backdrop/control layer (`PanelContainer`, `v-model`, backdrop events)
+- [x] `<Modal>` — modal window primitive (`Window`, close requests, sizing props)
+- [x] `<Dialog>` — confirmation dialog (`AcceptDialog`, confirm/cancel/close events)
 - [x] `<Span>` — text display with `fontSize`, `fontWeight`, `color`, `textAlign`, `textTransform`, `overflowWrap`
 - [x] `<Switch>` — binary toggle (`CheckButton`, `v-model`, `label`, `disabled`)
 - [x] `<Button>` — click handler with `@click`, `disabled`

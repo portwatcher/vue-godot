@@ -115,7 +115,9 @@ export function resolvePadding(style: HtmlStyle): ResolvedPadding | null {
   }
 }
 
-function toNumericPixels(value: number | string | undefined): number | null {
+export function toNumericPixels(
+  value: number | string | undefined,
+): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) {
     return value
   }

@@ -107,6 +107,9 @@ controller, touch behavior, and documented style limits.
 | `<ScrollView>` | `html` | `partial` | `ScrollContainer` plus inner `<Div>` content wrapper | All Godot UI targets | None | Unit, html-demo | Scrollbar behavior follows Godot `ScrollContainer`; content layout uses the existing style subset. |
 | `<Progress>` | `html` | `partial` | `ProgressBar` | All Godot UI targets | None | Unit, html-demo | Uses Godot `Range` props and native indeterminate mode; not a DOM progress element. |
 | `<ActivityIndicator>` | `html` | `partial` | `ProgressBar` indeterminate mode | All Godot UI targets | None | Unit, html-demo | Bar-style busy indicator; spinner visuals are not implemented yet. |
+| `<Overlay>` | `html` | `partial` | `PanelContainer` plus inner `<Div>` content wrapper | All Godot UI targets | None | Unit, html-demo | Godot `Control` overlay, not a DOM portal; backdrop input follows Godot `mouse_filter`. |
+| `<Modal>` | `html` | `partial` | `Window` | All Godot UI targets | None | Unit, html-demo | Window behavior follows Godot embedded/native subwindow settings; browser focus trapping is not implemented yet. |
+| `<Dialog>` | `html` | `partial` | `AcceptDialog` | All Godot UI targets | None | Unit, html-demo | Confirmation dialog subset; button layout and escape handling follow Godot `AcceptDialog`. |
 | `<Switch>` | `html` | `partial` | `CheckButton` | All Godot UI targets | None | Unit, html-demo | Binary toggle subset; accessibility metadata is limited. |
 | `<Button>` | `html` | `partial` | `Button` | All Godot UI targets | None | Unit, html-demo | Click maps to Godot pressed signal; accessibility is limited. |
 | `<Input>` | `html` | `partial` | `LineEdit`, `CheckBox`, `ButtonGroup`, `HSlider` | All Godot UI targets | None | Unit, html-demo | Supports text, password, checkbox, radio, and range subsets. |

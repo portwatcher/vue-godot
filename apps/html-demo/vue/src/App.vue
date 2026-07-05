@@ -83,6 +83,53 @@
     }}
   </Span>
 
+  <!-- ===== Section: Modal / Dialog / Overlay ===== -->
+  <Span>--- Modal / Dialog / Overlay ---</Span>
+  <Div :style="{ flexDirection: 'row', gap: 8 }">
+    <Button @click="overlayOpen = true">Open Overlay</Button>
+    <Button @click="modalOpen = true">Open Modal</Button>
+    <Button @click="dialogOpen = true">Open Dialog</Button>
+  </Div>
+  <Span>
+    {{
+      `Dialog confirmed ${dialogConfirmCount} time(s), canceled ${dialogCancelCount} time(s)`
+    }}
+  </Span>
+  <Overlay
+    v-model="overlayOpen"
+    :close-on-click="true"
+    :style="{ backgroundColor: '#0008', opacity: 0.9 }"
+    :content-style="{
+      flexDirection: 'column',
+      gap: 8,
+      padding: 16,
+      alignItems: 'center',
+    }"
+  >
+    <Span>Overlay backdrop blocks input and closes on click.</Span>
+    <Button @click="overlayOpen = false">Close Overlay</Button>
+  </Overlay>
+  <Modal
+    v-model="modalOpen"
+    title="Demo modal"
+    :width="360"
+    :height="220"
+    :unresizable="true"
+  >
+    <Div :style="{ flexDirection: 'column', gap: 8, padding: 12 }">
+      <Span>Modal content is rendered inside a Godot Window.</Span>
+      <Button @click="modalOpen = false">Close Modal</Button>
+    </Div>
+  </Modal>
+  <Dialog
+    v-model="dialogOpen"
+    title="Confirm action"
+    message="Dialog backed by AcceptDialog."
+    confirm-text="OK"
+    @confirm="dialogConfirmCount++"
+    @cancel="dialogCancelCount++"
+  ></Dialog>
+
   <!-- ===== Section: Span (text styling) ===== -->
   <Span>--- Span ---</Span>
   <Span
@@ -292,6 +339,13 @@ function advanceProgress() {
 function toggleActivity() {
   activityActive.value = !activityActive.value
 }
+
+// --- Modal / Dialog / Overlay ---
+const overlayOpen = ref(false)
+const modalOpen = ref(false)
+const dialogOpen = ref(false)
+const dialogConfirmCount = ref(0)
+const dialogCancelCount = ref(0)
 
 // --- Button ---
 const buttonClicks = ref(0)

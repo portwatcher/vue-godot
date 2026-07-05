@@ -4,10 +4,13 @@ import { ActivityIndicator } from './components/ActivityIndicator.js'
 import { Audio } from './components/Audio.js'
 import { Button } from './components/Button.js'
 import { Canvas } from './components/Canvas.js'
+import { Dialog } from './components/Dialog.js'
 import { Div } from './components/Div.js'
 import { Img } from './components/Img.js'
 import { Input } from './components/Input.js'
+import { Modal } from './components/Modal.js'
 import { Option, Select } from './components/Select.js'
+import { Overlay } from './components/Overlay.js'
 import { Progress } from './components/Progress.js'
 import { ScrollView } from './components/ScrollView.js'
 import { Span } from './components/Span.js'
@@ -20,11 +23,14 @@ const components: Record<string, Component> = {
   A,
   ActivityIndicator,
   Audio,
+  Dialog,
   Div,
   Img,
   Span,
   Button,
   Input,
+  Modal,
+  Overlay,
   Textarea,
   Select,
   Option,

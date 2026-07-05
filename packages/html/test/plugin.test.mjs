@@ -7,7 +7,10 @@ register(new URL('./godot-browser-loader.mjs', import.meta.url).href)
 const {
   A,
   ActivityIndicator,
+  Dialog,
   Div,
+  Modal,
+  Overlay,
   Progress,
   ScrollView,
   Switch,
@@ -18,8 +21,11 @@ const {
 test('htmlTags includes every lowercase component tag', () => {
   assert.ok(htmlTags.includes('a'))
   assert.ok(htmlTags.includes('activityindicator'))
+  assert.ok(htmlTags.includes('dialog'))
   assert.ok(htmlTags.includes('div'))
   assert.ok(htmlTags.includes('button'))
+  assert.ok(htmlTags.includes('modal'))
+  assert.ok(htmlTags.includes('overlay'))
   assert.ok(htmlTags.includes('progress'))
   assert.ok(htmlTags.includes('scrollview'))
   assert.ok(htmlTags.includes('switch'))
@@ -41,8 +47,14 @@ test('htmlPlugin registers PascalCase and lowercase components', () => {
   assert.equal(registered.get('a'), A)
   assert.equal(registered.get('ActivityIndicator'), ActivityIndicator)
   assert.equal(registered.get('activityindicator'), ActivityIndicator)
+  assert.equal(registered.get('Dialog'), Dialog)
+  assert.equal(registered.get('dialog'), Dialog)
   assert.equal(registered.get('Div'), Div)
   assert.equal(registered.get('div'), Div)
+  assert.equal(registered.get('Modal'), Modal)
+  assert.equal(registered.get('modal'), Modal)
+  assert.equal(registered.get('Overlay'), Overlay)
+  assert.equal(registered.get('overlay'), Overlay)
   assert.equal(registered.get('Progress'), Progress)
   assert.equal(registered.get('progress'), Progress)
   assert.equal(registered.get('ScrollView'), ScrollView)

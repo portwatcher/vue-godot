@@ -122,7 +122,7 @@ The project is production ready only when all of these are true:
   - [x] `<ScrollView>` backed by Godot scroll containers.
   - [ ] `<VirtualList>` or `<FlatList>` equivalent for large data sets.
   - [ ] `<Pressable>` with mouse, touch, keyboard, controller, focus, disabled, hover, pressed, and long-press states.
-  - [ ] `<Modal>` / `<Dialog>` / `<Overlay>`.
+  - [x] `<Modal>` / `<Dialog>` / `<Overlay>`.
   - [ ] `<SafeAreaView>` or equivalent layout helper.
   - [ ] `<KeyboardAvoidingView>` or equivalent for mobile text input.
   - [x] `<ActivityIndicator>` / `<Progress>`.
@@ -326,7 +326,7 @@ Use this backlog to seed `docs/compatibility.md`.
 | `<ScrollView>` | html | supported | `ScrollContainer` |
 | `<VirtualList>` | html | supported | virtualized Godot controls |
 | `<Pressable>` | html | supported | `Control` input/focus signals |
-| `<Modal>` / `<Dialog>` | html | supported | Godot popup/window/control stack |
+| `<Modal>` / `<Dialog>` / `<Overlay>` | html | supported | Godot popup/window/control stack |
 | `<SafeAreaView>` | html/device | partial | platform/display metrics |
 | `<KeyboardAvoidingView>` | html/device | partial | virtual keyboard metrics |
 | `<ActivityIndicator>` | html | supported | `ProgressBar` indeterminate mode |

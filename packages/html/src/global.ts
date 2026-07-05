@@ -3,10 +3,13 @@ import type { ActivityIndicator } from './components/ActivityIndicator.js'
 import type { Audio } from './components/Audio.js'
 import type { Button } from './components/Button.js'
 import type { Canvas } from './components/Canvas.js'
+import type { Dialog } from './components/Dialog.js'
 import type { Div } from './components/Div.js'
 import type { Img } from './components/Img.js'
 import type { Input } from './components/Input.js'
+import type { Modal } from './components/Modal.js'
 import type { Option, Select } from './components/Select.js'
+import type { Overlay } from './components/Overlay.js'
 import type { Progress } from './components/Progress.js'
 import type { ScrollView } from './components/ScrollView.js'
 import type { Span } from './components/Span.js'
@@ -22,10 +25,13 @@ declare module '@vue/runtime-core' {
     Audio: typeof Audio
     Button: typeof Button
     Canvas: typeof Canvas
+    Dialog: typeof Dialog
     Div: typeof Div
     Img: typeof Img
     Input: typeof Input
+    Modal: typeof Modal
     Option: typeof Option
+    Overlay: typeof Overlay
     Progress: typeof Progress
     ScrollView: typeof ScrollView
     Select: typeof Select
@@ -40,10 +46,13 @@ declare module '@vue/runtime-core' {
     audio: typeof Audio
     button: typeof Button
     canvas: typeof Canvas
+    dialog: typeof Dialog
     div: typeof Div
     img: typeof Img
     input: typeof Input
+    modal: typeof Modal
     option: typeof Option
+    overlay: typeof Overlay
     progress: typeof Progress
     scrollview: typeof ScrollView
     select: typeof Select
