@@ -8,7 +8,11 @@ import {
   selectedApiRequiredCheckMap,
   unknownRealDeviceSelectedApis,
 } from './real-device-evidence.mjs'
-import { initialReleaseCiCommands } from './release-handoff-commands.mjs'
+import {
+  checkRealDeviceEvidenceCommand,
+  initialReleaseCiCommands,
+  releaseEvidenceCommand,
+} from './release-handoff-commands.mjs'
 import { repoRoot } from './release-utils.mjs'
 
 const defaultOutput = 'release/platform-evidence.json'
@@ -202,8 +206,8 @@ function buildNextActions(platformEvidencePath) {
       commands: [
         'npm run check',
         ...initialReleaseCiCommands(),
-        `npm run release:evidence -- --platform-evidence ${platformEvidencePath} --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --real-device-output release/real-device-evidence.json`,
-        'npm run check:real-device-evidence -- --expected-commit <release-candidate-sha>',
+        releaseEvidenceCommand(null, { platformEvidencePath }),
+        checkRealDeviceEvidenceCommand(null),
       ],
     },
   ]

@@ -6,7 +6,11 @@ import {
   resolveRealDeviceEvidencePath,
   validateRealDeviceEvidence,
 } from './real-device-evidence.mjs'
-import { initialReleaseCiCommands } from './release-handoff-commands.mjs'
+import {
+  checkRealDeviceEvidenceCommand,
+  initialReleaseCiCommands,
+  releaseEvidenceCommand,
+} from './release-handoff-commands.mjs'
 import { currentReleasePackageVersions, repoRoot } from './release-utils.mjs'
 
 function usage() {
@@ -96,6 +100,7 @@ function collectNextActions(summary) {
   if (summary.ready) {
     return []
   }
+  const expectedCommit = summary.expectedCommit
 
   if (summary.evidencePresent === false) {
     return [
@@ -113,9 +118,9 @@ function collectNextActions(summary) {
           'After the tested release candidate has CI runs and completed platform evidence, write release/real-device-evidence.json.',
         commands: [
           'npm run check',
-          ...initialReleaseCiCommands(),
-          'npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --real-device-output release/real-device-evidence.json',
-          'npm run check:real-device-evidence -- --expected-commit <release-candidate-sha>',
+          ...initialReleaseCiCommands(expectedCommit),
+          releaseEvidenceCommand(expectedCommit),
+          checkRealDeviceEvidenceCommand(expectedCommit),
         ],
       },
     ]
@@ -129,8 +134,8 @@ function collectNextActions(summary) {
         'Run the local check, then use the reported validation errors to update platform evidence or regenerate final evidence for the tested release commit.',
       commands: [
         'npm run check',
-        'npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --real-device-output release/real-device-evidence.json',
-        'npm run check:real-device-evidence -- --expected-commit <release-candidate-sha>',
+        releaseEvidenceCommand(expectedCommit),
+        checkRealDeviceEvidenceCommand(expectedCommit),
       ],
     },
   ]

@@ -31,7 +31,8 @@ evidence JSON when it exists. Add
 validation status, errors, and `nextActions` command hints for fixing or
 creating evidence; missing-evidence assembly and invalid-evidence regeneration
 hints begin with `npm run check` before release CI wait/dispatch or evidence
-regeneration runs. `release:preflight` verifies package metadata,
+regeneration runs and resolve command placeholders to `--expected-commit` when
+it is supplied. `release:preflight` verifies package metadata,
 generated package specs, dry-run package contents including every
 `package.json` export target, registry state, publish environment assumptions,
 dependency audit status, serious example app readiness, Godot smoke, real

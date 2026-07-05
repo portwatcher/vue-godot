@@ -2,9 +2,14 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
+  checkRealDeviceEvidenceCommand,
+  defaultPlatformEvidencePath,
   defaultRealDeviceEvidencePath,
+  defaultReleasePreflightSummaryPath,
+  defaultReleaseReadinessEvidencePath,
   defaultReleaseCiEvidencePath,
   initialReleaseCiCommands,
+  releaseEvidenceCommand,
   releaseCandidateCommitPlaceholder,
   releaseCiCommand,
   releaseCommitLabel,
@@ -17,12 +22,37 @@ const commit = '0123456789abcdef0123456789abcdef01234567'
 test('release handoff commands format release CI waits and dispatches', () => {
   assert.equal(releaseCommitLabel(null), releaseCandidateCommitPlaceholder)
   assert.equal(releaseCommitLabel(commit), commit)
+  assert.equal(defaultPlatformEvidencePath, 'release/platform-evidence.json')
   assert.equal(defaultReleaseCiEvidencePath, 'release/ci-runs.json')
 
   assert.deepEqual(initialReleaseCiCommands(commit), [
     `npm run release:ci -- --commit ${commit} --wait --output release/ci-runs.json`,
     `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${commit} --dispatch-missing --wait --ref ${releaseDispatchRefPlaceholder} --output release/ci-runs.json`,
   ])
+})
+
+test('release handoff commands format real-device evidence assembly', () => {
+  assert.equal(
+    releaseEvidenceCommand(commit),
+    `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${commit} --real-device-output release/real-device-evidence.json`,
+  )
+  assert.equal(
+    checkRealDeviceEvidenceCommand(commit),
+    `npm run check:real-device-evidence -- --expected-commit ${commit}`,
+  )
+  assert.equal(
+    releaseEvidenceCommand(null, {
+      platformEvidencePath: 'release/custom-platform-evidence.json',
+    }),
+    'npm run release:evidence -- --platform-evidence release/custom-platform-evidence.json --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --real-device-output release/real-device-evidence.json',
+  )
+  assert.equal(
+    releaseEvidenceCommand(commit, {
+      releasePreflightSummaryPath: defaultReleasePreflightSummaryPath,
+      readinessEvidencePath: defaultReleaseReadinessEvidencePath,
+    }),
+    `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${commit} --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json`,
+  )
 })
 
 test('release handoff commands include preflight evidence input only for preflight', () => {

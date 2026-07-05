@@ -1,7 +1,12 @@
 export const releaseCandidateCommitPlaceholder = '<release-candidate-sha>'
 export const releaseDispatchRefPlaceholder = '<branch-or-tag>'
+export const defaultPlatformEvidencePath = 'release/platform-evidence.json'
 export const defaultReleaseCiEvidencePath = 'release/ci-runs.json'
 export const defaultRealDeviceEvidencePath = 'release/real-device-evidence.json'
+export const defaultReleasePreflightSummaryPath =
+  'release/release-preflight-summary.json'
+export const defaultReleaseReadinessEvidencePath =
+  'release/release-readiness-evidence.json'
 
 export function releaseCommitLabel(commit) {
   return commit ?? releaseCandidateCommitPlaceholder
@@ -71,4 +76,35 @@ export function releasePreflightCiCommands(commit, options = {}) {
       withGitHubToken: true,
     }),
   ]
+}
+
+export function releaseEvidenceCommand(commit, options = {}) {
+  const args = [
+    'npm run release:evidence --',
+    '--platform-evidence',
+    options.platformEvidencePath ?? defaultPlatformEvidencePath,
+    '--ci-evidence',
+    options.ciEvidencePath ?? defaultReleaseCiEvidencePath,
+    '--commit',
+    releaseCommitLabel(commit),
+    '--real-device-output',
+    options.realDeviceEvidencePath ?? defaultRealDeviceEvidencePath,
+  ]
+
+  if (options.releasePreflightSummaryPath) {
+    args.push(
+      '--release-preflight-summary',
+      options.releasePreflightSummaryPath,
+    )
+  }
+
+  if (options.readinessEvidencePath) {
+    args.push('--readiness-output', options.readinessEvidencePath)
+  }
+
+  return args.join(' ')
+}
+
+export function checkRealDeviceEvidenceCommand(commit) {
+  return `npm run check:real-device-evidence -- --expected-commit ${releaseCommitLabel(commit)}`
 }

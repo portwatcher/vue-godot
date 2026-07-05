@@ -244,6 +244,7 @@ test('release preflight enforces real device evidence', () => {
     production,
     /missing-evidence assembly and invalid-evidence regeneration\s+hints begin with `npm run check` before release CI wait\/dispatch/,
   )
+  assert.match(production, /resolve command placeholders to `--expected-commit`/)
   assert.match(production, /release:ci/)
   assert.match(production, /--include-release-preflight/)
   assert.match(production, /--dispatch-missing/)
@@ -329,6 +330,7 @@ test('release preflight enforces real device evidence', () => {
     readme,
     /missing-evidence assembly and invalid-evidence regeneration hints begin with `npm run check` before release CI wait\/dispatch/,
   )
+  assert.match(readme, /resolve command placeholders to `--expected-commit`/)
   assert.match(readme, /release:ci/)
   assert.match(readme, /--include-release-preflight/)
   assert.match(readme, /--dispatch-missing/)

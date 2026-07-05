@@ -22,7 +22,11 @@ import { collectPublicSurfaceAuditErrors } from './public-surface-audit.mjs'
 import { collectLocalGitReleaseState } from './check-release-ci-runs.mjs'
 import { finalizationFiles } from './release-finalization-files.mjs'
 import {
+  checkRealDeviceEvidenceCommand,
+  defaultReleasePreflightSummaryPath,
+  defaultReleaseReadinessEvidencePath,
   initialReleaseCiCommands,
+  releaseEvidenceCommand,
   releaseCommitLabel,
   releasePreflightCiCommands,
 } from './release-handoff-commands.mjs'
@@ -36,8 +40,6 @@ import {
 
 const releaseReadinessEvidenceEnvVar =
   'VUE_GODOT_RELEASE_READINESS_EVIDENCE'
-const defaultReleaseReadinessEvidencePath =
-  'release/release-readiness-evidence.json'
 
 export const releaseWarningMarkers = [
   {
@@ -917,8 +919,8 @@ function collectReadinessNextActions(checks, commit, localGit) {
         'npm run check',
         'npm run release:platform-evidence -- --selected-api <api>',
         ...initialReleaseCiCommands(commit),
-        `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${releaseCommit} --real-device-output release/real-device-evidence.json`,
-        `npm run check:real-device-evidence -- --expected-commit ${releaseCommit}`,
+        releaseEvidenceCommand(commit),
+        checkRealDeviceEvidenceCommand(commit),
       ],
     })
   }
@@ -933,7 +935,10 @@ function collectReadinessNextActions(checks, commit, localGit) {
         'npm run check',
         ...releasePreflightCiCommands(commit),
         'GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --output release/release-preflight-summary.json',
-        `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${releaseCommit} --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json`,
+        releaseEvidenceCommand(commit, {
+          releasePreflightSummaryPath: defaultReleasePreflightSummaryPath,
+          readinessEvidencePath: defaultReleaseReadinessEvidencePath,
+        }),
         `npm run release:readiness -- --expected-commit ${releaseCommit}`,
       ],
     })

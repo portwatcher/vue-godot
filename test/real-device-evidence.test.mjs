@@ -396,6 +396,53 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
   }
 })
 
+test('check-real-device-evidence next actions honor expected commits', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-evidence-'))
+  const summaryPath = path.join(tempDir, 'real-device-summary.json')
+  const expectedCommit = '0123456789abcdef0123456789abcdef01234567'
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/check-real-device-evidence.mjs',
+        '--optional',
+        '--expected-commit',
+        expectedCommit,
+        '--path',
+        path.join(tempDir, 'missing-real-device-evidence.json'),
+        '--summary-output',
+        summaryPath,
+      ],
+      { cwd: repoRoot, encoding: 'utf-8' },
+    )
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+    const assembleAction = summary.nextActions.find(
+      (action) => action.id === 'assemble-real-device-evidence',
+    )
+
+    assert.equal(result.status, 0)
+    assert.ok(assembleAction)
+    assert.ok(
+      assembleAction.commands.includes(
+        `npm run release:ci -- --commit ${expectedCommit} --wait --output release/ci-runs.json`,
+      ),
+    )
+    assert.ok(
+      assembleAction.commands.includes(
+        `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${expectedCommit} --real-device-output release/real-device-evidence.json`,
+      ),
+    )
+    assert.ok(
+      assembleAction.commands.includes(
+        `npm run check:real-device-evidence -- --expected-commit ${expectedCommit}`,
+      ),
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
 test('check-real-device-evidence writes validation errors before failing', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-evidence-'))
   const evidencePath = path.join(tempDir, 'real-device-evidence.json')
