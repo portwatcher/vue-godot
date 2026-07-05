@@ -40,6 +40,91 @@ export const requiredRealDeviceChecks = {
   ],
 }
 
+export const selectedApiRequiredRealDeviceChecks = {
+  fetch: {
+    all: ['network-if-selected'],
+  },
+  WebSocket: {
+    all: ['network-if-selected'],
+  },
+  checkNetworkReachability: {
+    all: ['network-if-selected'],
+  },
+  'navigator.onLine': {
+    all: ['network-if-selected'],
+  },
+  localStorage: {
+    all: ['storage-restart'],
+  },
+  sessionStorage: {
+    all: ['storage-restart'],
+  },
+  'navigator.geolocation': {
+    all: [
+      'permission-prompts-if-selected',
+      'adapter-states-if-selected',
+      'hardware-adapters-if-selected',
+    ],
+  },
+  'navigator.mediaDevices.getUserMedia': {
+    all: [
+      'permission-prompts-if-selected',
+      'adapter-states-if-selected',
+      'hardware-adapters-if-selected',
+    ],
+  },
+  CameraView: {
+    all: [
+      'permission-prompts-if-selected',
+      'adapter-states-if-selected',
+      'hardware-adapters-if-selected',
+    ],
+  },
+  Notification: {
+    all: ['permission-prompts-if-selected', 'adapter-states-if-selected'],
+    ios: ['deep-links-share-notifications-if-selected'],
+  },
+  NotificationAdapter: {
+    all: ['permission-prompts-if-selected', 'adapter-states-if-selected'],
+    ios: ['deep-links-share-notifications-if-selected'],
+  },
+  showNativeNotification: {
+    all: ['permission-prompts-if-selected', 'adapter-states-if-selected'],
+    ios: ['deep-links-share-notifications-if-selected'],
+  },
+  DeepLinkAdapter: {
+    all: ['adapter-states-if-selected'],
+    ios: ['deep-links-share-notifications-if-selected'],
+  },
+  readInitialOpenUrl: {
+    all: ['adapter-states-if-selected'],
+    ios: ['deep-links-share-notifications-if-selected'],
+  },
+  onOpenUrl: {
+    all: ['adapter-states-if-selected'],
+    ios: ['deep-links-share-notifications-if-selected'],
+  },
+  ShareAdapter: {
+    all: ['adapter-states-if-selected'],
+    ios: ['deep-links-share-notifications-if-selected'],
+  },
+  share: {
+    all: ['adapter-states-if-selected'],
+    ios: ['deep-links-share-notifications-if-selected'],
+  },
+  'navigator.vibrate': {
+    android: ['permission-prompts-if-selected'],
+  },
+  SafeAreaView: {
+    android: ['safe-area-keyboard'],
+    ios: ['safe-area-keyboard-rotation-text-input'],
+  },
+  KeyboardAvoidingView: {
+    android: ['safe-area-keyboard'],
+    ios: ['safe-area-keyboard-rotation-text-input'],
+  },
+}
+
 export function resolveRealDeviceEvidencePath(env = process.env) {
   const configured = env[realDeviceEvidenceEnvVar]
   return path.resolve(repoRoot, configured || defaultRealDeviceEvidencePath)
@@ -80,6 +165,46 @@ function assertSuccessConclusion(record, key, errors, label) {
   }
 }
 
+function selectedApiChecks(apiName, platform) {
+  const requirements = selectedApiRequiredRealDeviceChecks[apiName]
+  if (!isRecord(requirements)) {
+    return []
+  }
+
+  return [
+    ...(Array.isArray(requirements.all) ? requirements.all : []),
+    ...(Array.isArray(requirements[platform]) ? requirements[platform] : []),
+  ]
+}
+
+function selectedApiRequiredCheckMap(selectedApis, platform) {
+  const checks = new Map()
+  for (const apiName of selectedApis) {
+    for (const check of selectedApiChecks(apiName, platform)) {
+      const apiNames = checks.get(check) ?? []
+      apiNames.push(apiName)
+      checks.set(check, apiNames)
+    }
+  }
+
+  return checks
+}
+
+function validateCheckNames(platform, passedChecks, skippedChecks, errors) {
+  const requiredChecks = new Set(requiredRealDeviceChecks[platform])
+  for (const check of passedChecks) {
+    if (!requiredChecks.has(check)) {
+      errors.push(`${platform}.passedChecks contains unknown check ${check}`)
+    }
+  }
+
+  for (const check of Object.keys(skippedChecks)) {
+    if (!requiredChecks.has(check)) {
+      errors.push(`${platform}.skippedChecks contains unknown check ${check}`)
+    }
+  }
+}
+
 function validatePlatformEvidence(evidence, platform, errors) {
   const platformEvidence = evidence[platform]
   if (!isRecord(platformEvidence)) {
@@ -98,6 +223,13 @@ function validatePlatformEvidence(evidence, platform, errors) {
     assertString(platformEvidence, key, errors, platform)
   }
 
+  const selectedApisValid =
+    Array.isArray(platformEvidence.selectedApis) &&
+    platformEvidence.selectedApis.length > 0 &&
+    platformEvidence.selectedApis.every(
+      (api) => typeof api === 'string' && api.trim() !== '',
+    )
+
   if (
     !Array.isArray(platformEvidence.selectedApis) ||
     platformEvidence.selectedApis.length === 0 ||
@@ -107,6 +239,9 @@ function validatePlatformEvidence(evidence, platform, errors) {
   ) {
     errors.push(`${platform}.selectedApis must be a non-empty string array`)
   }
+  const selectedApis = selectedApisValid
+    ? [...new Set(platformEvidence.selectedApis.map((api) => api.trim()))]
+    : []
 
   const passedChecks = new Set(
     Array.isArray(platformEvidence.passedChecks)
@@ -119,6 +254,8 @@ function validatePlatformEvidence(evidence, platform, errors) {
     ? platformEvidence.skippedChecks
     : {}
 
+  validateCheckNames(platform, passedChecks, skippedChecks, errors)
+
   for (const check of requiredRealDeviceChecks[platform]) {
     const skipReason = skippedChecks[check]
     const hasSkipReason =
@@ -126,6 +263,15 @@ function validatePlatformEvidence(evidence, platform, errors) {
     if (!passedChecks.has(check) && !hasSkipReason) {
       errors.push(
         `${platform} must pass ${check} or document a skippedChecks.${check} reason`,
+      )
+    }
+  }
+
+  const selectedApiChecks = selectedApiRequiredCheckMap(selectedApis, platform)
+  for (const [check, apiNames] of selectedApiChecks) {
+    if (!passedChecks.has(check)) {
+      errors.push(
+        `${platform}.${check} must be in passedChecks because selectedApis includes ${apiNames.join(', ')}`,
       )
     }
   }

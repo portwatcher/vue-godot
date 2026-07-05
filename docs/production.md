@@ -47,6 +47,8 @@ by final readiness evidence.
 `npm run release:platform-evidence` creates a starter Android/iOS platform
 evidence file with the exact required device check names; it still must be
 filled with real artifact, device, OS, API, pass, and skip data after testing.
+Conditional checks required by selected APIs must be recorded in `passedChecks`,
+not `skippedChecks`.
 After device testing and CI runs exist, `npm run release:evidence` assembles the
 real-device and release-readiness evidence files from the current package
 versions, Android/iOS platform evidence, CI evidence, and verified GitHub

@@ -6,6 +6,7 @@ import {
   readRealDeviceEvidence,
   requiredRealDeviceChecks,
   resolveRealDeviceEvidencePath,
+  selectedApiRequiredRealDeviceChecks,
   validateRealDeviceEvidence,
 } from '../scripts/real-device-evidence.mjs'
 import {
@@ -81,6 +82,67 @@ test('real device evidence requires every platform check to pass or be skipped w
   }
 
   assert.deepEqual(validateRealDeviceEvidence(evidence), [])
+})
+
+test('real device evidence requires conditional checks to pass for selected APIs', () => {
+  const evidence = validEvidence()
+  evidence.android.passedChecks = evidence.android.passedChecks.filter(
+    (check) => check !== 'network-if-selected',
+  )
+  evidence.android.skippedChecks = {
+    'network-if-selected': 'Network APIs were not exercised in this pass.',
+  }
+
+  assert.match(
+    validateRealDeviceEvidence(evidence).join('\n'),
+    /android\.network-if-selected must be in passedChecks because selectedApis includes fetch/,
+  )
+})
+
+test('real device evidence permits skipped conditional checks outside selected APIs', () => {
+  const evidence = validEvidence()
+  evidence.android.selectedApis = ['SafeAreaView']
+  evidence.android.passedChecks = evidence.android.passedChecks.filter(
+    (check) => check !== 'network-if-selected',
+  )
+  evidence.android.skippedChecks = {
+    'network-if-selected': 'Release candidate did not select network APIs.',
+  }
+
+  assert.deepEqual(validateRealDeviceEvidence(evidence), [])
+})
+
+test('real device evidence rejects unknown check names', () => {
+  const evidence = validEvidence()
+  evidence.ios.passedChecks.push('typo-check')
+  evidence.ios.skippedChecks = {
+    'another-typo': 'This should not be accepted.',
+  }
+
+  const errors = validateRealDeviceEvidence(evidence).join('\n')
+
+  assert.match(errors, /ios\.passedChecks contains unknown check typo-check/)
+  assert.match(errors, /ios\.skippedChecks contains unknown check another-typo/)
+})
+
+test('selected API release checks cover public conditional release gates', () => {
+  assert.deepEqual(selectedApiRequiredRealDeviceChecks.fetch.all, [
+    'network-if-selected',
+  ])
+  assert.deepEqual(selectedApiRequiredRealDeviceChecks.SafeAreaView.android, [
+    'safe-area-keyboard',
+  ])
+  assert.deepEqual(
+    selectedApiRequiredRealDeviceChecks['navigator.geolocation'].all,
+    [
+      'permission-prompts-if-selected',
+      'adapter-states-if-selected',
+      'hardware-adapters-if-selected',
+    ],
+  )
+  assert.deepEqual(selectedApiRequiredRealDeviceChecks.Notification.ios, [
+    'deep-links-share-notifications-if-selected',
+  ])
 })
 
 test('real device evidence rejects stale commit evidence', () => {

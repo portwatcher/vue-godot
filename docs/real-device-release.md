@@ -43,6 +43,11 @@ Check and Godot Smoke GitHub Actions run URLs, workflow names, and commit SHAs
 for `portwatcher/vue-godot`, Android and iOS artifacts or hosted-device build
 identifiers, device model/OS/orientation/locale, selected APIs, and passed or
 explicitly skipped platform checks.
+When a selected API maps to a conditional check such as `network-if-selected`,
+`permission-prompts-if-selected`, `adapter-states-if-selected`,
+`hardware-adapters-if-selected`, or
+`deep-links-share-notifications-if-selected`, that conditional check must be in
+`passedChecks`; `skippedChecks` is only accepted outside the selected API set.
 
 Non-local `release:preflight` reads the recorded Check and Godot Smoke run URLs
 from the GitHub Actions API and fails if either run is not completed,
@@ -58,6 +63,8 @@ Android and iOS required check names are ready to fill:
 npm run release:platform-evidence -- \
   --selected-api fetch \
   --selected-api WebSocket \
+  --selected-api navigator.geolocation \
+  --selected-api navigator.mediaDevices.getUserMedia \
   --selected-api SafeAreaView \
   --orientation "portrait and landscape" \
   --locale en-US
@@ -65,8 +72,9 @@ npm run release:platform-evidence -- \
 
 The generated `requiredChecks` arrays are a worksheet only. After testing, move
 each item into `passedChecks` or into `skippedChecks` with a release-specific
-reason, and keep only complete `android` and `ios` evidence objects before
-running `npm run release:evidence`.
+reason. Conditional checks for selected APIs must be moved into `passedChecks`.
+Keep only complete `android` and `ios` evidence objects before running
+`npm run release:evidence`.
 
 After the release candidate is pushed, verify the required CI runs and capture
 their URLs:
