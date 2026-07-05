@@ -148,7 +148,7 @@ test('release real device evidence requires production profile selected APIs', (
     validateRealDeviceEvidence(evidence, {
       requireProductionProfile: true,
     }).join('\n'),
-    /ios\.selectedApis must include production profile API\(s\): WebSocket, navigator\.permissions\.query/,
+    /ios\.selectedApis must include production profile API\(s\): WebSocket, checkNetworkReachability, navigator\.onLine/,
   )
 })
 
@@ -233,6 +233,10 @@ test('selected API release checks cover public conditional release gates', () =>
   assert.deepEqual(productionProfileSelectedApis, [
     'fetch',
     'WebSocket',
+    'checkNetworkReachability',
+    'navigator.onLine',
+    'localStorage',
+    'sessionStorage',
     'navigator.permissions.query',
     'navigator.clipboard',
     'navigator.geolocation',
@@ -240,6 +244,7 @@ test('selected API release checks cover public conditional release gates', () =>
     'navigator.vibrate',
     'readDeviceMotion',
     'SafeAreaView',
+    'KeyboardAvoidingView',
   ])
   for (const apiName of productionProfileSelectedApis) {
     assert.ok(knownRealDeviceSelectedApis.includes(apiName))

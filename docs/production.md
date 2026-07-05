@@ -65,9 +65,11 @@ Android/iOS platform evidence file with the exact required device check names
 for the maintained production-profile selected API set; it still must be filled
 with real artifact, device, OS, API, pass, and skip data after testing.
 The production profile currently expands to `fetch`, `WebSocket`,
-`navigator.permissions.query`, `navigator.clipboard`,
+`checkNetworkReachability`, `navigator.onLine`, `localStorage`,
+`sessionStorage`, `navigator.permissions.query`, `navigator.clipboard`,
 `navigator.geolocation`, `navigator.mediaDevices.getUserMedia`,
-`navigator.vibrate`, `readDeviceMotion`, and `SafeAreaView`.
+`navigator.vibrate`, `readDeviceMotion`, `SafeAreaView`, and
+`KeyboardAvoidingView`.
 Final release evidence must include every production-profile API on both
 Android and iOS; release evidence assembly, the real-device evidence checker,
 release preflight, and strict release readiness reject evidence that omits any

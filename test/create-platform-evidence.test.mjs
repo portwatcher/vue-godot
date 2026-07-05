@@ -111,12 +111,15 @@ test('platform evidence template expands production profile selected APIs', () =
     selectedApis: ['fetch', 'KeyboardAvoidingView'],
   })
 
-  assert.deepEqual(template.android.selectedApis, [
-    ...productionProfileSelectedApis,
-    'KeyboardAvoidingView',
-  ])
+  assert.deepEqual(template.android.selectedApis, productionProfileSelectedApis)
   assert.deepEqual(template.android.selectedApiRequiredChecks, {
-    'network-if-selected': ['fetch', 'WebSocket'],
+    'network-if-selected': [
+      'fetch',
+      'WebSocket',
+      'checkNetworkReachability',
+      'navigator.onLine',
+    ],
+    'storage-restart': ['localStorage', 'sessionStorage'],
     'permission-prompts-if-selected': [
       'navigator.permissions.query',
       'navigator.geolocation',
@@ -137,7 +140,13 @@ test('platform evidence template expands production profile selected APIs', () =
     'safe-area-keyboard': ['SafeAreaView', 'KeyboardAvoidingView'],
   })
   assert.deepEqual(template.ios.selectedApiRequiredChecks, {
-    'network-if-selected': ['fetch', 'WebSocket'],
+    'network-if-selected': [
+      'fetch',
+      'WebSocket',
+      'checkNetworkReachability',
+      'navigator.onLine',
+    ],
+    'storage-restart': ['localStorage', 'sessionStorage'],
     'permission-prompts-if-selected': [
       'navigator.permissions.query',
       'navigator.geolocation',

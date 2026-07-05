@@ -88,11 +88,13 @@ npm run release:platform-evidence -- \
 ```
 
 The `--production-profile` shortcut expands to the maintained selected API set:
-`fetch`, `WebSocket`, `navigator.permissions.query`,
+`fetch`, `WebSocket`, `checkNetworkReachability`, `navigator.onLine`,
+`localStorage`, `sessionStorage`, `navigator.permissions.query`,
 `navigator.clipboard`, `navigator.geolocation`,
 `navigator.mediaDevices.getUserMedia`, `navigator.vibrate`,
-`readDeviceMotion`, and `SafeAreaView`. Add extra `--selected-api` flags only
-for release candidates that intentionally exercise more APIs.
+`readDeviceMotion`, `SafeAreaView`, and `KeyboardAvoidingView`. Add extra
+`--selected-api` flags only for release candidates that intentionally exercise
+more APIs.
 Final release evidence must include every production-profile API on both
 Android and iOS; `npm run release:evidence`,
 `npm run check:real-device-evidence`, `npm run release:preflight`, and strict

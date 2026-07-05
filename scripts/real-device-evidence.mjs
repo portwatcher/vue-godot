@@ -15,6 +15,10 @@ export const defaultRealDeviceEvidencePath = 'release/real-device-evidence.json'
 export const productionProfileSelectedApis = [
   'fetch',
   'WebSocket',
+  'checkNetworkReachability',
+  'navigator.onLine',
+  'localStorage',
+  'sessionStorage',
   'navigator.permissions.query',
   'navigator.clipboard',
   'navigator.geolocation',
@@ -22,6 +26,7 @@ export const productionProfileSelectedApis = [
   'navigator.vibrate',
   'readDeviceMotion',
   'SafeAreaView',
+  'KeyboardAvoidingView',
 ]
 
 export const requiredRealDeviceChecks = {

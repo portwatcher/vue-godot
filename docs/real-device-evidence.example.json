@@ -26,6 +26,10 @@
     "selectedApis": [
       "fetch",
       "WebSocket",
+      "checkNetworkReachability",
+      "navigator.onLine",
+      "localStorage",
+      "sessionStorage",
       "navigator.permissions.query",
       "navigator.clipboard",
       "navigator.geolocation",
@@ -64,6 +68,10 @@
     "selectedApis": [
       "fetch",
       "WebSocket",
+      "checkNetworkReachability",
+      "navigator.onLine",
+      "localStorage",
+      "sessionStorage",
       "navigator.permissions.query",
       "navigator.clipboard",
       "navigator.geolocation",
