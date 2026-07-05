@@ -74,6 +74,14 @@ export {
   unregisterFontFamily,
 } from './utils/fontLoader.js'
 export {
+  registerStyleKeyframes,
+  unregisterStyleKeyframes,
+} from './utils/styleTransition.js'
+export type {
+  StyleKeyframe,
+  StyleKeyframeStyle,
+} from './utils/styleTransition.js'
+export {
   createStreamFromBuffer,
   fetchRemoteStream,
   loadStream,

@@ -41,6 +41,20 @@
     >
       <Span>flex:2 child</Span>
     </Div>
+    <Div
+      :style="{
+        padding: 6,
+        width: 150,
+        backgroundColor: '#0f766e',
+        borderRadius: 6,
+        animationName: 'html-demo-pulse',
+        animationDuration: '900ms',
+        animationIterationCount: 'infinite',
+        animationTimingFunction: 'ease-in-out',
+      }"
+    >
+      <Span>keyframe pulse</Span>
+    </Div>
   </Div>
   <Div :style="{ flexDirection: 'row', gap: 8 }">
     <Button @click="toggleDirection">Toggle Direction</Button>
@@ -518,8 +532,14 @@
 </template>
 
 <script setup lang="ts">
+import { registerStyleKeyframes } from '@vue-godot/html'
 import { onMounted, ref } from 'vue'
 import { formatBrowserSmokeResults, runBrowserSmokeTests } from './browserSmoke'
+
+registerStyleKeyframes('html-demo-pulse', [
+  { offset: 0, style: { opacity: 0.72, transform: 'scale(1)' } },
+  { offset: 1, style: { opacity: 1, transform: 'scale(1.04)' } },
+])
 
 // --- Div layout state ---
 const direction = ref<'row' | 'column'>('row')

@@ -8,7 +8,7 @@ import {
   applyDisplayAndOpacityProps,
   applyFontStyleProps,
   applyTransformStyleProps,
-  applyTransitionStyleProps,
+  applyMotionStyleProps,
 } from '../utils/controlStyle.js'
 import {
   applyAutoFocusProp,
@@ -270,7 +270,7 @@ export const Input = defineComponent({
       if (props.disabled !== true) {
         applyAutoFocusProp(nodeProps, props)
       }
-      applyTransitionStyleProps(nodeProps, style)
+      applyMotionStyleProps(nodeProps, style)
 
       return h(mapping.tag, nodeProps)
     }

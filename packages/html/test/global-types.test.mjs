@@ -41,6 +41,7 @@ test('html package exposes typed PascalCase and lowercase GlobalComponents', () 
   writeFileSync(
     join(fixtureDir, 'index.ts'),
     `import '@vue-godot/html'
+import { registerStyleKeyframes } from '@vue-godot/html'
 import type { GlobalComponents as RuntimeGlobalComponents } from '@vue/runtime-core'
 import type { HtmlStyle } from '@vue-godot/html'
 
@@ -63,12 +64,21 @@ const divStyle: NonNullable<DivProps['style']> = {
   gap: 8,
   width: '50%',
   transform: 'translateY(2px)',
+  animationName: 'pulse',
+  animationDuration: '400ms',
+  animationTimingFunction: 'ease-in-out',
+  animationIterationCount: 'infinite',
+  animationDirection: 'normal',
   transitionProperty: ['opacity', 'transform'],
   transitionDuration: ['120ms', 0.2],
   transitionTimingFunction: 'ease-out',
 }
 const htmlStyle: HtmlStyle = divStyle
 const lowercaseStyle: NonNullable<LowercaseDivProps['style']> = htmlStyle
+const unregisterKeyframes = registerStyleKeyframes('pulse', [
+  { offset: 0, style: { opacity: 0.5, transform: 'scale(1)' } },
+  { offset: 1, style: { opacity: 1, transform: 'scale(1.1)' } },
+])
 const disabled: boolean | undefined = ({} as ButtonProps).disabled
 const inputModel: string | number | boolean | undefined =
   ({} as InputProps).modelValue
@@ -77,6 +87,7 @@ const inputModel: string | number | boolean | undefined =
 const badStyle: HtmlStyle = { position: 'absolute' }
 
 void lowercaseStyle
+void unregisterKeyframes
 void disabled
 void inputModel
 void badStyle

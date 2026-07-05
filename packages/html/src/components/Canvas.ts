@@ -5,7 +5,7 @@ import {
 } from '../utils/accessibility.js'
 import {
   applyTransformStyleProps,
-  applyTransitionStyleProps,
+  applyMotionStyleProps,
 } from '../utils/controlStyle.js'
 import { createOpacityModulate } from '../utils/godotColor.js'
 import {
@@ -110,7 +110,7 @@ export const Canvas = defineComponent({
       }
       applyTransformStyleProps(nodeProps, style)
       applyAccessibilityProps(nodeProps, props)
-      applyTransitionStyleProps(nodeProps, style)
+      applyMotionStyleProps(nodeProps, style)
 
       return h('Control', nodeProps)
     }

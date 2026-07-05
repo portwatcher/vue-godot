@@ -8,7 +8,7 @@ import {
 import {
   applyControlSizeProps,
   applyTransformStyleProps,
-  applyTransitionStyleProps,
+  applyMotionStyleProps,
 } from '../utils/controlStyle.js'
 import { resolveAssetPath } from '../utils/assetResolver.js'
 import {
@@ -303,7 +303,7 @@ export const Svg = defineComponent({
         nodeProps['visible'] = false
       }
       applyTransformStyleProps(nodeProps, style)
-      applyTransitionStyleProps(nodeProps, style)
+      applyMotionStyleProps(nodeProps, style)
 
       return h('TextureRect', nodeProps)
     }

@@ -8,7 +8,7 @@ import {
   applyDisplayAndOpacityProps,
   applyFontStyleProps,
   applyTransformStyleProps,
-  applyTransitionStyleProps,
+  applyMotionStyleProps,
 } from '../utils/controlStyle.js'
 import {
   applyAutoFocusProp,
@@ -164,7 +164,7 @@ export const Textarea = defineComponent({
       if (props.disabled !== true) {
         applyAutoFocusProp(nodeProps, props)
       }
-      applyTransitionStyleProps(nodeProps, style)
+      applyMotionStyleProps(nodeProps, style)
 
       return h('TextEdit', nodeProps)
     }

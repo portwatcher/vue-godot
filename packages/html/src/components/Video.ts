@@ -7,7 +7,7 @@ import {
 import {
   applyControlSizeProps,
   applyTransformStyleProps,
-  applyTransitionStyleProps,
+  applyMotionStyleProps,
 } from '../utils/controlStyle.js'
 import { createOpacityModulate } from '../utils/godotColor.js'
 import { classifySource, loadStream } from '../utils/streamLoader.js'
@@ -175,7 +175,7 @@ export const Video = defineComponent({
       }
       applyTransformStyleProps(nodeProps, style)
       applyAccessibilityProps(nodeProps, props)
-      applyTransitionStyleProps(nodeProps, style)
+      applyMotionStyleProps(nodeProps, style)
 
       return h('VideoStreamPlayer', nodeProps)
     }

@@ -239,6 +239,12 @@ test('detects unsupported style keys against the documented subset', () => {
       margin: 12,
       backgroundImage: 'url(panel.png)',
       transform: 'scale(1.1)',
+      animationName: 'pulse',
+      animationDuration: '400ms',
+      animationDelay: '50ms',
+      animationTimingFunction: 'ease-in-out',
+      animationIterationCount: 'infinite',
+      animationDirection: 'normal',
       transition: 'opacity 150ms ease-out',
       transitionDuration: '150ms',
       fontFamily: 'Inter, sans-serif',
@@ -251,6 +257,12 @@ test('detects unsupported style keys against the documented subset', () => {
   assert.equal(supportedHtmlStyleKeys.includes('borderRadius'), true)
   assert.equal(supportedHtmlStyleKeys.includes('margin'), true)
   assert.equal(supportedHtmlStyleKeys.includes('transform'), true)
+  assert.equal(supportedHtmlStyleKeys.includes('animationName'), true)
+  assert.equal(supportedHtmlStyleKeys.includes('animationDuration'), true)
+  assert.equal(supportedHtmlStyleKeys.includes('animationDelay'), true)
+  assert.equal(supportedHtmlStyleKeys.includes('animationTimingFunction'), true)
+  assert.equal(supportedHtmlStyleKeys.includes('animationIterationCount'), true)
+  assert.equal(supportedHtmlStyleKeys.includes('animationDirection'), true)
   assert.equal(supportedHtmlStyleKeys.includes('transition'), true)
   assert.equal(supportedHtmlStyleKeys.includes('transitionDuration'), true)
   assert.equal(supportedHtmlStyleKeys.includes('fontFamily'), true)

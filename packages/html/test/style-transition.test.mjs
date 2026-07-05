@@ -8,6 +8,10 @@ const { applyCommonControlStyleProps } = await import(
   '../dist/utils/controlStyle.js'
 )
 const {
+  applyMotionStyleProps,
+  clearStyleKeyframesForTests,
+  registerStyleKeyframes,
+  resolveStyleAnimation,
   resolveStyleTransitions,
   resolveTransitionTargets,
 } = await import('../dist/utils/styleTransition.js')
@@ -23,8 +27,13 @@ function createTweenNode() {
     create_tween() {
       const tween = {
         killed: false,
+        loops: null,
         parallel: false,
         calls: [],
+        set_loops(loops = 0) {
+          this.loops = loops
+          return this
+        },
         set_parallel(parallel = true) {
           this.parallel = parallel
           return this
@@ -298,4 +307,161 @@ test('transition hooks chain existing VNode handlers and kill active tweens', ()
   assert.equal(events.at(-1), 'cleanup-updated')
   assert.equal(node.tweens.length, 1)
   assert.equal(node.tweens[0].killed, true)
+})
+
+test('registers and resolves style keyframe animations', () => {
+  clearStyleKeyframesForTests()
+
+  const unregister = registerStyleKeyframes('pulse', [
+    {
+      offset: 0,
+      style: { opacity: 0.5, transform: 'scale(1)' },
+    },
+    {
+      offset: 1,
+      style: { opacity: 1, transform: 'scale(1.1)' },
+    },
+  ])
+
+  const animation = resolveStyleAnimation({
+    animationName: 'pulse',
+    animationDuration: '400ms',
+    animationTimingFunction: 'ease-out',
+    animationIterationCount: 2,
+  })
+
+  assert.equal(animation?.name, 'pulse')
+  assert.equal(animation?.duration, 0.4)
+  assert.equal(animation?.delay, 0)
+  assert.equal(animation?.timingFunction, 'ease-out')
+  assert.equal(animation?.iterationCount, 2)
+  assert.equal(animation?.direction, 'normal')
+  assert.equal(animation?.frames.length, 2)
+  assert.equal(animation?.frames[0].offset, 0)
+  assert.equal(animation?.frames[1].targets.get('modulate').a, 1)
+
+  unregister()
+  assert.equal(
+    resolveStyleAnimation({
+      animationName: 'pulse',
+      animationDuration: '400ms',
+    }),
+    null,
+  )
+})
+
+test('animation hooks tween registered keyframes on mount', () => {
+  clearStyleKeyframesForTests()
+  registerStyleKeyframes('pulse', [
+    {
+      offset: 0,
+      style: { opacity: 0.5, transform: 'scale(1)' },
+    },
+    {
+      offset: 1,
+      style: { opacity: 1, transform: 'scale(1.1)' },
+    },
+  ])
+
+  const node = createTweenNode()
+  const props = {}
+  applyMotionStyleProps(props, {
+    animationName: 'pulse',
+    animationDuration: '400ms',
+    animationTimingFunction: 'ease-out',
+    animationIterationCount: 2,
+  })
+
+  props.onVnodeMounted({ el: node })
+
+  assert.equal(node.tweens.length, 1)
+  assert.equal(node.tweens[0].parallel, true)
+  assert.equal(node.tweens[0].loops, 2)
+  assert.deepEqual(
+    node.setCalls.map((call) => [call.property, call.value.a ?? call.value]),
+    [
+      ['modulate', 0.5],
+      ['position:x', 0],
+      ['position:y', 0],
+      ['scale:x', 1],
+      ['scale:y', 1],
+      ['rotation', 0],
+    ],
+  )
+  assert.deepEqual(
+    node.tweens[0].calls
+      .filter((call) =>
+        ['modulate', 'scale:x', 'scale:y'].includes(call.property),
+      )
+      .map((call) => ({
+        property: call.property,
+        duration: call.duration,
+        delay: call.delay,
+        trans: call.trans,
+        ease: call.ease,
+      })),
+    [
+      {
+        property: 'modulate',
+        duration: 0.4,
+        delay: 0,
+        trans: 1,
+        ease: 1,
+      },
+      {
+        property: 'scale:x',
+        duration: 0.4,
+        delay: 0,
+        trans: 1,
+        ease: 1,
+      },
+      {
+        property: 'scale:y',
+        duration: 0.4,
+        delay: 0,
+        trans: 1,
+        ease: 1,
+      },
+    ],
+  )
+})
+
+test('animation hooks avoid duplicate restarts and clean up active tweens', () => {
+  clearStyleKeyframesForTests()
+  registerStyleKeyframes('pulse', [
+    { offset: 0, style: { opacity: 0.2 } },
+    { offset: 1, style: { opacity: 0.8 } },
+  ])
+
+  const node = createTweenNode()
+  const style = {
+    animationName: 'pulse',
+    animationDuration: '300ms',
+    animationIterationCount: 'infinite',
+  }
+  const props = {}
+  applyMotionStyleProps(props, style)
+  props.onVnodeMounted({ el: node })
+  props.onVnodeUpdated({ el: node })
+
+  assert.equal(node.tweens.length, 1)
+  assert.equal(node.tweens[0].loops, 0)
+
+  const changedProps = {}
+  applyMotionStyleProps(changedProps, {
+    ...style,
+    animationDuration: '600ms',
+  })
+  changedProps.onVnodeUpdated({ el: node })
+
+  assert.equal(node.tweens.length, 2)
+  assert.equal(node.tweens[0].killed, true)
+
+  const cleanupProps = {}
+  applyMotionStyleProps(cleanupProps, {
+    animationName: 'none',
+  })
+  cleanupProps.onVnodeUpdated({ el: node })
+
+  assert.equal(node.tweens[1].killed, true)
 })

@@ -2,10 +2,13 @@ import type { VNode } from '@vue/runtime-core'
 import { createOpacityModulate } from './godotColor.js'
 import type {
   HtmlStyle,
+  StyleAnimationDirection,
+  StyleAnimationIterationCount,
   StyleTime,
   StyleTransitionProperty,
   StyleTransitionTimingFunction,
 } from './styleMapping.js'
+import { toNumericPixels } from './styleMapping.js'
 import { resolveTransformStyle, type ResolvedTransform } from './transformStyle.js'
 import type { GodotPropBag } from './controlStyle.js'
 
@@ -19,6 +22,7 @@ interface GodotPropertyTweenerLike {
 
 interface GodotTweenLike {
   kill?: () => void
+  set_loops?: (loops?: number) => GodotTweenLike
   set_parallel?: (parallel?: boolean) => GodotTweenLike
   tween_property: (
     object: object,
@@ -50,6 +54,33 @@ interface TransitionTarget {
   value: unknown
 }
 
+export type StyleKeyframeStyle = Pick<
+  HtmlStyle,
+  'opacity' | 'transform' | 'width' | 'height'
+>
+
+export interface StyleKeyframe {
+  offset: number
+  style: StyleKeyframeStyle
+}
+
+interface NormalizedStyleKeyframe extends StyleKeyframe {
+  targets: Map<string, unknown>
+}
+
+export interface ResolvedStyleAnimation {
+  name: string
+  duration: number
+  delay: number
+  timingFunction: StyleTransitionTimingFunction
+  godotTransitionType: number
+  godotEaseType: number
+  iterationCount: StyleAnimationIterationCount
+  direction: StyleAnimationDirection
+  frames: NormalizedStyleKeyframe[]
+  signature: string
+}
+
 const TweenTransition = {
   LINEAR: 0,
   SINE: 1,
@@ -71,6 +102,11 @@ const transitionableStyleProperties = [
 
 const lastTargetsByNode = new WeakMap<object, Map<string, TransitionTarget>>()
 const activeTweensByNode = new WeakMap<object, GodotTweenLike[]>()
+const registeredStyleKeyframes = new Map<string, NormalizedStyleKeyframe[]>()
+const activeAnimationsByNode = new WeakMap<
+  object,
+  { signature: string; tween: GodotTweenLike }
+>()
 
 function isTransitionableStyleProperty(
   value: string,
@@ -450,6 +486,86 @@ function createIdentityTransform(): ResolvedTransform {
   }
 }
 
+function addMotionTarget(
+  targets: Map<string, unknown>,
+  godotProperty: string,
+  value: unknown,
+): void {
+  targets.set(godotProperty, value)
+}
+
+function resolveKeyframeTargets(style: StyleKeyframeStyle): Map<string, unknown> {
+  const targets = new Map<string, unknown>()
+
+  if (typeof style.opacity === 'number' && Number.isFinite(style.opacity)) {
+    addMotionTarget(targets, 'modulate', createOpacityModulate(style.opacity))
+  }
+
+  if (typeof style.transform === 'string') {
+    const transform = resolveTransformStyle(style.transform)
+    if (transform) {
+      addMotionTarget(targets, 'position:x', transform.translateX)
+      addMotionTarget(targets, 'position:y', transform.translateY)
+      addMotionTarget(targets, 'scale:x', transform.scaleX)
+      addMotionTarget(targets, 'scale:y', transform.scaleY)
+      addMotionTarget(targets, 'rotation', transform.rotation)
+    }
+  }
+
+  const width = toNumericPixels(style.width)
+  if (width != null) {
+    addMotionTarget(targets, 'custom_minimum_size:x', width)
+  }
+
+  const height = toNumericPixels(style.height)
+  if (height != null) {
+    addMotionTarget(targets, 'custom_minimum_size:y', height)
+  }
+
+  return targets
+}
+
+function normalizeStyleKeyframes(
+  frames: readonly StyleKeyframe[],
+): NormalizedStyleKeyframe[] {
+  return frames
+    .filter((frame) => Number.isFinite(frame.offset))
+    .map((frame) => ({
+      offset: Math.max(0, Math.min(1, frame.offset)),
+      style: frame.style,
+      targets: resolveKeyframeTargets(frame.style),
+    }))
+    .filter((frame) => frame.targets.size > 0)
+    .sort((left, right) => left.offset - right.offset)
+}
+
+export function registerStyleKeyframes(
+  name: string,
+  frames: readonly StyleKeyframe[],
+): () => void {
+  const normalizedName = name.trim()
+  if (normalizedName.length === 0) {
+    return () => {}
+  }
+
+  const normalizedFrames = normalizeStyleKeyframes(frames)
+  if (normalizedFrames.length < 2) {
+    registeredStyleKeyframes.delete(normalizedName)
+  } else {
+    registeredStyleKeyframes.set(normalizedName, normalizedFrames)
+  }
+
+  return () => unregisterStyleKeyframes(normalizedName)
+}
+
+export function unregisterStyleKeyframes(name: string): void {
+  registeredStyleKeyframes.delete(name.trim())
+}
+
+export function clearStyleKeyframesForTests(): void {
+  registeredStyleKeyframes.clear()
+}
+
 function addTarget(
   targets: TransitionTarget[],
   nodeProps: GodotPropBag,
@@ -670,6 +786,270 @@ function forgetTransitionState(node: unknown): void {
   lastTargetsByNode.delete(tweenable)
 }
 
+function hasAnimationDeclaration(style: HtmlStyle | undefined): boolean {
+  return Boolean(
+    style &&
+      (style.animationName != null ||
+        style.animationDuration != null ||
+        style.animationDelay != null ||
+        style.animationTimingFunction != null ||
+        style.animationIterationCount != null ||
+        style.animationDirection != null),
+  )
+}
+
+function normalizeAnimationIterationCount(
+  value: StyleAnimationIterationCount | undefined,
+): StyleAnimationIterationCount {
+  if (value === 'infinite') {
+    return value
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+    return Math.max(1, Math.floor(value))
+  }
+
+  return 1
+}
+
+function normalizeAnimationDirection(
+  value: StyleAnimationDirection | undefined,
+): StyleAnimationDirection {
+  return value === 'reverse' ? 'reverse' : 'normal'
+}
+
+function createAnimationSignature(
+  name: string,
+  duration: number,
+  delay: number,
+  timingFunction: StyleTransitionTimingFunction,
+  iterationCount: StyleAnimationIterationCount,
+  direction: StyleAnimationDirection,
+  frames: readonly NormalizedStyleKeyframe[],
+): string {
+  return JSON.stringify({
+    name,
+    duration,
+    delay,
+    timingFunction,
+    iterationCount,
+    direction,
+    frames: frames.map((frame) => ({
+      offset: frame.offset,
+      opacity: frame.style.opacity ?? null,
+      transform: frame.style.transform ?? null,
+      width: frame.style.width ?? null,
+      height: frame.style.height ?? null,
+    })),
+  })
+}
+
+export function resolveStyleAnimation(
+  style: HtmlStyle | undefined,
+): ResolvedStyleAnimation | null {
+  if (!style) {
+    return null
+  }
+
+  const name = style.animationName?.trim()
+  if (!name || name === 'none') {
+    return null
+  }
+
+  const frames = registeredStyleKeyframes.get(name)
+  const duration = parseStyleTime(style.animationDuration)
+  if (!frames || frames.length < 2 || duration == null || duration <= 0) {
+    return null
+  }
+
+  const timingFunction =
+    parseTimingFunction(style.animationTimingFunction) ?? defaultTimingFunction
+  const delay = parseStyleTime(style.animationDelay) ?? 0
+  const iterationCount = normalizeAnimationIterationCount(
+    style.animationIterationCount,
+  )
+  const direction = normalizeAnimationDirection(style.animationDirection)
+
+  return {
+    name,
+    duration,
+    delay,
+    timingFunction,
+    iterationCount,
+    direction,
+    frames,
+    signature: createAnimationSignature(
+      name,
+      duration,
+      delay,
+      timingFunction,
+      iterationCount,
+      direction,
+      frames,
+    ),
+    ...timingToGodot(timingFunction),
+  }
+}
+
+function orderedAnimationFrames(
+  animation: ResolvedStyleAnimation,
+): NormalizedStyleKeyframe[] {
+  return animation.direction === 'reverse'
+    ? [...animation.frames].reverse()
+    : [...animation.frames]
+}
+
+function killActiveAnimation(node: object): void {
+  const active = activeAnimationsByNode.get(node)
+  if (!active) {
+    return
+  }
+
+  active.tween.kill?.()
+  activeAnimationsByNode.delete(node)
+}
+
+function applyAnimationFrameTargets(
+  node: object & TweenableGodotNode,
+  frame: NormalizedStyleKeyframe,
+): void {
+  for (const [property, value] of frame.targets) {
+    applyTargetValue(node, property, value)
+  }
+}
+
+function runAnimation(
+  node: object & TweenableGodotNode,
+  animation: ResolvedStyleAnimation,
+): void {
+  const active = activeAnimationsByNode.get(node)
+  if (active?.signature === animation.signature) {
+    return
+  }
+
+  killActiveAnimation(node)
+
+  const frames = orderedAnimationFrames(animation)
+  const firstFrame = frames[0]
+  if (!firstFrame) {
+    return
+  }
+
+  applyAnimationFrameTargets(node, firstFrame)
+
+  if (typeof node.create_tween !== 'function') {
+    return
+  }
+
+  const tween = node.create_tween()
+  tween.set_parallel?.(true)
+  if (
+    typeof animation.iterationCount === 'number' &&
+    animation.iterationCount > 1
+  ) {
+    tween.set_loops?.(animation.iterationCount)
+  } else if (animation.iterationCount === 'infinite') {
+    tween.set_loops?.()
+  }
+
+  let elapsed = animation.delay
+  for (let index = 1; index < frames.length; index += 1) {
+    const previous = frames[index - 1]
+    const next = frames[index]
+    const segmentDuration =
+      Math.abs(next.offset - previous.offset) * animation.duration
+
+    if (segmentDuration <= 0) {
+      continue
+    }
+
+    for (const [property, value] of next.targets) {
+      const tweener = tween.tween_property(
+        node,
+        property,
+        value,
+        segmentDuration,
+      )
+      tweener.set_delay?.(elapsed)
+      tweener.set_trans?.(animation.godotTransitionType)
+      tweener.set_ease?.(animation.godotEaseType)
+    }
+
+    elapsed += segmentDuration
+  }
+
+  activeAnimationsByNode.set(node, {
+    signature: animation.signature,
+    tween,
+  })
+}
+
+function forgetAnimationState(node: unknown): void {
+  const tweenable = toTweenableNode(node)
+  if (!tweenable) {
+    return
+  }
+
+  killActiveAnimation(tweenable)
+}
+
+function applyAnimationCleanupProps(nodeProps: GodotPropBag): void {
+  const previousUpdated = readVNodeHandler(nodeProps['onVnodeUpdated'])
+  const previousBeforeUnmount = readVNodeHandler(
+    nodeProps['onVnodeBeforeUnmount'],
+  )
+
+  nodeProps['onVnodeUpdated'] = (vnode: VNode) => {
+    previousUpdated?.(vnode)
+    forgetAnimationState(vnode.el)
+  }
+
+  nodeProps['onVnodeBeforeUnmount'] = (vnode: VNode) => {
+    previousBeforeUnmount?.(vnode)
+    forgetAnimationState(vnode.el)
+  }
+}
+
+export function applyAnimationStyleProps(
+  nodeProps: GodotPropBag,
+  style: HtmlStyle | undefined,
+): void {
+  const animation = resolveStyleAnimation(style)
+  if (!animation) {
+    if (hasAnimationDeclaration(style)) {
+      applyAnimationCleanupProps(nodeProps)
+    }
+    return
+  }
+
+  const previousMounted = readVNodeHandler(nodeProps['onVnodeMounted'])
+  const previousUpdated = readVNodeHandler(nodeProps['onVnodeUpdated'])
+  const previousBeforeUnmount = readVNodeHandler(
+    nodeProps['onVnodeBeforeUnmount'],
+  )
+
+  nodeProps['onVnodeMounted'] = (vnode: VNode) => {
+    previousMounted?.(vnode)
+    const node = toTweenableNode(vnode.el)
+    if (node) {
+      runAnimation(node, animation)
+    }
+  }
+
+  nodeProps['onVnodeUpdated'] = (vnode: VNode) => {
+    previousUpdated?.(vnode)
+    const node = toTweenableNode(vnode.el)
+    if (node) {
+      runAnimation(node, animation)
+    }
+  }
+
+  nodeProps['onVnodeBeforeUnmount'] = (vnode: VNode) => {
+    previousBeforeUnmount?.(vnode)
+    forgetAnimationState(vnode.el)
+  }
+}
+
 function applyTransitionCleanupProps(nodeProps: GodotPropBag): void {
   const previousUpdated = readVNodeHandler(nodeProps['onVnodeUpdated'])
   const previousBeforeUnmount = readVNodeHandler(
@@ -733,4 +1113,12 @@ export function applyTransitionStyleProps(
     previousBeforeUnmount?.(vnode)
     forgetTransitionState(vnode.el)
   }
+}
+
+export function applyMotionStyleProps(
+  nodeProps: GodotPropBag,
+  style: HtmlStyle | undefined,
+): void {
+  applyTransitionStyleProps(nodeProps, style)
+  applyAnimationStyleProps(nodeProps, style)
 }

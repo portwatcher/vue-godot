@@ -41,6 +41,8 @@ export type StyleTransitionTimingFunction =
   | 'ease-in'
   | 'ease-out'
   | 'ease-in-out'
+export type StyleAnimationIterationCount = number | 'infinite'
+export type StyleAnimationDirection = 'normal' | 'reverse'
 
 export interface HtmlStyle {
   display?: 'flex' | 'grid' | 'none'
@@ -90,6 +92,12 @@ export interface HtmlStyle {
   textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize'
   textAlign?: 'left' | 'center' | 'right'
   transform?: string
+  animationName?: string
+  animationDuration?: StyleTime
+  animationDelay?: StyleTime
+  animationTimingFunction?: StyleTransitionTimingFunction | string
+  animationIterationCount?: StyleAnimationIterationCount
+  animationDirection?: StyleAnimationDirection
   transition?: string
   transitionProperty?:
     | StyleTransitionProperty
@@ -109,6 +117,12 @@ export interface HtmlStyle {
 export const supportedHtmlStyleKeys = [
   'alignItems',
   'alignSelf',
+  'animationDelay',
+  'animationDirection',
+  'animationDuration',
+  'animationIterationCount',
+  'animationName',
+  'animationTimingFunction',
   'backgroundColor',
   'backgroundImage',
   'borderBottomLeftRadius',

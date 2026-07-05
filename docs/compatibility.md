@@ -151,11 +151,12 @@ component checklist covers role mapping and documented style limits. Inline
 style objects support the documented Godot-backed subset; unsupported style
 keys emit a `[vue-godot/html]` warning once per component/property pair. Basic
 transitions for opacity, transform, width, and height run through bound Godot
-`Tween`s.
+`Tween`s, and registered keyframe-style animations support the same property
+subset.
 
 | Component/API | Owner | Status | Godot backend | Platforms | Permissions/export | Tests | Caveats |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `<Div>` | `html` | `partial` | Godot containers and style wrappers | All Godot UI targets | None | Unit, html-demo | CSS flex/grid subset with margin, padding, color/texture backgrounds, border, radius, percent-size anchors, basic transform wrappers, and opacity/transform/size transitions; not a DOM element. |
+| `<Div>` | `html` | `partial` | Godot containers and style wrappers | All Godot UI targets | None | Unit, html-demo | CSS flex/grid subset with margin, padding, color/texture backgrounds, border, radius, percent-size anchors, basic transform wrappers, and opacity/transform/size transitions plus registered keyframe animations; not a DOM element. |
 | `<Span>` | `html` | `partial` | `Label` | All Godot UI targets | None | Unit, html-demo | Text/style subset with registered/local font family loading; not a DOM inline layout box. |
 | `<ScrollView>` | `html` | `partial` | `ScrollContainer` plus inner `<Div>` content wrapper | All Godot UI targets | None | Unit, html-demo | Scrollbar behavior follows Godot `ScrollContainer`; content layout uses the existing style subset. |
 | `<VirtualList>` | `html` | `partial` | `ScrollContainer` plus fixed-height row wrappers and spacer `Control` nodes | All Godot UI targets | None | Unit, html-demo | Fixed row heights only; dynamic-height measurement and horizontal virtualization are not implemented. |

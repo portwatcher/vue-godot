@@ -22,7 +22,7 @@ import {
 import { useBackgroundTexture } from '../utils/backgroundTexture.js'
 import {
   applyTransformStyleProps,
-  applyTransitionStyleProps,
+  applyMotionStyleProps,
 } from '../utils/controlStyle.js'
 import type { GodotContainerTag, HtmlStyle } from '../utils/styleMapping.js'
 import {
@@ -232,7 +232,7 @@ export const Div = defineComponent({
       } = resolveContainerTag(style)
       applyAccessibilityProps(godotProps, props)
       applyTransformStyleProps(godotProps, style)
-      applyTransitionStyleProps(godotProps, style)
+      applyMotionStyleProps(godotProps, style)
       const slotChildren = slots.default?.()
       const childrenWithLayout = mapChildrenForContainerLayout(
         slotChildren,

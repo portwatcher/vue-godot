@@ -79,6 +79,7 @@ Rather than embedding a layout engine like Yoga, we map a CSS flexbox subset to 
 | `borderColor` / `borderWidth` / `borderRadius` | `StyleBoxFlat` border and corner-radius props                 |
 | `transform: translate/scale/rotate(...)`       | Godot `position`, `scale`, and `rotation` props                |
 | `transition: opacity/transform/width/height ...` | Godot `Tween` property tweens on supported style updates     |
+| `animationName` plus `animation*` props         | Godot `Tween` keyframe loops registered with `registerStyleKeyframes()` |
 | `color: <color>`                              | `theme_override_colors/font_color` on text controls             |
 | `fontFamily: <family list>`                   | Registered/local Godot fonts with fallback `FontVariation`      |
 | `fontWeight: 'bold'`                          | `theme_override_fonts/font` with `FontVariation` embolden       |
@@ -137,18 +138,44 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 | `transform` | Supports `translate()`, `translateX()`, `translateY()`, `scale()`, `scaleX()`, `scaleY()`, `rotate()`, and `rotateZ()` and maps them to Godot control transform props. |
 | `transition` | Supports CSS-like shorthand for `opacity`, `transform`, `width`, `height`, and `all`; durations accept seconds, `s`, or `ms`; timing supports `linear`, `ease`, `ease-in`, `ease-out`, and `ease-in-out`. |
 | `transitionProperty`, `transitionDuration`, `transitionDelay`, `transitionTimingFunction` | Longhand transition props for the same Godot-backed property subset. |
+| `animationName` | Starts a style keyframe animation registered with `registerStyleKeyframes()`; `'none'` stops an active style animation on the next update. |
+| `animationDuration`, `animationDelay`, `animationTimingFunction`, `animationIterationCount`, `animationDirection` | Configure registered style animations. Durations accept seconds, `s`, or `ms`; timing supports the same basic easing names as transitions; iteration count accepts positive numbers or `'infinite'`; direction supports `'normal'` and `'reverse'`. |
 | `overflowWrap` | Supports `'break-word'` on `<Span>` and `<Label>` via smart word wrapping. |
 | `overflow` | Supports `'hidden'` clipping where the backing Godot node exposes it. |
 | `opacity` | Maps to a Godot `modulate` alpha color. |
 
 Background images use the same loader as `<Img>` for local Godot paths, relative paths, data URIs, blob URLs, and remote URLs. CSS gradients, multiple backgrounds, repeat modes, and precise `background-size` / `background-position` behavior are not part of the current subset; the loaded texture is stretched to the panel bounds.
 
-Transforms and transitions intentionally cover only the basic Godot-backed
-subset. Transitions run through bound Godot `Tween`s for changed `opacity`,
-`transform`, `width`, and `height` style targets. Matrix, perspective, skew,
-transform-origin, cubic-bezier/steps timing functions, and CSS keyframe
-animations are not part of the current style subset. Use `transition: 'none'`
-or zero-duration longhands to stop active style tweens on the next update.
+Transforms, transitions, and registered animations intentionally cover only the
+basic Godot-backed subset. Transitions run through bound Godot `Tween`s for
+changed `opacity`, `transform`, `width`, and `height` style targets. Registered
+keyframes use the same target subset and are configured with inline
+`animation*` props. Matrix, perspective, skew, transform-origin,
+cubic-bezier/steps timing functions, CSS `@keyframes` parsing, animation
+shorthand, and multiple simultaneous style animations are not part of the
+current style subset. Use `transition: 'none'`, `animationName: 'none'`, or
+zero-duration longhands to stop active style tweens on the next update.
+
+```ts
+import { registerStyleKeyframes } from '@vue-godot/html'
+
+registerStyleKeyframes('pulse', [
+  { offset: 0, style: { opacity: 0.72, transform: 'scale(1)' } },
+  { offset: 1, style: { opacity: 1, transform: 'scale(1.04)' } },
+])
+```
+
+```vue
+<Div
+  :style="{
+    animationName: 'pulse',
+    animationDuration: '900ms',
+    animationIterationCount: 'infinite',
+  }"
+>
+  <Span>Pulsing panel</Span>
+</Div>
+```
 
 Font family loading is local and Godot-backed. Register CSS family names with `registerFontFamily(name, source, fallbacks)` or pass direct local font paths such as `./fonts/Inter.ttf` in `fontFamily`; remote font downloads and CSS `@font-face` parsing are not part of the current subset.
 
@@ -323,6 +350,7 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 | `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
 | `registerFontFamily`, `unregisterFontFamily`, `parseFontFamilyList`                                                                     | Registers CSS `fontFamily` names to local Godot font resources and parses CSS fallback lists              |
+| `registerStyleKeyframes`, `unregisterStyleKeyframes`                                                                                    | Registers Tween-backed style keyframes for `animationName` on `opacity`, `transform`, `width`, and `height` |
 | `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |
 
 Package types augment `@vue/runtime-core` `GlobalComponents`. PascalCase tags
@@ -813,6 +841,7 @@ This package is in early development. Currently scaffolded:
 - [x] Theme override application (margin wrappers plus `StyleBoxFlat` border and corner radius props)
 - [x] Texture-backed background images via `backgroundImage: url(...)`
 - [x] Basic transform mapping (`translate`, `scale`, `rotate`)
+- [x] Tween-backed transitions and registered keyframe animations for opacity, transform, width, and height
 - [x] Size flag mapping (flex, align-self)
 - [x] Div renderer integration tests (nested fragment/array slot layouts)
 - [x] `<style>` block support is a non-goal for the current beta; use inline style objects until a CSS-to-Godot mapping exists.
