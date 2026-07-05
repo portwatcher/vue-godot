@@ -1,6 +1,15 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 
+export { diagnoseProject, printDoctorReport, runDoctor } from './doctor.js'
+export type {
+  DoctorCheck,
+  DoctorOptions,
+  DoctorOutput,
+  DoctorReport,
+  DoctorStatus,
+} from './doctor.js'
+
 export interface GenerateOptions {
   /** Directory containing godot*.gen.d.ts files */
   typingsDir: string

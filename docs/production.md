@@ -28,7 +28,8 @@ smoke is skipped.
 For each app:
 
 1. Run `npm run build`.
-2. Run `npm run check:exports` if the generated export-setting checker exists.
+2. Run `npm run check:exports` if the generated export-setting checker exists,
+   or `npx vue-godot doctor --exports-only` from projects using the CLI.
 3. Open the project in the GodotJS editor and run the main scene.
 4. Test an exported binary for each target platform, not only editor play mode.
 5. Test adapter-backed capabilities on real devices or representative hosted
@@ -77,6 +78,12 @@ For adapter-backed APIs, test all relevant states:
 
 The expected behavior for each API is tracked in
 [compatibility.md](./compatibility.md).
+
+`vue-godot doctor` is a local guardrail for common setup mistakes: Node version,
+package specs and installs, GodotJS typings, Vite/Volar configuration, export
+permissions, and plugin-backed API hints. Treat warnings as release-review
+items; real device tests still decide whether native plugins and permissions are
+actually correct.
 
 ## Release Criteria
 

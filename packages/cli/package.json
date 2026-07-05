@@ -28,7 +28,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "npx tsc -p ."
+    "build": "npx tsc -p .",
+    "test": "npm run build && node --test test/*.test.mjs"
   },
   "dependencies": {},
   "devDependencies": {

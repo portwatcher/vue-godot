@@ -247,7 +247,7 @@ The project is production ready only when all of these are true:
   - [ ] `create game-ui` profile.
   - [ ] `integrate --html --device`.
   - [ ] Template option for router/storage/network/device APIs.
-  - [ ] Doctor command for GodotJS, Node, package versions, export settings, permissions, and missing plugins.
+  - [x] Doctor command for GodotJS, Node, package versions, export settings, permissions, and missing plugins.
 - [ ] Improve Volar and TypeScript support.
   - [ ] Lowercase and PascalCase HTML components.
   - [ ] Generated Godot component typings.

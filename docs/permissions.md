@@ -18,7 +18,8 @@ GodotJS, or an explicit `@vue-godot/device` adapter.
   misconfiguration are reported through typed errors from `@vue-godot/device`
   or browser-shaped wrapper errors.
 - Export permissions must be configured before a release build. The generated
-  `scripts/check-export-settings.mjs` warns when source code references APIs
+  `scripts/check-export-settings.mjs` delegates to
+  `vue-godot doctor --exports-only` and warns when source code references APIs
   whose platform export settings may be missing.
 
 ## Browser Permission Queries
@@ -138,6 +139,6 @@ browser-shaped error.
 ## Generated Export Check
 
 Generated projects include `npm run check:exports`, which scans Vue/source files
-for export-sensitive API references and prints platform setup warnings. It is a
-guardrail, not a substitute for real device testing. Keep the script warnings in
-sync with the APIs your app actually uses.
+for export-sensitive API references and prints platform setup warnings through
+the CLI doctor. It is a guardrail, not a substitute for real device testing.
+Keep the doctor warnings in sync with the APIs your app actually uses.

@@ -63,6 +63,8 @@ Generated projects also include `docs/production.md` and
 `scripts/check-export-settings.mjs`. Run `npm run check:exports` before release
 exports; it scans selected Vue/TypeScript APIs and warns when matching Android
 permissions or iOS plist keys are not present in `export_presets.cfg`.
+The generated export check delegates to `vue-godot doctor --exports-only`, so
+the same rules are available directly from the CLI.
 
 ### `integrate`
 
@@ -124,6 +126,27 @@ npx @vue-godot/cli gen-types
 ```
 
 Re-run whenever Godot typings are regenerated (e.g. after a Godot version upgrade).
+
+### `doctor`
+
+Check local project setup, package specs and installed versions, GodotJS
+typings, Vite/Volar configuration, export settings, and plugin-backed API hints.
+
+```bash
+vue-godot doctor [dir] [options]
+```
+
+| Argument | Description                        |
+| -------- | ---------------------------------- |
+| `dir`    | Target directory (defaults to `.`) |
+
+| Option           | Description                                                                 |
+| ---------------- | --------------------------------------------------------------------------- |
+| `--exports-only` | Only scan `vue/`, `src/`, and `export_presets.cfg` for permission warnings |
+
+`doctor` exits with a non-zero status only for errors. Missing export presets,
+missing `node_modules`, and adapter-backed API setup are warnings because they
+depend on the local release workflow or target devices.
 
 ## Development (monorepo)
 

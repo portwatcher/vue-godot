@@ -8,6 +8,7 @@ need explicit platform setup. Run this checklist before making release builds.
 ```bash
 npm run build
 npm run check:exports
+npx vue-godot doctor
 ```
 
 Godot loads `dist/app.js`, so build before exporting. Keep `vue/`, `gen/`, and
@@ -60,7 +61,9 @@ plugin-backed capability in the exported Web build.
 
 ## Export Setting Check
 
-`npm run check:exports` scans `vue/` and `src/` for selected APIs and prints
-warnings when matching Android permissions or iOS plist keys are missing from
-`export_presets.cfg`. It is a template-level guardrail, not a replacement for
-real device testing.
+`npm run check:exports` delegates to `vue-godot doctor --exports-only`. It
+scans `vue/` and `src/` for selected APIs and prints warnings when matching
+Android permissions or iOS plist keys are missing from `export_presets.cfg`.
+Run `npx vue-godot doctor` for the broader local setup check covering package
+installs, GodotJS typings, Vite/Volar setup, and plugin-backed API hints. These
+checks are guardrails, not replacements for real device testing.

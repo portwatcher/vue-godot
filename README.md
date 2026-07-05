@@ -125,7 +125,7 @@ export default class App extends Control {
 | [`@vue-godot/html`](./packages/html/README.md)                 | HTML-like Vue components implemented with Godot nodes            |
 | [`@vue-godot/browser`](./packages/browser/README.md)           | Browser API polyfills for GodotJS                                |
 | [`@vue-godot/device`](./packages/device/README.md)             | Device/native capability registry and adapter contracts          |
-| [`@vue-godot/cli`](./packages/cli/README.md)                   | CLI for creating projects, integrating Vue, and generating types |
+| [`@vue-godot/cli`](./packages/cli/README.md)                   | CLI for creating projects, integrating Vue, diagnosing setup, and generating types |
 
 ## Examples
 
@@ -143,7 +143,7 @@ export default class App extends Control {
 Vue Godot is a custom Vue renderer that targets Godot's scene tree instead of the DOM.
 
 - **`@vue-godot/runtime-tscn`** — A Vue custom renderer (`createRenderer` from `@vue/runtime-core`) that maps Vue operations to Godot node tree operations: `createElement` → `ClassDB.instantiate()`, `insert` → `add_child()`, `patchProp` → `el.set()` / signal `connect()`, etc.
-- **`@vue-godot/cli`** — A CLI tool (`vue-godot`) for scaffolding projects, integrating Vue into an existing Godot project, and generating Vue `GlobalComponents` type augmentation from GodotJS typings.
+- **`@vue-godot/cli`** — A CLI tool (`vue-godot`) for scaffolding projects, integrating Vue into an existing Godot project, diagnosing local setup with `vue-godot doctor`, and generating Vue `GlobalComponents` type augmentation from GodotJS typings.
 - **`@vue-godot/html`** — HTML-like Vue components backed by Godot nodes (`<div>`, `<span>`, `<button>`, `<input>`, `<a>`, media elements, etc.).
 - **`@vue-godot/browser`** — Browser API polyfills for GodotJS (`fetch`, `URL`, `Blob`, `history`, `TextEncoder`, and related APIs).
 - **`@vue-godot/device`** — Device/native capability registry, adapter interfaces, feature detection, and typed capability errors.
@@ -250,6 +250,7 @@ npm run smoke:public-cli # post-publish create --html smoke using public npm pac
 npm run smoke:godot  # optional: runs apps/html-demo lifecycle smoke with GODOT_BIN/godot4/godot
 npm run smoke:generated-godot # optional: generated create --html app under Godot + watch rebuild
 npm run smoke:editor-reload # optional: generated app played from the Godot editor before/after a watch rebuild
+npx vue-godot doctor # optional: local project diagnostics for package/export/plugin setup
 npm run check        # build + test + CLI smoke
 npm run release:preflight # release gate: check + pack dry-runs + registry + Godot smokes
 npm run release:publish   # publish helper used by the Publish workflow; dry-run locally

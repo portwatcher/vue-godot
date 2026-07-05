@@ -3,6 +3,7 @@
 import * as path from 'node:path'
 import * as readline from 'node:readline/promises'
 import { create } from './create.js'
+import { printDoctorReport, runDoctor } from './doctor.js'
 import { generate } from './index.js'
 import { integrate } from './integrate.js'
 
@@ -17,6 +18,7 @@ Commands:
   create      Create a new Godot project with vue-godot set up and ready to go
   integrate   Scaffold a vue/ folder with Vite + Vue configs for an existing Godot project
   gen-types   Generate Vue GlobalComponents type augmentation from Godot typings
+  doctor      Check local project setup, packages, exports, and plugin-backed APIs
 
 Run \`vue-godot <command> --help\` for command-specific options.
 `,
@@ -178,6 +180,52 @@ function parseIntegrateArgs(argv: string[]) {
   return { targetDir: targetDir ?? '.', force, html }
 }
 
+function doctorUsage(): never {
+  console.error(
+    `Usage: vue-godot doctor [dir] [options]
+
+Check local project setup, package versions, GodotJS typings, export settings,
+permissions, and plugin-backed API setup.
+
+Arguments:
+  dir             Target directory (defaults to the current directory)
+
+Options:
+  --exports-only  Only scan source files and export_presets.cfg for permission/plist warnings
+`,
+  )
+  process.exit(1)
+}
+
+function parseDoctorArgs(argv: string[]) {
+  let targetDir: string | undefined
+  let exportsOnly = false
+
+  for (let i = 0; i < argv.length; i++) {
+    switch (argv[i]) {
+      case '--exports-only':
+        exportsOnly = true
+        break
+      case '--help':
+      case '-h':
+        doctorUsage()
+      default:
+        if (argv[i].startsWith('-')) {
+          console.error(`Unknown option: ${argv[i]}`)
+          doctorUsage()
+        }
+        if (!targetDir) {
+          targetDir = argv[i]
+        } else {
+          console.error(`Unexpected argument: ${argv[i]}`)
+          doctorUsage()
+        }
+    }
+  }
+
+  return { targetDir: targetDir ?? '.', exportsOnly }
+}
+
 if (!command || command === '--help' || command === '-h') {
   mainUsage()
 }
@@ -215,6 +263,18 @@ switch (command) {
   case 'integrate': {
     const parsed = parseIntegrateArgs(args.slice(1))
     await integrate({ targetDir: parsed.targetDir, force: parsed.force, html: parsed.html })
+    break
+  }
+  case 'doctor': {
+    const parsed = parseDoctorArgs(args.slice(1))
+    const report = runDoctor({
+      targetDir: parsed.targetDir,
+      exportsOnly: parsed.exportsOnly,
+    })
+    printDoctorReport(report)
+    if (report.errorCount > 0) {
+      process.exit(1)
+    }
     break
   }
   default:
