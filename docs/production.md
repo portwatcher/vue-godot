@@ -60,9 +60,14 @@ commit, pass
 `--commit <release-candidate-sha>` pointed at the tested release commit.
 `release:evidence` rejects not-ready or inconsistent structured CI summaries
 before writing evidence.
-`npm run release:platform-evidence` creates a starter Android/iOS platform
-evidence file with the exact required device check names; it still must be
-filled with real artifact, device, OS, API, pass, and skip data after testing.
+`npm run release:platform-evidence -- --production-profile` creates a starter
+Android/iOS platform evidence file with the exact required device check names
+for the maintained production-profile selected API set; it still must be filled
+with real artifact, device, OS, API, pass, and skip data after testing.
+The production profile currently expands to `fetch`, `WebSocket`,
+`navigator.permissions.query`, `navigator.clipboard`,
+`navigator.geolocation`, `navigator.mediaDevices.getUserMedia`,
+`navigator.vibrate`, `readDeviceMotion`, and `SafeAreaView`.
 Selected API names are validated, so typos or unknown names fail before
 conditional checks can be omitted.
 Its `passOnlyChecks` worksheet lists core launch/runtime checks that must not

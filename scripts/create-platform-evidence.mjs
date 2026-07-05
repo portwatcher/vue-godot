@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url'
 import {
   knownRealDeviceSelectedApis,
   passOnlyRealDeviceChecks,
+  productionProfileSelectedApis,
   requiredRealDeviceChecks,
   selectedApiRequiredCheckMap,
   unknownRealDeviceSelectedApis,
@@ -34,6 +35,8 @@ Options:
   --selected-api <name>            Add a selected API. Can be repeated.
   --selected-apis <csv>            Add comma-separated selected APIs.
                                   Unknown selected API names fail validation.
+  --production-profile             Add the maintained production-profile
+                                  selected API set used by release evidence.
   --android-artifact <name>        Android APK/AAB or hosted build identifier.
   --ios-artifact <name>            iOS archive, TestFlight, or hosted build identifier.
   --android-export-preset <name>   Android export preset. Default: Android Release.
@@ -61,6 +64,7 @@ function parseArgs(argv) {
   const options = {
     output: defaultOutput,
     selectedApis: [],
+    productionProfile: false,
     androidArtifact: '',
     iosArtifact: '',
     androidExportPreset: 'Android Release',
@@ -101,6 +105,11 @@ function parseArgs(argv) {
         throw new Error(`${arg} requires a value`)
       }
       addSelectedApis(options, value)
+      continue
+    }
+
+    if (arg === '--production-profile') {
+      options.productionProfile = true
       continue
     }
 
@@ -214,7 +223,10 @@ function buildNextActions(platformEvidencePath) {
 }
 
 export function buildPlatformEvidenceTemplate(options = {}) {
-  const selectedApis = uniqueStrings(options.selectedApis ?? [])
+  const selectedApis = uniqueStrings([
+    ...(options.productionProfile ? productionProfileSelectedApis : []),
+    ...(options.selectedApis ?? []),
+  ])
   const unknownSelectedApis = unknownRealDeviceSelectedApis(selectedApis)
   if (unknownSelectedApis.length > 0) {
     throw new Error(

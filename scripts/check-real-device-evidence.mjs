@@ -9,6 +9,7 @@ import {
 import {
   checkRealDeviceEvidenceCommand,
   initialReleaseCiCommands,
+  productionProfilePlatformEvidenceCommand,
   releaseEvidenceCommand,
 } from './release-handoff-commands.mjs'
 import { currentReleasePackageVersions, repoRoot } from './release-utils.mjs'
@@ -109,7 +110,7 @@ function collectNextActions(summary) {
         title: 'Create and fill Android/iOS platform evidence',
         detail:
           'Start from the platform evidence worksheet, run the selected API export checks on real or hosted devices, and record pass/skip outcomes.',
-        commands: ['npm run release:platform-evidence -- --selected-api <api>'],
+        commands: [productionProfilePlatformEvidenceCommand],
       },
       {
         id: 'assemble-real-device-evidence',

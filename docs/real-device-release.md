@@ -82,18 +82,17 @@ Android and iOS required check names are ready to fill:
 
 ```bash
 npm run release:platform-evidence -- \
-  --selected-api fetch \
-  --selected-api WebSocket \
-  --selected-api navigator.permissions.query \
-  --selected-api navigator.clipboard \
-  --selected-api navigator.geolocation \
-  --selected-api navigator.mediaDevices.getUserMedia \
-  --selected-api navigator.vibrate \
-  --selected-api readDeviceMotion \
-  --selected-api SafeAreaView \
+  --production-profile \
   --orientation "portrait and landscape" \
   --locale en-US
 ```
+
+The `--production-profile` shortcut expands to the maintained selected API set:
+`fetch`, `WebSocket`, `navigator.permissions.query`,
+`navigator.clipboard`, `navigator.geolocation`,
+`navigator.mediaDevices.getUserMedia`, `navigator.vibrate`,
+`readDeviceMotion`, and `SafeAreaView`. Add extra `--selected-api` flags only
+for release candidates that intentionally exercise more APIs.
 
 The generated `requiredChecks` arrays are a worksheet only. After testing, move
 each item into `passedChecks` or into `skippedChecks` with a release-specific

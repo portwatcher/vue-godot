@@ -8,6 +8,7 @@ import {
 } from '../scripts/create-release-evidence.mjs'
 import {
   passOnlyRealDeviceChecks,
+  productionProfileSelectedApis,
   requiredRealDeviceChecks,
   validateRealDeviceEvidence,
 } from '../scripts/real-device-evidence.mjs'
@@ -102,6 +103,62 @@ test('platform evidence template next actions honor custom output paths', () => 
       command.includes('--platform-evidence release/custom-platform-evidence.json'),
     ),
   )
+})
+
+test('platform evidence template expands production profile selected APIs', () => {
+  const template = buildPlatformEvidenceTemplate({
+    productionProfile: true,
+    selectedApis: ['fetch', 'KeyboardAvoidingView'],
+  })
+
+  assert.deepEqual(template.android.selectedApis, [
+    ...productionProfileSelectedApis,
+    'KeyboardAvoidingView',
+  ])
+  assert.deepEqual(template.android.selectedApiRequiredChecks, {
+    'network-if-selected': ['fetch', 'WebSocket'],
+    'permission-prompts-if-selected': [
+      'navigator.permissions.query',
+      'navigator.geolocation',
+      'navigator.mediaDevices.getUserMedia',
+      'navigator.vibrate',
+    ],
+    'clipboard-if-selected': ['navigator.clipboard'],
+    'adapter-states-if-selected': [
+      'navigator.geolocation',
+      'navigator.mediaDevices.getUserMedia',
+    ],
+    'hardware-adapters-if-selected': [
+      'navigator.geolocation',
+      'navigator.mediaDevices.getUserMedia',
+    ],
+    'haptics-if-selected': ['navigator.vibrate'],
+    'sensors-if-selected': ['readDeviceMotion'],
+    'safe-area-keyboard': ['SafeAreaView', 'KeyboardAvoidingView'],
+  })
+  assert.deepEqual(template.ios.selectedApiRequiredChecks, {
+    'network-if-selected': ['fetch', 'WebSocket'],
+    'permission-prompts-if-selected': [
+      'navigator.permissions.query',
+      'navigator.geolocation',
+      'navigator.mediaDevices.getUserMedia',
+    ],
+    'clipboard-if-selected': ['navigator.clipboard'],
+    'adapter-states-if-selected': [
+      'navigator.geolocation',
+      'navigator.mediaDevices.getUserMedia',
+    ],
+    'hardware-adapters-if-selected': [
+      'navigator.geolocation',
+      'navigator.mediaDevices.getUserMedia',
+    ],
+    'haptics-if-selected': ['navigator.vibrate'],
+    'sensors-if-selected': ['readDeviceMotion'],
+    'safe-area-keyboard-rotation-text-input': [
+      'SafeAreaView',
+      'KeyboardAvoidingView',
+    ],
+  })
 })
 
 test('platform evidence template expands device API conditional checks', () => {

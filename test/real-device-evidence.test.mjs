@@ -7,6 +7,7 @@ import test from 'node:test'
 import {
   knownRealDeviceSelectedApis,
   passOnlyRealDeviceChecks,
+  productionProfileSelectedApis,
   readRealDeviceEvidence,
   realDeviceWorksheetFields,
   requiredRealDeviceChecks,
@@ -217,6 +218,20 @@ test('real device evidence rejects worksheet-only platform fields', () => {
 })
 
 test('selected API release checks cover public conditional release gates', () => {
+  assert.deepEqual(productionProfileSelectedApis, [
+    'fetch',
+    'WebSocket',
+    'navigator.permissions.query',
+    'navigator.clipboard',
+    'navigator.geolocation',
+    'navigator.mediaDevices.getUserMedia',
+    'navigator.vibrate',
+    'readDeviceMotion',
+    'SafeAreaView',
+  ])
+  for (const apiName of productionProfileSelectedApis) {
+    assert.ok(knownRealDeviceSelectedApis.includes(apiName))
+  }
   assert.ok(knownRealDeviceSelectedApis.includes('navigator.permissions'))
   assert.ok(knownRealDeviceSelectedApis.includes('navigator.permissions.query'))
   assert.ok(knownRealDeviceSelectedApis.includes('PermissionAdapter'))
@@ -447,7 +462,11 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
     assert.equal(summary.errorCount, 1)
     assert.ok(
       summary.nextActions.some(
-        (action) => action.id === 'create-platform-evidence',
+        (action) =>
+          action.id === 'create-platform-evidence' &&
+          action.commands.includes(
+            'npm run release:platform-evidence -- --production-profile',
+          ),
       ),
     )
     assert.ok(
@@ -494,6 +513,15 @@ test('check-real-device-evidence next actions honor expected commits', () => {
     )
 
     assert.equal(result.status, 0)
+    assert.ok(
+      summary.nextActions.some(
+        (action) =>
+          action.id === 'create-platform-evidence' &&
+          action.commands.includes(
+            'npm run release:platform-evidence -- --production-profile',
+          ),
+      ),
+    )
     assert.ok(assembleAction)
     assert.ok(
       assembleAction.commands.includes(

@@ -26,6 +26,7 @@ import {
   defaultReleasePreflightSummaryPath,
   defaultReleaseReadinessEvidencePath,
   initialReleaseCiCommands,
+  productionProfilePlatformEvidenceCommand,
   releaseEvidenceCommand,
   releaseCommitLabel,
   releasePreflightRunCommitPlaceholder,
@@ -908,7 +909,7 @@ function collectReadinessNextActions(checks, commit, localGit) {
         'Run the local check and selected API export checks on real or hosted devices, then assemble and validate release/real-device-evidence.json for the tested release commit.',
       commands: [
         'npm run check',
-        'npm run release:platform-evidence -- --selected-api <api>',
+        productionProfilePlatformEvidenceCommand,
         ...initialReleaseCiCommands(commit),
         releaseEvidenceCommand(commit),
         checkRealDeviceEvidenceCommand(commit),

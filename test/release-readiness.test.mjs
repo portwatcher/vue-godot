@@ -598,6 +598,9 @@ test('release readiness summary includes missing evidence next actions', () => {
           action.id === 'real-device-evidence' &&
           action.commands[0] === 'npm run check' &&
           action.commands.includes(
+            'npm run release:platform-evidence -- --production-profile',
+          ) &&
+          action.commands.includes(
             `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${summary.commit} --dispatch-missing --wait --ref <branch-or-tag> --output release/ci-runs.json`,
           ) &&
           action.commands.includes(

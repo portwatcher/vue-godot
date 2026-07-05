@@ -12,6 +12,18 @@ import { releasePackageConfigs, repoRoot } from './release-utils.mjs'
 export const realDeviceEvidenceEnvVar = 'VUE_GODOT_REAL_DEVICE_EVIDENCE'
 export const defaultRealDeviceEvidencePath = 'release/real-device-evidence.json'
 
+export const productionProfileSelectedApis = [
+  'fetch',
+  'WebSocket',
+  'navigator.permissions.query',
+  'navigator.clipboard',
+  'navigator.geolocation',
+  'navigator.mediaDevices.getUserMedia',
+  'navigator.vibrate',
+  'readDeviceMotion',
+  'SafeAreaView',
+]
+
 export const requiredRealDeviceChecks = {
   android: [
     'cold-launch',
