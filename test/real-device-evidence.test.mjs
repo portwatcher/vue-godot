@@ -122,6 +122,23 @@ test('real device evidence requires conditional checks to pass for selected APIs
   )
 })
 
+test('real device evidence requires permission checks for selected permission APIs', () => {
+  const evidence = validEvidence()
+  evidence.android.selectedApis = ['navigator.permissions.query']
+  evidence.android.passedChecks = evidence.android.passedChecks.filter(
+    (check) => check !== 'permission-prompts-if-selected',
+  )
+  evidence.android.skippedChecks = {
+    'permission-prompts-if-selected':
+      'Permission state checks were not exercised in this pass.',
+  }
+
+  assert.match(
+    validateRealDeviceEvidence(evidence).join('\n'),
+    /android\.permission-prompts-if-selected must be in passedChecks because selectedApis includes navigator\.permissions\.query/,
+  )
+})
+
 test('real device evidence exposes metadata and platform-specific validation', () => {
   const evidence = validEvidence()
   evidence.android.passedChecks = evidence.android.passedChecks.filter(
@@ -201,6 +218,8 @@ test('real device evidence rejects worksheet-only platform fields', () => {
 
 test('selected API release checks cover public conditional release gates', () => {
   assert.ok(knownRealDeviceSelectedApis.includes('navigator.permissions'))
+  assert.ok(knownRealDeviceSelectedApis.includes('navigator.permissions.query'))
+  assert.ok(knownRealDeviceSelectedApis.includes('PermissionAdapter'))
   for (const apiName of Object.keys(selectedApiRequiredRealDeviceChecks)) {
     assert.ok(knownRealDeviceSelectedApis.includes(apiName))
   }
@@ -238,6 +257,18 @@ test('selected API release checks cover public conditional release gates', () =>
   assert.deepEqual(
     selectedApiRequiredRealDeviceChecks['navigator.clipboard'].all,
     ['clipboard-if-selected'],
+  )
+  assert.deepEqual(
+    selectedApiRequiredRealDeviceChecks['navigator.permissions'].all,
+    ['permission-prompts-if-selected'],
+  )
+  assert.deepEqual(
+    selectedApiRequiredRealDeviceChecks['navigator.permissions.query'].all,
+    ['permission-prompts-if-selected'],
+  )
+  assert.deepEqual(
+    selectedApiRequiredRealDeviceChecks.PermissionAdapter.all,
+    ['permission-prompts-if-selected', 'adapter-states-if-selected'],
   )
   assert.deepEqual(
     selectedApiRequiredRealDeviceChecks['navigator.vibrate'].all,

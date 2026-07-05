@@ -83,6 +83,7 @@ const notificationSelectedChecks = [
   'permission-prompts-if-selected',
   'adapter-states-if-selected',
 ]
+const permissionSelectedChecks = ['permission-prompts-if-selected']
 const adapterStateSelectedChecks = ['adapter-states-if-selected']
 const iosDeepLinkShareNotificationChecks = [
   'deep-links-share-notifications-if-selected',
@@ -108,6 +109,15 @@ export const selectedApiRequiredRealDeviceChecks = {
   },
   'navigator.onLine': {
     all: networkSelectedChecks,
+  },
+  'navigator.permissions': {
+    all: permissionSelectedChecks,
+  },
+  'navigator.permissions.query': {
+    all: permissionSelectedChecks,
+  },
+  PermissionAdapter: {
+    all: [...permissionSelectedChecks, ...adapterStateSelectedChecks],
   },
   localStorage: {
     all: storageSelectedChecks,
@@ -305,7 +315,6 @@ export const selectedApiRequiredRealDeviceChecks = {
 
 export const knownRealDeviceSelectedApis = [
   ...Object.keys(selectedApiRequiredRealDeviceChecks),
-  'navigator.permissions',
 ].sort()
 
 export function resolveRealDeviceEvidencePath(env = process.env) {

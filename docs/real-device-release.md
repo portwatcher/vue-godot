@@ -84,6 +84,7 @@ Android and iOS required check names are ready to fill:
 npm run release:platform-evidence -- \
   --selected-api fetch \
   --selected-api WebSocket \
+  --selected-api navigator.permissions.query \
   --selected-api navigator.clipboard \
   --selected-api navigator.geolocation \
   --selected-api navigator.mediaDevices.getUserMedia \

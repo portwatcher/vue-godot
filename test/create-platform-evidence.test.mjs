@@ -107,6 +107,7 @@ test('platform evidence template next actions honor custom output paths', () => 
 test('platform evidence template expands device API conditional checks', () => {
   const template = buildPlatformEvidenceTemplate({
     selectedApis: [
+      'navigator.permissions.query',
       'navigator.clipboard',
       'navigator.vibrate',
       '@vue-godot/device/microphone',
@@ -115,19 +116,23 @@ test('platform evidence template expands device API conditional checks', () => {
   })
 
   assert.deepEqual(template.android.selectedApiRequiredChecks, {
-    'clipboard-if-selected': ['navigator.clipboard'],
-    'haptics-if-selected': ['navigator.vibrate'],
     'permission-prompts-if-selected': [
+      'navigator.permissions.query',
       'navigator.vibrate',
       '@vue-godot/device/microphone',
     ],
+    'clipboard-if-selected': ['navigator.clipboard'],
+    'haptics-if-selected': ['navigator.vibrate'],
     'audio-input-if-selected': ['@vue-godot/device/microphone'],
     'sensors-if-selected': ['readDeviceMotion'],
   })
   assert.deepEqual(template.ios.selectedApiRequiredChecks, {
+    'permission-prompts-if-selected': [
+      'navigator.permissions.query',
+      '@vue-godot/device/microphone',
+    ],
     'clipboard-if-selected': ['navigator.clipboard'],
     'haptics-if-selected': ['navigator.vibrate'],
-    'permission-prompts-if-selected': ['@vue-godot/device/microphone'],
     'audio-input-if-selected': ['@vue-godot/device/microphone'],
     'sensors-if-selected': ['readDeviceMotion'],
   })
