@@ -54,8 +54,12 @@ to dispatch Check and Godot Smoke from the CLI. The helper refuses to dispatch
 unless the branch or tag resolves to the same commit on GitHub. After the
 Release Preflight workflow passes, rerun it with `--include-release-preflight`
 so the same CI evidence file also includes the verified preflight run URL used
-by final readiness evidence. `release:evidence` rejects not-ready or
-inconsistent structured CI summaries before writing evidence.
+by final readiness evidence. If that workflow runs on a follow-up evidence
+commit, pass
+`--release-preflight-run-commit <evidence-commit-sha>` while keeping
+`--commit <release-candidate-sha>` pointed at the tested release commit.
+`release:evidence` rejects not-ready or inconsistent structured CI summaries
+before writing evidence.
 `npm run release:platform-evidence` creates a starter Android/iOS platform
 evidence file with the exact required device check names; it still must be
 filled with real artifact, device, OS, API, pass, and skip data after testing.
@@ -87,7 +91,11 @@ then pass it to `release:evidence` with
 `--release-preflight-summary release/release-preflight-summary.json`. The
 helpers check that the summary commit matches and that the preflight had zero
 failures, zero warnings, did not use local-only mode, and did not skip release
-gates before recording those facts in final readiness evidence.
+gates before recording those facts in final readiness evidence. When the
+preflight run URL is supplied manually from a follow-up evidence commit, pass
+`--release-preflight-run-commit <evidence-commit-sha>` so the run metadata is
+verified against the workflow commit while the summary and generated evidence
+still validate the tested release candidate.
 
 The local preflight command may warn when Godot smoke is skipped or when package
 versions are newer than the registry. Release builds should run the full
@@ -111,8 +119,9 @@ for release handoff. The initial CI, real-device, and Release Preflight evidence
 actions begin with `npm run check` before collecting CI or assembling evidence.
 The initial CI action captures Check and Godot Smoke, while Release Preflight is
 captured later after real-device evidence is committed. That later action
-includes the `--dispatch-missing` command and `--real-device-evidence-path`
-input for the workflow-dispatch-only preflight workflow. The
+includes the `--dispatch-missing`, `--release-preflight-run-commit`, and
+`--real-device-evidence-path` inputs for the workflow-dispatch-only preflight
+workflow. The
 final warning-removal action runs `npm run check` after the finalizer, stages
 the finalizer files, commits them, and then runs the final strict readiness
 check. When an
@@ -126,9 +135,10 @@ script wiring, CI workflow wiring, public-surface documentation/demo alignment,
 the final release state. Evidence run URLs must be GitHub Actions run URLs for
 `portwatcher/vue-godot`; in strict mode the run metadata is fetched from GitHub,
 the workflow names must match `Check`, `Godot Smoke`, and `Release Preflight`,
-the run commits must match the tested release commit recorded in the evidence,
-the runs must be completed successfully, and real-device package versions must
-match the current package manifests.
+the Check/Godot Smoke run commits must match the tested release commit recorded
+in the evidence, the Release Preflight run commit must match the recorded
+preflight workflow commit, the runs must be completed successfully, and
+real-device package versions must match the current package manifests.
 If evidence files are committed after testing a pushed release-candidate commit,
 pass `--expected-commit <release-candidate-sha>` so strict readiness validates
 the tested commit instead of the evidence commit.
@@ -160,15 +170,20 @@ as the schema reference for the post-preflight evidence file.
 
 Use the `Release Preflight` GitHub Actions workflow to run non-local preflight
 without publishing packages. It accepts the same real-device evidence path as
-the publish workflow and is the preferred source for the preflight run URL in
-release records. The workflow runs
-`npm run release:preflight -- --summary-output release/release-preflight-summary.json`
+the publish workflow, accepts an `expected_commit` input for the tested release
+candidate, and is the preferred source for the preflight run URL in release
+records. The workflow runs
+`npm run release:preflight -- --expected-commit "${{ inputs.expected_commit }}" --summary-output release/release-preflight-summary.json`
 and uploads the JSON as the `release-preflight-summary` artifact for
 `npm run release:evidence -- --release-preflight-summary`. Capture the matching
 workflow run URL with:
 
 ```bash
-npm run release:ci -- --include-release-preflight --output release/ci-runs.json
+npm run release:ci -- \
+  --commit <release-candidate-sha> \
+  --include-release-preflight \
+  --release-preflight-run-commit <evidence-commit-sha> \
+  --output release/ci-runs.json
 ```
 
 Run that before creating final readiness evidence.
@@ -186,14 +201,21 @@ the workflow and evidence input:
 
 ```bash
 GH_TOKEN="$(gh auth token)" npm run release:ci -- \
-  --commit <sha> \
+  --commit <release-candidate-sha> \
   --include-release-preflight \
+  --release-preflight-run-commit <evidence-commit-sha> \
   --dispatch-missing \
   --wait \
   --ref <branch-or-tag> \
   --real-device-evidence-path release/real-device-evidence.json \
   --output release/ci-runs.json
 ```
+
+For this later preflight dispatch, the ref must resolve to the evidence commit.
+The helper sends the tested release candidate as the workflow `expected_commit`
+input, so non-local preflight validates `release/real-device-evidence.json`
+against the release commit even though the workflow run attaches to the
+evidence commit.
 
 The `Check`, `Godot Smoke`, `Release Preflight`, and `Publish` workflows all run
 under Node 24 with `npm@^11.15.0`, so release-candidate CI evidence is produced

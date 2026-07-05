@@ -169,8 +169,20 @@ evidence so it includes the verified Release Preflight run URL:
 
 ```bash
 npm run release:ci -- \
-  --commit "$(git rev-parse HEAD)" \
+  --commit <release-candidate-sha> \
   --include-release-preflight \
+  --output release/ci-runs.json
+```
+
+If the real-device evidence was committed after the tested release candidate,
+run the preflight workflow on that follow-up evidence commit and keep
+`--commit` pointed at the tested release candidate:
+
+```bash
+npm run release:ci -- \
+  --commit <release-candidate-sha> \
+  --include-release-preflight \
+  --release-preflight-run-commit <evidence-commit-sha> \
   --output release/ci-runs.json
 ```
 
@@ -187,14 +199,21 @@ workflow input:
 
 ```bash
 GH_TOKEN="$(gh auth token)" npm run release:ci -- \
-  --commit "$(git rev-parse HEAD)" \
+  --commit <release-candidate-sha> \
   --include-release-preflight \
+  --release-preflight-run-commit <evidence-commit-sha> \
   --dispatch-missing \
   --wait \
   --ref <branch-or-tag> \
   --real-device-evidence-path release/real-device-evidence.json \
   --output release/ci-runs.json
 ```
+
+For that later preflight dispatch, `<branch-or-tag>` must resolve to the
+evidence commit that contains `release/real-device-evidence.json`. The helper
+passes the tested release candidate to the workflow as `expected_commit`, so the
+non-local preflight validates the committed evidence against the release commit
+instead of against the evidence commit itself.
 
 Rerun the same evidence command with the summary JSON to create the final
 readiness evidence:
@@ -216,8 +235,11 @@ skipped, failed, or warning-bearing summaries before writing readiness evidence.
 `--ci-evidence` supplies the Release Preflight run URL when it was generated
 with `--include-release-preflight`, and the structured CI summary must report
 the Release Preflight workflow as ready; otherwise pass
-`--release-preflight-run-url` manually. `--release-preflight-warning-count 0` is
-only an optional consistency check when the summary artifact is also supplied.
+`--release-preflight-run-url` manually. Pass
+`--release-preflight-run-commit <evidence-commit-sha>` with a manual URL when
+the preflight run attached to a follow-up evidence commit.
+`--release-preflight-warning-count 0` is only an optional consistency check when
+the summary artifact is also supplied.
 
 After committing the final evidence files, generate a strict readiness summary
 outside the worktree and run the guarded finalizer:
@@ -250,9 +272,10 @@ this evidence is missing. Non-local preflight runs fail until the evidence file
 exists and validates for the current commit.
 
 Run the `Release Preflight` GitHub Actions workflow after committing the
-evidence file. It runs the non-local release preflight without publishing, and
-its successful run URL should be recorded in the release PR, tag notes, or
-release issue.
+evidence file. It runs the non-local release preflight without publishing,
+passes the tested release candidate through `expected_commit`, and its
+successful run URL should be recorded in the release PR, tag notes, or release
+issue.
 
 ## Common Gate
 
@@ -274,7 +297,9 @@ Run these before platform-specific device checks:
 Run non-local `npm run release:preflight` or the `Release Preflight` workflow
 only after `release/real-device-evidence.json` is generated and committed for
 the tested release candidate. Non-local preflight fails when real-device
-evidence is missing, and its warning-free summary is later imported into
+evidence is missing. When the workflow runs from a follow-up evidence commit,
+its `expected_commit` input must be the tested release-candidate SHA. Its
+warning-free summary is later imported into
 `release/release-readiness-evidence.json`.
 
 ## Android Release Smoke

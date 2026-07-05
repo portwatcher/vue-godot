@@ -18,6 +18,13 @@ export function releaseCiCommand(commit, options = {}) {
   if (options.includeReleasePreflight) {
     args.push('--include-release-preflight')
   }
+  if (
+    options.releasePreflightRunCommit &&
+    options.releasePreflightRunCommit !== releaseCommitLabel(commit) &&
+    options.includeReleasePreflight
+  ) {
+    args.push('--release-preflight-run-commit', options.releasePreflightRunCommit)
+  }
   if (options.dispatchMissing) {
     args.push('--dispatch-missing')
   }
@@ -59,10 +66,12 @@ export function initialReleaseCiCommands(commit, options = {}) {
 
 export function releasePreflightCiCommands(commit, options = {}) {
   const output = options.output ?? defaultReleaseCiEvidencePath
+  const releasePreflightRunCommit = options.releasePreflightRunCommit
   return [
     releaseCiCommand(commit, {
       includeReleasePreflight: true,
       output,
+      releasePreflightRunCommit,
       wait: true,
     }),
     releaseCiCommand(commit, {
@@ -72,6 +81,7 @@ export function releasePreflightCiCommands(commit, options = {}) {
       realDeviceEvidencePath:
         options.realDeviceEvidencePath ?? defaultRealDeviceEvidencePath,
       ref: options.ref ?? releaseDispatchRefPlaceholder,
+      releasePreflightRunCommit,
       wait: true,
       withGitHubToken: true,
     }),

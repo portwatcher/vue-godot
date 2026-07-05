@@ -31,6 +31,7 @@ Options:
   --skip-check                    Skip npm run check.
   --skip-godot                    Skip Godot smoke checks.
   --skip-serious-examples         Skip serious example app readiness checks.
+  --expected-commit <sha>         Tested release commit. Default: current HEAD.
   --summary-output <file>         Write machine-readable preflight summary JSON.
   --help                          Show this help.
 `)
@@ -42,6 +43,7 @@ function parseArgs(argv) {
     skipCheck: false,
     skipGodot: false,
     skipSeriousExamples: false,
+    expectedCommit: null,
     summaryOutput: null,
   }
 
@@ -68,6 +70,18 @@ function parseArgs(argv) {
       options.skipSeriousExamples = true
       continue
     }
+    if (arg === '--expected-commit') {
+      const value = argv[++index]
+      if (!value) {
+        throw new Error('--expected-commit requires a value')
+      }
+      options.expectedCommit = value
+      continue
+    }
+    if (arg.startsWith('--expected-commit=')) {
+      options.expectedCommit = arg.slice('--expected-commit='.length)
+      continue
+    }
     if (arg === '--summary-output') {
       const value = argv[++index]
       if (!value) {
@@ -92,6 +106,7 @@ const localOnly = options.localOnly
 const skipCheck = options.skipCheck
 const skipGodot = options.skipGodot
 const skipSeriousExamples = options.skipSeriousExamples
+let cachedExpectedCommit = null
 
 const failures = []
 const warnings = []
@@ -536,9 +551,12 @@ function readCurrentCommit() {
   return result.stdout.trim()
 }
 
-function readSummaryCommit() {
-  const result = run('git', ['rev-parse', 'HEAD'])
-  return result.status === 0 ? result.stdout.trim() : null
+function expectedReleaseCommit() {
+  if (cachedExpectedCommit !== null) {
+    return cachedExpectedCommit
+  }
+  cachedExpectedCommit = options.expectedCommit ?? readCurrentCommit()
+  return cachedExpectedCommit
 }
 
 function recordRealDeviceEvidenceIssue(message) {
@@ -569,7 +587,7 @@ async function checkRealDeviceEvidence() {
     return
   }
 
-  const currentCommit = readCurrentCommit()
+  const currentCommit = expectedReleaseCommit()
   const errors = validateRealDeviceEvidence(evidence, {
     expectedCommit: currentCommit ?? undefined,
     expectedPackageVersions: currentReleasePackageVersions(),
@@ -602,7 +620,7 @@ async function checkRealDeviceEvidence() {
 
 function buildPreflightSummary() {
   return {
-    commit: readSummaryCommit(),
+    commit: expectedReleaseCommit(),
     localOnly,
     skipCheck,
     skipGodot,

@@ -366,16 +366,6 @@ export function validateReleaseReadinessEvidence(evidence, expectedCommit) {
   }
 
   if (
-    hasNonEmptyString(evidence, 'commit') &&
-    hasNonEmptyString(evidence, 'releasePreflightRunCommit') &&
-    evidence.releasePreflightRunCommit !== evidence.commit
-  ) {
-    errors.push(
-      `releaseReadiness.releasePreflightRunCommit must match commit ${evidence.commit}`,
-    )
-  }
-
-  if (
     expectedCommit &&
     hasNonEmptyString(evidence, 'commit') &&
     evidence.commit !== expectedCommit
@@ -781,7 +771,7 @@ async function checkReleaseReadinessEvidence(blockers, options, expectedCommit) 
       {
         label: 'releaseReadiness.releasePreflightRunUrl',
         workflowName: 'Release Preflight',
-        commit: evidence.commit,
+        commit: evidence.releasePreflightRunCommit,
         conclusion: 'success',
       },
     )

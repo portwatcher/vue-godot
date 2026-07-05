@@ -19,6 +19,7 @@ import { validateReleaseReadinessEvidence } from '../scripts/release-readiness.m
 import { currentReleasePackageVersions } from '../scripts/release-utils.mjs'
 
 const commit = '0123456789abcdef0123456789abcdef01234567'
+const evidenceCommit = 'abcdef0123456789abcdef0123456789abcdef01'
 
 function ciRunResult(workflows, overrides = {}) {
   const workflowNames = Object.keys(workflows)
@@ -133,6 +134,29 @@ test('buildReleaseReadinessEvidence records release preflight run metadata', () 
   assert.deepEqual(validateReleaseReadinessEvidence(evidence, commit), [])
 })
 
+test('buildReleaseReadinessEvidence accepts preflight runs on evidence commits', () => {
+  const evidence = buildReleaseReadinessEvidence({
+    commit,
+    releasePreflightRunUrl:
+      'https://github.com/portwatcher/vue-godot/actions/runs/3',
+    releasePreflightRun: {
+      name: 'Release Preflight',
+      head_sha: evidenceCommit,
+      conclusion: 'success',
+    },
+    releasePreflightLocalOnly: false,
+    releasePreflightSkipCheck: false,
+    releasePreflightSkipGodot: false,
+    releasePreflightSkipSeriousExamples: false,
+    releasePreflightFailureCount: 0,
+    releasePreflightWarningCount: 0,
+  })
+
+  assert.equal(evidence.commit, commit)
+  assert.equal(evidence.releasePreflightRunCommit, evidenceCommit)
+  assert.deepEqual(validateReleaseReadinessEvidence(evidence, commit), [])
+})
+
 test('create-release-evidence requires a preflight summary for readiness evidence', () => {
   const result = spawnSync(
     process.execPath,
@@ -180,6 +204,7 @@ test('create-release-evidence help describes --commit as the tested release comm
 
   assert.equal(result.status, 0)
   assert.match(result.stdout, /--commit <sha>\s+Tested release commit/)
+  assert.match(result.stdout, /--release-preflight-run-commit <sha>/)
   assert.match(result.stdout, /follow-up evidence commit/)
 })
 
@@ -252,6 +277,7 @@ test('extractCiRunUrls reads release CI evidence for the tested release commit',
       godotSmokeRunUrl:
         'https://github.com/portwatcher/vue-godot/actions/runs/2',
       releasePreflightRunUrl: null,
+      releasePreflightRunCommit: null,
       errors: [],
     },
   )
@@ -421,6 +447,7 @@ test('extractCiRunUrls accepts legacy CI evidence with verified workflow URLs', 
       godotSmokeRunUrl:
         'https://github.com/portwatcher/vue-godot/actions/runs/2',
       releasePreflightRunUrl: null,
+      releasePreflightRunCommit: null,
       errors: [],
     },
   )
@@ -438,6 +465,7 @@ test('extractCiRunUrls can read Release Preflight evidence for final readiness',
         },
         'Release Preflight': {
           runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/3',
+          runCommit: evidenceCommit,
         },
       }),
       commit,
@@ -449,6 +477,7 @@ test('extractCiRunUrls can read Release Preflight evidence for final readiness',
         'https://github.com/portwatcher/vue-godot/actions/runs/2',
       releasePreflightRunUrl:
         'https://github.com/portwatcher/vue-godot/actions/runs/3',
+      releasePreflightRunCommit: evidenceCommit,
       errors: [],
     },
   )

@@ -29,6 +29,7 @@ export const releaseCiWorkflowDispatches = {
   [releasePreflightWorkflowName]: {
     workflowId: 'release-preflight.yml',
     inputName: 'real_device_evidence_path',
+    expectedCommitInputName: 'expected_commit',
   },
 }
 
@@ -46,6 +47,9 @@ Options:
   --commit <sha>       Commit to verify. Default: current HEAD.
   --include-release-preflight
                        Also require the Release Preflight workflow run.
+  --release-preflight-run-commit <sha>
+                       Commit that should have the Release Preflight workflow
+                       run. Defaults to --commit.
   --wait               Poll GitHub Actions until required runs pass or timeout.
   --timeout-ms <ms>    Maximum wait time. Default: ${defaultTimeoutMs}.
   --poll-ms <ms>       Poll interval while waiting. Default: ${defaultPollMs}.
@@ -67,6 +71,7 @@ function parseArgs(argv) {
   const options = {
     commit: null,
     includeReleasePreflight: false,
+    releasePreflightRunCommit: null,
     json: false,
     output: null,
     allowMissing: false,
@@ -93,6 +98,22 @@ function parseArgs(argv) {
 
     if (arg === '--include-release-preflight') {
       options.includeReleasePreflight = true
+      continue
+    }
+
+    if (arg === '--release-preflight-run-commit') {
+      const value = argv[++index]
+      if (!value) {
+        throw new Error('--release-preflight-run-commit requires a value')
+      }
+      options.releasePreflightRunCommit = value
+      continue
+    }
+
+    if (arg.startsWith('--release-preflight-run-commit=')) {
+      options.releasePreflightRunCommit = arg.slice(
+        '--release-preflight-run-commit='.length,
+      )
       continue
     }
 
@@ -332,13 +353,25 @@ export function selectSuccessfulWorkflowRun(runs, workflowName, commit) {
     })[0]
 }
 
+function workflowTargetCommit(workflowName, commit, options = {}) {
+  return workflowName === releasePreflightWorkflowName
+    ? options.releasePreflightRunCommit ?? commit
+    : commit
+}
+
 export function missingReleaseCiWorkflows(
   runs,
   commit,
   workflows = requiredReleaseCiWorkflows,
+  options = {},
 ) {
   return workflows.filter(
-    (workflowName) => !selectSuccessfulWorkflowRun(runs, workflowName, commit),
+    (workflowName) =>
+      !selectSuccessfulWorkflowRun(
+        runs,
+        workflowName,
+        workflowTargetCommit(workflowName, commit, options),
+      ),
   )
 }
 
@@ -346,13 +379,15 @@ export function dispatchableReleaseCiWorkflows(
   runs,
   commit,
   workflows = requiredReleaseCiWorkflows,
+  options = {},
 ) {
   return workflows.filter((workflowName) => {
-    if (selectSuccessfulWorkflowRun(runs, workflowName, commit)) {
+    const targetCommit = workflowTargetCommit(workflowName, commit, options)
+    if (selectSuccessfulWorkflowRun(runs, workflowName, targetCommit)) {
       return false
     }
 
-    const latestRun = selectLatestWorkflowRun(runs, workflowName, commit)
+    const latestRun = selectLatestWorkflowRun(runs, workflowName, targetCommit)
     return !latestRun || latestRun.status === 'completed'
   })
 }
@@ -374,12 +409,31 @@ export function collectReleaseCiRunEvidence(
       `Commit ${commit} was not found on GitHub; push the release-candidate commit before collecting CI evidence.`,
     )
   }
+  if (
+    workflows.includes(releasePreflightWorkflowName) &&
+    options.releasePreflightCommitFound === false &&
+    workflowTargetCommit(releasePreflightWorkflowName, commit, options) !==
+      commit
+  ) {
+    errors.push(
+      `Release Preflight run commit ${workflowTargetCommit(
+        releasePreflightWorkflowName,
+        commit,
+        options,
+      )} was not found on GitHub; push the evidence commit before collecting Release Preflight evidence.`,
+    )
+  }
 
   for (const workflowName of workflows) {
-    const runMetadata = selectSuccessfulWorkflowRun(runs, workflowName, commit)
+    const targetCommit = workflowTargetCommit(workflowName, commit, options)
+    const runMetadata = selectSuccessfulWorkflowRun(
+      runs,
+      workflowName,
+      targetCommit,
+    )
     if (!runMetadata) {
       errors.push(
-        `No completed successful ${workflowName} workflow run found for commit ${commit}`,
+        `No completed successful ${workflowName} workflow run found for commit ${targetCommit}`,
       )
       continue
     }
@@ -387,7 +441,13 @@ export function collectReleaseCiRunEvidence(
     evidence.workflows[workflowName] = summarizeWorkflowRun(runMetadata)
   }
 
-  return { evidence, errors }
+  return {
+    evidence,
+    errors,
+    releasePreflightRunCommit: workflows.includes(releasePreflightWorkflowName)
+      ? workflowTargetCommit(releasePreflightWorkflowName, commit, options)
+      : null,
+  }
 }
 
 export function validateWorkflowDispatchRef(ref, commit, refCommit) {
@@ -418,9 +478,13 @@ function workflowDispatchInputs(workflowName, options) {
     return {}
   }
 
-  return {
+  const inputs = {
     [dispatchConfig.inputName]: options.realDeviceEvidencePath,
   }
+  if (dispatchConfig.expectedCommitInputName) {
+    inputs[dispatchConfig.expectedCommitInputName] = options.commit
+  }
+  return inputs
 }
 
 function logProgress(options, message) {
@@ -475,6 +539,7 @@ function releaseCiCommand(output, options = {}) {
     includeReleasePreflight: output.requiredWorkflowNames.includes(
       releasePreflightWorkflowName,
     ),
+    releasePreflightRunCommit: output.releasePreflightRunCommit,
   })
 }
 
@@ -599,21 +664,47 @@ function writeJson(filePath, data, options) {
   )
 }
 
-async function collectReleaseCiRunResult(commit, workflows) {
+async function collectReleaseCiRunResult(commit, workflows, options = {}) {
   const commitFound = await fetchGitHubCommitExists(commit)
-  const runs = commitFound ? await fetchGitHubActionsRunsForCommit(commit) : []
+  const releasePreflightRunCommit =
+    options.releasePreflightRunCommit ?? commit
+  const releasePreflightCommitFound =
+    releasePreflightRunCommit === commit
+      ? commitFound
+      : await fetchGitHubCommitExists(releasePreflightRunCommit)
+  const releaseRuns = commitFound
+    ? await fetchGitHubActionsRunsForCommit(commit)
+    : []
+  const releasePreflightRuns =
+    releasePreflightRunCommit !== commit && releasePreflightCommitFound
+      ? await fetchGitHubActionsRunsForCommit(releasePreflightRunCommit)
+      : []
+  const runs = [...releaseRuns, ...releasePreflightRuns]
   const result = collectReleaseCiRunEvidence(runs, commit, workflows, {
     commitFound,
+    releasePreflightCommitFound,
+    releasePreflightRunCommit: options.releasePreflightRunCommit,
   })
 
-  return { ...result, runs, commitFound }
+  return { ...result, runs, commitFound, releasePreflightCommitFound }
 }
 
-async function dispatchReleaseCiWorkflows(workflows, ref, options) {
+async function dispatchReleaseCiWorkflows(
+  workflows,
+  ref,
+  commit,
+  refCommit,
+  options,
+) {
   for (const workflowName of workflows) {
     const dispatchConfig = releaseCiWorkflowDispatches[workflowName]
     if (!dispatchConfig) {
       throw new Error(`No workflow dispatch config for ${workflowName}`)
+    }
+    const targetCommit = workflowTargetCommit(workflowName, commit, options)
+    const refErrors = validateWorkflowDispatchRef(ref, targetCommit, refCommit)
+    if (refErrors.length > 0) {
+      throw new Error(refErrors.join('\n'))
     }
 
     logProgress(options, `[release-ci] dispatching ${workflowName} on ${ref}`)
@@ -633,16 +724,21 @@ function sleep(ms) {
 
 async function waitForReleaseCiRunResult(commit, workflows, options) {
   const deadline = Date.now() + options.timeoutMs
-  let result = await collectReleaseCiRunResult(commit, workflows)
+  let result = await collectReleaseCiRunResult(commit, workflows, options)
 
   while (result.errors.length > 0 && Date.now() < deadline) {
-    const missing = missingReleaseCiWorkflows(result.runs, commit, workflows)
+    const missing = missingReleaseCiWorkflows(
+      result.runs,
+      commit,
+      workflows,
+      options,
+    )
     logProgress(
       options,
       `[release-ci] waiting for ${missing.join(', ') || 'release CI'}...`,
     )
     await sleep(options.pollMs)
-    result = await collectReleaseCiRunResult(commit, workflows)
+    result = await collectReleaseCiRunResult(commit, workflows, options)
   }
 
   if (result.errors.length > 0) {
@@ -677,6 +773,7 @@ export function releaseCiOutput(result, workflows = requiredReleaseCiWorkflows) 
     ready: result.errors.length === 0,
     commit: result.evidence.commit,
     commitFound: result.commitFound !== false,
+    releasePreflightRunCommit: result.releasePreflightRunCommit ?? null,
     localGit: result.localGit ?? null,
     requiredWorkflowNames: [...workflows],
     passedWorkflowNames,
@@ -699,25 +796,29 @@ export function releaseCiOutput(result, workflows = requiredReleaseCiWorkflows) 
 async function main() {
   const options = parseArgs(process.argv.slice(2))
   const commit = options.commit ?? currentCommit()
+  options.commit = commit
   const workflows = releaseCiWorkflows(options)
-  let result = await collectReleaseCiRunResult(commit, workflows)
+  let result = await collectReleaseCiRunResult(commit, workflows, options)
 
   if (options.dispatchMissing && result.commitFound) {
     const workflowsToDispatch = dispatchableReleaseCiWorkflows(
       result.runs,
       commit,
       workflows,
+      options,
     )
 
     if (workflowsToDispatch.length > 0) {
       const ref = options.ref ?? currentBranchRef()
       const refCommit = await fetchGitHubCommitSha(ref)
-      const refErrors = validateWorkflowDispatchRef(ref, commit, refCommit)
-      if (refErrors.length > 0) {
-        throw new Error(refErrors.join('\n'))
-      }
 
-      await dispatchReleaseCiWorkflows(workflowsToDispatch, ref, options)
+      await dispatchReleaseCiWorkflows(
+        workflowsToDispatch,
+        ref,
+        commit,
+        refCommit,
+        options,
+      )
     }
   }
 

@@ -15,6 +15,7 @@ import {
   collectTodoItems,
   collectUncheckedTodoItems,
   formatFinalTodoRequirementStatus,
+  validateReleaseReadinessEvidence,
 } from '../scripts/release-readiness.mjs'
 
 function runReadiness(args = []) {
@@ -681,6 +682,22 @@ test('release readiness requires a GitHub Actions preflight run URL for this rep
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }
+})
+
+test('release readiness allows Release Preflight to run on evidence commits', () => {
+  const evidence = JSON.parse(
+    fs.readFileSync('docs/release-readiness-evidence.example.json', 'utf-8'),
+  )
+  evidence.releasePreflightRunCommit =
+    'abcdef0123456789abcdef0123456789abcdef01'
+
+  assert.deepEqual(
+    validateReleaseReadinessEvidence(
+      evidence,
+      '0123456789abcdef0123456789abcdef01234567',
+    ),
+    [],
+  )
 })
 
 test('release readiness requires the Release Preflight workflow name', () => {

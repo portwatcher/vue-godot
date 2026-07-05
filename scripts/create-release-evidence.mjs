@@ -32,6 +32,7 @@ const optionFlags = {
   godotSmokeRunUrl: '--godot-smoke-run-url',
   realDeviceOutput: '--real-device-output',
   releasePreflightRunUrl: '--release-preflight-run-url',
+  releasePreflightRunCommit: '--release-preflight-run-commit',
   releasePreflightWarningCount: '--release-preflight-warning-count',
   releasePreflightSummaryPath: '--release-preflight-summary',
   readinessOutput: '--readiness-output',
@@ -52,6 +53,9 @@ Options:
   --real-device-output <file>      Write real-device evidence JSON.
   --release-preflight-run-url <url>
                                   Successful Release Preflight workflow run URL.
+  --release-preflight-run-commit <sha>
+                                  Commit that has the Release Preflight workflow
+                                  run. Defaults to --commit or CI evidence.
   --release-preflight-warning-count <count>
                                   Optional consistency check for the summary warning count.
   --release-preflight-summary <file>
@@ -81,6 +85,7 @@ function parseArgs(argv) {
     godotSmokeRunUrl: null,
     realDeviceOutput: null,
     releasePreflightRunUrl: null,
+    releasePreflightRunCommit: null,
     releasePreflightWarningCount: null,
     releasePreflightSummaryPath: null,
     readinessOutput: null,
@@ -95,6 +100,7 @@ function parseArgs(argv) {
     ['--godot-smoke-run-url', 'godotSmokeRunUrl'],
     ['--real-device-output', 'realDeviceOutput'],
     ['--release-preflight-run-url', 'releasePreflightRunUrl'],
+    ['--release-preflight-run-commit', 'releasePreflightRunCommit'],
     ['--release-preflight-warning-count', 'releasePreflightWarningCount'],
     ['--release-preflight-summary', 'releasePreflightSummaryPath'],
     ['--readiness-output', 'readinessOutput'],
@@ -229,6 +235,16 @@ function workflowRunUrl(ciEvidence, workflowName, errors, options = {}) {
   return workflow.runUrl
 }
 
+function workflowRunCommit(ciEvidence, workflowName) {
+  const workflow = isRecord(ciEvidence.workflows?.[workflowName])
+    ? ciEvidence.workflows[workflowName]
+    : null
+  return typeof workflow?.runCommit === 'string' &&
+    workflow.runCommit.trim().length > 0
+    ? workflow.runCommit
+    : null
+}
+
 function collectCiSummaryStatusErrors(ciResult, options = {}) {
   const errors = []
   const statusFieldNames = [
@@ -326,13 +342,25 @@ export function extractCiRunUrls(ciResult, commit, options = {}) {
   const errors = []
   if (!isRecord(ciResult)) {
     errors.push('CI evidence must be a JSON object')
-    return { checkRunUrl: null, godotSmokeRunUrl: null, errors }
+    return {
+      checkRunUrl: null,
+      godotSmokeRunUrl: null,
+      releasePreflightRunUrl: null,
+      releasePreflightRunCommit: null,
+      errors,
+    }
   }
 
   const ciEvidence = isRecord(ciResult.evidence) ? ciResult.evidence : ciResult
   if (!isRecord(ciEvidence)) {
     errors.push('CI evidence must include an evidence object')
-    return { checkRunUrl: null, godotSmokeRunUrl: null, errors }
+    return {
+      checkRunUrl: null,
+      godotSmokeRunUrl: null,
+      releasePreflightRunUrl: null,
+      releasePreflightRunCommit: null,
+      errors,
+    }
   }
 
   if (Array.isArray(ciResult.errors)) {
@@ -366,7 +394,16 @@ export function extractCiRunUrls(ciResult, commit, options = {}) {
     errors,
     { required: options.requireReleasePreflight === true },
   )
-  return { checkRunUrl, godotSmokeRunUrl, releasePreflightRunUrl, errors }
+  const releasePreflightRunCommit = releasePreflightRunUrl
+    ? workflowRunCommit(ciEvidence, 'Release Preflight')
+    : null
+  return {
+    checkRunUrl,
+    godotSmokeRunUrl,
+    releasePreflightRunUrl,
+    releasePreflightRunCommit,
+    errors,
+  }
 }
 
 function mergeRunUrlOption(name, explicitUrl, evidenceUrl) {
@@ -653,6 +690,12 @@ async function main() {
         ciEvidence.releasePreflightRunUrl,
       )
     }
+    if (
+      ciEvidence.releasePreflightRunCommit &&
+      !options.releasePreflightRunCommit
+    ) {
+      options.releasePreflightRunCommit = ciEvidence.releasePreflightRunCommit
+    }
   }
   assertRequiredOptions(options, ['checkRunUrl', 'godotSmokeRunUrl'])
   if (wantsReadinessEvidence) {
@@ -695,7 +738,7 @@ async function main() {
     const releasePreflightRun = await readSuccessfulRun(
       options.releasePreflightRunUrl,
       'Release Preflight',
-      commit,
+      options.releasePreflightRunCommit ?? commit,
       'releaseReadiness.releasePreflightRunUrl',
     )
     const releasePreflightWarningCount = parseWarningCount(

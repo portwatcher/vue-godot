@@ -142,6 +142,68 @@ test('release CI run evidence can include Release Preflight for final readiness'
   )
 })
 
+test('release CI run evidence can collect Release Preflight on evidence commits', () => {
+  const workflows = [...requiredReleaseCiWorkflows, releasePreflightWorkflowName]
+  const { evidence, errors, releasePreflightRunCommit } =
+    collectReleaseCiRunEvidence(
+      [
+        workflowRun({
+          name: 'Check',
+          html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+        }),
+        workflowRun({
+          name: 'Godot Smoke',
+          html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+        }),
+        workflowRun({
+          name: releasePreflightWorkflowName,
+          head_sha: otherCommit,
+          html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/3',
+        }),
+      ],
+      commit,
+      workflows,
+      { releasePreflightRunCommit: otherCommit },
+    )
+
+  assert.deepEqual(errors, [])
+  assert.equal(releasePreflightRunCommit, otherCommit)
+  assert.equal(evidence.workflows.Check.runCommit, commit)
+  assert.equal(evidence.workflows['Godot Smoke'].runCommit, commit)
+  assert.equal(
+    evidence.workflows[releasePreflightWorkflowName].runCommit,
+    otherCommit,
+  )
+})
+
+test('release CI run evidence reports missing evidence commit preflight runs', () => {
+  const { errors } = collectReleaseCiRunEvidence(
+    [
+      workflowRun({
+        name: 'Check',
+        html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+      }),
+      workflowRun({
+        name: 'Godot Smoke',
+        html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+      }),
+    ],
+    commit,
+    [...requiredReleaseCiWorkflows, releasePreflightWorkflowName],
+    {
+      releasePreflightCommitFound: false,
+      releasePreflightRunCommit: otherCommit,
+    },
+  )
+
+  assert.match(errors.join('\n'), new RegExp(otherCommit))
+  assert.match(errors.join('\n'), /push the evidence commit/)
+  assert.match(
+    errors.join('\n'),
+    new RegExp(`No completed successful Release Preflight.*${otherCommit}`),
+  )
+})
+
 test('release CI output reports structured workflow readiness', () => {
   const workflows = [...requiredReleaseCiWorkflows, releasePreflightWorkflowName]
   const result = collectReleaseCiRunEvidence(
@@ -195,6 +257,40 @@ test('release CI output reports structured workflow readiness', () => {
   )
 })
 
+test('release CI output carries evidence commit command hints for preflight', () => {
+  const workflows = [...requiredReleaseCiWorkflows, releasePreflightWorkflowName]
+  const result = collectReleaseCiRunEvidence(
+    [
+      workflowRun({
+        name: 'Check',
+        html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+      }),
+      workflowRun({
+        name: 'Godot Smoke',
+        html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+      }),
+    ],
+    commit,
+    workflows,
+    { releasePreflightRunCommit: otherCommit },
+  )
+  const output = releaseCiOutput(
+    { ...result, runs: [], commitFound: true },
+    workflows,
+  )
+
+  assert.equal(output.releasePreflightRunCommit, otherCommit)
+  assert.ok(
+    output.nextActions.some(
+      (action) =>
+        action.id === 'dispatch-missing-workflows' &&
+        action.commands.some((command) =>
+          command.includes(`--release-preflight-run-commit ${otherCommit}`),
+        ),
+    ),
+  )
+})
+
 test('release CI output reports missing commit status', () => {
   const result = collectReleaseCiRunEvidence(
     [],
@@ -232,6 +328,7 @@ test('release CI push action dispatches preflight after unpushed commits', () =>
   const result = collectReleaseCiRunEvidence([], commit, workflows, {
     commitFound: false,
   })
+  assert.doesNotMatch(result.errors.join('\n'), /push the evidence commit/)
   const output = releaseCiOutput(
     { ...result, runs: [], commitFound: false },
     workflows,
@@ -415,6 +512,37 @@ test('release CI dispatch targets missing or failed workflows, not running workf
   ])
 })
 
+test('release CI dispatch checks preflight against the configured run commit', () => {
+  const workflows = [...requiredReleaseCiWorkflows, releasePreflightWorkflowName]
+  const runs = [
+    workflowRun({
+      name: 'Check',
+      html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+    }),
+    workflowRun({
+      name: 'Godot Smoke',
+      html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+    }),
+    workflowRun({
+      name: releasePreflightWorkflowName,
+      html_url: 'https://github.com/portwatcher/vue-godot/actions/runs/3',
+    }),
+  ]
+
+  assert.deepEqual(
+    missingReleaseCiWorkflows(runs, commit, workflows, {
+      releasePreflightRunCommit: otherCommit,
+    }),
+    [releasePreflightWorkflowName],
+  )
+  assert.deepEqual(
+    dispatchableReleaseCiWorkflows(runs, commit, workflows, {
+      releasePreflightRunCommit: otherCommit,
+    }),
+    [releasePreflightWorkflowName],
+  )
+})
+
 test('release CI dispatch refuses refs that do not resolve to the release commit', () => {
   assert.deepEqual(validateWorkflowDispatchRef('develop', commit, commit), [])
   assert.match(
@@ -441,6 +569,11 @@ test('release CI dispatch config maps required workflows to workflow files', () 
     releaseCiWorkflowDispatches[releasePreflightWorkflowName].inputName,
     'real_device_evidence_path',
   )
+  assert.equal(
+    releaseCiWorkflowDispatches[releasePreflightWorkflowName]
+      .expectedCommitInputName,
+    'expected_commit',
+  )
 })
 
 test('release CI dispatch config matches workflow files', () => {
@@ -463,6 +596,15 @@ test('release CI dispatch config matches workflow files', () => {
       assert.match(
         workflow,
         new RegExp(`^\\s{6}${dispatchConfig.inputName}:$`, 'm'),
+      )
+    }
+    if (dispatchConfig.expectedCommitInputName) {
+      assert.match(
+        workflow,
+        new RegExp(
+          `^\\s{6}${dispatchConfig.expectedCommitInputName}:$`,
+          'm',
+        ),
       )
     }
   }

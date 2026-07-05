@@ -8,6 +8,10 @@ on:
         required: true
         default: release/real-device-evidence.json
         type: string
+      expected_commit:
+        description: Tested release commit recorded in real-device evidence.
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -47,6 +51,7 @@ jobs:
         run: >
           xvfb-run -a --server-args="-screen 0 1280x720x24"
           npm run release:preflight --
+          --expected-commit "${{ inputs.expected_commit }}"
           --summary-output release/release-preflight-summary.json
 
       - name: Upload release preflight summary

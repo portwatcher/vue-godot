@@ -143,6 +143,8 @@ test('release preflight enforces real device evidence', () => {
     /Real device evidence missing/,
     /Real device CI run evidence could not be verified/,
     /summary-output/,
+    /expectedReleaseCommit/,
+    /--expected-commit/,
     /buildPreflightSummary/,
   ]) {
     assert.match(preflight, pattern)
@@ -177,6 +179,7 @@ test('release preflight enforces real device evidence', () => {
     /Release preflight summary contains \$\{failureCount\} failure/,
     /validateRealDevicePlatformEvidence/,
     /collectCiSummaryStatusErrors/,
+    /releasePreflightRunCommit/,
     /CI evidence ready must be true/,
     /CI evidence checks must be an object/,
     /missingWorkflowNames includes required workflow/,
@@ -199,6 +202,8 @@ test('release preflight enforces real device evidence', () => {
     /include-release-preflight/,
     /releasePreflightWorkflowName/,
     /releaseCiWorkflowDispatches/,
+    /expectedCommitInputName/,
+    /releasePreflightRunCommit/,
     /dispatchGitHubActionsWorkflow/,
     /fetchGitHubCommitSha/,
     /dispatch-missing/,
@@ -302,7 +307,9 @@ test('release preflight enforces real device evidence', () => {
     /initial CI action captures Check and Godot Smoke[\s\S]*Release Preflight is\s+captured later after real-device evidence is committed/,
   )
   assert.match(production, /--real-device-evidence-path/)
-  assert.match(production, /workflow-dispatch-only preflight workflow/)
+  assert.match(production, /--release-preflight-run-commit/)
+  assert.match(production, /expected_commit/)
+  assert.match(production, /workflow-dispatch-only preflight\s+workflow/)
   assert.match(
     production,
     /final warning-removal action runs `npm run check` after the finalizer/,
@@ -375,7 +382,9 @@ test('release preflight enforces real device evidence', () => {
     /initial CI action captures Check and Godot Smoke, while Release Preflight is captured later after real-device evidence is committed/,
   )
   assert.match(readme, /--real-device-evidence-path/)
-  assert.match(readme, /workflow-dispatch-only preflight workflow/)
+  assert.match(readme, /--release-preflight-run-commit/)
+  assert.match(readme, /expected_commit/)
+  assert.match(readme, /workflow-dispatch-only preflight\s+workflow/)
   assert.match(
     readme,
     /final warning-removal action runs `npm run check` after the finalizer/,
@@ -457,6 +466,8 @@ test('release preflight enforces real device evidence', () => {
     /initial CI\s+action captures Check and Godot Smoke[\s\S]*Release Preflight is captured later\s+after real-device evidence is committed/,
   )
   assert.match(checklist, /--real-device-evidence-path/)
+  assert.match(checklist, /--release-preflight-run-commit/)
+  assert.match(checklist, /expected_commit/)
   assert.match(checklist, /workflow-dispatch-only preflight workflow/)
   assert.match(
     checklist,
@@ -511,6 +522,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(preflightWorkflow, /id-token: write/)
   assert.match(preflightWorkflow, /npm run release:preflight/)
   assert.match(preflightWorkflow, /summary-output/)
+  assert.match(preflightWorkflow, /expected_commit/)
+  assert.match(preflightWorkflow, /--expected-commit/)
   assert.match(preflightWorkflow, /actions\/upload-artifact@v4/)
   assert.match(preflightWorkflow, /release-preflight-summary/)
   assert.match(preflightWorkflow, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)

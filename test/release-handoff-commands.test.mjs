@@ -18,6 +18,7 @@ import {
 } from '../scripts/release-handoff-commands.mjs'
 
 const commit = '0123456789abcdef0123456789abcdef01234567'
+const evidenceCommit = 'abcdef0123456789abcdef0123456789abcdef01'
 
 test('release handoff commands format release CI waits and dispatches', () => {
   assert.equal(releaseCommitLabel(null), releaseCandidateCommitPlaceholder)
@@ -61,6 +62,15 @@ test('release handoff commands include preflight evidence input only for preflig
     `npm run release:ci -- --commit ${commit} --include-release-preflight --wait --output release/ci-runs.json`,
     `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${commit} --include-release-preflight --dispatch-missing --wait --ref ${releaseDispatchRefPlaceholder} --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
   ])
+  assert.deepEqual(
+    releasePreflightCiCommands(commit, {
+      releasePreflightRunCommit: evidenceCommit,
+    }),
+    [
+      `npm run release:ci -- --commit ${commit} --include-release-preflight --release-preflight-run-commit ${evidenceCommit} --wait --output release/ci-runs.json`,
+      `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${commit} --include-release-preflight --release-preflight-run-commit ${evidenceCommit} --dispatch-missing --wait --ref ${releaseDispatchRefPlaceholder} --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
+    ],
+  )
 
   assert.equal(
     releaseCiCommand(commit, {
