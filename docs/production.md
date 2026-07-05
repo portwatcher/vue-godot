@@ -21,14 +21,15 @@ README links, and fixture-test registration. It is expected to fail until those
 P1 examples exist. `npm audit --audit-level=moderate` must report zero
 moderate, high, or critical advisories unless an accepted exception is
 documented in the release notes. `release:preflight` verifies package metadata,
-generated package specs, dry-run package contents, registry state, and publish
-environment assumptions.
+generated package specs, dry-run package contents, registry state, publish
+environment assumptions, serious example app readiness, and Godot smoke.
 
 The local preflight command may warn when Godot smoke is skipped or when package
-versions are newer than the registry. Release builds should run the full
-workflow, including Godot smoke and trusted-publishing checks. `--skip-godot`
-is intended for local validation only; non-local preflight fails when Godot
-smoke is skipped.
+versions are newer than the registry. It may also warn while the serious
+example apps are still incomplete. Release builds should run the full workflow,
+including serious example app readiness, Godot smoke, and trusted-publishing
+checks. `--skip-serious-examples` and `--skip-godot` are intended for local
+validation only; non-local preflight fails when either gate is skipped.
 
 ## App Build Checklist
 

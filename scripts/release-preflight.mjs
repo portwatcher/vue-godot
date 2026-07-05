@@ -18,6 +18,7 @@ const args = new Set(process.argv.slice(2))
 const localOnly = args.has('--local')
 const skipCheck = args.has('--skip-check')
 const skipGodot = args.has('--skip-godot')
+const skipSeriousExamples = args.has('--skip-serious-examples')
 
 const failures = []
 const warnings = []
@@ -374,6 +375,37 @@ function checkGodotSmoke() {
   }
 }
 
+function checkSeriousExampleApps() {
+  if (skipSeriousExamples) {
+    const message = 'Serious example app check skipped by --skip-serious-examples'
+    if (localOnly) {
+      warnings.push(message)
+    } else {
+      failures.push(message)
+    }
+    return
+  }
+
+  logStep('checking serious example apps')
+
+  const result = run(npmCommand, ['run', 'check:serious-examples'])
+  const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`
+  process.stdout.write(result.stdout ?? '')
+  process.stderr.write(result.stderr ?? '')
+
+  if (result.status === 0) {
+    return
+  }
+
+  if (localOnly) {
+    warnings.push(
+      'Serious example app check failed; run npm run check:serious-examples for details.',
+    )
+  } else {
+    failures.push(`Serious example app check failed\n${output}`)
+  }
+}
+
 function printSummary() {
   if (warnings.length > 0) {
     console.log('\n[release-preflight] warnings')
@@ -411,6 +443,7 @@ async function main() {
   checkPackDryRun()
   const publishNeeded = checkRegistry(packagesByName)
   checkPublishEnvironment(publishNeeded)
+  checkSeriousExampleApps()
   checkGodotSmoke()
   printSummary()
 }

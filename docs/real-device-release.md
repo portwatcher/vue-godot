@@ -12,6 +12,7 @@ marking Android or iOS device validation complete:
 - commit hash and package versions under test
 - GodotJS version and export preset names
 - CI run URL for `npm run check`
+- `npm run check:serious-examples` result for the release commit
 - CI run URL for the Godot Smoke workflow
 - `npm run release:preflight` result from the release environment
 - Android APK/AAB artifact name or hosted-device build identifier
@@ -29,13 +30,14 @@ Run this before platform-specific checks:
 
 1. Start from a clean commit.
 2. Run `npm run check`.
-3. Run `npm audit --audit-level=moderate`.
-4. Run `npm run release:preflight` without local-only skips in the release
+3. Run `npm run check:serious-examples`.
+4. Run `npm audit --audit-level=moderate`.
+5. Run `npm run release:preflight` without local-only skips in the release
    environment.
-5. Confirm Godot smoke, generated Godot smoke, and editor reload smoke passed in
+6. Confirm Godot smoke, generated Godot smoke, and editor reload smoke passed in
    CI for the same commit.
-6. Build exported release artifacts from the production `export_presets.cfg`.
-7. Confirm `dist/app.js` and any `dist/chunks/*.js` files are included in the
+7. Build exported release artifacts from the production `export_presets.cfg`.
+8. Confirm `dist/app.js` and any `dist/chunks/*.js` files are included in the
    export.
 
 ## Android Release Smoke

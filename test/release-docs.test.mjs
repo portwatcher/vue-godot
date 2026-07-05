@@ -19,6 +19,7 @@ test('real device release checklist covers required Android and iOS gates', () =
     /^## Android Release Smoke/m,
     /^## iOS Release Smoke/m,
     /npm run check/,
+    /npm run check:serious-examples/,
     /npm audit --audit-level=moderate/,
     /npm run release:preflight/,
     /Godot Smoke workflow/,
@@ -40,6 +41,26 @@ test('real device release checklist covers required Android and iOS gates', () =
   ]) {
     assert.match(checklist, pattern)
   }
+})
+
+test('release preflight enforces serious example app readiness', () => {
+  const preflight = readDoc('scripts/release-preflight.mjs')
+  const production = readDoc('docs/production.md')
+  const readme = readDoc('README.md')
+
+  for (const pattern of [
+    /checkSeriousExampleApps/,
+    /check:serious-examples/,
+    /skip-serious-examples/,
+    /Serious example app check failed/,
+  ]) {
+    assert.match(preflight, pattern)
+  }
+
+  assert.match(production, /serious example app readiness/i)
+  assert.match(production, /--skip-serious-examples/)
+  assert.match(readme, /serious example app gate is incomplete/i)
+  assert.match(readme, /--skip-serious-examples/)
 })
 
 test('release documentation links the real device checklist', () => {
