@@ -89,6 +89,10 @@ Rather than embedding a layout engine like Yoga, we map a CSS flexbox subset to 
 Style objects (inline, React Native-style) are the primary styling API. For
 migration, `style` also accepts CSS declaration strings and arrays of style
 objects/strings; later entries in an array override earlier entries.
+If Vue normalizes a declaration string or array into an object before it reaches
+the component, kebab-case keys such as `border-radius` and supported CSS
+shorthands such as `background` are normalized into the same Godot-backed style
+subset.
 
 ```vue
 <Div :style="{ flexDirection: 'row', gap: 10, padding: 20 }">

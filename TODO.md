@@ -7,8 +7,8 @@ When this file is complete, maintainers should be confident enough to remove wor
 ## Current Readiness Snapshot
 
 - `@vue-godot/runtime-tscn` renders Vue into Godot nodes and has unit coverage for insertion, prop reset, signals, static text, diagnostics, lifecycle behavior, and stress update patterns.
-- `@vue-godot/html` exposes a small HTML-like component set and an inline style subset.
-- `@vue-godot/browser` exposes an initial browser API subset: `fetch`, `Request`, `Response`, `Headers`, `Blob`, `URL`, `TextEncoder`, `TextDecoder`, `AbortController`, base64 helpers, `history`, `location`, basic global event dispatch, adapter-backed `navigator.geolocation`, adapter-backed `navigator.mediaDevices.getUserMedia()`, and adapter-backed `Notification`.
+- `@vue-godot/html` exposes an expanded HTML-like component library, app primitives, media components, form helpers, and a documented Godot-backed style subset.
+- `@vue-godot/browser` exposes a broad browser API subset covering fetch primitives, URL/query helpers, files/forms, timers, animation frames, storage, history/location, global events, WebSocket, performance timing, sensor events, clipboard, haptics, reachability, and adapter-backed geolocation/media/notification APIs.
 - `@vue-godot/device` exposes a capability registry, adapter contracts, feature detection helpers, and typed errors for plugin-backed native APIs.
 - The repo has build/test/CLI smoke checks, generated export-setting checks, and CI Godot smoke workflows.
 - The project is not yet production ready because release/device evidence, CI

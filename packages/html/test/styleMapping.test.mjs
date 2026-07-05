@@ -329,6 +329,35 @@ test('normalizes style arrays with later entries taking precedence', () => {
   )
 })
 
+test('normalizes Vue-style object CSS keys and shorthands', () => {
+  const normalized = normalizeHtmlStyle({
+    'flex-direction': 'row',
+    width: '120px',
+    background: '#112233',
+    'border-radius': '4px 8px',
+    'box-shadow': '0 0 4px black',
+  })
+
+  assert.deepEqual(normalized, {
+    flexDirection: 'row',
+    width: 120,
+    backgroundColor: '#112233',
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 4,
+    borderBottomLeftRadius: 8,
+    boxShadow: '0 0 4px black',
+  })
+  assert.deepEqual(getUnsupportedStyleKeys(normalized), ['boxShadow'])
+  assert.deepEqual(
+    getUnsupportedStyleKeys({
+      background: '#112233',
+      'border-radius': '6px',
+    }),
+    [],
+  )
+})
+
 test('warns once per unsupported style key and component', () => {
   clearUnsupportedStyleWarningsForTests()
   const warnings = []

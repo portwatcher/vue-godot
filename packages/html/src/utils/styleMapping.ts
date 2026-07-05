@@ -208,6 +208,10 @@ function cssPropertyNameToStyleKey(property: string): string {
     return trimmed
   }
 
+  if (!trimmed.includes('-')) {
+    return trimmed
+  }
+
   return trimmed
     .toLowerCase()
     .replace(/-([a-z])/g, (_match, letter: string) => letter.toUpperCase())
@@ -629,6 +633,33 @@ export function parseHtmlStyle(style: string): HtmlStyle {
   return parsed
 }
 
+function assignStyleObjectProperty(
+  style: MutableHtmlStyle,
+  rawKey: string,
+  value: unknown,
+): void {
+  if (value == null) {
+    return
+  }
+
+  const key = cssPropertyNameToStyleKey(rawKey)
+  if (typeof value === 'string') {
+    setParsedStyleProperty(style, key, value)
+    return
+  }
+
+  style[key] = value
+}
+
+function normalizeStyleObject(style: HtmlStyle): HtmlStyle | undefined {
+  const normalized: MutableHtmlStyle = {}
+  for (const [key, value] of Object.entries(style)) {
+    assignStyleObjectProperty(normalized, key, value)
+  }
+
+  return Object.keys(normalized).length > 0 ? normalized : undefined
+}
+
 export function normalizeHtmlStyle(
   style: HtmlStyleInput,
 ): HtmlStyle | undefined {
@@ -651,7 +682,7 @@ export function normalizeHtmlStyle(
     return Object.keys(merged).length > 0 ? merged : undefined
   }
 
-  return style
+  return normalizeStyleObject(style)
 }
 
 export function getUnsupportedStyleKeys(
