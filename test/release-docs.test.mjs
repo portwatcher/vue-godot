@@ -192,7 +192,10 @@ test('Godot smoke gate covers serious example apps', () => {
   const smokeScript = readDoc('scripts/smoke-godot.mjs')
   const preflight = readDoc('scripts/release-preflight.mjs')
   const workflow = readDoc('.github/workflows/godot-smoke.yml')
+  const setupAction = readDoc('.github/actions/setup-godotjs/action.yml')
+  const setupScript = readDoc('scripts/setup-godotjs.mjs')
   const readme = readDoc('README.md')
+  const packageJson = JSON.parse(readDoc('package.json'))
 
   for (const pattern of [
     /exampleSmokeApps/,
@@ -220,6 +223,16 @@ test('Godot smoke gate covers serious example apps', () => {
   assert.match(readme, /serious example apps/)
   assert.match(readme, /native-app-demo/)
   assert.match(readme, /game-ui-demo/)
+  assert.equal(
+    packageJson.scripts['setup:godotjs'],
+    'node scripts/setup-godotjs.mjs',
+  )
+  assert.match(readme, /setup:godotjs -- --print-bin/)
+  assert.match(readme, /scripts\/setup-godotjs\.mjs/)
+  assert.match(setupAction, /scripts\/setup-godotjs\.mjs/)
+  assert.match(setupAction, /--github-env "\$GITHUB_ENV"/)
+  assert.match(setupScript, /GodotJS_1\.0\.0-2/)
+  assert.match(setupScript, /prebuilt_linux_x64_v8/)
 })
 
 test('release documentation links the real device checklist', () => {

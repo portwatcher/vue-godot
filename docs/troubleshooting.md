@@ -26,10 +26,14 @@ script from the repository root:
 GODOT_BIN=/path/to/godot npm run smoke:godot
 GODOT_BIN=/path/to/godot npm run smoke:generated-godot
 GODOT_BIN=/path/to/godot npm run smoke:editor-reload
+GODOT_BIN="$(npm run -s setup:godotjs -- --print-bin)" npm run smoke:godot
 ```
 
 `GODOT_BIN` can point to the executable or to a directory containing a
-`godot*` executable, including macOS `.app/Contents/MacOS` layouts.
+`godot*` executable, including macOS `.app/Contents/MacOS` layouts. The
+`setup:godotjs` helper downloads the pinned GodotJS editor into `.cache/godotjs`
+and prints the executable path so the same runtime can be reused across smoke
+commands.
 
 ## Godot Console Logs
 

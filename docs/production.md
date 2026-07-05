@@ -132,9 +132,16 @@ CI installs GodotJS through the shared
 | `release` | `GodotJS_1.0.0-2` | Release tag from `ialex32x/GodotJS-Build`. |
 | `asset` | `prebuilt_linux_x64_v8` | Linux x64 V8 editor bundle used by CI smoke tests. |
 
+Both CI and local runs use `scripts/setup-godotjs.mjs` to resolve, download,
+cache, and probe the editor executable. Run
+`npm run setup:godotjs -- --print-bin` locally to download the pinned asset for
+the current platform and print a `GODOT_BIN` path that can be reused for Godot
+smokes or `release:preflight`.
+
 When updating GodotJS:
 
-1. Change the default `release` and, if needed, `asset` in the setup action.
+1. Change the default `release` and, if needed, `asset` in the setup action and
+   the platform asset map in `scripts/setup-godotjs.mjs`.
 2. Open the project locally in the matching GodotJS editor and regenerate
    typings for any committed fixture/demo apps that need new engine types.
 3. Run `npm run check`.

@@ -42,34 +42,10 @@ runs:
           libxrandr2 \
           unzip
 
-    - name: Download GodotJS
-      if: steps.cache-godotjs.outputs.cache-hit != 'true'
+    - name: Setup GodotJS
       shell: bash
       run: |
-        GODOTJS_RELEASE="${{ inputs.release }}"
-        GODOTJS_ASSET="${{ inputs.asset }}"
-        GODOTJS_CACHE_DIR=".cache/godotjs/$GODOTJS_RELEASE/$GODOTJS_ASSET"
-        mkdir -p "$GODOTJS_CACHE_DIR"
-        curl --fail --location --retry 3 \
-          --output "$RUNNER_TEMP/godotjs.zip" \
-          "https://github.com/ialex32x/GodotJS-Build/releases/download/$GODOTJS_RELEASE/$GODOTJS_ASSET.zip"
-        unzip -q "$RUNNER_TEMP/godotjs.zip" -d "$GODOTJS_CACHE_DIR"
-
-    - name: Locate GodotJS executable
-      shell: bash
-      run: |
-        GODOTJS_RELEASE="${{ inputs.release }}"
-        GODOTJS_ASSET="${{ inputs.asset }}"
-        GODOTJS_CACHE_DIR=".cache/godotjs/$GODOTJS_RELEASE/$GODOTJS_ASSET"
-        GODOT_BIN="$(find "$GODOTJS_CACHE_DIR" -type f -name 'godot.linuxbsd.editor.*.x86_64' | sort | head -n 1)"
-        if [ -z "$GODOT_BIN" ]; then
-          echo "Unable to locate GodotJS editor executable in $GODOTJS_CACHE_DIR" >&2
-          find "$GODOTJS_CACHE_DIR" -maxdepth 3 -type f | sort >&2
-          exit 1
-        fi
-
-        chmod +x "$GODOT_BIN"
-        echo "GODOTJS_RELEASE=$GODOTJS_RELEASE" >> "$GITHUB_ENV"
-        echo "GODOTJS_ASSET=$GODOTJS_ASSET" >> "$GITHUB_ENV"
-        echo "GODOT_BIN=$GODOT_BIN" >> "$GITHUB_ENV"
-        "$GODOT_BIN" --version
+        node scripts/setup-godotjs.mjs \
+          --release "${{ inputs.release }}" \
+          --asset "${{ inputs.asset }}" \
+          --github-env "$GITHUB_ENV"

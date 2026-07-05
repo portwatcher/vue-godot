@@ -12,6 +12,7 @@
     "smoke:godot": "node scripts/smoke-godot.mjs",
     "smoke:generated-godot": "node scripts/smoke-generated-godot.mjs",
     "smoke:editor-reload": "node scripts/smoke-editor-reload.mjs",
+    "setup:godotjs": "node scripts/setup-godotjs.mjs",
     "bench:performance": "node scripts/performance-benchmarks.mjs",
     "check:serious-examples": "node scripts/check-serious-example-apps.mjs",
     "check:public-surface": "node scripts/public-surface-audit.mjs",
