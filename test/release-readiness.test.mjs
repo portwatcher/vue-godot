@@ -821,9 +821,7 @@ test('release readiness summary includes missing evidence next actions', () => {
 test('release readiness reuses committed initial CI evidence in next actions', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
   const summaryPath = path.join(tempDir, 'release-readiness-summary.json')
-  const ciEvidence = JSON.parse(
-    fs.readFileSync(path.join(process.cwd(), 'release/ci-runs.json'), 'utf-8'),
-  )
+  const ciEvidence = readCommittedReleaseCiEvidence()
 
   try {
     const result = runReadiness([
