@@ -38,9 +38,11 @@ function validEvidence() {
     ),
     godotJsVersion: 'GodotJS 1.0.0-2 / Godot 4.4.x',
     checkRunUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+    checkRunCommit: '0123456789abcdef0123456789abcdef01234567',
+    checkRunConclusion: 'success',
     godotSmokeRunUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
-    releasePreflightRunUrl:
-      'https://github.com/portwatcher/vue-godot/actions/runs/3',
+    godotSmokeRunCommit: '0123456789abcdef0123456789abcdef01234567',
+    godotSmokeRunConclusion: 'success',
     android: platformEvidence('android'),
     ios: platformEvidence('ios'),
   }
@@ -80,6 +82,17 @@ test('real device evidence rejects stale commit evidence', () => {
     }).join('\n'),
     /must match current commit/,
   )
+})
+
+test('real device evidence requires successful CI runs for the evidence commit', () => {
+  const evidence = validEvidence()
+  evidence.checkRunConclusion = 'failure'
+  evidence.godotSmokeRunCommit = 'ffffffffffffffffffffffffffffffffffffffff'
+
+  const errors = validateRealDeviceEvidence(evidence).join('\n')
+
+  assert.match(errors, /checkRunConclusion must be "success"/)
+  assert.match(errors, /godotSmokeRunCommit must match evidence\.commit/)
 })
 
 test('checked-in real device evidence example matches the validator schema', () => {

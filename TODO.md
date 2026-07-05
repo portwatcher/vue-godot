@@ -285,6 +285,7 @@ The project is production ready only when all of these are true:
 - [x] Make release preflight fail on skipped Godot smoke in non-local release contexts.
 - [x] Keep `npm audit` clean for moderate and high issues, or document accepted exceptions.
 - [x] Pin and periodically update GodotJS versions.
+- [x] Add a dedicated Release Preflight workflow for non-publishing release-gate runs.
 
 ## P1: Documentation And Examples
 

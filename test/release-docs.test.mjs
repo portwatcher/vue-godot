@@ -25,6 +25,7 @@ test('real device release checklist covers required Android and iOS gates', () =
     /npm run release:preflight/,
     /VUE_GODOT_REAL_DEVICE_EVIDENCE/,
     /real-device-evidence\.example\.json/,
+    /Release Preflight/,
     /Godot Smoke workflow/,
     /APK\/AAB/,
     /archive, TestFlight, or hosted-device build identifier/,
@@ -72,6 +73,8 @@ test('release preflight enforces real device evidence', () => {
   const readme = readDoc('README.md')
   const packageJson = JSON.parse(readDoc('package.json'))
   const workflow = readDoc('.github/workflows/publish.yml')
+  const preflightWorkflow = readDoc('.github/workflows/release-preflight.yml')
+  const example = JSON.parse(readDoc('docs/real-device-evidence.example.json'))
 
   for (const pattern of [
     /checkRealDeviceEvidence/,
@@ -93,6 +96,17 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /real-device-evidence\.json/)
   assert.match(workflow, /real_device_evidence_path/)
   assert.match(workflow, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
+  assert.match(production, /Release Preflight/)
+  assert.match(readme, /Release Preflight/)
+  assert.match(preflightWorkflow, /name: Release Preflight/)
+  assert.match(preflightWorkflow, /id-token: write/)
+  assert.match(preflightWorkflow, /npm run release:preflight/)
+  assert.match(preflightWorkflow, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
+  assert.equal(example.checkRunConclusion, 'success')
+  assert.equal(example.godotSmokeRunConclusion, 'success')
+  assert.equal(example.checkRunCommit, example.commit)
+  assert.equal(example.godotSmokeRunCommit, example.commit)
+  assert.equal('releasePreflightRunUrl' in example, false)
 })
 
 test('Godot smoke gate covers serious example apps', () => {

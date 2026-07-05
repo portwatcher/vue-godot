@@ -85,6 +85,12 @@ function assertUrl(record, key, errors, label) {
   }
 }
 
+function assertSuccessConclusion(record, key, errors, label) {
+  if (record[key] !== 'success') {
+    errors.push(`${label}.${key} must be "success"`)
+  }
+}
+
 function validatePlatformEvidence(evidence, platform, errors) {
   const platformEvidence = evidence[platform]
   if (!isRecord(platformEvidence)) {
@@ -146,8 +152,16 @@ export function validateRealDeviceEvidence(evidence, options = {}) {
   assertString(evidence, 'commit', errors, 'evidence')
   assertString(evidence, 'godotJsVersion', errors, 'evidence')
   assertUrl(evidence, 'checkRunUrl', errors, 'evidence')
+  assertString(evidence, 'checkRunCommit', errors, 'evidence')
+  assertSuccessConclusion(evidence, 'checkRunConclusion', errors, 'evidence')
   assertUrl(evidence, 'godotSmokeRunUrl', errors, 'evidence')
-  assertUrl(evidence, 'releasePreflightRunUrl', errors, 'evidence')
+  assertString(evidence, 'godotSmokeRunCommit', errors, 'evidence')
+  assertSuccessConclusion(
+    evidence,
+    'godotSmokeRunConclusion',
+    errors,
+    'evidence',
+  )
 
   if (
     options.expectedCommit &&
@@ -157,6 +171,17 @@ export function validateRealDeviceEvidence(evidence, options = {}) {
     errors.push(
       `evidence.commit must match current commit ${options.expectedCommit}`,
     )
+  }
+
+  if (hasNonEmptyString(evidence, 'commit')) {
+    for (const key of ['checkRunCommit', 'godotSmokeRunCommit']) {
+      if (
+        hasNonEmptyString(evidence, key) &&
+        evidence[key] !== evidence.commit
+      ) {
+        errors.push(`${key} must match evidence.commit ${evidence.commit}`)
+      }
+    }
   }
 
   if (!isRecord(evidence.packageVersions)) {

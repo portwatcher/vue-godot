@@ -35,6 +35,11 @@ trusted-publishing checks. Real-device evidence is read from
 `--skip-serious-examples` and `--skip-godot` are intended for local validation
 only; non-local preflight fails when either gate is skipped.
 
+Use the `Release Preflight` GitHub Actions workflow to run non-local preflight
+without publishing packages. It accepts the same real-device evidence path as
+the publish workflow and is the preferred source for the preflight run URL in
+release records.
+
 ## App Build Checklist
 
 For each app:

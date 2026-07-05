@@ -36,13 +36,19 @@ VUE_GODOT_REAL_DEVICE_EVIDENCE=release/real-device-evidence.json npm run release
 
 Use [real-device-evidence.example.json](./real-device-evidence.example.json) as
 the schema reference. The evidence file must include the tested commit, package
-versions, GodotJS version, CI/preflight run URLs, Android and iOS artifacts or
-hosted-device build identifiers, device model/OS/orientation/locale, selected
-APIs, and passed or explicitly skipped platform checks.
+versions, GodotJS version, successful Check and Godot Smoke run URLs and commit
+SHAs, Android and iOS artifacts or hosted-device build identifiers, device
+model/OS/orientation/locale, selected APIs, and passed or explicitly skipped
+platform checks.
 
 Local-only preflight runs (`npm run release:preflight -- --local`) warn when
 this evidence is missing. Non-local preflight runs fail until the evidence file
 exists and validates for the current commit.
+
+Run the `Release Preflight` GitHub Actions workflow after committing the
+evidence file. It runs the non-local release preflight without publishing, and
+its successful run URL should be recorded in the release PR, tag notes, or
+release issue.
 
 ## Common Gate
 
