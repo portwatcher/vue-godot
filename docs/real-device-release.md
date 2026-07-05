@@ -256,19 +256,26 @@ release issue.
 
 ## Common Gate
 
-Run this before platform-specific checks:
+Run these before platform-specific device checks:
 
 1. Start from a clean commit.
 2. Run `npm run check`.
 3. Run `npm run check:serious-examples`.
 4. Run `npm audit --audit-level=moderate`.
-5. Run `npm run release:preflight` without local-only skips in the release
-   environment.
-6. Confirm Godot smoke, generated Godot smoke, and editor reload smoke passed in
-   CI for the same commit.
+5. Optionally run `npm run release:preflight -- --local` as a local dry run;
+   treat missing real-device evidence, missing trusted publishing, or missing
+   Godot metadata as warnings only.
+6. Confirm Check, Godot smoke, generated Godot smoke, and editor reload smoke
+   passed in CI for the same commit.
 7. Build exported release artifacts from the production `export_presets.cfg`.
 8. Confirm `dist/app.js` and any `dist/chunks/*.js` files are included in the
    export.
+
+Run non-local `npm run release:preflight` or the `Release Preflight` workflow
+only after `release/real-device-evidence.json` is generated and committed for
+the tested release candidate. Non-local preflight fails when real-device
+evidence is missing, and its warning-free summary is later imported into
+`release/release-readiness-evidence.json`.
 
 ## Android Release Smoke
 

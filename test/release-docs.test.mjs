@@ -48,6 +48,23 @@ test('real device release checklist covers required Android and iOS gates', () =
   ]) {
     assert.match(checklist, pattern)
   }
+
+  assert.match(
+    checklist,
+    /Run these before platform-specific device checks:[\s\S]*release:preflight -- --local/,
+  )
+  assert.match(
+    checklist,
+    /Run non-local `npm run release:preflight`[\s\S]*only after `release\/real-device-evidence\.json` is generated and committed/,
+  )
+  assert.match(
+    checklist,
+    /Non-local preflight fails when real-device\s+evidence is missing/,
+  )
+  assert.doesNotMatch(
+    checklist,
+    /Run this before platform-specific checks:[\s\S]*npm run release:preflight` without local-only skips/,
+  )
 })
 
 test('release preflight enforces serious example app readiness', () => {
