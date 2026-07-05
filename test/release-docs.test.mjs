@@ -296,6 +296,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /required\/passed\/missing workflow/)
   assert.match(production, /structured workflow\s+checks/)
   assert.match(production, /local Git branch\/upstream diagnostics/)
+  assert.match(production, /same workflow evidence/)
+  assert.match(production, /evidence-only commits do not churn/)
   assert.match(production, /hints\s+for unpushed commits or stale upstreams/)
   assert.match(production, /`nextActions` command hints/)
   assert.match(production, /pushing or dispatching missing workflows/)
@@ -458,6 +460,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /required\/passed\/missing workflow/)
   assert.match(readme, /structured workflow\s+checks/)
   assert.match(readme, /local Git branch\/upstream diagnostics/)
+  assert.match(readme, /same workflow evidence/)
+  assert.match(readme, /evidence-only commits do not churn/)
   assert.match(readme, /hints for unpushed commits or stale upstreams/)
   assert.match(readme, /`nextActions` command hints/)
   assert.match(readme, /running `npm run check` before pushing/)
@@ -575,7 +579,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /release:ci/)
   assert.match(
     checklist,
-    /Release commit options \(`--commit`, `--expected-commit`,\s+and `--release-preflight-run-commit`\) require full 40-character git commit SHAs/,
+    /Release commit options \(`--commit`,\s+`--expected-commit`, and `--release-preflight-run-commit`\) require full\s+40-character git commit SHAs/,
   )
   assert.match(checklist, /real-device-evidence-summary\.json/)
   assert.match(
@@ -610,6 +614,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /required\/passed\/missing workflow/)
   assert.match(checklist, /structured workflow\s+checks/)
   assert.match(checklist, /local Git branch\/upstream diagnostics/)
+  assert.match(checklist, /same workflow evidence/)
+  assert.match(checklist, /evidence-only commits\s+do not churn/)
   assert.match(checklist, /hints for unpushed commits or\s+stale upstreams/)
   assert.match(checklist, /`nextActions` command hints/)
   assert.match(checklist, /running `npm run check` before\s+pushing/)
