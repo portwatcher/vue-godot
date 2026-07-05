@@ -119,9 +119,9 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 | `color` | Maps text-capable controls to `theme_override_colors/font_color`. |
 | `fontSize` | Maps text-capable controls to `theme_override_font_sizes/font_size`. |
 | `fontWeight` | Supports `'bold'` via a Godot `FontVariation` embolden override. |
-| `textTransform` | Supports `'uppercase'` on `<Span>`. |
-| `textAlign` | Maps `<Span>` to Godot horizontal alignment. |
-| `overflowWrap` | Supports `'break-word'` on `<Span>` via smart word wrapping. |
+| `textTransform` | Supports `'uppercase'` on `<Span>` and `<Label>`. |
+| `textAlign` | Maps `<Span>` and `<Label>` to Godot horizontal alignment. |
+| `overflowWrap` | Supports `'break-word'` on `<Span>` and `<Label>` via smart word wrapping. |
 | `overflow` | Supports `'hidden'` clipping where the backing Godot node exposes it. |
 | `opacity` | Maps to a Godot `modulate` alpha color. |
 
@@ -132,8 +132,10 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 | `<ActivityIndicator>` | `ProgressBar`                                                        | `active`, `size`, `fill`, `style` |
 | `<Dialog>`          | `AcceptDialog`                                                         | `v-model`, `title`, `message`, `confirmText` |
 | `<Div>`             | `HBoxContainer` / `VBoxContainer` / `*FlowContainer` / `GridContainer` | `style` (layout)      |
+| `<Form>`            | `PanelContainer` plus inner `<Div>`                                    | `disabled`, `submitOnAccept`, `resetOnCancel`, `contentStyle` |
 | `<Img>`             | `TextureRect`                                                          | `src`, `alt`, `style` |
 | `<KeyboardAvoidingView>` | `MarginContainer` / `PanelContainer`                              | `behavior`, `keyboardVerticalOffset`, `fallbackKeyboardHeight`, `contentStyle` |
+| `<Label>`           | `Label` / inner `<Div>` wrapper                                        | `text`, `required`, `requiredIndicator`, `contentStyle` |
 | `<Modal>`           | `Window`                                                               | `v-model`, `title`, `width`, `height` |
 | `<Overlay>`         | `PanelContainer` plus inner `<Div>`                                    | `v-model`, `closeOnClick`, `blockInput`, `contentStyle` |
 | `<Pressable>`       | `PanelContainer`                                                       | `disabled`, `longPressDelay`, interaction events |
@@ -156,7 +158,7 @@ Inline style objects are intentionally limited to the Godot-backed subset below.
 
 | API                                                                                                                                    | Description                                                                                              |
 | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Dialog`, `Div`, `Img`, `Input`, `KeyboardAvoidingView`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `SafeAreaView`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`, `VirtualList`) | Vue components backed by Godot nodes                                                                     |
+| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `Canvas`, `Dialog`, `Div`, `Form`, `Img`, `Input`, `KeyboardAvoidingView`, `Label`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `SafeAreaView`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`, `VirtualList`) | Vue components backed by Godot nodes                                                                     |
 | `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
 | `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |
@@ -271,10 +273,11 @@ export default class App extends Control {
 
 ```vue
 <script setup>
-import { Div, Img, Span, Button, Input, Switch } from '@vue-godot/html'
+import { Div, Form, Img, Label, Span, Button, Input, Switch } from '@vue-godot/html'
 import { ref } from '@vue/runtime-core'
 
 const name = ref('')
+const password = ref('')
 const agreed = ref(false)
 const plan = ref('basic')
 const volume = ref(50)
@@ -284,7 +287,11 @@ const volume = ref(50)
   <Div :style="{ flexDirection: 'column', gap: 10 }">
     <Img src="./logo.png"></Img>
     <Span :style="{ fontSize: 24, color: '#333' }">Welcome!</Span>
-    <Input v-model="name" placeholder="Your name"></Input>
+    <Form @submit="save">
+      <Label text="Your name" :required="true">
+        <Input v-model="name" placeholder="Your name"></Input>
+      </Label>
+    </Form>
     <Input type="password" v-model="password" placeholder="Password"></Input>
     <Input type="checkbox" v-model="agreed" label="I agree"></Input>
     <Input type="radio" v-model="plan" name="plan" value="basic" label="Basic"></Input>
@@ -384,6 +391,42 @@ It supports `active`, `size`, `fill`, and `style`. When `active` is `false`, the
 ```
 
 Checkbox inputs now also accept `label`, which maps to the underlying Godot button text.
+
+### Form and label scope
+
+`<Form>` maps to a focusable Godot `PanelContainer` with an inner `<Div>` content wrapper:
+
+```vue
+<Form
+  :reset-on-cancel="true"
+  :style="{ width: 360, backgroundColor: '#111827' }"
+  :content-style="{ gap: 8, padding: 12 }"
+  @submit="save"
+  @reset="clear"
+>
+  <Label text="Email" :required="true">
+    <Input v-model="email" placeholder="name@example.com"></Input>
+  </Label>
+  <Button @click="save">Save</Button>
+</Form>
+```
+
+It supports `disabled`, `submitOnAccept`, `resetOnCancel`, `style`, and `contentStyle`. When focused, `ui_accept` emits `submit` by default. `ui_cancel` emits `reset` only when `resetOnCancel` is enabled. This is a Godot input-action mapping, not a browser DOM submit event.
+
+`<Label>` maps to Godot `Label` for text-only use, or to an inner `<Div>` wrapper when it also contains controls:
+
+```vue
+<Label
+  text="Display name"
+  :required="true"
+  required-indicator=" (required)"
+  :content-style="{ gap: 4 }"
+>
+  <Input v-model="displayName"></Input>
+</Label>
+```
+
+It supports `text`, `required`, `requiredIndicator`, `style`, and `contentStyle`. Text styling uses the same Godot-backed subset as `<Span>`: `fontSize`, `fontWeight`, `color`, `textAlign`, `textTransform`, `overflowWrap`, and `overflow`. The component groups label text with slot content visually; browser `for` / `id` focus binding is not implemented.
 
 ### Pressable interaction scope
 
@@ -526,6 +569,8 @@ This package is in early development. Currently scaffolded:
 - [x] `<Overlay>` — full-parent backdrop/control layer (`PanelContainer`, `v-model`, backdrop events)
 - [x] `<Modal>` — modal window primitive (`Window`, close requests, sizing props)
 - [x] `<Dialog>` — confirmation dialog (`AcceptDialog`, confirm/cancel/close events)
+- [x] `<Form>` — focusable form wrapper (`PanelContainer`, submit/reset input actions, content wrapper)
+- [x] `<Label>` — text or control label helper (`Label`, required indicator, text style subset)
 - [x] `<Pressable>` — focusable interactive wrapper (`PanelContainer`, hover/focus/press/long-press state)
 - [x] `<SafeAreaView>` — safe-area layout helper (`DisplayServer.get_display_safe_area()`, margin padding, fallback insets)
 - [x] `<KeyboardAvoidingView>` — virtual keyboard layout helper (`DisplayServer.virtual_keyboard_get_height()`, padding/position/height behavior, fallback height)

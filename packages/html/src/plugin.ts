@@ -6,9 +6,11 @@ import { Button } from './components/Button.js'
 import { Canvas } from './components/Canvas.js'
 import { Dialog } from './components/Dialog.js'
 import { Div } from './components/Div.js'
+import { Form } from './components/Form.js'
 import { Img } from './components/Img.js'
 import { Input } from './components/Input.js'
 import { KeyboardAvoidingView } from './components/KeyboardAvoidingView.js'
+import { Label } from './components/Label.js'
 import { Modal } from './components/Modal.js'
 import { Option, Select } from './components/Select.js'
 import { Overlay } from './components/Overlay.js'
@@ -29,11 +31,13 @@ const components: Record<string, Component> = {
   Audio,
   Dialog,
   Div,
+  Form,
   Img,
   Span,
   Button,
   Input,
   KeyboardAvoidingView,
+  Label,
   Modal,
   Overlay,
   Pressable,

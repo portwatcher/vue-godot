@@ -283,6 +283,34 @@
   </A>
   <Label :text="`Anchor clicks: ${linkClicks}`"></Label>
 
+  <!-- ===== Section: Form / Label ===== -->
+  <Span>--- Form / Label ---</Span>
+  <Form
+    :reset-on-cancel="true"
+    :style="{ width: 420, backgroundColor: '#102a43' }"
+    :content-style="{ gap: 8, padding: 10 }"
+    @submit="onFormSubmit"
+    @reset="onFormReset"
+  >
+    <Label
+      text="Display name"
+      :required="true"
+      :style="{ fontWeight: 'bold', color: '#fef3c7' }"
+      :content-style="{ gap: 4 }"
+    >
+      <Input v-model="formName" placeholder="Ada"></Input>
+    </Label>
+    <Div :style="{ flexDirection: 'row', gap: 8 }">
+      <Button @click="onFormSubmit">Submit Form</Button>
+      <Button @click="onFormReset">Reset Form</Button>
+    </Div>
+  </Form>
+  <Span>
+    {{
+      `Form name=${formName || 'empty'} submits=${formSubmitCount} resets=${formResetCount}`
+    }}
+  </Span>
+
   <!-- ===== Section: Input (text) ===== -->
   <Span>--- Input (text) ---</Span>
   <Input v-model="textValue" placeholder="Type something..."></Input>
@@ -501,6 +529,20 @@ function onPascalButtonClick() {
 const linkClicks = ref(0)
 function onLinkClick() {
   linkClicks.value++
+}
+
+// --- Form / Label ---
+const formName = ref('')
+const formSubmitCount = ref(0)
+const formResetCount = ref(0)
+
+function onFormSubmit() {
+  formSubmitCount.value++
+}
+
+function onFormReset() {
+  formResetCount.value++
+  formName.value = ''
 }
 
 // --- Input ---

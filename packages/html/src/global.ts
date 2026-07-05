@@ -5,9 +5,11 @@ import type { Button } from './components/Button.js'
 import type { Canvas } from './components/Canvas.js'
 import type { Dialog } from './components/Dialog.js'
 import type { Div } from './components/Div.js'
+import type { Form } from './components/Form.js'
 import type { Img } from './components/Img.js'
 import type { Input } from './components/Input.js'
 import type { KeyboardAvoidingView } from './components/KeyboardAvoidingView.js'
+import type { Label } from './components/Label.js'
 import type { Modal } from './components/Modal.js'
 import type { Option, Select } from './components/Select.js'
 import type { Overlay } from './components/Overlay.js'
@@ -31,9 +33,11 @@ declare module '@vue/runtime-core' {
     Canvas: typeof Canvas
     Dialog: typeof Dialog
     Div: typeof Div
+    Form: typeof Form
     Img: typeof Img
     Input: typeof Input
     KeyboardAvoidingView: typeof KeyboardAvoidingView
+    Label: typeof Label
     Modal: typeof Modal
     Option: typeof Option
     Overlay: typeof Overlay
@@ -56,9 +60,11 @@ declare module '@vue/runtime-core' {
     canvas: typeof Canvas
     dialog: typeof Dialog
     div: typeof Div
+    form: typeof Form
     img: typeof Img
     input: typeof Input
     keyboardavoidingview: typeof KeyboardAvoidingView
+    label: typeof Label
     modal: typeof Modal
     option: typeof Option
     overlay: typeof Overlay

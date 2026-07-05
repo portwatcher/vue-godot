@@ -128,7 +128,7 @@ The project is production ready only when all of these are true:
   - [x] `<ActivityIndicator>` / `<Progress>`.
   - [x] `<Switch>` / checkbox refinement.
   - [x] Radio input support.
-  - [ ] Form and label helpers.
+  - [x] Form and label helpers.
   - [ ] Screen/router container primitives.
 - [ ] Make existing components production-grade:
   - [ ] `<Div>`
@@ -333,6 +333,8 @@ Use this backlog to seed `docs/compatibility.md`.
 | `<Progress>` | html | supported | `ProgressBar` |
 | `<Switch>` | html | supported | `CheckButton` |
 | `<Input type="radio">` | html | supported | `CheckBox` + `ButtonGroup` |
+| `<Form>` | html | supported | `PanelContainer` |
+| `<Label>` | html | supported | `Label` / `<Div>` wrapper |
 | `<Canvas>` 2D context | html | partial | `CanvasItem` draw adapter |
 
 ## Final Removal Checklist

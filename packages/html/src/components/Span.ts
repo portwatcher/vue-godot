@@ -1,38 +1,10 @@
 import { defineComponent, h } from '@vue/runtime-core'
 import {
-  applyCommonControlStyleProps,
   type GodotPropBag,
 } from '../utils/controlStyle.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
-
-/**
- * Godot HorizontalAlignment constants.
- *
- * @see https://docs.godotengine.org/en/4.4/classes/class_%40globalscope.html#enum-globalscope-horizontalalignment
- */
-const HorizontalAlignment = {
-  LEFT: 0,
-  CENTER: 1,
-  RIGHT: 2,
-  FILL: 3,
-} as const
-
-/**
- * Resolve CSS `textAlign` to Godot HorizontalAlignment value.
- */
-function resolveTextAlign(textAlign: string | undefined): number | null {
-  switch (textAlign) {
-    case 'left':
-      return HorizontalAlignment.LEFT
-    case 'center':
-      return HorizontalAlignment.CENTER
-    case 'right':
-      return HorizontalAlignment.RIGHT
-    default:
-      return null
-  }
-}
+import { applyLabelTextStyleProps } from '../utils/textLabel.js'
 
 /**
  * <Span> — inline text component.
@@ -71,28 +43,7 @@ export const Span = defineComponent({
       const nodeProps: GodotPropBag = {}
 
       nodeProps['text'] = extractTextFromSlot(slots.default)
-      applyCommonControlStyleProps(nodeProps, style, 'Span')
-
-      // textAlign → horizontal_alignment
-      const hAlign = resolveTextAlign(style?.textAlign)
-      if (hAlign != null) {
-        nodeProps['horizontal_alignment'] = hAlign
-      }
-
-      // textTransform: 'uppercase' → Label.uppercase
-      if (style?.textTransform === 'uppercase') {
-        nodeProps['uppercase'] = true
-      }
-
-      // overflowWrap: 'break-word' → autowrap_mode (AUTOWRAP_WORD_SMART = 3)
-      if (style?.overflowWrap === 'break-word') {
-        nodeProps['autowrap_mode'] = 3
-      }
-
-      // overflow: 'hidden' → clip_text
-      if (style?.overflow === 'hidden') {
-        nodeProps['clip_text'] = true
-      }
+      applyLabelTextStyleProps(nodeProps, style, 'Span')
 
       return h('Label', nodeProps)
     }

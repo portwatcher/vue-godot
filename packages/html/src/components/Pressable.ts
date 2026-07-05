@@ -1,6 +1,7 @@
 import { defineComponent, h, ref } from '@vue/runtime-core'
 import { createBackgroundPanelStyle } from '../utils/backgroundStyle.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
+import { FocusMode, readPressedState } from '../utils/controlInput.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 
 export interface PressableState {
@@ -10,34 +11,12 @@ export interface PressableState {
   disabled: boolean
 }
 
-const FocusMode = {
-  NONE: 0,
-  ALL: 2,
-} as const
-
 const MouseFilter = {
   STOP: 0,
   IGNORE: 2,
 } as const
 
 const DEFAULT_LONG_PRESS_DELAY = 500
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return typeof value === 'object' && value !== null
-    ? (value as Record<string, unknown>)
-    : null
-}
-
-function readPressedState(event: unknown): boolean | null {
-  const record = asRecord(event)
-  if (!record || typeof record.pressed !== 'boolean') {
-    return null
-  }
-  if (record.echo === true) {
-    return null
-  }
-  return record.pressed
-}
 
 function normalizeDelay(value: number | undefined): number {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0
