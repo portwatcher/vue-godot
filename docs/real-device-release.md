@@ -141,6 +141,9 @@ The helper strips worksheet fields before writing final evidence. If
 `release/platform-evidence.json` is copied directly to
 `release/real-device-evidence.json`, `npm run check:real-device-evidence` and
 strict release gates reject it.
+Use `npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json`
+to write validation status, errors, and `nextActions` command hints for fixing
+or creating evidence.
 The helper validates the normalized platform evidence before fetching GitHub run
 metadata, so missing device details, unknown selected APIs, or selected-API
 checks left in `skippedChecks` fail before network calls.

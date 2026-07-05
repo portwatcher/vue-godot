@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
 import {
@@ -346,4 +348,120 @@ test('real device evidence reader reports missing files without throwing', () =>
 
   assert.equal(evidence, null)
   assert.match(errors.join('\n'), /not found/)
+})
+
+test('check-real-device-evidence writes a missing-evidence summary when optional', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-evidence-'))
+  const summaryPath = path.join(tempDir, 'real-device-summary.json')
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/check-real-device-evidence.mjs',
+        '--optional',
+        '--path',
+        path.join(tempDir, 'missing-real-device-evidence.json'),
+        '--summary-output',
+        summaryPath,
+      ],
+      { cwd: repoRoot, encoding: 'utf-8' },
+    )
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+
+    assert.equal(result.status, 0)
+    assert.equal(summary.ready, false)
+    assert.equal(summary.evidencePresent, false)
+    assert.equal(summary.errorCount, 1)
+    assert.ok(
+      summary.nextActions.some(
+        (action) => action.id === 'create-platform-evidence',
+      ),
+    )
+    assert.ok(
+      summary.nextActions.some(
+        (action) =>
+          action.id === 'assemble-real-device-evidence' &&
+          action.commands.includes(
+            'npm run check:real-device-evidence -- --expected-commit <release-candidate-sha>',
+          ),
+      ),
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
+test('check-real-device-evidence writes validation errors before failing', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-evidence-'))
+  const evidencePath = path.join(tempDir, 'real-device-evidence.json')
+  const summaryPath = path.join(tempDir, 'real-device-summary.json')
+  const evidence = validEvidence()
+  evidence.android.selectedApis = ['navigator.geoLocation']
+  fs.writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`)
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/check-real-device-evidence.mjs',
+        '--path',
+        evidencePath,
+        '--summary-output',
+        summaryPath,
+      ],
+      { cwd: repoRoot, encoding: 'utf-8' },
+    )
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+
+    assert.equal(result.status, 1)
+    assert.equal(summary.ready, false)
+    assert.equal(summary.evidencePresent, true)
+    assert.match(summary.errors.join('\n'), /navigator\.geoLocation/)
+    assert.ok(
+      summary.nextActions.some(
+        (action) =>
+          action.id === 'fix-real-device-evidence' &&
+          action.commands.some((command) =>
+            command.includes('--real-device-output release/real-device-evidence.json'),
+          ),
+      ),
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
+test('check-real-device-evidence writes a passing summary', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-evidence-'))
+  const evidencePath = path.join(tempDir, 'real-device-evidence.json')
+  const summaryPath = path.join(tempDir, 'real-device-summary.json')
+  const evidence = validEvidence()
+  evidence.packageVersions = currentReleasePackageVersions()
+  fs.writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`)
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/check-real-device-evidence.mjs',
+        '--path',
+        evidencePath,
+        '--expected-commit',
+        evidence.commit,
+        '--summary-output',
+        summaryPath,
+      ],
+      { cwd: repoRoot, encoding: 'utf-8' },
+    )
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+
+    assert.equal(result.status, 0)
+    assert.equal(summary.ready, true)
+    assert.equal(summary.errorCount, 0)
+    assert.deepEqual(summary.errors, [])
+    assert.deepEqual(summary.nextActions, [])
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
 })

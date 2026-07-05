@@ -26,7 +26,10 @@ coverage, root README support links, generated template release defaults,
 serious example README smoke coverage, compatibility docs, and `apps/html-demo`
 component coverage.
 `npm run check:real-device-evidence` validates the Android/iOS export-smoke
-evidence JSON when it exists. `release:preflight` verifies package metadata,
+evidence JSON when it exists. Add
+`--summary-output release/real-device-evidence-summary.json` to write
+validation status, errors, and `nextActions` command hints for fixing or
+creating evidence. `release:preflight` verifies package metadata,
 generated package specs, dry-run package contents including every
 `package.json` export target, registry state, publish environment assumptions,
 dependency audit status, serious example app readiness, Godot smoke, real
