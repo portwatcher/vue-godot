@@ -328,7 +328,7 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 | `<Form>`            | `PanelContainer` plus inner `<Div>`                                    | `disabled`, `submitOnAccept`, `resetOnCancel`, `contentStyle` |
 | `<CameraView>`      | `TextureRect` with `CameraTexture`                                     | `feedId`, `feedIndex`, `active`, `whichFeed`, `style` |
 | `<Canvas>`          | `Control`                                                              | `width`, `height`, `style`, template ref |
-| `<Img>`             | `TextureRect`                                                          | `src`, `alt`, `style` |
+| `<Img>`             | `TextureRect`                                                          | `src`, `alt`, `style` (`width`, `height`, `objectFit`, `display`) |
 | `<KeyboardAvoidingView>` | `MarginContainer` / `PanelContainer`                              | `behavior`, `keyboardVerticalOffset`, `fallbackKeyboardHeight`, `contentStyle` |
 | `<Label>`           | `Label` / inner `<Div>` wrapper                                        | `text`, `required`, `requiredIndicator`, `contentStyle` |
 | `<Modal>`           | `Window`                                                               | `v-model`, `title`, `width`, `height`, `trapFocus`, `restoreFocus` |

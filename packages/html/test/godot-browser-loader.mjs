@@ -260,13 +260,43 @@ export function load(url, context, nextLoad) {
 
         export class Image {
           _loaded = false
+          _format = null
           _scale = 1
 
-          load_svg_from_buffer(buffer, scale) {
+          _loadBuffer(buffer, format, scale = 1) {
             this._loaded = true
-            this._scale = scale ?? 1
+            this._format = format
+            this._scale = scale
             this._bufferByteLength = buffer.byteLength
             return 0
+          }
+
+          load_png_from_buffer(buffer) {
+            return this._loadBuffer(buffer, 'png')
+          }
+
+          load_jpg_from_buffer(buffer) {
+            return this._loadBuffer(buffer, 'jpg')
+          }
+
+          load_webp_from_buffer(buffer) {
+            return this._loadBuffer(buffer, 'webp')
+          }
+
+          load_bmp_from_buffer(buffer) {
+            return this._loadBuffer(buffer, 'bmp')
+          }
+
+          load_tga_from_buffer(buffer) {
+            return this._loadBuffer(buffer, 'tga')
+          }
+
+          load_ktx_from_buffer(buffer) {
+            return this._loadBuffer(buffer, 'ktx')
+          }
+
+          load_svg_from_buffer(buffer, scale) {
+            return this._loadBuffer(buffer, 'svg', scale ?? 1)
           }
         }
 
@@ -276,6 +306,7 @@ export function load(url, context, nextLoad) {
 
           static create_from_image(image) {
             const t = new ImageTexture()
+            t._format = image._format
             t._scale = image._scale
             t._bufferByteLength = image._bufferByteLength
             return t
@@ -399,6 +430,9 @@ export function load(url, context, nextLoad) {
           if (value.endsWith('.ogg')) return 'audio/ogg'
           if (value.endsWith('.ogv')) return 'video/ogg'
           if (value.endsWith('.svg')) return 'image/svg+xml'
+          if (value.endsWith('.png')) return 'image/png'
+          if (value.endsWith('.jpg') || value.endsWith('.jpeg')) return 'image/jpeg'
+          if (value.endsWith('.webp')) return 'image/webp'
           return 'application/octet-stream'
         }
 
@@ -415,6 +449,9 @@ export function load(url, context, nextLoad) {
             const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"></svg>'
             const encoder = new TextEncoder()
             return new MockResponse(encoder.encode(svg).buffer, true, contentType)
+          }
+          if (contentType.startsWith('image/')) {
+            return new MockResponse(new Uint8Array([0x89, 0x50, 0x4e, 0x47]).buffer, true, contentType)
           }
 
           return new MockResponse(new ArrayBuffer(16), true, contentType)
