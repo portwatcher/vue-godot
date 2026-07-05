@@ -82,6 +82,7 @@ Each entry should be evaluated with these fields:
 | `registerDeviceCapability()` / `isSupported()` / `requireCapability()` | `device` | `supported` | JavaScript adapter registry | All JS runtimes | None | Unit | `isSupported()` returns `false` when no adapter is registered; `requireCapability()` rejects with typed errors. |
 | `DeviceCapabilityError` | `device` | `supported` | JavaScript typed error | All JS runtimes | None | Unit | Error codes cover unsupported platform, permission denied, missing plugin, and export misconfiguration. |
 | Plugin adapter interfaces | `device` | `supported` | TypeScript contracts | All JS runtimes | Depends on adapter | Type build, unit | Includes generic capability adapters plus geolocation, media devices, notifications, and permissions contracts. |
+| `@vue-godot/device/microphone` helpers | `device` | `partial` | `AudioServer`, `AudioStreamMicrophone`, `AudioStreamPlayer`, `AudioEffectCapture` | Platforms where Godot audio input is enabled | `ProjectSettings.audio/driver/enable_input`, OS privacy prompts, and export permissions remain app/plugin responsibilities | Unit | Low-level stream/player/capture helpers only; no native plugin fallback, runtime permission prompt, scene-tree attachment, recording encoder, or browser `MediaRecorder` API. |
 
 ## Skipped Browser APIs
 

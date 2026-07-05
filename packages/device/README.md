@@ -60,6 +60,7 @@ unregister()
 | `createDeviceCapabilityError()` | Constructs a typed capability error. |
 | `normalizeDeviceCapabilityError()` | Preserves typed errors and wraps unknown errors. |
 | Adapter interfaces | `GeolocationAdapter`, `MediaDevicesAdapter`, `NotificationAdapter`, `PermissionAdapter`, and generic `DeviceCapabilityAdapter`. |
+| `@vue-godot/device/microphone` | Godot-backed microphone and audio-bus capture helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 
 ## Capability Status
 
@@ -106,3 +107,33 @@ Native implementations should return a `DeviceCapabilityStatus` from
 `getStatus()` when they can distinguish permission denial, missing plugins, and
 export misconfiguration. Simple adapters can provide `isSupported()` and let the
 registry map `false` to `unsupported-platform`.
+
+## Godot Microphone Helpers
+
+Import the built-in Godot audio-input helpers from the `microphone` subpath:
+
+```ts
+import {
+  attachAudioCaptureEffect,
+  createAudioCaptureEffect,
+  createMicrophonePlayer,
+  listAudioInputDevices,
+  readAudioCaptureFrames,
+} from '@vue-godot/device/microphone'
+
+const devices = listAudioInputDevices()
+const player = createMicrophonePlayer({
+  busName: 'Voice',
+  autoplay: true,
+})
+
+const capture = createAudioCaptureEffect({ bufferLengthSeconds: 0.5 })
+attachAudioCaptureEffect(capture, { busName: 'Voice' })
+
+const chunk = readAudioCaptureFrames(capture, 512)
+```
+
+These helpers wrap `AudioServer`, `AudioStreamMicrophone`,
+`AudioStreamPlayer`, and `AudioEffectCapture`. They do not request runtime
+permissions, enable `ProjectSettings.audio/driver/enable_input`, add nodes to a
+scene tree, encode recordings, or provide native Android/iOS plugin fallbacks.

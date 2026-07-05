@@ -199,7 +199,7 @@ The project is production ready only when all of these are true:
   - [ ] Add Android/iOS plugin fallback where core Godot is insufficient.
   - [x] Document platform limits.
 - [ ] Microphone:
-  - [ ] Wrap Godot audio input where feasible.
+  - [x] Wrap Godot audio input where feasible.
   - [x] Add permission/export docs.
   - [x] Define whether a browser `MediaStream` subset is supported or skipped.
 - [ ] Network reachability:
