@@ -282,6 +282,7 @@ npm run check:serious-examples # verifies native/game example app readiness and 
 npm run check:public-surface # verifies READMEs, compatibility docs, templates, and demos match public APIs
 npm run check:real-device-evidence # validates Android/iOS export-smoke evidence JSON
 npm run check        # build + test + CLI smoke + serious examples + performance budgets
+npm run release:evidence -- --help # assembles release evidence JSON from device results + CI run URLs
 npm run release:preflight # release gate: check + pack dry-runs + registry + Godot smokes
 npm run release:publish   # publish helper used by the Publish workflow; dry-run locally
 ```
@@ -303,6 +304,8 @@ The `Godot Smoke` GitHub Actions workflow installs the pinned `GodotJS_1.0.0-2` 
 `npm run check:serious-examples` is also part of `npm run check`, so the normal local and CI check gate fails if the native app or game UI example workspace, README coverage, root README examples table, or fixture-test registration drifts.
 
 `npm run check:real-device-evidence` reads `release/real-device-evidence.json` by default, or `VUE_GODOT_REAL_DEVICE_EVIDENCE` when the release evidence lives elsewhere. It validates the current Android/iOS export-smoke evidence format, including package versions against the current manifests and the expected Check/Godot Smoke workflow names, documented in [real device release checklist](./docs/real-device-release.md). Strict release gates also query GitHub Actions metadata for the recorded run URLs so the referenced Check, Godot Smoke, and Release Preflight runs must actually be completed successful runs for the evidence commit.
+
+`npm run release:evidence` assembles `release/real-device-evidence.json` and optionally `release/release-readiness-evidence.json` after the real Android/iOS checks and GitHub Actions runs exist. It reads the Android/iOS platform evidence JSON, records current package versions, verifies the supplied Check/Godot Smoke/Release Preflight run URLs against GitHub Actions metadata, then validates the generated real-device evidence before writing it.
 
 `npm run release:readiness -- --allow-open` prints the remaining final-readiness blockers without failing while the production-readiness TODO is still open and does not contact GitHub. The strict form, `npm run release:readiness`, is for the committed final removal candidate: it checks for a clean worktree, open TODO boxes, current real-device evidence, public-surface documentation/demo drift, `release/release-readiness-evidence.json` for a successful warning-free `Release Preflight` workflow run, GitHub Actions metadata for the recorded evidence runs, and public warning wording before experimental/not-production-ready text is removed.
 

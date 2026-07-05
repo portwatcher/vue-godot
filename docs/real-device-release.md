@@ -51,6 +51,36 @@ The final strict `release:readiness` gate applies the same check and also
 verifies the recorded Release Preflight run metadata. The `--allow-open`
 readiness audit stays offline so it can be used before final evidence exists.
 
+After the Android and iOS checks are complete, create
+`release/platform-evidence.json` with only the complete `android` and `ios`
+objects from the schema example. Keep every required platform check either in
+`passedChecks` or in `skippedChecks` with a release-specific reason.
+
+Then assemble the evidence file from the real device data and completed CI
+runs:
+
+```bash
+npm run release:evidence -- \
+  --platform-evidence release/platform-evidence.json \
+  --check-run-url https://github.com/portwatcher/vue-godot/actions/runs/CHECK_RUN_ID \
+  --godot-smoke-run-url https://github.com/portwatcher/vue-godot/actions/runs/GODOT_SMOKE_RUN_ID \
+  --real-device-output release/real-device-evidence.json
+```
+
+After the `Release Preflight` workflow passes without warnings, rerun the same
+command with the preflight run URL to create the final readiness evidence:
+
+```bash
+npm run release:evidence -- \
+  --platform-evidence release/platform-evidence.json \
+  --check-run-url https://github.com/portwatcher/vue-godot/actions/runs/CHECK_RUN_ID \
+  --godot-smoke-run-url https://github.com/portwatcher/vue-godot/actions/runs/GODOT_SMOKE_RUN_ID \
+  --real-device-output release/real-device-evidence.json \
+  --release-preflight-run-url https://github.com/portwatcher/vue-godot/actions/runs/PREFLIGHT_RUN_ID \
+  --release-preflight-warning-count 0 \
+  --readiness-output release/release-readiness-evidence.json
+```
+
 Local-only preflight runs (`npm run release:preflight -- --local`) warn when
 this evidence is missing. Non-local preflight runs fail until the evidence file
 exists and validates for the current commit.

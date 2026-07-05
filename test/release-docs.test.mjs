@@ -115,10 +115,16 @@ test('release preflight enforces real device evidence', () => {
     packageJson.scripts['check:real-device-evidence'],
     'node scripts/check-real-device-evidence.mjs',
   )
+  assert.equal(
+    packageJson.scripts['release:evidence'],
+    'node scripts/create-release-evidence.mjs',
+  )
   assert.match(production, /check:real-device-evidence/)
+  assert.match(production, /release:evidence/)
   assert.match(production, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
   assert.match(production, /GitHub\s+Actions metadata/)
   assert.match(readme, /check:real-device-evidence/)
+  assert.match(readme, /release:evidence/)
   assert.match(readme, /real-device-evidence\.json/)
   assert.match(readme, /GitHub Actions metadata/)
   assert.match(workflow, /real_device_evidence_path/)

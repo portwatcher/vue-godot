@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 import {
   defaultRealDeviceEvidencePath,
   describeRealDeviceEvidencePath,
@@ -239,7 +240,7 @@ function readJsonEvidence(evidencePath) {
   }
 }
 
-function validateReleaseReadinessEvidence(evidence, expectedCommit) {
+export function validateReleaseReadinessEvidence(evidence, expectedCommit) {
   const errors = []
 
   if (!isRecord(evidence)) {
@@ -526,9 +527,12 @@ async function main() {
   process.exit(1)
 }
 
-try {
-  await main()
-} catch (error) {
-  console.error(error instanceof Error ? error.message : String(error))
-  process.exit(1)
+const entryPoint = process.argv[1] ? pathToFileURL(process.argv[1]).href : ''
+if (import.meta.url === entryPoint) {
+  try {
+    await main()
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error))
+    process.exit(1)
+  }
 }

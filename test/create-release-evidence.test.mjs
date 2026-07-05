@@ -1,0 +1,92 @@
+import assert from 'node:assert/strict'
+import test from 'node:test'
+
+import {
+  buildRealDeviceEvidence,
+  buildReleaseReadinessEvidence,
+} from '../scripts/create-release-evidence.mjs'
+import {
+  requiredRealDeviceChecks,
+  validateRealDeviceEvidence,
+} from '../scripts/real-device-evidence.mjs'
+import { validateReleaseReadinessEvidence } from '../scripts/release-readiness.mjs'
+import { currentReleasePackageVersions } from '../scripts/release-utils.mjs'
+
+const commit = '0123456789abcdef0123456789abcdef01234567'
+
+function platformEvidence(platform) {
+  return {
+    artifact:
+      platform === 'android'
+        ? 'vue-godot-android-release.aab'
+        : 'TestFlight build 1',
+    exportPreset: platform === 'android' ? 'Android Release' : 'iOS Release',
+    deviceModel:
+      platform === 'android' ? 'Pixel hosted device' : 'iPhone hosted device',
+    osVersion: platform === 'android' ? 'Android 15' : 'iOS 18',
+    orientation: 'portrait and landscape',
+    locale: 'en-US',
+    selectedApis: ['fetch', 'navigator.permissions', 'SafeAreaView'],
+    passedChecks: [...requiredRealDeviceChecks[platform]],
+    skippedChecks: {},
+  }
+}
+
+test('buildRealDeviceEvidence assembles validator-ready evidence from CI runs and device data', () => {
+  const packageVersions = currentReleasePackageVersions()
+  const evidence = buildRealDeviceEvidence({
+    commit,
+    packageVersions,
+    godotJsVersion: 'GodotJS 1.0.0-2 / Godot 4.4.x',
+    checkRunUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+    checkRun: {
+      name: 'Check',
+      head_sha: commit,
+      conclusion: 'success',
+    },
+    godotSmokeRunUrl:
+      'https://github.com/portwatcher/vue-godot/actions/runs/2',
+    godotSmokeRun: {
+      name: 'Godot Smoke',
+      head_sha: commit,
+      conclusion: 'success',
+    },
+    platformEvidence: {
+      android: platformEvidence('android'),
+      ios: platformEvidence('ios'),
+    },
+  })
+
+  assert.deepEqual(
+    validateRealDeviceEvidence(evidence, {
+      expectedCommit: commit,
+      expectedPackageVersions: packageVersions,
+    }),
+    [],
+  )
+})
+
+test('buildReleaseReadinessEvidence records release preflight run metadata', () => {
+  const evidence = buildReleaseReadinessEvidence({
+    commit,
+    releasePreflightRunUrl:
+      'https://github.com/portwatcher/vue-godot/actions/runs/3',
+    releasePreflightRun: {
+      name: 'Release Preflight',
+      head_sha: commit,
+      conclusion: 'success',
+    },
+    releasePreflightWarningCount: 0,
+  })
+
+  assert.deepEqual(evidence, {
+    commit,
+    releasePreflightRunUrl:
+      'https://github.com/portwatcher/vue-godot/actions/runs/3',
+    releasePreflightRunWorkflowName: 'Release Preflight',
+    releasePreflightRunCommit: commit,
+    releasePreflightRunConclusion: 'success',
+    releasePreflightWarningCount: 0,
+  })
+  assert.deepEqual(validateReleaseReadinessEvidence(evidence, commit), [])
+})
