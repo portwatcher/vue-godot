@@ -132,6 +132,19 @@ test('compatibility rows use the required schema and status values', () => {
   }
 })
 
+test('compatibility strategy documents backend selection policy', () => {
+  for (const pattern of [
+    /Prefer best-effort web-compatible APIs/,
+    /Prefer explicit `@vue-godot\/device` adapters/,
+    /Do not\s+install browser-shaped globals[\s\S]*until a real adapter is\s+registered/,
+    /Wrapping stable Godot modules and classes is acceptable/,
+    /Wrapping stable Godot plugins or native Android\/iOS plugins is acceptable/,
+    /Mark APIs as `skipped`/,
+  ]) {
+    assert.match(compatibility, pattern)
+  }
+})
+
 test('browser compatibility rows cover shipped browser APIs by API family', () => {
   const browserApis = [
     'fetch()',

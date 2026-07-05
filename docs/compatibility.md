@@ -30,6 +30,28 @@ Each entry should be evaluated with these fields:
 | Tests | Unit, simulated Godot, real Godot smoke, or real device coverage. |
 | Caveats | Spec differences, unsupported options, lifecycle notes, and known limits. |
 
+## Compatibility Strategy
+
+Vue Godot chooses compatibility backends with these rules:
+
+- Prefer best-effort web-compatible APIs where a Godot or JavaScript backend can
+  preserve the useful browser shape closely enough for app code. Document the
+  entry as `partial` when behavior is useful but not spec-complete.
+- Prefer explicit `@vue-godot/device` adapters for APIs that require native
+  plugins, runtime permissions, platform channels, or app-specific setup. Do not
+  install browser-shaped globals for those APIs until a real adapter is
+  registered.
+- Wrapping stable Godot modules and classes is acceptable when the wrapper keeps
+  Godot semantics visible in the backend, platform, permission, and caveat
+  fields.
+- Wrapping stable Godot plugins or native Android/iOS plugins is acceptable when
+  core Godot does not expose the capability. The plugin, export settings,
+  permissions, and real-device validation remain part of the compatibility row
+  and release checklist.
+- Mark APIs as `skipped` when a compatibility layer would mislead users into
+  assuming a browser DOM, worker, storage, or native capability that Godot does
+  not actually provide.
+
 ## Browser APIs
 
 | API | Owner | Status | Godot backend | Platforms | Permissions/export | Tests | Caveats |

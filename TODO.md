@@ -44,11 +44,11 @@ The project is production ready only when all of these are true:
   - Tests: unit, simulated Godot, real Godot smoke, real device.
   - Known caveats and spec differences.
 - [x] Do not install fake browser globals by default when there is no real backend.
-- [ ] Prefer best-effort web-compatible APIs where behavior is close enough.
-- [ ] Prefer explicit adapters for APIs requiring native plugins.
+- [x] Prefer best-effort web-compatible APIs where behavior is close enough.
+- [x] Prefer explicit adapters for APIs requiring native plugins.
 - [x] Mark impossible or misleading browser APIs as `skipped` with a clear explanation.
-- [ ] Wrapping stable Godot modules is acceptable.
-- [ ] Wrapping stable Godot plugins or native Android/iOS plugins is acceptable when core Godot does not expose the capability.
+- [x] Wrapping stable Godot modules is acceptable.
+- [x] Wrapping stable Godot plugins or native Android/iOS plugins is acceptable when core Godot does not expose the capability.
 
 ## P0: Runtime And Platform Foundation
 
