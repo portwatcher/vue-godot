@@ -223,8 +223,36 @@ test('selected API release checks cover public conditional release gates', () =>
     'storage-restart',
     'background-foreground',
   ])
+  for (const check of [
+    'clipboard-if-selected',
+    'haptics-if-selected',
+    'audio-input-if-selected',
+    'sensors-if-selected',
+  ]) {
+    assert.ok(requiredRealDeviceChecks.android.includes(check))
+    assert.ok(requiredRealDeviceChecks.ios.includes(check))
+  }
   assert.deepEqual(selectedApiRequiredRealDeviceChecks.fetch.all, [
     'network-if-selected',
+  ])
+  assert.deepEqual(
+    selectedApiRequiredRealDeviceChecks['navigator.clipboard'].all,
+    ['clipboard-if-selected'],
+  )
+  assert.deepEqual(
+    selectedApiRequiredRealDeviceChecks['navigator.vibrate'].all,
+    ['haptics-if-selected'],
+  )
+  assert.deepEqual(
+    selectedApiRequiredRealDeviceChecks['navigator.vibrate'].android,
+    ['permission-prompts-if-selected'],
+  )
+  assert.deepEqual(
+    selectedApiRequiredRealDeviceChecks['@vue-godot/device/microphone'].all,
+    ['permission-prompts-if-selected', 'audio-input-if-selected'],
+  )
+  assert.deepEqual(selectedApiRequiredRealDeviceChecks.readDeviceMotion.all, [
+    'sensors-if-selected',
   ])
   assert.deepEqual(selectedApiRequiredRealDeviceChecks.SafeAreaView.android, [
     'safe-area-keyboard',
@@ -237,6 +265,19 @@ test('selected API release checks cover public conditional release gates', () =>
       'hardware-adapters-if-selected',
     ],
   )
+  assert.deepEqual(
+    selectedApiRequiredRealDeviceChecks['@vue-godot/device/geolocation'].all,
+    [
+      'permission-prompts-if-selected',
+      'adapter-states-if-selected',
+      'hardware-adapters-if-selected',
+    ],
+  )
+  assert.deepEqual(selectedApiRequiredRealDeviceChecks.MediaStream.all, [
+    'permission-prompts-if-selected',
+    'adapter-states-if-selected',
+    'hardware-adapters-if-selected',
+  ])
   assert.deepEqual(selectedApiRequiredRealDeviceChecks.Notification.ios, [
     'deep-links-share-notifications-if-selected',
   ])

@@ -44,8 +44,9 @@ for `portwatcher/vue-godot`, Android and iOS artifacts or hosted-device build
 identifiers, device model/OS/orientation/locale, selected APIs, and passed or
 explicitly skipped platform checks.
 When a selected API maps to a conditional check such as `network-if-selected`,
-`permission-prompts-if-selected`, `adapter-states-if-selected`,
-`hardware-adapters-if-selected`, or
+`clipboard-if-selected`, `permission-prompts-if-selected`,
+`adapter-states-if-selected`, `hardware-adapters-if-selected`,
+`haptics-if-selected`, `audio-input-if-selected`, `sensors-if-selected`, or
 `deep-links-share-notifications-if-selected`, that conditional check must be in
 `passedChecks`; `skippedChecks` is only accepted outside the selected API set.
 
@@ -83,8 +84,11 @@ Android and iOS required check names are ready to fill:
 npm run release:platform-evidence -- \
   --selected-api fetch \
   --selected-api WebSocket \
+  --selected-api navigator.clipboard \
   --selected-api navigator.geolocation \
   --selected-api navigator.mediaDevices.getUserMedia \
+  --selected-api navigator.vibrate \
+  --selected-api readDeviceMotion \
   --selected-api SafeAreaView \
   --orientation "portrait and landscape" \
   --locale en-US
@@ -315,11 +319,13 @@ for each release candidate that claims Android support:
 4. Verify `fetch()`, `WebSocket`, and reachability behavior if the app uses
    network APIs.
 5. Verify permission prompts and denied states for selected camera, microphone,
-   location, notification, and vibration capabilities.
+   location, notification, vibration, clipboard, audio-input, and sensor
+   capabilities.
 6. Verify adapter states for each selected plugin-backed capability:
    unsupported platform, missing plugin, export misconfiguration,
    permission denied, and successful native operation where applicable.
-7. Verify camera/geolocation/media device adapters on hardware when selected.
+7. Verify camera/geolocation/media device adapters, haptics, audio input,
+   clipboard, and sensors on hardware when selected.
 8. Verify `<SafeAreaView>` and `<KeyboardAvoidingView>` on the tested device.
 9. Verify Android back handling from nested screens, modal/dialog states, and
    the app root.
@@ -344,11 +350,13 @@ extra layout pass, not as the final capability sign-off.
 5. Verify `fetch()`, `WebSocket`, and reachability behavior if the app uses
    network APIs.
 6. Verify permission prompts and denied states for selected camera, microphone,
-   location, notifications, photo/media library, and sensor capabilities.
+   location, notifications, photo/media library, clipboard, haptics,
+   audio-input, and sensor capabilities.
 7. Verify adapter states for each selected plugin-backed capability:
    unsupported platform, missing plugin, export misconfiguration,
    permission denied, and successful native operation where applicable.
-8. Verify camera/geolocation/media device adapters on hardware when selected.
+8. Verify camera/geolocation/media device adapters, haptics, audio input,
+   clipboard, and sensors on hardware when selected.
 9. Verify safe area, virtual keyboard, rotation, and text input behavior on the
    tested device family.
 10. Background and foreground the app, then confirm adapters release or resume

@@ -68,7 +68,9 @@ conditional checks can be omitted.
 Its `passOnlyChecks` worksheet lists core launch/runtime checks that must not
 be skipped.
 Use its `selectedApiRequiredChecks` worksheet to see which conditional checks
-the selected APIs made mandatory.
+the selected APIs made mandatory, including network, clipboard, haptics,
+audio-input, sensor, hardware-adapter, permission, and safe-area/keyboard
+checks.
 Conditional checks required by selected APIs must be recorded in `passedChecks`,
 not `skippedChecks`. Its top-level `nextActions` section records `npm run check`,
 release CI wait/dispatch commands, and final evidence assembly commands for

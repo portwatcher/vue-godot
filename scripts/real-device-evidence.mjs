@@ -18,9 +18,13 @@ export const requiredRealDeviceChecks = {
     'no-godotjs-load-diagnostics',
     'storage-restart',
     'network-if-selected',
+    'clipboard-if-selected',
     'permission-prompts-if-selected',
     'adapter-states-if-selected',
     'hardware-adapters-if-selected',
+    'haptics-if-selected',
+    'audio-input-if-selected',
+    'sensors-if-selected',
     'safe-area-keyboard',
     'android-back-handling',
     'background-foreground',
@@ -31,9 +35,13 @@ export const requiredRealDeviceChecks = {
     'plist-entitlements',
     'storage-restart',
     'network-if-selected',
+    'clipboard-if-selected',
     'permission-prompts-if-selected',
     'adapter-states-if-selected',
     'hardware-adapters-if-selected',
+    'haptics-if-selected',
+    'audio-input-if-selected',
+    'sensors-if-selected',
     'safe-area-keyboard-rotation-text-input',
     'background-foreground',
     'deep-links-share-notifications-if-selected',
@@ -63,80 +71,227 @@ export const realDeviceWorksheetFields = [
   'selectedApiRequiredChecks',
 ]
 
+const networkSelectedChecks = ['network-if-selected']
+const storageSelectedChecks = ['storage-restart']
+const clipboardSelectedChecks = ['clipboard-if-selected']
+const pluginHardwareSelectedChecks = [
+  'permission-prompts-if-selected',
+  'adapter-states-if-selected',
+  'hardware-adapters-if-selected',
+]
+const notificationSelectedChecks = [
+  'permission-prompts-if-selected',
+  'adapter-states-if-selected',
+]
+const adapterStateSelectedChecks = ['adapter-states-if-selected']
+const iosDeepLinkShareNotificationChecks = [
+  'deep-links-share-notifications-if-selected',
+]
+const hapticsSelectedChecks = ['haptics-if-selected']
+const androidHapticsSelectedChecks = ['permission-prompts-if-selected']
+const audioInputSelectedChecks = [
+  'permission-prompts-if-selected',
+  'audio-input-if-selected',
+]
+const audioInputProbeSelectedChecks = ['audio-input-if-selected']
+const sensorsSelectedChecks = ['sensors-if-selected']
+
 export const selectedApiRequiredRealDeviceChecks = {
   fetch: {
-    all: ['network-if-selected'],
+    all: networkSelectedChecks,
   },
   WebSocket: {
-    all: ['network-if-selected'],
+    all: networkSelectedChecks,
   },
   checkNetworkReachability: {
-    all: ['network-if-selected'],
+    all: networkSelectedChecks,
   },
   'navigator.onLine': {
-    all: ['network-if-selected'],
+    all: networkSelectedChecks,
   },
   localStorage: {
-    all: ['storage-restart'],
+    all: storageSelectedChecks,
   },
   sessionStorage: {
-    all: ['storage-restart'],
+    all: storageSelectedChecks,
+  },
+  'navigator.clipboard': {
+    all: clipboardSelectedChecks,
+  },
+  'navigator.clipboard.readText': {
+    all: clipboardSelectedChecks,
+  },
+  'navigator.clipboard.writeText': {
+    all: clipboardSelectedChecks,
+  },
+  isClipboardSupported: {
+    all: clipboardSelectedChecks,
+  },
+  isPrimaryClipboardSupported: {
+    all: clipboardSelectedChecks,
+  },
+  '@vue-godot/device/clipboard': {
+    all: clipboardSelectedChecks,
+  },
+  hasClipboardText: {
+    all: clipboardSelectedChecks,
+  },
+  readClipboardText: {
+    all: clipboardSelectedChecks,
+  },
+  writeClipboardText: {
+    all: clipboardSelectedChecks,
+  },
+  hasClipboardImage: {
+    all: clipboardSelectedChecks,
+  },
+  readClipboardImage: {
+    all: clipboardSelectedChecks,
+  },
+  readPrimaryClipboardText: {
+    all: clipboardSelectedChecks,
+  },
+  writePrimaryClipboardText: {
+    all: clipboardSelectedChecks,
   },
   'navigator.geolocation': {
-    all: [
-      'permission-prompts-if-selected',
-      'adapter-states-if-selected',
-      'hardware-adapters-if-selected',
-    ],
+    all: pluginHardwareSelectedChecks,
+  },
+  '@vue-godot/device/geolocation': {
+    all: pluginHardwareSelectedChecks,
+  },
+  GeolocationAdapter: {
+    all: pluginHardwareSelectedChecks,
+  },
+  createGeolocationAdapter: {
+    all: pluginHardwareSelectedChecks,
   },
   'navigator.mediaDevices.getUserMedia': {
-    all: [
-      'permission-prompts-if-selected',
-      'adapter-states-if-selected',
-      'hardware-adapters-if-selected',
-    ],
+    all: pluginHardwareSelectedChecks,
+  },
+  MediaStream: {
+    all: pluginHardwareSelectedChecks,
+  },
+  '@vue-godot/device/media-devices': {
+    all: pluginHardwareSelectedChecks,
+  },
+  MediaDevicesAdapter: {
+    all: pluginHardwareSelectedChecks,
+  },
+  createMediaDevicesAdapter: {
+    all: pluginHardwareSelectedChecks,
   },
   CameraView: {
-    all: [
-      'permission-prompts-if-selected',
-      'adapter-states-if-selected',
-      'hardware-adapters-if-selected',
-    ],
+    all: pluginHardwareSelectedChecks,
   },
   Notification: {
-    all: ['permission-prompts-if-selected', 'adapter-states-if-selected'],
-    ios: ['deep-links-share-notifications-if-selected'],
+    all: notificationSelectedChecks,
+    ios: iosDeepLinkShareNotificationChecks,
   },
   NotificationAdapter: {
-    all: ['permission-prompts-if-selected', 'adapter-states-if-selected'],
-    ios: ['deep-links-share-notifications-if-selected'],
+    all: notificationSelectedChecks,
+    ios: iosDeepLinkShareNotificationChecks,
   },
   showNativeNotification: {
-    all: ['permission-prompts-if-selected', 'adapter-states-if-selected'],
-    ios: ['deep-links-share-notifications-if-selected'],
+    all: notificationSelectedChecks,
+    ios: iosDeepLinkShareNotificationChecks,
   },
   DeepLinkAdapter: {
-    all: ['adapter-states-if-selected'],
-    ios: ['deep-links-share-notifications-if-selected'],
+    all: adapterStateSelectedChecks,
+    ios: iosDeepLinkShareNotificationChecks,
   },
   readInitialOpenUrl: {
-    all: ['adapter-states-if-selected'],
-    ios: ['deep-links-share-notifications-if-selected'],
+    all: adapterStateSelectedChecks,
+    ios: iosDeepLinkShareNotificationChecks,
   },
   onOpenUrl: {
-    all: ['adapter-states-if-selected'],
-    ios: ['deep-links-share-notifications-if-selected'],
+    all: adapterStateSelectedChecks,
+    ios: iosDeepLinkShareNotificationChecks,
   },
   ShareAdapter: {
-    all: ['adapter-states-if-selected'],
-    ios: ['deep-links-share-notifications-if-selected'],
+    all: adapterStateSelectedChecks,
+    ios: iosDeepLinkShareNotificationChecks,
   },
   share: {
-    all: ['adapter-states-if-selected'],
-    ios: ['deep-links-share-notifications-if-selected'],
+    all: adapterStateSelectedChecks,
+    ios: iosDeepLinkShareNotificationChecks,
   },
   'navigator.vibrate': {
-    android: ['permission-prompts-if-selected'],
+    all: hapticsSelectedChecks,
+    android: androidHapticsSelectedChecks,
+  },
+  isVibrationSupported: {
+    all: hapticsSelectedChecks,
+    android: androidHapticsSelectedChecks,
+  },
+  '@vue-godot/device/haptics': {
+    all: hapticsSelectedChecks,
+    android: androidHapticsSelectedChecks,
+  },
+  isHandheldVibrationSupported: {
+    all: hapticsSelectedChecks,
+    android: androidHapticsSelectedChecks,
+  },
+  vibrateHandheld: {
+    all: hapticsSelectedChecks,
+    android: androidHapticsSelectedChecks,
+  },
+  startJoypadVibration: {
+    all: hapticsSelectedChecks,
+  },
+  stopJoypadVibration: {
+    all: hapticsSelectedChecks,
+  },
+  readJoypadVibration: {
+    all: hapticsSelectedChecks,
+  },
+  '@vue-godot/device/microphone': {
+    all: audioInputSelectedChecks,
+  },
+  listAudioInputDevices: {
+    all: audioInputProbeSelectedChecks,
+  },
+  createMicrophoneStream: {
+    all: audioInputSelectedChecks,
+  },
+  createMicrophonePlayer: {
+    all: audioInputSelectedChecks,
+  },
+  createAudioCaptureEffect: {
+    all: audioInputSelectedChecks,
+  },
+  attachAudioCaptureEffect: {
+    all: audioInputSelectedChecks,
+  },
+  readAudioCaptureFrames: {
+    all: audioInputProbeSelectedChecks,
+  },
+  '@vue-godot/device/sensors': {
+    all: sensorsSelectedChecks,
+  },
+  readAccelerometer: {
+    all: sensorsSelectedChecks,
+  },
+  readGravity: {
+    all: sensorsSelectedChecks,
+  },
+  readGyroscope: {
+    all: sensorsSelectedChecks,
+  },
+  readMagnetometer: {
+    all: sensorsSelectedChecks,
+  },
+  readDeviceMotion: {
+    all: sensorsSelectedChecks,
+  },
+  readDeviceOrientation: {
+    all: sensorsSelectedChecks,
+  },
+  DeviceMotionEvent: {
+    all: sensorsSelectedChecks,
+  },
+  DeviceOrientationEvent: {
+    all: sensorsSelectedChecks,
   },
   SafeAreaView: {
     android: ['safe-area-keyboard'],

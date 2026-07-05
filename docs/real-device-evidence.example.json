@@ -44,7 +44,12 @@
       "android-back-handling",
       "background-foreground"
     ],
-    "skippedChecks": {}
+    "skippedChecks": {
+      "clipboard-if-selected": "Example build does not select clipboard APIs.",
+      "haptics-if-selected": "Example build does not select haptics APIs.",
+      "audio-input-if-selected": "Example build does not select low-level audio input helpers.",
+      "sensors-if-selected": "Example build does not select sensor APIs."
+    }
   },
   "ios": {
     "artifact": "TestFlight build 1",
@@ -75,6 +80,11 @@
       "background-foreground",
       "deep-links-share-notifications-if-selected"
     ],
-    "skippedChecks": {}
+    "skippedChecks": {
+      "clipboard-if-selected": "Example build does not select clipboard APIs.",
+      "haptics-if-selected": "Example build does not select haptics APIs.",
+      "audio-input-if-selected": "Example build does not select low-level audio input helpers.",
+      "sensors-if-selected": "Example build does not select sensor APIs."
+    }
   }
 }
