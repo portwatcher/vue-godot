@@ -51,10 +51,22 @@ The final strict `release:readiness` gate applies the same check and also
 verifies the recorded Release Preflight run metadata. The `--allow-open`
 readiness audit stays offline so it can be used before final evidence exists.
 
-After the Android and iOS checks are complete, create
-`release/platform-evidence.json` with only the complete `android` and `ios`
-objects from the schema example. Keep every required platform check either in
-`passedChecks` or in `skippedChecks` with a release-specific reason.
+Before device testing, initialize `release/platform-evidence.json` so the exact
+Android and iOS required check names are ready to fill:
+
+```bash
+npm run release:platform-evidence -- \
+  --selected-api fetch \
+  --selected-api WebSocket \
+  --selected-api SafeAreaView \
+  --orientation "portrait and landscape" \
+  --locale en-US
+```
+
+The generated `requiredChecks` arrays are a worksheet only. After testing, move
+each item into `passedChecks` or into `skippedChecks` with a release-specific
+reason, and keep only complete `android` and `ios` evidence objects before
+running `npm run release:evidence`.
 
 After the release candidate is pushed, verify the required CI runs and capture
 their URLs:

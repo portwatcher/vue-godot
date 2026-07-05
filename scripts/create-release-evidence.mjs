@@ -161,9 +161,14 @@ function readPlatformEvidence(filePath) {
   }
 
   return {
-    android: evidence.android,
-    ios: evidence.ios,
+    android: normalizePlatformEvidence(evidence.android),
+    ios: normalizePlatformEvidence(evidence.ios),
   }
+}
+
+export function normalizePlatformEvidence(evidence) {
+  const { requiredChecks, ...platformEvidence } = evidence
+  return platformEvidence
 }
 
 function assertRequiredOptions(options, names) {
