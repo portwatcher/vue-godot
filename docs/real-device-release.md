@@ -77,6 +77,10 @@ npm run release:ci -- \
   --output release/ci-runs.json
 ```
 
+If the `Check` or `Godot Smoke` workflow did not run automatically for that
+commit, dispatch the workflow manually on the release-candidate ref and rerun
+the command above after it completes.
+
 Then assemble the evidence file from the real device data and completed CI
 runs:
 
