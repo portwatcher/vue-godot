@@ -122,6 +122,40 @@ test('release preflight enforces real device evidence', () => {
   assert.equal('releasePreflightRunUrl' in example, false)
 })
 
+test('release readiness audit documents final removal blockers', () => {
+  const readiness = readDoc('scripts/release-readiness.mjs')
+  const production = readDoc('docs/production.md')
+  const readme = readDoc('README.md')
+  const todo = readDoc('TODO.md')
+  const packageJson = JSON.parse(readDoc('package.json'))
+  const example = JSON.parse(
+    readDoc('docs/release-readiness-evidence.example.json'),
+  )
+
+  for (const pattern of [
+    /release-readiness evidence missing/,
+    /collectUncheckedTodoItems/,
+    /validateRealDeviceEvidence/,
+    /releasePreflightWarningCount must be 0/,
+    /public warning markers still present/,
+  ]) {
+    assert.match(readiness, pattern)
+  }
+
+  assert.equal(
+    packageJson.scripts['release:readiness'],
+    'node scripts/release-readiness.mjs',
+  )
+  assert.match(production, /release:readiness/)
+  assert.match(production, /release-readiness-evidence\.example\.json/)
+  assert.match(readme, /release:readiness/)
+  assert.match(readme, /release-readiness-evidence\.json/)
+  assert.match(todo, /release:readiness/)
+  assert.equal(example.releasePreflightRunConclusion, 'success')
+  assert.equal(example.releasePreflightWarningCount, 0)
+  assert.equal(example.releasePreflightRunCommit, example.commit)
+})
+
 test('Godot smoke gate covers serious example apps', () => {
   const smokeScript = readDoc('scripts/smoke-godot.mjs')
   const preflight = readDoc('scripts/release-preflight.mjs')

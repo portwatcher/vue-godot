@@ -374,7 +374,10 @@ Use this backlog to seed `docs/compatibility.md`.
 
 ## Final Removal Checklist
 
-Run this checklist before removing "not production ready", "alpha", or "experimental" wording:
+Run this checklist before removing "not production ready", "alpha", or
+"experimental" wording. Use `npm run release:readiness -- --allow-open` while
+blockers remain, then run `npm run release:readiness` without `--allow-open` in
+the final removal commit.
 
 - [ ] Every P0 item is complete.
 - [ ] Every P1 item is complete or explicitly moved to P2 with maintainer approval.

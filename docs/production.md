@@ -35,6 +35,14 @@ trusted-publishing checks. Real-device evidence is read from
 `--skip-serious-examples` and `--skip-godot` are intended for local validation
 only; non-local preflight fails when either gate is skipped.
 
+`npm run release:readiness -- --allow-open` reports final-removal blockers while
+the production TODO remains open. The strict `npm run release:readiness` command
+is for the final removal commit and fails unless TODO boxes, current real-device
+evidence, `release/release-readiness-evidence.json`, and public warning wording
+are all in the final release state. Use
+[`docs/release-readiness-evidence.example.json`](./release-readiness-evidence.example.json)
+as the schema reference for the post-preflight evidence file.
+
 Use the `Release Preflight` GitHub Actions workflow to run non-local preflight
 without publishing packages. It accepts the same real-device evidence path as
 the publish workflow and is the preferred source for the preflight run URL in
@@ -138,6 +146,7 @@ needs:
   [the example app criteria](./example-apps.md) and pass
   `npm run check:serious-examples`
 - clean or documented security/dependency audit results
+- `npm run release:readiness` passing without `--allow-open`
 
 Until those are complete, treat release builds as preview/alpha-quality and
 document app-specific risk explicitly.

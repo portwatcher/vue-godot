@@ -1,0 +1,7 @@
+{
+  "commit": "0123456789abcdef0123456789abcdef01234567",
+  "releasePreflightRunUrl": "https://github.com/portwatcher/vue-godot/actions/runs/0000000003",
+  "releasePreflightRunCommit": "0123456789abcdef0123456789abcdef01234567",
+  "releasePreflightRunConclusion": "success",
+  "releasePreflightWarningCount": 0
+}
