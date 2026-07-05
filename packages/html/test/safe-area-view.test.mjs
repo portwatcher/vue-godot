@@ -10,6 +10,12 @@ const {
   computeSafeAreaInsets,
 } = await import('../dist/utils/safeArea.js')
 
+function defaultSlotChildren(vnode) {
+  return typeof vnode.children?.default === 'function'
+    ? vnode.children.default()
+    : vnode.children
+}
+
 function setDisplayServerState(state) {
   globalThis.__vueGodotHtmlMockDisplayServer = {
     safeArea: {
@@ -93,7 +99,7 @@ test('SafeAreaView applies safe area plus style padding inside background', () =
     flexDirection: 'column',
     gap: 8,
   })
-  assert.deepEqual(margin.children[0].children, [child])
+  assert.deepEqual(defaultSlotChildren(margin.children[0]), [child])
 })
 
 test('SafeAreaView can limit safe area edges and use fallback insets', () => {

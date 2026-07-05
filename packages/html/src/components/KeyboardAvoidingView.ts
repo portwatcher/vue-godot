@@ -21,6 +21,7 @@ import {
 } from '../utils/keyboardAvoiding.js'
 import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { asDefaultSlot } from '../utils/slots.js'
 import { Div } from './Div.js'
 
 /**
@@ -99,7 +100,7 @@ export const KeyboardAvoidingView = defineComponent({
       const content = h(
         Div,
         { style: contentStyle ?? {} },
-        slots.default?.(),
+        asDefaultSlot(slots.default),
       )
       const backgroundTextureStyle = createBackgroundTexturePanelStyle(
         backgroundTexture.value,

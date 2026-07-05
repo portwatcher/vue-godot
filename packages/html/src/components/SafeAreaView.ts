@@ -20,6 +20,7 @@ import {
 } from '../utils/safeArea.js'
 import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { asDefaultSlot } from '../utils/slots.js'
 import { Div } from './Div.js'
 
 /**
@@ -64,7 +65,7 @@ export const SafeAreaView = defineComponent({
       const content = h(
         Div,
         { style: contentStyle ?? {} },
-        slots.default?.(),
+        asDefaultSlot(slots.default),
       )
       const marginProps = createMarginThemeOverrides(padding)
       const backgroundTextureStyle = createBackgroundTexturePanelStyle(

@@ -7,6 +7,12 @@ register(new URL('./godot-browser-loader.mjs', import.meta.url).href)
 
 const { Div, Screen, ScreenStack } = await import('../dist/index.js')
 
+function defaultSlotChildren(vnode) {
+  return typeof vnode.children?.default === 'function'
+    ? vnode.children.default()
+    : vnode.children
+}
+
 function renderScreen(props = {}, children = []) {
   const render = Screen.setup(props, {
     slots: {
@@ -61,7 +67,7 @@ test('Screen renders a full-parent Control with column content by default', () =
     flexDirection: 'column',
     gap: 8,
   })
-  assert.deepEqual(vnode.children[0].children, [child])
+  assert.deepEqual(defaultSlotChildren(vnode.children[0]), [child])
 })
 
 test('Screen supports background panels, hidden state, and non-full layout', () => {
@@ -115,6 +121,7 @@ test('ScreenStack renders the active named route slot with navigation props', ()
   )
 
   let vnode = render()
+  let screenChildren = defaultSlotChildren(vnode)
 
   assert.equal(vnode.type, Screen)
   assert.equal(slotProps.routeName, 'home')
@@ -123,15 +130,16 @@ test('ScreenStack renders the active named route slot with navigation props', ()
   assert.equal(vnode.props.fullRect, false)
   assert.deepEqual(vnode.props.style, { backgroundColor: '#0f172a' })
   assert.deepEqual(vnode.props.contentStyle, { gap: 6 })
-  assert.equal(vnode.children[0].props.text, 'Home')
+  assert.equal(screenChildren[0].props.text, 'Home')
 
   slotProps.navigate('settings')
   vnode = render()
+  screenChildren = defaultSlotChildren(vnode)
 
   assert.equal(slotProps.routeName, 'settings')
   assert.equal(slotProps.index, 1)
   assert.equal(slotProps.canGoBack, true)
-  assert.equal(vnode.children[0].props.text, 'Settings')
+  assert.equal(screenChildren[0].props.text, 'Settings')
   assert.deepEqual(emitted, [
     ['update:modelValue', 'settings'],
     ['navigate', routes[1]],
@@ -139,10 +147,11 @@ test('ScreenStack renders the active named route slot with navigation props', ()
 
   slotProps.back()
   vnode = render()
+  screenChildren = defaultSlotChildren(vnode)
 
   assert.equal(slotProps.routeName, 'home')
   assert.equal(slotProps.canGoBack, false)
-  assert.equal(vnode.children[0].props.text, 'Home')
+  assert.equal(screenChildren[0].props.text, 'Home')
   assert.deepEqual(emitted.slice(2), [
     ['update:modelValue', 'home'],
     ['back', routes[0]],
@@ -168,14 +177,16 @@ test('ScreenStack falls back to default slot and ignores unknown routes', () => 
   )
 
   let vnode = render()
+  let screenChildren = defaultSlotChildren(vnode)
 
   assert.equal(slotProps.routeName, 'home')
-  assert.equal(vnode.children[0].props.text, 'home')
+  assert.equal(screenChildren[0].props.text, 'home')
 
   slotProps.navigate('missing')
   vnode = render()
+  screenChildren = defaultSlotChildren(vnode)
 
   assert.equal(slotProps.routeName, 'home')
-  assert.equal(vnode.children[0].props.text, 'home')
+  assert.equal(screenChildren[0].props.text, 'home')
   assert.deepEqual(emitted, [])
 })

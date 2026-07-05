@@ -7,6 +7,12 @@ register(new URL('./godot-browser-loader.mjs', import.meta.url).href)
 
 const { Div, Form, Label } = await import('../dist/index.js')
 
+function defaultSlotChildren(vnode) {
+  return typeof vnode.children?.default === 'function'
+    ? vnode.children.default()
+    : vnode.children
+}
+
 function renderForm(props = {}, children = [], emitted = []) {
   const render = Form.setup(props, {
     emit: (event, value) => {
@@ -57,7 +63,7 @@ test('Form renders a focusable PanelContainer with column content', () => {
     flexDirection: 'column',
     gap: 8,
   })
-  assert.deepEqual(vnode.children[0].children, [child])
+  assert.deepEqual(defaultSlotChildren(vnode.children[0]), [child])
 })
 
 test('Form emits submit and reset for Godot UI actions', () => {
@@ -140,7 +146,8 @@ test('Label can wrap a labeled control', () => {
     flexDirection: 'column',
     gap: 4,
   })
-  assert.equal(vnode.children[0].type, 'Label')
-  assert.equal(vnode.children[0].props.text, 'Name')
-  assert.equal(vnode.children[1], input)
+  const children = defaultSlotChildren(vnode)
+  assert.equal(children[0].type, 'Label')
+  assert.equal(children[0].props.text, 'Name')
+  assert.equal(children[1], input)
 })

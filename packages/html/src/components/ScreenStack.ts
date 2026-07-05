@@ -1,6 +1,7 @@
 import { defineComponent, h, ref } from '@vue/runtime-core'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { createDefaultSlot } from '../utils/slots.js'
 import {
   findScreenRoute,
   resolveScreenRoute,
@@ -106,8 +107,11 @@ export const ScreenStack = defineComponent({
         route && slotProps
           ? slots[route.name] ?? slots.default
           : slots.default
-      const children =
-        slotProps && activeSlot ? activeSlot(slotProps) : activeSlot?.()
+      const screenSlots = activeSlot
+        ? createDefaultSlot(() =>
+            slotProps ? activeSlot(slotProps) : activeSlot(),
+          )
+        : undefined
 
       return h(
         Screen,
@@ -117,7 +121,7 @@ export const ScreenStack = defineComponent({
           style: props.style,
           contentStyle: props.contentStyle,
         },
-        children,
+        screenSlots,
       )
     }
   },

@@ -16,6 +16,7 @@ import {
 } from '../utils/focus.js'
 import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { asDefaultSlot } from '../utils/slots.js'
 import { Div } from './Div.js'
 
 const MouseFilter = {
@@ -95,7 +96,7 @@ export const Overlay = defineComponent({
       let content = h(
         Div,
         { style: contentStyle ?? {} },
-        slots.default?.(),
+        asDefaultSlot(slots.default),
       )
       if (backgroundStyle && backgroundTextureStyle) {
         content = h(

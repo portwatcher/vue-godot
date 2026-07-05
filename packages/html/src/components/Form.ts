@@ -18,6 +18,7 @@ import {
 } from '../utils/focus.js'
 import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { asDefaultSlot } from '../utils/slots.js'
 import {
   applyMinTouchTargetProps,
   touchTargetPropOptions,
@@ -103,7 +104,7 @@ export const Form = defineComponent({
             ...(contentStyle ?? {}),
           },
         },
-        slots.default?.(),
+        asDefaultSlot(slots.default),
       )
       if (backgroundStyle && backgroundTextureStyle) {
         content = h(

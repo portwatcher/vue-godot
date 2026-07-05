@@ -10,6 +10,12 @@ const {
   resolveKeyboardAvoidanceHeight,
 } = await import('../dist/utils/keyboardAvoiding.js')
 
+function defaultSlotChildren(vnode) {
+  return typeof vnode.children?.default === 'function'
+    ? vnode.children.default()
+    : vnode.children
+}
+
 function setDisplayServerState(state) {
   globalThis.__vueGodotHtmlMockDisplayServer = {
     safeArea: {
@@ -79,7 +85,7 @@ test('KeyboardAvoidingView adds keyboard height to bottom padding by default', (
     flexDirection: 'column',
     gap: 8,
   })
-  assert.deepEqual(margin.children[0].children, [child])
+  assert.deepEqual(defaultSlotChildren(margin.children[0]), [child])
 })
 
 test('KeyboardAvoidingView can shift the view for position behavior', () => {

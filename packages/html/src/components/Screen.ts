@@ -12,6 +12,7 @@ import { useBackgroundTexture } from '../utils/backgroundTexture.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
 import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { asDefaultSlot } from '../utils/slots.js'
 import { Div } from './Div.js'
 
 const fullRectProps = {
@@ -77,7 +78,7 @@ export const Screen = defineComponent({
             ...(contentStyle ?? {}),
           },
         },
-        slots.default?.(),
+        asDefaultSlot(slots.default),
       )
 
       if (backgroundStyle && backgroundTextureStyle) {

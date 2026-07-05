@@ -10,6 +10,12 @@ const {
   resolveVirtualListRange,
 } = await import('../dist/utils/virtualList.js')
 
+function defaultSlotChildren(vnode) {
+  return typeof vnode.children?.default === 'function'
+    ? vnode.children.default()
+    : vnode.children
+}
+
 function renderVirtualList(props = {}, emitted = [], slotCalls = []) {
   const render = VirtualList.setup(props, {
     emit: (event, value) => {
@@ -123,7 +129,7 @@ test('VirtualList renders only the visible window plus spacers', () => {
     flexDirection: 'column',
   })
 
-  const children = content.children
+  const children = defaultSlotChildren(content)
   assert.equal(children.length, 9)
   assert.equal(children[0].type, 'Control')
   assert.equal(children[0].props['custom_minimum_size:y'], 140)
@@ -137,7 +143,7 @@ test('VirtualList renders only the visible window plus spacers', () => {
     padding: 2,
     height: 20,
   })
-  assert.equal(firstRow.children[0].props.text, '7:row-7')
+  assert.equal(defaultSlotChildren(firstRow)[0].props.text, '7:row-7')
 
   assert.deepEqual(
     slotCalls.map((call) => call.index),
@@ -166,7 +172,7 @@ test('VirtualList can render by itemCount and keyExtractor', () => {
 
   assert.equal(vnode.props.vertical_scroll_mode, 3)
   assert.equal(vnode.props.scroll_vertical_custom_step, 10)
-  const rows = vnode.children[0].children
+  const rows = defaultSlotChildren(vnode.children[0])
   assert.equal(rows.length, 5)
   assert.equal(rows[0].props['custom_minimum_size:y'], 20)
   assert.equal(rows[1].key, 'index-2')

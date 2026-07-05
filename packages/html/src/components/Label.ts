@@ -9,6 +9,7 @@ import {
 import { extractTextFromSlot } from '../utils/slotText.js'
 import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { createDefaultSlot } from '../utils/slots.js'
 import {
   applyLabelTextStyleProps,
   withRequiredIndicator,
@@ -66,7 +67,7 @@ export const Label = defineComponent({
             ...(contentStyle ?? {}),
           },
         },
-        [labelNode, ...slotChildren],
+        createDefaultSlot(() => [labelNode, ...slotChildren]),
       )
     }
   },

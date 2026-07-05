@@ -11,6 +11,7 @@ import {
 } from '../utils/scrollContainer.js'
 import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { asDefaultSlot } from '../utils/slots.js'
 import { Div } from './Div.js'
 
 export type { ScrollViewScrollbarMode } from '../utils/scrollContainer.js'
@@ -122,7 +123,7 @@ export const ScrollView = defineComponent({
       }
 
       return h('ScrollContainer', nodeProps, [
-        h(Div, { style: contentStyle }, slots.default?.()),
+        h(Div, { style: contentStyle }, asDefaultSlot(slots.default)),
       ])
     }
   },

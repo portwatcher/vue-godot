@@ -22,6 +22,7 @@ import {
   type HtmlStyle,
 } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { createDefaultSlot } from '../utils/slots.js'
 import {
   nonNegativeFinite,
   positiveFinite,
@@ -342,7 +343,7 @@ export const VirtualList = defineComponent({
         props.scrollStep,
       )
 
-      const children = []
+      const children: VNode[] = []
       if (range.offsetTop > 0) {
         children.push(spacer(range.offsetTop, 'top-spacer'))
       }
@@ -361,6 +362,7 @@ export const VirtualList = defineComponent({
           key,
           range,
         }
+        const rowChildren = slots.default?.(slotProps) ?? []
         children.push(
           h(
             Div,
@@ -371,7 +373,7 @@ export const VirtualList = defineComponent({
                 height: itemHeight,
               },
             },
-            slots.default?.(slotProps),
+            createDefaultSlot(() => rowChildren),
           ),
         )
       }
@@ -389,7 +391,7 @@ export const VirtualList = defineComponent({
               flexDirection: 'column',
             },
           },
-          children,
+          createDefaultSlot(() => children),
         ),
       ])
     }
