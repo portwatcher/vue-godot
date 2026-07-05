@@ -62,8 +62,9 @@ used before final evidence exists.
 Add `--summary-output release/release-readiness-summary.json` to either form to
 capture the current blockers, TODO counts, unchecked TODO item details, final TODO proof status,
 readiness check and evidence status, local Git state, platform worksheet audit
-status with per-platform gaps, separate Android/iOS real-device evidence status
-with metadata, platform, and read errors, release-readiness evidence status, CI workflow wiring status,
+status with compact per-platform progress counts and gaps, separate Android/iOS
+real-device evidence status with metadata, platform, and read errors,
+release-readiness evidence status, CI workflow wiring status,
 release tooling/workflow blocker lists, public warning markers, package
 description warning status, and `nextActions` command hints for the local
 `npm run check`, initial CI evidence collection, push/dispatch commands, and the
@@ -91,7 +92,8 @@ commit is current `HEAD`. That later action includes the `--dispatch-missing`,
 `--release-preflight-run-commit`, and `--real-device-evidence-path` inputs for
 the workflow-dispatch-only preflight workflow. The real-device evidence action
 reuses an existing platform worksheet and writes
-`release/platform-evidence-summary.json` when it still has gaps; it only emits
+`release/platform-evidence-summary.json` when it still has gaps. Its detail
+includes Android/iOS metadata-field and required-check counts, and it only emits
 `npm run release:platform-evidence -- --production-profile` when the worksheet
 is missing, then runs the strict platform worksheet audit before final evidence
 assembly. The final warning-removal action runs
@@ -238,8 +240,8 @@ The helper strips worksheet fields before writing final evidence. If
 strict release gates reject it.
 Use `npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json`
 to write validation status, errors, initial CI evidence status, platform
-worksheet status, and `nextActions` command hints for fixing or creating
-evidence; missing-evidence assembly and invalid-evidence regeneration hints
+worksheet status with compact per-platform progress counts, and `nextActions`
+command hints for fixing or creating evidence; missing-evidence assembly and invalid-evidence regeneration hints
 begin with `npm run check`, run the platform worksheet audit before final
 evidence assembly or regeneration, then run any still-needed release CI
 wait/dispatch or evidence commands.

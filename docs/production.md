@@ -36,7 +36,8 @@ the handoff run.
 evidence JSON when it exists. Add
 `--summary-output release/real-device-evidence-summary.json` to write
 validation status, errors, initial CI evidence status, platform worksheet
-status, and `nextActions` command hints for fixing or creating evidence;
+status with compact per-platform progress counts, and `nextActions` command
+hints for fixing or creating evidence;
 missing-evidence assembly and invalid-evidence regeneration hints begin with
 `npm run check`, run the platform worksheet audit before final evidence
 assembly or regeneration, then run any still-needed release CI wait/dispatch or
@@ -157,10 +158,10 @@ blocker lists, TODO counts, unchecked TODO item details, final TODO proof status
 structured readiness check and evidence status, local Git state, and
 `nextActions` command hints for the remaining evidence/finalizer work, including
 the local `npm run check`, initial CI evidence collection, push/dispatch
-commands, platform worksheet audit status with per-platform gaps, separate
-Android/iOS real-device evidence status with metadata, platform, and read
-errors, release-readiness evidence status, and CI workflow wiring status, as
-JSON for release handoff. The initial CI, real-device, and
+commands, platform worksheet audit status with compact per-platform progress
+counts and gaps, separate Android/iOS real-device evidence status with
+metadata, platform, and read errors, release-readiness evidence status, and CI
+workflow wiring status, as JSON for release handoff. The initial CI, real-device, and
 Release Preflight evidence actions begin with `npm run check` before collecting
 CI or assembling evidence.
 The initial CI action captures Check and Godot Smoke, while Release Preflight is
@@ -181,7 +182,8 @@ That later action includes the `--dispatch-missing`,
 `--release-preflight-run-commit`, and `--real-device-evidence-path` inputs for
 the workflow-dispatch-only preflight workflow. The real-device evidence action
 reuses an existing platform worksheet and writes
-`release/platform-evidence-summary.json` when it still has gaps; it only emits
+`release/platform-evidence-summary.json` when it still has gaps. Its detail
+includes Android/iOS metadata-field and required-check counts, and it only emits
 `npm run release:platform-evidence -- --production-profile` when the worksheet
 is missing. Before final evidence assembly it runs the strict platform worksheet
 audit, stages
