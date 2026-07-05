@@ -162,6 +162,8 @@ The project is production ready only when all of these are true:
   - [x] Add style warnings for unsupported properties.
 - [ ] Improve accessibility and input:
   - [ ] Focus management.
+    - [x] Add `autoFocus` / `autofocus` mount-time focus for focusable controls.
+    - [ ] Add focus traps, restoration, and explicit focus traversal helpers where needed.
   - [ ] Keyboard navigation.
   - [ ] Controller/gamepad navigation.
   - [ ] Touch target behavior.

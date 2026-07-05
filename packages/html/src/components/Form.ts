@@ -11,6 +11,7 @@ import {
 import { useBackgroundTexture } from '../utils/backgroundTexture.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
 import { FocusMode, isPressedInputAction } from '../utils/controlInput.js'
+import { applyAutoFocusProp, focusPropOptions } from '../utils/focus.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 import { Div } from './Div.js'
 
@@ -33,6 +34,7 @@ export const Form = defineComponent({
       default: false,
     },
     ...accessibilityPropOptions,
+    ...focusPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -71,6 +73,9 @@ export const Form = defineComponent({
 
       applyCommonControlStyleProps(nodeProps, props.style, 'Form')
       applyAccessibilityProps(nodeProps, props)
+      if (props.disabled !== true) {
+        applyAutoFocusProp(nodeProps, props)
+      }
 
       const backgroundStyle = createBackgroundPanelStyle(props.style)
       const backgroundTextureStyle = createBackgroundTexturePanelStyle(

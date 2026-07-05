@@ -9,6 +9,7 @@ import {
   applyFontStyleProps,
   applyTransformStyleProps,
 } from '../utils/controlStyle.js'
+import { applyAutoFocusProp, focusPropOptions } from '../utils/focus.js'
 import { getRadioButtonGroup } from '../utils/radioGroups.js'
 import {
   warnUnsupportedStyleProps,
@@ -146,6 +147,7 @@ export const Input = defineComponent({
       default: undefined,
     },
     ...accessibilityPropOptions,
+    ...focusPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -253,6 +255,9 @@ export const Input = defineComponent({
       applyDisplayAndOpacityProps(nodeProps, style)
       applyTransformStyleProps(nodeProps, style)
       applyAccessibilityProps(nodeProps, props)
+      if (props.disabled !== true) {
+        applyAutoFocusProp(nodeProps, props)
+      }
 
       return h(mapping.tag, nodeProps)
     }

@@ -9,6 +9,7 @@ import {
   applyFontStyleProps,
   applyTransformStyleProps,
 } from '../utils/controlStyle.js'
+import { applyAutoFocusProp, focusPropOptions } from '../utils/focus.js'
 import { extractTextFromVNode } from '../utils/slotText.js'
 import {
   warnUnsupportedStyleProps,
@@ -140,6 +141,7 @@ export const Select = defineComponent({
       default: false,
     },
     ...accessibilityPropOptions,
+    ...focusPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -209,6 +211,9 @@ export const Select = defineComponent({
         syncItems(vnode.el, options)
       nodeProps['onVnodeUpdated'] = (vnode: VNode) =>
         syncItems(vnode.el, options)
+      if (props.disabled !== true) {
+        applyAutoFocusProp(nodeProps, props)
+      }
 
       return h('OptionButton', nodeProps)
     }

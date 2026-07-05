@@ -9,6 +9,7 @@ import {
   applyFontStyleProps,
   applyTransformStyleProps,
 } from '../utils/controlStyle.js'
+import { applyAutoFocusProp, focusPropOptions } from '../utils/focus.js'
 import {
   warnUnsupportedStyleProps,
   type HtmlStyle,
@@ -76,6 +77,7 @@ export const Textarea = defineComponent({
       default: undefined,
     },
     ...accessibilityPropOptions,
+    ...focusPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -146,6 +148,9 @@ export const Textarea = defineComponent({
       }
       nodeProps['onVnodeUnmounted'] = () => {
         textEditNode = null
+      }
+      if (props.disabled !== true) {
+        applyAutoFocusProp(nodeProps, props)
       }
 
       return h('TextEdit', nodeProps)

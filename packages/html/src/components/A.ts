@@ -7,6 +7,7 @@ import {
   applyCommonControlStyleProps,
   type GodotPropBag,
 } from '../utils/controlStyle.js'
+import { applyAutoFocusProp, focusPropOptions } from '../utils/focus.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 
@@ -32,6 +33,7 @@ export const A = defineComponent({
       default: false,
     },
     ...accessibilityPropOptions,
+    ...focusPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -58,6 +60,9 @@ export const A = defineComponent({
       applyAccessibilityProps(nodeProps, props, {
         hint: props.disabled ? undefined : props.href,
       })
+      if (props.disabled !== true) {
+        applyAutoFocusProp(nodeProps, props)
+      }
 
       return h('LinkButton', nodeProps)
     }

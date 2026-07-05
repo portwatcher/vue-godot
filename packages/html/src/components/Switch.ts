@@ -4,6 +4,7 @@ import {
   applyAccessibilityProps,
 } from '../utils/accessibility.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
+import { applyAutoFocusProp, focusPropOptions } from '../utils/focus.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
 import type { HtmlStyle } from '../utils/styleMapping.js'
 
@@ -26,6 +27,7 @@ export const Switch = defineComponent({
       default: false,
     },
     ...accessibilityPropOptions,
+    ...focusPropOptions,
     style: {
       type: Object as () => HtmlStyle,
       default: undefined,
@@ -53,6 +55,9 @@ export const Switch = defineComponent({
 
       applyCommonControlStyleProps(nodeProps, props.style, 'Switch')
       applyAccessibilityProps(nodeProps, props)
+      if (props.disabled !== true) {
+        applyAutoFocusProp(nodeProps, props)
+      }
 
       return h('CheckButton', nodeProps)
     }

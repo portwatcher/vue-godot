@@ -380,7 +380,11 @@
 
   <!-- ===== Section: Input (text) ===== -->
   <Span>--- Input (text) ---</Span>
-  <Input v-model="textValue" placeholder="Type something..."></Input>
+  <Input
+    v-model="textValue"
+    placeholder="Type something..."
+    auto-focus
+  ></Input>
   <Span>{{ `Text input: ${textValue}` }}</Span>
 
   <!-- ===== Section: Input (password) ===== -->
