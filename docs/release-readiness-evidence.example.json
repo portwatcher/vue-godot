@@ -4,5 +4,10 @@
   "releasePreflightRunWorkflowName": "Release Preflight",
   "releasePreflightRunCommit": "0123456789abcdef0123456789abcdef01234567",
   "releasePreflightRunConclusion": "success",
+  "releasePreflightLocalOnly": false,
+  "releasePreflightSkipCheck": false,
+  "releasePreflightSkipGodot": false,
+  "releasePreflightSkipSeriousExamples": false,
+  "releasePreflightFailureCount": 0,
   "releasePreflightWarningCount": 0
 }

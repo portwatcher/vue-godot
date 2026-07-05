@@ -293,6 +293,21 @@ export function validateReleaseReadinessEvidence(evidence, expectedCommit) {
     )
   }
 
+  for (const key of [
+    'releasePreflightLocalOnly',
+    'releasePreflightSkipCheck',
+    'releasePreflightSkipGodot',
+    'releasePreflightSkipSeriousExamples',
+  ]) {
+    if (evidence[key] !== false) {
+      errors.push(`releaseReadiness.${key} must be false`)
+    }
+  }
+
+  if (evidence.releasePreflightFailureCount !== 0) {
+    errors.push('releaseReadiness.releasePreflightFailureCount must be 0')
+  }
+
   if (evidence.releasePreflightWarningCount !== 0) {
     errors.push('releaseReadiness.releasePreflightWarningCount must be 0')
   }

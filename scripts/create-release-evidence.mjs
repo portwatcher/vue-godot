@@ -47,9 +47,10 @@ Options:
   --release-preflight-run-url <url>
                                   Successful Release Preflight workflow run URL.
   --release-preflight-warning-count <count>
-                                  Warning count from release preflight output.
+                                  Optional consistency check for the summary warning count.
   --release-preflight-summary <file>
-                                  JSON written by release:preflight -- --summary-output.
+                                  Required for readiness evidence. JSON written by
+                                  release:preflight -- --summary-output.
   --readiness-output <file>        Write release-readiness evidence JSON.
   --commit <sha>                   Evidence commit. Default: current HEAD.
   --godot-js-version <label>       GodotJS version label.
@@ -266,7 +267,7 @@ function assertRequiredOptions(options, names) {
 function parseWarningCount(value) {
   if (value == null) {
     throw new Error(
-      '--release-preflight-warning-count or --release-preflight-summary is required when writing readiness evidence',
+      '--release-preflight-summary must include a warning count when writing readiness evidence',
     )
   }
 
@@ -283,7 +284,15 @@ export function extractReleasePreflightWarningCount(summary, commit) {
   const errors = []
   if (!isRecord(summary)) {
     errors.push('Release preflight summary must be a JSON object')
-    return { warningCount: null, errors }
+    return {
+      warningCount: null,
+      failureCount: null,
+      localOnly: null,
+      skipCheck: null,
+      skipGodot: null,
+      skipSeriousExamples: null,
+      errors,
+    }
   }
 
   if (summary.commit !== commit) {
@@ -306,6 +315,18 @@ export function extractReleasePreflightWarningCount(summary, commit) {
   if (!Number.isInteger(warningCount) || warningCount < 0) {
     errors.push(
       'Release preflight summary warningCount must be a non-negative integer',
+    )
+  } else if (warningCount !== 0) {
+    const summaryWarnings = Array.isArray(summary.warnings)
+      ? summary.warnings.filter(
+          (warning) => typeof warning === 'string' && warning.trim().length > 0,
+        )
+      : []
+    errors.push(
+      [
+        `Release preflight summary contains ${warningCount} warning(s)`,
+        ...summaryWarnings,
+      ].join('\n'),
     )
   }
 
@@ -331,6 +352,13 @@ export function extractReleasePreflightWarningCount(summary, commit) {
   return {
     warningCount:
       Number.isInteger(warningCount) && warningCount >= 0 ? warningCount : null,
+    failureCount:
+      Number.isInteger(failureCount) && failureCount >= 0 ? failureCount : null,
+    localOnly: summary.localOnly === false ? false : null,
+    skipCheck: summary.skipCheck === false ? false : null,
+    skipGodot: summary.skipGodot === false ? false : null,
+    skipSeriousExamples:
+      summary.skipSeriousExamples === false ? false : null,
     errors,
   }
 }
@@ -398,6 +426,12 @@ export function buildReleaseReadinessEvidence(options) {
     releasePreflightRunWorkflowName: options.releasePreflightRun.name,
     releasePreflightRunCommit: options.releasePreflightRun.head_sha,
     releasePreflightRunConclusion: options.releasePreflightRun.conclusion,
+    releasePreflightLocalOnly: options.releasePreflightLocalOnly,
+    releasePreflightSkipCheck: options.releasePreflightSkipCheck,
+    releasePreflightSkipGodot: options.releasePreflightSkipGodot,
+    releasePreflightSkipSeriousExamples:
+      options.releasePreflightSkipSeriousExamples,
+    releasePreflightFailureCount: options.releasePreflightFailureCount,
     releasePreflightWarningCount: options.releasePreflightWarningCount,
   }
 }
@@ -439,30 +473,29 @@ async function main() {
         'Missing required option: --release-preflight-run-url or --ci-evidence with Release Preflight',
       )
     }
-    if (
-      options.releasePreflightWarningCount == null &&
-      !options.releasePreflightSummaryPath
-    ) {
-      throw new Error(
-        'Missing required option: --release-preflight-warning-count or --release-preflight-summary',
-      )
+    if (!options.releasePreflightSummaryPath) {
+      throw new Error('Missing required option: --release-preflight-summary')
     }
   }
 
   const commit = options.commit ?? currentCommit()
   const packageVersions = currentReleasePackageVersions()
+  let releasePreflightSummary = null
   if (options.releasePreflightSummaryPath) {
     const releasePreflightSummaryPath = resolveOutputPath(
       options.releasePreflightSummaryPath,
     )
     const summary = readJsonFile(releasePreflightSummaryPath)
-    const preflightSummary = extractReleasePreflightWarningCount(summary, commit)
-    if (preflightSummary.errors.length > 0) {
-      throw new Error(preflightSummary.errors.join('\n'))
+    releasePreflightSummary = extractReleasePreflightWarningCount(
+      summary,
+      commit,
+    )
+    if (releasePreflightSummary.errors.length > 0) {
+      throw new Error(releasePreflightSummary.errors.join('\n'))
     }
     options.releasePreflightWarningCount = mergeWarningCountOption(
       options.releasePreflightWarningCount,
-      preflightSummary.warningCount,
+      releasePreflightSummary.warningCount,
     )
   }
 
@@ -528,6 +561,10 @@ async function main() {
 
   let readinessEvidence = null
   if (options.releasePreflightRunUrl) {
+    if (!releasePreflightSummary) {
+      throw new Error('Missing required option: --release-preflight-summary')
+    }
+
     const releasePreflightRun = await readSuccessfulRun(
       options.releasePreflightRunUrl,
       'Release Preflight',
@@ -541,6 +578,12 @@ async function main() {
       commit,
       releasePreflightRunUrl: options.releasePreflightRunUrl,
       releasePreflightRun,
+      releasePreflightLocalOnly: releasePreflightSummary.localOnly,
+      releasePreflightSkipCheck: releasePreflightSummary.skipCheck,
+      releasePreflightSkipGodot: releasePreflightSummary.skipGodot,
+      releasePreflightSkipSeriousExamples:
+        releasePreflightSummary.skipSeriousExamples,
+      releasePreflightFailureCount: releasePreflightSummary.failureCount,
       releasePreflightWarningCount,
     })
     validateGeneratedReleaseReadinessEvidence(readinessEvidence, commit)

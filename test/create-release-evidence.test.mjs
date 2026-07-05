@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
 import test from 'node:test'
 
 import {
@@ -78,6 +79,11 @@ test('buildReleaseReadinessEvidence records release preflight run metadata', () 
       head_sha: commit,
       conclusion: 'success',
     },
+    releasePreflightLocalOnly: false,
+    releasePreflightSkipCheck: false,
+    releasePreflightSkipGodot: false,
+    releasePreflightSkipSeriousExamples: false,
+    releasePreflightFailureCount: 0,
     releasePreflightWarningCount: 0,
   })
 
@@ -88,9 +94,49 @@ test('buildReleaseReadinessEvidence records release preflight run metadata', () 
     releasePreflightRunWorkflowName: 'Release Preflight',
     releasePreflightRunCommit: commit,
     releasePreflightRunConclusion: 'success',
+    releasePreflightLocalOnly: false,
+    releasePreflightSkipCheck: false,
+    releasePreflightSkipGodot: false,
+    releasePreflightSkipSeriousExamples: false,
+    releasePreflightFailureCount: 0,
     releasePreflightWarningCount: 0,
   })
   assert.deepEqual(validateReleaseReadinessEvidence(evidence, commit), [])
+})
+
+test('create-release-evidence requires a preflight summary for readiness evidence', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/create-release-evidence.mjs',
+      '--platform-evidence',
+      'docs/real-device-evidence.example.json',
+      '--real-device-output',
+      'release/real-device-evidence.json',
+      '--readiness-output',
+      'release/release-readiness-evidence.json',
+      '--check-run-url',
+      'https://github.com/portwatcher/vue-godot/actions/runs/1',
+      '--godot-smoke-run-url',
+      'https://github.com/portwatcher/vue-godot/actions/runs/2',
+      '--release-preflight-run-url',
+      'https://github.com/portwatcher/vue-godot/actions/runs/3',
+      '--release-preflight-warning-count',
+      '0',
+      '--commit',
+      commit,
+    ],
+    {
+      cwd: process.cwd(),
+      encoding: 'utf-8',
+    },
+  )
+
+  assert.equal(result.status, 1)
+  assert.match(
+    `${result.stdout}\n${result.stderr}`,
+    /Missing required option: --release-preflight-summary/,
+  )
 })
 
 test('extractCiRunUrls reads release CI evidence for the evidence commit', () => {
@@ -230,6 +276,11 @@ test('extractReleasePreflightWarningCount reads a matching preflight summary', (
     ),
     {
       warningCount: 0,
+      failureCount: 0,
+      localOnly: false,
+      skipCheck: false,
+      skipGodot: false,
+      skipSeriousExamples: false,
       errors: [],
     },
   )
@@ -260,6 +311,27 @@ test('extractReleasePreflightWarningCount rejects stale or failed summaries', ()
   assert.match(result.errors.join('\n'), /Godot smoke skipped/)
 })
 
+test('extractReleasePreflightWarningCount rejects warning-bearing summaries', () => {
+  const result = extractReleasePreflightWarningCount(
+    {
+      commit,
+      localOnly: false,
+      skipCheck: false,
+      skipGodot: false,
+      skipSeriousExamples: false,
+      warningCount: 1,
+      failureCount: 0,
+      warnings: ['Real device evidence run metadata could not be verified'],
+      failures: [],
+    },
+    commit,
+  )
+
+  assert.equal(result.warningCount, 1)
+  assert.match(result.errors.join('\n'), /contains 1 warning/)
+  assert.match(result.errors.join('\n'), /run metadata could not be verified/)
+})
+
 test('extractReleasePreflightWarningCount rejects local or skipped preflight summaries', () => {
   const result = extractReleasePreflightWarningCount(
     {
@@ -277,6 +349,10 @@ test('extractReleasePreflightWarningCount rejects local or skipped preflight sum
   )
 
   assert.equal(result.warningCount, 0)
+  assert.equal(result.localOnly, null)
+  assert.equal(result.skipCheck, null)
+  assert.equal(result.skipGodot, null)
+  assert.equal(result.skipSeriousExamples, null)
   assert.match(result.errors.join('\n'), /non-local release preflight run/)
   assert.match(result.errors.join('\n'), /skipCheck must be false/)
   assert.match(result.errors.join('\n'), /skipGodot must be false/)

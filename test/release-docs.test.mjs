@@ -155,6 +155,8 @@ test('release preflight enforces real device evidence', () => {
     /Release preflight summary commit must match/,
     /Release preflight summary .*non-local/,
     /Release preflight summary .*must be false/,
+    /Release preflight summary contains \$\{warningCount\} warning/,
+    /Release preflight summary contains \$\{failureCount\} failure/,
     /Release Preflight/,
   ]) {
     assert.match(evidenceHelper, pattern)
@@ -229,7 +231,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /--release-preflight-summary/)
   assert.match(production, /release-preflight-summary/)
   assert.match(production, /did not use local-only mode/)
-  assert.match(production, /did not skip release gates/)
+  assert.match(production, /did not skip release\s+gates/)
   assert.match(production, /VUE_GODOT_REAL_DEVICE_EVIDENCE/)
   assert.match(production, /GitHub\s+Actions metadata/)
   assert.match(readme, /check:real-device-evidence/)
@@ -245,7 +247,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /--ci-evidence/)
   assert.match(readme, /--summary-output/)
   assert.match(readme, /--release-preflight-summary/)
-  assert.match(readme, /rejects local-only or skipped preflight summaries/)
+  assert.match(
+    readme,
+    /rejects local-only, skipped, failed, or warning-bearing preflight summaries/,
+  )
   assert.match(readme, /release:platform-evidence/)
   assert.match(readme, /passOnlyChecks/)
   assert.match(readme, /selectedApiRequiredChecks/)
@@ -272,6 +277,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /local\/skip flags/)
   assert.match(checklist, /local-only/)
   assert.match(checklist, /skipped/)
+  assert.match(checklist, /warning-bearing/)
   assert.match(checklist, /release-preflight-summary/)
   assert.match(checklist, /release:preflight-summary/)
   assert.match(checklist, /release-readiness-summary/)
@@ -329,6 +335,10 @@ test('release readiness audit documents final removal blockers', () => {
     /currentReleasePackageVersions/,
     /validateRealDeviceEvidence/,
     /release-evidence-utils/,
+    /releasePreflightLocalOnly/,
+    /releasePreflightSkipGodot/,
+    /must be false/,
+    /releasePreflightFailureCount must be 0/,
     /releasePreflightWarningCount must be 0/,
     /working tree must be clean for final release readiness/,
     /public warning markers still present/,
@@ -365,6 +375,11 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(todo, /release:readiness/)
   assert.equal(example.releasePreflightRunConclusion, 'success')
   assert.equal(example.releasePreflightRunWorkflowName, 'Release Preflight')
+  assert.equal(example.releasePreflightLocalOnly, false)
+  assert.equal(example.releasePreflightSkipCheck, false)
+  assert.equal(example.releasePreflightSkipGodot, false)
+  assert.equal(example.releasePreflightSkipSeriousExamples, false)
+  assert.equal(example.releasePreflightFailureCount, 0)
   assert.equal(example.releasePreflightWarningCount, 0)
   assert.equal(example.releasePreflightRunCommit, example.commit)
 })

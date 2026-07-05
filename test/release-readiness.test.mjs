@@ -123,6 +123,11 @@ test('release readiness requires a GitHub Actions preflight run URL for this rep
         releasePreflightRunCommit:
           '0123456789abcdef0123456789abcdef01234567',
         releasePreflightRunConclusion: 'success',
+        releasePreflightLocalOnly: false,
+        releasePreflightSkipCheck: false,
+        releasePreflightSkipGodot: false,
+        releasePreflightSkipSeriousExamples: false,
+        releasePreflightFailureCount: 0,
         releasePreflightWarningCount: 0,
       },
       null,
@@ -179,6 +184,45 @@ test('release readiness requires the Release Preflight workflow name', () => {
       output,
       /releasePreflightRunWorkflowName must be "Release Preflight"/,
     )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
+test('release readiness requires completed non-local preflight summary evidence', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
+  const readinessPath = path.join(tempDir, 'release-readiness.json')
+  const evidence = JSON.parse(
+    fs.readFileSync('docs/release-readiness-evidence.example.json', 'utf-8'),
+  )
+  evidence.releasePreflightLocalOnly = true
+  evidence.releasePreflightSkipCheck = true
+  evidence.releasePreflightSkipGodot = true
+  evidence.releasePreflightSkipSeriousExamples = true
+  evidence.releasePreflightFailureCount = 1
+  evidence.releasePreflightWarningCount = 1
+
+  fs.writeFileSync(readinessPath, JSON.stringify(evidence, null, 2))
+
+  try {
+    const result = runReadiness([
+      '--allow-open',
+      '--real-device-path',
+      'docs/real-device-evidence.example.json',
+      '--readiness-path',
+      readinessPath,
+      '--expected-commit',
+      '0123456789abcdef0123456789abcdef01234567',
+    ])
+    const output = `${result.stdout}\n${result.stderr}`
+
+    assert.equal(result.status, 0)
+    assert.match(output, /releasePreflightLocalOnly must be false/)
+    assert.match(output, /releasePreflightSkipCheck must be false/)
+    assert.match(output, /releasePreflightSkipGodot must be false/)
+    assert.match(output, /releasePreflightSkipSeriousExamples must be false/)
+    assert.match(output, /releasePreflightFailureCount must be 0/)
+    assert.match(output, /releasePreflightWarningCount must be 0/)
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }

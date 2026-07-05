@@ -170,11 +170,11 @@ npm run release:evidence -- \
 `--release-preflight-summary` reads the preflight commit, local/skip flags,
 failure count, and warning count from
 `npm run release:preflight -- --summary-output`. It rejects stale, local-only,
-skipped, or failed summaries before writing readiness evidence. `--ci-evidence`
-supplies the Release Preflight run URL when it was generated with
-`--include-release-preflight`; otherwise pass `--release-preflight-run-url`
-manually. The older `--release-preflight-warning-count 0` flag remains available
-only as a manual fallback when no summary artifact exists.
+skipped, failed, or warning-bearing summaries before writing readiness evidence.
+`--ci-evidence` supplies the Release Preflight run URL when it was generated
+with `--include-release-preflight`; otherwise pass `--release-preflight-run-url`
+manually. `--release-preflight-warning-count 0` is only an optional consistency
+check when the summary artifact is also supplied.
 
 Local-only preflight runs (`npm run release:preflight -- --local`) warn when
 this evidence is missing. Non-local preflight runs fail until the evidence file

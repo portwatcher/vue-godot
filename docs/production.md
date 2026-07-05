@@ -66,8 +66,8 @@ platform evidence is rejected. For final readiness evidence, fetch the
 then pass it to `release:evidence` with
 `--release-preflight-summary release/release-preflight-summary.json`. The
 helpers check that the summary commit matches and that the preflight had zero
-failures, did not use local-only mode, and did not skip release gates before
-using its warning count.
+failures, zero warnings, did not use local-only mode, and did not skip release
+gates before recording those facts in final readiness evidence.
 
 The local preflight command may warn when Godot smoke is skipped or when package
 versions are newer than the registry. Release builds should run the full
