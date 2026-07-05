@@ -39,6 +39,7 @@ const expectedSmokeNames = [
   'device capability registry',
   'device capability errors',
   'device adapter guards',
+  'device geolocation adapter',
   'localStorage',
   'sessionStorage',
   'queueMicrotask',

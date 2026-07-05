@@ -27,6 +27,11 @@
       "import": "./dist/haptics.js",
       "default": "./dist/haptics.js"
     },
+    "./geolocation": {
+      "types": "./dist/geolocation.d.ts",
+      "import": "./dist/geolocation.js",
+      "default": "./dist/geolocation.js"
+    },
     "./microphone": {
       "types": "./dist/microphone.d.ts",
       "import": "./dist/microphone.js",

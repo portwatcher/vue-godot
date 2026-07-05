@@ -91,6 +91,62 @@ Adapters may be implemented by a Godot script plugin, a native Android/iOS
 plugin, desktop integration code, or app-specific JavaScript that bridges to a
 known runtime object.
 
+## Geolocation Plugins On Android And iOS
+
+Use `createGeolocationAdapter()` from `@vue-godot/device/geolocation` to adapt
+Android, iOS, or desktop location plugins to Vue Godot's shared
+`GeolocationAdapter` contract:
+
+```ts
+import { installBrowserAPIs } from '@vue-godot/browser'
+import { registerDeviceCapability } from '@vue-godot/device'
+import { createGeolocationAdapter } from '@vue-godot/device/geolocation'
+
+registerDeviceCapability(
+  createGeolocationAdapter(
+    {
+      pluginName: 'native-location',
+      isAvailable() {
+        return nativeLocation.is_available()
+      },
+      hasPermission() {
+        return nativeLocation.has_permission()
+      },
+      async getCurrentPosition(options) {
+        return nativeLocation.get_current_position({
+          high_accuracy: options?.enableHighAccuracy === true,
+          timeout_ms: options?.timeout,
+        })
+      },
+      watchPosition(onPosition, onError, options) {
+        return nativeLocation.watch_position(onPosition, onError, {
+          high_accuracy: options?.enableHighAccuracy === true,
+          maximum_age_ms: options?.maximumAge,
+        })
+      },
+      clearWatch(watchId) {
+        nativeLocation.clear_watch(watchId)
+      },
+    },
+    {
+      isExportConfigured() {
+        return nativeLocation.has_required_export_settings()
+      },
+    },
+  ),
+)
+
+installBrowserAPIs()
+```
+
+The bridge expects plugin positions with `latitude`, `longitude`, `accuracy`,
+optional altitude/heading/speed fields, and an optional `timestamp`. It maps
+plugin availability, permission, export setup, and platform checks to the
+device capability states that `navigator.geolocation` already understands.
+Android plugins still own runtime permission prompts and manifest/export
+settings. iOS plugins still own Core Location prompts, plist usage strings, and
+authorization mode.
+
 ## System Adapters
 
 Deep links and share sheets are plugin-backed because core Godot does not expose

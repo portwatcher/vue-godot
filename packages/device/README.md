@@ -63,6 +63,7 @@ unregister()
 | Adapter type guards | `isDeepLinkAdapter()`, `isNotificationAdapter()`, and `isShareAdapter()` for safely narrowing registry adapters. |
 | `@vue-godot/device/clipboard` | Godot-backed text, primary-selection text, and image-read clipboard helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/haptics` | Godot-backed handheld and joypad/controller vibration helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
+| `@vue-godot/device/geolocation` | Backend-neutral bridge for Android/iOS/native geolocation plugins that implement the `GeolocationAdapter` contract. |
 | `@vue-godot/device/microphone` | Godot-backed microphone and audio-bus capture helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/permissions` | Godot-backed permission helpers for Android runtime requests, permission result events, and granted-permission lists. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/sensors` | Godot-backed accelerometer, gravity, gyroscope, magnetometer, motion, and orientation snapshot helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
@@ -114,6 +115,56 @@ Native implementations should return a `DeviceCapabilityStatus` from
 `getStatus()` when they can distinguish permission denial, missing plugins, and
 export misconfiguration. Simple adapters can provide `isSupported()` and let the
 registry map `false` to `unsupported-platform`.
+
+## Native Geolocation Plugin Bridge
+
+Import the geolocation bridge from the `geolocation` subpath when an Android,
+iOS, or desktop plugin already exposes native location methods:
+
+```ts
+import { installBrowserAPIs } from '@vue-godot/browser'
+import { registerDeviceCapability } from '@vue-godot/device'
+import { createGeolocationAdapter } from '@vue-godot/device/geolocation'
+
+const geolocationAdapter = createGeolocationAdapter(
+  {
+    pluginName: 'com.example.location',
+    isAvailable() {
+      return locationPlugin.is_available()
+    },
+    hasPermission() {
+      return locationPlugin.has_permission()
+    },
+    async getCurrentPosition(options) {
+      return locationPlugin.get_current_position({
+        high_accuracy: options?.enableHighAccuracy === true,
+        timeout_ms: options?.timeout,
+      })
+    },
+    watchPosition(onPosition, onError, options) {
+      return locationPlugin.watch_position(onPosition, onError, {
+        high_accuracy: options?.enableHighAccuracy === true,
+      })
+    },
+    clearWatch(watchId) {
+      locationPlugin.clear_watch(watchId)
+    },
+  },
+  {
+    isExportConfigured() {
+      return locationPlugin.has_required_export_settings()
+    },
+  },
+)
+
+const unregister = registerDeviceCapability(geolocationAdapter)
+installBrowserAPIs()
+```
+
+`createGeolocationAdapter()` normalizes plugin positions to
+`DeviceGeolocationPosition`, maps unavailable plugins, denied permission, and
+missing export settings to `DeviceCapabilityError` states, and implements the
+`GeolocationAdapter` contract consumed by `navigator.geolocation`.
 
 ## Godot System Helpers
 

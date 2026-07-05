@@ -22,6 +22,17 @@ export {
   isNotificationAdapter,
   isShareAdapter,
 } from './adapterGuards.js'
+export {
+  createGeolocationAdapter,
+  normalizeGeolocationPluginError,
+  normalizeGeolocationPosition,
+} from './geolocation.js'
+export type {
+  NativeGeolocationAdapter,
+  NativeGeolocationAdapterOptions,
+  NativeGeolocationPlugin,
+  NativeGeolocationPluginPosition,
+} from './geolocation.js'
 export type {
   CoreDeviceCapabilityName,
   DeviceCapabilityAdapter,

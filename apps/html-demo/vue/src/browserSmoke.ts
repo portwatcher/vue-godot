@@ -32,6 +32,7 @@ import {
   registerDeviceCapability,
   requireCapability,
   unregisterDeviceCapability,
+  createGeolocationAdapter,
   type DeviceCapabilityAdapter,
 } from '@vue-godot/device'
 
@@ -75,6 +76,7 @@ export const requiredBrowserSmokeNames = [
   'device capability registry',
   'device capability errors',
   'device adapter guards',
+  'device geolocation adapter',
   'localStorage',
   'sessionStorage',
   'queueMicrotask',
@@ -655,6 +657,59 @@ export async function runBrowserSmokeTests(
     )
   } catch (error) {
     results.push(failFromError('device adapter guards', error))
+  }
+
+  try {
+    let clearedWatchId = 0
+    const adapter = createGeolocationAdapter({
+      pluginName: 'html-demo-geolocation',
+      hasPermission() {
+        return true
+      },
+      getCurrentPosition() {
+        return {
+          latitude: 35.681236,
+          longitude: 139.767125,
+          accuracy: 8,
+          timestamp: 1234,
+        }
+      },
+      watchPosition(onPosition) {
+        onPosition({
+          latitude: 35.681236,
+          longitude: 139.767125,
+          accuracy: 8,
+          timestamp: 1235,
+        })
+        return 7
+      },
+      clearWatch(watchId) {
+        clearedWatchId = watchId
+      },
+    })
+    const status = adapter.getStatus ? await adapter.getStatus() : null
+    const position = await adapter.getCurrentPosition()
+    let watchedTimestamp = 0
+    const watchId = adapter.watchPosition((watchedPosition) => {
+      watchedTimestamp = watchedPosition.timestamp
+    })
+    adapter.clearWatch(watchId)
+
+    results.push(
+      status?.state === 'supported' &&
+        position.coords.latitude === 35.681236 &&
+        position.coords.longitude === 139.767125 &&
+        watchId === 7 &&
+        watchedTimestamp === 1235 &&
+        clearedWatchId === 7
+        ? pass('device geolocation adapter', 'ok')
+        : fail(
+            'device geolocation adapter',
+            `status=${status?.state} watch=${watchId} cleared=${clearedWatchId}`,
+          ),
+    )
+  } catch (error) {
+    results.push(failFromError('device geolocation adapter', error))
   }
 
   try {

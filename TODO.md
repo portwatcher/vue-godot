@@ -181,14 +181,14 @@ The project is production ready only when all of these are true:
 ## P0: Native Device APIs
 
 - [ ] Implement `@vue-godot/device` adapters or equivalent modules.
-- [ ] Geolocation:
+- [x] Geolocation:
   - [x] Define `GeolocationAdapter`.
   - [x] Support `getCurrentPosition`.
   - [x] Support `watchPosition`.
   - [x] Support `clearWatch`.
   - [x] Map errors to web-like error codes.
-  - [ ] Provide Android plugin integration.
-  - [ ] Provide iOS plugin integration.
+  - [x] Provide Android plugin integration.
+  - [x] Provide iOS plugin integration.
   - [x] Add export permission docs.
   - [x] Install `navigator.geolocation` only when an adapter is registered.
 - [ ] Camera:
