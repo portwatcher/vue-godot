@@ -12,9 +12,10 @@
     "smoke:godot": "node scripts/smoke-godot.mjs",
     "smoke:generated-godot": "node scripts/smoke-generated-godot.mjs",
     "smoke:editor-reload": "node scripts/smoke-editor-reload.mjs",
+    "bench:performance": "node scripts/performance-benchmarks.mjs",
     "release:preflight": "node scripts/release-preflight.mjs",
     "release:publish": "node scripts/release-publish.mjs",
-    "check": "npm run build && npm run test && npm run smoke:cli",
+    "check": "npm run build && npm run test && npm run smoke:cli && npm run bench:performance",
     "vue-godot": "vue-godot"
   },
   "repository": {

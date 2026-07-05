@@ -269,14 +269,14 @@ The project is production ready only when all of these are true:
 - [ ] Add real Godot smoke coverage for each supported browser/device API.
 - [ ] Add real device CI/manual release checklist for Android and iOS.
 - [x] Add memory leak checks for repeated mount/unmount and navigation.
-- [ ] Add performance benchmarks:
-  - [ ] Startup time.
-  - [ ] First Vue render.
-  - [ ] Large tree update.
-  - [ ] Large list scroll.
-  - [ ] Image/video/audio loading.
-  - [ ] Fetch/WebSocket throughput.
-  - [ ] Editor reload stability.
+- [x] Add performance benchmarks:
+  - [x] Startup time.
+  - [x] First Vue render.
+  - [x] Large tree update.
+  - [x] Large list scroll.
+  - [x] Image/video/audio loading.
+  - [x] Fetch/WebSocket throughput.
+  - [x] Editor reload stability.
 - [ ] Add fixture apps for regression testing.
 - [x] Make release preflight fail on skipped Godot smoke in non-local release contexts.
 - [x] Keep `npm audit` clean for moderate and high issues, or document accepted exceptions.

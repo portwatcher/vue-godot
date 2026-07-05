@@ -4,9 +4,11 @@ Vue Godot performance depends on three layers: Vite bundle output, Vue renderer
 work, and Godot node/resource behavior. Use this guide to set app-level budgets
 and to measure regressions consistently.
 
-These budgets are initial release targets. They are documented here, but not
-fully enforced by automated benchmarks yet. Keep the testing TODOs open until
-CI records and fails on the relevant measurements.
+These budgets are initial release targets. `npm run bench:performance` enforces
+deterministic Node-side regression budgets for startup, first render, tree
+updates, virtual list scrolling, media loader paths, fetch/WebSocket throughput,
+and editor-style reload stability. Keep real device/export measurements in app
+or release notes when hardware-specific numbers matter.
 
 ## Target Budgets
 
@@ -141,6 +143,32 @@ editor reload behavior. Runtime stress tests also cover repeated mount/unmount
 and keyed navigation stale-node release. They do not replace future
 memory-budget benchmarks.
 
+## Automated Benchmarks
+
+Run the benchmark gate directly when changing renderer, browser, html loader, or
+template performance-sensitive code:
+
+```bash
+npm run bench:performance
+```
+
+`npm run check` also runs this benchmark suite. The current gate covers:
+
+- Startup time: cold import of the runtime renderer package.
+- First Vue render: mounting a small app and waiting for Vue to flush.
+- Large tree update: keyed update of 1,000 Godot-backed labels.
+- Large list scroll: 20,000 fixed-height virtual range calculations.
+- Image/video/audio loading: in-memory image texture, audio stream, and video
+  stream creation paths.
+- Fetch/WebSocket throughput: mocked Godot `HTTPClient` fetches plus
+  `WebSocketPeer` sends.
+- Editor reload stability: repeated unmount/remount cycles with stale node
+  release checks.
+
+These checks are intentionally deterministic and broad enough for CI. They are
+not a substitute for release-candidate measurements in exported desktop/mobile
+builds on target hardware.
+
 ## Bundle And Build Hygiene
 
 - Keep `godot` external in Vite output.
@@ -155,18 +183,6 @@ Use `npm run check` before merging performance-sensitive changes. It builds all
 packages and demo apps, runs package tests, and exercises generated project
 smoke flows.
 
-## Benchmark Backlog
-
-The production checklist still needs automated benchmarks for:
-
-- startup time
-- first Vue render
-- large tree update
-- large list scroll
-- image/video/audio loading
-- fetch/WebSocket throughput
-- editor reload stability
-
-Until those are implemented, record manual measurements in PRs that touch the
-renderer, `@vue-godot/html` layout components, browser/device polyfills, Vite
-templates, or smoke workflows.
+When benchmark budgets need to change, update
+`scripts/performance-benchmarks.mjs` and explain the target machine or CI
+reason in the same change.
