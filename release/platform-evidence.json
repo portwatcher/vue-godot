@@ -1,4 +1,13 @@
 {
+  "initialCiEvidence": {
+    "commit": "92c5d36719fc9bd7329766dfd6ead1a8d7af0357",
+    "errorCount": 0,
+    "errors": [],
+    "expectedCommit": "92c5d36719fc9bd7329766dfd6ead1a8d7af0357",
+    "path": "release/ci-runs.json",
+    "ready": true,
+    "validForCommit": null
+  },
   "nextActions": [
     {
       "id": "complete-platform-evidence",

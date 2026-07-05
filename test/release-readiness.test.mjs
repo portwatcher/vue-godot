@@ -33,6 +33,40 @@ function readCommittedReleaseCiEvidence() {
   )
 }
 
+function currentGitCommit() {
+  const result = spawnSync('git', ['rev-parse', 'HEAD'], {
+    cwd: process.cwd(),
+    encoding: 'utf-8',
+  })
+  assert.equal(result.status, 0)
+  return result.stdout.trim()
+}
+
+function differentCommitSha(commit) {
+  const fallbackCommit = '0000000000000000000000000000000000000000'
+  if (commit !== fallbackCommit) {
+    return fallbackCommit
+  }
+  return '1111111111111111111111111111111111111111'
+}
+
+function writeSyntheticCiEvidenceForCommit(ciEvidence, commit, outputPath) {
+  const syntheticEvidence = JSON.parse(JSON.stringify(ciEvidence))
+  syntheticEvidence.commit = commit
+  syntheticEvidence.evidence.commit = commit
+  for (const workflow of Object.values(syntheticEvidence.evidence.workflows)) {
+    workflow.runCommit = commit
+  }
+  if (syntheticEvidence.localGit) {
+    syntheticEvidence.localGit.currentHead = commit
+    syntheticEvidence.localGit.commitIsHead = true
+    syntheticEvidence.localGit.upstreamCommit = commit
+    syntheticEvidence.localGit.upstreamMatchesCommit = true
+    syntheticEvidence.localGit.dirtyWorktree = false
+  }
+  fs.writeFileSync(outputPath, `${JSON.stringify(syntheticEvidence, null, 2)}\n`)
+}
+
 test('release readiness rejects non-SHA expected commits', () => {
   const result = runReadiness([
     '--allow-open',
@@ -463,21 +497,29 @@ test('release readiness reports current blockers without failing when allowed op
 test('release readiness suggests expected commit for committed CI evidence', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
   const summaryPath = path.join(tempDir, 'release-readiness-summary.json')
+  const ciEvidencePath = path.join(tempDir, 'ci-runs.json')
   const ciEvidence = readCommittedReleaseCiEvidence()
+  const headCommit = currentGitCommit()
+  const testedCommit = differentCommitSha(headCommit)
+  writeSyntheticCiEvidenceForCommit(ciEvidence, testedCommit, ciEvidencePath)
 
   try {
     const result = runReadiness([
       '--allow-open',
+      '--ci-evidence',
+      ciEvidencePath,
       '--summary-output',
       summaryPath,
     ])
     const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
 
     assert.equal(result.status, 0)
-    assert.notEqual(summary.commit, ciEvidence.commit)
+    assert.equal(summary.commit, headCommit)
+    assert.notEqual(summary.commit, testedCommit)
     assert.equal(summary.initialCiEvidence.ready, false)
-    assert.equal(summary.initialCiEvidence.commit, ciEvidence.commit)
-    assert.equal(summary.initialCiEvidence.validForCommit, ciEvidence.commit)
+    assert.equal(summary.initialCiEvidence.commit, testedCommit)
+    assert.equal(summary.initialCiEvidence.path, ciEvidencePath)
+    assert.equal(summary.initialCiEvidence.validForCommit, testedCommit)
     assert.ok(
       summary.initialCiEvidence.errors.some((error) =>
         error.includes(`CI evidence commit must match ${summary.commit}`),
@@ -490,7 +532,7 @@ test('release readiness suggests expected commit for committed CI evidence', () 
     assert.ok(expectedCommitAction)
     assert.ok(
       expectedCommitAction.commands.includes(
-        `npm run release:readiness -- --allow-open --expected-commit ${ciEvidence.commit} --summary-output release/release-readiness-summary.json`,
+        `npm run release:readiness -- --allow-open --expected-commit ${testedCommit} --ci-evidence ${ciEvidencePath} --summary-output release/release-readiness-summary.json`,
       ),
     )
   } finally {

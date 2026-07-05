@@ -175,6 +175,15 @@ test('platform evidence template reuses ready initial CI evidence', () => {
       (action) => action.id === 'assemble-real-device-evidence',
     )
 
+    assert.deepEqual(template.initialCiEvidence, {
+      commit,
+      errorCount: 0,
+      errors: [],
+      expectedCommit: commit,
+      path: ciEvidencePath,
+      ready: true,
+      validForCommit: null,
+    })
     assert.ok(assembleAction)
     assert.ok(
       assembleAction.commands.every(

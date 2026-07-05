@@ -246,14 +246,17 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(production, /check:real-device-evidence/)
   assert.match(production, /real-device-evidence-summary\.json/)
-  assert.match(production, /validation status, errors, and `nextActions`/)
   assert.match(
     production,
-    /missing-evidence assembly and invalid-evidence regeneration\s+hints begin with `npm run check` before any still-needed release CI\s+wait\/dispatch/,
+    /validation status, errors, initial CI evidence status, and `nextActions`/,
   )
   assert.match(
     production,
-    /resolve command placeholders\s+to\s+`--expected-commit`/,
+    /missing-evidence assembly\s+and\s+invalid-evidence regeneration\s+hints begin with `npm run check`\s+before any\s+still-needed release CI\s+wait\/dispatch/,
+  )
+  assert.match(
+    production,
+    /resolve\s+command placeholders\s+to\s+`--expected-commit`/,
   )
   assert.match(production, /release:ci/)
   assert.match(
@@ -287,7 +290,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /production-profile selected API set/)
   assert.match(
     production,
-    /worksheet reads `release\/ci-runs\.json` by default[\s\S]*`--ci-evidence <file>`[\s\S]*omits duplicate Check\/Godot Smoke collection\s+commands/,
+    /[Tt]he worksheet reads `release\/ci-runs\.json` by default[\s\S]*`--ci-evidence <file>`[\s\S]*records an `initialCiEvidence` status object[\s\S]*duplicate Check\/Godot Smoke collection\s+commands/,
   )
   assert.match(production, /Final release evidence must include every production-profile API/)
   assert.match(production, /passOnlyChecks/)
@@ -337,11 +340,11 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
-    /release\/ci-runs\.json` already validates Check and Godot Smoke[\s\S]*omits the\s+duplicate Check\/Godot Smoke collection commands/,
+    /release\/ci-runs\.json`[\s\S]*`--ci-evidence <file>`[\s\S]*already validates Check and Godot Smoke[\s\S]*omits the\s+duplicate\s+Check\/Godot Smoke collection commands/,
   )
   assert.match(
     production,
-    /release\/ci-runs\.json` is valid for a different tested release commit[\s\S]*`expected-commit`\s+`nextActions` entry[\s\S]*npm run release:readiness -- --allow-open --expected-commit/,
+    /checked-in or\s+supplied CI evidence is valid for a different tested release commit[\s\S]*`expected-commit`\s+`nextActions` entry[\s\S]*npm run release:readiness -- --allow-open --expected-commit/,
   )
   assert.match(
     production,
@@ -389,12 +392,15 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /GitHub\s+Actions metadata/)
   assert.match(readme, /check:real-device-evidence/)
   assert.match(readme, /real-device-evidence-summary\.json/)
-  assert.match(readme, /validation status, errors, and `nextActions`/)
   assert.match(
     readme,
-    /missing-evidence assembly and invalid-evidence regeneration hints begin with `npm run check` before any still-needed release CI wait\/dispatch/,
+    /validation status, errors, initial CI evidence status, and `nextActions`/,
   )
-  assert.match(readme, /resolve command placeholders\s+to\s+`--expected-commit`/)
+  assert.match(
+    readme,
+    /missing-evidence assembly\s+and\s+invalid-evidence regeneration\s+hints begin with `npm run check`\s+before any\s+still-needed release CI\s+wait\/dispatch/,
+  )
+  assert.match(readme, /resolve\s+command placeholders\s+to\s+`--expected-commit`/)
   assert.match(readme, /release:ci/)
   assert.match(
     readme,
@@ -454,11 +460,11 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     readme,
-    /release\/ci-runs\.json` already validates Check and Godot Smoke[\s\S]*omits the duplicate Check\/Godot Smoke collection commands/,
+    /release\/ci-runs\.json`[\s\S]*already validates Check and Godot Smoke[\s\S]*omits the duplicate Check\/Godot Smoke collection commands/,
   )
   assert.match(
     readme,
-    /release\/ci-runs\.json` is valid for a different tested release commit[\s\S]*`expected-commit` `nextActions` entry[\s\S]*npm run release:readiness -- --allow-open --expected-commit/,
+    /checked-in or supplied CI evidence is valid for a different tested release commit[\s\S]*`expected-commit` `nextActions` entry[\s\S]*npm run release:readiness -- --allow-open --expected-commit/,
   )
   assert.match(
     readme,
@@ -500,7 +506,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /production-profile selected API set/)
   assert.match(
     readme,
-    /worksheet reads `release\/ci-runs\.json` by default[\s\S]*`--ci-evidence <file>`[\s\S]*omits duplicate Check\/Godot Smoke collection commands/,
+    /worksheet reads `release\/ci-runs\.json` by default[\s\S]*`--ci-evidence <file>`[\s\S]*records an `initialCiEvidence` status object[\s\S]*duplicate Check\/Godot Smoke collection commands/,
   )
   assert.match(readme, /Final release evidence must include every production-profile API/)
   assert.match(readme, /passOnlyChecks/)
@@ -525,10 +531,13 @@ test('release preflight enforces real device evidence', () => {
     /Release commit options \(`--commit`, `--expected-commit`,\s+and `--release-preflight-run-commit`\) require full 40-character git commit SHAs/,
   )
   assert.match(checklist, /real-device-evidence-summary\.json/)
-  assert.match(checklist, /validation status, errors, and `nextActions`/)
   assert.match(
     checklist,
-    /missing-evidence assembly and invalid-evidence\s+regeneration hints begin with `npm run check` before any still-needed release\s+CI wait\/dispatch/,
+    /validation status, errors, initial CI evidence status, and\s+`nextActions`/,
+  )
+  assert.match(
+    checklist,
+    /missing-evidence\s+assembly\s+and\s+invalid-evidence\s+regeneration hints begin with `npm run check`\s+before any\s+still-needed release\s+CI wait\/dispatch/,
   )
   assert.match(checklist, /ci-runs\.json/)
   assert.match(checklist, /--include-release-preflight/)
@@ -586,11 +595,11 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     checklist,
-    /release\/ci-runs\.json` already[\s\S]*validates Check and Godot Smoke[\s\S]*omits the duplicate Check\/Godot Smoke\s+collection commands/,
+    /release\/ci-runs\.json`[\s\S]*already[\s\S]*validates Check and Godot Smoke[\s\S]*omits the duplicate Check\/Godot Smoke\s+collection commands/,
   )
   assert.match(
     checklist,
-    /release\/ci-runs\.json` is valid for a different tested release commit[\s\S]*`expected-commit`\s+`nextActions` entry[\s\S]*npm run release:readiness -- --allow-open --expected-commit/,
+    /checked-in or supplied CI evidence is valid for a different[\s\S]*tested release commit[\s\S]*`expected-commit`\s+`nextActions` entry[\s\S]*npm run release:readiness -- --allow-open --expected-commit/,
   )
   assert.match(
     checklist,
@@ -644,7 +653,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /--production-profile/)
   assert.match(
     checklist,
-    /reads `release\/ci-runs\.json` by default[\s\S]*`--ci-evidence <file>`[\s\S]*omits duplicate Check\/Godot Smoke collection\s+commands/,
+    /reads `release\/ci-runs\.json` by default[\s\S]*`--ci-evidence <file>`[\s\S]*records an `initialCiEvidence` status object[\s\S]*duplicate Check\/Godot Smoke collection\s+commands/,
   )
   assert.match(checklist, /fetch[\s\S]*WebSocket[\s\S]*navigator\.permissions\.query/)
   assert.match(checklist, /Final release evidence must include every production-profile API/)

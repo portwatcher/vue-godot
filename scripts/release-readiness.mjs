@@ -18,7 +18,7 @@ import {
   isRecord,
   verifyGitHubActionsRunUrl,
 } from './release-evidence-utils.mjs'
-import { validateInitialCiEvidence } from './release-ci-evidence.mjs'
+import { readInitialCiEvidenceStatus } from './release-ci-evidence.mjs'
 
 export { validateInitialCiEvidence } from './release-ci-evidence.mjs'
 import { collectPublicSurfaceAuditErrors } from './public-surface-audit.mjs'
@@ -114,6 +114,8 @@ function usage() {
 
 Options:
   --allow-open                  Print blockers but exit 0.
+  --ci-evidence <file>          Read initial Check/Godot Smoke CI evidence from
+                                a specific file. Defaults to ${defaultReleaseCiEvidencePath}.
   --real-device-path <file>     Read Android/iOS evidence from a specific file.
                                 Defaults to ${realDeviceEvidenceEnvVar} or ${defaultRealDeviceEvidencePath}.
   --readiness-path <file>       Read release-readiness evidence from a specific file.
@@ -130,6 +132,7 @@ Options:
 function parseArgs(argv) {
   const options = {
     allowOpen: false,
+    ciEvidencePath: null,
     expectedCommit: null,
     realDevicePath: null,
     readinessPath: null,
@@ -146,6 +149,23 @@ function parseArgs(argv) {
 
     if (arg === '--allow-open') {
       options.allowOpen = true
+      continue
+    }
+
+    if (arg === '--ci-evidence') {
+      const value = argv[++index]
+      if (!value) {
+        throw new Error('--ci-evidence requires a value')
+      }
+      options.ciEvidencePath = path.resolve(repoRoot, value)
+      continue
+    }
+
+    if (arg.startsWith('--ci-evidence=')) {
+      options.ciEvidencePath = path.resolve(
+        repoRoot,
+        arg.slice('--ci-evidence='.length),
+      )
       continue
     }
 
@@ -887,46 +907,6 @@ function checkPublicSurface(blockers) {
   return false
 }
 
-function collectInitialCiEvidenceStatus(expectedCommit) {
-  const status = {
-    path: defaultReleaseCiEvidencePath,
-    ready: false,
-    commit: null,
-    validForCommit: null,
-    errorCount: 0,
-    errors: [],
-  }
-
-  if (!expectedCommit) {
-    status.errors = ['expected commit is required to validate CI evidence']
-    status.errorCount = status.errors.length
-    return status
-  }
-
-  try {
-    const ciResult = JSON.parse(readText(defaultReleaseCiEvidencePath))
-    if (isRecord(ciResult) && isFullCommitSha(ciResult.commit)) {
-      status.commit = ciResult.commit
-    }
-
-    status.errors = validateInitialCiEvidence(ciResult, expectedCommit)
-    status.ready = status.errors.length === 0
-    if (
-      !status.ready &&
-      status.commit &&
-      status.commit !== expectedCommit &&
-      validateInitialCiEvidence(ciResult, status.commit).length === 0
-    ) {
-      status.validForCommit = status.commit
-    }
-  } catch (error) {
-    status.errors = [error instanceof Error ? error.message : String(error)]
-  }
-
-  status.errorCount = status.errors.length
-  return status
-}
-
 export function ciEvidenceCommands(commit, localGit) {
   const pushCommand =
     localGit?.currentBranch && !localGit.upstreamRef
@@ -977,13 +957,18 @@ function collectReadinessNextActions(
     initialCiEvidence?.validForCommit &&
     initialCiEvidence.validForCommit !== commit
   ) {
+    const ciEvidenceOption =
+      initialCiEvidence.path &&
+      initialCiEvidence.path !== defaultReleaseCiEvidencePath
+        ? ` --ci-evidence ${shellQuote(initialCiEvidence.path)}`
+        : ''
     actions.push({
       id: 'expected-commit',
       title: 'Run readiness against the tested release commit',
       detail:
-        'The checked-in CI evidence is valid for an earlier release-candidate commit; pass --expected-commit when release evidence is committed after that candidate.',
+        'The checked-in or supplied CI evidence is valid for an earlier release-candidate commit; pass --expected-commit when release evidence is committed after that candidate.',
       commands: [
-        `npm run release:readiness -- --allow-open --expected-commit ${initialCiEvidence.validForCommit} --summary-output release/release-readiness-summary.json`,
+        `npm run release:readiness -- --allow-open --expected-commit ${initialCiEvidence.validForCommit}${ciEvidenceOption} --summary-output release/release-readiness-summary.json`,
       ],
     })
   }
@@ -1188,7 +1173,10 @@ async function main() {
   const releaseWorkflowBlockers = collectReleaseWorkflowBlockers()
   blockers.push(...releaseWorkflowBlockers)
   const releaseWorkflowsReady = releaseWorkflowBlockers.length === 0
-  const initialCiEvidenceStatus = collectInitialCiEvidenceStatus(expectedCommit)
+  const initialCiEvidenceStatus = readInitialCiEvidenceStatus(
+    options.ciEvidencePath ?? defaultReleaseCiEvidencePath,
+    expectedCommit,
+  )
   const initialCiEvidenceReady =
     releaseWorkflowsReady && initialCiEvidenceStatus.ready
 

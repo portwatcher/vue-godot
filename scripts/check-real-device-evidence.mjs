@@ -180,6 +180,7 @@ function main() {
     evidencePath: describeRealDeviceEvidencePath(evidencePath),
     evidencePresent: Boolean(evidence),
     expectedCommit: options.expectedCommit ?? null,
+    initialCiEvidence: null,
     initialCiEvidencePath: defaultReleaseCiEvidencePath,
     initialCiEvidenceReady: false,
     optional: options.optional,
@@ -191,6 +192,7 @@ function main() {
     defaultReleaseCiEvidencePath,
     summary.expectedCommit,
   )
+  summary.initialCiEvidence = initialCiEvidence
   summary.initialCiEvidenceReady = initialCiEvidence.ready
 
   if (!evidence) {

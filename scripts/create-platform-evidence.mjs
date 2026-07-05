@@ -203,10 +203,11 @@ function buildPlatformTemplate(platform, options) {
 
 function buildNextActions(platformEvidencePath, commit, options = {}) {
   const ciEvidencePath = options.ciEvidencePath ?? defaultReleaseCiEvidencePath
-  const ciEvidenceCommands = options.initialCiEvidenceReady
+  const initialCiEvidenceReady = options.initialCiEvidence?.ready === true
+  const ciEvidenceCommands = initialCiEvidenceReady
     ? []
     : initialReleaseCiCommands(commit, { output: ciEvidencePath })
-  const ciEvidenceDetail = options.initialCiEvidenceReady
+  const ciEvidenceDetail = initialCiEvidenceReady
     ? 'Committed CI evidence already validates Check and Godot Smoke for the tested release candidate; generate release/real-device-evidence.json from this worksheet after device testing.'
     : 'After CI runs exist for the tested release candidate, generate release/real-device-evidence.json from this worksheet.'
 
@@ -279,9 +280,10 @@ export function buildPlatformEvidenceTemplate(options = {}) {
   )
 
   return {
+    initialCiEvidence,
     nextActions: buildNextActions(normalized.output, normalized.commit, {
       ciEvidencePath: normalized.ciEvidencePath,
-      initialCiEvidenceReady: initialCiEvidence.ready,
+      initialCiEvidence,
     }),
     android: buildPlatformTemplate('android', normalized),
     ios: buildPlatformTemplate('ios', normalized),

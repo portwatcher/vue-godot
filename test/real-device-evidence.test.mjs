@@ -612,6 +612,15 @@ test('check-real-device-evidence reuses committed initial CI evidence', () => {
 
     assert.equal(result.status, 0)
     assert.equal(summary.initialCiEvidenceReady, true)
+    assert.deepEqual(summary.initialCiEvidence, {
+      commit: ciEvidence.commit,
+      errorCount: 0,
+      errors: [],
+      expectedCommit: ciEvidence.commit,
+      path: 'release/ci-runs.json',
+      ready: true,
+      validForCommit: null,
+    })
     assert.ok(assembleAction)
     assert.ok(
       assembleAction.commands.every(

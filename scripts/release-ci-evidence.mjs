@@ -120,30 +120,47 @@ export function resolveCiEvidencePath(evidencePath) {
 export function readInitialCiEvidenceStatus(evidencePath, expectedCommit) {
   const resolvedPath = resolveCiEvidencePath(evidencePath)
   const status = {
-    evidencePath,
+    commit: null,
+    errorCount: 0,
     errors: [],
+    expectedCommit: expectedCommit ?? null,
+    path: evidencePath,
     ready: false,
-    resolvedPath,
+    validForCommit: null,
   }
 
   if (!expectedCommit) {
-    status.errors.push('Expected release commit is required')
+    status.errors.push('expected commit is required to validate CI evidence')
+    status.errorCount = status.errors.length
     return status
   }
 
   let ciResult
   try {
     ciResult = JSON.parse(fs.readFileSync(resolvedPath, 'utf-8'))
+    if (isRecord(ciResult) && isFullCommitSha(ciResult.commit)) {
+      status.commit = ciResult.commit
+    }
   } catch (error) {
     status.errors.push(
       `Unable to read CI evidence at ${evidencePath}: ${
         error instanceof Error ? error.message : String(error)
       }`,
     )
+    status.errorCount = status.errors.length
     return status
   }
 
   status.errors = validateInitialCiEvidence(ciResult, expectedCommit)
   status.ready = status.errors.length === 0
+  if (
+    !status.ready &&
+    status.commit &&
+    status.commit !== expectedCommit &&
+    validateInitialCiEvidence(ciResult, status.commit).length === 0
+  ) {
+    status.validForCommit = status.commit
+  }
+  status.errorCount = status.errors.length
   return status
 }
