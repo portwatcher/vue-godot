@@ -279,7 +279,12 @@ function checkPublishEnvironment(publishNeeded) {
 
 function checkGodotSmoke() {
   if (skipGodot) {
-    warnings.push('Godot smoke skipped by --skip-godot')
+    const message = 'Godot smoke skipped by --skip-godot'
+    if (localOnly) {
+      warnings.push(message)
+    } else {
+      failures.push(message)
+    }
     return
   }
 

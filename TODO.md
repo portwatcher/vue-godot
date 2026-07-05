@@ -278,7 +278,7 @@ The project is production ready only when all of these are true:
   - [ ] Fetch/WebSocket throughput.
   - [ ] Editor reload stability.
 - [ ] Add fixture apps for regression testing.
-- [ ] Make release preflight fail on skipped Godot smoke in non-local release contexts.
+- [x] Make release preflight fail on skipped Godot smoke in non-local release contexts.
 - [ ] Keep `npm audit` clean for moderate and high issues, or document accepted exceptions.
 - [ ] Pin and periodically update GodotJS versions.
 

@@ -19,7 +19,9 @@ environment assumptions.
 
 The local preflight command may warn when Godot smoke is skipped or when package
 versions are newer than the registry. Release builds should run the full
-workflow, including Godot smoke and trusted-publishing checks.
+workflow, including Godot smoke and trusted-publishing checks. `--skip-godot`
+is intended for local validation only; non-local preflight fails when Godot
+smoke is skipped.
 
 ## App Build Checklist
 
