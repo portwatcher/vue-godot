@@ -117,8 +117,9 @@ the selected APIs made mandatory, including network, clipboard, haptics,
 audio-input, sensor, hardware-adapter, permission, and safe-area/keyboard
 checks.
 Conditional checks required by selected APIs must be recorded in `passedChecks`,
-not `skippedChecks`. Its top-level `nextActions` section records `npm run check`,
-release CI wait/dispatch commands, the worksheet audit command, and final
+not `skippedChecks`. Its top-level `nextActions` section records Android/iOS
+`release:record-platform-evidence` command templates, the allow-open worksheet
+audit command, `npm run check`, release CI wait/dispatch commands, and final
 evidence assembly commands for after the worksheet is complete. Run
 `npm run check:platform-evidence` without `--allow-open` before
 `npm run release:evidence`.

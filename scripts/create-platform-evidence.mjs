@@ -14,6 +14,7 @@ import {
   checkRealDeviceEvidenceCommand,
   defaultReleaseCiEvidencePath,
   initialReleaseCiCommands,
+  recordPlatformEvidenceCommand,
   releaseEvidenceCommand,
 } from './release-handoff-commands.mjs'
 import { readInitialCiEvidenceStatus } from './release-ci-evidence.mjs'
@@ -30,8 +31,9 @@ artifact/device details and move each requiredChecks entry into passedChecks or
 skippedChecks with a release-specific reason after testing.
 Checks listed in passOnlyChecks and selectedApiRequiredChecks must be recorded
 in passedChecks.
-The top-level nextActions array records the follow-up commands for assembling
-final real-device evidence after the worksheet is complete.
+The top-level nextActions array records the follow-up commands for recording
+device results, auditing worksheet progress, and assembling final real-device
+evidence after the worksheet is complete.
 
 Options:
   --output <file>                  Output path. Default: ${defaultOutput}
@@ -211,6 +213,7 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
   const ciEvidenceDetail = initialCiEvidenceReady
     ? 'Committed CI evidence already validates Check and Godot Smoke for the tested release candidate; generate release/real-device-evidence.json from this worksheet after device testing.'
     : 'After CI runs exist for the tested release candidate, generate release/real-device-evidence.json from this worksheet.'
+  const platformEvidenceSummaryPath = 'release/platform-evidence-summary.json'
 
   return [
     {
@@ -218,14 +221,29 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
       title: 'Fill Android and iOS device evidence fields',
       detail:
         'Record artifact IDs, export presets, device models, OS versions, orientation, locale, selected APIs, and real test outcomes before assembling final evidence.',
-      commands: [],
+      commands: [
+        recordPlatformEvidenceCommand('android', commit, {
+          platformEvidencePath,
+          summaryOutput: platformEvidenceSummaryPath,
+        }),
+        recordPlatformEvidenceCommand('ios', commit, {
+          platformEvidencePath,
+          summaryOutput: platformEvidenceSummaryPath,
+        }),
+      ],
     },
     {
       id: 'record-required-checks',
       title: 'Move worksheet checks into passedChecks or skippedChecks',
       detail:
         'Every requiredChecks entry must move to passedChecks or skippedChecks with a release-specific reason; passOnlyChecks and selectedApiRequiredChecks must move to passedChecks.',
-      commands: [],
+      commands: [
+        checkPlatformEvidenceCommand(commit, {
+          allowOpen: true,
+          platformEvidencePath,
+          summaryOutput: platformEvidenceSummaryPath,
+        }),
+      ],
     },
     {
       id: 'assemble-real-device-evidence',

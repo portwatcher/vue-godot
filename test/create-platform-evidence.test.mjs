@@ -106,6 +106,27 @@ test('platform evidence template lists required checks without passing them', ()
   assert.ok(
     template.nextActions.some(
       (action) =>
+        action.id === 'complete-platform-evidence' &&
+        action.commands.includes(
+          'npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
+        ) &&
+        action.commands.includes(
+          'npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
+        ),
+    ),
+  )
+  assert.ok(
+    template.nextActions.some(
+      (action) =>
+        action.id === 'record-required-checks' &&
+        action.commands.includes(
+          'npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit <release-candidate-sha>',
+        ),
+    ),
+  )
+  assert.ok(
+    template.nextActions.some(
+      (action) =>
         action.id === 'assemble-real-device-evidence' &&
         action.commands[0] === 'npm run check' &&
         action.commands.includes(
@@ -134,6 +155,31 @@ test('platform evidence template next actions honor custom output paths', () => 
 
   const assembleAction = template.nextActions.find(
     (action) => action.id === 'assemble-real-device-evidence',
+  )
+  const completeAction = template.nextActions.find(
+    (action) => action.id === 'complete-platform-evidence',
+  )
+  const recordAction = template.nextActions.find(
+    (action) => action.id === 'record-required-checks',
+  )
+  assert.ok(completeAction)
+  assert.ok(
+    completeAction.commands.some((command) =>
+      command.includes(
+        "--platform-evidence 'release/custom platform'\\''s evidence.json'",
+      ),
+    ),
+  )
+  assert.ok(
+    completeAction.commands.every((command) =>
+      command.includes(`--expected-commit ${commit}`),
+    ),
+  )
+  assert.ok(recordAction)
+  assert.ok(
+    recordAction.commands.includes(
+      `npm run check:platform-evidence -- --platform-evidence 'release/custom platform'\\''s evidence.json' --summary-output release/platform-evidence-summary.json --allow-open --expected-commit ${commit}`,
+    ),
   )
   assert.ok(assembleAction)
   assert.ok(

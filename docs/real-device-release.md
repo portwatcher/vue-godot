@@ -135,9 +135,10 @@ that must not be skipped. The generated `selectedApiRequiredChecks` object
 shows which conditional checks came from the selected API set. Selected API
 names are validated, so typos or unknown names fail before conditional checks
 can be omitted. Conditional checks for selected APIs must be moved into
-`passedChecks`. The generated top-level `nextActions` section records the
-local `npm run check`, any still-needed release CI wait/dispatch commands, the
-worksheet audit command, and final evidence assembly commands for turning the
+`passedChecks`. The generated top-level `nextActions` section records Android
+and iOS `release:record-platform-evidence` command templates, the allow-open
+worksheet audit command, the local `npm run check`, any still-needed release CI
+wait/dispatch commands, and final evidence assembly commands for turning the
 completed worksheet into final real-device evidence. It reads
 `release/ci-runs.json` by default, or
 `--ci-evidence <file>`, records an `initialCiEvidence` status object, and omits
