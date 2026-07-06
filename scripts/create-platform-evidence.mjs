@@ -27,6 +27,7 @@ import {
   recordPlatformEvidenceCommands,
   releaseEvidenceCommand,
 } from './release-handoff-commands.mjs'
+import { isHttpUrl } from './release-evidence-utils.mjs'
 import { readInitialCiEvidenceStatus } from './release-ci-evidence.mjs'
 import { normalizeCommitSha, repoRoot, uniqueStrings } from './release-utils.mjs'
 
@@ -185,6 +186,15 @@ function parseArgs(argv) {
 
 function selectedApiRequiredChecks(selectedApis, platform) {
   return Object.fromEntries(selectedApiRequiredCheckMap(selectedApis, platform))
+}
+
+function assertOptionalEvidenceUrl(value, label) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return
+  }
+  if (!isHttpUrl(value)) {
+    throw new Error(`${label} requires an http(s) URL`)
+  }
 }
 
 function buildPlatformTemplate(platform, options) {
@@ -350,6 +360,9 @@ export function buildPlatformEvidenceTemplate(options = {}) {
     productionProfile: Boolean(options.productionProfile),
     selectedApis,
   }
+  assertOptionalEvidenceUrl(normalized.androidEvidenceUrl, 'android.evidenceUrl')
+  assertOptionalEvidenceUrl(normalized.iosEvidenceUrl, 'ios.evidenceUrl')
+
   const initialCiEvidence = readInitialCiEvidenceStatus(
     normalized.ciEvidencePath,
     normalized.commit,

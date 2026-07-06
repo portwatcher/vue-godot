@@ -4,6 +4,7 @@ import {
   assertExactString,
   assertGitHubActionsRunUrl,
   hasNonEmptyString,
+  isHttpUrl,
   isRecord,
   verifyGitHubActionsRunUrl,
 } from './release-evidence-utils.mjs'
@@ -446,16 +447,7 @@ function assertString(record, key, errors, label) {
 
 function assertHttpUrl(record, key, errors, label) {
   assertString(record, key, errors, label)
-  if (!hasNonEmptyString(record, key)) {
-    return
-  }
-
-  try {
-    const url = new URL(record[key])
-    if (url.protocol !== 'https:' && url.protocol !== 'http:') {
-      errors.push(`${label}.${key} must be an http(s) URL`)
-    }
-  } catch {
+  if (hasNonEmptyString(record, key) && !isHttpUrl(record[key])) {
     errors.push(`${label}.${key} must be an http(s) URL`)
   }
 }

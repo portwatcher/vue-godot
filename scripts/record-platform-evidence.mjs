@@ -7,7 +7,7 @@ import {
   formatPlatformEvidenceProgress,
   formatPlatformEvidenceRemaining,
 } from './check-platform-evidence.mjs'
-import { isRecord } from './release-evidence-utils.mjs'
+import { isHttpUrl, isRecord } from './release-evidence-utils.mjs'
 import { defaultPlatformEvidencePath } from './release-handoff-commands.mjs'
 import {
   describeRealDeviceCheck,
@@ -69,19 +69,6 @@ function addCsv(values, value) {
     if (trimmed.length > 0) {
       values.push(trimmed)
     }
-  }
-}
-
-function isHttpUrl(value) {
-  if (typeof value !== 'string' || value.trim().length === 0) {
-    return false
-  }
-
-  try {
-    const url = new URL(value)
-    return url.protocol === 'https:' || url.protocol === 'http:'
-  } catch {
-    return false
   }
 }
 

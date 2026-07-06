@@ -26,7 +26,7 @@ import {
   releaseEvidenceCommand,
   productionProfilePlatformEvidenceCommand,
 } from './release-handoff-commands.mjs'
-import { isRecord } from './release-evidence-utils.mjs'
+import { isHttpUrl, isRecord } from './release-evidence-utils.mjs'
 import {
   duplicateStrings,
   intersectStrings,
@@ -180,19 +180,6 @@ function checkRequiredString(record, key, label, errors) {
     errors.push(`${label}.${key} must replace placeholder ${record[key]}`)
   }
   return null
-}
-
-function isHttpUrl(value) {
-  if (typeof value !== 'string' || value.trim().length === 0) {
-    return false
-  }
-
-  try {
-    const url = new URL(value)
-    return url.protocol === 'https:' || url.protocol === 'http:'
-  } catch {
-    return false
-  }
 }
 
 function checkRequiredHttpUrl(record, key, label, errors) {

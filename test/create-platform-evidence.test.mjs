@@ -486,6 +486,23 @@ test('platform evidence template rejects unknown selected APIs', () => {
   )
 })
 
+test('platform evidence template rejects invalid evidence URLs', () => {
+  assert.throws(
+    () =>
+      buildPlatformEvidenceTemplate({
+        androidEvidenceUrl: 'file:///tmp/android-device-run.txt',
+      }),
+    /android\.evidenceUrl requires an http\(s\) URL/,
+  )
+  assert.throws(
+    () =>
+      buildPlatformEvidenceTemplate({
+        iosEvidenceUrl: '<ios-device-evidence-url>',
+      }),
+    /ios\.evidenceUrl requires an http\(s\) URL/,
+  )
+})
+
 test('completed platform template validates after required checks are recorded', () => {
   const template = buildPlatformEvidenceTemplate({
     selectedApis: ['fetch', 'WebSocket', 'SafeAreaView'],

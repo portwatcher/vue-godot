@@ -31,6 +31,19 @@ export function hasGitHubActionsRunUrl(record, key) {
   )
 }
 
+export function isHttpUrl(value) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return false
+  }
+
+  try {
+    const url = new URL(value)
+    return url.protocol === 'https:' || url.protocol === 'http:'
+  } catch {
+    return false
+  }
+}
+
 export function assertGitHubActionsRunUrl(record, key, errors, label) {
   if (!hasGitHubActionsRunUrl(record, key)) {
     errors.push(

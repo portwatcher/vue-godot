@@ -340,9 +340,11 @@ duplicates, and `skippedChecks` must be an object whose values are non-empty
 release-specific reasons. A check must not appear in both. Use `npm run release:record-platform-evidence -- --platform android`
 or `--platform ios` after each hosted or real-device pass to record
 artifact/evidence URL/export-preset/device metadata, `--pass` check names, and
-`--skip check=reason` outcomes without hand-editing JSON; add `--list-checks`
-first when you need the valid check names, descriptions, current worksheet
-outcomes, and selected-API must-pass context without modifying the worksheet.
+`--skip check=reason` outcomes without hand-editing JSON. Evidence URL values
+must be `http` or `https` links to the device test run, lab session, or signed
+evidence artifact; add `--list-checks` first when you need the valid check
+names, descriptions, current worksheet outcomes, and selected-API must-pass
+context without modifying the worksheet.
 After every
 unresolved must-pass check has actually passed, add `--pass-remaining` to record
 the remaining must-pass checks in one batch, and include

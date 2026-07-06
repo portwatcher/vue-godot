@@ -255,7 +255,6 @@ test('platform evidence audit reports malformed worksheet fields without throwin
 test('platform evidence audit rejects placeholder metadata and skip reasons', () => {
   const template = buildPlatformEvidenceTemplate({
     androidArtifact: '<android-apk-aab-or-hosted-build-id>',
-    androidEvidenceUrl: '<android-device-evidence-url>',
     androidDevice: 'Pixel hosted device',
     androidOs: 'Android 15',
     iosArtifact: 'TestFlight build 1',
@@ -267,6 +266,7 @@ test('platform evidence audit rejects placeholder metadata and skip reasons', ()
     orientation: 'portrait and landscape',
     productionProfile: true,
   })
+  template.android.evidenceUrl = '<android-device-evidence-url>'
   template.ios.skippedChecks = {
     'deep-links-share-notifications-if-selected':
       '<skip-reason-if-not-selected>',
