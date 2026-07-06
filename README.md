@@ -361,10 +361,14 @@ Sauce Labs, Firebase Test Lab, AWS Device Farm, LambdaTest, and Kobiton, but
 never their values; when none are fully configured, the text output lists the
 recognized provider env-set options.
 Android emulators are reported separately and do not satisfy the local
-release-device prerequisite. Missing local tooling or provider environment
-variables are only diagnostics; hosted real-device runs still satisfy the
-release gate when the final evidence records artifact IDs, device metadata, and
-non-local http(s) evidence URLs.
+release-device prerequisite. iOS local device sessions require full Xcode, not
+only Command Line Tools; if `xcrun xctrace list devices` cannot find `xctrace`,
+install Xcode.app and select it with
+`sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`, or use
+hosted real Apple-device evidence. Missing local tooling or provider
+environment variables are only diagnostics; hosted real-device runs still
+satisfy the release gate when the final evidence records artifact IDs, device
+metadata, and non-local http(s) evidence URLs.
 After every
 unresolved must-pass check has actually passed, add `--pass-remaining` to record
 the remaining must-pass checks in one batch, and include

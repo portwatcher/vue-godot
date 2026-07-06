@@ -168,6 +168,38 @@ test('device prereq status reports missing local tooling without failing hosted 
   assert.match(summary.blockers[1], /xcrun not found/)
 })
 
+test('device prereq status explains missing full Xcode when xctrace is unavailable', () => {
+  const summary = collectDeviceTestPrereqStatus({
+    platform: 'ios',
+    runCommand(command, args) {
+      if (command === 'xcrun' && args.join(' ') === 'xctrace list devices') {
+        return {
+          errorCode: null,
+          status: 72,
+          stderr:
+            'xcrun: error: unable to find utility "xctrace", not a developer tool or in PATH',
+          stdout: '',
+        }
+      }
+      if (command === 'xcode-select' && args.join(' ') === '-p') {
+        return {
+          errorCode: null,
+          status: 0,
+          stderr: '',
+          stdout: '/Library/Developer/CommandLineTools\n',
+        }
+      }
+      throw new Error(`Unexpected command: ${command} ${args.join(' ')}`)
+    },
+  })
+
+  assert.equal(summary.ready, false)
+  assert.equal(summary.ios.ready, false)
+  assert.match(summary.ios.blockers[0], /xcrun xctrace list devices failed/)
+  assert.match(summary.ios.blockers[1], /Full Xcode is not selected/)
+  assert.match(summary.ios.blockers.join('\n'), /Xcode\.app/)
+})
+
 test('hosted provider status reports configured env names without values', () => {
   const status = collectHostedDeviceProviderStatus({
     BROWSERSTACK_ACCESS_KEY: 'secret',

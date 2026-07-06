@@ -155,6 +155,45 @@ function formatCommandFailure(command, result) {
     : `${command} failed with status ${result.status ?? 'unknown'}`
 }
 
+function commandOutput(result) {
+  return `${result.stderr ?? ''}\n${result.stdout ?? ''}`.trim()
+}
+
+function xctraceUtilityMissing(result) {
+  return /unable to find utility "xctrace"/i.test(commandOutput(result))
+}
+
+function collectXcodeSelectionBlockers(runCommand) {
+  const blockers = []
+  const selected = runCommand('xcode-select', ['-p'])
+  if (commandMissing(selected)) {
+    blockers.push(
+      'xcode-select not found; install full Xcode or use hosted real Apple-device evidence.',
+    )
+    return blockers
+  }
+
+  if (selected.status !== 0) {
+    blockers.push(formatCommandFailure('xcode-select -p', selected))
+    return blockers
+  }
+
+  const developerDir = selected.stdout.trim()
+  if (/CommandLineTools(?:\/|$)/.test(developerDir)) {
+    blockers.push(
+      `Full Xcode is not selected; active developer directory is ${developerDir}. Install Xcode.app and run sudo xcode-select -s /Applications/Xcode.app/Contents/Developer, or use hosted real Apple-device evidence.`,
+    )
+  }
+
+  if (!fs.existsSync('/Applications/Xcode.app')) {
+    blockers.push(
+      'Full Xcode.app was not found at /Applications/Xcode.app; install Xcode from the App Store or Apple Developer downloads, then rerun the iOS device prerequisite check.',
+    )
+  }
+
+  return blockers
+}
+
 function envHasValue(env, name) {
   return typeof env[name] === 'string' && env[name].trim().length > 0
 }
@@ -323,6 +362,9 @@ function checkIos(runCommand) {
     )
   } else if (result.status !== 0) {
     blockers.push(formatCommandFailure('xcrun xctrace list devices', result))
+    if (xctraceUtilityMissing(result)) {
+      blockers.push(...collectXcodeSelectionBlockers(runCommand))
+    }
   } else {
     devices = parseXctraceDevices(result.stdout)
     if (devices.length === 0) {

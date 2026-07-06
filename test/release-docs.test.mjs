@@ -64,6 +64,9 @@ test('real device release checklist covers required Android and iOS gates', () =
     /devicePrereqs/,
     /Device Prereq\s+Diagnostics/,
     /--device-prereqs-summary <file>/,
+    /iOS local device sessions require full Xcode/,
+    /xcrun xctrace list devices/,
+    /sudo xcode-select -s \/Applications\/Xcode\.app\/Contents\/Developer/,
     /npm run check:serious-examples/,
     /npm run release:preflight[\s\S]*validates real-device evidence/,
     /npm audit --audit-level=moderate/,
@@ -327,6 +330,12 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /--device-prereqs-summary <file>/)
   assert.match(production, /diagnostic-only `devicePrereqs`/)
   assert.match(production, /Android emulators are reported separately/)
+  assert.match(production, /iOS local device sessions require full Xcode/)
+  assert.match(production, /xcrun xctrace list devices/)
+  assert.match(
+    production,
+    /sudo xcode-select -s \/Applications\/Xcode\.app\/Contents\/Developer/,
+  )
   assert.match(production, hostedProviderNamesPattern)
   assert.match(production, /configured or partially configured environment variable names/)
   assert.match(production, /never their values/)
@@ -337,11 +346,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /device prereq diagnostics/)
   assert.match(
     production,
-    /Missing local tooling or provider environment\s+variables are only diagnostics/,
+    /Missing local tooling or provider\s+environment\s+variables are only diagnostics/,
   )
   assert.match(
     production,
-    /hosted\s+real-device runs still satisfy the\s+release gate/,
+    /hosted\s+real-device runs still\s+satisfy the release\s+gate/,
   )
   assert.match(production, /platform-evidence-summary\.json/)
   assert.match(production, /platform-evidence-checklist\.md/)
@@ -618,13 +627,19 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /--device-prereqs-summary <file>/)
   assert.match(readme, /diagnostic-only `devicePrereqs`/)
   assert.match(readme, /Android emulators are reported separately/)
+  assert.match(readme, /iOS local device sessions require full Xcode/)
+  assert.match(readme, /xcrun xctrace list devices/)
+  assert.match(
+    readme,
+    /sudo xcode-select -s \/Applications\/Xcode\.app\/Contents\/Developer/,
+  )
   assert.match(readme, hostedProviderNamesPattern)
   assert.match(readme, /configured or partially configured environment variable names/)
   assert.match(readme, /never their values/)
   assert.match(readme, /recognized provider env-set\s+options/)
   assert.match(
     readme,
-    /Missing local tooling or provider environment\s+variables are only diagnostics/,
+    /Missing local tooling or provider\s+environment\s+variables are only diagnostics/,
   )
   assert.match(readme, /platform-evidence-summary\.json/)
   assert.match(readme, /platform-evidence-checklist\.md/)

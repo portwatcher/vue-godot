@@ -539,9 +539,13 @@ Run these before platform-specific device checks:
    Diagnostics section; use `--device-prereqs-summary <file>` with readiness
    when the diagnostic lives outside the default path.
    Android emulators are reported separately and do not satisfy the local
-   release-device prerequisite. Missing local tooling or provider environment
-   variables do not satisfy or fail final evidence by themselves; use a hosted
-   real-device lab when the final evidence can link to the lab run.
+   release-device prerequisite. iOS local device sessions require full Xcode,
+   not only Command Line Tools; if `xcrun xctrace list devices` cannot find
+   `xctrace`, install Xcode.app and select it with
+   `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`, or use
+   hosted real Apple-device evidence. Missing local tooling or provider
+   environment variables do not satisfy or fail final evidence by themselves;
+   use a hosted real-device lab when the final evidence can link to the lab run.
 4. Run `npm run check:serious-examples`.
 5. Run `npm audit --audit-level=moderate`.
 6. Optionally run `npm run release:preflight -- --local` as a local dry run;
