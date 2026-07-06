@@ -1,9 +1,9 @@
 {
   "initialCiEvidence": {
-    "commit": "6e02e6edd183efb9292a23d37c5e5381eed4af80",
+    "commit": "8642aa5bcc0037e48f45f5ffc338468626671440",
     "errorCount": 0,
     "errors": [],
-    "expectedCommit": "6e02e6edd183efb9292a23d37c5e5381eed4af80",
+    "expectedCommit": "8642aa5bcc0037e48f45f5ffc338468626671440",
     "path": "release/ci-runs.json",
     "ready": true,
     "validForCommit": null
@@ -336,10 +336,10 @@
         }
       ],
       "commands": [
-        "npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit 6e02e6edd183efb9292a23d37c5e5381eed4af80",
-        "npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output release/platform-evidence-summary.json --expected-commit 6e02e6edd183efb9292a23d37c5e5381eed4af80",
-        "npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit 6e02e6edd183efb9292a23d37c5e5381eed4af80",
-        "npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output release/platform-evidence-summary.json --expected-commit 6e02e6edd183efb9292a23d37c5e5381eed4af80"
+        "npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit 8642aa5bcc0037e48f45f5ffc338468626671440",
+        "npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output release/platform-evidence-summary.json --expected-commit 8642aa5bcc0037e48f45f5ffc338468626671440",
+        "npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit 8642aa5bcc0037e48f45f5ffc338468626671440",
+        "npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output release/platform-evidence-summary.json --expected-commit 8642aa5bcc0037e48f45f5ffc338468626671440"
       ]
     },
     {
@@ -347,7 +347,7 @@
       "title": "Move worksheet checks into passedChecks or skippedChecks",
       "detail": "Every requiredChecks entry must move to passedChecks or skippedChecks with a release-specific reason; passOnlyChecks and selectedApiRequiredChecks must move to passedChecks.\nAndroid: 5 metadata field(s) missing, 14/14 required check(s) unresolved, 14 must-pass check(s) missing; iOS: 5 metadata field(s) missing, 15/15 required check(s) unresolved, 14 must-pass check(s) missing\nAndroid missing metadata: artifact, deviceModel, osVersion, orientation, locale\nAndroid must-pass remaining: cold-launch, no-godotjs-load-diagnostics, storage-restart, network-if-selected, clipboard-if-selected, permission-prompts-if-selected, adapter-states-if-selected, hardware-adapters-if-selected, haptics-if-selected, audio-input-if-selected, sensors-if-selected, safe-area-keyboard, android-back-handling, background-foreground\niOS missing metadata: artifact, deviceModel, osVersion, orientation, locale\niOS must-pass remaining: cold-launch, no-godotjs-load-diagnostics, plist-entitlements, storage-restart, network-if-selected, clipboard-if-selected, permission-prompts-if-selected, adapter-states-if-selected, hardware-adapters-if-selected, haptics-if-selected, audio-input-if-selected, sensors-if-selected, safe-area-keyboard-rotation-text-input, background-foreground\niOS skippable remaining: deep-links-share-notifications-if-selected",
       "commands": [
-        "npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit 6e02e6edd183efb9292a23d37c5e5381eed4af80"
+        "npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit 8642aa5bcc0037e48f45f5ffc338468626671440"
       ]
     },
     {
@@ -356,9 +356,9 @@
       "detail": "Committed CI evidence already validates Check and Godot Smoke for the tested release candidate; generate release/real-device-evidence.json from this worksheet after device testing.",
       "commands": [
         "npm run check",
-        "npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit 6e02e6edd183efb9292a23d37c5e5381eed4af80",
-        "npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 6e02e6edd183efb9292a23d37c5e5381eed4af80 --real-device-output release/real-device-evidence.json",
-        "npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 6e02e6edd183efb9292a23d37c5e5381eed4af80"
+        "npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit 8642aa5bcc0037e48f45f5ffc338468626671440",
+        "npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 8642aa5bcc0037e48f45f5ffc338468626671440 --real-device-output release/real-device-evidence.json",
+        "npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 8642aa5bcc0037e48f45f5ffc338468626671440"
       ]
     }
   ],
