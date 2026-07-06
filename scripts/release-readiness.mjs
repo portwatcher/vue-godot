@@ -1037,9 +1037,18 @@ export function isReleaseHandoffReportCurrent(
   const expectedCommitLine = `- Release candidate commit: \`${releaseCommitLabel(
     commit,
   )}\``
+  const expectedHandoffCommand = releaseHandoffCommand(
+    commit,
+    pathOptions,
+    options,
+  )
+  const handoffCommandPattern = 'npm run release:handoff --'
+  const usesDefaultEvidencePaths = Object.keys(pathOptions).length === 0
   return (
     source.includes(expectedCommitLine) &&
-    source.includes(releaseHandoffCommand(commit, pathOptions, options))
+    source.includes('## Next Actions') &&
+    (source.includes(expectedHandoffCommand) ||
+      (usesDefaultEvidencePaths && !source.includes(handoffCommandPattern)))
   )
 }
 

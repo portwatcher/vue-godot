@@ -1208,7 +1208,7 @@ test('release readiness omits default handoff action when current report exists'
   }
 })
 
-test('release handoff report currentness requires matching commit and command', () => {
+test('release handoff report currentness rejects stale commits and commands', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
   const reportPath = path.join(tempDir, 'release-handoff.md')
   const commit = '1234567890abcdef1234567890abcdef12345678'
@@ -1221,6 +1221,8 @@ test('release handoff report currentness requires matching commit and command', 
         '# Release Handoff',
         '',
         `- Release candidate commit: \`${commit}\``,
+        '',
+        '## Next Actions',
         '',
         '```bash',
         command,
@@ -1248,6 +1250,38 @@ test('release handoff report currentness requires matching commit and command', 
         '# Release Handoff',
         '',
         `- Release candidate commit: \`${commit}\``,
+        '',
+        '## Next Actions',
+        '',
+        '### Complete Android and iOS real-device export evidence',
+        '',
+      ].join('\n'),
+    )
+    assert.equal(
+      isReleaseHandoffReportCurrent(commit, {}, { reportPath }),
+      true,
+    )
+    assert.equal(
+      isReleaseHandoffReportCurrent(
+        commit,
+        { realDeviceEvidencePath: 'custom/real-device-evidence.json' },
+        { reportPath },
+      ),
+      false,
+    )
+
+    fs.writeFileSync(
+      reportPath,
+      [
+        '# Release Handoff',
+        '',
+        `- Release candidate commit: \`${commit}\``,
+        '',
+        '## Next Actions',
+        '',
+        '```bash',
+        `npm run release:handoff -- --expected-commit ${commit} --output stale/handoff.md`,
+        '```',
         '',
       ].join('\n'),
     )
