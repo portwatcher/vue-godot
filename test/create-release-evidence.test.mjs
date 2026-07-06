@@ -54,6 +54,10 @@ function platformEvidence(platform) {
       platform === 'android'
         ? 'vue-godot-android-release.aab'
         : 'TestFlight build 1',
+    evidenceUrl:
+      platform === 'android'
+        ? 'https://github.com/portwatcher/vue-godot/actions/runs/111'
+        : 'https://github.com/portwatcher/vue-godot/actions/runs/222',
     exportPreset: platform === 'android' ? 'Android Release' : 'iOS Release',
     deviceModel:
       platform === 'android' ? 'Pixel hosted device' : 'iPhone hosted device',
