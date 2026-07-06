@@ -559,6 +559,30 @@ test('record-platform-evidence CLI rejects unreplaced placeholders', () => {
       placeholderConfirmationResult.stderr,
       /--pass-remaining-confirmation requires a real confirmation note/,
     )
+
+    const blankConfirmationWithoutPassRemainingResult = spawnSync(
+      process.execPath,
+      [
+        'scripts/record-platform-evidence.mjs',
+        '--platform',
+        'android',
+        '--platform-evidence',
+        evidencePath,
+        '--artifact',
+        'Pixel hosted build',
+        '--pass-remaining-confirmation=',
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf-8',
+      },
+    )
+
+    assert.equal(blankConfirmationWithoutPassRemainingResult.status, 1)
+    assert.match(
+      blankConfirmationWithoutPassRemainingResult.stderr,
+      /--pass-remaining-confirmation can only be used with --pass-remaining/,
+    )
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }
@@ -586,7 +610,7 @@ test('record-platform-evidence CLI passes remaining must-pass checks only', () =
         'network-if-selected=Network APIs were not selected for this hosted pass',
         '--pass-remaining',
         '--pass-remaining-confirmation',
-        'All remaining Android must-pass checks passed on the hosted device run',
+        '  All remaining Android must-pass checks passed on the hosted device run  ',
         '--summary-output',
         summaryPath,
       ],

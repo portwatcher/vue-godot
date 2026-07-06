@@ -263,7 +263,7 @@ function parseArgs(argv) {
         `--pass-remaining-confirmation requires a real confirmation note, not ${options.passRemainingConfirmation}`,
       )
     }
-  } else if (options.passRemainingConfirmation) {
+  } else if (options.passRemainingConfirmation !== null) {
     throw new Error(
       '--pass-remaining-confirmation can only be used with --pass-remaining',
     )
@@ -448,7 +448,7 @@ function main() {
   summary.expectedCommit = options.expectedCommit
   summary.passRemaining = options.passRemaining
   summary.passRemainingConfirmation = options.passRemaining
-    ? options.passRemainingConfirmation
+    ? options.passRemainingConfirmation.trim()
     : null
   summary.nextActions = collectPlatformEvidenceNextActions(summary, {
     expectedCommit: options.expectedCommit,
