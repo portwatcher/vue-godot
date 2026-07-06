@@ -68,9 +68,12 @@ function sampleReadinessSummary(ciEvidencePath = 'release/ci-runs.json') {
       platforms: {
         android: {
           completedCheckCount: 1,
+          duplicatePassedChecks: ['cold-launch'],
           errorCount: 2,
+          invalidSkippedChecks: ['network-if-selected'],
           missingFields: ['artifact'],
           mustPassMissingChecks: ['cold-launch'],
+          passedSkippedChecks: ['cold-launch'],
           ready: false,
           remainingCheckDetails: [
             {
@@ -84,6 +87,10 @@ function sampleReadinessSummary(ciEvidencePath = 'release/ci-runs.json') {
           ],
           requiredCheckCount: 14,
           skippableMissingChecks: [],
+          unknownPassedChecks: ['typo-pass'],
+          unknownSelectedApis: ['navigator.typo'],
+          unknownSkippedChecks: ['typo-skip'],
+          worksheetErrors: ['android.requiredChecks is missing cold-launch'],
         },
         ios: {
           completedCheckCount: 0,
@@ -169,6 +176,16 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
   assert.match(markdown, /Required checks complete: 1\/14/)
   assert.match(markdown, /Metadata gaps: `artifact`, `deviceModel`/)
   assert.match(markdown, /Skippable remaining: `deep-links-share-notifications-if-selected`/)
+  assert.match(markdown, /Duplicate passed checks: `cold-launch`/)
+  assert.match(markdown, /Invalid skipped reasons: `network-if-selected`/)
+  assert.match(markdown, /Contradictory pass\/skip checks: `cold-launch`/)
+  assert.match(markdown, /Unknown passed checks: `typo-pass`/)
+  assert.match(markdown, /Unknown skipped checks: `typo-skip`/)
+  assert.match(markdown, /Unknown selected APIs: `navigator\.typo`/)
+  assert.match(
+    markdown,
+    /Worksheet drift: `android\.requiredChecks is missing cold-launch`/,
+  )
   assert.match(markdown, /`cold-launch` \(must pass\): Install the exported build/)
   assert.match(
     markdown,

@@ -181,6 +181,11 @@ function inlineList(values) {
   return values.map((value) => `\`${String(value)}\``).join(', ')
 }
 
+function statusList(status, key) {
+  const value = status[key]
+  return Array.isArray(value) ? value : []
+}
+
 function reportText(value) {
   const normalizedRoot = repoRoot.split(path.sep).join('/')
   return String(value)
@@ -332,6 +337,13 @@ function platformLines(platform, status) {
     `- Metadata gaps: ${inlineList(status.missingFields)}`,
     `- Must-pass remaining: ${inlineList(status.mustPassMissingChecks)}`,
     `- Skippable remaining: ${inlineList(status.skippableMissingChecks)}`,
+    `- Duplicate passed checks: ${inlineList(statusList(status, 'duplicatePassedChecks'))}`,
+    `- Invalid skipped reasons: ${inlineList(statusList(status, 'invalidSkippedChecks'))}`,
+    `- Contradictory pass/skip checks: ${inlineList(statusList(status, 'passedSkippedChecks'))}`,
+    `- Unknown passed checks: ${inlineList(statusList(status, 'unknownPassedChecks'))}`,
+    `- Unknown skipped checks: ${inlineList(statusList(status, 'unknownSkippedChecks'))}`,
+    `- Unknown selected APIs: ${inlineList(statusList(status, 'unknownSelectedApis'))}`,
+    `- Worksheet drift: ${inlineList(statusList(status, 'worksheetErrors'))}`,
     ...detailLines,
   ]
 }

@@ -204,7 +204,9 @@ to render the same allow-open audit as a Markdown handoff for Android/iOS
 testers; while real-device evidence is open, the release-readiness
 `nextActions` include that handoff command before the device-evidence action
 only when `release/release-handoff.md` is missing or stale for the expected
-commit and evidence paths.
+commit and evidence paths. The handoff lists per-platform metadata/check gaps,
+malformed outcome details, remaining check descriptions, `blockedBy`
+dependencies, and next commands.
 The initial CI, real-device, and
 Release Preflight evidence actions begin with `npm run check` before collecting
 CI or assembling evidence.
