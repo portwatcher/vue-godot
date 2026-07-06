@@ -36,6 +36,7 @@ import {
   currentHeadCommitCommand,
   defaultPlatformEvidencePath,
   defaultReleaseCiEvidencePath,
+  defaultReleaseHandoffReportPath,
   defaultReleasePreflightSummaryPath,
   defaultReleaseReadinessEvidencePath,
   formatHandoffCommand,
@@ -1000,7 +1001,7 @@ function releaseHandoffCommand(commit, pathOptions = {}, options = {}) {
     '--expected-commit',
     releaseCommitLabel(commit),
     '--output',
-    options.output ?? 'release/release-handoff.md',
+    options.output ?? defaultReleaseHandoffReportPath,
   ]
 
   if (pathOptions.ciEvidencePath) {
@@ -1017,6 +1018,29 @@ function releaseHandoffCommand(commit, pathOptions = {}, options = {}) {
   }
 
   return formatHandoffCommand(args)
+}
+
+export function isReleaseHandoffReportCurrent(
+  commit,
+  pathOptions = {},
+  options = {},
+) {
+  const reportPath = path.resolve(
+    repoRoot,
+    options.reportPath ?? defaultReleaseHandoffReportPath,
+  )
+  if (!fs.existsSync(reportPath)) {
+    return false
+  }
+
+  const source = fs.readFileSync(reportPath, 'utf-8')
+  const expectedCommitLine = `- Release candidate commit: \`${releaseCommitLabel(
+    commit,
+  )}\``
+  return (
+    source.includes(expectedCommitLine) &&
+    source.includes(releaseHandoffCommand(commit, pathOptions, options))
+  )
 }
 
 function preflightSummaryCommand(commit, pathOptions = {}) {
@@ -1268,13 +1292,15 @@ function collectReadinessNextActions(
       )
     }
 
-    actions.push({
-      id: 'release-handoff-report',
-      title: 'Write Android/iOS tester handoff',
-      detail:
-        'Render the current allow-open readiness audit as Markdown so device testers can see the exact platform gaps, dependencies, and commands for this release candidate.',
-      commands: [releaseHandoffCommand(commit, pathOptions)],
-    })
+    if (!isReleaseHandoffReportCurrent(commit, pathOptions)) {
+      actions.push({
+        id: 'release-handoff-report',
+        title: 'Write Android/iOS tester handoff',
+        detail:
+          'Render the current allow-open readiness audit as Markdown so device testers can see the exact platform gaps, dependencies, and commands for this release candidate.',
+        commands: [releaseHandoffCommand(commit, pathOptions)],
+      })
+    }
 
     actions.push({
       id: 'real-device-evidence',

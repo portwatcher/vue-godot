@@ -15,6 +15,7 @@ export const defaultReleasePreflightSummaryPath =
   'release/release-preflight-summary.json'
 export const defaultReleaseReadinessEvidencePath =
   'release/release-readiness-evidence.json'
+export const defaultReleaseHandoffReportPath = 'release/release-handoff.md'
 
 function shellArg(value) {
   const text = String(value)

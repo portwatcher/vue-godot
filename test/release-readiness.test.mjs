@@ -16,6 +16,7 @@ import {
   collectTodoItems,
   collectUncheckedTodoItems,
   formatFinalTodoRequirementStatus,
+  isReleaseHandoffReportCurrent,
   validateInitialCiEvidence,
   validateReleaseReadinessEvidence,
 } from '../scripts/release-readiness.mjs'
@@ -1170,6 +1171,89 @@ test('release readiness reuses committed initial CI evidence in next actions', (
           command.includes('--include-release-preflight') ||
           !command.includes('npm run release:ci --'),
       ),
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
+test('release readiness omits default handoff action when current report exists', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
+  const summaryPath = path.join(tempDir, 'release-readiness-summary.json')
+  const ciEvidence = readCommittedReleaseCiEvidence()
+
+  try {
+    const result = runReadiness([
+      '--allow-open',
+      '--expected-commit',
+      ciEvidence.commit,
+      '--summary-output',
+      summaryPath,
+    ])
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+
+    assert.equal(result.status, 0)
+    assert.equal(summary.checks.initialCiEvidence, true)
+    assert.equal(
+      summary.nextActions.some(
+        (action) => action.id === 'release-handoff-report',
+      ),
+      false,
+    )
+    assert.ok(
+      summary.nextActions.some((action) => action.id === 'real-device-evidence'),
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
+test('release handoff report currentness requires matching commit and command', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
+  const reportPath = path.join(tempDir, 'release-handoff.md')
+  const commit = '1234567890abcdef1234567890abcdef12345678'
+  const command = `npm run release:handoff -- --expected-commit ${commit} --output release/release-handoff.md`
+
+  try {
+    fs.writeFileSync(
+      reportPath,
+      [
+        '# Release Handoff',
+        '',
+        `- Release candidate commit: \`${commit}\``,
+        '',
+        '```bash',
+        command,
+        '```',
+        '',
+      ].join('\n'),
+    )
+
+    assert.equal(
+      isReleaseHandoffReportCurrent(commit, {}, { reportPath }),
+      true,
+    )
+    assert.equal(
+      isReleaseHandoffReportCurrent(
+        'ffffffffffffffffffffffffffffffffffffffff',
+        {},
+        { reportPath },
+      ),
+      false,
+    )
+
+    fs.writeFileSync(
+      reportPath,
+      [
+        '# Release Handoff',
+        '',
+        `- Release candidate commit: \`${commit}\``,
+        '',
+      ].join('\n'),
+    )
+    assert.equal(
+      isReleaseHandoffReportCurrent(commit, {}, { reportPath }),
+      false,
     )
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
