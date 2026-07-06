@@ -28,10 +28,14 @@ import {
 import { shellQuote } from '../scripts/release-utils.mjs'
 
 function runReadiness(args = []) {
-  return spawnSync(process.execPath, ['scripts/release-readiness.mjs', ...args], {
-    cwd: process.cwd(),
-    encoding: 'utf-8',
-  })
+  return spawnSync(
+    process.execPath,
+    ['scripts/release-readiness.mjs', ...args],
+    {
+      cwd: process.cwd(),
+      encoding: 'utf-8',
+    },
+  )
 }
 
 function readCommittedReleaseCiEvidence() {
@@ -71,7 +75,10 @@ function writeSyntheticCiEvidenceForCommit(ciEvidence, commit, outputPath) {
     syntheticEvidence.localGit.upstreamMatchesCommit = true
     syntheticEvidence.localGit.dirtyWorktree = false
   }
-  fs.writeFileSync(outputPath, `${JSON.stringify(syntheticEvidence, null, 2)}\n`)
+  fs.writeFileSync(
+    outputPath,
+    `${JSON.stringify(syntheticEvidence, null, 2)}\n`,
+  )
 }
 
 test('release readiness rejects non-SHA expected commits', () => {
@@ -266,10 +273,7 @@ test('release readiness requires the final TODO evidence checklist shape', () =>
     ].join('\n'),
     'TODO.test.md',
   )
-  const blockers = collectFinalTodoStructureBlockers(
-    todoItems,
-    'TODO.test.md',
-  )
+  const blockers = collectFinalTodoStructureBlockers(todoItems, 'TODO.test.md')
   const output = blockers.join('\n')
 
   assert.match(
@@ -320,10 +324,7 @@ test('release readiness checklist renders final proof and next actions', () => {
         anyConfigured: true,
         configuredProviders: [
           {
-            configuredEnv: [
-              'BROWSERSTACK_USERNAME',
-              'BROWSERSTACK_ACCESS_KEY',
-            ],
+            configuredEnv: ['BROWSERSTACK_USERNAME', 'BROWSERSTACK_ACCESS_KEY'],
             id: 'browserstack',
             label: 'BrowserStack App Automate',
           },
@@ -420,7 +421,10 @@ test('release readiness checklist renders final proof and next actions', () => {
 
   assert.match(checklist, /# Release Readiness Checklist/)
   assert.match(checklist, /- Status: waiting/)
-  assert.match(checklist, /\[x\] TODO\.md:24 checked: checkCiEvidenceReady ready/)
+  assert.match(
+    checklist,
+    /\[x\] TODO\.md:24 checked: checkCiEvidenceReady ready/,
+  )
   assert.match(
     checklist,
     /\[ \] TODO\.md:389 unchecked: androidRealDeviceEvidenceReady waiting/,
@@ -428,7 +432,10 @@ test('release readiness checklist renders final proof and next actions', () => {
   assert.match(checklist, /\[ \] Real-device evidence/)
   assert.match(checklist, /## Device Prereq Diagnostics/)
   assert.match(checklist, /Diagnostic only: yes; this is not release evidence/)
-  assert.match(checklist, /Android: waiting \(1 blocker\(s\), 0 warning\(s\), 0 device\(s\)\)/)
+  assert.match(
+    checklist,
+    /Android: waiting \(1 blocker\(s\), 0 warning\(s\), 0 device\(s\)\)/,
+  )
   assert.match(checklist, /  - Command: `adb devices -l`/)
   assert.match(checklist, /  - Blockers:\n    - adb not found/)
   assert.match(checklist, /iOS: not recorded/)
@@ -482,10 +489,7 @@ test('release readiness summary includes device prereq diagnostics', () => {
       providers: [
         {
           configured: true,
-          configuredEnv: [
-            'BROWSERSTACK_USERNAME',
-            'BROWSERSTACK_ACCESS_KEY',
-          ],
+          configuredEnv: ['BROWSERSTACK_USERNAME', 'BROWSERSTACK_ACCESS_KEY'],
           id: 'browserstack',
           label: 'BrowserStack App Automate',
           missingEnv: [],
@@ -512,6 +516,52 @@ test('release readiness summary includes device prereq diagnostics', () => {
     },
     ready: false,
     selectedPlatforms: ['android', 'ios'],
+    toolchains: {
+      android: {
+        blockers: ['zipalign not found'],
+        buildToolsDir: '/tmp/android-sdk/build-tools/37.0.0',
+        buildToolsVersion: '37.0.0',
+        commands: [
+          {
+            command: 'adb version',
+            detail: 'Android Debug Bridge version 1.0.41',
+            id: 'adb',
+            label: 'Android Debug Bridge',
+            ready: true,
+            status: 0,
+          },
+          {
+            command: 'zipalign',
+            detail: null,
+            id: 'zipalign',
+            label: 'Zip align',
+            ready: false,
+            status: null,
+          },
+        ],
+        ready: false,
+        sdkRoot: '/tmp/android-sdk',
+        sdkRootSource: 'ANDROID_HOME',
+        warnings: ['ANDROID_HOME points at a test SDK root'],
+      },
+      ios: {
+        blockers: [],
+        commands: [
+          {
+            command: 'xcodebuild -version',
+            detail: 'Xcode 26.6',
+            id: 'xcodebuild',
+            label: 'Xcode build tools',
+            ready: true,
+            status: 0,
+          },
+        ],
+        developerDir: '/Applications/Xcode.app/Contents/Developer',
+        ready: true,
+        warnings: [],
+        xcodeVersion: 'Xcode 26.6',
+      },
+    },
   }
 
   try {
@@ -542,6 +592,10 @@ test('release readiness summary includes device prereq diagnostics', () => {
     assert.equal(diagnostics.android.deviceCount, 0)
     assert.equal(diagnostics.ios.ready, true)
     assert.equal(diagnostics.ios.deviceCount, 1)
+    assert.equal(diagnostics.toolchains.android.ready, false)
+    assert.equal(diagnostics.toolchains.android.blockerCount, 1)
+    assert.equal(diagnostics.toolchains.android.commandCount, 2)
+    assert.equal(diagnostics.toolchains.ios.ready, true)
     assert.equal(diagnostics.hostedProviders.anyConfigured, true)
     assert.equal(diagnostics.hostedProviders.providerCount, 2)
     assert.deepEqual(
@@ -553,16 +607,40 @@ test('release readiness summary includes device prereq diagnostics', () => {
       ['AWS_SECRET_ACCESS_KEY', 'AWS_REGION'],
     )
     assert.match(checklist, /## Device Prereq Diagnostics/)
-    assert.match(checklist, /Diagnostic only: yes; this is not release evidence/)
-    assert.match(checklist, /Android: waiting \(1 blocker\(s\), 1 warning\(s\), 0 device\(s\)\)/)
+    assert.match(
+      checklist,
+      /Diagnostic only: yes; this is not release evidence/,
+    )
+    assert.match(
+      checklist,
+      /Android: waiting \(1 blocker\(s\), 1 warning\(s\), 0 device\(s\)\)/,
+    )
     assert.match(checklist, /  - Command: `adb devices -l`/)
     assert.match(checklist, /  - Blockers:\n    - adb not found/)
     assert.match(
       checklist,
       /  - Warnings:\n    - Android SDK platform-tools missing/,
     )
-    assert.match(checklist, /iOS: ready \(0 blocker\(s\), 0 warning\(s\), 1 device\(s\)\)/)
+    assert.match(
+      checklist,
+      /iOS: ready \(0 blocker\(s\), 0 warning\(s\), 1 device\(s\)\)/,
+    )
     assert.match(checklist, /  - Command: `xcrun xctrace list devices`/)
+    assert.match(
+      checklist,
+      /Android toolchain: waiting \(1 blocker\(s\), 1 warning\(s\), 2 command\(s\)\)/,
+    )
+    assert.match(checklist, /  - SDK root: \/tmp\/android-sdk/)
+    assert.match(checklist, /  - Build-tools version: `37\.0\.0`/)
+    assert.match(
+      checklist,
+      /    - Android Debug Bridge: ready \(`adb version`\) - Android Debug Bridge version 1\.0\.41/,
+    )
+    assert.match(checklist, /  - Blockers:\n    - zipalign not found/)
+    assert.match(
+      checklist,
+      /iOS toolchain: ready \(0 blocker\(s\), 0 warning\(s\), 1 command\(s\)\)/,
+    )
     assert.match(
       checklist,
       /Hosted provider env configured: BrowserStack App Automate \(`BROWSERSTACK_USERNAME`, `BROWSERSTACK_ACCESS_KEY`\)/,
@@ -584,12 +662,10 @@ test('release readiness requires release tooling scripts', () => {
           'npm run build && npm run test && npm run smoke:cli && npm run check:serious-examples && npm run bench:performance',
         'check:device-prereqs': 'node scripts/check-device-test-prereqs.mjs',
         'check:public-surface': 'node scripts/public-surface-audit.mjs',
-        'check:platform-evidence':
-          'node scripts/check-platform-evidence.mjs',
+        'check:platform-evidence': 'node scripts/check-platform-evidence.mjs',
         'check:real-device-evidence':
           'node scripts/check-real-device-evidence.mjs',
-        'check:serious-examples':
-          'node scripts/check-serious-example-apps.mjs',
+        'check:serious-examples': 'node scripts/check-serious-example-apps.mjs',
         'release:ci': 'node scripts/check-release-ci-runs.mjs',
         'release:platform-evidence':
           'node scripts/create-platform-evidence.mjs',
@@ -624,7 +700,10 @@ test('release readiness requires release tooling scripts', () => {
   assert.match(output, /release:finalize-readiness/)
   assert.match(output, /release:handoff/)
   assert.match(output, /release:preflight-summary/)
-  assert.match(output, /release:preflight as node scripts\/release-preflight\.mjs/)
+  assert.match(
+    output,
+    /release:preflight as node scripts\/release-preflight\.mjs/,
+  )
   assert.match(output, /check script must run npm run check:serious-examples/)
 })
 
@@ -720,7 +799,10 @@ test('release readiness requires Release Preflight expected commit wiring', () =
 
   assert.match(output, /\.github\/workflows\/release-preflight\.yml/)
   assert.match(output, /expected_commit/)
-  assert.match(output, /--expected-commit "\$\{\{ inputs\.expected_commit \}\}"/)
+  assert.match(
+    output,
+    /--expected-commit "\$\{\{ inputs\.expected_commit \}\}"/,
+  )
 })
 
 test('release readiness validates initial CI evidence for Check and Godot Smoke', () => {
@@ -821,10 +903,7 @@ test('release readiness reports current blockers without failing when allowed op
   assert.match(output, /release-readiness evidence missing/)
   assert.match(output, /final TODO proof status/)
   assert.match(output, /TODO\.md:24 checked; checkCiEvidenceReady ready/)
-  assert.match(
-    output,
-    /TODO\.md:25 checked; godotSmokeCiEvidenceReady ready/,
-  )
+  assert.match(output, /TODO\.md:25 checked; godotSmokeCiEvidenceReady ready/)
   assert.match(
     output,
     /TODO\.md:389 unchecked; androidRealDeviceEvidenceReady waiting/,
@@ -878,9 +957,7 @@ test('release readiness suggests expected commit for committed CI evidence', () 
     assert.match(output, /tested release commit evidence found/)
     assert.match(
       output,
-      new RegExp(
-        `ci-runs\\.json validates ${testedCommit}, not ${headCommit}`,
-      ),
+      new RegExp(`ci-runs\\.json validates ${testedCommit}, not ${headCommit}`),
     )
     assert.ok(
       output.includes(
@@ -952,7 +1029,9 @@ test('release readiness writes a machine-readable blocker summary', () => {
             command: 'adb devices -l',
             devices: [],
             ready: false,
-            warnings: ['Android device emulator-5554 appears to be an emulator.'],
+            warnings: [
+              'Android device emulator-5554 appears to be an emulator.',
+            ],
           },
           hostedProviders: {
             anyConfigured: true,
@@ -1035,12 +1114,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
       summary.devicePrereqs.hostedProviders.configuredProviders.map(
         (provider) => [provider.id, provider.configuredEnv],
       ),
-      [
-        [
-          'browserstack',
-          ['BROWSERSTACK_USERNAME', 'BROWSERSTACK_ACCESS_KEY'],
-        ],
-      ],
+      [['browserstack', ['BROWSERSTACK_USERNAME', 'BROWSERSTACK_ACCESS_KEY']]],
     )
     assert.deepEqual(
       summary.devicePrereqs.hostedProviders.partialProviders.map((provider) => [
@@ -1095,7 +1169,10 @@ test('release readiness writes a machine-readable blocker summary', () => {
     })
     assert.equal(summary.platformEvidence.evidencePresent, true)
     assert.equal(summary.platformEvidence.ready, false)
-    assert.equal(summary.platformEvidence.path, 'release/platform-evidence.json')
+    assert.equal(
+      summary.platformEvidence.path,
+      'release/platform-evidence.json',
+    )
     assert.ok(summary.platformEvidence.errorCount > 0)
     assert.ok(Array.isArray(summary.nextActions))
     const ciEvidenceAction = summary.nextActions.find(
@@ -1169,45 +1246,43 @@ test('release readiness writes a machine-readable blocker summary', () => {
       ),
     )
     assert.ok(
-      summary.nextActions.some(
-        (action) => {
-          if (action.id !== 'final-warning-removal') {
-            return false
-          }
+      summary.nextActions.some((action) => {
+        if (action.id !== 'final-warning-removal') {
+          return false
+        }
 
-          if ('blockedBy' in action) {
-            return false
-          }
+        if ('blockedBy' in action) {
+          return false
+        }
 
-          const readinessSummaryIndex = action.commands.indexOf(
-            `npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --checklist-output /tmp/vue-godot-readiness.md --expected-commit ${exampleCommit} --real-device-path docs/real-device-evidence.example.json --readiness-path docs/release-readiness-evidence.example.json`,
-          )
-          const finalizerIndex = action.commands.indexOf(
-            'npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json',
-          )
-          const checkIndex = action.commands.indexOf('npm run check')
-          const gitAddIndex = action.commands.indexOf(
-            'git add TODO.md README.md docs/compatibility.md docs/production.md docs/real-device-release.md',
-          )
-          const gitCommitIndex = action.commands.indexOf(
-            'git commit -m "Finalize production readiness"',
-          )
-          const gitPushIndex = action.commands.indexOf('git push')
-          const finalReadinessIndex = action.commands.indexOf(
-            `npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit ${exampleCommit} --real-device-path docs/real-device-evidence.example.json --readiness-path docs/release-readiness-evidence.example.json`,
-          )
+        const readinessSummaryIndex = action.commands.indexOf(
+          `npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --checklist-output /tmp/vue-godot-readiness.md --expected-commit ${exampleCommit} --real-device-path docs/real-device-evidence.example.json --readiness-path docs/release-readiness-evidence.example.json`,
+        )
+        const finalizerIndex = action.commands.indexOf(
+          'npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json',
+        )
+        const checkIndex = action.commands.indexOf('npm run check')
+        const gitAddIndex = action.commands.indexOf(
+          'git add TODO.md README.md docs/compatibility.md docs/production.md docs/real-device-release.md',
+        )
+        const gitCommitIndex = action.commands.indexOf(
+          'git commit -m "Finalize production readiness"',
+        )
+        const gitPushIndex = action.commands.indexOf('git push')
+        const finalReadinessIndex = action.commands.indexOf(
+          `npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit ${exampleCommit} --real-device-path docs/real-device-evidence.example.json --readiness-path docs/release-readiness-evidence.example.json`,
+        )
 
-          return (
-            readinessSummaryIndex >= 0 &&
-            finalizerIndex === readinessSummaryIndex + 1 &&
-            checkIndex === finalizerIndex + 1 &&
-            gitAddIndex === checkIndex + 1 &&
-            gitCommitIndex === gitAddIndex + 1 &&
-            gitPushIndex === gitCommitIndex + 1 &&
-            finalReadinessIndex === gitPushIndex + 1
-          )
-        },
-      ),
+        return (
+          readinessSummaryIndex >= 0 &&
+          finalizerIndex === readinessSummaryIndex + 1 &&
+          checkIndex === finalizerIndex + 1 &&
+          gitAddIndex === checkIndex + 1 &&
+          gitCommitIndex === gitAddIndex + 1 &&
+          gitPushIndex === gitCommitIndex + 1 &&
+          finalReadinessIndex === gitPushIndex + 1
+        )
+      }),
     )
     assert.equal(summary.finalTodoRequirements.length, 10)
     assert.ok(
@@ -1298,15 +1373,24 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.match(checklist, /## Final TODO Proof/)
     assert.match(checklist, /Check\/Godot Smoke CI evidence/)
     assert.match(checklist, /## Device Prereq Diagnostics/)
-    assert.match(checklist, /Diagnostic only: yes; this is not release evidence/)
-    assert.match(checklist, /Android: waiting \(1 blocker\(s\), 1 warning\(s\), 0 device\(s\)\)/)
+    assert.match(
+      checklist,
+      /Diagnostic only: yes; this is not release evidence/,
+    )
+    assert.match(
+      checklist,
+      /Android: waiting \(1 blocker\(s\), 1 warning\(s\), 0 device\(s\)\)/,
+    )
     assert.match(checklist, /  - Command: `adb devices -l`/)
     assert.match(checklist, /  - Blockers:\n    - adb not found/)
     assert.match(
       checklist,
       /  - Warnings:\n    - Android device emulator-5554 appears to be an emulator\./,
     )
-    assert.match(checklist, /iOS: ready \(0 blocker\(s\), 0 warning\(s\), 1 device\(s\)\)/)
+    assert.match(
+      checklist,
+      /iOS: ready \(0 blocker\(s\), 0 warning\(s\), 1 device\(s\)\)/,
+    )
     assert.match(checklist, /  - Command: `xcrun xctrace list devices`/)
     assert.match(
       checklist,
@@ -1334,10 +1418,7 @@ test('release readiness summary includes missing evidence next actions', () => {
     tempDir,
     'custom platform evidence.json',
   )
-  const realDevicePath = path.join(
-    tempDir,
-    'missing real-device evidence.json',
-  )
+  const realDevicePath = path.join(tempDir, 'missing real-device evidence.json')
   const readinessPath = path.join(
     tempDir,
     'missing release-readiness evidence.json',
@@ -1406,7 +1487,10 @@ test('release readiness summary includes missing evidence next actions', () => {
       (action) => action.id === 'real-device-evidence',
     )
     assert.ok(realDeviceAction)
-    assert.match(realDeviceAction.detail, /Android: 6 metadata field\(s\) missing/)
+    assert.match(
+      realDeviceAction.detail,
+      /Android: 6 metadata field\(s\) missing/,
+    )
     assert.match(
       realDeviceAction.detail,
       /tested release commit\.[\s\S]*Android: 6 metadata field\(s\) missing/,
@@ -1453,8 +1537,7 @@ test('release readiness summary includes missing evidence next actions', () => {
     )
     assert.ok(
       realDeviceAction.commands.every(
-        (command) =>
-          !command.includes('npm run release:platform-evidence --'),
+        (command) => !command.includes('npm run release:platform-evidence --'),
       ),
     )
     assert.ok(
@@ -1559,9 +1642,7 @@ test('release readiness summary includes missing evidence next actions', () => {
       (action) => action.id === 'release-preflight-evidence',
     )
     assert.ok(releasePreflightAction)
-    assert.deepEqual(releasePreflightAction.blockedBy, [
-      'real-device-evidence',
-    ])
+    assert.deepEqual(releasePreflightAction.blockedBy, ['real-device-evidence'])
     assert.equal(releasePreflightAction.commands[0], 'npm run check')
     assert.equal(
       releasePreflightAction.commands[1],
@@ -1569,7 +1650,8 @@ test('release readiness summary includes missing evidence next actions', () => {
     )
     assert.ok(
       releasePreflightAction.commands.every(
-        (command) => !command.includes('--ref <release-candidate-branch-or-tag>'),
+        (command) =>
+          !command.includes('--ref <release-candidate-branch-or-tag>'),
       ),
     )
     assert.ok(
@@ -1732,9 +1814,7 @@ test('release readiness reuses committed initial CI evidence in next actions', (
       (action) => action.id === 'release-preflight-evidence',
     )
     assert.ok(releasePreflightAction)
-    assert.deepEqual(releasePreflightAction.blockedBy, [
-      'real-device-evidence',
-    ])
+    assert.deepEqual(releasePreflightAction.blockedBy, ['real-device-evidence'])
     assert.ok(
       releasePreflightAction.commands.every(
         (command) =>
@@ -1787,9 +1867,13 @@ test('release readiness matches default handoff action to report currentness', (
     assert.match(summary.releaseHandoffReport.stateHash, /^[0-9a-f]{16}$/)
     assert.equal(summary.releaseHandoffReport.current, reportIsCurrent)
     assert.equal(
-      isReleaseHandoffReportCurrent(ciEvidence.commit, {}, {
-        stateHash: summary.releaseHandoffReport.stateHash,
-      }),
+      isReleaseHandoffReportCurrent(
+        ciEvidence.commit,
+        {},
+        {
+          stateHash: summary.releaseHandoffReport.stateHash,
+        },
+      ),
       reportIsCurrent,
     )
     assert.equal(
@@ -1803,7 +1887,9 @@ test('release readiness matches default handoff action to report currentness', (
       !reportIsCurrent,
     )
     assert.ok(
-      summary.nextActions.some((action) => action.id === 'real-device-evidence'),
+      summary.nextActions.some(
+        (action) => action.id === 'real-device-evidence',
+      ),
     )
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
@@ -1841,10 +1927,14 @@ test('release handoff report currentness rejects stale commits and commands', ()
       true,
     )
     assert.equal(
-      isReleaseHandoffReportCurrent(commit, {}, {
-        reportPath,
-        stateHash: 'fedcba9876543210',
-      }),
+      isReleaseHandoffReportCurrent(
+        commit,
+        {},
+        {
+          reportPath,
+          stateHash: 'fedcba9876543210',
+        },
+      ),
       false,
     )
     assert.equal(
@@ -1976,7 +2066,10 @@ test('release readiness reports a dirty worktree blocker', () => {
     const output = `${result.stdout}\n${result.stderr}`
 
     assert.equal(result.status, 0)
-    assert.match(output, /working tree must be clean for final release readiness/)
+    assert.match(
+      output,
+      /working tree must be clean for final release readiness/,
+    )
     assert.match(output, /\.release-readiness-dirty-test/)
   } finally {
     fs.rmSync(markerPath, { force: true })
@@ -1994,8 +2087,7 @@ test('release readiness requires a GitHub Actions preflight run URL for this rep
         commit: '0123456789abcdef0123456789abcdef01234567',
         releasePreflightRunUrl: 'https://example.com/actions/runs/3',
         releasePreflightRunWorkflowName: 'Release Preflight',
-        releasePreflightRunCommit:
-          '0123456789abcdef0123456789abcdef01234567',
+        releasePreflightRunCommit: '0123456789abcdef0123456789abcdef01234567',
         releasePreflightRunConclusion: 'success',
         releasePreflightLocalOnly: false,
         releasePreflightSkipCheck: false,

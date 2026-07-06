@@ -21,6 +21,11 @@ export const requiredAndroidExportTemplateFiles = Object.freeze([
 
 const androidExportTemplateInstallCommand =
   'npm run setup:godotjs -- --asset prebuilt_android_v8 --asset-kind templates --install-templates --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir'
+const androidSdkEnvNames = ['ANDROID_HOME', 'ANDROID_SDK_ROOT']
+const defaultAndroidSdkRootCandidates = [
+  '/opt/homebrew/share/android-commandlinetools',
+  '/usr/local/share/android-commandlinetools',
+]
 
 const hostedDeviceProviderEnvSets = [
   {
@@ -207,6 +212,15 @@ function formatCommandFailure(command, result) {
 
 function commandOutput(result) {
   return `${result.stderr ?? ''}\n${result.stdout ?? ''}`.trim()
+}
+
+function firstOutputLine(result) {
+  return (
+    commandOutput(result)
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .find((line) => line.length > 0) ?? ''
+  )
 }
 
 function xctraceUtilityMissing(result) {
@@ -436,6 +450,326 @@ function checkIos(runCommand) {
   }
 }
 
+function selectedPlatformList(options = {}) {
+  return (
+    options.selectedPlatforms ??
+    (options.platform && options.platform !== 'all'
+      ? [options.platform]
+      : platforms)
+  )
+}
+
+function commandProbe(
+  runCommand,
+  { args, command, id, label, successStatuses },
+) {
+  const result = runCommand(command, args)
+  const renderedCommand = [command, ...args].join(' ')
+  if (commandMissing(result)) {
+    return {
+      command: renderedCommand,
+      detail: null,
+      id,
+      label,
+      ready: false,
+      status: null,
+    }
+  }
+
+  return {
+    command: renderedCommand,
+    detail: firstOutputLine(result) || null,
+    id,
+    label,
+    ready: successStatuses.includes(result.status),
+    status: result.status,
+  }
+}
+
+function newestVersionName(left, right) {
+  return right.localeCompare(left, undefined, {
+    numeric: true,
+    sensitivity: 'base',
+  })
+}
+
+function directoryExists(dir) {
+  try {
+    return fs.statSync(dir).isDirectory()
+  } catch {
+    return false
+  }
+}
+
+function fileExists(filePath) {
+  try {
+    return fs.statSync(filePath).isFile()
+  } catch {
+    return false
+  }
+}
+
+function detectAndroidSdkRoot(env = process.env, candidates = []) {
+  const envCandidates = androidSdkEnvNames
+    .map((name) => ({
+      path: env[name],
+      source: name,
+    }))
+    .filter(
+      (candidate) =>
+        typeof candidate.path === 'string' && candidate.path.trim().length > 0,
+    )
+
+  const fallbackCandidates = [
+    ...candidates.map((candidate) => ({
+      path: candidate,
+      source: 'candidate',
+    })),
+    ...defaultAndroidSdkRootCandidates.map((candidate) => ({
+      path: candidate,
+      source: 'discovered',
+    })),
+  ]
+
+  for (const candidate of [...envCandidates, ...fallbackCandidates]) {
+    const resolved = path.resolve(candidate.path)
+    if (
+      directoryExists(path.join(resolved, 'build-tools')) ||
+      directoryExists(path.join(resolved, 'platform-tools')) ||
+      directoryExists(path.join(resolved, 'cmdline-tools'))
+    ) {
+      return {
+        source: candidate.source,
+        value: resolved,
+      }
+    }
+  }
+
+  return {
+    source: null,
+    value: null,
+  }
+}
+
+function collectAndroidBuildTools(sdkRoot) {
+  if (!sdkRoot) {
+    return {
+      buildToolsDir: null,
+      buildToolsVersion: null,
+      missingFiles: ['apksigner', 'zipalign'],
+      ready: false,
+    }
+  }
+
+  const buildToolsRoot = path.join(sdkRoot, 'build-tools')
+  let entries
+  try {
+    entries = fs.readdirSync(buildToolsRoot, { withFileTypes: true })
+  } catch {
+    return {
+      buildToolsDir: null,
+      buildToolsVersion: null,
+      missingFiles: ['apksigner', 'zipalign'],
+      ready: false,
+    }
+  }
+
+  const versions = entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort(newestVersionName)
+
+  for (const version of versions) {
+    const buildToolsDir = path.join(buildToolsRoot, version)
+    const missingFiles = ['apksigner', 'zipalign'].filter(
+      (file) => !fileExists(path.join(buildToolsDir, file)),
+    )
+    if (missingFiles.length === 0) {
+      return {
+        buildToolsDir,
+        buildToolsVersion: version,
+        missingFiles,
+        ready: true,
+      }
+    }
+  }
+
+  return {
+    buildToolsDir: versions[0] ? path.join(buildToolsRoot, versions[0]) : null,
+    buildToolsVersion: versions[0] ?? null,
+    missingFiles: ['apksigner', 'zipalign'],
+    ready: false,
+  }
+}
+
+function collectAndroidToolchainStatus(runCommand, options = {}) {
+  const blockers = []
+  const warnings = []
+  const sdkRootStatus = detectAndroidSdkRoot(
+    options.env,
+    options.androidSdkRootCandidates ?? [],
+  )
+  const buildTools = collectAndroidBuildTools(sdkRootStatus.value)
+  const commands = [
+    commandProbe(runCommand, {
+      args: ['version'],
+      command: 'adb',
+      id: 'adb',
+      label: 'Android Debug Bridge',
+      successStatuses: [0],
+    }),
+    commandProbe(runCommand, {
+      args: ['--version'],
+      command: 'apksigner',
+      id: 'apksigner',
+      label: 'APK signer',
+      successStatuses: [0],
+    }),
+    commandProbe(runCommand, {
+      args: [],
+      command: 'zipalign',
+      id: 'zipalign',
+      label: 'Zip align',
+      successStatuses: [0, 1, 2],
+    }),
+  ]
+
+  for (const command of commands) {
+    if (!command.ready) {
+      blockers.push(
+        `${command.label} not found or not runnable via ${command.command}.`,
+      )
+    }
+  }
+
+  if (!sdkRootStatus.value) {
+    blockers.push(
+      'Android SDK root not found; set ANDROID_HOME or ANDROID_SDK_ROOT, or install Android command-line tools.',
+    )
+  }
+
+  if (!buildTools.ready) {
+    blockers.push(
+      `Android SDK build-tools are missing ${buildTools.missingFiles.join(', ')}.`,
+    )
+  }
+
+  if (
+    !androidSdkEnvNames.some((name) =>
+      envHasValue(options.env ?? process.env, name),
+    )
+  ) {
+    warnings.push(
+      'ANDROID_HOME or ANDROID_SDK_ROOT is not set; configure Godot Android export settings with the SDK root before local exports.',
+    )
+  }
+
+  return {
+    blockers,
+    buildToolsDir: buildTools.buildToolsDir,
+    buildToolsVersion: buildTools.buildToolsVersion,
+    commands,
+    ready: blockers.length === 0,
+    sdkRoot: sdkRootStatus.value,
+    sdkRootSource: sdkRootStatus.source,
+    warnings,
+  }
+}
+
+function collectIosToolchainStatus(runCommand) {
+  const blockers = []
+  const warnings = []
+  const commands = []
+  let developerDir = null
+  let xcodeVersion = null
+
+  const selected = commandProbe(runCommand, {
+    args: ['-p'],
+    command: 'xcode-select',
+    id: 'xcode-select',
+    label: 'Xcode selection',
+    successStatuses: [0],
+  })
+  commands.push(selected)
+  if (selected.ready) {
+    developerDir = selected.detail
+    if (/CommandLineTools(?:\/|$)/.test(developerDir ?? '')) {
+      blockers.push(
+        `Full Xcode is not selected; active developer directory is ${developerDir}.`,
+      )
+    }
+  } else {
+    blockers.push('xcode-select is not available or failed.')
+  }
+
+  const xcodebuild = commandProbe(runCommand, {
+    args: ['-version'],
+    command: 'xcodebuild',
+    id: 'xcodebuild',
+    label: 'Xcode build tools',
+    successStatuses: [0],
+  })
+  commands.push(xcodebuild)
+  if (xcodebuild.ready) {
+    xcodeVersion = xcodebuild.detail
+  } else {
+    blockers.push('xcodebuild is not available or failed.')
+  }
+
+  const xctrace = commandProbe(runCommand, {
+    args: ['--find', 'xctrace'],
+    command: 'xcrun',
+    id: 'xctrace',
+    label: 'xctrace',
+    successStatuses: [0],
+  })
+  commands.push(xctrace)
+  if (!xctrace.ready) {
+    blockers.push('xcrun cannot locate xctrace.')
+  }
+
+  const devicectl = commandProbe(runCommand, {
+    args: ['--find', 'devicectl'],
+    command: 'xcrun',
+    id: 'devicectl',
+    label: 'devicectl',
+    successStatuses: [0],
+  })
+  commands.push(devicectl)
+  if (!devicectl.ready) {
+    blockers.push('xcrun cannot locate devicectl.')
+  }
+
+  if (!fs.existsSync('/Applications/Xcode.app')) {
+    warnings.push(
+      `Full Xcode.app was not found at /Applications/Xcode.app. ${fullXcodeInstallGuidance}`,
+    )
+  }
+
+  return {
+    blockers,
+    commands,
+    developerDir,
+    ready: blockers.length === 0,
+    warnings,
+    xcodeVersion,
+  }
+}
+
+export function collectLocalToolchainStatus(options = {}) {
+  const runCommand = options.runCommand ?? defaultRunCommand
+  const selectedPlatforms = selectedPlatformList(options)
+
+  return {
+    android: selectedPlatforms.includes('android')
+      ? collectAndroidToolchainStatus(runCommand, options)
+      : null,
+    ios: selectedPlatforms.includes('ios')
+      ? collectIosToolchainStatus(runCommand)
+      : null,
+  }
+}
+
 function readTrimmedFile(filePath) {
   try {
     return fs.readFileSync(filePath, 'utf-8').trim()
@@ -611,11 +945,7 @@ function collectIosExportTemplateStatus() {
 }
 
 export function collectExportTemplateStatus(options = {}) {
-  const selectedPlatforms =
-    options.selectedPlatforms ??
-    (options.platform && options.platform !== 'all'
-      ? [options.platform]
-      : platforms)
+  const selectedPlatforms = selectedPlatformList(options)
 
   return {
     android: selectedPlatforms.includes('android')
@@ -667,6 +997,16 @@ export function collectDeviceTestPrereqStatus(options = {}) {
     templateVersion: options.templateVersion,
     templatesRoot: options.templatesRoot,
   })
+  summary.toolchains =
+    options.includeToolchains === false
+      ? null
+      : collectLocalToolchainStatus({
+          androidSdkRootCandidates: options.androidSdkRootCandidates,
+          env,
+          platform: options.platform,
+          runCommand,
+          selectedPlatforms,
+        })
 
   return summary
 }
@@ -797,11 +1137,65 @@ function formatExportTemplateStatus(label, status) {
   return lines
 }
 
+function formatToolchainStatus(label, status) {
+  if (!status) {
+    return []
+  }
+
+  const lines = [
+    `[device-prereqs] ${label} toolchain: ${status.ready ? 'ready' : 'waiting'}`,
+  ]
+
+  if (status.sdkRoot) {
+    lines.push(`[device-prereqs] ${label} SDK root: ${status.sdkRoot}`)
+  }
+  if (status.sdkRootSource) {
+    lines.push(
+      `[device-prereqs] ${label} SDK root source: ${status.sdkRootSource}`,
+    )
+  }
+  if (status.buildToolsVersion) {
+    lines.push(
+      `[device-prereqs] ${label} build-tools version: ${status.buildToolsVersion}`,
+    )
+  }
+  if (status.buildToolsDir) {
+    lines.push(
+      `[device-prereqs] ${label} build-tools dir: ${status.buildToolsDir}`,
+    )
+  }
+  if (status.developerDir) {
+    lines.push(
+      `[device-prereqs] ${label} developer dir: ${status.developerDir}`,
+    )
+  }
+  if (status.xcodeVersion) {
+    lines.push(
+      `[device-prereqs] ${label} Xcode version: ${status.xcodeVersion}`,
+    )
+  }
+  for (const command of status.commands ?? []) {
+    lines.push(
+      `[device-prereqs] ${label} toolchain command: ${command.label} ${command.ready ? 'ready' : 'waiting'} (${command.command})${command.detail ? ` - ${command.detail}` : ''}`,
+    )
+  }
+  for (const warning of status.warnings ?? []) {
+    lines.push(`[device-prereqs] toolchain warning: ${warning}`)
+  }
+  for (const blocker of status.blockers ?? []) {
+    lines.push(`[device-prereqs] toolchain blocker: ${blocker}`)
+  }
+
+  return lines
+}
+
 function printText(summary) {
   const lines = [
     `[device-prereqs] status: ${summary.ready ? 'ready' : 'waiting'}`,
     ...formatPlatformStatus('Android', summary.android),
     ...formatPlatformStatus('iOS', summary.ios),
+    ...formatToolchainStatus('Android', summary.toolchains?.android),
+    ...formatToolchainStatus('iOS', summary.toolchains?.ios),
     ...formatExportTemplateStatus('Android', summary.exportTemplates?.android),
     ...formatExportTemplateStatus('iOS', summary.exportTemplates?.ios),
     ...formatHostedProviderStatus(summary.hostedProviders),

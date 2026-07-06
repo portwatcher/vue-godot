@@ -24,9 +24,7 @@ import {
   repoRoot,
 } from './release-utils.mjs'
 import { formatIssueBulletLines } from './markdown-checklist-utils.mjs'
-import {
-  formatDevicePrereqDiagnosticLines,
-} from './device-prereq-diagnostics.mjs'
+import { formatDevicePrereqDiagnosticLines } from './device-prereq-diagnostics.mjs'
 
 function usage() {
   console.log(`Usage: node scripts/release-handoff-report.mjs [options]
@@ -287,9 +285,7 @@ function checkDetailText(detail) {
         .filter((apiName) => apiName.length > 0)
     : []
   const selectedApiText =
-    selectedApis.length > 0
-      ? `; selected APIs: ${selectedApis.join(', ')}`
-      : ''
+    selectedApis.length > 0 ? `; selected APIs: ${selectedApis.join(', ')}` : ''
   const description =
     typeof detail.description === 'string' && detail.description.trim()
       ? detail.description.trim()
@@ -532,10 +528,18 @@ export function prepareReleaseHandoffSummary(summary, outputPath) {
 
   const outputRelativePath = repoRelativePath(outputPath)
   const blockers = Array.isArray(summary.blockers) ? summary.blockers : []
-  const cleanWorktreeBlocker = blockers.find((blocker) =>
-    isSelfOutputDirtyBlocker(blocker, outputRelativePath),
-  )
-  const onlySelfOutputIsDirty = Boolean(cleanWorktreeBlocker)
+  let removedSelfOutputDirtyLine = false
+  const preparedBlockers = blockers.flatMap((blocker) => {
+    const preparedBlocker = removeSelfOutputDirtyLine(
+      blocker,
+      outputRelativePath,
+    )
+    if (preparedBlocker.removed) {
+      removedSelfOutputDirtyLine = true
+    }
+    return preparedBlocker.blocker ? [preparedBlocker.blocker] : []
+  })
+  const cleanWorktreeStillDirty = preparedBlockers.some(isCleanWorktreeBlocker)
 
   const actions = Array.isArray(summary.nextActions)
     ? summary.nextActions.filter((action) => {
@@ -545,38 +549,39 @@ export function prepareReleaseHandoffSummary(summary, outputPath) {
         if (action.id === 'release-handoff-report') {
           return false
         }
-        if (onlySelfOutputIsDirty && action.id === 'clean-worktree') {
+        if (
+          removedSelfOutputDirtyLine &&
+          !cleanWorktreeStillDirty &&
+          action.id === 'clean-worktree'
+        ) {
           return false
         }
         return true
       })
     : summary.nextActions
-  const preparedBlockers = onlySelfOutputIsDirty
-    ? blockers.filter((blocker) => blocker !== cleanWorktreeBlocker)
-    : blockers
 
   return {
     ...summary,
-    blockerCount: onlySelfOutputIsDirty
+    blockerCount: removedSelfOutputDirtyLine
       ? preparedBlockers.length
       : summary.blockerCount,
     blockers: preparedBlockers,
     checks:
-      onlySelfOutputIsDirty && isRecord(summary.checks)
+      removedSelfOutputDirtyLine && isRecord(summary.checks)
         ? {
             ...summary.checks,
-            cleanWorktree: true,
+            cleanWorktree: !cleanWorktreeStillDirty,
           }
         : summary.checks,
     localGit:
-      onlySelfOutputIsDirty && isRecord(summary.localGit)
+      removedSelfOutputDirtyLine && isRecord(summary.localGit)
         ? {
             ...summary.localGit,
-            dirtyWorktree: false,
+            dirtyWorktree: cleanWorktreeStillDirty,
           }
         : summary.localGit,
     nextActions: actions,
-    ready: onlySelfOutputIsDirty
+    ready: removedSelfOutputDirtyLine
       ? preparedBlockers.length === 0
       : summary.ready,
   }
@@ -593,9 +598,17 @@ function dirtyStatusPath(line) {
   return String(renamedPath).replace(/^"|"$/g, '')
 }
 
-function isSelfOutputDirtyBlocker(blocker, outputRelativePath) {
+function isCleanWorktreeBlocker(blocker) {
+  return (
+    typeof blocker === 'string' &&
+    blocker.split('\n')[0] ===
+      'working tree must be clean for final release readiness'
+  )
+}
+
+function removeSelfOutputDirtyLine(blocker, outputRelativePath) {
   if (typeof blocker !== 'string') {
-    return false
+    return { blocker, removed: false }
   }
 
   const [title, ...statusLines] = blocker.split('\n')
@@ -603,19 +616,30 @@ function isSelfOutputDirtyBlocker(blocker, outputRelativePath) {
     title !== 'working tree must be clean for final release readiness' ||
     statusLines.length === 0
   ) {
-    return false
+    return { blocker, removed: false }
   }
 
-  return statusLines.every(
-    (line) => dirtyStatusPath(line) === outputRelativePath,
+  const keptStatusLines = statusLines.filter(
+    (line) => dirtyStatusPath(line) !== outputRelativePath,
   )
+  const removed = keptStatusLines.length !== statusLines.length
+  if (!removed) {
+    return { blocker, removed: false }
+  }
+  if (keptStatusLines.length === 0) {
+    return { blocker: null, removed: true }
+  }
+
+  return { blocker: [title, ...keptStatusLines].join('\n'), removed: true }
 }
 
 function renderFinalTodoProofs(summary) {
   const requirements = Array.isArray(summary.finalTodoRequirements)
     ? summary.finalTodoRequirements
     : []
-  const waiting = requirements.filter((requirement) => requirement.ready !== true)
+  const waiting = requirements.filter(
+    (requirement) => requirement.ready !== true,
+  )
 
   return [
     '## Final TODO Proofs',
@@ -718,7 +742,9 @@ function checkOutput(outputPath, markdown, options) {
     )
   }
 
-  console.log(`[release-handoff] ${path.relative(repoRoot, resolved)} is current`)
+  console.log(
+    `[release-handoff] ${path.relative(repoRoot, resolved)} is current`,
+  )
 }
 
 function main() {

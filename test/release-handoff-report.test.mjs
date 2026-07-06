@@ -79,10 +79,7 @@ function sampleReadinessSummary(ciEvidencePath = 'release/ci-runs.json') {
         anyConfigured: true,
         configuredProviders: [
           {
-            configuredEnv: [
-              'BROWSERSTACK_USERNAME',
-              'BROWSERSTACK_ACCESS_KEY',
-            ],
+            configuredEnv: ['BROWSERSTACK_USERNAME', 'BROWSERSTACK_ACCESS_KEY'],
             id: 'browserstack',
             label: 'BrowserStack App Automate',
           },
@@ -111,6 +108,67 @@ function sampleReadinessSummary(ciEvidencePath = 'release/ci-runs.json') {
       ready: false,
       selectedPlatforms: ['android', 'ios'],
       summaryPresent: true,
+      toolchains: {
+        android: {
+          blockerCount: 0,
+          blockers: [],
+          buildToolsDir:
+            '/opt/homebrew/share/android-commandlinetools/build-tools/37.0.0',
+          buildToolsVersion: '37.0.0',
+          commandCount: 3,
+          commands: [
+            {
+              command: 'adb version',
+              detail: 'Android Debug Bridge version 1.0.41',
+              id: 'adb',
+              label: 'Android Debug Bridge',
+              ready: true,
+              status: 0,
+            },
+            {
+              command: 'apksigner --version',
+              detail: '0.9',
+              id: 'apksigner',
+              label: 'APK signer',
+              ready: true,
+              status: 0,
+            },
+            {
+              command: 'zipalign',
+              detail: 'Zip alignment utility',
+              id: 'zipalign',
+              label: 'Zip align',
+              ready: true,
+              status: 2,
+            },
+          ],
+          ready: true,
+          sdkRoot: '/opt/homebrew/share/android-commandlinetools',
+          sdkRootSource: 'discovered',
+          warningCount: 1,
+          warnings: ['ANDROID_HOME or ANDROID_SDK_ROOT is not set'],
+        },
+        ios: {
+          blockerCount: 0,
+          blockers: [],
+          commandCount: 1,
+          commands: [
+            {
+              command: 'xcodebuild -version',
+              detail: 'Xcode 26.6',
+              id: 'xcodebuild',
+              label: 'Xcode build tools',
+              ready: true,
+              status: 0,
+            },
+          ],
+          developerDir: '/Applications/Xcode.app/Contents/Developer',
+          ready: true,
+          warningCount: 0,
+          warnings: [],
+          xcodeVersion: 'Xcode 26.6',
+        },
+      },
     },
     initialCiEvidence: {
       commit,
@@ -167,11 +225,10 @@ function sampleReadinessSummary(ciEvidencePath = 'release/ci-runs.json') {
           errorCount: 1,
           missingFields: ['artifact', 'deviceModel'],
           mustPassMissingChecks: ['cold-launch'],
-          passRemainingConfirmationIssue:
-            [
-              'ios.passRemainingConfirmation must replace placeholder',
-              '<confirm-all-remaining-must-pass-checks-after-testing>',
-            ].join(' '),
+          passRemainingConfirmationIssue: [
+            'ios.passRemainingConfirmation must replace placeholder',
+            '<confirm-all-remaining-must-pass-checks-after-testing>',
+          ].join(' '),
           ready: false,
           remainingCheckDetails: [
             {
@@ -260,12 +317,38 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
   assert.match(markdown, /Real-device evidence: waiting/)
   assert.match(markdown, /## Device Prereq Diagnostics/)
   assert.match(markdown, /Diagnostic only: yes; this is not release evidence/)
-  assert.match(markdown, /Summary path: `release\/device-test-prereqs-summary\.json`/)
-  assert.match(markdown, /Android: waiting \(1 blocker\(s\), 0 warning\(s\), 0 device\(s\)\)/)
+  assert.match(
+    markdown,
+    /Summary path: `release\/device-test-prereqs-summary\.json`/,
+  )
+  assert.match(
+    markdown,
+    /Android: waiting \(1 blocker\(s\), 0 warning\(s\), 0 device\(s\)\)/,
+  )
   assert.match(markdown, /  - Command: `adb devices -l`/)
   assert.match(markdown, /  - Blockers:\n    - adb not found/)
-  assert.match(markdown, /iOS: ready \(0 blocker\(s\), 0 warning\(s\), 1 device\(s\)\)/)
+  assert.match(
+    markdown,
+    /iOS: ready \(0 blocker\(s\), 0 warning\(s\), 1 device\(s\)\)/,
+  )
   assert.match(markdown, /  - Command: `xcrun xctrace list devices`/)
+  assert.match(
+    markdown,
+    /Android toolchain: ready \(0 blocker\(s\), 1 warning\(s\), 3 command\(s\)\)/,
+  )
+  assert.match(
+    markdown,
+    /  - SDK root: `\/opt\/homebrew\/share\/android-commandlinetools`/,
+  )
+  assert.match(markdown, /  - Build-tools version: `37\.0\.0`/)
+  assert.match(
+    markdown,
+    /    - Zip align: ready \(`zipalign`\) - Zip alignment utility/,
+  )
+  assert.match(
+    markdown,
+    /iOS toolchain: ready \(0 blocker\(s\), 0 warning\(s\), 1 command\(s\)\)/,
+  )
   assert.match(
     markdown,
     /Hosted provider env configured: BrowserStack App Automate \(`BROWSERSTACK_USERNAME`, `BROWSERSTACK_ACCESS_KEY`\)/,
@@ -275,11 +358,23 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
     /Hosted provider env partial: AWS Device Farm \(set: `AWS_ACCESS_KEY_ID`; missing: `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`\)/,
   )
   assert.match(markdown, /## Release Preflight Evidence/)
-  assert.match(markdown, /Readiness evidence path: `release\/release-readiness-evidence\.json`/)
-  assert.match(markdown, /Summary JSON: `release\/release-preflight-summary\.json`/)
-  assert.match(markdown, /Summary checklist: `release\/release-preflight-checklist\.md`/)
+  assert.match(
+    markdown,
+    /Readiness evidence path: `release\/release-readiness-evidence\.json`/,
+  )
+  assert.match(
+    markdown,
+    /Summary JSON: `release\/release-preflight-summary\.json`/,
+  )
+  assert.match(
+    markdown,
+    /Summary checklist: `release\/release-preflight-checklist\.md`/,
+  )
   assert.match(markdown, /Evidence present: no/)
-  assert.match(markdown, /Read errors:\n- Release-readiness evidence file not found: release\/release-readiness-evidence\.json/)
+  assert.match(
+    markdown,
+    /Read errors:\n- Release-readiness evidence file not found: release\/release-readiness-evidence\.json/,
+  )
   assert.match(markdown, /Required checks complete: 1\/14/)
   assert.match(
     markdown,
@@ -297,7 +392,10 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
     ),
   )
   assert.match(markdown, /Metadata gaps: `artifact`, `deviceModel`/)
-  assert.match(markdown, /Skippable remaining: `deep-links-share-notifications-if-selected`/)
+  assert.match(
+    markdown,
+    /Skippable remaining: `deep-links-share-notifications-if-selected`/,
+  )
   assert.match(markdown, /Duplicate passed checks: `cold-launch`/)
   assert.match(markdown, /Invalid skipped reasons: `network-if-selected`/)
   assert.match(markdown, /Contradictory pass\/skip checks: `cold-launch`/)
@@ -308,13 +406,19 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
     markdown,
     /Worksheet drift: `android\.requiredChecks is missing cold-launch`/,
   )
-  assert.match(markdown, /`cold-launch` \(must pass\): Install the exported build/)
+  assert.match(
+    markdown,
+    /`cold-launch` \(must pass\): Install the exported build/,
+  )
   assert.match(
     markdown,
     /`deep-links-share-notifications-if-selected` \(skippable\): Verify deep links/,
   )
   assert.match(markdown, /Blocked by: `real-device-evidence`/)
-  assert.match(markdown, /Remaining check details:\n- Android `network-if-selected` \(must pass; selected APIs: fetch, WebSocket\): Exercise fetch/)
+  assert.match(
+    markdown,
+    /Remaining check details:\n- Android `network-if-selected` \(must pass; selected APIs: fetch, WebSocket\): Exercise fetch/,
+  )
   assert.match(
     markdown,
     /Commands with `<\.\.\.>` placeholders must be edited before running; unresolved placeholders are not valid release evidence or dispatch inputs\./,
@@ -348,7 +452,10 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
     /release-readiness evidence missing at release\/release-readiness-evidence\.json; Release-readiness evidence file not found/,
   )
   assert.match(markdown, /Write Android\/iOS tester handoff/)
-  assert.match(markdown, /release:record-platform-evidence -- --platform android/)
+  assert.match(
+    markdown,
+    /release:record-platform-evidence -- --platform android/,
+  )
   assert.match(markdown, /npm run release:evidence -- --commit/)
   assert.doesNotMatch(markdown, new RegExp(repoRoot.replaceAll('/', '\\/')))
   assert.match(
@@ -389,7 +496,10 @@ test('release handoff renderer summarizes recorded release preflight evidence', 
   assert.match(markdown, /Release Preflight Evidence/)
   assert.match(markdown, /Status: ready \(0 blocker\(s\)\)/)
   assert.match(markdown, /Evidence present: yes/)
-  assert.match(markdown, /Run URL: https:\/\/github\.com\/portwatcher\/vue-godot\/actions\/runs\/3/)
+  assert.match(
+    markdown,
+    /Run URL: https:\/\/github\.com\/portwatcher\/vue-godot\/actions\/runs\/3/,
+  )
   assert.match(markdown, new RegExp(`Run commit: ${commit}`))
   assert.match(markdown, /Run conclusion: success/)
   assert.match(markdown, /Local-only: false/)
@@ -525,7 +635,9 @@ test('release handoff summary keeps non-output dirty blockers', () => {
   assert.equal(summary.localGit.dirtyWorktree, true)
   assert.match(markdown, /working tree must be clean/)
   assert.match(markdown, /M README\.md/)
+  assert.doesNotMatch(markdown, /M release\/release-handoff\.md/)
   assert.match(markdown, /git status --short/)
+  assert.doesNotMatch(markdown, /Write Android\/iOS tester handoff/)
 })
 
 test('release handoff CLI writes a Markdown report from a readiness summary', () => {
@@ -568,7 +680,10 @@ test('release handoff CLI writes a Markdown report from a readiness summary', ()
       markdown,
       /Godot Smoke: https:\/\/github\.com\/portwatcher\/vue-godot\/actions\/runs\/2 \(success\)/,
     )
-    assert.match(markdown, /Complete Android and iOS real-device export evidence/)
+    assert.match(
+      markdown,
+      /Complete Android and iOS real-device export evidence/,
+    )
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }
@@ -660,11 +775,10 @@ test('release handoff CLI check verifies current output without writing', () => 
       `${JSON.stringify(sampleReadinessSummary(ciEvidencePath), null, 2)}\n`,
     )
 
-    const writeResult = spawnSync(
-      process.execPath,
-      renderArgs,
-      { cwd: repoRoot, encoding: 'utf-8' },
-    )
+    const writeResult = spawnSync(process.execPath, renderArgs, {
+      cwd: repoRoot,
+      encoding: 'utf-8',
+    })
     assert.equal(writeResult.status, 0, writeResult.stderr)
     const before = fs.readFileSync(outputPath, 'utf-8')
 

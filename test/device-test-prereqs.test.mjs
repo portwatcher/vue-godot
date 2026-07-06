@@ -8,6 +8,7 @@ import {
   collectDeviceTestPrereqStatus,
   collectExportTemplateStatus,
   collectHostedDeviceProviderStatus,
+  collectLocalToolchainStatus,
   formatHostedProviderStatus,
   isAndroidEmulatorDevice,
   parseAdbDevices,
@@ -63,6 +64,7 @@ iPhone 16 Pro (11111111-2222-3333-4444-555555555555) (Shutdown)
 
 test('device prereq status reports ready local Android and iOS devices', () => {
   const summary = collectDeviceTestPrereqStatus({
+    includeToolchains: false,
     runCommand(command, args) {
       if (command === 'adb' && args.join(' ') === 'devices -l') {
         return {
@@ -100,6 +102,7 @@ test('device prereq status reports ready local Android and iOS devices', () => {
 
 test('device prereq status rejects Android emulators as release devices', () => {
   const summary = collectDeviceTestPrereqStatus({
+    includeToolchains: false,
     platform: 'android',
     runCommand(command, args) {
       assert.equal(command, 'adb')
@@ -124,6 +127,7 @@ test('device prereq status rejects Android emulators as release devices', () => 
 
 test('device prereq status permits physical Android devices with emulator warnings', () => {
   const summary = collectDeviceTestPrereqStatus({
+    includeToolchains: false,
     platform: 'android',
     runCommand(command, args) {
       assert.equal(command, 'adb')
@@ -150,6 +154,7 @@ test('device prereq status permits physical Android devices with emulator warnin
 test('device prereq status reports missing local tooling without failing hosted evidence', () => {
   const summary = collectDeviceTestPrereqStatus({
     env: {},
+    includeToolchains: false,
     platform: 'all',
     runCommand() {
       return {
@@ -172,6 +177,7 @@ test('device prereq status reports missing local tooling without failing hosted 
 
 test('device prereq status explains missing full Xcode when xctrace is unavailable', () => {
   const summary = collectDeviceTestPrereqStatus({
+    includeToolchains: false,
     platform: 'ios',
     runCommand(command, args) {
       if (command === 'xcrun' && args.join(' ') === 'xctrace list devices') {
@@ -338,6 +344,7 @@ test('device prereq status includes hosted provider diagnostics', () => {
       SAUCE_ACCESS_KEY: 'secret',
       SAUCE_USERNAME: 'release-user',
     },
+    includeToolchains: false,
     platform: 'android',
     runCommand() {
       return {
@@ -398,6 +405,7 @@ test('export template diagnostics do not change local device readiness', () => {
   )
   try {
     const summary = collectDeviceTestPrereqStatus({
+      includeToolchains: false,
       platform: 'android',
       templateVersion: 'missing-version',
       templatesRoot: tempDir,
@@ -444,4 +452,170 @@ test('export template status records unavailable pinned iOS templates', () => {
     status.ios.notes.join('\n'),
     /does not publish an iOS export-template asset/,
   )
+})
+
+test('toolchain status reports Android SDK and build-tools readiness', (t) => {
+  const tempDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'vue-godot-android-sdk-'),
+  )
+  t.after(() => fs.rmSync(tempDir, { force: true, recursive: true }))
+
+  const buildToolsDir = path.join(tempDir, 'build-tools', '37.0.0')
+  fs.mkdirSync(buildToolsDir, { recursive: true })
+  fs.writeFileSync(path.join(buildToolsDir, 'apksigner'), '')
+  fs.writeFileSync(path.join(buildToolsDir, 'zipalign'), '')
+
+  const status = collectLocalToolchainStatus({
+    env: {
+      ANDROID_HOME: tempDir,
+    },
+    platform: 'android',
+    runCommand(command, args) {
+      if (command === 'adb' && args.join(' ') === 'version') {
+        return {
+          errorCode: null,
+          status: 0,
+          stderr: '',
+          stdout: 'Android Debug Bridge version 1.0.41\n',
+        }
+      }
+      if (command === 'apksigner' && args.join(' ') === '--version') {
+        return {
+          errorCode: null,
+          status: 0,
+          stderr: '',
+          stdout: '0.9\n',
+        }
+      }
+      if (command === 'zipalign' && args.length === 0) {
+        return {
+          errorCode: null,
+          status: 1,
+          stderr: '',
+          stdout: 'Zip alignment utility\n',
+        }
+      }
+      throw new Error(`Unexpected command: ${command} ${args.join(' ')}`)
+    },
+  })
+
+  assert.equal(status.android.ready, true)
+  assert.equal(status.android.sdkRoot, tempDir)
+  assert.equal(status.android.sdkRootSource, 'ANDROID_HOME')
+  assert.equal(status.android.buildToolsVersion, '37.0.0')
+  assert.equal(status.android.buildToolsDir, buildToolsDir)
+  assert.deepEqual(status.android.blockers, [])
+  assert.equal(status.android.commands.length, 3)
+  assert.equal(status.ios, null)
+})
+
+test('toolchain diagnostics do not change local device readiness', (t) => {
+  const tempDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'vue-godot-incomplete-sdk-'),
+  )
+  t.after(() => fs.rmSync(tempDir, { force: true, recursive: true }))
+  fs.mkdirSync(path.join(tempDir, 'build-tools', '37.0.0'), {
+    recursive: true,
+  })
+
+  const summary = collectDeviceTestPrereqStatus({
+    env: {
+      ANDROID_HOME: tempDir,
+    },
+    platform: 'android',
+    runCommand(command, args) {
+      if (command === 'adb' && args.join(' ') === 'devices -l') {
+        return {
+          errorCode: null,
+          status: 0,
+          stderr: '',
+          stdout: [
+            'List of devices attached',
+            'R5CT12345 device product:shiba model:Pixel_8 device:shiba',
+          ].join('\n'),
+        }
+      }
+      if (command === 'adb' && args.join(' ') === 'version') {
+        return {
+          errorCode: null,
+          status: 0,
+          stderr: '',
+          stdout: 'Android Debug Bridge version 1.0.41\n',
+        }
+      }
+      if (command === 'apksigner' || command === 'zipalign') {
+        return {
+          errorCode: 'ENOENT',
+          status: null,
+          stderr: '',
+          stdout: '',
+        }
+      }
+      throw new Error(`Unexpected command: ${command} ${args.join(' ')}`)
+    },
+  })
+
+  assert.equal(summary.ready, true)
+  assert.equal(summary.toolchains.android.ready, false)
+  assert.match(
+    summary.toolchains.android.blockers.join('\n'),
+    /APK signer not found/,
+  )
+  assert.match(
+    summary.toolchains.android.blockers.join('\n'),
+    /Android SDK build-tools are missing apksigner, zipalign/,
+  )
+})
+
+test('toolchain status reports selected Xcode utilities', () => {
+  const status = collectLocalToolchainStatus({
+    platform: 'ios',
+    runCommand(command, args) {
+      const rendered = [command, ...args].join(' ')
+      if (rendered === 'xcode-select -p') {
+        return {
+          errorCode: null,
+          status: 0,
+          stderr: '',
+          stdout: '/Applications/Xcode.app/Contents/Developer\n',
+        }
+      }
+      if (rendered === 'xcodebuild -version') {
+        return {
+          errorCode: null,
+          status: 0,
+          stderr: '',
+          stdout: 'Xcode 26.6\nBuild version 17F113\n',
+        }
+      }
+      if (rendered === 'xcrun --find xctrace') {
+        return {
+          errorCode: null,
+          status: 0,
+          stderr: '',
+          stdout:
+            '/Applications/Xcode.app/Contents/Developer/usr/bin/xctrace\n',
+        }
+      }
+      if (rendered === 'xcrun --find devicectl') {
+        return {
+          errorCode: null,
+          status: 0,
+          stderr: '',
+          stdout:
+            '/Applications/Xcode.app/Contents/Developer/usr/bin/devicectl\n',
+        }
+      }
+      throw new Error(`Unexpected command: ${rendered}`)
+    },
+  })
+
+  assert.equal(status.android, null)
+  assert.equal(status.ios.ready, true)
+  assert.equal(
+    status.ios.developerDir,
+    '/Applications/Xcode.app/Contents/Developer',
+  )
+  assert.equal(status.ios.xcodeVersion, 'Xcode 26.6')
+  assert.deepEqual(status.ios.blockers, [])
 })

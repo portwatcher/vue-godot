@@ -108,6 +108,56 @@ function exportTemplateDiagnostics(summary) {
   }
 }
 
+function toolchainCommands(values) {
+  if (!Array.isArray(values)) {
+    return []
+  }
+
+  return values.filter(isRecord).map((command) => ({
+    command: optionalString(command.command),
+    detail: optionalString(command.detail),
+    id: optionalString(command.id),
+    label: optionalString(command.label) ?? 'unknown command',
+    ready: command.ready === true,
+    status: Number.isInteger(command.status) ? command.status : null,
+  }))
+}
+
+function toolchainPlatformStatus(summary, platform) {
+  const toolchains = isRecord(summary.toolchains) ? summary.toolchains : {}
+  const status = isRecord(toolchains[platform]) ? toolchains[platform] : null
+  if (!status) {
+    return null
+  }
+
+  const blockers = stringList(status.blockers)
+  const warnings = stringList(status.warnings)
+  const commands = toolchainCommands(status.commands)
+
+  return {
+    blockerCount: blockers.length,
+    blockers,
+    buildToolsDir: optionalString(status.buildToolsDir),
+    buildToolsVersion: optionalString(status.buildToolsVersion),
+    commandCount: commands.length,
+    commands,
+    developerDir: optionalString(status.developerDir),
+    ready: status.ready === true,
+    sdkRoot: optionalString(status.sdkRoot),
+    sdkRootSource: optionalString(status.sdkRootSource),
+    warningCount: warnings.length,
+    warnings,
+    xcodeVersion: optionalString(status.xcodeVersion),
+  }
+}
+
+function toolchainDiagnostics(summary) {
+  return {
+    android: toolchainPlatformStatus(summary, 'android'),
+    ios: toolchainPlatformStatus(summary, 'ios'),
+  }
+}
+
 function providerText(provider, key, fallback) {
   const value = provider[key]
   return typeof value === 'string' && value.trim().length > 0
@@ -167,6 +217,10 @@ export function collectDevicePrereqDiagnostics(options) {
     ready: null,
     selectedPlatforms: [],
     summaryPresent: false,
+    toolchains: {
+      android: null,
+      ios: null,
+    },
   }
 
   if (!fs.existsSync(resolvedPath)) {
@@ -199,6 +253,7 @@ export function collectDevicePrereqDiagnostics(options) {
   diagnostic.ios = devicePrereqPlatformStatus(summary, 'ios')
   diagnostic.exportTemplates = exportTemplateDiagnostics(summary)
   diagnostic.hostedProviders = normalizeHostedDeviceProviders(summary)
+  diagnostic.toolchains = toolchainDiagnostics(summary)
   return diagnostic
 }
 
@@ -359,6 +414,63 @@ function exportTemplateStatusText(status) {
   return 'waiting'
 }
 
+function formatCommandDiagnosticLine(command) {
+  const state = command.ready ? 'ready' : 'waiting'
+  const renderedCommand = command.command ? ` (\`${command.command}\`)` : ''
+  const detail = command.detail ? ` - ${command.detail}` : ''
+  return `    - ${command.label}: ${state}${renderedCommand}${detail}`
+}
+
+function formatToolchainDiagnosticLines(label, status, { formatPath }) {
+  if (!isRecord(status)) {
+    return []
+  }
+
+  const lines = [
+    [
+      `- ${label}: ${devicePrereqStatusText(status.ready)}`,
+      ` (${formatDiagnosticCount(status.blockerCount, 'missing')} blocker(s),`,
+      ` ${formatDiagnosticCount(status.warningCount, 'missing')} warning(s),`,
+      ` ${formatDiagnosticCount(status.commandCount, 'missing')} command(s))`,
+    ].join(''),
+  ]
+
+  const sdkRoot = portableLocalPath(status.sdkRoot)
+  if (sdkRoot) {
+    lines.push(`  - SDK root: ${formatPath(sdkRoot)}`)
+  }
+  if (status.sdkRootSource) {
+    lines.push(`  - SDK root source: \`${status.sdkRootSource}\``)
+  }
+  if (status.buildToolsVersion) {
+    lines.push(`  - Build-tools version: \`${status.buildToolsVersion}\``)
+  }
+  const buildToolsDir = portableLocalPath(status.buildToolsDir)
+  if (buildToolsDir) {
+    lines.push(`  - Build-tools dir: ${formatPath(buildToolsDir)}`)
+  }
+  const developerDir = portableLocalPath(status.developerDir)
+  if (developerDir) {
+    lines.push(`  - Developer dir: ${formatPath(developerDir)}`)
+  }
+  if (status.xcodeVersion) {
+    lines.push(`  - Xcode version: \`${status.xcodeVersion}\``)
+  }
+  if (Array.isArray(status.commands) && status.commands.length > 0) {
+    lines.push(
+      '  - Commands:',
+      ...status.commands.map(formatCommandDiagnosticLine),
+    )
+  }
+
+  lines.push(
+    ...formatNestedDiagnosticIssues('Blockers', status.blockers),
+    ...formatNestedDiagnosticIssues('Warnings', status.warnings),
+  )
+
+  return lines
+}
+
 function formatExportTemplateDiagnosticLines(label, status, { formatPath }) {
   const state = exportTemplateStatusText(status)
   if (state === null) {
@@ -445,6 +557,16 @@ export function formatDevicePrereqDiagnosticLines(
     ...formatPlatformDiagnosticLines('iOS', diagnostics.ios, {
       countMissing,
     }),
+    ...formatToolchainDiagnosticLines(
+      'Android toolchain',
+      diagnostics.toolchains?.android,
+      { formatPath },
+    ),
+    ...formatToolchainDiagnosticLines(
+      'iOS toolchain',
+      diagnostics.toolchains?.ios,
+      { formatPath },
+    ),
     ...formatExportTemplateDiagnosticLines(
       'Android export templates',
       diagnostics.exportTemplates?.android,

@@ -101,12 +101,12 @@ with `npm run check` before collecting CI or assembling evidence. The
 real-device evidence action also runs
 `npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` before local or hosted device
 handoff commands so missing local tooling and hosted-provider environment
-variable names, plus GodotJS export-template diagnostics, are recorded without
-pretending they are evidence, then
+variable names, plus Android SDK/Xcode toolchain diagnostics and GodotJS
+export-template diagnostics, are recorded without pretending they are evidence, then
 readiness and handoff reports expose that snapshot as diagnostic-only
 `devicePrereqs` / Device Prereq Diagnostics with per-platform command, blocker,
-warning, and export-template details. Pass `--device-prereqs-summary <file>`
-when the diagnostic lives elsewhere. The
+warning, toolchain, and export-template details. Pass
+`--device-prereqs-summary <file>` when the diagnostic lives elsewhere. The
 hosted-provider diagnostic covers BrowserStack, Sauce Labs, Firebase Test Lab,
 AWS Device Farm, LambdaTest, and Kobiton, and never records environment values.
 The Release Preflight evidence action also reruns
@@ -529,19 +529,20 @@ Run these before platform-specific device checks:
 1. Start from a clean commit.
 2. Run `npm run check`.
 3. Run `npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` to see whether local
-   Android/iOS device tooling, attached devices, the pinned GodotJS Android
-   export templates, and common hosted-provider environment variable sets are
-   available and to write a gitignored JSON diagnostic. The same diagnostic
-   records that the pinned GodotJS release does not publish an iOS
-   export-template asset, so iOS evidence needs a hosted or custom Apple-device
-   build pipeline. The hosted-provider diagnostic reports configured
-   environment variable names and partially configured missing-name hints for
-   BrowserStack, Sauce Labs, Firebase Test Lab, AWS Device Farm, LambdaTest, and
-   Kobiton, but never their values; when none are fully configured, the text
-   output lists the recognized provider env-set options. The release-readiness
-   summary and Markdown handoff read the diagnostic as a `devicePrereqs` /
-   Device Prereq Diagnostics section; use `--device-prereqs-summary <file>`
-   with readiness when the diagnostic lives outside the default path.
+   Android/iOS device tooling, attached devices, Android SDK/build-tools,
+   selected Xcode command-line utilities, the pinned GodotJS Android export
+   templates, and common hosted-provider environment variable sets are available
+   and to write a gitignored JSON diagnostic. The same diagnostic records that
+   the pinned GodotJS release does not publish an iOS export-template asset, so
+   iOS evidence needs a hosted or custom Apple-device build pipeline. The
+   hosted-provider diagnostic reports configured environment variable names and
+   partially configured missing-name hints for BrowserStack, Sauce Labs,
+   Firebase Test Lab, AWS Device Farm, LambdaTest, and Kobiton, but never their
+   values; when none are fully configured, the text output lists the recognized
+   provider env-set options. The release-readiness summary and Markdown handoff
+   read the diagnostic as a `devicePrereqs` / Device Prereq Diagnostics section;
+   use `--device-prereqs-summary <file>` with readiness when the diagnostic
+   lives outside the default path.
    Android emulators are reported separately and do not satisfy the local
    release-device prerequisite. iOS local device sessions require full Xcode,
    not only Command Line Tools; if `xcrun xctrace list devices` cannot find

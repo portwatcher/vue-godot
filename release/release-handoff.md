@@ -2,7 +2,7 @@
 
 - Release candidate commit: `1087588e2a2f7989a51df1c428eb647d17ea3ab8`
 - Handoff format: 7
-- Handoff state: e0ac43aa85de60bd
+- Handoff state: 15fff65aef7cabea
 - Overall readiness: open (11 blocker(s))
 - Real-device evidence: waiting
 - Android evidence: waiting
@@ -21,8 +21,16 @@
 - TODO.md:394 All public READMEs match the final support claims.
 - TODO.md:395 The root README warning is removed in the same commit that marks this checklist complete.
 - working tree must be clean for final release readiness
-  M release/release-handoff.md
+  M README.md
+  M docs/production.md
+  M docs/real-device-release.md
+  M scripts/check-device-test-prereqs.mjs
   M scripts/device-prereq-diagnostics.mjs
+  M scripts/release-handoff-report.mjs
+  M test/device-test-prereqs.test.mjs
+  M test/release-docs.test.mjs
+  M test/release-handoff-report.test.mjs
+  M test/release-readiness.test.mjs
 - real-device evidence missing at release/real-device-evidence.json
   Create release/real-device-evidence.json after completing docs/real-device-release.md, then run npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 1087588e2a2f7989a51df1c428eb647d17ea3ab8.
   Real device evidence file not found: release/real-device-evidence.json
@@ -52,6 +60,25 @@
   - Command: `xcrun xctrace list devices`
   - Blockers:
     - No physical iPhone, iPad, or iPod devices reported by xcrun xctrace; connect a trusted device or use hosted real Apple-device evidence.
+- Android toolchain: ready (0 blocker(s), 1 warning(s), 3 command(s))
+  - SDK root: `/opt/homebrew/share/android-commandlinetools`
+  - SDK root source: `discovered`
+  - Build-tools version: `37.0.0`
+  - Build-tools dir: `/opt/homebrew/share/android-commandlinetools/build-tools/37.0.0`
+  - Commands:
+    - Android Debug Bridge: ready (`adb version`) - Android Debug Bridge version 1.0.41
+    - APK signer: ready (`apksigner --version`) - 0.9
+    - Zip align: ready (`zipalign`) - Zip alignment utility
+  - Warnings:
+    - ANDROID_HOME or ANDROID_SDK_ROOT is not set; configure Godot Android export settings with the SDK root before local exports.
+- iOS toolchain: ready (0 blocker(s), 0 warning(s), 4 command(s))
+  - Developer dir: `/Applications/Xcode.app/Contents/Developer`
+  - Xcode version: `Xcode 26.6`
+  - Commands:
+    - Xcode selection: ready (`xcode-select -p`) - /Applications/Xcode.app/Contents/Developer
+    - Xcode build tools: ready (`xcodebuild -version`) - Xcode 26.6
+    - xctrace: ready (`xcrun --find xctrace`) - /Applications/Xcode.app/Contents/Developer/usr/bin/xctrace
+    - devicectl: ready (`xcrun --find devicectl`) - /Applications/Xcode.app/Contents/Developer/usr/bin/devicectl
 - Android export templates: ready (0 blocker(s), 0 warning(s), 0 missing file(s))
   - Pinned release: `GodotJS_1.0.0-2`
   - Asset: `prebuilt_android_v8`

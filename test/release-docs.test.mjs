@@ -53,11 +53,13 @@ test('real device release checklist covers required Android and iOS gates', () =
     /hosted-provider\s+environment variable sets/,
     hostedProviderNamesPattern,
     /partially configured missing-name hints/,
-    /never their values/,
-    /recognized provider env-set\s+options/,
-    /pinned GodotJS Android\s+export templates/,
+    /never (?:their\s+values|records environment values)/,
+    /recognized\s+provider env-set\s+options/,
+    /Android SDK\/build-tools/,
+    /selected Xcode\s+command-line utilities/,
+    /pinned GodotJS Android export\s+templates/,
     /does not publish an iOS\s+export-template asset/,
-    /export-template details/,
+    /toolchain, and\s+export-template details/,
     /devicePrereqs/,
     /Device Prereq\s+Diagnostics/,
     /--device-prereqs-summary <file>/,
@@ -350,10 +352,12 @@ test('release preflight enforces real device evidence', () => {
     /configured or partially configured environment variable names/,
   )
   assert.match(production, /never their values/)
-  assert.match(production, /recognized provider env-set\s+options/)
-  assert.match(production, /pinned GodotJS Android export templates/)
+  assert.match(production, /recognized\s+provider env-set\s+options/)
+  assert.match(production, /Android SDK\/build-tools/)
+  assert.match(production, /selected Xcode\s+command-line utilities/)
+  assert.match(production, /pinned GodotJS Android export\s+templates/)
   assert.match(production, /does not publish an iOS\s+export-template asset/)
-  assert.match(production, /export-template details/)
+  assert.match(production, /toolchain, and\s+export-template details/)
   assert.match(production, /devicePrereqs/)
   assert.match(production, /Device Prereq\s+Diagnostics/)
   assert.match(production, /--device-prereqs-summary <file>/)
@@ -671,10 +675,12 @@ test('release preflight enforces real device evidence', () => {
     /configured or partially configured environment variable names/,
   )
   assert.match(readme, /never their values/)
-  assert.match(readme, /recognized provider env-set\s+options/)
-  assert.match(readme, /pinned GodotJS Android export templates/)
+  assert.match(readme, /recognized\s+provider env-set\s+options/)
+  assert.match(readme, /Android SDK\/build-tools/)
+  assert.match(readme, /selected Xcode\s+command-line utilities/)
+  assert.match(readme, /pinned GodotJS Android export\s+templates/)
   assert.match(readme, /does not publish an iOS\s+export-template asset/)
-  assert.match(readme, /export-template details/)
+  assert.match(readme, /toolchain, and\s+export-template details/)
   assert.match(
     readme,
     /Missing local tooling or\s+provider\s+environment\s+variables are only diagnostics/,
