@@ -2,7 +2,7 @@
 
 - Release candidate commit: `43f76a37f9885a3f656127479e810212ef1ffd85`
 - Handoff format: 4
-- Handoff state: 627a3c91e263e524
+- Handoff state: 0f1c4407ac7ba2ce
 - Overall readiness: open (10 blocker(s))
 - Real-device evidence: waiting
 - Android evidence: waiting
@@ -20,7 +20,7 @@
 - TODO.md:392 Release preflight passes without warnings in the release environment.
 - TODO.md:394 All public READMEs match the final support claims.
 - TODO.md:395 The root README warning is removed in the same commit that marks this checklist complete.
-- real-device evidence missing at release/real-device-evidence.json; Create release/real-device-evidence.json after completing docs/real-device-release.md, then run npm run check:real-device-evidence.; Real device evidence file not found: release/real-device-evidence.json
+- real-device evidence missing at release/real-device-evidence.json; Create release/real-device-evidence.json after completing docs/real-device-release.md, then run npm run check:real-device-evidence -- --verify-runs.; Real device evidence file not found: release/real-device-evidence.json
 - release-readiness evidence missing at release/release-readiness-evidence.json; Create it after the Release Preflight workflow passes without warnings.; Release-readiness evidence file not found: release/release-readiness-evidence.json
 
 ## CI Evidence
@@ -172,6 +172,7 @@ Commands with `<...>` placeholders must be edited before running; unresolved pla
 
 ```bash
 npm run check
+npm run check:real-device-evidence -- --verify-runs --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
 npm run release:ci -- --commit 43f76a37f9885a3f656127479e810212ef1ffd85 --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --wait --output release/ci-runs.json
 GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit 43f76a37f9885a3f656127479e810212ef1ffd85 --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json
 GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit 43f76a37f9885a3f656127479e810212ef1ffd85 --output release/release-preflight-summary.json

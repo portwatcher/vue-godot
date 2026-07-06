@@ -769,7 +769,7 @@ async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
         )}`,
         `Create ${describeRealDeviceEvidencePath(
           evidencePath,
-        )} after completing docs/real-device-release.md, then run npm run check:real-device-evidence.`,
+        )} after completing docs/real-device-release.md, then run npm run check:real-device-evidence -- --verify-runs.`,
         readErrors.join('\n'),
       ]
         .filter(Boolean)
@@ -1403,6 +1403,10 @@ function collectReadinessNextActions(
             'Run the local check after the tested release candidate and real-device evidence are pushed, refresh Check and Godot Smoke from the release-candidate ref when CI evidence is still missing, then dispatch Release Preflight from the current evidence commit ref and write release-readiness evidence.',
           commands: [
             'npm run check',
+            checkRealDeviceEvidenceCommand(commit, {
+              ...realDeviceCommandOptions,
+              verifyRuns: true,
+            }),
             ...(checks.initialCiEvidence
               ? []
               : initialReleaseCiCommands(commit, initialCiOptions)),

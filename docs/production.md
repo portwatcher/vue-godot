@@ -218,7 +218,10 @@ batch confirmation notes and issues, malformed outcome details, remaining check
 descriptions, `blockedBy` dependencies, and next commands.
 The initial CI, real-device, and
 Release Preflight evidence actions begin with `npm run check` before collecting
-CI or assembling evidence.
+CI or assembling evidence. The Release Preflight evidence action also reruns
+`npm run check:real-device-evidence -- --verify-runs` before CI/preflight
+collection continues, so stale device evidence or unverified Check/Godot Smoke
+run URLs fail before dispatching preflight.
 Later `nextActions` include a `blockedBy` list when they depend on earlier
 evidence actions, such as real-device evidence before Release Preflight.
 The initial CI action captures Check and Godot Smoke, while Release Preflight is

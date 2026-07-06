@@ -501,6 +501,7 @@ test('release readiness reports current blockers without failing when allowed op
   assert.equal(result.status, 0)
   assert.doesNotMatch(output, /TODO\.md:24 `npm run check` passes locally/)
   assert.match(output, /real-device evidence missing/)
+  assert.match(output, /check:real-device-evidence -- --verify-runs/)
   assert.match(output, /release-readiness evidence missing/)
   assert.match(output, /final TODO proof status/)
   assert.match(output, /TODO\.md:24 checked; checkCiEvidenceReady ready/)
@@ -1059,6 +1060,10 @@ test('release readiness summary includes missing evidence next actions', () => {
       'real-device-evidence',
     ])
     assert.equal(releasePreflightAction.commands[0], 'npm run check')
+    assert.equal(
+      releasePreflightAction.commands[1],
+      `npm run check:real-device-evidence -- --path ${shellQuote(realDeviceCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --ci-evidence ${shellQuote(ciCommandPath)} --verify-runs --expected-commit ${summary.commit}`,
+    )
     assert.ok(
       releasePreflightAction.commands.every(
         (command) => !command.includes('--ref <release-candidate-branch-or-tag>'),
@@ -1223,6 +1228,11 @@ test('release readiness reuses committed initial CI evidence in next actions', (
         (command) =>
           command.includes('--include-release-preflight') ||
           !command.includes('npm run release:ci --'),
+      ),
+    )
+    assert.ok(
+      releasePreflightAction.commands.includes(
+        `npm run check:real-device-evidence -- --path ${shellQuote(realDeviceCommandPath)} --verify-runs --expected-commit ${ciEvidence.commit}`,
       ),
     )
   } finally {

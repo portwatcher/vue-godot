@@ -435,6 +435,10 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
+    /Release Preflight evidence action also reruns[\s\S]*check:real-device-evidence -- --verify-runs[\s\S]*before CI\/preflight\s+collection/,
+  )
+  assert.match(
+    production,
     /initial CI action captures Check and Godot Smoke[\s\S]*Release Preflight is\s+captured later after real-device evidence is committed/,
   )
   assert.match(
@@ -827,6 +831,10 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     checklist,
+    /Release\s+Preflight evidence action also reruns[\s\S]*check:real-device-evidence -- --verify-runs[\s\S]*before CI\/preflight\s+collection/,
+  )
+  assert.match(
+    checklist,
     /release:handoff[\s\S]*release\/release-handoff\.md[\s\S]*Markdown handoff/,
   )
   assert.match(
@@ -839,7 +847,11 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     checklist,
-    /initial CI\s+action captures Check and Godot Smoke[\s\S]*Release Preflight is captured later\s+after real-device evidence is committed/,
+    /Release\s+Preflight evidence action also reruns[\s\S]*check:real-device-evidence -- --verify-runs[\s\S]*before dispatching preflight/,
+  )
+  assert.match(
+    checklist,
+    /initial CI\s+action captures Check\s+and Godot Smoke[\s\S]*Release Preflight is captured later\s+after real-device\s+evidence is committed/,
   )
   assert.match(
     checklist,

@@ -84,10 +84,14 @@ commit and evidence paths. The handoff lists per-platform metadata/check gaps,
 batch confirmation notes and issues, malformed outcome details, remaining check
 descriptions, `blockedBy` dependencies, and next commands.
 The initial CI, real-device, and Release Preflight evidence actions begin
-with `npm run check` before collecting CI or assembling evidence. The initial CI
-action captures Check and Godot Smoke, while Release Preflight is captured later
-after real-device evidence is committed. The real-device evidence action runs
-the platform worksheet audit before final evidence assembly. Later
+with `npm run check` before collecting CI or assembling evidence. The Release
+Preflight evidence action also reruns
+`npm run check:real-device-evidence -- --verify-runs` before CI/preflight
+collection continues, so stale device evidence or unverified Check/Godot Smoke
+run URLs fail before dispatching preflight. The initial CI action captures Check
+and Godot Smoke, while Release Preflight is captured later after real-device
+evidence is committed. The real-device evidence action runs the platform
+worksheet audit before final evidence assembly. Later
 `nextActions` include a `blockedBy` list when they depend on earlier evidence
 work, for example real-device evidence before Release Preflight. When
 `release/ci-runs.json`, or the
