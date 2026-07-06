@@ -952,7 +952,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /reuses an existing platform worksheet/)
   assert.match(
     checklist,
-    /single-check and pass-remaining `release:record-platform-evidence`\s+command templates/,
+    /list-checks, single-check, and pass-remaining\s+`release:record-platform-evidence` command templates/,
   )
   assert.match(
     checklist,

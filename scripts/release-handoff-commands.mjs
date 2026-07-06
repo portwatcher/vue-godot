@@ -232,6 +232,29 @@ export function recordPlatformEvidencePassCommand(
   return formatHandoffCommand(args)
 }
 
+export function recordPlatformEvidenceListChecksCommand(
+  platform,
+  commit,
+  options = {},
+) {
+  const placeholders = platformEvidencePlaceholders(platform)
+  const args = [
+    'npm',
+    'run',
+    'release:record-platform-evidence',
+    '--',
+    '--platform',
+    placeholders.platformName,
+    '--platform-evidence',
+    options.platformEvidencePath ?? defaultPlatformEvidencePath,
+    '--list-checks',
+  ]
+
+  appendPlatformEvidenceSummaryArgs(args, commit, options)
+
+  return formatHandoffCommand(args)
+}
+
 export function recordPlatformEvidenceCommand(platform, commit, options = {}) {
   const args = [
     ...recordPlatformEvidenceBaseArgs(platform, options),
@@ -251,6 +274,7 @@ export function recordPlatformEvidenceCommand(platform, commit, options = {}) {
 
 export function recordPlatformEvidenceCommands(platform, commit, options = {}) {
   return [
+    recordPlatformEvidenceListChecksCommand(platform, commit, options),
     recordPlatformEvidencePassCommand(platform, commit, options),
     recordPlatformEvidenceCommand(platform, commit, options),
   ]

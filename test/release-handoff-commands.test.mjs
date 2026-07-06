@@ -22,6 +22,7 @@ import {
   productionProfilePlatformEvidenceCommand,
   recordPlatformEvidenceCommand,
   recordPlatformEvidenceCommands,
+  recordPlatformEvidenceListChecksCommand,
   recordPlatformEvidencePassCommand,
   releaseEvidenceCommand,
   releaseCandidateCommitPlaceholder,
@@ -111,6 +112,17 @@ test('release handoff commands format real-device evidence assembly', () => {
     `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass <observed-android-check-name> --summary-output release/platform-evidence-summary.json --expected-commit ${commit}`,
   )
   assert.equal(
+    recordPlatformEvidenceListChecksCommand('android', commit),
+    `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit ${commit}`,
+  )
+  assert.equal(
+    recordPlatformEvidenceListChecksCommand('ios', commit, {
+      platformEvidencePath: 'release/custom-platform-evidence.json',
+      summaryOutput: 'release/custom-platform-summary.json',
+    }),
+    `npm run release:record-platform-evidence -- --platform ios --platform-evidence release/custom-platform-evidence.json --list-checks --summary-output release/custom-platform-summary.json --expected-commit ${commit}`,
+  )
+  assert.equal(
     recordPlatformEvidencePassCommand('ios', commit, {
       check: 'cold-launch',
     }),
@@ -121,6 +133,7 @@ test('release handoff commands format real-device evidence assembly', () => {
     `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output release/platform-evidence-summary.json --expected-commit ${commit}`,
   )
   assert.deepEqual(recordPlatformEvidenceCommands('android', commit), [
+    recordPlatformEvidenceListChecksCommand('android', commit),
     recordPlatformEvidencePassCommand('android', commit),
     recordPlatformEvidenceCommand('android', commit),
   ])

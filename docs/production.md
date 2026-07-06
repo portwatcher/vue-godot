@@ -117,8 +117,8 @@ remaining must-pass checks in one batch, and include
 device run; the recorder stores that confirmation on the platform evidence so
 `release/real-device-evidence.json` keeps the audit note. Skippable checks still
 need an explicit `--pass` or `--skip check=reason`; generated handoff commands
-include skip and pass-remaining confirmation placeholders for currently
-open gaps, plus single-check commands that prefill a suggested remaining check name
+include read-only list-checks commands, skip and pass-remaining confirmation
+placeholders for currently open gaps, plus single-check commands that prefill a suggested remaining check name
 for incremental device sessions. Replace every placeholder before recording evidence; the recorder,
 worksheet audit, and final evidence validator reject placeholder metadata,
 placeholder confirmation notes,
@@ -154,8 +154,8 @@ Because the production profile includes `navigator.mediaDevices.getUserMedia`,
 production evidence.
 Conditional checks required by selected APIs must be recorded in `passedChecks`,
 not `skippedChecks`. Its top-level `nextActions` section records Android/iOS
-single-check and pass-remaining `release:record-platform-evidence` command
-templates, audited progress, exact
+list-checks, single-check, and pass-remaining
+`release:record-platform-evidence` command templates, audited progress, exact
 remaining metadata/must-pass/skippable gap names and structured `platformCheckDetails` descriptions, the allow-open worksheet audit
 command, `npm run check`, release CI wait/dispatch commands, and final evidence
 assembly, validation, commit, and push commands for after the worksheet is complete. Run
@@ -268,8 +268,8 @@ includes Android/iOS metadata-field counts, malformed outcome counts,
 required-check counts, and exact remaining must-pass/skippable check names in
 its detail, attaches
 `platformCheckDetails` with descriptions and selected API context, and includes Android/iOS
-single-check and pass-remaining `release:record-platform-evidence` command
-templates while gaps remain. It only
+list-checks, single-check, and pass-remaining
+`release:record-platform-evidence` command templates while gaps remain. It only
 emits
 `npm run release:platform-evidence -- --production-profile` when the worksheet
 is missing. Before final evidence assembly it runs the strict platform worksheet
