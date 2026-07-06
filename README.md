@@ -364,8 +364,9 @@ for incremental device sessions. Replace every placeholder before recording evid
 worksheet audit, and final evidence validator reject placeholder metadata,
 placeholder confirmation notes,
 and placeholder skip reasons. The Markdown handoff separates ready-to-run
-commands from templates with `<...>` placeholders and flags those placeholders
-so device testers know to edit them before running. When `--summary-output` is supplied, the
+commands, templates with `<...>` placeholders, and downstream evidence
+assembly, validation, commit, and push commands, and flags placeholders so
+device testers know to edit them before running. When `--summary-output` is supplied, the
 recorder writes the updated audit and follow-up `nextActions`
 using the same evidence and summary paths. The helper rejects unknown checks and
 refuses to skip pass-only or selected-API-required checks. Selected API names are
@@ -389,8 +390,9 @@ list-checks, per-check, and pass-remaining
 command, and final evidence assembly,
 validation, commit, and push commands for
 after the worksheet is complete. The Markdown checklist splits ready-to-run
-commands from templates that still contain `<...>` placeholders so testers can
-run audit/list helpers without accidentally recording placeholder evidence. Keep platform worksheet fields and scaffold fields only in `release/platform-evidence.json`; final
+commands, templates that still contain `<...>` placeholders, and downstream
+assembly/commit commands so testers can run audit/list helpers without
+accidentally recording placeholder evidence. Keep platform worksheet fields and scaffold fields only in `release/platform-evidence.json`; final
 `release/real-device-evidence.json` must not contain `requiredChecks`,
 `passOnlyChecks`, `selectedApiRequiredChecks`, top-level `initialCiEvidence`, or
 top-level `nextActions`.

@@ -257,13 +257,22 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
   )
   assert.match(markdown, /#### Ready To Run/)
   assert.match(markdown, /#### Replace Placeholders First/)
+  assert.match(markdown, /#### Run After Device Evidence Is Recorded/)
   assert.match(
     markdown,
-    /#### Ready To Run[\s\S]*npm run check[\s\S]*npm run release:evidence -- --commit[\s\S]*#### Replace Placeholders First/,
+    /#### Ready To Run[\s\S]*npm run check[\s\S]*#### Replace Placeholders First/,
   )
   assert.match(
     markdown,
     /#### Replace Placeholders First[\s\S]*<android-apk-aab-or-hosted-build-id>/,
+  )
+  assert.doesNotMatch(
+    markdown,
+    /#### Ready To Run[\s\S]*npm run release:evidence -- --commit[\s\S]*#### Replace Placeholders First/,
+  )
+  assert.match(
+    markdown,
+    /#### Run After Device Evidence Is Recorded[\s\S]*npm run release:evidence -- --commit[\s\S]*git commit -m "Add real-device release evidence"/,
   )
   assert.match(markdown, /TODO\.md:389 Android export/)
   assert.match(

@@ -132,9 +132,10 @@ placeholder confirmation notes,
 and placeholder skip reasons. Final `passedChecks`
 must be a non-empty string array without duplicates, and final `skippedChecks`
 must be an object whose values are non-empty release-specific reasons. A check
-must not appear in both. The Markdown handoff separates ready-to-run commands
-from templates with `<...>` placeholders and flags those placeholders so device
-testers know to edit them before running. The helper rejects unknown check names and
+must not appear in both. The Markdown handoff separates ready-to-run commands,
+templates with `<...>` placeholders, and downstream evidence assembly,
+validation, commit, and push commands, and flags placeholders so device testers
+know to edit them before running. The helper rejects unknown check names and
 refuses to skip pass-only or selected-API-required checks. When
 `--summary-output` is supplied, the recorder writes the updated audit and
 follow-up `nextActions` using the same evidence and summary paths.
@@ -165,7 +166,7 @@ list-checks, per-check, and pass-remaining
 `release:record-platform-evidence` command templates, audited progress, exact
 remaining metadata/must-pass/skippable gap names and structured `platformCheckDetails` descriptions, the allow-open worksheet audit
 command, `npm run check`, release CI wait/dispatch commands, and final evidence
-assembly, validation, commit, and push commands for after the worksheet is complete. The generated Markdown checklist separates ready-to-run audit/list commands from templates that still contain `<...>` placeholders. Run
+assembly, validation, commit, and push commands for after the worksheet is complete. The generated Markdown checklist separates ready-to-run audit/list commands, templates that still contain `<...>` placeholders, and downstream assembly/commit commands. Run
 `npm run check:platform-evidence` without `--allow-open` before
 `npm run release:evidence`.
 After device testing and CI runs exist, `npm run release:evidence` assembles the

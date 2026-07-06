@@ -391,7 +391,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /A check\s+must not appear in both/)
   assert.match(
     production,
-    /Markdown handoff separates ready-to-run commands\s+from templates with `<\.\.\.>` placeholders and flags those placeholders/,
+    /Markdown handoff separates ready-to-run commands,\s+templates with `<\.\.\.>` placeholders,\s+and downstream evidence assembly,\s+validation,\s+commit,\s+and push commands,\s+and flags placeholders/,
   )
   assert.match(
     production,
@@ -765,7 +765,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /A check must not appear in both/)
   assert.match(
     readme,
-    /Markdown handoff separates ready-to-run\s+commands from templates with `<\.\.\.>` placeholders and flags those placeholders/,
+    /Markdown handoff separates ready-to-run\s+commands,\s+templates with `<\.\.\.>` placeholders,\s+and downstream evidence\s+assembly,\s+validation,\s+commit,\s+and push commands,\s+and flags placeholders/,
   )
   assert.match(readme, /rejects unknown checks/)
   assert.match(readme, /refuses to\s+skip pass-only or selected-API-required checks/)
@@ -1041,7 +1041,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /A check must not appear in both/)
   assert.match(
     checklist,
-    /Markdown handoff separates ready-to-run commands from templates with\s+`<\.\.\.>` placeholders and flags those placeholders/,
+    /Markdown handoff separates ready-to-run commands,\s+templates with `<\.\.\.>`\s+placeholders,\s+and downstream evidence assembly,\s+validation,\s+commit,\s+and push\s+commands,\s+and flags placeholders/,
   )
   assert.match(checklist, /preserves existing and newly supplied/)
   assert.match(

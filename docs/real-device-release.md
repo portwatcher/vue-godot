@@ -138,7 +138,9 @@ list-checks, per-check, and pass-remaining
 `release:record-platform-evidence` command templates while gaps remain. It only emits
 `npm run release:platform-evidence -- --production-profile` when the worksheet
 is missing, then runs the strict platform worksheet audit before final evidence
-assembly. The Markdown checklist separates ready-to-run audit/list commands from templates that still contain `<...>` placeholders. The platform, real-device, and readiness summary/checklist outputs are
+assembly. The Markdown checklist separates ready-to-run audit/list commands,
+templates that still contain `<...>` placeholders, and downstream
+assembly/commit commands. The platform, real-device, and readiness summary/checklist outputs are
 gitignored helper files for local handoff work; the committed evidence files stay
 limited to `release/platform-evidence.json`, `release/ci-runs.json`,
 `release/real-device-evidence.json`, `release/release-preflight-summary.json`,
@@ -273,9 +275,10 @@ placeholder confirmation notes,
 and placeholder skip reasons. Final `passedChecks` must be a non-empty
 string array without duplicates, and final `skippedChecks` must be an object whose
 values are non-empty release-specific reasons. A check must not appear in both.
-The Markdown handoff separates ready-to-run commands from templates with
-`<...>` placeholders and flags those placeholders so device testers know to edit
-them before running. It preserves existing and newly supplied `--skip check=reason`
+The Markdown handoff separates ready-to-run commands, templates with `<...>`
+placeholders, and downstream evidence assembly, validation, commit, and push
+commands, and flags placeholders so device testers know to edit them before
+running. It preserves existing and newly supplied `--skip check=reason`
 entries, and the same pass-only and selected-API validation still applies. When
 `--summary-output` is supplied, the recorder writes the updated audit and
 follow-up `nextActions` using the same evidence and summary paths.

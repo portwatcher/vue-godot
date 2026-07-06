@@ -247,6 +247,41 @@ function commandHasPlaceholder(command) {
   return typeof command === 'string' && /<[^>\n]+>/.test(command.trim())
 }
 
+function commandRequiresResolvedTemplates(command) {
+  if (typeof command !== 'string') {
+    return false
+  }
+
+  const text = command.trim()
+  if (text.startsWith('git add ') || text.startsWith('git commit ')) {
+    return true
+  }
+  if (text === 'git push') {
+    return true
+  }
+  if (text.includes('npm run release:evidence --')) {
+    return true
+  }
+  if (text.includes('npm run check:real-device-evidence --')) {
+    return true
+  }
+  return (
+    text.includes('npm run check:platform-evidence --') &&
+    !text.includes('--allow-open')
+  )
+}
+
+function commandIsEvidenceTemplate(command) {
+  if (typeof command !== 'string') {
+    return false
+  }
+
+  return (
+    command.includes('npm run release:record-platform-evidence --') ||
+    command.includes('npm run release:platform-evidence --')
+  )
+}
+
 function fencedCommandBlock(commands) {
   return ['```bash', ...commands, '```']
 }
@@ -256,23 +291,46 @@ function commandBlock(commands) {
     return ['No commands recorded.']
   }
 
-  const readyCommands = commands.filter(
-    (command) => !commandHasPlaceholder(command),
-  )
   const placeholderCommands = commands.filter(commandHasPlaceholder)
-  if (readyCommands.length === 0 || placeholderCommands.length === 0) {
+  const shouldSplitDownstreamCommands =
+    placeholderCommands.some(commandIsEvidenceTemplate)
+  const readyCommands = commands.filter(
+    (command) =>
+      !commandHasPlaceholder(command) &&
+      (!shouldSplitDownstreamCommands ||
+        !commandRequiresResolvedTemplates(command)),
+  )
+  const afterTemplateCommands = commands.filter(
+    (command) =>
+      !commandHasPlaceholder(command) &&
+      shouldSplitDownstreamCommands &&
+      commandRequiresResolvedTemplates(command),
+  )
+  if (
+    placeholderCommands.length === 0 ||
+    readyCommands.length + afterTemplateCommands.length === 0
+  ) {
     return fencedCommandBlock(commands)
   }
 
-  return [
-    '#### Ready To Run',
-    '',
-    ...fencedCommandBlock(readyCommands),
-    '',
+  const lines = []
+  if (readyCommands.length > 0) {
+    lines.push('#### Ready To Run', '', ...fencedCommandBlock(readyCommands), '')
+  }
+  lines.push(
     '#### Replace Placeholders First',
     '',
     ...fencedCommandBlock(placeholderCommands),
-  ]
+  )
+  if (afterTemplateCommands.length > 0) {
+    lines.push(
+      '',
+      '#### Run After Device Evidence Is Recorded',
+      '',
+      ...fencedCommandBlock(afterTemplateCommands),
+    )
+  }
+  return lines
 }
 
 function hasCommandPlaceholders(commands) {
