@@ -1,9 +1,9 @@
 {
   "initialCiEvidence": {
-    "commit": "b3713fadc39dd7a9fb04fe0ce1c69b92bbfbc652",
+    "commit": "4ff89a2d78392997f4334a92ed9df0408ba8a66b",
     "errorCount": 0,
     "errors": [],
-    "expectedCommit": "b3713fadc39dd7a9fb04fe0ce1c69b92bbfbc652",
+    "expectedCommit": "4ff89a2d78392997f4334a92ed9df0408ba8a66b",
     "path": "release/ci-runs.json",
     "ready": true,
     "validForCommit": null
@@ -14,8 +14,8 @@
       "title": "Fill Android and iOS device evidence fields",
       "detail": "Record artifact IDs, export presets, device models, OS versions, orientation, locale, selected APIs, and real test outcomes before assembling final evidence.",
       "commands": [
-        "npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit b3713fadc39dd7a9fb04fe0ce1c69b92bbfbc652",
-        "npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit b3713fadc39dd7a9fb04fe0ce1c69b92bbfbc652"
+        "npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit 4ff89a2d78392997f4334a92ed9df0408ba8a66b",
+        "npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit 4ff89a2d78392997f4334a92ed9df0408ba8a66b"
       ]
     },
     {
@@ -23,7 +23,7 @@
       "title": "Move worksheet checks into passedChecks or skippedChecks",
       "detail": "Every requiredChecks entry must move to passedChecks or skippedChecks with a release-specific reason; passOnlyChecks and selectedApiRequiredChecks must move to passedChecks.",
       "commands": [
-        "npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit b3713fadc39dd7a9fb04fe0ce1c69b92bbfbc652"
+        "npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit 4ff89a2d78392997f4334a92ed9df0408ba8a66b"
       ]
     },
     {
@@ -32,9 +32,9 @@
       "detail": "Committed CI evidence already validates Check and Godot Smoke for the tested release candidate; generate release/real-device-evidence.json from this worksheet after device testing.",
       "commands": [
         "npm run check",
-        "npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit b3713fadc39dd7a9fb04fe0ce1c69b92bbfbc652",
-        "npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit b3713fadc39dd7a9fb04fe0ce1c69b92bbfbc652 --real-device-output release/real-device-evidence.json",
-        "npm run check:real-device-evidence -- --expected-commit b3713fadc39dd7a9fb04fe0ce1c69b92bbfbc652"
+        "npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit 4ff89a2d78392997f4334a92ed9df0408ba8a66b",
+        "npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 4ff89a2d78392997f4334a92ed9df0408ba8a66b --real-device-output release/real-device-evidence.json",
+        "npm run check:real-device-evidence -- --expected-commit 4ff89a2d78392997f4334a92ed9df0408ba8a66b"
       ]
     }
   ],
