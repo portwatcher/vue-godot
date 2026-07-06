@@ -364,8 +364,9 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /command templates before the strict\s+worksheet audit/)
   assert.match(production, /--platform android/)
   assert.match(production, /--platform ios/)
-  assert.match(production, /single-check/)
-  assert.match(production, /suggested remaining check name/)
+  assert.match(production, /per-check/)
+  assert.match(production, /each remaining check name/)
+  assert.match(production, /ready-to-run audit\/list commands/)
   assert.match(production, /--pass-remaining/)
   assert.match(production, /--pass-remaining-confirmation/)
   assert.match(production, /keeps the audit note/)
@@ -737,8 +738,9 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /worksheet audit/)
   assert.match(readme, /--platform android/)
   assert.match(readme, /--platform ios/)
-  assert.match(readme, /single-check/)
-  assert.match(readme, /suggested remaining check name/)
+  assert.match(readme, /per-check/)
+  assert.match(readme, /each remaining check name/)
+  assert.match(readme, /ready-to-run\s+commands/)
   assert.match(readme, /--pass-remaining/)
   assert.match(readme, /--pass-remaining-confirmation/)
   assert.match(readme, /keeps the audit note/)
@@ -952,7 +954,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /reuses an existing platform worksheet/)
   assert.match(
     checklist,
-    /list-checks, single-check, and pass-remaining\s+`release:record-platform-evidence` command templates/,
+    /list-checks, per-check, and pass-remaining\s+`release:record-platform-evidence` command templates/,
   )
   assert.match(
     checklist,
@@ -1007,8 +1009,9 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /--platform ios/)
   assert.match(checklist, /--export-preset <android-export-preset>/)
   assert.match(checklist, /--export-preset <ios-export-preset>/)
-  assert.match(checklist, /single-check/)
-  assert.match(checklist, /suggested remaining check name/)
+  assert.match(checklist, /per-check/)
+  assert.match(checklist, /each remaining check name/)
+  assert.match(checklist, /ready-to-run audit\/list commands/)
   assert.match(
     checklist,
     /--pass cold-launch,no-godotjs-load-diagnostics,audio-input-if-selected/,

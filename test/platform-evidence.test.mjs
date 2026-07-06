@@ -800,6 +800,17 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
     assert.match(checklist, /Record in `passedChecks`\./)
     assert.match(checklist, /Selected APIs: `fetch`, `WebSocket`/)
     assert.match(checklist, /## Commands/)
+    assert.match(checklist, /Replace every `<\.\.\.>` placeholder/)
+    assert.match(checklist, /### Ready To Run/)
+    assert.match(checklist, /### Replace Placeholders First/)
+    assert.match(
+      checklist,
+      /### Ready To Run[\s\S]*--list-checks[\s\S]*npm run check:platform-evidence[\s\S]*### Replace Placeholders First/,
+    )
+    assert.match(
+      checklist,
+      /### Replace Placeholders First[\s\S]*<android-apk-aab-or-hosted-build-id>[\s\S]*<confirm-all-remaining-must-pass-checks-after-testing>/,
+    )
     assert.match(
       checklist,
       /npm run release:record-platform-evidence -- --platform android/,
@@ -861,6 +872,11 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
     )
     assert.ok(
       summary.nextActions[0].commands.includes(
+        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass storage-restart --summary-output ${summaryPath} --expected-commit ${commit}`,
+      ),
+    )
+    assert.ok(
+      summary.nextActions[0].commands.includes(
         `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output ${summaryPath} --expected-commit ${commit}`,
       ),
     )
@@ -872,6 +888,11 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
     assert.ok(
       summary.nextActions[0].commands.includes(
         `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output ${summaryPath} --expected-commit ${commit}`,
+      ),
+    )
+    assert.ok(
+      summary.nextActions[0].commands.includes(
+        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass plist-entitlements --summary-output ${summaryPath} --expected-commit ${commit}`,
       ),
     )
     assert.ok(

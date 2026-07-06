@@ -147,6 +147,13 @@ test('platform evidence template lists required checks without passing them', ()
       command.includes('--pass cold-launch'),
   )
   assert.ok(androidPassCommand)
+  assert.ok(
+    completeAction.commands.some(
+      (command) =>
+        command.includes('--platform android') &&
+        command.includes('--pass network-if-selected'),
+    ),
+  )
   const androidRecordCommand = completeAction.commands.find(
     (command) =>
       command.includes('--platform android') &&
@@ -168,6 +175,13 @@ test('platform evidence template lists required checks without passing them', ()
       command.includes('--pass cold-launch'),
   )
   assert.ok(iosPassCommand)
+  assert.ok(
+    completeAction.commands.some(
+      (command) =>
+        command.includes('--platform ios') &&
+        command.includes('--pass safe-area-keyboard-rotation-text-input'),
+    ),
+  )
   const iosRecordCommand = completeAction.commands.find(
     (command) =>
       command.includes('--platform ios') &&

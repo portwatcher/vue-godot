@@ -697,6 +697,20 @@ export function collectPlatformEvidenceSkippableMissingChecks(
     .filter((check) => check.length > 0)
 }
 
+export function collectPlatformEvidencePassChecks(summary, platform) {
+  const status = summary?.platforms?.[platform]
+  if (!isRecord(status) || !Array.isArray(status.remainingChecks)) {
+    return []
+  }
+
+  return uniqueStrings(
+    status.remainingChecks
+      .filter((check) => typeof check === 'string')
+      .map((check) => check.trim())
+      .filter((check) => check.length > 0),
+  )
+}
+
 export function collectPlatformEvidenceSuggestedPassCheck(summary, platform) {
   const status = summary?.platforms?.[platform]
   if (!isRecord(status)) {
@@ -895,7 +909,7 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
       ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
       commands: [
         ...recordPlatformEvidenceCommands('android', commit, {
-          check: collectPlatformEvidenceSuggestedPassCheck(summary, 'android'),
+          checks: collectPlatformEvidencePassChecks(summary, 'android'),
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(
             summary,
@@ -904,7 +918,7 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
           summaryOutput: options.summaryOutput ?? 'release/platform-evidence-summary.json',
         }),
         ...recordPlatformEvidenceCommands('ios', commit, {
-          check: collectPlatformEvidenceSuggestedPassCheck(summary, 'ios'),
+          checks: collectPlatformEvidencePassChecks(summary, 'ios'),
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(
             summary,
@@ -1051,12 +1065,31 @@ function commandLines(summary) {
     return []
   }
 
+  const readyCommands = commands.filter(
+    (command) => !/<[^>\n]+>/.test(command),
+  )
+  const placeholderCommands = commands.filter((command) =>
+    /<[^>\n]+>/.test(command),
+  )
+  const sectionLines = (title, values) =>
+    values.length > 0
+      ? [
+          `### ${title}`,
+          '',
+          '```bash',
+          ...values,
+          '```',
+          '',
+        ]
+      : []
+
   return [
     '## Commands',
     '',
-    '```bash',
-    ...commands,
-    '```',
+    'Replace every `<...>` placeholder before running template commands.',
+    '',
+    ...sectionLines('Ready To Run', readyCommands),
+    ...sectionLines('Replace Placeholders First', placeholderCommands),
   ]
 }
 

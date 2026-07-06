@@ -24,6 +24,7 @@ import {
   recordPlatformEvidenceCommands,
   recordPlatformEvidenceListChecksCommand,
   recordPlatformEvidencePassCommand,
+  recordPlatformEvidencePassCommands,
   releaseEvidenceCommand,
   releaseCandidateCommitPlaceholder,
   releaseCandidateDispatchRefPlaceholder,
@@ -127,6 +128,15 @@ test('release handoff commands format real-device evidence assembly', () => {
       check: 'cold-launch',
     }),
     `npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit ${commit}`,
+  )
+  assert.deepEqual(
+    recordPlatformEvidencePassCommands('android', commit, {
+      checks: ['cold-launch', 'storage-restart', 'cold-launch'],
+    }),
+    [
+      `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit ${commit}`,
+      `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass storage-restart --summary-output release/platform-evidence-summary.json --expected-commit ${commit}`,
+    ],
   )
   assert.equal(
     recordPlatformEvidenceCommand('android', commit),

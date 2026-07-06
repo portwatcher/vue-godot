@@ -130,11 +130,11 @@ includes Android/iOS metadata-field counts, malformed outcome counts,
 required-check counts, and exact remaining must-pass/skippable check names in
 its detail, attaches
 `platformCheckDetails` with descriptions and selected API context, and includes Android/iOS
-list-checks, single-check, and pass-remaining
+list-checks, per-check, and pass-remaining
 `release:record-platform-evidence` command templates while gaps remain. It only emits
 `npm run release:platform-evidence -- --production-profile` when the worksheet
 is missing, then runs the strict platform worksheet audit before final evidence
-assembly. The platform, real-device, and readiness summary/checklist outputs are
+assembly. The Markdown checklist separates ready-to-run audit/list commands from templates that still contain `<...>` placeholders. The platform, real-device, and readiness summary/checklist outputs are
 gitignored helper files for local handoff work; the committed evidence files stay
 limited to `release/platform-evidence.json`, `release/ci-runs.json`,
 `release/real-device-evidence.json`, `release/release-preflight-summary.json`,
@@ -177,7 +177,7 @@ shows which conditional checks came from the selected API set. Selected API
 names are validated, so typos or unknown names fail before conditional checks
 can be omitted. Conditional checks for selected APIs must be moved into
 `passedChecks`. The generated top-level `nextActions` section records Android
-and iOS list-checks, single-check, and pass-remaining
+and iOS list-checks, per-check, and pass-remaining
 `release:record-platform-evidence` command templates, audited progress,
 malformed outcome counts, exact remaining metadata/must-pass/skippable gap names and structured `platformCheckDetails` descriptions, the allow-open worksheet
 audit command, the local `npm run check`, any still-needed release CI
@@ -257,7 +257,7 @@ device run; the recorder stores that confirmation on the platform evidence so
 `release/real-device-evidence.json` keeps the audit note. Skippable checks still
 need an explicit `--pass` or `--skip check=reason`; generated handoff commands
 include read-only list-checks commands, skip and pass-remaining confirmation
-placeholders for currently open gaps, plus single-check commands that prefill a suggested remaining check name
+placeholders for currently open gaps, plus per-check commands that prefill each remaining check name
 for incremental device sessions. Replace every placeholder before recording evidence; the recorder,
 worksheet audit, and final evidence validator reject placeholder metadata,
 placeholder confirmation notes,

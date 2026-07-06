@@ -118,7 +118,7 @@ device run; the recorder stores that confirmation on the platform evidence so
 `release/real-device-evidence.json` keeps the audit note. Skippable checks still
 need an explicit `--pass` or `--skip check=reason`; generated handoff commands
 include read-only list-checks commands, skip and pass-remaining confirmation
-placeholders for currently open gaps, plus single-check commands that prefill a suggested remaining check name
+placeholders for currently open gaps, plus per-check commands that prefill each remaining check name
 for incremental device sessions. Replace every placeholder before recording evidence; the recorder,
 worksheet audit, and final evidence validator reject placeholder metadata,
 placeholder confirmation notes,
@@ -154,11 +154,11 @@ Because the production profile includes `navigator.mediaDevices.getUserMedia`,
 production evidence.
 Conditional checks required by selected APIs must be recorded in `passedChecks`,
 not `skippedChecks`. Its top-level `nextActions` section records Android/iOS
-list-checks, single-check, and pass-remaining
+list-checks, per-check, and pass-remaining
 `release:record-platform-evidence` command templates, audited progress, exact
 remaining metadata/must-pass/skippable gap names and structured `platformCheckDetails` descriptions, the allow-open worksheet audit
 command, `npm run check`, release CI wait/dispatch commands, and final evidence
-assembly, validation, commit, and push commands for after the worksheet is complete. Run
+assembly, validation, commit, and push commands for after the worksheet is complete. The generated Markdown checklist separates ready-to-run audit/list commands from templates that still contain `<...>` placeholders. Run
 `npm run check:platform-evidence` without `--allow-open` before
 `npm run release:evidence`.
 After device testing and CI runs exist, `npm run release:evidence` assembles the
@@ -268,7 +268,7 @@ includes Android/iOS metadata-field counts, malformed outcome counts,
 required-check counts, and exact remaining must-pass/skippable check names in
 its detail, attaches
 `platformCheckDetails` with descriptions and selected API context, and includes Android/iOS
-list-checks, single-check, and pass-remaining
+list-checks, per-check, and pass-remaining
 `release:record-platform-evidence` command templates while gaps remain. It only
 emits
 `npm run release:platform-evidence -- --production-profile` when the worksheet

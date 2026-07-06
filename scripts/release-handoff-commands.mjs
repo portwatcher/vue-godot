@@ -232,6 +232,25 @@ export function recordPlatformEvidencePassCommand(
   return formatHandoffCommand(args)
 }
 
+export function recordPlatformEvidencePassCommands(
+  platform,
+  commit,
+  options = {},
+) {
+  const checks = uniqueNonEmptyStrings(options.checks)
+
+  if (checks.length === 0) {
+    return [recordPlatformEvidencePassCommand(platform, commit, options)]
+  }
+
+  return checks.map((check) =>
+    recordPlatformEvidencePassCommand(platform, commit, {
+      ...options,
+      check,
+    }),
+  )
+}
+
 export function recordPlatformEvidenceListChecksCommand(
   platform,
   commit,
@@ -275,7 +294,7 @@ export function recordPlatformEvidenceCommand(platform, commit, options = {}) {
 export function recordPlatformEvidenceCommands(platform, commit, options = {}) {
   return [
     recordPlatformEvidenceListChecksCommand(platform, commit, options),
-    recordPlatformEvidencePassCommand(platform, commit, options),
+    ...recordPlatformEvidencePassCommands(platform, commit, options),
     recordPlatformEvidenceCommand(platform, commit, options),
   ]
 }
