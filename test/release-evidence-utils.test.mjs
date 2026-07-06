@@ -85,8 +85,13 @@ test('release evidence URLs reject local-only links', () => {
     true,
   )
   assert.equal(isReleaseEvidenceUrl('http://localhost:8080/run'), false)
+  assert.equal(isReleaseEvidenceUrl('http://localhost./run'), false)
+  assert.equal(isReleaseEvidenceUrl('http://device.localhost./run'), false)
+  assert.equal(isReleaseEvidenceUrl('http://0.0.0.0/run'), false)
   assert.equal(isReleaseEvidenceUrl('https://127.0.0.1/run'), false)
   assert.equal(isReleaseEvidenceUrl('http://[::1]/run'), false)
+  assert.equal(isReleaseEvidenceUrl('http://[::]/run'), false)
+  assert.equal(isReleaseEvidenceUrl('http://[::ffff:127.0.0.1]/run'), false)
   assert.equal(isReleaseEvidenceUrl('file:///tmp/device-run.txt'), false)
   assert.equal(isLoopbackHttpUrl('https://localhost/run'), true)
   assert.equal(isLoopbackHttpUrl('https://device-lab.example.com/run'), false)

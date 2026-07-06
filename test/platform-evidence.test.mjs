@@ -328,6 +328,22 @@ test('platform evidence audit rejects placeholder metadata and skip reasons', ()
   )
 })
 
+test('platform evidence audit rejects local-only evidence URLs', () => {
+  const template = completedTemplate()
+  template.android.evidenceUrl = 'http://localhost:8080/android-device-run'
+  template.ios.evidenceUrl = 'http://[::1]/ios-device-run'
+
+  const summary = auditPlatformEvidence(template)
+  const errors = summary.errors.join('\n')
+
+  assert.equal(summary.ready, false)
+  assert.match(
+    errors,
+    /android\.evidenceUrl must be a non-local http\(s\) URL/,
+  )
+  assert.match(errors, /ios\.evidenceUrl must be a non-local http\(s\) URL/)
+})
+
 test('platform evidence audit accepts non-production profile when allowed', () => {
   const template = buildPlatformEvidenceTemplate({
     androidArtifact: 'vue-godot-android-release.aab',

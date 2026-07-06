@@ -50,13 +50,18 @@ export function isLoopbackHttpUrl(value) {
   }
 
   const url = new URL(value)
-  const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, '')
+  const hostname = url.hostname
+    .toLowerCase()
+    .replace(/^\[|\]$/g, '')
+    .replace(/\.+$/g, '')
   return (
     hostname === 'localhost' ||
     hostname.endsWith('.localhost') ||
     hostname === '0.0.0.0' ||
+    hostname === '::' ||
     hostname === '::1' ||
-    hostname.startsWith('127.')
+    hostname.startsWith('127.') ||
+    hostname.startsWith('::ffff:7f')
   )
 }
 
