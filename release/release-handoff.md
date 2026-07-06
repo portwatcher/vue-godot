@@ -192,12 +192,6 @@ npm run release:preflight -- --local --skip-check --skip-godot --expected-commit
 npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit af72f6556b570a79667cb9abe0321b1a993c003b
 npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit af72f6556b570a79667cb9abe0321b1a993c003b
 npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit af72f6556b570a79667cb9abe0321b1a993c003b
-npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit af72f6556b570a79667cb9abe0321b1a993c003b
-npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit af72f6556b570a79667cb9abe0321b1a993c003b --real-device-output release/real-device-evidence.json
-npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit af72f6556b570a79667cb9abe0321b1a993c003b
-git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json
-git commit -m "Add real-device release evidence"
-git push
 ```
 
 #### Replace Placeholders First
@@ -234,6 +228,17 @@ npm run release:record-platform-evidence -- --platform ios --platform-evidence r
 npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-device-evidence-url> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass background-foreground --summary-output release/platform-evidence-summary.json --expected-commit af72f6556b570a79667cb9abe0321b1a993c003b
 npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-device-evidence-url> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass deep-links-share-notifications-if-selected --summary-output release/platform-evidence-summary.json --expected-commit af72f6556b570a79667cb9abe0321b1a993c003b
 npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-device-evidence-url> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output release/platform-evidence-summary.json --expected-commit af72f6556b570a79667cb9abe0321b1a993c003b
+```
+
+#### Run After Device Evidence Is Recorded
+
+```bash
+npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit af72f6556b570a79667cb9abe0321b1a993c003b
+npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit af72f6556b570a79667cb9abe0321b1a993c003b --real-device-output release/real-device-evidence.json
+npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit af72f6556b570a79667cb9abe0321b1a993c003b
+git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json
+git commit -m "Add real-device release evidence"
+git push
 ```
 
 ### Collect CI and warning-free Release Preflight evidence
