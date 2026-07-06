@@ -278,7 +278,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /real-device-evidence-summary\.json/)
   assert.match(
     production,
-    /validation status, errors, initial CI evidence status, platform worksheet\s+status with compact per-platform progress counts(?: plus| and) exact remaining\s+must-pass\/skippable check names and structured check descriptions, and `nextActions`/,
+    /validation status, errors, initial CI evidence status, platform worksheet\s+status with compact per-platform progress counts, malformed outcome counts,\s+exact remaining\s+must-pass\/skippable check names, and structured check\s+descriptions, plus `nextActions`/,
   )
   assert.match(production, /[Mm]issing-evidence assembly/)
   assert.match(
@@ -473,7 +473,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
-    /includes Android\/iOS metadata-field counts, required-check counts, and exact\s+remaining must-pass\/skippable check names in its detail[\s\S]*attaches\s+`platformCheckDetails` with descriptions and selected API context[\s\S]*only\s+emits\s+`npm run release:platform-evidence -- --production-profile` when the worksheet\s+is missing/,
+    /includes Android\/iOS metadata-field counts, malformed outcome counts,\s+required-check counts, and exact remaining must-pass\/skippable check names in\s+its detail[\s\S]*attaches\s+`platformCheckDetails` with descriptions and selected API context[\s\S]*only\s+emits\s+`npm run release:platform-evidence -- --production-profile` when the worksheet\s+is missing/,
   )
   assert.match(production, /strict platform worksheet\s+audit/)
   assert.match(production, /git commit -m "Add release readiness evidence"/)
@@ -512,7 +512,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /real-device-evidence-summary\.json/)
   assert.match(
     readme,
-    /validation status, errors, initial CI evidence status, platform worksheet status with compact per-platform progress counts(?: plus| and) exact remaining\s+must-pass\/skippable check names and structured check descriptions, and `nextActions`/,
+    /validation status, errors, initial CI evidence status, platform worksheet status with compact per-platform progress counts, malformed outcome counts,\s+exact remaining\s+must-pass\/skippable check names, and structured check descriptions, plus `nextActions`/,
   )
   assert.match(readme, /[Mm]issing-evidence assembly/)
   assert.match(
@@ -651,7 +651,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /release:record-platform-evidence` command templates/)
   assert.match(
     readme,
-    /includes Android\/iOS metadata-field counts, required-check counts, and exact remaining check names in its detail[\s\S]*attaches `platformCheckDetails` with descriptions and selected API context[\s\S]*only emits `npm run release:platform-evidence -- --production-profile` when the worksheet is missing/,
+    /includes Android\/iOS metadata-field counts, malformed outcome counts, required-check counts, and exact remaining check names in its detail[\s\S]*attaches `platformCheckDetails` with descriptions and selected API context[\s\S]*only emits `npm run release:platform-evidence -- --production-profile` when the worksheet is missing/,
   )
   assert.match(readme, /strict platform worksheet audit/)
   assert.match(readme, /git commit -m "Add release readiness evidence"/)
@@ -707,6 +707,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /must be in `passedChecks`/)
   assert.match(readme, /top-level `nextActions` section/)
   assert.match(readme, /audited progress/)
+  assert.match(readme, /malformed outcome counts/)
   assert.match(readme, /exact remaining metadata\/must-pass\/skippable gap names/)
   assert.match(readme, /release\s+CI\s+wait\/dispatch commands/)
   assert.match(readme, /worksheet\s+audit\s+command/)
@@ -731,7 +732,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /real-device-evidence-summary\.json/)
   assert.match(
     checklist,
-    /validation status, errors, initial CI evidence status, platform\s+worksheet status with compact per-platform progress counts(?: plus| and) exact remaining\s+must-pass\/skippable check names and structured check descriptions, and\s+`nextActions`/,
+    /validation status, errors, initial CI evidence status, platform\s+worksheet status with compact per-platform progress counts, malformed outcome\s+counts,\s+exact remaining\s+must-pass\/skippable check names, and structured check\s+descriptions, plus\s+`nextActions`/,
   )
   assert.match(checklist, /[Mm]issing-evidence\s+assembly/)
   assert.match(
@@ -858,7 +859,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /release:record-platform-evidence` command templates/)
   assert.match(
     checklist,
-    /includes Android\/iOS metadata-field counts, required-check counts, and exact\s+remaining must-pass\/skippable check names in its detail[\s\S]*attaches\s+`platformCheckDetails` with descriptions and selected API context[\s\S]*only emits\s+`npm run release:platform-evidence -- --production-profile` when the worksheet\s+is missing/,
+    /includes Android\/iOS metadata-field counts, malformed outcome counts,\s+required-check counts, and exact remaining must-pass\/skippable check names in\s+its detail[\s\S]*attaches\s+`platformCheckDetails` with descriptions and selected API context[\s\S]*only emits\s+`npm run release:platform-evidence -- --production-profile` when the worksheet\s+is missing/,
   )
   assert.match(checklist, /strict platform worksheet audit/)
   assert.match(checklist, /git commit -m "Add release readiness evidence"/)
@@ -874,7 +875,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /CI workflow wiring status/)
   assert.match(
     checklist,
-    /platform worksheet audit\s+status with compact per-platform progress counts plus exact remaining\s+must-pass\/skippable check names and structured check descriptions/,
+    /platform worksheet audit\s+status with compact per-platform progress counts, malformed outcome counts,\s+exact remaining\s+must-pass\/skippable check names, and structured check\s+descriptions/,
   )
   assert.match(checklist, /release tooling\/workflow blocker\s+lists/)
   assert.match(checklist, /local\/skip flags/)
@@ -951,7 +952,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /audited progress/)
   assert.match(
     checklist,
-    /exact remaining metadata\/must-pass\/skippable gap names and structured `platformCheckDetails` descriptions/,
+    /malformed outcome counts[\s\S]*exact remaining metadata\/must-pass\/skippable gap names and structured `platformCheckDetails` descriptions/,
   )
   assert.match(checklist, /release\s+CI\s+wait\/dispatch commands/)
   assert.match(checklist, /worksheet\s+audit command/)
@@ -1129,7 +1130,7 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(readme, /CI workflow wiring/)
   assert.match(
     readme,
-    /platform worksheet audit status with compact per-platform progress counts plus exact remaining must-pass\/skippable check names and structured check descriptions/,
+    /platform worksheet audit status with compact per-platform progress counts, malformed outcome counts, exact remaining must-pass\/skippable check names, and structured check descriptions/,
   )
   assert.match(readme, /release tooling\/workflow blocker lists/)
   assert.match(readme, /structured readiness check and evidence status/)

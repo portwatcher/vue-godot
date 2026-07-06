@@ -95,10 +95,17 @@ test('platform evidence audit reports incomplete worksheet gaps', () => {
     selectedApiCount: productionProfileSelectedApis.length,
     missingFieldCount: 5,
     completedCheckCount: 0,
+    duplicatePassedCheckCount: 0,
+    invalidSkippedCheckCount: 0,
     requiredCheckCount: requiredRealDeviceChecks.android.length,
     remainingCheckCount: requiredRealDeviceChecks.android.length,
     mustPassMissingCheckCount: requiredRealDeviceChecks.android.length,
+    passedSkippedCheckCount: 0,
     skippableMissingCheckCount: 0,
+    unknownPassedCheckCount: 0,
+    unknownSelectedApiCount: 0,
+    unknownSkippedCheckCount: 0,
+    worksheetErrorCount: 0,
   })
   assert.match(
     formatPlatformEvidenceProgress(summary),
@@ -175,6 +182,16 @@ test('platform evidence audit rejects checks recorded as both passed and skipped
   assert.deepEqual(summary.platforms.android.passedSkippedChecks, [
     'cold-launch',
   ])
+  assert.equal(summary.progress.android.passedSkippedCheckCount, 1)
+  assert.match(
+    formatPlatformEvidenceProgress(summary),
+    /1 contradictory pass\/skip check\(s\)/,
+  )
+  assert.ok(
+    formatPlatformEvidenceRemaining(summary).includes(
+      'Android contradictory pass/skip checks: cold-launch',
+    ),
+  )
   assert.match(
     summary.platforms.android.errors.join('\n'),
     /android\.cold-launch cannot be both passedChecks and skippedChecks/,
@@ -227,6 +244,15 @@ test('platform evidence audit rejects placeholder metadata and skip reasons', ()
   const errors = summary.errors.join('\n')
 
   assert.equal(summary.ready, false)
+  assert.deepEqual(summary.platforms.ios.invalidSkippedChecks, [
+    'deep-links-share-notifications-if-selected',
+  ])
+  assert.equal(summary.progress.ios.invalidSkippedCheckCount, 1)
+  assert.ok(
+    formatPlatformEvidenceRemaining(summary).includes(
+      'iOS invalid skipped reason checks: deep-links-share-notifications-if-selected',
+    ),
+  )
   assert.match(
     errors,
     /android\.artifact must replace placeholder <android-apk-aab-or-hosted-build-id>/,

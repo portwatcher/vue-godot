@@ -29,15 +29,16 @@ component coverage.
 `npm run check:platform-evidence` audits the Android/iOS worksheet before final
 evidence assembly. Use `--allow-open --summary-output
 release/platform-evidence-summary.json` during device testing to report
-metadata gaps, remaining required checks, pass-only or selected-API checks that
-must move to `passedChecks`, worksheet drift, and nextActions without failing
-the handoff run.
+metadata gaps, malformed outcome counts, remaining required checks, pass-only
+or selected-API checks that must move to `passedChecks`, worksheet drift, and
+nextActions without failing the handoff run.
 `npm run check:real-device-evidence` validates the Android/iOS export-smoke
 evidence JSON when it exists. Add
 `--summary-output release/real-device-evidence-summary.json` to write
 validation status, errors, initial CI evidence status, platform worksheet
-status with compact per-platform progress counts plus exact remaining
-must-pass/skippable check names and structured check descriptions, and `nextActions` command hints for fixing or
+status with compact per-platform progress counts, malformed outcome counts,
+exact remaining must-pass/skippable check names, and structured check
+descriptions, plus `nextActions` command hints for fixing or
 creating evidence. Pass `--ci-evidence <file>` or
 `--platform-evidence <file>` when a handoff is using non-default evidence or
 worksheet paths so generated creation, validation, and assembly commands
@@ -237,8 +238,9 @@ That later action includes the `--dispatch-missing`,
 the workflow-dispatch-only preflight workflow. The real-device evidence action
 reuses an existing platform worksheet and writes
 `release/platform-evidence-summary.json` when it still has gaps. Its detail
-includes Android/iOS metadata-field counts, required-check counts, and exact
-remaining must-pass/skippable check names in its detail, attaches
+includes Android/iOS metadata-field counts, malformed outcome counts,
+required-check counts, and exact remaining must-pass/skippable check names in
+its detail, attaches
 `platformCheckDetails` with descriptions and selected API context, and includes Android/iOS
 `release:record-platform-evidence` command templates while gaps remain. It only
 emits

@@ -291,6 +291,7 @@ function auditPlatformWorksheet(record, platform, options = {}) {
     duplicatePassedChecks: [],
     errorCount: 0,
     errors,
+    invalidSkippedChecks: [],
     missingFields: [],
     missingProductionProfileApis: [],
     mustPassChecks: [],
@@ -381,6 +382,7 @@ function auditPlatformWorksheet(record, platform, options = {}) {
   }
 
   const skipped = checkSkippedChecks(record, platform, errors)
+  status.invalidSkippedChecks = skipped.invalidSkippedChecks
   status.skippedCheckNames = skipped.skippedCheckNames
 
   status.unknownPassedChecks = extraValues(status.passedChecks, requiredChecks)
@@ -475,10 +477,17 @@ function worksheetProgress(status) {
     selectedApiCount: status.selectedApis.length,
     missingFieldCount: status.missingFields.length,
     completedCheckCount: status.completedCheckCount,
+    duplicatePassedCheckCount: status.duplicatePassedChecks.length,
+    invalidSkippedCheckCount: status.invalidSkippedChecks.length,
     requiredCheckCount: status.requiredCheckCount,
     remainingCheckCount: status.remainingChecks.length,
     mustPassMissingCheckCount: status.mustPassMissingChecks.length,
+    passedSkippedCheckCount: status.passedSkippedChecks.length,
     skippableMissingCheckCount: status.skippableMissingChecks.length,
+    unknownPassedCheckCount: status.unknownPassedChecks.length,
+    unknownSelectedApiCount: status.unknownSelectedApis.length,
+    unknownSkippedCheckCount: status.unknownSkippedChecks.length,
+    worksheetErrorCount: status.worksheetErrors.length,
   }
 }
 
@@ -499,7 +508,49 @@ function formatProgressPart(platform, status) {
     `${formatPlatformLabel(platform)}: ${status.missingFields.length} metadata field(s) missing`,
     `${status.remainingChecks.length}/${status.requiredCheckCount} required check(s) unresolved`,
     `${status.mustPassMissingChecks.length} must-pass check(s) missing`,
+    ...formatOutcomeIssueCountParts(status),
   ].join(', ')
+}
+
+function formatCountPart(count, label) {
+  return count > 0 ? `${count} ${label}(s)` : null
+}
+
+function statusList(status, key) {
+  return Array.isArray(status?.[key]) ? status[key] : []
+}
+
+function formatOutcomeIssueCountParts(status) {
+  return [
+    formatCountPart(
+      statusList(status, 'duplicatePassedChecks').length,
+      'duplicate passed check',
+    ),
+    formatCountPart(
+      statusList(status, 'invalidSkippedChecks').length,
+      'invalid skipped reason',
+    ),
+    formatCountPart(
+      statusList(status, 'passedSkippedChecks').length,
+      'contradictory pass/skip check',
+    ),
+    formatCountPart(
+      statusList(status, 'unknownPassedChecks').length,
+      'unknown passed check',
+    ),
+    formatCountPart(
+      statusList(status, 'unknownSkippedChecks').length,
+      'unknown skipped check',
+    ),
+    formatCountPart(
+      statusList(status, 'unknownSelectedApis').length,
+      'unknown selected API',
+    ),
+    formatCountPart(
+      statusList(status, 'worksheetErrors').length,
+      'worksheet drift error',
+    ),
+  ].filter(Boolean)
 }
 
 function formatList(values) {
@@ -512,9 +563,37 @@ function formatRemainingParts(platform, status) {
   }
 
   const label = formatPlatformLabel(platform)
+  const duplicatePassedChecks = statusList(status, 'duplicatePassedChecks')
+  const invalidSkippedChecks = statusList(status, 'invalidSkippedChecks')
+  const passedSkippedChecks = statusList(status, 'passedSkippedChecks')
+  const unknownPassedChecks = statusList(status, 'unknownPassedChecks')
+  const unknownSkippedChecks = statusList(status, 'unknownSkippedChecks')
+  const unknownSelectedApis = statusList(status, 'unknownSelectedApis')
+  const worksheetErrors = statusList(status, 'worksheetErrors')
   return [
     status.missingFields.length > 0
       ? `${label} missing metadata: ${formatList(status.missingFields)}`
+      : null,
+    duplicatePassedChecks.length > 0
+      ? `${label} duplicate passed checks: ${formatList(duplicatePassedChecks)}`
+      : null,
+    invalidSkippedChecks.length > 0
+      ? `${label} invalid skipped reason checks: ${formatList(invalidSkippedChecks)}`
+      : null,
+    passedSkippedChecks.length > 0
+      ? `${label} contradictory pass/skip checks: ${formatList(passedSkippedChecks)}`
+      : null,
+    unknownPassedChecks.length > 0
+      ? `${label} unknown passed checks: ${formatList(unknownPassedChecks)}`
+      : null,
+    unknownSkippedChecks.length > 0
+      ? `${label} unknown skipped checks: ${formatList(unknownSkippedChecks)}`
+      : null,
+    unknownSelectedApis.length > 0
+      ? `${label} unknown selected APIs: ${formatList(unknownSelectedApis)}`
+      : null,
+    worksheetErrors.length > 0
+      ? `${label} worksheet drift: ${formatList(worksheetErrors)}`
       : null,
     status.mustPassMissingChecks.length > 0
       ? `${label} must-pass remaining: ${formatList(status.mustPassMissingChecks)}`
