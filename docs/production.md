@@ -115,12 +115,16 @@ current worksheet outcomes, and selected-API must-pass context without
 modifying the worksheet.
 Run `npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` before local device
 sessions to report whether `adb`, Xcode device listing, and attached Android or
-iOS devices are available and to leave a gitignored JSON diagnostic next to the
-other release helper summaries. Android emulators are reported separately and
-do not satisfy the local release-device prerequisite. Missing local tooling is
-only a diagnostic; hosted real-device runs still satisfy the release gate when
-the final evidence records artifact IDs, device metadata, and non-local
-http(s) evidence URLs.
+iOS devices are available, and whether common hosted-provider environment
+variable sets are configured, then leave a gitignored JSON diagnostic next to
+the other release helper summaries. The hosted-provider diagnostic reports
+configured environment variable names for BrowserStack, Sauce Labs, Firebase
+Test Lab, AWS Device Farm, LambdaTest, and Kobiton, but never their values.
+Android emulators are reported separately and do not satisfy the local
+release-device prerequisite. Missing local tooling or provider environment
+variables are only diagnostics; hosted real-device runs still satisfy the
+release gate when the final evidence records artifact IDs, device metadata, and
+non-local http(s) evidence URLs.
 After every unresolved
 must-pass check has actually passed, add `--pass-remaining` to record the
 remaining must-pass checks in one batch, and include
@@ -227,7 +231,12 @@ commands, platform worksheet audit status with compact per-platform progress
 counts plus exact remaining must-pass/skippable check names and structured check descriptions, separate
 Android/iOS real-device evidence status with metadata, platform, and read
 errors, release-readiness evidence status, and CI workflow wiring status, as
-JSON and a Markdown checklist for final gate handoff. Run
+JSON and a Markdown checklist for final gate handoff. The generated Markdown
+checklist and release handoff split `nextActions` commands into `Ready To Run`,
+`Replace Placeholders First`, and, when platform placeholder templates are
+present, `Run After Device Evidence Is Recorded` so placeholder recording
+templates stay separate from downstream evidence assembly or commit commands.
+Run
 `npm run release:handoff -- --expected-commit <release-candidate-sha> --output release/release-handoff.md`
 to render the same allow-open audit as a Markdown handoff for Android/iOS
 testers; while real-device evidence is open, the release-readiness

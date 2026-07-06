@@ -75,7 +75,12 @@ release-readiness evidence status, CI workflow wiring status,
 release tooling/workflow blocker lists, public warning markers, package
 description warning status, and `nextActions` command hints for the local
 `npm run check`, initial CI evidence collection, push/dispatch commands, and the
-remaining evidence/finalizer work as JSON and a Markdown checklist. Run
+remaining evidence/finalizer work as JSON and a Markdown checklist. The
+generated Markdown checklist and release handoff split `nextActions` commands
+into `Ready To Run`, `Replace Placeholders First`, and, when platform
+placeholder templates are present, `Run After Device Evidence Is Recorded` so
+placeholder recording templates stay separate from downstream evidence assembly
+or commit commands. Run
 `npm run release:handoff -- --expected-commit <release-candidate-sha> --output release/release-handoff.md`
 to render the same allow-open audit as a Markdown handoff for Android/iOS
 testers; while real-device evidence is open, the release-readiness
@@ -93,8 +98,11 @@ The initial CI, real-device, and Release Preflight evidence actions begin
 with `npm run check` before collecting CI or assembling evidence. The
 real-device evidence action also runs
 `npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` before local or hosted device
-handoff commands so missing local tooling is recorded without pretending it is
-evidence. The Release Preflight evidence action also reruns
+handoff commands so missing local tooling and hosted-provider environment
+variable names are recorded without pretending they are evidence. The
+hosted-provider diagnostic covers BrowserStack, Sauce Labs, Firebase Test Lab,
+AWS Device Farm, LambdaTest, and Kobiton, and never records environment values.
+The Release Preflight evidence action also reruns
 `npm run check:real-device-evidence -- --verify-runs` before CI/preflight
 collection continues, so stale device evidence or unverified Check/Godot Smoke
 run URLs fail before dispatching preflight. The initial CI action captures Check
@@ -514,11 +522,15 @@ Run these before platform-specific device checks:
 1. Start from a clean commit.
 2. Run `npm run check`.
 3. Run `npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` to see whether local
-   Android/iOS device tooling and attached devices are available and to write a
-   gitignored JSON diagnostic. Android emulators are reported separately and do
-   not satisfy the local release-device prerequisite. Missing local tooling does
-   not satisfy or fail final evidence by itself; use a hosted real-device lab
-   when the final evidence can link to the lab run.
+   Android/iOS device tooling, attached devices, and common hosted-provider
+   environment variable sets are available and to write a gitignored JSON
+   diagnostic. The hosted-provider diagnostic reports configured environment
+   variable names for BrowserStack, Sauce Labs, Firebase Test Lab, AWS Device
+   Farm, LambdaTest, and Kobiton, but never their values. Android emulators are
+   reported separately and do not satisfy the local release-device prerequisite.
+   Missing local tooling or provider environment variables do not satisfy or
+   fail final evidence by themselves; use a hosted real-device lab when the
+   final evidence can link to the lab run.
 4. Run `npm run check:serious-examples`.
 5. Run `npm audit --audit-level=moderate`.
 6. Optionally run `npm run release:preflight -- --local` as a local dry run;

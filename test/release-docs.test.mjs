@@ -4,6 +4,8 @@ import path from 'node:path'
 import test from 'node:test'
 
 const repoRoot = process.cwd()
+const hostedProviderNamesPattern =
+  /BrowserStack[\s\S]*Sauce Labs[\s\S]*Firebase\s+Test Lab[\s\S]*AWS Device\s+Farm[\s\S]*LambdaTest[\s\S]*Kobiton/
 
 function readDoc(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), 'utf-8')
@@ -51,6 +53,9 @@ test('real device release checklist covers required Android and iOS gates', () =
     /^## iOS Release Smoke/m,
     /npm run check/,
     /npm run check:device-prereqs -- --summary-output release\/device-test-prereqs-summary\.json --allow-missing/,
+    /hosted-provider\s+environment variable sets/,
+    hostedProviderNamesPattern,
+    /never their values/,
     /npm run check:serious-examples/,
     /npm run release:preflight[\s\S]*validates real-device evidence/,
     /npm audit --audit-level=moderate/,
@@ -311,13 +316,15 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /check:platform-evidence/)
   assert.match(production, /check:device-prereqs/)
   assert.match(production, /Android emulators are reported separately/)
+  assert.match(production, hostedProviderNamesPattern)
+  assert.match(production, /never their values/)
   assert.match(
     production,
-    /Missing local tooling is[\s\S]*only a diagnostic/,
+    /Missing local tooling or provider environment\s+variables are only diagnostics/,
   )
   assert.match(
     production,
-    /hosted\s+real-device runs still satisfy the release gate/,
+    /hosted\s+real-device runs still satisfy the\s+release gate/,
   )
   assert.match(production, /platform-evidence-summary\.json/)
   assert.match(production, /platform-evidence-checklist\.md/)
@@ -470,6 +477,10 @@ test('release preflight enforces real device evidence', () => {
     production,
     /release:handoff[\s\S]*release\/release-handoff\.md[\s\S]*Markdown handoff/,
   )
+  assert.match(
+    production,
+    /generated Markdown\s+checklist and release handoff split `nextActions` commands into `Ready To Run`,\s+`Replace Placeholders First`,[\s\S]*`Run After Device Evidence Is Recorded`[\s\S]*placeholder recording\s+templates stay separate from downstream evidence assembly or commit commands/,
+  )
   assert.match(production, /--check[\s\S]*handoff is current/)
   assert.match(
     production,
@@ -584,6 +595,14 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /GitHub\s+Actions metadata/)
   assert.match(readme, /check:real-device-evidence/)
   assert.match(readme, /check:platform-evidence/)
+  assert.match(readme, /check:device-prereqs/)
+  assert.match(readme, /Android emulators are reported separately/)
+  assert.match(readme, hostedProviderNamesPattern)
+  assert.match(readme, /never their values/)
+  assert.match(
+    readme,
+    /Missing local tooling or provider environment\s+variables are only diagnostics/,
+  )
   assert.match(readme, /platform-evidence-summary\.json/)
   assert.match(readme, /platform-evidence-checklist\.md/)
   assert.match(readme, /real-device-evidence-summary\.json/)
@@ -670,6 +689,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(
     readme,
     /release:handoff[\s\S]*release\/release-handoff\.md[\s\S]*Markdown handoff/,
+  )
+  assert.match(
+    readme,
+    /generated Markdown checklist and release handoff split `nextActions` commands into `Ready To Run`, `Replace Placeholders First`,[\s\S]*`Run After Device Evidence Is Recorded`[\s\S]*placeholder recording templates stay separate from downstream evidence assembly or commit commands/,
   )
   assert.match(readme, /--check[\s\S]*handoff is current/)
   assert.match(

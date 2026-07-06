@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import {
   collectDeviceTestPrereqStatus,
+  collectHostedDeviceProviderStatus,
   isAndroidEmulatorDevice,
   parseAdbDevices,
   parseXctraceDevices,
@@ -145,6 +146,7 @@ test('device prereq status permits physical Android devices with emulator warnin
 
 test('device prereq status reports missing local tooling without failing hosted evidence', () => {
   const summary = collectDeviceTestPrereqStatus({
+    env: {},
     platform: 'all',
     runCommand() {
       return {
@@ -158,8 +160,72 @@ test('device prereq status reports missing local tooling without failing hosted 
 
   assert.equal(summary.ready, false)
   assert.equal(summary.hostedDeviceEvidenceAccepted, true)
+  assert.equal(summary.hostedProviders.anyConfigured, false)
   assert.match(summary.note, /non-local http\(s\) evidence URLs/)
   assert.equal(summary.blockers.length, 2)
   assert.match(summary.blockers[0], /adb not found/)
   assert.match(summary.blockers[1], /xcrun not found/)
+})
+
+test('hosted provider status reports configured env names without values', () => {
+  const status = collectHostedDeviceProviderStatus({
+    BROWSERSTACK_ACCESS_KEY: 'secret',
+    BROWSERSTACK_USERNAME: 'release-user',
+    FIREBASE_TOKEN: '',
+    GCLOUD_PROJECT: 'vue-godot-release',
+    LAMBDATEST_ACCESS_KEY: 'lt-secret',
+    LAMBDATEST_USERNAME: 'lt-user',
+  })
+
+  assert.equal(status.anyConfigured, true)
+  assert.deepEqual(
+    status.providers
+      .filter((provider) => provider.configured)
+      .map((provider) => [provider.id, provider.configuredEnv]),
+    [
+      [
+        'browserstack',
+        ['BROWSERSTACK_USERNAME', 'BROWSERSTACK_ACCESS_KEY'],
+      ],
+      [
+        'lambdatest',
+        ['LAMBDATEST_USERNAME', 'LAMBDATEST_ACCESS_KEY'],
+      ],
+    ],
+  )
+  assert.equal(
+    status.providers.find((provider) => provider.id === 'firebase-test-lab')
+      ?.configured,
+    false,
+  )
+  assert.doesNotMatch(JSON.stringify(status), /secret|release-user|lt-user/)
+})
+
+test('device prereq status includes hosted provider diagnostics', () => {
+  const summary = collectDeviceTestPrereqStatus({
+    env: {
+      SAUCE_ACCESS_KEY: 'secret',
+      SAUCE_USERNAME: 'release-user',
+    },
+    platform: 'android',
+    runCommand() {
+      return {
+        errorCode: 'ENOENT',
+        status: null,
+        stderr: '',
+        stdout: '',
+      }
+    },
+  })
+
+  assert.equal(summary.ready, false)
+  assert.equal(summary.hostedProviders.anyConfigured, true)
+  assert.deepEqual(
+    summary.hostedProviders.providers
+      .filter((provider) => provider.configured)
+      .map((provider) => provider.id),
+    ['sauce-labs'],
+  )
+  assert.equal(summary.blockers.length, 1)
+  assert.match(summary.blockers[0], /adb not found/)
 })

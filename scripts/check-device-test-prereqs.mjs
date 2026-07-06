@@ -6,12 +6,59 @@ import { repoRoot } from './release-utils.mjs'
 
 const platforms = ['android', 'ios']
 
+const hostedDeviceProviderEnvSets = [
+  {
+    id: 'browserstack',
+    label: 'BrowserStack App Automate',
+    requiredEnvSets: [['BROWSERSTACK_USERNAME', 'BROWSERSTACK_ACCESS_KEY']],
+  },
+  {
+    id: 'sauce-labs',
+    label: 'Sauce Labs Real Device Cloud',
+    requiredEnvSets: [['SAUCE_USERNAME', 'SAUCE_ACCESS_KEY']],
+  },
+  {
+    id: 'firebase-test-lab',
+    label: 'Firebase Test Lab',
+    requiredEnvSets: [
+      ['GOOGLE_APPLICATION_CREDENTIALS', 'GCLOUD_PROJECT'],
+      ['GOOGLE_APPLICATION_CREDENTIALS', 'GOOGLE_CLOUD_PROJECT'],
+      ['FIREBASE_TOKEN', 'GCLOUD_PROJECT'],
+      ['FIREBASE_TOKEN', 'GOOGLE_CLOUD_PROJECT'],
+    ],
+  },
+  {
+    id: 'aws-device-farm',
+    label: 'AWS Device Farm',
+    requiredEnvSets: [
+      ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_REGION'],
+    ],
+  },
+  {
+    id: 'lambdatest',
+    label: 'LambdaTest Real Device Cloud',
+    requiredEnvSets: [
+      ['LT_USERNAME', 'LT_ACCESS_KEY'],
+      ['LAMBDATEST_USERNAME', 'LAMBDATEST_ACCESS_KEY'],
+    ],
+  },
+  {
+    id: 'kobiton',
+    label: 'Kobiton',
+    requiredEnvSets: [
+      ['KOBITON_USERNAME', 'KOBITON_API_KEY'],
+      ['KOBITON_USERNAME', 'KOBITON_ACCESS_KEY'],
+    ],
+  },
+]
+
 function usage() {
   console.log(`Usage: node scripts/check-device-test-prereqs.mjs [options]
 
 Checks whether the local machine has enough Android/iOS tooling and attached
 real devices to run the release smoke checks. Hosted real-device providers can
-still satisfy release evidence; this command only diagnoses local prerequisites.
+still satisfy release evidence; this command diagnoses local prerequisites and
+common hosted-provider environment variables without treating them as evidence.
 
 Options:
   --platform <android|ios|all>  Platform to check. Default: all.
@@ -106,6 +153,32 @@ function formatCommandFailure(command, result) {
   return message.length > 0
     ? `${command} failed: ${message}`
     : `${command} failed with status ${result.status ?? 'unknown'}`
+}
+
+function envHasValue(env, name) {
+  return typeof env[name] === 'string' && env[name].trim().length > 0
+}
+
+export function collectHostedDeviceProviderStatus(env = process.env) {
+  const providers = hostedDeviceProviderEnvSets.map((provider) => {
+    const configuredEnv =
+      provider.requiredEnvSets.find((envSet) =>
+        envSet.every((name) => envHasValue(env, name)),
+      ) ?? null
+
+    return {
+      configured: configuredEnv !== null,
+      configuredEnv: configuredEnv ?? [],
+      id: provider.id,
+      label: provider.label,
+      requiredEnvSets: provider.requiredEnvSets,
+    }
+  })
+
+  return {
+    anyConfigured: providers.some((provider) => provider.configured),
+    providers,
+  }
 }
 
 export function parseAdbDevices(output) {
@@ -249,6 +322,7 @@ function checkIos(runCommand) {
 
 export function collectDeviceTestPrereqStatus(options = {}) {
   const runCommand = options.runCommand ?? defaultRunCommand
+  const env = options.env ?? process.env
   const selectedPlatforms =
     options.platform && options.platform !== 'all'
       ? [options.platform]
@@ -274,10 +348,25 @@ export function collectDeviceTestPrereqStatus(options = {}) {
   )
   summary.ready = summary.blockers.length === 0
   summary.hostedDeviceEvidenceAccepted = true
+  summary.hostedProviders = collectHostedDeviceProviderStatus(env)
   summary.note =
     'Hosted real-device runs satisfy the release gate when the final evidence records artifact ids, device metadata, and non-local http(s) evidence URLs.'
 
   return summary
+}
+
+function formatHostedProviderStatus(status) {
+  const configuredProviders = status.providers.filter(
+    (provider) => provider.configured,
+  )
+  if (configuredProviders.length === 0) {
+    return ['[device-prereqs] hosted provider env: none detected']
+  }
+
+  return configuredProviders.map(
+    (provider) =>
+      `[device-prereqs] hosted provider env: ${provider.label} (${provider.configuredEnv.join(', ')})`,
+  )
 }
 
 function formatPlatformStatus(label, status) {
@@ -314,6 +403,7 @@ function printText(summary) {
     `[device-prereqs] status: ${summary.ready ? 'ready' : 'waiting'}`,
     ...formatPlatformStatus('Android', summary.android),
     ...formatPlatformStatus('iOS', summary.ios),
+    ...formatHostedProviderStatus(summary.hostedProviders),
   ]
   if (!summary.ready) {
     lines.push(`[device-prereqs] ${summary.note}`)
