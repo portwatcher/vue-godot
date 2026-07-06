@@ -19,7 +19,7 @@ marking Android or iOS device validation complete:
 - `npm run release:preflight` result from the release environment
 - Android APK/AAB artifact name or hosted-device build identifier
 - iOS archive, TestFlight, or hosted-device build identifier
-- Android and iOS device test run, lab session, or signed evidence URLs
+- Android and iOS device test run, lab session, or signed non-local evidence URLs
 - tested device model, OS version, orientation, and locale for each platform
 - selected browser/device APIs and native adapters enabled in the build
 - observed failures, skipped capabilities, and accepted release risks
@@ -202,8 +202,8 @@ tested release commit is known; it must be the full 40-character commit SHA.
 Generated `nextActions` commands will use that commit for CI collection,
 worksheet audit, evidence assembly, and validation instead of the placeholder.
 If you prefill `--android-evidence-url` or `--ios-evidence-url`, each value
-must be an `http` or `https` link to the device test run, lab session, or signed
-evidence artifact.
+must be a non-local `http` or `https` link to the device test run, lab session,
+or signed evidence artifact; `localhost` and loopback links are rejected.
 Keep only complete `android` and `ios` evidence objects before running
 `npm run release:evidence`.
 Keep platform worksheet fields and scaffold fields only in `release/platform-evidence.json`; final
@@ -257,8 +257,9 @@ context without modifying `release/platform-evidence.json`.
 Use `--platform ios` with `--export-preset <ios-export-preset>` for the iOS
 pass. The recorder rejects unknown check names and refuses to put pass-only or
 selected-API-required checks in `skippedChecks`; those checks must be recorded
-with `--pass` after they actually pass. `--evidence-url` must be an `http` or
-`https` link to the device test run, lab session, or signed evidence artifact.
+with `--pass` after they actually pass. `--evidence-url` must be a non-local
+`http` or `https` link to the device test run, lab session, or signed evidence
+artifact; `localhost` and loopback links are rejected.
 Only use `--skip check=reason` for conditional checks that are genuinely outside
 the selected release profile, such as
 `--skip deep-links-share-notifications-if-selected="not selected for this release profile"`

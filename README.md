@@ -342,18 +342,19 @@ release-specific reasons. A check must not appear in both. Use `npm run release:
 or `--platform ios` after each hosted or real-device pass to record
 artifact/evidence URL/export-preset/device metadata, `--pass` check names, and
 `--skip check=reason` outcomes without hand-editing JSON. Evidence URL values
-must be `http` or `https` links to the device test run, lab session, or signed
-evidence artifact; add `--list-checks` first when you need the valid check
-names, descriptions, current worksheet outcomes, and selected-API must-pass
-context without modifying the worksheet.
+must be non-local `http` or `https` links to the device test run, lab session,
+or signed evidence artifact; `localhost` and loopback links are rejected. Add
+`--list-checks` first when you need the valid check names, descriptions,
+current worksheet outcomes, and selected-API must-pass context without
+modifying the worksheet.
 Run `npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` before local device
 sessions to report whether `adb`, Xcode device listing, and attached Android or
 iOS devices are available and to leave a gitignored JSON diagnostic next to the
 other release helper summaries. Android emulators are reported separately and
 do not satisfy the local release-device prerequisite. Missing local tooling is
 only a diagnostic; hosted real-device runs still satisfy the release gate when
-the final evidence records artifact IDs, device metadata, and http(s) evidence
-URLs.
+the final evidence records artifact IDs, device metadata, and non-local
+http(s) evidence URLs.
 After every
 unresolved must-pass check has actually passed, add `--pass-remaining` to record
 the remaining must-pass checks in one batch, and include

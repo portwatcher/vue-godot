@@ -6,6 +6,8 @@ import {
   extractGitHubActionsRunId,
   fetchGitHubActionsRunArtifacts,
   githubTokenFromEnv,
+  isLoopbackHttpUrl,
+  isReleaseEvidenceUrl,
   validateGitHubActionsRunMetadata,
 } from '../scripts/release-evidence-utils.mjs'
 
@@ -75,6 +77,19 @@ test('GitHub Actions run metadata rejects stale or failed runs', () => {
     /commit must be 0123456789abcdef0123456789abcdef01234567/,
   )
   assert.match(errors, /conclusion must be "success"/)
+})
+
+test('release evidence URLs reject local-only links', () => {
+  assert.equal(
+    isReleaseEvidenceUrl('https://device-lab.example.com/runs/123'),
+    true,
+  )
+  assert.equal(isReleaseEvidenceUrl('http://localhost:8080/run'), false)
+  assert.equal(isReleaseEvidenceUrl('https://127.0.0.1/run'), false)
+  assert.equal(isReleaseEvidenceUrl('http://[::1]/run'), false)
+  assert.equal(isReleaseEvidenceUrl('file:///tmp/device-run.txt'), false)
+  assert.equal(isLoopbackHttpUrl('https://localhost/run'), true)
+  assert.equal(isLoopbackHttpUrl('https://device-lab.example.com/run'), false)
 })
 
 test('GitHub token helper accepts Actions and gh token environment names', () => {

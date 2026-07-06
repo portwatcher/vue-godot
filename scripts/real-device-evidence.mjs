@@ -4,8 +4,8 @@ import {
   assertExactString,
   assertGitHubActionsRunUrl,
   hasNonEmptyString,
-  isHttpUrl,
   isRecord,
+  isReleaseEvidenceUrl,
   verifyGitHubActionsRunUrl,
 } from './release-evidence-utils.mjs'
 import {
@@ -447,8 +447,8 @@ function assertString(record, key, errors, label) {
 
 function assertHttpUrl(record, key, errors, label) {
   assertString(record, key, errors, label)
-  if (hasNonEmptyString(record, key) && !isHttpUrl(record[key])) {
-    errors.push(`${label}.${key} must be an http(s) URL`)
+  if (hasNonEmptyString(record, key) && !isReleaseEvidenceUrl(record[key])) {
+    errors.push(`${label}.${key} must be a non-local http(s) URL`)
   }
 }
 

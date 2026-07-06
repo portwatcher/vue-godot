@@ -159,6 +159,19 @@ test('real device evidence rejects placeholder metadata and skip reasons', () =>
   )
 })
 
+test('real device evidence rejects local-only evidence URLs', () => {
+  const evidence = validEvidence()
+  evidence.android.evidenceUrl = 'http://localhost:8080/android-device-run'
+  evidence.ios.evidenceUrl = 'https://127.0.0.1/ios-device-run'
+
+  const errors = validateRealDeviceEvidence(evidence).join('\n')
+  assert.match(
+    errors,
+    /android\.evidenceUrl must be a non-local http\(s\) URL/,
+  )
+  assert.match(errors, /ios\.evidenceUrl must be a non-local http\(s\) URL/)
+})
+
 test('real device evidence requires core platform checks to pass', () => {
   const evidence = validEvidence()
   evidence.android.passedChecks = evidence.android.passedChecks.filter(

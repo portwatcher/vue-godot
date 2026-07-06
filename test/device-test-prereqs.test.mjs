@@ -158,6 +158,7 @@ test('device prereq status reports missing local tooling without failing hosted 
 
   assert.equal(summary.ready, false)
   assert.equal(summary.hostedDeviceEvidenceAccepted, true)
+  assert.match(summary.note, /non-local http\(s\) evidence URLs/)
   assert.equal(summary.blockers.length, 2)
   assert.match(summary.blockers[0], /adb not found/)
   assert.match(summary.blockers[1], /xcrun not found/)

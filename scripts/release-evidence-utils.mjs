@@ -44,6 +44,26 @@ export function isHttpUrl(value) {
   }
 }
 
+export function isLoopbackHttpUrl(value) {
+  if (!isHttpUrl(value)) {
+    return false
+  }
+
+  const url = new URL(value)
+  const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, '')
+  return (
+    hostname === 'localhost' ||
+    hostname.endsWith('.localhost') ||
+    hostname === '0.0.0.0' ||
+    hostname === '::1' ||
+    hostname.startsWith('127.')
+  )
+}
+
+export function isReleaseEvidenceUrl(value) {
+  return isHttpUrl(value) && !isLoopbackHttpUrl(value)
+}
+
 export function assertGitHubActionsRunUrl(record, key, errors, label) {
   if (!hasGitHubActionsRunUrl(record, key)) {
     errors.push(

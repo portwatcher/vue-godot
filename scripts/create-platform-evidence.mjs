@@ -27,7 +27,7 @@ import {
   recordPlatformEvidenceCommands,
   releaseEvidenceCommand,
 } from './release-handoff-commands.mjs'
-import { isHttpUrl } from './release-evidence-utils.mjs'
+import { isReleaseEvidenceUrl } from './release-evidence-utils.mjs'
 import { readInitialCiEvidenceStatus } from './release-ci-evidence.mjs'
 import { normalizeCommitSha, repoRoot, uniqueStrings } from './release-utils.mjs'
 
@@ -61,8 +61,8 @@ Options:
                                   Default: ${defaultReleaseCiEvidencePath}.
   --android-artifact <name>        Android APK/AAB or hosted build identifier.
   --ios-artifact <name>            iOS archive, TestFlight, or hosted build identifier.
-  --android-evidence-url <url>     Android device test run, lab session, or signed evidence URL.
-  --ios-evidence-url <url>         iOS device test run, lab session, or signed evidence URL.
+  --android-evidence-url <url>     Android non-local device test run, lab session, or signed evidence URL.
+  --ios-evidence-url <url>         iOS non-local device test run, lab session, or signed evidence URL.
   --android-export-preset <name>   Android export preset. Default: Android Release.
   --ios-export-preset <name>       iOS export preset. Default: iOS Release.
   --android-device <model>         Tested Android device model.
@@ -192,8 +192,8 @@ function assertOptionalEvidenceUrl(value, label) {
   if (typeof value !== 'string' || value.trim().length === 0) {
     return
   }
-  if (!isHttpUrl(value)) {
-    throw new Error(`${label} requires an http(s) URL`)
+  if (!isReleaseEvidenceUrl(value)) {
+    throw new Error(`${label} requires a non-local http(s) URL`)
   }
 }
 

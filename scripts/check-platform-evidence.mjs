@@ -26,7 +26,7 @@ import {
   releaseEvidenceCommand,
   productionProfilePlatformEvidenceCommand,
 } from './release-handoff-commands.mjs'
-import { isHttpUrl, isRecord } from './release-evidence-utils.mjs'
+import { isRecord, isReleaseEvidenceUrl } from './release-evidence-utils.mjs'
 import {
   duplicateStrings,
   intersectStrings,
@@ -188,8 +188,8 @@ function checkRequiredHttpUrl(record, key, label, errors) {
     return missingField
   }
 
-  if (!isHttpUrl(record[key])) {
-    errors.push(`${label}.${key} must be an http(s) URL`)
+  if (!isReleaseEvidenceUrl(record[key])) {
+    errors.push(`${label}.${key} must be a non-local http(s) URL`)
   }
   return null
 }

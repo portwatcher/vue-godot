@@ -7,7 +7,7 @@ import {
   formatPlatformEvidenceProgress,
   formatPlatformEvidenceRemaining,
 } from './check-platform-evidence.mjs'
-import { isHttpUrl, isRecord } from './release-evidence-utils.mjs'
+import { isRecord, isReleaseEvidenceUrl } from './release-evidence-utils.mjs'
 import { defaultPlatformEvidencePath } from './release-handoff-commands.mjs'
 import {
   describeRealDeviceCheck,
@@ -32,7 +32,7 @@ Options:
   --platform <android|ios>         Platform to update. Required.
   --platform-evidence <file>       Worksheet path. Default: ${defaultPlatformEvidencePath}
   --artifact <name>                APK/AAB, archive, TestFlight, or hosted build id.
-  --evidence-url <url>             Device test run, lab session, or signed evidence URL.
+  --evidence-url <url>             Non-local device test run, lab session, or signed evidence URL.
   --export-preset <name>           Godot export preset tested.
   --device <model>                 Tested device model.
   --os <version>                   Tested OS version.
@@ -425,8 +425,8 @@ export function recordPlatformEvidence(evidence, options) {
     if (isReleaseEvidencePlaceholder(value)) {
       throw new Error(`${platform}.${key} requires a real value, not ${value}`)
     }
-    if (key === 'evidenceUrl' && !isHttpUrl(value)) {
-      throw new Error(`${platform}.evidenceUrl requires an http(s) URL`)
+    if (key === 'evidenceUrl' && !isReleaseEvidenceUrl(value)) {
+      throw new Error(`${platform}.evidenceUrl requires a non-local http(s) URL`)
     }
     platformEvidence[key] = value
   }

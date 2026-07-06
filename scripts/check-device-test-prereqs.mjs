@@ -275,7 +275,7 @@ export function collectDeviceTestPrereqStatus(options = {}) {
   summary.ready = summary.blockers.length === 0
   summary.hostedDeviceEvidenceAccepted = true
   summary.note =
-    'Hosted real-device runs satisfy the release gate when the final evidence records artifact ids, device metadata, and http(s) evidence URLs.'
+    'Hosted real-device runs satisfy the release gate when the final evidence records artifact ids, device metadata, and non-local http(s) evidence URLs.'
 
   return summary
 }

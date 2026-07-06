@@ -492,14 +492,21 @@ test('platform evidence template rejects invalid evidence URLs', () => {
       buildPlatformEvidenceTemplate({
         androidEvidenceUrl: 'file:///tmp/android-device-run.txt',
       }),
-    /android\.evidenceUrl requires an http\(s\) URL/,
+    /android\.evidenceUrl requires a non-local http\(s\) URL/,
   )
   assert.throws(
     () =>
       buildPlatformEvidenceTemplate({
         iosEvidenceUrl: '<ios-device-evidence-url>',
       }),
-    /ios\.evidenceUrl requires an http\(s\) URL/,
+    /ios\.evidenceUrl requires a non-local http\(s\) URL/,
+  )
+  assert.throws(
+    () =>
+      buildPlatformEvidenceTemplate({
+        iosEvidenceUrl: 'http://localhost:9000/ios-device-run',
+      }),
+    /ios\.evidenceUrl requires a non-local http\(s\) URL/,
   )
 })
 
