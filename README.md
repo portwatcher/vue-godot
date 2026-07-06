@@ -356,6 +356,7 @@ Android and iOS. Use `npm run check:platform-evidence -- --allow-open --summary-
 during device testing to write per-platform remaining check names, must-pass and
 skippable gaps, metadata gaps, worksheet drift, and nextActions; run it without `--allow-open` before
 `npm run release:evidence`. The top-level `nextActions` section records
+audited progress, exact remaining metadata/must-pass/skippable gap names,
 `npm run check`, any still-needed release CI wait/dispatch commands, Android/iOS
 `release:record-platform-evidence` command templates before the worksheet audit
 command, and final evidence assembly commands for after the worksheet is

@@ -107,6 +107,10 @@ test('platform evidence template lists required checks without passing them', ()
     template.nextActions.some(
       (action) =>
         action.id === 'complete-platform-evidence' &&
+        /Android must-pass remaining: cold-launch/.test(action.detail) &&
+        /iOS skippable remaining: .*deep-links-share-notifications-if-selected/.test(
+          action.detail,
+        ) &&
         action.commands.includes(
           'npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
         ) &&
@@ -119,6 +123,8 @@ test('platform evidence template lists required checks without passing them', ()
     template.nextActions.some(
       (action) =>
         action.id === 'record-required-checks' &&
+        /Android: 3 metadata field\(s\) missing/.test(action.detail) &&
+        /iOS must-pass remaining: cold-launch/.test(action.detail) &&
         action.commands.includes(
           'npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit <release-candidate-sha>',
         ),
@@ -275,8 +281,20 @@ test('platform evidence template expands production profile selected APIs', () =
     productionProfile: true,
     selectedApis: ['fetch', 'KeyboardAvoidingView'],
   })
+  const completeAction = template.nextActions.find(
+    (action) => action.id === 'complete-platform-evidence',
+  )
 
   assert.deepEqual(template.android.selectedApis, productionProfileSelectedApis)
+  assert.ok(completeAction)
+  assert.match(
+    completeAction.detail,
+    /Android must-pass remaining: .*audio-input-if-selected/,
+  )
+  assert.match(
+    completeAction.detail,
+    /iOS skippable remaining: deep-links-share-notifications-if-selected/,
+  )
   assert.deepEqual(template.android.selectedApiRequiredChecks, {
     'network-if-selected': [
       'fetch',

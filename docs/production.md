@@ -127,9 +127,10 @@ Because the production profile includes `navigator.mediaDevices.getUserMedia`,
 production evidence.
 Conditional checks required by selected APIs must be recorded in `passedChecks`,
 not `skippedChecks`. Its top-level `nextActions` section records Android/iOS
-`release:record-platform-evidence` command templates, the allow-open worksheet
-audit command, `npm run check`, release CI wait/dispatch commands, and final
-evidence assembly commands for after the worksheet is complete. Run
+`release:record-platform-evidence` command templates, audited progress, exact
+remaining metadata/must-pass/skippable gap names, the allow-open worksheet audit
+command, `npm run check`, release CI wait/dispatch commands, and final evidence
+assembly commands for after the worksheet is complete. Run
 `npm run check:platform-evidence` without `--allow-open` before
 `npm run release:evidence`.
 After device testing and CI runs exist, `npm run release:evidence` assembles the

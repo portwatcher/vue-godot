@@ -177,6 +177,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(platformEvidenceHelper, /selectedApiRequiredChecks/)
   assert.match(platformEvidenceHelper, /selectedApiRequiredCheckMap/)
   assert.match(platformEvidenceHelper, /nextActions/)
+  assert.match(platformEvidenceHelper, /formatPlatformEvidenceProgress/)
+  assert.match(platformEvidenceHelper, /formatPlatformEvidenceRemaining/)
 
   for (const pattern of [
     /release-preflight-summary/,
@@ -350,9 +352,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /Selected API names are validated/)
   assert.match(production, /selected APIs must be recorded in `passedChecks`/)
   assert.match(production, /top-level `nextActions` section/)
+  assert.match(production, /audited progress/)
+  assert.match(production, /exact\s+remaining metadata\/must-pass\/skippable gap names/)
   assert.match(production, /release\s+CI\s+wait\/dispatch commands/)
-  assert.match(production, /worksheet\s+audit command/)
-  assert.match(production, /final\s+evidence assembly commands/)
+  assert.match(production, /allow-open worksheet audit\s+command/)
+  assert.match(production, /final\s+evidence\s+assembly commands/)
   assert.match(production, /worksheet fields/)
   assert.match(
     production,
@@ -628,9 +632,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /Selected API names are\s+validated/)
   assert.match(readme, /must be in `passedChecks`/)
   assert.match(readme, /top-level `nextActions` section/)
+  assert.match(readme, /audited progress/)
+  assert.match(readme, /exact remaining metadata\/must-pass\/skippable gap names/)
   assert.match(readme, /release\s+CI\s+wait\/dispatch commands/)
   assert.match(readme, /worksheet\s+audit\s+command/)
-  assert.match(readme, /final evidence assembly commands/)
+  assert.match(readme, /final evidence\s+assembly commands/)
   assert.match(readme, /worksheet fields/)
   assert.match(
     readme,
@@ -834,6 +840,11 @@ test('release preflight enforces real device evidence', () => {
     /audio-input-if-selected[\s\S]*must-pass Android and iOS device check/,
   )
   assert.match(checklist, /top-level `nextActions`/)
+  assert.match(checklist, /audited progress/)
+  assert.match(
+    checklist,
+    /exact remaining metadata\/must-pass\/skippable gap names/,
+  )
   assert.match(checklist, /release\s+CI\s+wait\/dispatch commands/)
   assert.match(checklist, /worksheet\s+audit command/)
   assert.match(checklist, /local `npm run check`/)

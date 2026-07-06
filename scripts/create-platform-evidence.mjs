@@ -2,6 +2,11 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import {
+  auditPlatformEvidence,
+  formatPlatformEvidenceProgress,
+  formatPlatformEvidenceRemaining,
+} from './check-platform-evidence.mjs'
+import {
   knownRealDeviceSelectedApis,
   passOnlyRealDeviceChecks,
   productionProfileSelectedApis,
@@ -33,7 +38,8 @@ Checks listed in passOnlyChecks and selectedApiRequiredChecks must be recorded
 in passedChecks.
 The top-level nextActions array records the follow-up commands for recording
 device results, auditing worksheet progress, and assembling final real-device
-evidence after the worksheet is complete.
+evidence after the worksheet is complete. It also includes audited progress and
+exact remaining metadata, must-pass, and skippable check names.
 
 Options:
   --output <file>                  Output path. Default: ${defaultOutput}
@@ -220,13 +226,28 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
     ? 'Committed CI evidence already validates Check and Godot Smoke for the tested release candidate; generate release/real-device-evidence.json from this worksheet after device testing.'
     : 'After CI runs exist for the tested release candidate, generate release/real-device-evidence.json from this worksheet.'
   const platformEvidenceSummaryPath = 'release/platform-evidence-summary.json'
+  const platformAudit = options.platformAudit
+  const platformAuditDetail = platformAudit?.ready
+    ? ''
+    : [
+        platformAudit ? formatPlatformEvidenceProgress(platformAudit) : '',
+        platformAudit
+          ? formatPlatformEvidenceRemaining(platformAudit).join(' ')
+          : '',
+      ]
+        .filter(Boolean)
+        .join(' ')
 
   return [
     {
       id: 'complete-platform-evidence',
       title: 'Fill Android and iOS device evidence fields',
-      detail:
+      detail: [
         'Record artifact IDs, export presets, device models, OS versions, orientation, locale, selected APIs, and real test outcomes before assembling final evidence.',
+        platformAuditDetail,
+      ]
+        .filter(Boolean)
+        .join(' '),
       commands: [
         recordPlatformEvidenceCommand('android', commit, {
           platformEvidencePath,
@@ -241,8 +262,12 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
     {
       id: 'record-required-checks',
       title: 'Move worksheet checks into passedChecks or skippedChecks',
-      detail:
+      detail: [
         'Every requiredChecks entry must move to passedChecks or skippedChecks with a release-specific reason; passOnlyChecks and selectedApiRequiredChecks must move to passedChecks.',
+        platformAuditDetail,
+      ]
+        .filter(Boolean)
+        .join(' '),
       commands: [
         checkPlatformEvidenceCommand(commit, {
           allowOpen: true,
@@ -300,11 +325,18 @@ export function buildPlatformEvidenceTemplate(options = {}) {
     output: options.output ?? defaultOutput,
     ciEvidencePath: options.ciEvidencePath ?? defaultReleaseCiEvidencePath,
     commit: normalizeCommitSha(options.commit, '--commit'),
+    productionProfile: Boolean(options.productionProfile),
     selectedApis,
   }
   const initialCiEvidence = readInitialCiEvidenceStatus(
     normalized.ciEvidencePath,
     normalized.commit,
+  )
+  const android = buildPlatformTemplate('android', normalized)
+  const ios = buildPlatformTemplate('ios', normalized)
+  const platformAudit = auditPlatformEvidence(
+    { android, ios },
+    { allowNonProductionProfile: !normalized.productionProfile },
   )
 
   return {
@@ -312,9 +344,10 @@ export function buildPlatformEvidenceTemplate(options = {}) {
     nextActions: buildNextActions(normalized.output, normalized.commit, {
       ciEvidencePath: normalized.ciEvidencePath,
       initialCiEvidence,
+      platformAudit,
     }),
-    android: buildPlatformTemplate('android', normalized),
-    ios: buildPlatformTemplate('ios', normalized),
+    android,
+    ios,
   }
 }
 
