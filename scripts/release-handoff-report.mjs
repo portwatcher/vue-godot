@@ -224,6 +224,16 @@ function commandBlock(commands) {
   return ['```bash', ...commands, '```']
 }
 
+function hasCommandPlaceholders(commands) {
+  return (
+    Array.isArray(commands) &&
+    commands.some(
+      (command) =>
+        typeof command === 'string' && /<[^>\n]+>/.test(command.trim()),
+    )
+  )
+}
+
 function checkDetailText(detail) {
   const check = String(detail.check ?? 'unknown-check')
   const state = detail.mustPass === true ? 'must pass' : 'skippable'
@@ -369,6 +379,12 @@ function renderNextActions(summary) {
     const checkDetailLines = actionCheckDetailLines(action)
     if (checkDetailLines.length > 0) {
       lines.push(...checkDetailLines)
+      lines.push('')
+    }
+    if (hasCommandPlaceholders(action.commands)) {
+      lines.push(
+        'Commands with `<...>` placeholders must be edited before running; unresolved placeholders are not valid release evidence or dispatch inputs.',
+      )
       lines.push('')
     }
     lines.push(...commandBlock(action.commands))

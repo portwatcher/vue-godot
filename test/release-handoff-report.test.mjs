@@ -151,6 +151,7 @@ function sampleReadinessSummary(ciEvidencePath = 'release/ci-runs.json') {
         ],
         commands: [
           'npm run check',
+          'npm run release:record-platform-evidence -- --platform android --artifact <android-apk-aab-or-hosted-build-id>',
           `npm run release:evidence -- --commit ${commit}`,
           'git commit -m "Add real-device release evidence"',
         ],
@@ -175,8 +176,13 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
   )
   assert.match(markdown, /Blocked by: `real-device-evidence`/)
   assert.match(markdown, /Remaining check details:\n- Android `network-if-selected` \(must pass; selected APIs: fetch, WebSocket\): Exercise fetch/)
+  assert.match(
+    markdown,
+    /Commands with `<\.\.\.>` placeholders must be edited before running; unresolved placeholders are not valid release evidence or dispatch inputs\./,
+  )
   assert.match(markdown, /TODO\.md:389 Android export/)
   assert.match(markdown, /Write Android\/iOS tester handoff/)
+  assert.match(markdown, /release:record-platform-evidence -- --platform android/)
   assert.match(markdown, /npm run release:evidence -- --commit/)
   assert.doesNotMatch(markdown, new RegExp(repoRoot.replaceAll('/', '\\/')))
   assert.match(

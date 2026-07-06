@@ -129,6 +129,8 @@ Remaining check details:
 - iOS `background-foreground` (must pass): Background and foreground the app, then confirm resources, adapters, and app state resume correctly.
 - iOS `deep-links-share-notifications-if-selected` (skippable): Verify cold-start and warm-start deep links, share sheets, and notification delivery when those adapters are selected.
 
+Commands with `<...>` placeholders must be edited before running; unresolved placeholders are not valid release evidence or dispatch inputs.
+
 ```bash
 npm run check
 npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
@@ -147,6 +149,8 @@ git push
 Blocked by: `real-device-evidence`
 
 Run the local check after the tested release candidate and real-device evidence are pushed, refresh Check and Godot Smoke from the release-candidate ref when CI evidence is still missing, then dispatch Release Preflight from the current evidence commit ref and write release-readiness evidence.
+
+Commands with `<...>` placeholders must be edited before running; unresolved placeholders are not valid release evidence or dispatch inputs.
 
 ```bash
 npm run check
