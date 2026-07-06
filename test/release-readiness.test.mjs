@@ -682,6 +682,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
       (action) => action.id === 'release-preflight-evidence',
     )
     assert.ok(releasePreflightAction)
+    assert.equal('blockedBy' in releasePreflightAction, false)
     assert.equal(releasePreflightAction.commands[0], 'npm run check')
     const releaseCiWaitIndex = releasePreflightAction.commands.indexOf(
       `npm run release:ci -- --commit ${exampleCommit} --wait --output release/ci-runs.json`,
@@ -719,6 +720,10 @@ test('release readiness writes a machine-readable blocker summary', () => {
       summary.nextActions.some(
         (action) => {
           if (action.id !== 'final-warning-removal') {
+            return false
+          }
+
+          if ('blockedBy' in action) {
             return false
           }
 
@@ -984,6 +989,9 @@ test('release readiness summary includes missing evidence next actions', () => {
       (action) => action.id === 'release-preflight-evidence',
     )
     assert.ok(releasePreflightAction)
+    assert.deepEqual(releasePreflightAction.blockedBy, [
+      'real-device-evidence',
+    ])
     assert.equal(releasePreflightAction.commands[0], 'npm run check')
     assert.ok(
       releasePreflightAction.commands.every(
@@ -1054,6 +1062,10 @@ test('release readiness summary includes missing evidence next actions', () => {
       (action) => action.id === 'final-warning-removal',
     )
     assert.ok(finalWarningAction)
+    assert.deepEqual(finalWarningAction.blockedBy, [
+      'real-device-evidence',
+      'release-preflight-evidence',
+    ])
     assert.ok(
       finalWarningAction.commands.includes(
         `npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit ${summary.commit} --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
@@ -1121,6 +1133,9 @@ test('release readiness reuses committed initial CI evidence in next actions', (
       (action) => action.id === 'release-preflight-evidence',
     )
     assert.ok(releasePreflightAction)
+    assert.deepEqual(releasePreflightAction.blockedBy, [
+      'real-device-evidence',
+    ])
     assert.ok(
       releasePreflightAction.commands.every(
         (command) =>

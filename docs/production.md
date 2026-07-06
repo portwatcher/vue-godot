@@ -188,6 +188,8 @@ errors, release-readiness evidence status, and CI workflow wiring status, as
 JSON for release handoff. The initial CI, real-device, and
 Release Preflight evidence actions begin with `npm run check` before collecting
 CI or assembling evidence.
+Later `nextActions` include a `blockedBy` list when they depend on earlier
+evidence actions, such as real-device evidence before Release Preflight.
 The initial CI action captures Check and Godot Smoke, while Release Preflight is
 captured later after real-device evidence is committed. When
 `release/ci-runs.json`, or the file passed with `--ci-evidence <file>`,

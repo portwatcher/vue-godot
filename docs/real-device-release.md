@@ -77,7 +77,9 @@ Release Preflight evidence actions begin
 with `npm run check` before collecting CI or assembling evidence. The initial CI
 action captures Check and Godot Smoke, while Release Preflight is captured later
 after real-device evidence is committed. The real-device evidence action runs
-the platform worksheet audit before final evidence assembly. When
+the platform worksheet audit before final evidence assembly. Later
+`nextActions` include a `blockedBy` list when they depend on earlier evidence
+work, for example real-device evidence before Release Preflight. When
 `release/ci-runs.json`, or the
 file passed with `--ci-evidence <file>`, already validates Check and Godot Smoke
 for the expected release commit, readiness marks that initial CI evidence as

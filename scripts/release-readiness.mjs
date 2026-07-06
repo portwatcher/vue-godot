@@ -1137,6 +1137,19 @@ function collectReadinessNextActions(
     realDeviceEvidencePath,
     defaultRealDeviceEvidencePath,
   )
+  const realDeviceEvidenceBlocked =
+    !checks.realDeviceEvidence ||
+    !checks.androidRealDeviceEvidence ||
+    !checks.iosRealDeviceEvidence
+
+  function withBlockedBy(action, dependencies) {
+    return dependencies.length > 0
+      ? {
+          ...action,
+          blockedBy: dependencies,
+        }
+      : action
+  }
 
   if (!checks.cleanWorktree) {
     actions.push({
@@ -1261,42 +1274,47 @@ function collectReadinessNextActions(
   }
 
   if (!checks.strictCiEvidence || !checks.releaseReadinessEvidence) {
-    actions.push({
-      id: 'release-preflight-evidence',
-      title: 'Collect CI and warning-free Release Preflight evidence',
-      detail:
-        'Run the local check after the tested release candidate and real-device evidence are pushed, refresh Check and Godot Smoke from the release-candidate ref when CI evidence is still missing, then dispatch Release Preflight from the current evidence commit ref and write release-readiness evidence.',
-      commands: [
-        'npm run check',
-        ...(checks.initialCiEvidence
-          ? []
-          : initialReleaseCiCommands(commit, initialCiOptions)),
-        ...releasePreflightCiCommands(commit, {
-          output: ciEvidencePath,
-          realDeviceEvidencePath: repoLocalRealDeviceEvidencePath,
-          releasePreflightRunCommit: currentHeadCommitCommand,
-        }),
-        preflightSummaryCommand(commit, pathOptions),
-        releaseEvidenceCommand(
-          commit,
-          releaseReadinessEvidenceCommandOptions(pathOptions),
-        ),
-        ...commitEvidenceFileCommands(
-          [
-            [ciEvidencePath, defaultReleaseCiEvidencePath],
-            [
-              defaultReleasePreflightSummaryPath,
-              defaultReleasePreflightSummaryPath,
-            ],
-            [realDeviceEvidencePath, defaultRealDeviceEvidencePath],
-            [readinessEvidencePath, defaultReleaseReadinessEvidencePath],
+    actions.push(
+      withBlockedBy(
+        {
+          id: 'release-preflight-evidence',
+          title: 'Collect CI and warning-free Release Preflight evidence',
+          detail:
+            'Run the local check after the tested release candidate and real-device evidence are pushed, refresh Check and Godot Smoke from the release-candidate ref when CI evidence is still missing, then dispatch Release Preflight from the current evidence commit ref and write release-readiness evidence.',
+          commands: [
+            'npm run check',
+            ...(checks.initialCiEvidence
+              ? []
+              : initialReleaseCiCommands(commit, initialCiOptions)),
+            ...releasePreflightCiCommands(commit, {
+              output: ciEvidencePath,
+              realDeviceEvidencePath: repoLocalRealDeviceEvidencePath,
+              releasePreflightRunCommit: currentHeadCommitCommand,
+            }),
+            preflightSummaryCommand(commit, pathOptions),
+            releaseEvidenceCommand(
+              commit,
+              releaseReadinessEvidenceCommandOptions(pathOptions),
+            ),
+            ...commitEvidenceFileCommands(
+              [
+                [ciEvidencePath, defaultReleaseCiEvidencePath],
+                [
+                  defaultReleasePreflightSummaryPath,
+                  defaultReleasePreflightSummaryPath,
+                ],
+                [realDeviceEvidencePath, defaultRealDeviceEvidencePath],
+                [readinessEvidencePath, defaultReleaseReadinessEvidencePath],
+              ],
+              'Add release readiness evidence',
+              { push: true },
+            ),
+            releaseReadinessCommand(commit, repoLocalPathOptions),
           ],
-          'Add release readiness evidence',
-          { push: true },
-        ),
-        releaseReadinessCommand(commit, repoLocalPathOptions),
-      ],
-    })
+        },
+        realDeviceEvidenceBlocked ? ['real-device-evidence'] : [],
+      ),
+    )
   }
 
   if (!checks.publicSurface) {
@@ -1314,23 +1332,39 @@ function collectReadinessNextActions(
     !checks.packageDescriptionWarningsRemoved ||
     !checks.rootReadmeWarningsRemoved
   ) {
-    actions.push({
-      id: 'final-warning-removal',
-      title: 'Remove public warning wording through the guarded finalizer',
-      detail:
-        'Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks, removes public warning wording, then stages and commits those edits before the final strict readiness check.',
-      commands: [
-        releaseReadinessCommand(commit, pathOptions, {
-          summaryOutput: '/tmp/vue-godot-readiness.json',
-        }),
-        'npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json',
-        'npm run check',
-        `git add ${finalizationFiles.join(' ')}`,
-        'git commit -m "Finalize production readiness"',
-        'git push',
-        releaseReadinessCommand(commit, pathOptions),
-      ],
-    })
+    const dependencies = []
+    if (realDeviceEvidenceBlocked) {
+      dependencies.push('real-device-evidence')
+    }
+    if (!checks.releaseReadinessEvidence) {
+      dependencies.push('release-preflight-evidence')
+    }
+    if (!checks.publicSurface) {
+      dependencies.push('public-surface')
+    }
+
+    actions.push(
+      withBlockedBy(
+        {
+          id: 'final-warning-removal',
+          title: 'Remove public warning wording through the guarded finalizer',
+          detail:
+            'Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks, removes public warning wording, then stages and commits those edits before the final strict readiness check.',
+          commands: [
+            releaseReadinessCommand(commit, pathOptions, {
+              summaryOutput: '/tmp/vue-godot-readiness.json',
+            }),
+            'npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json',
+            'npm run check',
+            `git add ${finalizationFiles.join(' ')}`,
+            'git commit -m "Finalize production readiness"',
+            'git push',
+            releaseReadinessCommand(commit, pathOptions),
+          ],
+        },
+        dependencies,
+      ),
+    )
   }
 
   return actions
