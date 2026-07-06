@@ -14,6 +14,7 @@ import {
   productionProfileSelectedApis,
   requiredRealDeviceChecks,
 } from '../scripts/real-device-evidence.mjs'
+import { shellQuote } from '../scripts/release-utils.mjs'
 
 const commit = '0123456789abcdef0123456789abcdef01234567'
 const repoRoot = process.cwd()
@@ -382,6 +383,42 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
         `npm run check:platform-evidence -- --platform-evidence ${evidencePath} --summary-output ${summaryPath} --allow-open --expected-commit ${commit}`,
       ),
     )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
+test('check-platform-evidence missing custom worksheet creates custom output next action', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-platform-'))
+  const evidencePath = path.join(tempDir, 'missing-platform-evidence.json')
+  const summaryPath = path.join(tempDir, 'platform-summary.json')
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/check-platform-evidence.mjs',
+        '--platform-evidence',
+        evidencePath,
+        '--allow-open',
+        '--expected-commit',
+        commit,
+        '--summary-output',
+        summaryPath,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf-8',
+      },
+    )
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+
+    assert.equal(result.status, 0, result.stderr || result.stdout)
+    assert.equal(summary.evidencePresent, false)
+    assert.equal(summary.nextActions[0].id, 'create-platform-evidence')
+    assert.deepEqual(summary.nextActions[0].commands, [
+      `npm run release:platform-evidence -- --production-profile --commit ${commit} --output ${shellQuote(evidencePath)}`,
+    ])
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }

@@ -32,6 +32,12 @@ function usage() {
 
 Options:
   --path <file>       Read evidence from a specific JSON file.
+  --ci-evidence <file>
+                      Read initial CI evidence from a specific JSON file.
+                      Default: ${defaultReleaseCiEvidencePath}
+  --platform-evidence <file>
+                      Read platform worksheet status from a specific JSON file.
+                      Default: ${defaultPlatformEvidencePath}
   --expected-commit <sha>
                       Require evidence.commit to match the given commit.
   --summary-output <file>
@@ -43,9 +49,11 @@ Options:
 
 function parseArgs(argv) {
   const options = {
+    ciEvidencePath: defaultReleaseCiEvidencePath,
     evidencePath: null,
     expectedCommit: null,
     optional: false,
+    platformEvidencePath: defaultPlatformEvidencePath,
     summaryOutput: null,
   }
 
@@ -90,6 +98,34 @@ function parseArgs(argv) {
       continue
     }
 
+    if (arg === '--ci-evidence') {
+      const value = argv[++index]
+      if (!value) {
+        throw new Error('--ci-evidence requires a value')
+      }
+      options.ciEvidencePath = value
+      continue
+    }
+
+    if (arg.startsWith('--ci-evidence=')) {
+      options.ciEvidencePath = arg.slice('--ci-evidence='.length)
+      continue
+    }
+
+    if (arg === '--platform-evidence') {
+      const value = argv[++index]
+      if (!value) {
+        throw new Error('--platform-evidence requires a value')
+      }
+      options.platformEvidencePath = value
+      continue
+    }
+
+    if (arg.startsWith('--platform-evidence=')) {
+      options.platformEvidencePath = arg.slice('--platform-evidence='.length)
+      continue
+    }
+
     if (arg === '--expected-commit') {
       const value = argv[++index]
       if (!value) {
@@ -113,16 +149,49 @@ function parseArgs(argv) {
   return options
 }
 
+function customPathCommandOptions(summary) {
+  const options = {}
+  if (summary.usesCustomEvidencePath) {
+    options.realDeviceEvidencePath = summary.evidencePath
+  }
+  if (summary.usesCustomPlatformEvidencePath) {
+    options.platformEvidencePath = summary.platformEvidencePath
+  }
+  if (summary.usesCustomCiEvidencePath) {
+    options.ciEvidencePath = summary.initialCiEvidencePath
+  }
+  return options
+}
+
+function customPlatformEvidenceCommandOptions(summary, extra = {}) {
+  return {
+    ...(summary.usesCustomPlatformEvidencePath
+      ? { platformEvidencePath: summary.platformEvidencePath }
+      : {}),
+    ...extra,
+  }
+}
+
+function customCiEvidenceCommandOptions(summary) {
+  return summary.usesCustomCiEvidencePath
+    ? { output: summary.initialCiEvidencePath }
+    : {}
+}
+
 function collectNextActions(summary) {
   if (summary.ready) {
     return []
   }
   const expectedCommit = summary.expectedCommit
+  const pathOptions = customPathCommandOptions(summary)
 
   if (summary.evidencePresent === false) {
     const ciEvidenceCommands = summary.initialCiEvidenceReady
       ? []
-      : initialReleaseCiCommands(expectedCommit)
+      : initialReleaseCiCommands(
+          expectedCommit,
+          customCiEvidenceCommandOptions(summary),
+        )
     const platformEvidence = summary.platformEvidence
     const platformEvidenceCommands = []
     if (!platformEvidence?.evidencePresent) {
@@ -131,7 +200,14 @@ function collectNextActions(summary) {
         title: 'Create and fill Android/iOS platform evidence',
         detail:
           'Start from the platform evidence worksheet, run the selected API export checks on real or hosted devices, and record pass/skip outcomes.',
-        commands: [productionProfilePlatformEvidenceCommand(expectedCommit)],
+        commands: [
+          productionProfilePlatformEvidenceCommand(
+            expectedCommit,
+            summary.usesCustomPlatformEvidencePath
+              ? { output: summary.platformEvidencePath }
+              : {},
+          ),
+        ],
       })
     } else if (!platformEvidence.ready) {
       const progress = formatPlatformEvidenceProgress(platformEvidence)
@@ -143,11 +219,25 @@ function collectNextActions(summary) {
           progress,
         ].join(' '),
         commands: [
-          recordPlatformEvidenceCommand('android', expectedCommit),
-          recordPlatformEvidenceCommand('ios', expectedCommit),
+          recordPlatformEvidenceCommand(
+            'android',
+            expectedCommit,
+            customPlatformEvidenceCommandOptions(summary, {
+              summaryOutput: 'release/platform-evidence-summary.json',
+            }),
+          ),
+          recordPlatformEvidenceCommand(
+            'ios',
+            expectedCommit,
+            customPlatformEvidenceCommandOptions(summary, {
+              summaryOutput: 'release/platform-evidence-summary.json',
+            }),
+          ),
           checkPlatformEvidenceCommand(expectedCommit, {
             allowOpen: true,
-            summaryOutput: 'release/platform-evidence-summary.json',
+            ...customPlatformEvidenceCommandOptions(summary, {
+              summaryOutput: 'release/platform-evidence-summary.json',
+            }),
           }),
         ],
       })
@@ -165,9 +255,12 @@ function collectNextActions(summary) {
         commands: [
           'npm run check',
           ...ciEvidenceCommands,
-          checkPlatformEvidenceCommand(expectedCommit),
-          releaseEvidenceCommand(expectedCommit),
-          checkRealDeviceEvidenceCommand(expectedCommit),
+          checkPlatformEvidenceCommand(
+            expectedCommit,
+            customPlatformEvidenceCommandOptions(summary),
+          ),
+          releaseEvidenceCommand(expectedCommit, pathOptions),
+          checkRealDeviceEvidenceCommand(expectedCommit, pathOptions),
         ],
       },
     ]
@@ -181,9 +274,12 @@ function collectNextActions(summary) {
         'Run the local check, then use the reported validation errors to update platform evidence or regenerate final evidence for the tested release commit.',
       commands: [
         'npm run check',
-        checkPlatformEvidenceCommand(expectedCommit),
-        releaseEvidenceCommand(expectedCommit),
-        checkRealDeviceEvidenceCommand(expectedCommit),
+        checkPlatformEvidenceCommand(
+          expectedCommit,
+          customPlatformEvidenceCommandOptions(summary),
+        ),
+        releaseEvidenceCommand(expectedCommit, pathOptions),
+        checkRealDeviceEvidenceCommand(expectedCommit, pathOptions),
       ],
     },
   ]
@@ -213,23 +309,29 @@ function main() {
     evidencePresent: Boolean(evidence),
     expectedCommit: options.expectedCommit ?? null,
     initialCiEvidence: null,
-    initialCiEvidencePath: defaultReleaseCiEvidencePath,
+    initialCiEvidencePath: options.ciEvidencePath,
     initialCiEvidenceReady: false,
     optional: options.optional,
     platformEvidence: null,
-    platformEvidencePath: defaultPlatformEvidencePath,
+    platformEvidencePath: options.platformEvidencePath,
     platformEvidenceReady: false,
     ready: false,
+    usesCustomCiEvidencePath:
+      options.ciEvidencePath !== defaultReleaseCiEvidencePath,
+    usesCustomEvidencePath: options.evidencePath !== null,
+    usesCustomPlatformEvidencePath:
+      options.platformEvidencePath !== defaultPlatformEvidencePath,
     errorCount: 0,
     errors: [],
   }
   const initialCiEvidence = readInitialCiEvidenceStatus(
-    defaultReleaseCiEvidencePath,
+    options.ciEvidencePath,
     summary.expectedCommit,
   )
   summary.initialCiEvidence = initialCiEvidence
+  summary.initialCiEvidencePath = initialCiEvidence.path
   summary.initialCiEvidenceReady = initialCiEvidence.ready
-  summary.platformEvidence = readPlatformEvidenceAudit(defaultPlatformEvidencePath)
+  summary.platformEvidence = readPlatformEvidenceAudit(options.platformEvidencePath)
   summary.platformEvidenceReady = summary.platformEvidence.ready
 
   if (!evidence) {

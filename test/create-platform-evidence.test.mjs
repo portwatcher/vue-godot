@@ -206,7 +206,7 @@ test('platform evidence template next actions honor custom output paths', () => 
   )
   assert.ok(
     assembleAction.commands.includes(
-      `npm run check:real-device-evidence -- --expected-commit ${commit}`,
+      `npm run check:real-device-evidence -- --platform-evidence 'release/custom platform'\\''s evidence.json' --expected-commit ${commit}`,
     ),
   )
 })
@@ -247,6 +247,11 @@ test('platform evidence template reuses ready initial CI evidence', () => {
     assert.ok(
       assembleAction.commands.some((command) =>
         command.includes(`--ci-evidence ${ciEvidencePath}`),
+      ),
+    )
+    assert.ok(
+      assembleAction.commands.includes(
+        `npm run check:real-device-evidence -- --ci-evidence ${ciEvidencePath} --expected-commit ${commit}`,
       ),
     )
   } finally {

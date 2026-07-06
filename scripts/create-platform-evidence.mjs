@@ -206,6 +206,12 @@ function buildPlatformTemplate(platform, options) {
 
 function buildNextActions(platformEvidencePath, commit, options = {}) {
   const ciEvidencePath = options.ciEvidencePath ?? defaultReleaseCiEvidencePath
+  const realDeviceCheckOptions = {
+    ...(platformEvidencePath !== defaultOutput ? { platformEvidencePath } : {}),
+    ...(ciEvidencePath !== defaultReleaseCiEvidencePath
+      ? { ciEvidencePath }
+      : {}),
+  }
   const initialCiEvidenceReady = options.initialCiEvidence?.ready === true
   const ciEvidenceCommands = initialCiEvidenceReady
     ? []
@@ -259,7 +265,7 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
           ciEvidencePath,
           platformEvidencePath,
         }),
-        checkRealDeviceEvidenceCommand(commit),
+        checkRealDeviceEvidenceCommand(commit, realDeviceCheckOptions),
       ],
     },
   ]

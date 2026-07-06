@@ -17,9 +17,11 @@ import {
   validateRealDeviceEvidenceMetadata,
   validateRealDevicePlatformEvidence,
 } from '../scripts/real-device-evidence.mjs'
+import { buildPlatformEvidenceTemplate } from '../scripts/create-platform-evidence.mjs'
 import {
   currentReleasePackageVersions,
   releasePackageConfigs,
+  shellQuote,
 } from '../scripts/release-utils.mjs'
 
 const repoRoot = process.cwd()
@@ -479,7 +481,9 @@ test('real device evidence reader reports missing files without throwing', () =>
 
 test('check-real-device-evidence writes a missing-evidence summary when optional', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-evidence-'))
+  const evidencePath = path.join(tempDir, 'missing-real-device-evidence.json')
   const summaryPath = path.join(tempDir, 'real-device-summary.json')
+  const commandEvidencePath = path.relative(repoRoot, evidencePath)
 
   try {
     const result = spawnSync(
@@ -488,7 +492,7 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
         'scripts/check-real-device-evidence.mjs',
         '--optional',
         '--path',
-        path.join(tempDir, 'missing-real-device-evidence.json'),
+        evidencePath,
         '--summary-output',
         summaryPath,
       ],
@@ -538,7 +542,7 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
             'npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit <release-candidate-sha>',
           ) &&
           action.commands.includes(
-            'npm run check:real-device-evidence -- --expected-commit <release-candidate-sha>',
+            `npm run check:real-device-evidence -- --path ${commandEvidencePath} --expected-commit <release-candidate-sha>`,
           ),
       ),
     )
@@ -549,8 +553,10 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
 
 test('check-real-device-evidence next actions honor expected commits', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-evidence-'))
+  const evidencePath = path.join(tempDir, 'missing-real-device-evidence.json')
   const summaryPath = path.join(tempDir, 'real-device-summary.json')
   const expectedCommit = '0123456789abcdef0123456789abcdef01234567'
+  const commandEvidencePath = path.relative(repoRoot, evidencePath)
 
   try {
     const result = spawnSync(
@@ -561,7 +567,7 @@ test('check-real-device-evidence next actions honor expected commits', () => {
         '--expected-commit',
         expectedCommit,
         '--path',
-        path.join(tempDir, 'missing-real-device-evidence.json'),
+        evidencePath,
         '--summary-output',
         summaryPath,
       ],
@@ -605,12 +611,85 @@ test('check-real-device-evidence next actions honor expected commits', () => {
     )
     assert.ok(
       assembleAction.commands.includes(
-        `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${expectedCommit} --real-device-output release/real-device-evidence.json`,
+        `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${expectedCommit} --real-device-output ${commandEvidencePath}`,
       ),
     )
     assert.ok(
       assembleAction.commands.includes(
-        `npm run check:real-device-evidence -- --expected-commit ${expectedCommit}`,
+        `npm run check:real-device-evidence -- --path ${commandEvidencePath} --expected-commit ${expectedCommit}`,
+      ),
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
+test('check-real-device-evidence next actions honor missing custom evidence paths', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-evidence-'))
+  const ciEvidencePath = path.join(tempDir, 'ci-runs.json')
+  const evidencePath = path.join(tempDir, 'real-device-evidence.json')
+  const platformEvidencePath = path.join(tempDir, 'platform-evidence.json')
+  const summaryPath = path.join(tempDir, 'real-device-summary.json')
+  const expectedCommit = '0123456789abcdef0123456789abcdef01234567'
+  const commandEvidencePath = path.relative(repoRoot, evidencePath)
+  const commandPlatformEvidencePath = platformEvidencePath
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/check-real-device-evidence.mjs',
+        '--optional',
+        '--expected-commit',
+        expectedCommit,
+        '--path',
+        evidencePath,
+        '--platform-evidence',
+        platformEvidencePath,
+        '--ci-evidence',
+        ciEvidencePath,
+        '--summary-output',
+        summaryPath,
+      ],
+      { cwd: repoRoot, encoding: 'utf-8' },
+    )
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+    const createAction = summary.nextActions.find(
+      (action) => action.id === 'create-platform-evidence',
+    )
+    const assembleAction = summary.nextActions.find(
+      (action) => action.id === 'assemble-real-device-evidence',
+    )
+
+    assert.equal(result.status, 0, result.stderr || result.stdout)
+    assert.equal(summary.initialCiEvidencePath, ciEvidencePath)
+    assert.equal(summary.platformEvidencePath, commandPlatformEvidencePath)
+    assert.equal(summary.evidencePath, commandEvidencePath)
+    assert.ok(createAction)
+    assert.ok(
+      createAction.commands.includes(
+        `npm run release:platform-evidence -- --production-profile --commit ${expectedCommit} --output ${shellQuote(commandPlatformEvidencePath)}`,
+      ),
+    )
+    assert.ok(assembleAction)
+    assert.ok(
+      assembleAction.commands.includes(
+        `npm run release:ci -- --commit ${expectedCommit} --wait --output ${ciEvidencePath}`,
+      ),
+    )
+    assert.ok(
+      assembleAction.commands.includes(
+        `npm run check:platform-evidence -- --platform-evidence ${shellQuote(commandPlatformEvidencePath)} --expected-commit ${expectedCommit}`,
+      ),
+    )
+    assert.ok(
+      assembleAction.commands.includes(
+        `npm run release:evidence -- --platform-evidence ${shellQuote(commandPlatformEvidencePath)} --ci-evidence ${shellQuote(ciEvidencePath)} --commit ${expectedCommit} --real-device-output ${shellQuote(commandEvidencePath)}`,
+      ),
+    )
+    assert.ok(
+      assembleAction.commands.includes(
+        `npm run check:real-device-evidence -- --path ${shellQuote(commandEvidencePath)} --platform-evidence ${shellQuote(commandPlatformEvidencePath)} --ci-evidence ${shellQuote(ciEvidencePath)} --expected-commit ${expectedCommit}`,
       ),
     )
   } finally {
@@ -620,7 +699,9 @@ test('check-real-device-evidence next actions honor expected commits', () => {
 
 test('check-real-device-evidence reuses committed initial CI evidence', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-evidence-'))
+  const evidencePath = path.join(tempDir, 'missing-real-device-evidence.json')
   const summaryPath = path.join(tempDir, 'real-device-summary.json')
+  const commandEvidencePath = path.relative(repoRoot, evidencePath)
   const ciEvidence = JSON.parse(
     fs.readFileSync(path.join(repoRoot, 'release/ci-runs.json'), 'utf-8'),
   )
@@ -634,7 +715,7 @@ test('check-real-device-evidence reuses committed initial CI evidence', () => {
         '--expected-commit',
         ciEvidence.commit,
         '--path',
-        path.join(tempDir, 'missing-real-device-evidence.json'),
+        evidencePath,
         '--summary-output',
         summaryPath,
       ],
@@ -671,7 +752,99 @@ test('check-real-device-evidence reuses committed initial CI evidence', () => {
     )
     assert.ok(
       assembleAction.commands.includes(
-        `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${ciEvidence.commit} --real-device-output release/real-device-evidence.json`,
+        `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${ciEvidence.commit} --real-device-output ${commandEvidencePath}`,
+      ),
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
+test('check-real-device-evidence next actions honor custom completed input paths', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-evidence-'))
+  const ciEvidencePath = path.join(tempDir, 'ci-runs.json')
+  const platformEvidencePath = path.join(tempDir, 'platform-evidence.json')
+  const realDeviceEvidencePath = path.join(tempDir, 'real-device-evidence.json')
+  const summaryPath = path.join(tempDir, 'real-device-summary.json')
+  const ciEvidence = JSON.parse(
+    fs.readFileSync(path.join(repoRoot, 'release/ci-runs.json'), 'utf-8'),
+  )
+
+  try {
+    fs.copyFileSync(path.join(repoRoot, 'release/ci-runs.json'), ciEvidencePath)
+    fs.writeFileSync(
+      platformEvidencePath,
+      `${JSON.stringify(
+        buildPlatformEvidenceTemplate({
+          commit: ciEvidence.commit,
+          productionProfile: true,
+        }),
+        null,
+        2,
+      )}\n`,
+    )
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/check-real-device-evidence.mjs',
+        '--optional',
+        '--expected-commit',
+        ciEvidence.commit,
+        '--path',
+        realDeviceEvidencePath,
+        '--platform-evidence',
+        platformEvidencePath,
+        '--ci-evidence',
+        ciEvidencePath,
+        '--summary-output',
+        summaryPath,
+      ],
+      { cwd: repoRoot, encoding: 'utf-8' },
+    )
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+    const completeAction = summary.nextActions.find(
+      (action) => action.id === 'complete-platform-evidence',
+    )
+    const assembleAction = summary.nextActions.find(
+      (action) => action.id === 'assemble-real-device-evidence',
+    )
+    const platformCommandPath = platformEvidencePath
+    const realDeviceCommandPath = path.relative(repoRoot, realDeviceEvidencePath)
+
+    assert.equal(result.status, 0, result.stderr || result.stdout)
+    assert.equal(summary.initialCiEvidenceReady, true)
+    assert.equal(summary.initialCiEvidencePath, ciEvidencePath)
+    assert.equal(summary.platformEvidencePath, platformCommandPath)
+    assert.equal(summary.evidencePath, realDeviceCommandPath)
+    assert.equal(summary.usesCustomCiEvidencePath, true)
+    assert.equal(summary.usesCustomEvidencePath, true)
+    assert.equal(summary.usesCustomPlatformEvidencePath, true)
+    assert.ok(completeAction)
+    assert.ok(
+      completeAction.commands.includes(
+        `npm run check:platform-evidence -- --platform-evidence ${shellQuote(platformCommandPath)} --summary-output release/platform-evidence-summary.json --allow-open --expected-commit ${ciEvidence.commit}`,
+      ),
+    )
+    assert.ok(assembleAction)
+    assert.ok(
+      assembleAction.commands.every(
+        (command) => !command.includes('npm run release:ci --'),
+      ),
+    )
+    assert.ok(
+      assembleAction.commands.includes(
+        `npm run check:platform-evidence -- --platform-evidence ${shellQuote(platformCommandPath)} --expected-commit ${ciEvidence.commit}`,
+      ),
+    )
+    assert.ok(
+      assembleAction.commands.includes(
+        `npm run release:evidence -- --platform-evidence ${shellQuote(platformCommandPath)} --ci-evidence ${shellQuote(ciEvidencePath)} --commit ${ciEvidence.commit} --real-device-output ${shellQuote(realDeviceCommandPath)}`,
+      ),
+    )
+    assert.ok(
+      assembleAction.commands.includes(
+        `npm run check:real-device-evidence -- --path ${shellQuote(realDeviceCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --ci-evidence ${shellQuote(ciEvidencePath)} --expected-commit ${ciEvidence.commit}`,
       ),
     )
   } finally {
@@ -702,6 +875,7 @@ test('check-real-device-evidence writes validation errors before failing', () =>
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-evidence-'))
   const evidencePath = path.join(tempDir, 'real-device-evidence.json')
   const summaryPath = path.join(tempDir, 'real-device-summary.json')
+  const commandEvidencePath = path.relative(repoRoot, evidencePath)
   const evidence = validEvidence()
   evidence.android.selectedApis = ['navigator.geoLocation']
   fs.writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`)
@@ -733,7 +907,7 @@ test('check-real-device-evidence writes validation errors before failing', () =>
             'npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit <release-candidate-sha>',
           ) &&
           action.commands.some((command) =>
-            command.includes('--real-device-output release/real-device-evidence.json'),
+            command.includes(`--real-device-output ${commandEvidencePath}`),
           ),
       ),
     )

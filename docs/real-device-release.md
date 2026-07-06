@@ -253,10 +253,12 @@ strict release gates reject it.
 Use `npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json`
 to write validation status, errors, initial CI evidence status, platform
 worksheet status with compact per-platform progress counts, and `nextActions`
-command hints for fixing or creating evidence; missing-evidence assembly and invalid-evidence regeneration hints
-begin with `npm run check`, run the platform worksheet audit before final
-evidence assembly or regeneration, then run any still-needed release CI
-wait/dispatch or evidence commands.
+command hints for fixing or creating evidence. Pass `--ci-evidence <file>` or
+`--platform-evidence <file>` when those inputs use non-default handoff paths;
+missing-evidence assembly and invalid-evidence regeneration hints begin with
+`npm run check`, run the platform worksheet audit before final evidence
+assembly or regeneration, then run any still-needed release CI wait/dispatch or
+evidence commands.
 The helper validates the normalized platform evidence before fetching GitHub run
 metadata, so missing device details, unknown selected APIs, or selected-API
 checks left in `skippedChecks` fail before network calls.

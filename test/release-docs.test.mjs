@@ -117,6 +117,7 @@ test('release preflight validates package export targets in tarballs', () => {
 test('release preflight enforces real device evidence', () => {
   const preflight = readDoc('scripts/release-preflight.mjs')
   const realDeviceEvidence = readDoc('scripts/real-device-evidence.mjs')
+  const realDeviceEvidenceCheck = readDoc('scripts/check-real-device-evidence.mjs')
   const platformEvidenceHelper = readDoc('scripts/create-platform-evidence.mjs')
   const releaseCi = readDoc('scripts/check-release-ci-runs.mjs')
   const evidenceHelper = readDoc('scripts/create-release-evidence.mjs')
@@ -160,6 +161,16 @@ test('release preflight enforces real device evidence', () => {
     /must be in passedChecks/,
   ]) {
     assert.match(realDeviceEvidence, pattern)
+  }
+
+  for (const pattern of [
+    /--ci-evidence/,
+    /--platform-evidence/,
+    /usesCustomCiEvidencePath/,
+    /usesCustomEvidencePath/,
+    /usesCustomPlatformEvidencePath/,
+  ]) {
+    assert.match(realDeviceEvidenceCheck, pattern)
   }
 
   assert.match(platformEvidenceHelper, /passOnlyChecks/)
@@ -270,6 +281,10 @@ test('release preflight enforces real device evidence', () => {
     /platform worksheet audit before final\s+evidence\s+assembly or regeneration/,
   )
   assert.match(production, /still-needed release\s+CI\s+wait\/dispatch/)
+  assert.match(
+    production,
+    /Pass `--ci-evidence <file>` or\s+`--platform-evidence <file>`/,
+  )
   assert.match(
     production,
     /resolve\s+command placeholders\s+to\s+`--expected-commit`/,
@@ -447,6 +462,10 @@ test('release preflight enforces real device evidence', () => {
     /platform worksheet audit before final\s+evidence\s+assembly or regeneration/,
   )
   assert.match(readme, /still-needed release\s+CI\s+wait\/dispatch/)
+  assert.match(
+    readme,
+    /pass `--ci-evidence <file>` or `--platform-evidence <file>`/,
+  )
   assert.match(readme, /resolve\s+command placeholders\s+to\s+`--expected-commit`/)
   assert.match(readme, /release:ci/)
   assert.match(
@@ -604,13 +623,17 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /missing-evidence\s+assembly/)
   assert.match(
     checklist,
-    /invalid-evidence\s+regeneration\s+hints\s+begin with `npm run check`/,
+    /invalid-evidence\s+regeneration\s+hints\s+begin with\s+`npm run check`/,
   )
   assert.match(
     checklist,
     /platform worksheet audit before final\s+evidence\s+assembly or\s+regeneration/,
   )
   assert.match(checklist, /still-needed release\s+CI\s+wait\/dispatch/)
+  assert.match(
+    checklist,
+    /Pass `--ci-evidence <file>` or\s+`--platform-evidence <file>`/,
+  )
   assert.match(checklist, /ci-runs\.json/)
   assert.match(checklist, /--include-release-preflight/)
   assert.match(

@@ -32,8 +32,8 @@ export function releaseCommitLabel(commit) {
   return commit ?? releaseCandidateCommitPlaceholder
 }
 
-export function productionProfilePlatformEvidenceCommand(commit) {
-  return shellCommand([
+export function productionProfilePlatformEvidenceCommand(commit, options = {}) {
+  const args = [
     'npm',
     'run',
     'release:platform-evidence',
@@ -41,7 +41,13 @@ export function productionProfilePlatformEvidenceCommand(commit) {
     '--production-profile',
     '--commit',
     releaseCommitLabel(commit),
-  ])
+  ]
+
+  if (options.output) {
+    args.push('--output', options.output)
+  }
+
+  return shellCommand(args)
 }
 
 export function checkPlatformEvidenceCommand(commit, options = {}) {
@@ -227,13 +233,28 @@ export function releaseEvidenceCommand(commit, options = {}) {
   return shellCommand(args)
 }
 
-export function checkRealDeviceEvidenceCommand(commit) {
-  return shellCommand([
+export function checkRealDeviceEvidenceCommand(commit, options = {}) {
+  const args = [
     'npm',
     'run',
     'check:real-device-evidence',
     '--',
+  ]
+
+  if (options.realDeviceEvidencePath) {
+    args.push('--path', options.realDeviceEvidencePath)
+  }
+  if (options.platformEvidencePath) {
+    args.push('--platform-evidence', options.platformEvidencePath)
+  }
+  if (options.ciEvidencePath) {
+    args.push('--ci-evidence', options.ciEvidencePath)
+  }
+
+  args.push(
     '--expected-commit',
     releaseCommitLabel(commit),
-  ])
+  )
+
+  return shellCommand(args)
 }

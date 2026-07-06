@@ -37,7 +37,9 @@ evidence JSON when it exists. Add
 `--summary-output release/real-device-evidence-summary.json` to write
 validation status, errors, initial CI evidence status, platform worksheet
 status with compact per-platform progress counts, and `nextActions` command
-hints for fixing or creating evidence;
+hints for fixing or creating evidence. Pass `--ci-evidence <file>` or
+`--platform-evidence <file>` when a handoff is using non-default evidence or
+worksheet paths so generated commands continue to target the same files;
 missing-evidence assembly and invalid-evidence regeneration hints begin with
 `npm run check`, run the platform worksheet audit before final evidence
 assembly or regeneration, then run any still-needed release CI wait/dispatch or

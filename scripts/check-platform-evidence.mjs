@@ -581,13 +581,26 @@ export function readPlatformEvidenceAudit(
 function collectNextActions(summary, options) {
   const commit = options.expectedCommit
   const actions = []
+  const usesCustomPlatformEvidencePath =
+    options.platformEvidencePath !== defaultPlatformEvidencePath
+  const platformEvidenceOptions = usesCustomPlatformEvidencePath
+    ? { platformEvidencePath: options.platformEvidencePath }
+    : {}
+
   if (!summary.evidencePresent) {
     actions.push({
       id: 'create-platform-evidence',
       title: 'Create the Android/iOS platform evidence worksheet',
       detail:
         'Generate the maintained production-profile worksheet before device testing.',
-      commands: [productionProfilePlatformEvidenceCommand(commit)],
+      commands: [
+        productionProfilePlatformEvidenceCommand(
+          commit,
+          usesCustomPlatformEvidencePath
+            ? { output: options.platformEvidencePath }
+            : {},
+        ),
+      ],
     })
     return actions
   }
@@ -631,7 +644,7 @@ function collectNextActions(summary, options) {
       releaseEvidenceCommand(commit, {
         platformEvidencePath: options.platformEvidencePath,
       }),
-      checkRealDeviceEvidenceCommand(commit),
+      checkRealDeviceEvidenceCommand(commit, platformEvidenceOptions),
     ],
   })
   return actions
