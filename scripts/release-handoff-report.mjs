@@ -11,7 +11,9 @@ import {
   defaultReleasePreflightChecklistPath,
   defaultReleasePreflightSummaryPath,
   defaultReleaseReadinessEvidencePath,
+  formatReleaseCommandBlock,
   formatHandoffCommand,
+  hasCommandPlaceholders,
   releaseHandoffReportFormatVersion,
   releaseHandoffReportStateHash,
 } from './release-handoff-commands.mjs'
@@ -271,103 +273,6 @@ function platformLabel(platform) {
   return 'Platform'
 }
 
-function commandHasPlaceholder(command) {
-  return typeof command === 'string' && /<[^>\n]+>/.test(command.trim())
-}
-
-function commandRequiresResolvedTemplates(command) {
-  if (typeof command !== 'string') {
-    return false
-  }
-
-  const text = command.trim()
-  if (text.startsWith('git add ') || text.startsWith('git commit ')) {
-    return true
-  }
-  if (text === 'git push') {
-    return true
-  }
-  if (text.includes('npm run release:evidence --')) {
-    return true
-  }
-  if (text.includes('npm run check:real-device-evidence --')) {
-    return true
-  }
-  return (
-    text.includes('npm run check:platform-evidence --') &&
-    !text.includes('--allow-open')
-  )
-}
-
-function commandIsEvidenceTemplate(command) {
-  if (typeof command !== 'string') {
-    return false
-  }
-
-  return (
-    command.includes('npm run release:record-platform-evidence --') ||
-    command.includes('npm run release:platform-evidence --')
-  )
-}
-
-function fencedCommandBlock(commands) {
-  return ['```bash', ...commands, '```']
-}
-
-function commandBlock(commands) {
-  if (!Array.isArray(commands) || commands.length === 0) {
-    return ['No commands recorded.']
-  }
-
-  const placeholderCommands = commands.filter(commandHasPlaceholder)
-  const shouldSplitDownstreamCommands =
-    placeholderCommands.some(commandIsEvidenceTemplate)
-  const readyCommands = commands.filter(
-    (command) =>
-      !commandHasPlaceholder(command) &&
-      (!shouldSplitDownstreamCommands ||
-        !commandRequiresResolvedTemplates(command)),
-  )
-  const afterTemplateCommands = commands.filter(
-    (command) =>
-      !commandHasPlaceholder(command) &&
-      shouldSplitDownstreamCommands &&
-      commandRequiresResolvedTemplates(command),
-  )
-  if (
-    placeholderCommands.length === 0 ||
-    readyCommands.length + afterTemplateCommands.length === 0
-  ) {
-    return fencedCommandBlock(commands)
-  }
-
-  const lines = []
-  if (readyCommands.length > 0) {
-    lines.push('#### Ready To Run', '', ...fencedCommandBlock(readyCommands), '')
-  }
-  lines.push(
-    '#### Replace Placeholders First',
-    '',
-    ...fencedCommandBlock(placeholderCommands),
-  )
-  if (afterTemplateCommands.length > 0) {
-    lines.push(
-      '',
-      '#### Run After Device Evidence Is Recorded',
-      '',
-      ...fencedCommandBlock(afterTemplateCommands),
-    )
-  }
-  return lines
-}
-
-function hasCommandPlaceholders(commands) {
-  return (
-    Array.isArray(commands) &&
-    commands.some((command) => commandHasPlaceholder(command))
-  )
-}
-
 function checkDetailText(detail) {
   const check = String(detail.check ?? 'unknown-check')
   const state = detail.mustPass === true ? 'must pass' : 'skippable'
@@ -597,7 +502,7 @@ function renderNextActions(summary) {
       )
       lines.push('')
     }
-    lines.push(...commandBlock(action.commands))
+    lines.push(...formatReleaseCommandBlock(action.commands))
     lines.push('')
   }
 

@@ -341,6 +341,16 @@ test('release readiness checklist renders final proof and next actions', () => {
         id: 'release-preflight-evidence',
         title: 'Collect Release Preflight evidence',
       },
+      {
+        commands: [
+          'npm run check',
+          'npm run release:record-platform-evidence -- --platform android --artifact <android-apk-aab-or-hosted-build-id>',
+          'npm run release:evidence -- --commit 0123456789abcdef0123456789abcdef01234567',
+        ],
+        detail: 'Record hosted device results.',
+        id: 'real-device-evidence',
+        title: 'Complete real-device evidence',
+      },
     ],
     packageDescriptionWarnings: [],
     platformEvidence: {
@@ -383,6 +393,18 @@ test('release readiness checklist renders final proof and next actions', () => {
   )
   assert.match(checklist, /Blocked by: real-device-evidence/)
   assert.match(checklist, /```bash\nnpm run check\n```/)
+  assert.match(
+    checklist,
+    /### Complete real-device evidence[\s\S]*Commands with `<\.\.\.>` placeholders must be edited before running/,
+  )
+  assert.match(
+    checklist,
+    /#### Ready To Run[\s\S]*npm run check[\s\S]*#### Replace Placeholders First[\s\S]*<android-apk-aab-or-hosted-build-id>/,
+  )
+  assert.match(
+    checklist,
+    /#### Run After Device Evidence Is Recorded[\s\S]*npm run release:evidence -- --commit 0123456789abcdef0123456789abcdef01234567/,
+  )
 })
 
 test('release readiness requires release tooling scripts', () => {

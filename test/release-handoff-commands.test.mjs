@@ -20,6 +20,8 @@ import {
   defaultRealDeviceEvidenceSummaryPath,
   defaultReleasePreflightChecklistPath,
   evidenceDispatchRefPlaceholder,
+  formatReleaseCommandBlock,
+  hasCommandPlaceholders,
   initialReleaseCiCommands,
   localReleasePreflightCommand,
   productionProfilePlatformEvidenceCommand,
@@ -284,6 +286,50 @@ test('release handoff commands format real-device evidence assembly', () => {
       'git push',
     ],
   )
+})
+
+test('release command blocks separate templates from downstream evidence commands', () => {
+  const commands = [
+    'npm run check',
+    `npm run release:record-platform-evidence -- --platform android --artifact <android-apk-aab-or-hosted-build-id> --expected-commit ${commit}`,
+    `npm run check:platform-evidence -- --expected-commit ${commit}`,
+    `npm run release:evidence -- --commit ${commit}`,
+    'git add release/platform-evidence.json release/real-device-evidence.json',
+    'git commit -m "Add real-device release evidence"',
+    'git push',
+  ]
+
+  assert.equal(hasCommandPlaceholders(commands), true)
+  assert.deepEqual(formatReleaseCommandBlock(commands), [
+    '#### Ready To Run',
+    '',
+    '```bash',
+    'npm run check',
+    '```',
+    '',
+    '#### Replace Placeholders First',
+    '',
+    '```bash',
+    `npm run release:record-platform-evidence -- --platform android --artifact <android-apk-aab-or-hosted-build-id> --expected-commit ${commit}`,
+    '```',
+    '',
+    '#### Run After Device Evidence Is Recorded',
+    '',
+    '```bash',
+    `npm run check:platform-evidence -- --expected-commit ${commit}`,
+    `npm run release:evidence -- --commit ${commit}`,
+    'git add release/platform-evidence.json release/real-device-evidence.json',
+    'git commit -m "Add real-device release evidence"',
+    'git push',
+    '```',
+  ])
+  assert.deepEqual(
+    formatReleaseCommandBlock(['npm run check'], { headingLevel: 3 }),
+    ['```bash', 'npm run check', '```'],
+  )
+  assert.deepEqual(formatReleaseCommandBlock([], { emptyText: '- none' }), [
+    '- none',
+  ])
 })
 
 test('release handoff commands include preflight evidence input only for preflight', () => {

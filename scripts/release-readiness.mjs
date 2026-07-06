@@ -55,7 +55,9 @@ import {
   defaultReleaseReadinessChecklistPath,
   defaultReleaseReadinessEvidencePath,
   defaultReleaseReadinessSummaryPath,
+  formatReleaseCommandBlock,
   formatHandoffCommand,
+  hasCommandPlaceholders,
   initialReleaseCiCommands,
   localReleasePreflightCommand,
   productionProfilePlatformEvidenceCommand,
@@ -1663,11 +1665,19 @@ function formatActionLines(action) {
     lines.push(`Blocked by: ${action.blockedBy.join(', ')}`, '')
   }
   const commands = Array.isArray(action.commands) ? action.commands : []
-  if (commands.length > 0) {
-    lines.push('```bash', ...commands, '```', '')
-  } else {
-    lines.push('- no commands', '')
+  if (hasCommandPlaceholders(commands)) {
+    lines.push(
+      'Commands with `<...>` placeholders must be edited before running; unresolved placeholders are not valid release evidence or dispatch inputs.',
+      '',
+    )
   }
+  lines.push(
+    ...formatReleaseCommandBlock(commands, {
+      emptyText: '- no commands',
+      headingLevel: 4,
+    }),
+    '',
+  )
   return lines
 }
 
