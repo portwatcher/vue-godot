@@ -628,6 +628,7 @@ const releaseToolingScriptRequirements = [
     'release:finalize-readiness',
     'node scripts/finalize-release-readiness.mjs',
   ],
+  ['release:handoff', 'node scripts/release-handoff-report.mjs'],
   ['release:readiness', 'node scripts/release-readiness.mjs'],
   ['release:preflight', 'node scripts/release-preflight.mjs'],
 ]
