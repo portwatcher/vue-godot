@@ -419,16 +419,17 @@ export function recordPlatformEvidence(evidence, options) {
   ])
 
   for (const [key, value] of Object.entries(options.updates)) {
-    if (typeof value !== 'string' || value.trim().length === 0) {
+    const trimmed = typeof value === 'string' ? value.trim() : ''
+    if (trimmed.length === 0) {
       throw new Error(`${platform}.${key} requires a non-empty value`)
     }
-    if (isReleaseEvidencePlaceholder(value)) {
-      throw new Error(`${platform}.${key} requires a real value, not ${value}`)
+    if (isReleaseEvidencePlaceholder(trimmed)) {
+      throw new Error(`${platform}.${key} requires a real value, not ${trimmed}`)
     }
-    if (key === 'evidenceUrl' && !isReleaseEvidenceUrl(value)) {
+    if (key === 'evidenceUrl' && !isReleaseEvidenceUrl(trimmed)) {
       throw new Error(`${platform}.evidenceUrl requires a non-local http(s) URL`)
     }
-    platformEvidence[key] = value
+    platformEvidence[key] = trimmed
   }
   if (options.passRemaining) {
     platformEvidence.passRemainingConfirmation =
@@ -442,7 +443,7 @@ export function recordPlatformEvidence(evidence, options) {
     delete skippedChecks[check]
   }
   for (const [check, reason] of Object.entries(options.skippedChecks)) {
-    skippedChecks[check] = reason
+    skippedChecks[check] = reason.trim()
     passedSet.delete(check)
   }
 

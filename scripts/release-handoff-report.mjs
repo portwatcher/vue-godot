@@ -24,6 +24,10 @@ import {
   repoRoot,
 } from './release-utils.mjs'
 import { formatIssueBulletLines } from './markdown-checklist-utils.mjs'
+import {
+  devicePrereqProviderLabel,
+  devicePrereqStatusText,
+} from './device-prereq-diagnostics.mjs'
 
 function usage() {
   console.log(`Usage: node scripts/release-handoff-report.mjs [options]
@@ -348,45 +352,33 @@ function ciEvidenceLines(summary) {
   return lines
 }
 
-function prereqStatusText(value) {
-  if (value === true) {
-    return 'ready'
-  }
-  if (value === false) {
-    return 'waiting'
-  }
-  return 'not recorded'
-}
-
 function prereqPlatformLine(label, status) {
   if (!isRecord(status)) {
     return `- ${label}: not recorded`
   }
 
   return [
-    `- ${label}: ${prereqStatusText(status.ready)}`,
+    `- ${label}: ${devicePrereqStatusText(status.ready)}`,
     ` (${status.blockerCount ?? 0} blocker(s),`,
     ` ${status.warningCount ?? 0} warning(s),`,
     ` ${status.deviceCount ?? 0} device(s))`,
   ].join('')
 }
 
-function providerLabel(provider) {
-  return typeof provider.label === 'string' && provider.label.trim().length > 0
-    ? provider.label.trim()
-    : typeof provider.id === 'string' && provider.id.trim().length > 0
-      ? provider.id.trim()
-      : 'unknown provider'
+function providerEnvList(provider, key) {
+  return isRecord(provider) ? provider[key] : []
 }
 
 function configuredProviderText(provider) {
-  return `${providerLabel(provider)} (${inlineList(provider.configuredEnv)})`
+  return `${devicePrereqProviderLabel(provider)} (${inlineList(
+    providerEnvList(provider, 'configuredEnv'),
+  )})`
 }
 
 function partialProviderText(provider) {
-  return `${providerLabel(provider)} (set: ${inlineList(
-    provider.partialEnv,
-  )}; missing: ${inlineList(provider.missingEnv)})`
+  return `${devicePrereqProviderLabel(provider)} (set: ${inlineList(
+    providerEnvList(provider, 'partialEnv'),
+  )}; missing: ${inlineList(providerEnvList(provider, 'missingEnv'))})`
 }
 
 function renderDevicePrereqDiagnostics(summary) {
@@ -411,7 +403,7 @@ function renderDevicePrereqDiagnostics(summary) {
     '- Diagnostic only: yes; this is not release evidence',
     `- Summary path: \`${diagnostics.path ?? defaultDeviceTestPrereqsSummaryPath}\``,
     `- Summary present: ${diagnostics.summaryPresent === true ? 'yes' : 'no'}`,
-    `- Status: ${prereqStatusText(diagnostics.ready)}`,
+    `- Status: ${devicePrereqStatusText(diagnostics.ready)}`,
     `- Selected platforms: ${inlineList(diagnostics.selectedPlatforms)}`,
     prereqPlatformLine('Android', diagnostics.android),
     prereqPlatformLine('iOS', diagnostics.ios),
