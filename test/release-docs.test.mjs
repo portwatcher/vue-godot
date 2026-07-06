@@ -378,7 +378,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /exact\s+remaining metadata\/must-pass\/skippable gap names and structured `platformCheckDetails` descriptions/)
   assert.match(production, /release\s+CI\s+wait\/dispatch commands/)
   assert.match(production, /allow-open worksheet audit\s+command/)
-  assert.match(production, /final\s+evidence\s+assembly commands/)
+  assert.match(
+    production,
+    /final\s+evidence\s+assembly,\s+validation,\s+commit,\s+and\s+push commands/,
+  )
   assert.match(production, /worksheet fields/)
   assert.match(
     production,
@@ -737,7 +740,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /exact remaining metadata\/must-pass\/skippable gap names/)
   assert.match(readme, /release\s+CI\s+wait\/dispatch commands/)
   assert.match(readme, /worksheet\s+audit\s+command/)
-  assert.match(readme, /final evidence\s+assembly commands/)
+  assert.match(
+    readme,
+    /final evidence\s+assembly,\s+validation,\s+commit,\s+and\s+push commands/,
+  )
   assert.match(readme, /worksheet fields/)
   assert.match(
     readme,
@@ -1002,7 +1008,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /release\s+CI\s+wait\/dispatch commands/)
   assert.match(checklist, /worksheet\s+audit command/)
   assert.match(checklist, /local `npm run check`/)
-  assert.match(checklist, /final evidence\s+assembly commands/)
+  assert.match(
+    checklist,
+    /final evidence\s+assembly,\s+validation,\s+commit,\s+and\s+push commands/,
+  )
   assert.match(checklist, /worksheet fields/)
   assert.match(
     checklist,

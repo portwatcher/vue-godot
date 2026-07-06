@@ -373,8 +373,8 @@ skippable gaps, metadata gaps, worksheet drift, and nextActions; run it without 
 audited progress, malformed outcome counts, exact remaining metadata/must-pass/skippable gap names and structured `platformCheckDetails` descriptions,
 `npm run check`, any still-needed release CI wait/dispatch commands, Android/iOS
 `release:record-platform-evidence` command templates before the worksheet audit
-command, and final evidence assembly commands for after the worksheet is
-complete. Keep platform worksheet fields and scaffold fields only in `release/platform-evidence.json`; final
+command, and final evidence assembly, validation, commit, and push commands for
+after the worksheet is complete. Keep platform worksheet fields and scaffold fields only in `release/platform-evidence.json`; final
 `release/real-device-evidence.json` must not contain `requiredChecks`,
 `passOnlyChecks`, `selectedApiRequiredChecks`, top-level `initialCiEvidence`, or
 top-level `nextActions`.

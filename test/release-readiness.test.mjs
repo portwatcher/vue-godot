@@ -369,6 +369,8 @@ test('release readiness requires Release Preflight expected commit wiring', () =
       return [
         'name: Check',
         'workflow_dispatch:',
+        'actions/checkout@v6',
+        'actions/setup-node@v6',
         'node-version: 24',
         'npm install -g npm@^11.15.0',
         'npm ci',
@@ -379,6 +381,8 @@ test('release readiness requires Release Preflight expected commit wiring', () =
       return [
         'name: Godot Smoke',
         'workflow_dispatch:',
+        'actions/checkout@v6',
+        'actions/setup-node@v6',
         'node-version: 24',
         './.github/actions/setup-godotjs',
         'npm install -g npm@^11.15.0',
@@ -395,6 +399,8 @@ test('release readiness requires Release Preflight expected commit wiring', () =
       'workflow_dispatch:',
       'real_device_evidence_path',
       'node-version: 24',
+      'actions/checkout@v6',
+      'actions/setup-node@v6',
       'id-token: write',
       './.github/actions/setup-godotjs',
       'VUE_GODOT_REAL_DEVICE_EVIDENCE',

@@ -666,6 +666,8 @@ const releaseWorkflowRequirements = [
     snippets: [
       'name: Check',
       'workflow_dispatch:',
+      'actions/checkout@v6',
+      'actions/setup-node@v6',
       'node-version: 24',
       'npm install -g npm@^11.15.0',
       'npm ci',
@@ -678,6 +680,8 @@ const releaseWorkflowRequirements = [
     snippets: [
       'name: Godot Smoke',
       'workflow_dispatch:',
+      'actions/checkout@v6',
+      'actions/setup-node@v6',
       'node-version: 24',
       './.github/actions/setup-godotjs',
       'npm install -g npm@^11.15.0',
@@ -697,6 +701,8 @@ const releaseWorkflowRequirements = [
       'workflow_dispatch:',
       'real_device_evidence_path',
       'expected_commit',
+      'actions/checkout@v6',
+      'actions/setup-node@v6',
       'node-version: 24',
       'id-token: write',
       './.github/actions/setup-godotjs',

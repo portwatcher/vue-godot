@@ -782,6 +782,54 @@ test('check-platform-evidence missing custom worksheet creates custom output nex
   }
 })
 
+test('check-platform-evidence completed worksheet next action commits evidence', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-platform-'))
+  const evidencePath = path.join(tempDir, 'platform-evidence.json')
+  const summaryPath = path.join(tempDir, 'platform-summary.json')
+  const evidenceCommandPath = shellQuote(evidencePath)
+
+  try {
+    fs.writeFileSync(
+      evidencePath,
+      `${JSON.stringify(completedTemplate(), null, 2)}\n`,
+    )
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/check-platform-evidence.mjs',
+        '--platform-evidence',
+        evidencePath,
+        '--expected-commit',
+        commit,
+        '--summary-output',
+        summaryPath,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf-8',
+      },
+    )
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+    const action = summary.nextActions[0]
+
+    assert.equal(result.status, 0, result.stderr || result.stdout)
+    assert.equal(summary.ready, true)
+    assert.equal(action.id, 'assemble-real-device-evidence')
+    assert.deepEqual(action.commands, [
+      'npm run check',
+      `npm run check:platform-evidence -- --platform-evidence ${evidenceCommandPath} --expected-commit ${commit}`,
+      `npm run release:evidence -- --platform-evidence ${evidenceCommandPath} --ci-evidence release/ci-runs.json --commit ${commit} --real-device-output release/real-device-evidence.json`,
+      `npm run check:real-device-evidence -- --platform-evidence ${evidenceCommandPath} --verify-runs --expected-commit ${commit}`,
+      `cp ${evidenceCommandPath} release/platform-evidence.json`,
+      'git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json',
+      'git commit -m "Add real-device release evidence"',
+      'git push',
+    ])
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
 test('check-platform-evidence CLI fails incomplete worksheet in strict mode', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-platform-'))
   const evidencePath = path.join(tempDir, 'platform-evidence.json')

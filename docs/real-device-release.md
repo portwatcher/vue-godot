@@ -171,8 +171,9 @@ can be omitted. Conditional checks for selected APIs must be moved into
 and iOS `release:record-platform-evidence` command templates, audited progress,
 malformed outcome counts, exact remaining metadata/must-pass/skippable gap names and structured `platformCheckDetails` descriptions, the allow-open worksheet
 audit command, the local `npm run check`, any still-needed release CI
-wait/dispatch commands, and final evidence assembly commands for turning the
-completed worksheet into final real-device evidence. It reads
+wait/dispatch commands, and final evidence assembly, validation, commit, and
+push commands for turning the completed worksheet into final real-device
+evidence. It reads
 `release/ci-runs.json` by default, or
 `--ci-evidence <file>`, records an `initialCiEvidence` status object, and omits
 duplicate Check/Godot Smoke collection commands when that file already validates
@@ -201,8 +202,10 @@ The summary reports Android and iOS metadata gaps, remaining required checks,
 exact must-pass/skippable check names and structured check descriptions, pass-only and selected-API checks that
 still must be in `passedChecks`, worksheet drift from the maintained check lists, and follow-up `nextActions`. Those
 actions include Android and iOS `release:record-platform-evidence` command
-templates before the strict worksheet audit. Before assembling final evidence,
-run the same command without `--allow-open`; it must pass.
+templates before the strict worksheet audit. Once the worksheet is complete,
+they include final evidence assembly, validation, commit, and push commands.
+Before assembling final evidence, run the same command without `--allow-open`;
+it must pass.
 
 After each real or hosted device pass, record the observed metadata and outcomes
 without hand-editing JSON:

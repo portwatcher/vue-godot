@@ -14,7 +14,10 @@ import {
 import {
   checkPlatformEvidenceCommand,
   checkRealDeviceEvidenceCommand,
+  commitEvidenceFileCommands,
   defaultPlatformEvidencePath,
+  defaultRealDeviceEvidencePath,
+  defaultReleaseCiEvidencePath,
   recordPlatformEvidenceCommand,
   releaseEvidenceCommand,
   productionProfilePlatformEvidenceCommand,
@@ -887,6 +890,9 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
       'The worksheet is complete enough to normalize into release/real-device-evidence.json.',
     commands: [
       'npm run check',
+      checkPlatformEvidenceCommand(commit, {
+        platformEvidencePath,
+      }),
       releaseEvidenceCommand(commit, {
         platformEvidencePath,
       }),
@@ -894,6 +900,15 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
         ...platformEvidenceOptions,
         verifyRuns: true,
       }),
+      ...commitEvidenceFileCommands(
+        [
+          [platformEvidencePath, defaultPlatformEvidencePath],
+          [defaultReleaseCiEvidencePath, defaultReleaseCiEvidencePath],
+          [defaultRealDeviceEvidencePath, defaultRealDeviceEvidencePath],
+        ],
+        'Add real-device release evidence',
+        { push: true },
+      ),
     ],
   })
   return actions
