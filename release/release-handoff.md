@@ -2,7 +2,7 @@
 
 - Release candidate commit: `1087588e2a2f7989a51df1c428eb647d17ea3ab8`
 - Handoff format: 7
-- Handoff state: 2cbf175b80fdbf00
+- Handoff state: dbabe365d828571f
 - Overall readiness: open (10 blocker(s))
 - Real-device evidence: waiting
 - Android evidence: waiting
@@ -45,12 +45,10 @@
   - Command: `adb devices -l`
   - Blockers:
     - No authorized physical Android devices reported by adb; connect and authorize a real device or use hosted real-device evidence.
-- iOS: waiting (3 blocker(s), 0 warning(s), 0 device(s))
+- iOS: waiting (1 blocker(s), 0 warning(s), 0 device(s))
   - Command: `xcrun xctrace list devices`
   - Blockers:
-    - xcrun xctrace list devices failed: xcrun: error: unable to find utility "xctrace", not a developer tool or in PATH
-    - Full Xcode is not selected; active developer directory is /Library/Developer/CommandLineTools. Install Xcode.app and run sudo xcode-select -s /Applications/Xcode.app/Contents/Developer, or use hosted real Apple-device evidence.
-    - Full Xcode.app was not found at /Applications/Xcode.app; install Xcode from the App Store (app id 497799835), resume any paused App Store download when prompted, or install from Apple Developer downloads with an Apple ID, then rerun the iOS device prerequisite check.
+    - No physical iPhone, iPad, or iPod devices reported by xcrun xctrace; connect a trusted device or use hosted real Apple-device evidence.
 - Hosted provider env configured: none
 - Hosted provider env partial: none
 - Read errors: none
