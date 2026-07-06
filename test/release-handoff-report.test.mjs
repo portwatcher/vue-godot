@@ -256,6 +256,14 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
     /Commands with `<\.\.\.>` placeholders must be edited before running; unresolved placeholders are not valid release evidence or dispatch inputs\./,
   )
   assert.match(markdown, /TODO\.md:389 Android export/)
+  assert.match(
+    markdown,
+    /- release-readiness evidence missing at release\/release-readiness-evidence\.json\n  Release-readiness evidence file not found: release\/release-readiness-evidence\.json/,
+  )
+  assert.doesNotMatch(
+    markdown,
+    /release-readiness evidence missing at release\/release-readiness-evidence\.json; Release-readiness evidence file not found/,
+  )
   assert.match(markdown, /Write Android\/iOS tester handoff/)
   assert.match(markdown, /release:record-platform-evidence -- --platform android/)
   assert.match(markdown, /npm run release:evidence -- --commit/)

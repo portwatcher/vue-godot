@@ -20,6 +20,7 @@ import {
   normalizeCommitSha,
   repoRoot,
 } from './release-utils.mjs'
+import { formatIssueBulletLines } from './markdown-checklist-utils.mjs'
 
 function usage() {
   console.log(`Usage: node scripts/release-handoff-report.mjs [options]
@@ -212,29 +213,24 @@ function optionalText(value) {
   return value.trim()
 }
 
-function reportText(value) {
+function reportTextLine(value) {
   const normalizedRoot = repoRoot.split(path.sep).join('/')
   return String(value)
     .replaceAll(`${repoRoot}${path.sep}`, '')
     .replaceAll(`${normalizedRoot}/`, '')
     .replaceAll(repoRoot, '.')
     .replaceAll(normalizedRoot, '.')
-    .replace(/\s*\n\s*/g, '; ')
+}
+
+function reportText(value) {
+  return reportTextLine(value).replace(/\s*\n\s*/g, '; ')
 }
 
 function limitedBullets(values, limit = 12) {
-  if (!Array.isArray(values) || values.length === 0) {
-    return ['- none']
-  }
-
-  const lines = values
-    .slice(0, limit)
-    .map((value) => `- ${reportText(value)}`)
-  const remaining = values.length - limit
-  if (remaining > 0) {
-    lines.push(`- ... ${remaining} more`)
-  }
-  return lines
+  return formatIssueBulletLines(values, {
+    limit,
+    normalizeLine: reportTextLine,
+  })
 }
 
 function platformLabel(platform) {
