@@ -349,9 +349,11 @@ context without modifying the worksheet.
 Run `npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` before local device
 sessions to report whether `adb`, Xcode device listing, and attached Android or
 iOS devices are available and to leave a gitignored JSON diagnostic next to the
-other release helper summaries. Missing local tooling is only a diagnostic;
-hosted real-device runs still satisfy the release gate when the final evidence
-records artifact IDs, device metadata, and http(s) evidence URLs.
+other release helper summaries. Android emulators are reported separately and
+do not satisfy the local release-device prerequisite. Missing local tooling is
+only a diagnostic; hosted real-device runs still satisfy the release gate when
+the final evidence records artifact IDs, device metadata, and http(s) evidence
+URLs.
 After every
 unresolved must-pass check has actually passed, add `--pass-remaining` to record
 the remaining must-pass checks in one batch, and include

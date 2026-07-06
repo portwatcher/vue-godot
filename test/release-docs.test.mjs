@@ -310,9 +310,14 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /check:real-device-evidence/)
   assert.match(production, /check:platform-evidence/)
   assert.match(production, /check:device-prereqs/)
+  assert.match(production, /Android emulators are reported separately/)
   assert.match(
     production,
-    /Missing local tooling is only a diagnostic[\s\S]*hosted\s+real-device runs still satisfy the release gate/,
+    /Missing local tooling is[\s\S]*only a diagnostic/,
+  )
+  assert.match(
+    production,
+    /hosted\s+real-device runs still satisfy the release gate/,
   )
   assert.match(production, /platform-evidence-summary\.json/)
   assert.match(production, /platform-evidence-checklist\.md/)

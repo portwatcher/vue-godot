@@ -514,9 +514,10 @@ Run these before platform-specific device checks:
 2. Run `npm run check`.
 3. Run `npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` to see whether local
    Android/iOS device tooling and attached devices are available and to write a
-   gitignored JSON diagnostic. Missing local tooling does not satisfy or fail
-   final evidence by itself; use a hosted real-device lab when the final
-   evidence can link to the lab run.
+   gitignored JSON diagnostic. Android emulators are reported separately and do
+   not satisfy the local release-device prerequisite. Missing local tooling does
+   not satisfy or fail final evidence by itself; use a hosted real-device lab
+   when the final evidence can link to the lab run.
 4. Run `npm run check:serious-examples`.
 5. Run `npm audit --audit-level=moderate`.
 6. Optionally run `npm run release:preflight -- --local` as a local dry run;

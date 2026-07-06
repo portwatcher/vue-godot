@@ -3,17 +3,20 @@ import test from 'node:test'
 
 import {
   collectDeviceTestPrereqStatus,
+  isAndroidEmulatorDevice,
   parseAdbDevices,
   parseXctraceDevices,
 } from '../scripts/check-device-test-prereqs.mjs'
 
 test('device prereq parser reads adb device states', () => {
-  assert.deepEqual(
-    parseAdbDevices(`
+  const devices = parseAdbDevices(`
 List of devices attached
 emulator-5554 device product:sdk model:Pixel_8 device:emu64a transport_id:1
 R58M123 unauthorized usb:336592896X transport_id:2
-`),
+`)
+
+  assert.deepEqual(
+    devices,
     [
       {
         details: 'product:sdk model:Pixel_8 device:emu64a transport_id:1',
@@ -27,6 +30,8 @@ R58M123 unauthorized usb:336592896X transport_id:2
       },
     ],
   )
+  assert.equal(isAndroidEmulatorDevice(devices[0]), true)
+  assert.equal(isAndroidEmulatorDevice(devices[1]), false)
 })
 
 test('device prereq parser ignores simulators in xctrace output', () => {
@@ -87,6 +92,55 @@ test('device prereq status reports ready local Android and iOS devices', () => {
   assert.equal(summary.android.ready, true)
   assert.equal(summary.ios.ready, true)
   assert.deepEqual(summary.blockers, [])
+})
+
+test('device prereq status rejects Android emulators as release devices', () => {
+  const summary = collectDeviceTestPrereqStatus({
+    platform: 'android',
+    runCommand(command, args) {
+      assert.equal(command, 'adb')
+      assert.equal(args.join(' '), 'devices -l')
+      return {
+        errorCode: null,
+        status: 0,
+        stderr: '',
+        stdout: [
+          'List of devices attached',
+          'emulator-5554 device product:sdk_gphone64_arm64 model:sdk_gphone64_arm64 device:emu64a',
+        ].join('\n'),
+      }
+    },
+  })
+
+  assert.equal(summary.ready, false)
+  assert.equal(summary.android.ready, false)
+  assert.match(summary.android.blockers[0], /physical Android devices/)
+  assert.match(summary.android.warnings[0], /appears to be an emulator/)
+})
+
+test('device prereq status permits physical Android devices with emulator warnings', () => {
+  const summary = collectDeviceTestPrereqStatus({
+    platform: 'android',
+    runCommand(command, args) {
+      assert.equal(command, 'adb')
+      assert.equal(args.join(' '), 'devices -l')
+      return {
+        errorCode: null,
+        status: 0,
+        stderr: '',
+        stdout: [
+          'List of devices attached',
+          'emulator-5554 device product:sdk_gphone64_arm64 model:sdk_gphone64_arm64 device:emu64a',
+          'R5CT12345 device product:shiba model:Pixel_8 device:shiba',
+        ].join('\n'),
+      }
+    },
+  })
+
+  assert.equal(summary.ready, true)
+  assert.equal(summary.android.ready, true)
+  assert.deepEqual(summary.android.blockers, [])
+  assert.match(summary.android.warnings[0], /emulator/)
 })
 
 test('device prereq status reports missing local tooling without failing hosted evidence', () => {

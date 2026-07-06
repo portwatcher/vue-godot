@@ -129,6 +129,17 @@ export function parseAdbDevices(output) {
   return devices
 }
 
+export function isAndroidEmulatorDevice(device) {
+  const serial = String(device?.serial ?? '').toLowerCase()
+  const details = String(device?.details ?? '').toLowerCase()
+  return (
+    serial.startsWith('emulator-') ||
+    /\bdevice:emu/.test(details) ||
+    /\bmodel:sdk/.test(details) ||
+    /\bproduct:sdk/.test(details)
+  )
+}
+
 export function parseXctraceDevices(output) {
   const devices = []
   let section = null
@@ -174,17 +185,27 @@ function checkAndroid(runCommand) {
     blockers.push(formatCommandFailure('adb devices -l', result))
   } else {
     devices = parseAdbDevices(result.stdout)
-    const readyDevices = devices.filter((device) => device.state === 'device')
+    const readyDevices = devices.filter(
+      (device) => device.state === 'device' && !isAndroidEmulatorDevice(device),
+    )
     const unavailableDevices = devices.filter(
       (device) => device.state !== 'device',
     )
+    const emulatorDevices = devices.filter(
+      (device) => device.state === 'device' && isAndroidEmulatorDevice(device),
+    )
     if (readyDevices.length === 0) {
       blockers.push(
-        'No authorized Android devices reported by adb; connect and authorize a device or use hosted real-device evidence.',
+        'No authorized physical Android devices reported by adb; connect and authorize a real device or use hosted real-device evidence.',
       )
     }
     for (const device of unavailableDevices) {
       warnings.push(`Android device ${device.serial} is ${device.state}.`)
+    }
+    for (const device of emulatorDevices) {
+      warnings.push(
+        `Android device ${device.serial} appears to be an emulator; release smoke requires a real or hosted Android device.`,
+      )
     }
   }
 
