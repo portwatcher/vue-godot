@@ -418,7 +418,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
-    /per-platform metadata\/check gaps,\s+malformed outcome details/,
+    /per-platform metadata\/check gaps,\s+batch confirmation notes,\s+malformed outcome details/,
   )
   assert.match(
     production,
@@ -603,7 +603,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     readme,
-    /per-platform metadata\/check gaps, malformed outcome details/,
+    /per-platform metadata\/check gaps, batch confirmation notes, malformed outcome details/,
   )
   assert.match(
     readme,
@@ -828,7 +828,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     checklist,
-    /per-platform metadata\/check gaps,\s+malformed outcome details/,
+    /per-platform metadata\/check gaps,\s+batch confirmation notes,\s+malformed outcome details/,
   )
   assert.match(
     checklist,

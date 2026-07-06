@@ -17,7 +17,7 @@ export const defaultReleasePreflightSummaryPath =
 export const defaultReleaseReadinessEvidencePath =
   'release/release-readiness-evidence.json'
 export const defaultReleaseHandoffReportPath = 'release/release-handoff.md'
-export const releaseHandoffReportFormatVersion = 2
+export const releaseHandoffReportFormatVersion = 3
 
 function stableJson(value) {
   if (Array.isArray(value)) {

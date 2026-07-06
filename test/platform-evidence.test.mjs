@@ -33,6 +33,8 @@ function completedTemplate() {
     orientation: 'portrait and landscape',
     productionProfile: true,
   })
+  template.android.passRemainingConfirmation =
+    'All Android must-pass checks passed on Pixel hosted device run.'
   template.android.passedChecks = [...requiredRealDeviceChecks.android]
   template.ios.passedChecks = [...requiredRealDeviceChecks.ios]
   return template
@@ -134,6 +136,10 @@ test('platform evidence audit accepts completed production profile worksheet', (
   assert.equal(summary.ready, true)
   assert.equal(summary.errorCount, 0)
   assert.equal(summary.platforms.android.completedCheckCount, 14)
+  assert.equal(
+    summary.platforms.android.passRemainingConfirmation,
+    'All Android must-pass checks passed on Pixel hosted device run.',
+  )
   assert.equal(summary.platforms.ios.completedCheckCount, 15)
   assert.deepEqual(summary.platforms.android.remainingChecks, [])
   assert.deepEqual(summary.platforms.ios.mustPassMissingChecks, [])

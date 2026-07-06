@@ -188,6 +188,14 @@ function statusList(status, key) {
   return Array.isArray(value) ? value : []
 }
 
+function optionalText(value) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return 'none'
+  }
+
+  return value.trim()
+}
+
 function reportText(value) {
   const normalizedRoot = repoRoot.split(path.sep).join('/')
   return String(value)
@@ -336,6 +344,7 @@ function platformLines(platform, status) {
     '',
     `- Status: ${statusText(status.ready)} (${status.errorCount ?? 0} blocker(s))`,
     `- Required checks complete: ${status.completedCheckCount ?? 0}/${status.requiredCheckCount ?? 0}`,
+    `- Batch confirmation: ${optionalText(status.passRemainingConfirmation)}`,
     `- Metadata gaps: ${inlineList(status.missingFields)}`,
     `- Must-pass remaining: ${inlineList(status.mustPassMissingChecks)}`,
     `- Skippable remaining: ${inlineList(status.skippableMissingChecks)}`,

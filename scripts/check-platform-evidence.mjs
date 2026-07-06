@@ -335,6 +335,13 @@ function auditPlatformWorksheet(record, platform, options = {}) {
   }
   if ('passRemainingConfirmation' in record) {
     if (
+      typeof record.passRemainingConfirmation === 'string' &&
+      record.passRemainingConfirmation.trim().length > 0
+    ) {
+      status.passRemainingConfirmation =
+        record.passRemainingConfirmation.trim()
+    }
+    if (
       typeof record.passRemainingConfirmation !== 'string' ||
       record.passRemainingConfirmation.trim().length === 0
     ) {

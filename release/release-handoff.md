@@ -1,7 +1,7 @@
 # Release Handoff
 
 - Release candidate commit: `43f76a37f9885a3f656127479e810212ef1ffd85`
-- Handoff format: 2
+- Handoff format: 3
 - Handoff state: 627a3c91e263e524
 - Overall readiness: open (10 blocker(s))
 - Real-device evidence: waiting
@@ -39,6 +39,7 @@
 
 - Status: waiting (34 blocker(s))
 - Required checks complete: 0/14
+- Batch confirmation: none
 - Metadata gaps: `artifact`, `deviceModel`, `osVersion`, `orientation`, `locale`
 - Must-pass remaining: `cold-launch`, `no-godotjs-load-diagnostics`, `storage-restart`, `network-if-selected`, `clipboard-if-selected`, `permission-prompts-if-selected`, `adapter-states-if-selected`, `hardware-adapters-if-selected`, `haptics-if-selected`, `audio-input-if-selected`, `sensors-if-selected`, `safe-area-keyboard`, `android-back-handling`, `background-foreground`
 - Skippable remaining: none
@@ -69,6 +70,7 @@
 
 - Status: waiting (35 blocker(s))
 - Required checks complete: 0/15
+- Batch confirmation: none
 - Metadata gaps: `artifact`, `deviceModel`, `osVersion`, `orientation`, `locale`
 - Must-pass remaining: `cold-launch`, `no-godotjs-load-diagnostics`, `plist-entitlements`, `storage-restart`, `network-if-selected`, `clipboard-if-selected`, `permission-prompts-if-selected`, `adapter-states-if-selected`, `hardware-adapters-if-selected`, `haptics-if-selected`, `audio-input-if-selected`, `sensors-if-selected`, `safe-area-keyboard-rotation-text-input`, `background-foreground`
 - Skippable remaining: `deep-links-share-notifications-if-selected`
