@@ -1,15 +1,15 @@
 {
   "ready": true,
-  "commit": "978d10fe966364620fa4c9bb3824cdf6e340d0f9",
+  "commit": "4ba1d5240742818e8fa8fd632646b246dec9d5e5",
   "commitFound": true,
   "releasePreflightRunCommit": null,
   "localGit": {
     "currentBranch": "develop",
-    "currentHead": "978d10fe966364620fa4c9bb3824cdf6e340d0f9",
-    "commitIsHead": true,
+    "currentHead": "764ea627565684b722600d7230ad8b100225e743",
+    "commitIsHead": false,
     "upstreamRef": "origin/develop",
-    "upstreamCommit": "978d10fe966364620fa4c9bb3824cdf6e340d0f9",
-    "upstreamMatchesCommit": true,
+    "upstreamCommit": "764ea627565684b722600d7230ad8b100225e743",
+    "upstreamMatchesCommit": false,
     "dirtyWorktree": false
   },
   "requiredWorkflowNames": [
@@ -27,24 +27,24 @@
     "godotSmokeWorkflow": true
   },
   "evidence": {
-    "commit": "978d10fe966364620fa4c9bb3824cdf6e340d0f9",
+    "commit": "4ba1d5240742818e8fa8fd632646b246dec9d5e5",
     "workflows": {
       "Check": {
         "workflowName": "Check",
-        "runUrl": "https://github.com/portwatcher/vue-godot/actions/runs/28802097077",
-        "runId": 28802097077,
-        "runNumber": 169,
+        "runUrl": "https://github.com/portwatcher/vue-godot/actions/runs/28802880134",
+        "runId": 28802880134,
+        "runNumber": 171,
         "runAttempt": 1,
-        "runCommit": "978d10fe966364620fa4c9bb3824cdf6e340d0f9",
+        "runCommit": "4ba1d5240742818e8fa8fd632646b246dec9d5e5",
         "runConclusion": "success"
       },
       "Godot Smoke": {
         "workflowName": "Godot Smoke",
-        "runUrl": "https://github.com/portwatcher/vue-godot/actions/runs/28802106269",
-        "runId": 28802106269,
-        "runNumber": 82,
+        "runUrl": "https://github.com/portwatcher/vue-godot/actions/runs/28802884265",
+        "runId": 28802884265,
+        "runNumber": 83,
         "runAttempt": 1,
-        "runCommit": "978d10fe966364620fa4c9bb3824cdf6e340d0f9",
+        "runCommit": "4ba1d5240742818e8fa8fd632646b246dec9d5e5",
         "runConclusion": "success"
       }
     }
