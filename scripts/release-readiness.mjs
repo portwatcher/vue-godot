@@ -29,6 +29,7 @@ export { validateInitialCiEvidence } from './release-ci-evidence.mjs'
 import { collectPublicSurfaceAuditErrors } from './public-surface-audit.mjs'
 import { collectLocalGitReleaseState } from './check-release-ci-runs.mjs'
 import {
+  collectPlatformEvidenceCommandMetadata,
   collectPlatformEvidencePassChecks,
   collectPlatformEvidenceRemainingCheckDetails,
   collectPlatformEvidenceSkippableMissingChecks,
@@ -1373,6 +1374,10 @@ function collectReadinessNextActions(
     } else if (!platformEvidence.ready) {
       platformEvidenceCommands.push(
         ...recordPlatformEvidenceCommands('android', commit, {
+          ...collectPlatformEvidenceCommandMetadata(
+            platformEvidence,
+            'android',
+          ),
           checks: collectPlatformEvidencePassChecks(platformEvidence, 'android'),
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(
@@ -1382,6 +1387,7 @@ function collectReadinessNextActions(
           summaryOutput: 'release/platform-evidence-summary.json',
         }),
         ...recordPlatformEvidenceCommands('ios', commit, {
+          ...collectPlatformEvidenceCommandMetadata(platformEvidence, 'ios'),
           checks: collectPlatformEvidencePassChecks(platformEvidence, 'ios'),
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(
