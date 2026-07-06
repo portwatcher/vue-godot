@@ -20,6 +20,7 @@ import {
 } from './release-handoff-commands.mjs'
 import {
   collectPlatformEvidenceRemainingCheckDetails,
+  collectPlatformEvidenceSkippableMissingChecks,
   formatPlatformEvidenceProgress,
   formatPlatformEvidenceRemaining,
   readPlatformEvidenceAudit,
@@ -246,6 +247,10 @@ function collectNextActions(summary) {
             'android',
             expectedCommit,
             customPlatformEvidenceCommandOptions(summary, {
+              skipChecks: collectPlatformEvidenceSkippableMissingChecks(
+                platformEvidence,
+                'android',
+              ),
               summaryOutput: 'release/platform-evidence-summary.json',
             }),
           ),
@@ -253,6 +258,10 @@ function collectNextActions(summary) {
             'ios',
             expectedCommit,
             customPlatformEvidenceCommandOptions(summary, {
+              skipChecks: collectPlatformEvidenceSkippableMissingChecks(
+                platformEvidence,
+                'ios',
+              ),
               summaryOutput: 'release/platform-evidence-summary.json',
             }),
           ),

@@ -103,40 +103,57 @@ test('platform evidence template lists required checks without passing them', ()
   )
   assert.deepEqual(template.ios.requiredChecks, requiredRealDeviceChecks.ios)
   assert.deepEqual(template.ios.passOnlyChecks, passOnlyRealDeviceChecks.ios)
+  const completeAction = template.nextActions.find(
+    (action) => action.id === 'complete-platform-evidence',
+  )
+  assert.ok(completeAction)
+  assert.match(completeAction.detail, /Android must-pass remaining: cold-launch/)
   assert.ok(
-    template.nextActions.some(
-      (action) =>
-        action.id === 'complete-platform-evidence' &&
-        /Android must-pass remaining: cold-launch/.test(action.detail) &&
-        action.platformCheckDetails.some(
-          (detail) =>
-            detail.platform === 'android' &&
-            detail.check === 'cold-launch' &&
-            detail.description.includes('Install the exported build'),
-        ) &&
-        action.platformCheckDetails.some(
-          (detail) =>
-            detail.check === 'network-if-selected' &&
-            detail.mustPass === true &&
-            detail.selectedApis.includes('fetch'),
-        ) &&
-        /iOS skippable remaining: .*deep-links-share-notifications-if-selected/.test(
-          action.detail,
-        ) &&
-        action.platformCheckDetails.some(
-          (detail) =>
-            detail.platform === 'ios' &&
-            detail.check === 'deep-links-share-notifications-if-selected' &&
-            detail.mustPass === false &&
-            detail.description.includes('Verify cold-start'),
-        ) &&
-        action.commands.includes(
-          'npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
-        ) &&
-        action.commands.includes(
-          'npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
-        ),
+    completeAction.platformCheckDetails.some(
+      (detail) =>
+        detail.platform === 'android' &&
+        detail.check === 'cold-launch' &&
+        detail.description.includes('Install the exported build'),
     ),
+  )
+  assert.ok(
+    completeAction.platformCheckDetails.some(
+      (detail) =>
+        detail.check === 'network-if-selected' &&
+        detail.mustPass === true &&
+        detail.selectedApis.includes('fetch'),
+    ),
+  )
+  assert.match(
+    completeAction.detail,
+    /iOS skippable remaining: .*deep-links-share-notifications-if-selected/,
+  )
+  assert.ok(
+    completeAction.platformCheckDetails.some(
+      (detail) =>
+        detail.platform === 'ios' &&
+        detail.check === 'deep-links-share-notifications-if-selected' &&
+        detail.mustPass === false &&
+        detail.description.includes('Verify cold-start'),
+    ),
+  )
+  const androidRecordCommand = completeAction.commands.find((command) =>
+    command.includes('--platform android'),
+  )
+  assert.ok(androidRecordCommand)
+  assert.match(androidRecordCommand, /--pass-remaining/)
+  assert.match(
+    androidRecordCommand,
+    /--skip 'clipboard-if-selected=<skip-reason-if-not-selected>'/,
+  )
+  const iosRecordCommand = completeAction.commands.find((command) =>
+    command.includes('--platform ios'),
+  )
+  assert.ok(iosRecordCommand)
+  assert.match(iosRecordCommand, /--pass-remaining/)
+  assert.match(
+    iosRecordCommand,
+    /--skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>'/,
   )
   assert.ok(
     template.nextActions.some(

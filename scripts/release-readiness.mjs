@@ -25,6 +25,7 @@ import { collectPublicSurfaceAuditErrors } from './public-surface-audit.mjs'
 import { collectLocalGitReleaseState } from './check-release-ci-runs.mjs'
 import {
   collectPlatformEvidenceRemainingCheckDetails,
+  collectPlatformEvidenceSkippableMissingChecks,
   formatPlatformEvidenceProgress,
   formatPlatformEvidenceRemaining,
   readPlatformEvidenceAudit,
@@ -1284,10 +1285,18 @@ function collectReadinessNextActions(
       platformEvidenceCommands.push(
         recordPlatformEvidenceCommand('android', commit, {
           platformEvidencePath,
+          skipChecks: collectPlatformEvidenceSkippableMissingChecks(
+            platformEvidence,
+            'android',
+          ),
           summaryOutput: 'release/platform-evidence-summary.json',
         }),
         recordPlatformEvidenceCommand('ios', commit, {
           platformEvidencePath,
+          skipChecks: collectPlatformEvidenceSkippableMissingChecks(
+            platformEvidence,
+            'ios',
+          ),
           summaryOutput: 'release/platform-evidence-summary.json',
         }),
       )

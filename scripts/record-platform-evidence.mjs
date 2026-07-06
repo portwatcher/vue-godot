@@ -36,8 +36,9 @@ Options:
   --orientation <value>            Tested orientation coverage.
   --locale <value>                 Tested locale.
   --pass <check[,check...]>        Record required check(s) in passedChecks.
-  --pass-remaining                 Record every unskipped required check in
-                                  passedChecks.
+  --pass-remaining                 Record every remaining must-pass check in
+                                  passedChecks. Skippable checks still need
+                                  --pass or --skip.
   --passed-check <check[,check...]> Alias for --pass.
   --skip <check=reason>            Record a skippable required check with reason.
                                   Can be repeated. ":" is also accepted.
@@ -337,6 +338,9 @@ export function recordPlatformEvidence(evidence, options) {
 
   const passRemainingChecks = options.passRemaining
     ? requiredRealDeviceChecks[platform].filter((check) => {
+        if (!mustPassChecks.has(check)) {
+          return false
+        }
         if (explicitPassedChecks.includes(check)) {
           return false
         }

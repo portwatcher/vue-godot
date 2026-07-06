@@ -333,14 +333,15 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /--platform android/)
   assert.match(production, /--platform ios/)
   assert.match(production, /--pass-remaining/)
-  assert.match(production, /all unskipped required checks/)
+  assert.match(production, /remaining must-pass checks/)
+  assert.match(production, /generated handoff commands include skip\s+placeholders/)
   assert.match(
     production,
     /refuses to skip\s+pass-only or selected-API-required checks/,
   )
   assert.match(
     production,
-    /When `--summary-output` is supplied[\s\S]*recorder writes the updated audit and follow-up `nextActions`/,
+    /When\s+`--summary-output`\s+is\s+supplied[\s\S]*recorder\s+writes the updated audit\s+and\s+follow-up `nextActions`/,
   )
   assert.match(production, /--production-profile/)
   assert.match(production, /production-profile selected API set/)
@@ -550,7 +551,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /--summary-output/)
   assert.match(
     readme,
-    /When `--summary-output` is supplied[\s\S]*recorder writes the updated audit and follow-up `nextActions`/,
+    /When\s+`--summary-output`\s+is\s+supplied[\s\S]*recorder\s+writes the updated audit\s+and\s+follow-up `nextActions`/,
   )
   assert.match(readme, /--release-preflight-summary/)
   assert.match(
@@ -660,12 +661,13 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /--platform android/)
   assert.match(readme, /--platform ios/)
   assert.match(readme, /--pass-remaining/)
-  assert.match(readme, /all unskipped required checks/)
+  assert.match(readme, /remaining must-pass checks/)
+  assert.match(readme, /generated handoff commands include\s+skip placeholders/)
   assert.match(readme, /rejects unknown checks/)
   assert.match(readme, /refuses to\s+skip pass-only or selected-API-required checks/)
   assert.match(
     readme,
-    /When `--summary-output` is supplied[\s\S]*recorder writes the updated audit and follow-up `nextActions`/,
+    /When\s+`--summary-output`\s+is\s+supplied[\s\S]*recorder\s+writes the updated audit\s+and\s+follow-up `nextActions`/,
   )
   assert.match(readme, /--production-profile/)
   assert.match(readme, /production-profile selected API set/)
@@ -752,7 +754,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /--ci-evidence/)
   assert.match(
     checklist,
-    /When `--summary-output` is supplied[\s\S]*recorder\s+writes the updated audit and follow-up `nextActions`/,
+    /When\s+`--summary-output`\s+is\s+supplied[\s\S]*recorder\s+writes the updated audit\s+and\s+follow-up `nextActions`/,
   )
   assert.match(checklist, /--release-preflight-summary/)
   assert.match(
@@ -890,6 +892,8 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(checklist, /--skip deep-links-share-notifications-if-selected/)
   assert.match(checklist, /--pass-remaining/)
+  assert.match(checklist, /remaining must-pass checks/)
+  assert.match(checklist, /generated handoff commands include skip placeholders/)
   assert.match(checklist, /preserves existing and newly supplied/)
   assert.match(
     checklist,
@@ -897,7 +901,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     checklist,
-    /When `--summary-output` is supplied[\s\S]*recorder[\s\S]*writes the updated audit and follow-up `nextActions`/,
+    /When\s+`--summary-output`\s+is\s+supplied[\s\S]*recorder[\s\S]*writes the updated audit\s+and\s+follow-up `nextActions`/,
   )
   assert.match(checklist, /check:platform-evidence/)
   assert.match(checklist, /platform-evidence-summary\.json/)

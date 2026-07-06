@@ -26,6 +26,21 @@ function shellArg(value) {
   return shellQuote(text)
 }
 
+function uniqueNonEmptyStrings(values) {
+  if (!Array.isArray(values)) {
+    return []
+  }
+
+  return [
+    ...new Set(
+      values
+        .filter((value) => typeof value === 'string')
+        .map((value) => value.trim())
+        .filter((value) => value.length > 0),
+    ),
+  ]
+}
+
 export function formatHandoffCommand(args) {
   return args.map((arg) => shellArg(arg)).join(' ')
 }
@@ -109,11 +124,18 @@ export function recordPlatformEvidenceCommand(platform, commit, options = {}) {
     '--locale',
     '<tested-locale>',
     '--pass-remaining',
+  ]
+
+  for (const check of uniqueNonEmptyStrings(options.skipChecks)) {
+    args.push('--skip', `${check}=<skip-reason-if-not-selected>`)
+  }
+
+  args.push(
     '--summary-output',
     options.summaryOutput ?? 'release/platform-evidence-summary.json',
     '--expected-commit',
     releaseCommitLabel(commit),
-  ]
+  )
 
   return formatHandoffCommand(args)
 }

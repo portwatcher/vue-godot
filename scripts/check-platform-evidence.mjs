@@ -580,6 +580,21 @@ function collectRemainingCheckDetails(platform, status) {
     .map((detail) => normalizeRemainingCheckDetail(platform, detail))
 }
 
+export function collectPlatformEvidenceSkippableMissingChecks(
+  summary,
+  platform,
+) {
+  const status = summary?.platforms?.[platform]
+  if (!isRecord(status) || !Array.isArray(status.skippableMissingChecks)) {
+    return []
+  }
+
+  return status.skippableMissingChecks
+    .filter((check) => typeof check === 'string')
+    .map((check) => check.trim())
+    .filter((check) => check.length > 0)
+}
+
 function formatRemainingCheckDetails(platform, status) {
   const details = collectRemainingCheckDetails(platform, status).map((detail) =>
     formatNormalizedCheckDetail(detail),
@@ -748,10 +763,18 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
       commands: [
         recordPlatformEvidenceCommand('android', commit, {
           platformEvidencePath,
+          skipChecks: collectPlatformEvidenceSkippableMissingChecks(
+            summary,
+            'android',
+          ),
           summaryOutput: options.summaryOutput ?? 'release/platform-evidence-summary.json',
         }),
         recordPlatformEvidenceCommand('ios', commit, {
           platformEvidencePath,
+          skipChecks: collectPlatformEvidenceSkippableMissingChecks(
+            summary,
+            'ios',
+          ),
           summaryOutput: options.summaryOutput ?? 'release/platform-evidence-summary.json',
         }),
         checkPlatformEvidenceCommand(commit, {

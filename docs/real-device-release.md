@@ -218,9 +218,11 @@ Only use `--skip check=reason` for conditional checks that are genuinely outside
 the selected release profile, such as
 `--skip deep-links-share-notifications-if-selected="not selected for this release profile"`
 on an iOS build that does not include deep links, share sheets, or notifications.
-After every unresolved required check for that platform has actually passed,
-use `--pass-remaining` to move all unskipped required checks into
-`passedChecks` in one batch. It preserves existing and newly supplied
+After every unresolved must-pass check for that platform has actually passed,
+use `--pass-remaining` to move the remaining must-pass checks into
+`passedChecks` in one batch. Skippable checks still need an explicit `--pass` or
+`--skip check=reason`; generated handoff commands include skip placeholders for
+currently skippable gaps. It preserves existing and newly supplied
 `--skip check=reason` entries, and the same pass-only and selected-API
 validation still applies. When `--summary-output` is supplied, the recorder
 writes the updated audit and follow-up `nextActions` using the same evidence and

@@ -279,10 +279,24 @@ test('record-platform-evidence CLI records one platform result batch', () => {
     assert.equal(summary.nextActions[0].id, 'complete-platform-evidence')
     assert.match(result.stdout, /iOS missing metadata: artifact/)
     assert.match(result.stdout, /Android must-pass remaining: storage-restart/)
-    assert.ok(
-      summary.nextActions[0].commands.includes(
-        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${shellQuote(evidencePath)} --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output ${shellQuote(summaryPath)} --expected-commit ${commit}`,
+    const androidRecordCommand = summary.nextActions[0].commands.find(
+      (command) => command.includes('--platform android'),
+    )
+    assert.ok(androidRecordCommand)
+    assert.match(
+      androidRecordCommand,
+      new RegExp(
+        `--platform-evidence ${shellQuote(evidencePath).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`,
       ),
+    )
+    assert.match(androidRecordCommand, /--pass-remaining/)
+    assert.match(
+      androidRecordCommand,
+      /--skip 'clipboard-if-selected=<skip-reason-if-not-selected>'/,
+    )
+    assert.doesNotMatch(
+      androidRecordCommand,
+      /--skip 'network-if-selected=<skip-reason-if-not-selected>'/,
     )
     assert.ok(
       summary.nextActions[0].commands.includes(
@@ -333,7 +347,7 @@ test('record-platform-evidence CLI rejects skipped must-pass checks', () => {
   }
 })
 
-test('record-platform-evidence CLI can pass all remaining unskipped checks', () => {
+test('record-platform-evidence CLI passes remaining must-pass checks only', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-platform-'))
   const evidencePath = path.join(tempDir, 'platform-evidence.json')
   const summaryPath = path.join(tempDir, 'platform-summary.json')
@@ -365,12 +379,13 @@ test('record-platform-evidence CLI can pass all remaining unskipped checks', () 
 
     assert.equal(result.status, 0, result.stderr || result.stdout)
     const updated = JSON.parse(fs.readFileSync(evidencePath, 'utf-8'))
-    assert.deepEqual(
-      updated.android.passedChecks,
-      requiredRealDeviceChecks.android.filter(
-        (check) => check !== 'network-if-selected',
-      ),
-    )
+    assert.deepEqual(updated.android.passedChecks, [
+      'cold-launch',
+      'no-godotjs-load-diagnostics',
+      'storage-restart',
+      'android-back-handling',
+      'background-foreground',
+    ])
     assert.equal(
       updated.android.skippedChecks['network-if-selected'],
       'Network APIs were not selected for this hosted pass',
@@ -379,11 +394,13 @@ test('record-platform-evidence CLI can pass all remaining unskipped checks', () 
     const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
     assert.equal(summary.updatedPlatform, 'android')
     assert.equal(summary.passRemaining, true)
-    assert.equal(
-      summary.progress.android.completedCheckCount,
-      requiredRealDeviceChecks.android.length,
+    assert.equal(summary.progress.android.completedCheckCount, 6)
+    assert.ok(
+      summary.platforms.android.skippableMissingChecks.includes(
+        'clipboard-if-selected',
+      ),
     )
-    assert.deepEqual(summary.platforms.android.remainingChecks, [])
+    assert.deepEqual(summary.platforms.android.mustPassMissingChecks, [])
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }
@@ -465,7 +482,7 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
     )
     assert.ok(
       summary.nextActions[0].commands.includes(
-        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output ${summaryPath} --expected-commit ${commit}`,
+        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output ${summaryPath} --expected-commit ${commit}`,
       ),
     )
     assert.ok(

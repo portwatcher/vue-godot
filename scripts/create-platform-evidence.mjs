@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url'
 import {
   auditPlatformEvidence,
   collectPlatformEvidenceRemainingCheckDetails,
+  collectPlatformEvidenceSkippableMissingChecks,
   formatPlatformEvidenceProgress,
   formatPlatformEvidenceRemaining,
 } from './check-platform-evidence.mjs'
@@ -256,10 +257,18 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
       commands: [
         recordPlatformEvidenceCommand('android', commit, {
           platformEvidencePath,
+          skipChecks: collectPlatformEvidenceSkippableMissingChecks(
+            platformAudit,
+            'android',
+          ),
           summaryOutput: platformEvidenceSummaryPath,
         }),
         recordPlatformEvidenceCommand('ios', commit, {
           platformEvidencePath,
+          skipChecks: collectPlatformEvidenceSkippableMissingChecks(
+            platformAudit,
+            'ios',
+          ),
           summaryOutput: platformEvidenceSummaryPath,
         }),
       ],
