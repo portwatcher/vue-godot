@@ -239,6 +239,8 @@ test('platform evidence audit rejects placeholder metadata and skip reasons', ()
     'deep-links-share-notifications-if-selected':
       '<skip-reason-if-not-selected>',
   }
+  template.ios.passRemainingConfirmation =
+    '<confirm-all-remaining-must-pass-checks-after-testing>'
 
   const summary = auditPlatformEvidence(template)
   const errors = summary.errors.join('\n')
@@ -260,6 +262,17 @@ test('platform evidence audit rejects placeholder metadata and skip reasons', ()
   assert.match(
     errors,
     /ios\.skippedChecks\.deep-links-share-notifications-if-selected must replace placeholder <skip-reason-if-not-selected>/,
+  )
+  assert.match(
+    errors,
+    /ios\.passRemainingConfirmation must replace placeholder <confirm-all-remaining-must-pass-checks-after-testing>/,
+  )
+
+  template.ios.passRemainingConfirmation = ''
+  const emptyConfirmationSummary = auditPlatformEvidence(template)
+  assert.match(
+    emptyConfirmationSummary.errors.join('\n'),
+    /ios\.passRemainingConfirmation must be a non-empty release-specific confirmation note/,
   )
 })
 
@@ -573,6 +586,10 @@ test('record-platform-evidence CLI passes remaining must-pass checks only', () =
     assert.equal(
       updated.android.skippedChecks['network-if-selected'],
       'Network APIs were not selected for this hosted pass',
+    )
+    assert.equal(
+      updated.android.passRemainingConfirmation,
+      'All remaining Android must-pass checks passed on the hosted device run',
     )
 
     const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))

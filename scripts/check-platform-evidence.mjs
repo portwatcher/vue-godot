@@ -333,6 +333,20 @@ function auditPlatformWorksheet(record, platform, options = {}) {
       status.missingFields.push(missingField)
     }
   }
+  if ('passRemainingConfirmation' in record) {
+    if (
+      typeof record.passRemainingConfirmation !== 'string' ||
+      record.passRemainingConfirmation.trim().length === 0
+    ) {
+      errors.push(
+        `${platform}.passRemainingConfirmation must be a non-empty release-specific confirmation note`,
+      )
+    } else if (isReleaseEvidencePlaceholder(record.passRemainingConfirmation)) {
+      errors.push(
+        `${platform}.passRemainingConfirmation must replace placeholder ${record.passRemainingConfirmation}`,
+      )
+    }
+  }
 
   status.selectedApis = checkStringArray(record, 'selectedApis', platform, errors)
   status.unknownSelectedApis = unknownRealDeviceSelectedApis(status.selectedApis)

@@ -23,6 +23,7 @@
     "osVersion": "Android 15",
     "orientation": "portrait and landscape",
     "locale": "en-US",
+    "passRemainingConfirmation": "All Android must-pass checks passed on Pixel 8 hosted device.",
     "selectedApis": [
       "fetch",
       "WebSocket",
@@ -64,6 +65,7 @@
     "osVersion": "iOS 18",
     "orientation": "portrait and landscape",
     "locale": "en-US",
+    "passRemainingConfirmation": "All iOS must-pass checks passed on iPhone 15 hosted device.",
     "selectedApis": [
       "fetch",
       "WebSocket",

@@ -396,6 +396,10 @@ export function recordPlatformEvidence(evidence, options) {
     }
     platformEvidence[key] = value
   }
+  if (options.passRemaining) {
+    platformEvidence.passRemainingConfirmation =
+      options.passRemainingConfirmation.trim()
+  }
 
   const passedSet = new Set(passedChecks)
   const skippedChecks = { ...platformEvidence.skippedChecks }

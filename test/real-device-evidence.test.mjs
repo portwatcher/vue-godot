@@ -88,6 +88,8 @@ function copyEvidenceCommands(copies) {
 
 test('real device evidence accepts a complete Android and iOS sign-off', () => {
   const evidence = validEvidence()
+  evidence.android.passRemainingConfirmation =
+    'All Android must-pass checks passed on Pixel hosted device run.'
 
   assert.deepEqual(
     validateRealDeviceEvidence(evidence, {
@@ -120,6 +122,8 @@ test('real device evidence requires every platform check to pass or be skipped w
 test('real device evidence rejects placeholder metadata and skip reasons', () => {
   const evidence = validEvidence()
   evidence.android.artifact = '<android-apk-aab-or-hosted-build-id>'
+  evidence.android.passRemainingConfirmation =
+    '<confirm-all-remaining-must-pass-checks-after-testing>'
   evidence.ios.skippedChecks = {
     'deep-links-share-notifications-if-selected':
       '<skip-reason-if-not-selected>',
@@ -133,6 +137,10 @@ test('real device evidence rejects placeholder metadata and skip reasons', () =>
   assert.match(
     errors,
     /ios\.skippedChecks\.deep-links-share-notifications-if-selected must replace placeholder <skip-reason-if-not-selected>/,
+  )
+  assert.match(
+    errors,
+    /android\.passRemainingConfirmation must replace placeholder <confirm-all-remaining-must-pass-checks-after-testing>/,
   )
 })
 

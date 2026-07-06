@@ -68,6 +68,11 @@ function platformEvidence(platform) {
 
 test('buildRealDeviceEvidence assembles validator-ready evidence from CI runs and device data', () => {
   const packageVersions = currentReleasePackageVersions()
+  const androidPlatformEvidence = {
+    ...platformEvidence('android'),
+    passRemainingConfirmation:
+      'All Android must-pass checks passed on Pixel hosted device run.',
+  }
   const evidence = buildRealDeviceEvidence({
     commit,
     packageVersions,
@@ -86,11 +91,15 @@ test('buildRealDeviceEvidence assembles validator-ready evidence from CI runs an
       conclusion: 'success',
     },
     platformEvidence: {
-      android: platformEvidence('android'),
+      android: androidPlatformEvidence,
       ios: platformEvidence('ios'),
     },
   })
 
+  assert.equal(
+    evidence.android.passRemainingConfirmation,
+    'All Android must-pass checks passed on Pixel hosted device run.',
+  )
   assert.deepEqual(
     validateRealDeviceEvidence(evidence, {
       expectedCommit: commit,

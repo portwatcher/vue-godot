@@ -228,11 +228,13 @@ After every unresolved must-pass check for that platform has actually passed,
 use `--pass-remaining` to move the remaining must-pass checks into
 `passedChecks` in one batch, and include
 `--pass-remaining-confirmation "<release-specific confirmation>"` after the
-device run. Skippable checks still need an explicit `--pass` or
-`--skip check=reason`; generated handoff commands include skip and
-pass-remaining confirmation placeholders for currently open gaps. Replace every
-placeholder before recording evidence; the recorder, worksheet audit, and final
-evidence validator reject placeholder metadata, placeholder confirmation notes,
+device run; the recorder stores that confirmation on the platform evidence so
+`release/real-device-evidence.json` keeps the audit note. Skippable checks still
+need an explicit `--pass` or `--skip check=reason`; generated handoff commands
+include skip and pass-remaining confirmation placeholders for currently
+open gaps. Replace every placeholder before recording evidence; the recorder,
+worksheet audit, and final evidence validator reject placeholder metadata,
+placeholder confirmation notes,
 and placeholder skip reasons. Final `passedChecks` must be a non-empty
 string array without duplicates, and final `skippedChecks` must be an object whose
 values are non-empty release-specific reasons. A check must not appear in both.

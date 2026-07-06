@@ -334,10 +334,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /--platform ios/)
   assert.match(production, /--pass-remaining/)
   assert.match(production, /--pass-remaining-confirmation/)
+  assert.match(production, /keeps the audit note/)
   assert.match(production, /remaining must-pass checks/)
   assert.match(
     production,
-    /generated handoff commands include skip and\s+pass-remaining confirmation placeholders/,
+    /generated handoff commands\s+include skip and\s+pass-remaining confirmation placeholders/,
   )
   assert.match(production, /placeholder confirmation notes/)
   assert.match(production, /`passedChecks`[\s\S]*non-empty string array/)
@@ -686,10 +687,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /--platform ios/)
   assert.match(readme, /--pass-remaining/)
   assert.match(readme, /--pass-remaining-confirmation/)
+  assert.match(readme, /keeps the audit note/)
   assert.match(readme, /remaining must-pass checks/)
   assert.match(
     readme,
-    /generated handoff commands include skip and\s+pass-remaining confirmation placeholders/,
+    /generated handoff commands\s+include skip and\s+pass-remaining confirmation placeholders/,
   )
   assert.match(readme, /placeholder confirmation notes/)
   assert.match(readme, /`passedChecks`[\s\S]*non-empty string array/)
@@ -934,10 +936,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /--skip deep-links-share-notifications-if-selected/)
   assert.match(checklist, /--pass-remaining/)
   assert.match(checklist, /--pass-remaining-confirmation/)
+  assert.match(checklist, /keeps the audit note/)
   assert.match(checklist, /remaining must-pass checks/)
   assert.match(
     checklist,
-    /generated handoff commands include skip and\s+pass-remaining confirmation placeholders/,
+    /generated handoff commands\s+include skip and\s+pass-remaining confirmation placeholders/,
   )
   assert.match(checklist, /placeholder confirmation notes/)
   assert.match(checklist, /`passedChecks`[\s\S]*non-empty\s+string array/)

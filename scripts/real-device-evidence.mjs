@@ -583,6 +583,15 @@ function validatePlatformEvidence(evidence, platform, errors, options = {}) {
     assertString(platformEvidence, key, errors, platform)
     assertNoPlaceholderString(platformEvidence, key, errors, platform)
   }
+  if ('passRemainingConfirmation' in platformEvidence) {
+    assertString(platformEvidence, 'passRemainingConfirmation', errors, platform)
+    assertNoPlaceholderString(
+      platformEvidence,
+      'passRemainingConfirmation',
+      errors,
+      platform,
+    )
+  }
 
   for (const field of realDeviceWorksheetFields) {
     if (field in platformEvidence) {
