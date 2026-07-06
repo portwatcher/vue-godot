@@ -131,10 +131,12 @@ release-device prerequisite. iOS local device sessions require full Xcode, not
 only Command Line Tools; if `xcrun xctrace list devices` cannot find `xctrace`,
 install Xcode.app and select it with
 `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`, or use
-hosted real Apple-device evidence. Missing local tooling or provider
-environment variables are only diagnostics; hosted real-device runs still
-satisfy the release gate when the final evidence records artifact IDs, device
-metadata, and non-local http(s) evidence URLs.
+hosted real Apple-device evidence. If the App Store CLI is used, Xcode is app id
+`497799835` and paused downloads still need to be resumed in App Store.app; the
+Apple Developer download path requires an Apple ID. Missing local tooling or
+provider environment variables are only diagnostics; hosted real-device runs
+still satisfy the release gate when the final evidence records artifact IDs,
+device metadata, and non-local http(s) evidence URLs.
 After every unresolved
 must-pass check has actually passed, add `--pass-remaining` to record the
 remaining must-pass checks in one batch, and include

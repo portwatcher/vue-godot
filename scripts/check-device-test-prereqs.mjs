@@ -187,7 +187,7 @@ function collectXcodeSelectionBlockers(runCommand) {
 
   if (!fs.existsSync('/Applications/Xcode.app')) {
     blockers.push(
-      'Full Xcode.app was not found at /Applications/Xcode.app; install Xcode from the App Store or Apple Developer downloads, then rerun the iOS device prerequisite check.',
+      'Full Xcode.app was not found at /Applications/Xcode.app; install Xcode from the App Store (app id 497799835), resume any paused App Store download when prompted, or install from Apple Developer downloads with an Apple ID, then rerun the iOS device prerequisite check.',
     )
   }
 

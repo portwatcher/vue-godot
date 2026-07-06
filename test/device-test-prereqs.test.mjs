@@ -198,6 +198,8 @@ test('device prereq status explains missing full Xcode when xctrace is unavailab
   assert.match(summary.ios.blockers[0], /xcrun xctrace list devices failed/)
   assert.match(summary.ios.blockers[1], /Full Xcode is not selected/)
   assert.match(summary.ios.blockers.join('\n'), /Xcode\.app/)
+  assert.match(summary.ios.blockers.join('\n'), /App Store \(app id 497799835\)/)
+  assert.match(summary.ios.blockers.join('\n'), /Apple ID/)
 })
 
 test('hosted provider status reports configured env names without values', () => {

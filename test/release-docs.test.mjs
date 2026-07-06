@@ -67,6 +67,9 @@ test('real device release checklist covers required Android and iOS gates', () =
     /iOS local device sessions require full Xcode/,
     /xcrun xctrace list devices/,
     /sudo xcode-select -s \/Applications\/Xcode\.app\/Contents\/Developer/,
+    /app\s+id `497799835`/,
+    /paused downloads still need to be resumed in App\s+Store\.app/,
+    /Apple Developer download path requires an Apple ID/,
     /npm run check:serious-examples/,
     /npm run release:preflight[\s\S]*validates real-device evidence/,
     /npm audit --audit-level=moderate/,
@@ -336,6 +339,12 @@ test('release preflight enforces real device evidence', () => {
     production,
     /sudo xcode-select -s \/Applications\/Xcode\.app\/Contents\/Developer/,
   )
+  assert.match(production, /app\s+id\s+`497799835`/)
+  assert.match(
+    production,
+    /paused downloads still need to be resumed in App\s+Store\.app/,
+  )
+  assert.match(production, /Apple Developer download path requires an Apple ID/)
   assert.match(production, hostedProviderNamesPattern)
   assert.match(production, /configured or partially configured environment variable names/)
   assert.match(production, /never their values/)
@@ -346,11 +355,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /device prereq diagnostics/)
   assert.match(
     production,
-    /Missing local tooling or provider\s+environment\s+variables are only diagnostics/,
+    /Missing local tooling or\s+provider\s+environment\s+variables are only diagnostics/,
   )
   assert.match(
     production,
-    /hosted\s+real-device runs still\s+satisfy the release\s+gate/,
+    /hosted\s+real-device runs\s+still\s+satisfy the\s+release\s+gate/,
   )
   assert.match(production, /platform-evidence-summary\.json/)
   assert.match(production, /platform-evidence-checklist\.md/)
@@ -633,13 +642,19 @@ test('release preflight enforces real device evidence', () => {
     readme,
     /sudo xcode-select -s \/Applications\/Xcode\.app\/Contents\/Developer/,
   )
+  assert.match(readme, /app\s+id\s+`497799835`/)
+  assert.match(
+    readme,
+    /paused downloads still need to be resumed in App\s+Store\.app/,
+  )
+  assert.match(readme, /Apple Developer download path requires an Apple ID/)
   assert.match(readme, hostedProviderNamesPattern)
   assert.match(readme, /configured or partially configured environment variable names/)
   assert.match(readme, /never their values/)
   assert.match(readme, /recognized provider env-set\s+options/)
   assert.match(
     readme,
-    /Missing local tooling or provider\s+environment\s+variables are only diagnostics/,
+    /Missing local tooling or\s+provider\s+environment\s+variables are only diagnostics/,
   )
   assert.match(readme, /platform-evidence-summary\.json/)
   assert.match(readme, /platform-evidence-checklist\.md/)
