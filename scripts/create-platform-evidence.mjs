@@ -25,7 +25,7 @@ import {
   releaseEvidenceCommand,
 } from './release-handoff-commands.mjs'
 import { readInitialCiEvidenceStatus } from './release-ci-evidence.mjs'
-import { normalizeCommitSha, repoRoot } from './release-utils.mjs'
+import { normalizeCommitSha, repoRoot, uniqueStrings } from './release-utils.mjs'
 
 const defaultOutput = 'release/platform-evidence.json'
 
@@ -171,17 +171,6 @@ function parseArgs(argv) {
   }
 
   return options
-}
-
-function uniqueStrings(values) {
-  return [
-    ...new Set(
-      values
-        .filter((value) => typeof value === 'string')
-        .map((value) => value.trim())
-        .filter((value) => value.length > 0),
-    ),
-  ]
 }
 
 function selectedApiRequiredChecks(selectedApis, platform) {

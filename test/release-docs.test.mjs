@@ -336,6 +336,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /remaining must-pass checks/)
   assert.match(production, /generated handoff commands include skip\s+placeholders/)
   assert.match(production, /reject placeholder metadata and placeholder skip reasons/)
+  assert.match(production, /`passedChecks`[\s\S]*non-empty string array/)
+  assert.match(production, /`skippedChecks`[\s\S]*non-empty\s+release-specific reasons/)
   assert.match(
     production,
     /Markdown handoff\s+flags command blocks that still contain `<\.\.\.>` placeholders/,
@@ -379,6 +381,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(
     production,
     /rejects not-ready or\s+inconsistent structured CI summaries/,
+  )
+  assert.match(
+    production,
+    /malformed `passedChecks` arrays[\s\S]*malformed `skippedChecks` reason maps/,
   )
   assert.match(production, /malformed workflow run commit SHAs/)
   assert.match(
@@ -669,6 +675,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /remaining must-pass checks/)
   assert.match(readme, /generated handoff commands include\s+skip placeholders/)
   assert.match(readme, /reject placeholder metadata and placeholder skip reasons/)
+  assert.match(readme, /`passedChecks`[\s\S]*non-empty string array/)
+  assert.match(readme, /`skippedChecks`[\s\S]*non-empty\s+release-specific reasons/)
   assert.match(
     readme,
     /Markdown handoff\s+flags command blocks that still contain `<\.\.\.>` placeholders/,
@@ -905,6 +913,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /remaining must-pass checks/)
   assert.match(checklist, /generated handoff commands include skip placeholders/)
   assert.match(checklist, /reject placeholder\s+metadata and placeholder skip reasons/)
+  assert.match(checklist, /`passedChecks`[\s\S]*non-empty\s+string array/)
+  assert.match(checklist, /`skippedChecks`[\s\S]*non-empty\s+release-specific reasons/)
   assert.match(
     checklist,
     /Markdown handoff flags command blocks\s+that still contain `<\.\.\.>` placeholders/,

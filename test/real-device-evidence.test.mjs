@@ -254,6 +254,35 @@ test('real device evidence rejects unknown selected API names', () => {
   )
 })
 
+test('real device evidence rejects malformed outcome containers', () => {
+  const evidence = validEvidence()
+  evidence.android.passedChecks = [
+    ...evidence.android.passedChecks,
+    'cold-launch',
+    '',
+    123,
+  ]
+  evidence.ios.passedChecks = {}
+  evidence.ios.skippedChecks = {
+    'deep-links-share-notifications-if-selected': '',
+  }
+  evidence.android.skippedChecks = []
+
+  const errors = validateRealDeviceEvidence(evidence).join('\n')
+
+  assert.match(
+    errors,
+    /android\.passedChecks must contain only non-empty strings/,
+  )
+  assert.match(errors, /android\.passedChecks contains duplicate cold-launch/)
+  assert.match(errors, /android\.skippedChecks must be an object/)
+  assert.match(errors, /ios\.passedChecks must be a string array/)
+  assert.match(
+    errors,
+    /ios\.skippedChecks\.deep-links-share-notifications-if-selected must be a non-empty release-specific reason/,
+  )
+})
+
 test('real device evidence rejects worksheet-only platform fields', () => {
   const evidence = validEvidence()
   evidence.android.requiredChecks = [...requiredRealDeviceChecks.android]

@@ -8,9 +8,11 @@ import {
   verifyGitHubActionsRunUrl,
 } from './release-evidence-utils.mjs'
 import {
+  duplicateStrings,
   isFullCommitSha,
   releasePackageConfigs,
   repoRoot,
+  uniqueStrings,
 } from './release-utils.mjs'
 
 export const realDeviceEvidenceEnvVar = 'VUE_GODOT_REAL_DEVICE_EVIDENCE'
@@ -518,6 +520,50 @@ function validateCheckNames(platform, passedChecks, skippedChecks, errors) {
   }
 }
 
+function validatePassedChecks(platformEvidence, platform, errors) {
+  if (!Array.isArray(platformEvidence.passedChecks)) {
+    errors.push(`${platform}.passedChecks must be a string array`)
+    return new Set()
+  }
+
+  if (
+    platformEvidence.passedChecks.some(
+      (check) => typeof check !== 'string' || check.trim().length === 0,
+    )
+  ) {
+    errors.push(`${platform}.passedChecks must contain only non-empty strings`)
+  }
+
+  for (const check of duplicateStrings(platformEvidence.passedChecks)) {
+    errors.push(`${platform}.passedChecks contains duplicate ${check}`)
+  }
+
+  return new Set(uniqueStrings(platformEvidence.passedChecks))
+}
+
+function validateSkippedChecks(platformEvidence, platform, errors) {
+  if (!isRecord(platformEvidence.skippedChecks)) {
+    errors.push(`${platform}.skippedChecks must be an object`)
+    return {}
+  }
+
+  for (const [check, reason] of Object.entries(platformEvidence.skippedChecks)) {
+    if (typeof reason !== 'string' || reason.trim().length === 0) {
+      errors.push(
+        `${platform}.skippedChecks.${check} must be a non-empty release-specific reason`,
+      )
+      continue
+    }
+    if (isReleaseEvidencePlaceholder(reason)) {
+      errors.push(
+        `${platform}.skippedChecks.${check} must replace placeholder ${reason}`,
+      )
+    }
+  }
+
+  return platformEvidence.skippedChecks
+}
+
 function validatePlatformEvidence(evidence, platform, errors, options = {}) {
   const platformEvidence = evidence[platform]
   if (!isRecord(platformEvidence)) {
@@ -562,7 +608,7 @@ function validatePlatformEvidence(evidence, platform, errors, options = {}) {
     errors.push(`${platform}.selectedApis must be a non-empty string array`)
   }
   const selectedApis = selectedApisValid
-    ? [...new Set(platformEvidence.selectedApis.map((api) => api.trim()))]
+    ? uniqueStrings(platformEvidence.selectedApis)
     : []
 
   for (const apiName of unknownRealDeviceSelectedApis(selectedApis)) {
@@ -579,16 +625,8 @@ function validatePlatformEvidence(evidence, platform, errors, options = {}) {
     }
   }
 
-  const passedChecks = new Set(
-    Array.isArray(platformEvidence.passedChecks)
-      ? platformEvidence.passedChecks.filter(
-          (check) => typeof check === 'string',
-        )
-      : [],
-  )
-  const skippedChecks = isRecord(platformEvidence.skippedChecks)
-    ? platformEvidence.skippedChecks
-    : {}
+  const passedChecks = validatePassedChecks(platformEvidence, platform, errors)
+  const skippedChecks = validateSkippedChecks(platformEvidence, platform, errors)
 
   validateCheckNames(platform, passedChecks, skippedChecks, errors)
 
@@ -596,11 +634,6 @@ function validatePlatformEvidence(evidence, platform, errors, options = {}) {
     const skipReason = skippedChecks[check]
     const hasSkipReason =
       typeof skipReason === 'string' && skipReason.trim().length > 0
-    if (hasSkipReason && isReleaseEvidencePlaceholder(skipReason)) {
-      errors.push(
-        `${platform}.skippedChecks.${check} must replace placeholder ${skipReason}`,
-      )
-    }
     if (!passedChecks.has(check) && !hasSkipReason) {
       errors.push(
         `${platform} must pass ${check} or document a skippedChecks.${check} reason`,

@@ -108,7 +108,9 @@ remaining must-pass checks in one batch. Skippable checks still need an explicit
 `--pass` or `--skip check=reason`; generated handoff commands include skip
 placeholders for currently skippable gaps. Replace every placeholder before
 recording evidence; the recorder, worksheet audit, and final evidence validator
-reject placeholder metadata and placeholder skip reasons. The Markdown handoff
+reject placeholder metadata and placeholder skip reasons. Final `passedChecks`
+must be a non-empty string array without duplicates, and final `skippedChecks`
+must be an object whose values are non-empty release-specific reasons. The Markdown handoff
 flags command blocks that still contain `<...>` placeholders so device testers
 know to edit them before running. The helper rejects unknown check names and
 refuses to skip pass-only or selected-API-required checks. When
@@ -153,7 +155,8 @@ before fetching GitHub run metadata. Pass
 `--commit <release-candidate-sha>` when generating evidence from a follow-up
 evidence commit so the evidence records the tested release commit rather than
 current `HEAD`. It rejects not-ready or inconsistent structured CI summaries,
-including malformed workflow run commit SHAs, before writing the final evidence;
+including malformed workflow run commit SHAs, malformed `passedChecks` arrays,
+and malformed `skippedChecks` reason maps before writing the final evidence;
 `release/real-device-evidence.json` must not contain
 `requiredChecks`, `passOnlyChecks`, `selectedApiRequiredChecks`, top-level
 `initialCiEvidence`, or top-level `nextActions`, and copied platform evidence is

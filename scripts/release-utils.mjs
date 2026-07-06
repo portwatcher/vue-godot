@@ -88,6 +88,44 @@ export function readJson(relativePath) {
   return JSON.parse(fs.readFileSync(path.join(repoRoot, relativePath), 'utf-8'))
 }
 
+export function uniqueStrings(values) {
+  if (!Array.isArray(values)) {
+    return []
+  }
+
+  return [
+    ...new Set(
+      values
+        .filter((value) => typeof value === 'string')
+        .map((value) => value.trim())
+        .filter((value) => value.length > 0),
+    ),
+  ]
+}
+
+export function duplicateStrings(values) {
+  if (!Array.isArray(values)) {
+    return []
+  }
+
+  const seen = new Set()
+  const duplicates = new Set()
+  for (const value of values) {
+    if (typeof value !== 'string') {
+      continue
+    }
+    const trimmed = value.trim()
+    if (trimmed.length === 0) {
+      continue
+    }
+    if (seen.has(trimmed)) {
+      duplicates.add(trimmed)
+    }
+    seen.add(trimmed)
+  }
+  return [...duplicates]
+}
+
 export function run(command, commandArgs, options = {}) {
   return spawnSync(command, commandArgs, {
     cwd: options.cwd ?? repoRoot,

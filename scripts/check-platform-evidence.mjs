@@ -20,7 +20,12 @@ import {
   productionProfilePlatformEvidenceCommand,
 } from './release-handoff-commands.mjs'
 import { isRecord } from './release-evidence-utils.mjs'
-import { normalizeCommitSha, repoRoot } from './release-utils.mjs'
+import {
+  duplicateStrings,
+  normalizeCommitSha,
+  repoRoot,
+  uniqueStrings,
+} from './release-utils.mjs'
 
 function usage() {
   console.log(`Usage: node scripts/check-platform-evidence.mjs [options]
@@ -136,40 +141,6 @@ function readWorksheet(filePath) {
       ],
     }
   }
-}
-
-function uniqueStrings(values) {
-  return [
-    ...new Set(
-      values
-        .filter((value) => typeof value === 'string')
-        .map((value) => value.trim())
-        .filter((value) => value.length > 0),
-    ),
-  ]
-}
-
-function duplicateStrings(values) {
-  if (!Array.isArray(values)) {
-    return []
-  }
-
-  const seen = new Set()
-  const duplicates = new Set()
-  for (const value of values) {
-    if (typeof value !== 'string') {
-      continue
-    }
-    const trimmed = value.trim()
-    if (trimmed.length === 0) {
-      continue
-    }
-    if (seen.has(trimmed)) {
-      duplicates.add(trimmed)
-    }
-    seen.add(trimmed)
-  }
-  return [...duplicates]
 }
 
 function checkStringArray(record, key, label, errors) {

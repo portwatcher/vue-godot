@@ -16,7 +16,7 @@ import {
   selectedApiRequiredCheckMap,
   unknownRealDeviceSelectedApis,
 } from './real-device-evidence.mjs'
-import { normalizeCommitSha, repoRoot } from './release-utils.mjs'
+import { normalizeCommitSha, repoRoot, uniqueStrings } from './release-utils.mjs'
 
 const platforms = ['android', 'ios']
 
@@ -228,17 +228,6 @@ function parseArgs(argv) {
   }
 
   return options
-}
-
-function uniqueStrings(values) {
-  return [
-    ...new Set(
-      values
-        .filter((value) => typeof value === 'string')
-        .map((value) => value.trim())
-        .filter((value) => value.length > 0),
-    ),
-  ]
 }
 
 function readJson(filePath) {
