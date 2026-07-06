@@ -429,6 +429,18 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
       /Android must-pass remaining: cold-launch/,
     )
     assert.match(
+      summary.nextActions[0].detail,
+      /Android remaining check details: cold-launch \(must pass\): Install the exported build/,
+    )
+    assert.match(
+      summary.nextActions[0].detail,
+      /network-if-selected \(must pass; selected APIs: fetch, WebSocket/,
+    )
+    assert.match(
+      summary.nextActions[0].detail,
+      /iOS remaining check details: .*deep-links-share-notifications-if-selected \(skippable\): Verify cold-start/,
+    )
+    assert.match(
       result.stdout,
       /iOS missing metadata: artifact, deviceModel, osVersion, orientation, locale/,
     )

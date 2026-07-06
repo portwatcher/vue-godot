@@ -931,6 +931,18 @@ test('release readiness summary includes missing evidence next actions', () => {
     assert.ok(realDeviceAction)
     assert.match(realDeviceAction.detail, /Android: 5 metadata field\(s\) missing/)
     assert.match(realDeviceAction.detail, /iOS: 5 metadata field\(s\) missing/)
+    assert.match(
+      realDeviceAction.detail,
+      /Android remaining check details: cold-launch \(must pass\): Install the exported build/,
+    )
+    assert.match(
+      realDeviceAction.detail,
+      /network-if-selected \(must pass; selected APIs: fetch, WebSocket/,
+    )
+    assert.match(
+      realDeviceAction.detail,
+      /iOS remaining check details: .*deep-links-share-notifications-if-selected \(skippable\): Verify cold-start/,
+    )
     assert.equal(realDeviceAction.commands[0], 'npm run check')
     assert.ok(
       realDeviceAction.commands.every(

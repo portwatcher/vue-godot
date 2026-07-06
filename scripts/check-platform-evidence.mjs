@@ -534,6 +534,45 @@ function formatRemainingParts(platform, status) {
   ].filter(Boolean)
 }
 
+function formatCheckDetail(detail) {
+  const check = String(detail.check ?? 'unknown-check')
+  const state = detail.mustPass === true ? 'must pass' : 'skippable'
+  const selectedApis = Array.isArray(detail.selectedApis)
+    ? detail.selectedApis
+        .filter((apiName) => typeof apiName === 'string')
+        .map((apiName) => apiName.trim())
+        .filter((apiName) => apiName.length > 0)
+    : []
+  const selectedApiText =
+    selectedApis.length > 0 ? `; selected APIs: ${formatList(selectedApis)}` : ''
+  const description =
+    typeof detail.description === 'string' && detail.description.trim()
+      ? detail.description.trim()
+      : check
+  return `${check} (${state}${selectedApiText}): ${description}`
+}
+
+function formatRemainingCheckDetails(platform, status) {
+  if (
+    !isRecord(status) ||
+    status.ready ||
+    !Array.isArray(status.remainingCheckDetails)
+  ) {
+    return []
+  }
+
+  const details = status.remainingCheckDetails
+    .filter(isRecord)
+    .map((detail) => formatCheckDetail(detail))
+  if (details.length === 0) {
+    return []
+  }
+
+  return [
+    `${formatPlatformLabel(platform)} remaining check details: ${details.join('; ')}`,
+  ]
+}
+
 export function formatPlatformEvidenceProgress(summary) {
   if (!isRecord(summary?.platforms)) {
     return 'Platform worksheet status is unavailable.'
@@ -551,6 +590,16 @@ export function formatPlatformEvidenceRemaining(summary) {
 
   return ['android', 'ios'].flatMap((platform) =>
     formatRemainingParts(platform, summary.platforms[platform]),
+  )
+}
+
+export function formatPlatformEvidenceRemainingDetails(summary) {
+  if (!isRecord(summary?.platforms)) {
+    return []
+  }
+
+  return ['android', 'ios'].flatMap((platform) =>
+    formatRemainingCheckDetails(platform, summary.platforms[platform]),
   )
 }
 
@@ -654,6 +703,8 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
   if (!summary.ready) {
     const progress = formatPlatformEvidenceProgress(summary)
     const remaining = formatPlatformEvidenceRemaining(summary).join(' ')
+    const remainingDetails =
+      formatPlatformEvidenceRemainingDetails(summary).join(' ')
     actions.push({
       id: 'complete-platform-evidence',
       title: 'Finish Android and iOS worksheet evidence',
@@ -662,6 +713,7 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
         'passOnlyChecks and selectedApiRequiredChecks must be in passedChecks.',
         progress,
         remaining,
+        remainingDetails,
       ].join(' '),
       commands: [
         recordPlatformEvidenceCommand('android', commit, {

@@ -108,7 +108,16 @@ test('platform evidence template lists required checks without passing them', ()
       (action) =>
         action.id === 'complete-platform-evidence' &&
         /Android must-pass remaining: cold-launch/.test(action.detail) &&
+        /Android remaining check details: cold-launch \(must pass\): Install the exported build/.test(
+          action.detail,
+        ) &&
+        /network-if-selected \(must pass; selected APIs: fetch\):/.test(
+          action.detail,
+        ) &&
         /iOS skippable remaining: .*deep-links-share-notifications-if-selected/.test(
+          action.detail,
+        ) &&
+        /iOS remaining check details: .*deep-links-share-notifications-if-selected \(skippable\): Verify cold-start/.test(
           action.detail,
         ) &&
         action.commands.includes(
@@ -290,6 +299,10 @@ test('platform evidence template expands production profile selected APIs', () =
   assert.match(
     completeAction.detail,
     /Android must-pass remaining: .*audio-input-if-selected/,
+  )
+  assert.match(
+    completeAction.detail,
+    /network-if-selected \(must pass; selected APIs: fetch, WebSocket/,
   )
   assert.match(
     completeAction.detail,

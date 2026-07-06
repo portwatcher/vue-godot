@@ -5,6 +5,7 @@ import {
   auditPlatformEvidence,
   formatPlatformEvidenceProgress,
   formatPlatformEvidenceRemaining,
+  formatPlatformEvidenceRemainingDetails,
 } from './check-platform-evidence.mjs'
 import {
   knownRealDeviceSelectedApis,
@@ -233,6 +234,9 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
         platformAudit ? formatPlatformEvidenceProgress(platformAudit) : '',
         platformAudit
           ? formatPlatformEvidenceRemaining(platformAudit).join(' ')
+          : '',
+        platformAudit
+          ? formatPlatformEvidenceRemainingDetails(platformAudit).join(' ')
           : '',
       ]
         .filter(Boolean)
