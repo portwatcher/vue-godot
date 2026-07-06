@@ -55,6 +55,7 @@ test('real device release checklist covers required Android and iOS gates', () =
     /npm run check:device-prereqs -- --summary-output release\/device-test-prereqs-summary\.json --allow-missing/,
     /hosted-provider\s+environment variable sets/,
     hostedProviderNamesPattern,
+    /partially configured missing-name hints/,
     /never their values/,
     /recognized provider env-set\s+options/,
     /npm run check:serious-examples/,
@@ -318,6 +319,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /check:device-prereqs/)
   assert.match(production, /Android emulators are reported separately/)
   assert.match(production, hostedProviderNamesPattern)
+  assert.match(production, /configured or partially configured environment variable names/)
   assert.match(production, /never their values/)
   assert.match(production, /recognized provider env-set\s+options/)
   assert.match(
@@ -600,6 +602,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /check:device-prereqs/)
   assert.match(readme, /Android emulators are reported separately/)
   assert.match(readme, hostedProviderNamesPattern)
+  assert.match(readme, /configured or partially configured environment variable names/)
   assert.match(readme, /never their values/)
   assert.match(readme, /recognized provider env-set\s+options/)
   assert.match(

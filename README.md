@@ -352,10 +352,10 @@ sessions to report whether `adb`, Xcode device listing, and attached Android or
 iOS devices are available, and whether common hosted-provider environment
 variable sets are configured, then leave a gitignored JSON diagnostic next to
 the other release helper summaries. The hosted-provider diagnostic reports
-configured environment variable names for BrowserStack, Sauce Labs, Firebase
-Test Lab, AWS Device Farm, LambdaTest, and Kobiton, but never their values; when
-none are configured, the text output lists the recognized provider env-set
-options.
+configured or partially configured environment variable names for BrowserStack,
+Sauce Labs, Firebase Test Lab, AWS Device Farm, LambdaTest, and Kobiton, but
+never their values; when none are fully configured, the text output lists the
+recognized provider env-set options.
 Android emulators are reported separately and do not satisfy the local
 release-device prerequisite. Missing local tooling or provider environment
 variables are only diagnostics; hosted real-device runs still satisfy the

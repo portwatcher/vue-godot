@@ -1143,7 +1143,7 @@ test('release readiness summary includes missing evidence next actions', () => {
     )
     assert.match(
       realDeviceAction.detail,
-      /device prereq summary records local tooling availability and configured hosted-provider environment variable names[\s\S]*final evidence still needs non-local device run URLs, artifact IDs, and device metadata/,
+      /device prereq summary records local tooling availability and configured or partially configured hosted-provider environment variable names[\s\S]*final evidence still needs non-local device run URLs, artifact IDs, and device metadata/,
     )
     assert.match(realDeviceAction.detail, /iOS: 6 metadata field\(s\) missing/)
     assert.ok(

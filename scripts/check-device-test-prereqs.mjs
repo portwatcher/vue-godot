@@ -161,16 +161,37 @@ function envHasValue(env, name) {
 
 export function collectHostedDeviceProviderStatus(env = process.env) {
   const providers = hostedDeviceProviderEnvSets.map((provider) => {
+    const envSetStatuses = provider.requiredEnvSets.map((envSet) => {
+      const presentEnv = envSet.filter((name) => envHasValue(env, name))
+      const missingEnv = envSet.filter((name) => !envHasValue(env, name))
+      return {
+        complete: missingEnv.length === 0,
+        missingEnv,
+        presentEnv,
+      }
+    })
     const configuredEnv =
-      provider.requiredEnvSets.find((envSet) =>
-        envSet.every((name) => envHasValue(env, name)),
-      ) ?? null
+      envSetStatuses.find((envSetStatus) => envSetStatus.complete)
+        ?.presentEnv ?? null
+    const partialEnvSet =
+      configuredEnv === null
+        ? (envSetStatuses
+            .filter((envSetStatus) => envSetStatus.presentEnv.length > 0)
+            .sort(
+              (left, right) =>
+                right.presentEnv.length - left.presentEnv.length ||
+                left.missingEnv.length - right.missingEnv.length,
+            )[0] ?? null)
+        : null
 
     return {
       configured: configuredEnv !== null,
       configuredEnv: configuredEnv ?? [],
       id: provider.id,
       label: provider.label,
+      missingEnv: partialEnvSet?.missingEnv ?? [],
+      partiallyConfigured: partialEnvSet !== null,
+      partialEnv: partialEnvSet?.presentEnv ?? [],
       requiredEnvSets: provider.requiredEnvSets,
     }
   })
@@ -365,9 +386,17 @@ export function formatHostedProviderStatus(status) {
   const configuredProviders = status.providers.filter(
     (provider) => provider.configured,
   )
+  const partialProviders = status.providers.filter(
+    (provider) => provider.partiallyConfigured,
+  )
+  const partialProviderLines = partialProviders.map(
+    (provider) =>
+      `[device-prereqs] hosted provider env partial: ${provider.label} (set: ${provider.partialEnv.join(', ')}; missing: ${provider.missingEnv.join(', ')})`,
+  )
   if (configuredProviders.length === 0) {
     return [
       '[device-prereqs] hosted provider env: none detected',
+      ...partialProviderLines,
       ...status.providers.map(
         (provider) =>
           `[device-prereqs] hosted provider env option: ${provider.label} (${formatProviderRequiredEnvSets(provider)})`,
@@ -375,10 +404,13 @@ export function formatHostedProviderStatus(status) {
     ]
   }
 
-  return configuredProviders.map(
-    (provider) =>
-      `[device-prereqs] hosted provider env: ${provider.label} (${provider.configuredEnv.join(', ')})`,
-  )
+  return [
+    ...configuredProviders.map(
+      (provider) =>
+        `[device-prereqs] hosted provider env: ${provider.label} (${provider.configuredEnv.join(', ')})`,
+    ),
+    ...partialProviderLines,
+  ]
 }
 
 function formatPlatformStatus(label, status) {

@@ -1437,7 +1437,7 @@ function collectReadinessNextActions(
       title: 'Complete Android and iOS real-device export evidence',
       detail: [
         'Run the local check and selected API export checks on real or hosted devices, record the evidence URL in the platform worksheet, then assemble and validate release/real-device-evidence.json for the tested release commit.',
-        'The device prereq summary records local tooling availability and configured hosted-provider environment variable names for handoff diagnostics only; final evidence still needs non-local device run URLs, artifact IDs, and device metadata.',
+        'The device prereq summary records local tooling availability and configured or partially configured hosted-provider environment variable names for handoff diagnostics only; final evidence still needs non-local device run URLs, artifact IDs, and device metadata.',
         platformEvidenceRemaining,
       ]
         .filter(Boolean)

@@ -202,6 +202,38 @@ test('hosted provider status reports configured env names without values', () =>
   assert.doesNotMatch(JSON.stringify(status), /secret|release-user|lt-user/)
 })
 
+test('hosted provider status reports partial env names without values', () => {
+  const status = collectHostedDeviceProviderStatus({
+    AWS_ACCESS_KEY_ID: 'aws-key',
+    AWS_SECRET_ACCESS_KEY: 'aws-secret',
+    BROWSERSTACK_USERNAME: 'release-user',
+  })
+
+  assert.equal(status.anyConfigured, false)
+  assert.deepEqual(
+    status.providers
+      .filter((provider) => provider.partiallyConfigured)
+      .map((provider) => [
+        provider.id,
+        provider.partialEnv,
+        provider.missingEnv,
+      ]),
+    [
+      [
+        'browserstack',
+        ['BROWSERSTACK_USERNAME'],
+        ['BROWSERSTACK_ACCESS_KEY'],
+      ],
+      [
+        'aws-device-farm',
+        ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY'],
+        ['AWS_REGION'],
+      ],
+    ],
+  )
+  assert.doesNotMatch(JSON.stringify(status), /aws-key|aws-secret|release-user/)
+})
+
 test('hosted provider text lists accepted env sets when none are configured', () => {
   const status = collectHostedDeviceProviderStatus({})
   const lines = formatHostedProviderStatus(status)
@@ -221,6 +253,21 @@ test('hosted provider text lists accepted env sets when none are configured', ()
   )
 })
 
+test('hosted provider text reports partial env names without values', () => {
+  const status = collectHostedDeviceProviderStatus({
+    BROWSERSTACK_USERNAME: 'release-user',
+  })
+  const text = formatHostedProviderStatus(status).join('\n')
+
+  assert.match(text, /hosted provider env: none detected/)
+  assert.match(
+    text,
+    /hosted provider env partial: BrowserStack App Automate \(set: BROWSERSTACK_USERNAME; missing: BROWSERSTACK_ACCESS_KEY\)/,
+  )
+  assert.match(text, /hosted provider env option: BrowserStack App Automate/)
+  assert.doesNotMatch(text, /release-user/)
+})
+
 test('hosted provider text reports configured env names without values', () => {
   const status = collectHostedDeviceProviderStatus({
     BROWSERSTACK_ACCESS_KEY: 'secret',
@@ -233,6 +280,26 @@ test('hosted provider text reports configured env names without values', () => {
     /BrowserStack App Automate \(BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY\)/,
   )
   assert.doesNotMatch(text, /secret|release-user/)
+  assert.doesNotMatch(text, /hosted provider env option/)
+})
+
+test('hosted provider text reports configured and partial providers together', () => {
+  const status = collectHostedDeviceProviderStatus({
+    BROWSERSTACK_ACCESS_KEY: 'secret',
+    BROWSERSTACK_USERNAME: 'release-user',
+    LT_USERNAME: 'lt-user',
+  })
+  const text = formatHostedProviderStatus(status).join('\n')
+
+  assert.match(
+    text,
+    /BrowserStack App Automate \(BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY\)/,
+  )
+  assert.match(
+    text,
+    /LambdaTest Real Device Cloud \(set: LT_USERNAME; missing: LT_ACCESS_KEY\)/,
+  )
+  assert.doesNotMatch(text, /secret|release-user|lt-user/)
   assert.doesNotMatch(text, /hosted provider env option/)
 })
 
