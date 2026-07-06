@@ -1108,6 +1108,7 @@ function collectReadinessNextActions(
             defaultReleaseReadinessEvidencePath,
           ],
           'Add release readiness evidence',
+          { push: true },
         ),
         `npm run release:readiness -- --expected-commit ${releaseCommit}`,
       ],
@@ -1140,6 +1141,7 @@ function collectReadinessNextActions(
         'npm run check',
         `git add ${finalizationFiles.join(' ')}`,
         'git commit -m "Finalize production readiness"',
+        'git push',
         `npm run release:readiness -- --expected-commit ${releaseCommit}`,
       ],
     })

@@ -100,7 +100,7 @@ remain. It only emits
 is missing, then runs the strict platform worksheet audit before final evidence
 assembly. The final warning-removal action runs
 `npm run check` after the finalizer, stages the finalizer files, commits them,
-and then runs the final strict readiness check. When an expected
+pushes, and then runs the final strict readiness check. When an expected
 commit is known, the summary resolves evidence and
 finalizer commands to that tested release commit.
 
@@ -352,10 +352,11 @@ Commit the final evidence files before running strict readiness:
 ```bash
 git add release/ci-runs.json release/release-preflight-summary.json release/real-device-evidence.json release/release-readiness-evidence.json
 git commit -m "Add release readiness evidence"
+git push
 ```
 
-After committing the final evidence files, generate a strict readiness summary
-outside the worktree and run the guarded finalizer:
+After committing and pushing the final evidence files, generate a strict
+readiness summary outside the worktree and run the guarded finalizer:
 
 ```bash
 npm run release:readiness -- \
@@ -365,6 +366,7 @@ npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json
 npm run check
 git add TODO.md README.md docs/compatibility.md docs/production.md docs/real-device-release.md
 git commit -m "Finalize production readiness"
+git push
 npm run release:readiness -- --expected-commit <release-candidate-sha>
 ```
 

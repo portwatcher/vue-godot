@@ -708,6 +708,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
         'git commit -m "Add release readiness evidence"',
       ),
     )
+    assert.ok(releasePreflightAction.commands.includes('git push'))
     assert.ok(
       releasePreflightAction.commands.includes(
         `npm run release:readiness -- --expected-commit ${exampleCommit}`,
@@ -733,6 +734,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
           const gitCommitIndex = action.commands.indexOf(
             'git commit -m "Finalize production readiness"',
           )
+          const gitPushIndex = action.commands.indexOf('git push')
           const finalReadinessIndex = action.commands.indexOf(
             `npm run release:readiness -- --expected-commit ${exampleCommit}`,
           )
@@ -743,7 +745,8 @@ test('release readiness writes a machine-readable blocker summary', () => {
             checkIndex === finalizerIndex + 1 &&
             gitAddIndex === checkIndex + 1 &&
             gitCommitIndex === gitAddIndex + 1 &&
-            finalReadinessIndex === gitCommitIndex + 1
+            gitPushIndex === gitCommitIndex + 1 &&
+            finalReadinessIndex === gitPushIndex + 1
           )
         },
       ),
@@ -974,6 +977,7 @@ test('release readiness summary includes missing evidence next actions', () => {
         'git commit -m "Add release readiness evidence"',
       ),
     )
+    assert.ok(releasePreflightAction.commands.includes('git push'))
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }

@@ -205,9 +205,9 @@ Release Preflight workflow can run from that evidence ref. The
 release-readiness evidence action stages `release/ci-runs.json`,
 `release/release-preflight-summary.json`, `release/real-device-evidence.json`,
 and `release/release-readiness-evidence.json`, then commits them with
-`git commit -m "Add release readiness evidence"`. The
+`git commit -m "Add release readiness evidence"` and pushes the commit. The
 final warning-removal action runs `npm run check` after the finalizer, stages
-the finalizer files, commits them, and then runs the final strict readiness
+the finalizer files, commits them, pushes, and then runs the final strict readiness
 check. When an
 expected commit is known, the summary resolves evidence and finalizer commands
 to that tested release commit. The strict
