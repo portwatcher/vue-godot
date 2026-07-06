@@ -13,6 +13,7 @@ import {
   evidenceDispatchRefPlaceholder,
   initialReleaseCiCommands,
   productionProfilePlatformEvidenceCommand,
+  recordPlatformEvidenceCommand,
   releaseEvidenceCommand,
   releaseCandidateCommitPlaceholder,
   releaseCandidateDispatchRefPlaceholder,
@@ -61,6 +62,17 @@ test('release handoff commands format real-device evidence assembly', () => {
   assert.equal(
     checkPlatformEvidenceCommand(commit),
     `npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit ${commit}`,
+  )
+  assert.equal(
+    recordPlatformEvidenceCommand('android', commit),
+    `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass <comma-separated-passed-checks> --summary-output release/platform-evidence-summary.json --expected-commit ${commit}`,
+  )
+  assert.equal(
+    recordPlatformEvidenceCommand('ios', null, {
+      platformEvidencePath: 'release/custom-platform-evidence.json',
+      summaryOutput: 'release/custom-platform-summary.json',
+    }),
+    'npm run release:record-platform-evidence -- --platform ios --platform-evidence release/custom-platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass <comma-separated-passed-checks> --summary-output release/custom-platform-summary.json --expected-commit <release-candidate-sha>',
   )
   assert.equal(
     checkRealDeviceEvidenceCommand(commit),

@@ -305,6 +305,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /npm@\^11\.15\.0/)
   assert.match(production, /release:platform-evidence/)
   assert.match(production, /release:record-platform-evidence/)
+  assert.match(production, /command templates before the strict\s+worksheet audit/)
   assert.match(production, /--platform android/)
   assert.match(production, /--platform ios/)
   assert.match(production, /refuses to skip pass-only or selected-API-required checks/)
@@ -393,6 +394,10 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(production, /git commit -m "Add real-device release evidence"/)
   assert.match(production, /reuses an existing platform worksheet/)
+  assert.match(
+    production,
+    /release:record-platform-evidence` command templates/,
+  )
   assert.match(
     production,
     /includes Android\/iOS metadata-field and required-check counts[\s\S]*only emits\s+`npm run release:platform-evidence -- --production-profile` when the worksheet\s+is missing/,
@@ -529,6 +534,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(readme, /git commit -m "Add real-device release evidence"/)
   assert.match(readme, /reuses an existing platform worksheet/)
+  assert.match(readme, /release:record-platform-evidence` command templates/)
   assert.match(
     readme,
     /includes Android\/iOS metadata-field and required-check counts[\s\S]*only emits `npm run release:platform-evidence -- --production-profile` when the worksheet is missing/,
@@ -548,6 +554,8 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(readme, /release:platform-evidence/)
   assert.match(readme, /release:record-platform-evidence/)
+  assert.match(readme, /command templates/)
+  assert.match(readme, /before the worksheet audit command/)
   assert.match(readme, /--platform android/)
   assert.match(readme, /--platform ios/)
   assert.match(readme, /rejects unknown checks/)
@@ -684,6 +692,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(checklist, /git commit -m "Add real-device release evidence"/)
   assert.match(checklist, /reuses an existing platform worksheet/)
+  assert.match(checklist, /release:record-platform-evidence` command templates/)
   assert.match(
     checklist,
     /includes Android\/iOS metadata-field and required-check counts[\s\S]*only emits\s+`npm run release:platform-evidence -- --production-profile` when the worksheet\s+is missing/,
@@ -717,6 +726,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /follow-up evidence commit/)
   assert.match(checklist, /release:platform-evidence/)
   assert.match(checklist, /release:record-platform-evidence/)
+  assert.match(checklist, /command\s+templates before the strict worksheet audit/)
   assert.match(checklist, /--platform android/)
   assert.match(checklist, /--platform ios/)
   assert.match(checklist, /--pass cold-launch,no-godotjs-load-diagnostics/)

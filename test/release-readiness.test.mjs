@@ -897,6 +897,16 @@ test('release readiness summary includes missing evidence next actions', () => {
     )
     assert.ok(
       realDeviceAction.commands.includes(
+        `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass <comma-separated-passed-checks> --summary-output release/platform-evidence-summary.json --expected-commit ${summary.commit}`,
+      ),
+    )
+    assert.ok(
+      realDeviceAction.commands.includes(
+        `npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass <comma-separated-passed-checks> --summary-output release/platform-evidence-summary.json --expected-commit ${summary.commit}`,
+      ),
+    )
+    assert.ok(
+      realDeviceAction.commands.includes(
         `npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit ${summary.commit}`,
       ),
     )

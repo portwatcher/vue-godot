@@ -13,6 +13,7 @@ import {
   defaultReleaseCiEvidencePath,
   initialReleaseCiCommands,
   productionProfilePlatformEvidenceCommand,
+  recordPlatformEvidenceCommand,
   releaseEvidenceCommand,
 } from './release-handoff-commands.mjs'
 import {
@@ -142,6 +143,8 @@ function collectNextActions(summary) {
           progress,
         ].join(' '),
         commands: [
+          recordPlatformEvidenceCommand('android', expectedCommit),
+          recordPlatformEvidenceCommand('ios', expectedCommit),
           checkPlatformEvidenceCommand(expectedCommit, {
             allowOpen: true,
             summaryOutput: 'release/platform-evidence-summary.json',

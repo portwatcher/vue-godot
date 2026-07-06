@@ -67,6 +67,46 @@ export function checkPlatformEvidenceCommand(commit, options = {}) {
   return shellCommand(args)
 }
 
+export function recordPlatformEvidenceCommand(platform, commit, options = {}) {
+  const platformName = platform === 'ios' ? 'ios' : 'android'
+  const artifactPlaceholder =
+    platformName === 'ios'
+      ? '<ios-archive-testflight-or-hosted-build-id>'
+      : '<android-apk-aab-or-hosted-build-id>'
+  const devicePlaceholder =
+    platformName === 'ios' ? '<ios-device-model>' : '<android-device-model>'
+  const osPlaceholder =
+    platformName === 'ios' ? '<ios-version>' : '<android-os-version>'
+  const args = [
+    'npm',
+    'run',
+    'release:record-platform-evidence',
+    '--',
+    '--platform',
+    platformName,
+    '--platform-evidence',
+    options.platformEvidencePath ?? defaultPlatformEvidencePath,
+    '--artifact',
+    artifactPlaceholder,
+    '--device',
+    devicePlaceholder,
+    '--os',
+    osPlaceholder,
+    '--orientation',
+    '<tested-orientations>',
+    '--locale',
+    '<tested-locale>',
+    '--pass',
+    '<comma-separated-passed-checks>',
+    '--summary-output',
+    options.summaryOutput ?? 'release/platform-evidence-summary.json',
+    '--expected-commit',
+    releaseCommitLabel(commit),
+  ]
+
+  return shellCommand(args)
+}
+
 export function releaseCiCommand(commit, options = {}) {
   const args = [
     'npm',

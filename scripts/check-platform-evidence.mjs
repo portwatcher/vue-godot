@@ -13,6 +13,7 @@ import {
   checkPlatformEvidenceCommand,
   checkRealDeviceEvidenceCommand,
   defaultPlatformEvidencePath,
+  recordPlatformEvidenceCommand,
   releaseEvidenceCommand,
   productionProfilePlatformEvidenceCommand,
 } from './release-handoff-commands.mjs'
@@ -602,6 +603,14 @@ function collectNextActions(summary, options) {
         progress,
       ].join(' '),
       commands: [
+        recordPlatformEvidenceCommand('android', commit, {
+          platformEvidencePath: options.platformEvidencePath,
+          summaryOutput: options.summaryOutput ?? 'release/platform-evidence-summary.json',
+        }),
+        recordPlatformEvidenceCommand('ios', commit, {
+          platformEvidencePath: options.platformEvidencePath,
+          summaryOutput: options.summaryOutput ?? 'release/platform-evidence-summary.json',
+        }),
         checkPlatformEvidenceCommand(commit, {
           allowOpen: true,
           platformEvidencePath: options.platformEvidencePath,

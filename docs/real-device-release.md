@@ -93,7 +93,9 @@ commit is current `HEAD`. That later action includes the `--dispatch-missing`,
 the workflow-dispatch-only preflight workflow. The real-device evidence action
 reuses an existing platform worksheet and writes
 `release/platform-evidence-summary.json` when it still has gaps. Its detail
-includes Android/iOS metadata-field and required-check counts, and it only emits
+includes Android/iOS metadata-field and required-check counts, and includes
+Android/iOS `release:record-platform-evidence` command templates while gaps
+remain. It only emits
 `npm run release:platform-evidence -- --production-profile` when the worksheet
 is missing, then runs the strict platform worksheet audit before final evidence
 assembly. The final warning-removal action runs
@@ -162,9 +164,10 @@ npm run check:platform-evidence -- \
 
 The summary reports Android and iOS metadata gaps, remaining required checks,
 pass-only and selected-API checks that still must be in `passedChecks`, worksheet
-drift from the maintained check lists, and follow-up `nextActions`. Before
-assembling final evidence, run the same command without `--allow-open`; it must
-pass.
+drift from the maintained check lists, and follow-up `nextActions`. Those
+actions include Android and iOS `release:record-platform-evidence` command
+templates before the strict worksheet audit. Before assembling final evidence,
+run the same command without `--allow-open`; it must pass.
 
 After each real or hosted device pass, record the observed metadata and outcomes
 without hand-editing JSON:

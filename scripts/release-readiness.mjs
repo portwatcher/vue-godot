@@ -38,6 +38,7 @@ import {
   defaultReleaseReadinessEvidencePath,
   initialReleaseCiCommands,
   productionProfilePlatformEvidenceCommand,
+  recordPlatformEvidenceCommand,
   releaseEvidenceCommand,
   releaseCommitLabel,
   releasePreflightCiCommands,
@@ -1026,6 +1027,16 @@ function collectReadinessNextActions(
         productionProfilePlatformEvidenceCommand(commit),
       )
     } else if (!platformEvidence.ready) {
+      platformEvidenceCommands.push(
+        recordPlatformEvidenceCommand('android', commit, {
+          platformEvidencePath: platformEvidence.path,
+          summaryOutput: 'release/platform-evidence-summary.json',
+        }),
+        recordPlatformEvidenceCommand('ios', commit, {
+          platformEvidencePath: platformEvidence.path,
+          summaryOutput: 'release/platform-evidence-summary.json',
+        }),
+      )
       platformEvidenceCommands.push(
         checkPlatformEvidenceCommand(commit, {
           allowOpen: true,

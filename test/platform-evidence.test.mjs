@@ -313,6 +313,16 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
     assert.match(summary.nextActions[0].detail, /iOS: 5 metadata/)
     assert.ok(
       summary.nextActions[0].commands.includes(
+        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass <comma-separated-passed-checks> --summary-output ${summaryPath} --expected-commit ${commit}`,
+      ),
+    )
+    assert.ok(
+      summary.nextActions[0].commands.includes(
+        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass <comma-separated-passed-checks> --summary-output ${summaryPath} --expected-commit ${commit}`,
+      ),
+    )
+    assert.ok(
+      summary.nextActions[0].commands.includes(
         `npm run check:platform-evidence -- --platform-evidence ${evidencePath} --summary-output ${summaryPath} --allow-open --expected-commit ${commit}`,
       ),
     )

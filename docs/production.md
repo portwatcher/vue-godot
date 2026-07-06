@@ -83,6 +83,10 @@ with real artifact, device, OS, API, pass, and skip data after testing. Pass
 `--commit <release-candidate-sha>` with the full 40-character tested commit SHA
 when it is known so generated `nextActions` commands use that commit for CI
 collection, worksheet audit, evidence assembly, and validation.
+Those `nextActions` include Android and iOS
+`release:record-platform-evidence` command templates before the strict
+worksheet audit so real-device results can be recorded without hand-editing
+JSON.
 The worksheet reads `release/ci-runs.json` by default, or
 `--ci-evidence <file>`, records an `initialCiEvidence` status object, and omits
 duplicate Check/Godot Smoke collection commands when that file already validates
@@ -185,7 +189,9 @@ That later action includes the `--dispatch-missing`,
 the workflow-dispatch-only preflight workflow. The real-device evidence action
 reuses an existing platform worksheet and writes
 `release/platform-evidence-summary.json` when it still has gaps. Its detail
-includes Android/iOS metadata-field and required-check counts, and it only emits
+includes Android/iOS metadata-field and required-check counts, and includes
+Android/iOS `release:record-platform-evidence` command templates while gaps
+remain. It only emits
 `npm run release:platform-evidence -- --production-profile` when the worksheet
 is missing. Before final evidence assembly it runs the strict platform worksheet
 audit, stages
