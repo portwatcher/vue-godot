@@ -47,6 +47,7 @@ import {
   recordPlatformEvidenceCommand,
   releaseEvidenceCommand,
   releaseCommitLabel,
+  releaseHandoffReportFormatVersion,
   releasePreflightCiCommands,
   repoLocalEvidencePath,
 } from './release-handoff-commands.mjs'
@@ -1039,6 +1040,7 @@ export function isReleaseHandoffReportCurrent(
   const expectedCommitLine = `- Release candidate commit: \`${releaseCommitLabel(
     commit,
   )}\``
+  const expectedFormatLine = `- Handoff format: ${releaseHandoffReportFormatVersion}`
   const expectedHandoffCommand = releaseHandoffCommand(
     commit,
     pathOptions,
@@ -1048,6 +1050,7 @@ export function isReleaseHandoffReportCurrent(
   const usesDefaultEvidencePaths = Object.keys(pathOptions).length === 0
   return (
     source.includes(expectedCommitLine) &&
+    source.includes(expectedFormatLine) &&
     source.includes('## Next Actions') &&
     (source.includes(expectedHandoffCommand) ||
       (usesDefaultEvidencePaths && !source.includes(handoffCommandPattern)))

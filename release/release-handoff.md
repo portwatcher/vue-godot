@@ -1,6 +1,7 @@
 # Release Handoff
 
 - Release candidate commit: `43f76a37f9885a3f656127479e810212ef1ffd85`
+- Handoff format: 2
 - Overall readiness: open (10 blocker(s))
 - Real-device evidence: waiting
 - Android evidence: waiting
@@ -40,6 +41,13 @@
 - Metadata gaps: `artifact`, `deviceModel`, `osVersion`, `orientation`, `locale`
 - Must-pass remaining: `cold-launch`, `no-godotjs-load-diagnostics`, `storage-restart`, `network-if-selected`, `clipboard-if-selected`, `permission-prompts-if-selected`, `adapter-states-if-selected`, `hardware-adapters-if-selected`, `haptics-if-selected`, `audio-input-if-selected`, `sensors-if-selected`, `safe-area-keyboard`, `android-back-handling`, `background-foreground`
 - Skippable remaining: none
+- Duplicate passed checks: none
+- Invalid skipped reasons: none
+- Contradictory pass/skip checks: none
+- Unknown passed checks: none
+- Unknown skipped checks: none
+- Unknown selected APIs: none
+- Worksheet drift: none
 - Remaining check details:
   - `cold-launch` (must pass): Install the exported build, cold launch into the main scene, and confirm the app reaches the expected UI.
   - `no-godotjs-load-diagnostics` (must pass): Confirm the device logs do not show GodotJS missing-module, script-load, chunk-load, asset-load, or signal wiring diagnostics.
@@ -63,6 +71,13 @@
 - Metadata gaps: `artifact`, `deviceModel`, `osVersion`, `orientation`, `locale`
 - Must-pass remaining: `cold-launch`, `no-godotjs-load-diagnostics`, `plist-entitlements`, `storage-restart`, `network-if-selected`, `clipboard-if-selected`, `permission-prompts-if-selected`, `adapter-states-if-selected`, `hardware-adapters-if-selected`, `haptics-if-selected`, `audio-input-if-selected`, `sensors-if-selected`, `safe-area-keyboard-rotation-text-input`, `background-foreground`
 - Skippable remaining: `deep-links-share-notifications-if-selected`
+- Duplicate passed checks: none
+- Invalid skipped reasons: none
+- Contradictory pass/skip checks: none
+- Unknown passed checks: none
+- Unknown skipped checks: none
+- Unknown selected APIs: none
+- Worksheet drift: none
 - Remaining check details:
   - `cold-launch` (must pass): Install the exported build, cold launch into the main scene, and confirm the app reaches the expected UI.
   - `no-godotjs-load-diagnostics` (must pass): Confirm the device logs do not show GodotJS missing-module, script-load, chunk-load, asset-load, or signal wiring diagnostics.

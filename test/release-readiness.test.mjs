@@ -20,6 +20,9 @@ import {
   validateInitialCiEvidence,
   validateReleaseReadinessEvidence,
 } from '../scripts/release-readiness.mjs'
+import {
+  releaseHandoffReportFormatVersion,
+} from '../scripts/release-handoff-commands.mjs'
 import { shellQuote } from '../scripts/release-utils.mjs'
 
 function runReadiness(args = []) {
@@ -1248,6 +1251,7 @@ test('release handoff report currentness rejects stale commits and commands', ()
         '# Release Handoff',
         '',
         `- Release candidate commit: \`${commit}\``,
+        `- Handoff format: ${releaseHandoffReportFormatVersion}`,
         '',
         '## Next Actions',
         '',
@@ -1280,6 +1284,27 @@ test('release handoff report currentness rejects stale commits and commands', ()
         '',
         '## Next Actions',
         '',
+        '```bash',
+        command,
+        '```',
+        '',
+      ].join('\n'),
+    )
+    assert.equal(
+      isReleaseHandoffReportCurrent(commit, {}, { reportPath }),
+      false,
+    )
+
+    fs.writeFileSync(
+      reportPath,
+      [
+        '# Release Handoff',
+        '',
+        `- Release candidate commit: \`${commit}\``,
+        `- Handoff format: ${releaseHandoffReportFormatVersion}`,
+        '',
+        '## Next Actions',
+        '',
         '### Complete Android and iOS real-device export evidence',
         '',
       ].join('\n'),
@@ -1303,6 +1328,7 @@ test('release handoff report currentness rejects stale commits and commands', ()
         '# Release Handoff',
         '',
         `- Release candidate commit: \`${commit}\``,
+        `- Handoff format: ${releaseHandoffReportFormatVersion}`,
         '',
         '## Next Actions',
         '',

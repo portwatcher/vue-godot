@@ -8,6 +8,9 @@ import {
   prepareReleaseHandoffSummary,
   renderReleaseHandoff,
 } from '../scripts/release-handoff-report.mjs'
+import {
+  releaseHandoffReportFormatVersion,
+} from '../scripts/release-handoff-commands.mjs'
 
 const repoRoot = path.resolve(import.meta.dirname, '..')
 const commit = '0123456789abcdef0123456789abcdef01234567'
@@ -172,6 +175,10 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
 
   assert.match(markdown, /^# Release Handoff/)
   assert.match(markdown, new RegExp(`Release candidate commit: \`${commit}\``))
+  assert.match(
+    markdown,
+    new RegExp(`Handoff format: ${releaseHandoffReportFormatVersion}`),
+  )
   assert.match(markdown, /Real-device evidence: waiting/)
   assert.match(markdown, /Required checks complete: 1\/14/)
   assert.match(markdown, /Metadata gaps: `artifact`, `deviceModel`/)
