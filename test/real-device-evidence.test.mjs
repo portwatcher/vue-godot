@@ -4,6 +4,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
+import { buildRealDeviceEvidenceSummary } from '../scripts/check-real-device-evidence.mjs'
 import {
   knownRealDeviceSelectedApis,
   passOnlyRealDeviceChecks,
@@ -656,7 +657,7 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
             'npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit <release-candidate-sha>',
           ) &&
           action.commands.includes(
-            `npm run check:real-device-evidence -- --path ${commandEvidencePath} --expected-commit <release-candidate-sha>`,
+            `npm run check:real-device-evidence -- --path ${commandEvidencePath} --verify-runs --expected-commit <release-candidate-sha>`,
           ) &&
           copyEvidenceCommands([
             [commandEvidencePath, 'release/real-device-evidence.json'],
@@ -736,7 +737,7 @@ test('check-real-device-evidence next actions honor expected commits', () => {
     )
     assert.ok(
       assembleAction.commands.includes(
-        `npm run check:real-device-evidence -- --path ${commandEvidencePath} --expected-commit ${expectedCommit}`,
+        `npm run check:real-device-evidence -- --path ${commandEvidencePath} --verify-runs --expected-commit ${expectedCommit}`,
       ),
     )
     assert.ok(
@@ -751,7 +752,7 @@ test('check-real-device-evidence next actions honor expected commits', () => {
     )
     assert.ok(
       assembleAction.commands.indexOf(
-        `npm run check:real-device-evidence -- --path ${commandEvidencePath} --expected-commit ${expectedCommit}`,
+        `npm run check:real-device-evidence -- --path ${commandEvidencePath} --verify-runs --expected-commit ${expectedCommit}`,
       ) <
         assembleAction.commands.indexOf(
           'git commit -m "Add real-device release evidence"',
@@ -827,7 +828,7 @@ test('check-real-device-evidence next actions honor missing custom evidence path
     )
     assert.ok(
       assembleAction.commands.includes(
-        `npm run check:real-device-evidence -- --path ${shellQuote(commandEvidencePath)} --platform-evidence ${shellQuote(commandPlatformEvidencePath)} --ci-evidence ${shellQuote(ciEvidencePath)} --expected-commit ${expectedCommit}`,
+        `npm run check:real-device-evidence -- --path ${shellQuote(commandEvidencePath)} --platform-evidence ${shellQuote(commandPlatformEvidencePath)} --ci-evidence ${shellQuote(ciEvidencePath)} --verify-runs --expected-commit ${expectedCommit}`,
       ),
     )
     assert.ok(
@@ -1004,7 +1005,7 @@ test('check-real-device-evidence next actions honor custom completed input paths
     )
     assert.ok(
       assembleAction.commands.includes(
-        `npm run check:real-device-evidence -- --path ${shellQuote(realDeviceCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --ci-evidence ${shellQuote(ciEvidencePath)} --expected-commit ${ciEvidence.commit}`,
+        `npm run check:real-device-evidence -- --path ${shellQuote(realDeviceCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --ci-evidence ${shellQuote(ciEvidencePath)} --verify-runs --expected-commit ${ciEvidence.commit}`,
       ),
     )
     assert.ok(
@@ -1089,6 +1090,41 @@ test('check-real-device-evidence writes validation errors before failing', () =>
           ),
       ),
     )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
+test('check-real-device-evidence summary records run verification errors', async () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-evidence-'))
+  const evidencePath = path.join(tempDir, 'real-device-evidence.json')
+  const evidence = validEvidence()
+  evidence.packageVersions = currentReleasePackageVersions()
+  fs.writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`)
+
+  try {
+    const summary = await buildRealDeviceEvidenceSummary(
+      {
+        ciEvidencePath: 'release/ci-runs.json',
+        evidencePath,
+        expectedCommit: evidence.commit,
+        optional: false,
+        platformEvidencePath: 'release/platform-evidence.json',
+        summaryOutput: null,
+        verifyRuns: true,
+      },
+      async () => ['evidence.checkRunUrl status must be "completed"'],
+    )
+
+    assert.equal(summary.ready, false)
+    assert.equal(summary.metadataReady, true)
+    assert.equal(summary.androidReady, true)
+    assert.equal(summary.iosReady, true)
+    assert.equal(summary.runVerificationRequested, true)
+    assert.deepEqual(summary.runErrors, [
+      'evidence.checkRunUrl status must be "completed"',
+    ])
+    assert.deepEqual(summary.errors, summary.runErrors)
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }

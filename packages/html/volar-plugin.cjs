@@ -17,6 +17,7 @@ const htmlTags = [
   'a',
   'activityindicator',
   'audio',
+  'cameraview',
   'dialog',
   'div',
   'form',

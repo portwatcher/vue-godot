@@ -300,7 +300,8 @@ The helper strips platform worksheet fields and scaffold fields before writing f
 `release/real-device-evidence.json`, `npm run check:real-device-evidence` and
 strict release gates reject it.
 Use `npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json`
-to write validation status, errors, initial CI evidence status, platform
+to write validation status, metadata/platform/run errors, initial CI evidence
+status, platform
 worksheet status with compact per-platform progress counts, malformed outcome
 counts, exact remaining must-pass/skippable check names, and structured check
 descriptions, plus `nextActions` command hints for fixing or
@@ -317,6 +318,10 @@ platform/CI/real-device evidence files, commit them with
 The helper validates the normalized platform evidence before fetching GitHub run
 metadata, so missing device details, unknown selected APIs, or selected-API
 checks left in `skippedChecks` fail before network calls.
+After `npm run release:evidence` assembles final evidence, pass `--verify-runs`
+to `npm run check:real-device-evidence` to query GitHub Actions and require the
+recorded Check and Godot Smoke run URLs to be completed successful runs for the
+tested release commit.
 Commit and push the completed evidence before dispatching Release Preflight:
 
 ```bash

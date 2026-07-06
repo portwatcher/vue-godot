@@ -336,6 +336,9 @@ export function checkRealDeviceEvidenceCommand(commit, options = {}) {
   if (options.ciEvidencePath) {
     args.push('--ci-evidence', options.ciEvidencePath)
   }
+  if (options.verifyRuns) {
+    args.push('--verify-runs')
+  }
 
   args.push(
     '--expected-commit',

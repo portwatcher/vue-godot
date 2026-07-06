@@ -1,7 +1,13 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { readJson, releasePackageConfigs, repoRoot } from './release-utils.mjs'
+import {
+  duplicateStrings,
+  readJson,
+  releasePackageConfigs,
+  repoRoot,
+  uniqueStrings,
+} from './release-utils.mjs'
 
 function readText(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), 'utf-8')
@@ -94,6 +100,67 @@ function checkHtmlSurface(errors) {
     if (!tagPattern.test(htmlDemo)) {
       errors.push(`apps/html-demo/vue/src/App.vue must render <${componentName}>`)
     }
+  }
+
+  checkHtmlTagMirrors(errors, components)
+}
+
+export function collectHtmlTagMirrorErrors(
+  relativePath,
+  source,
+  expectedTags,
+) {
+  const errors = []
+  const match = source.match(/const htmlTags = \[([\s\S]*?)\n\]/)
+  if (!match) {
+    return [`${relativePath} must declare const htmlTags array`]
+  }
+
+  const actualTags = [...match[1].matchAll(/'([^']+)'/g)].map(
+    (item) => item[1],
+  )
+  const duplicates = duplicateStrings(actualTags)
+  if (duplicates.length > 0) {
+    errors.push(
+      `${relativePath} htmlTags contains duplicate ${duplicates.join(', ')}`,
+    )
+  }
+
+  const actual = uniqueStrings(actualTags)
+  const expected = uniqueStrings(expectedTags)
+  const missing = expected.filter((tag) => !actual.includes(tag))
+  const extra = actual.filter((tag) => !expected.includes(tag))
+
+  if (missing.length > 0) {
+    errors.push(`${relativePath} htmlTags is missing ${missing.join(', ')}`)
+  }
+  if (extra.length > 0) {
+    errors.push(
+      `${relativePath} htmlTags contains unexpected ${extra.join(', ')}`,
+    )
+  }
+
+  return errors
+}
+
+function checkHtmlTagMirrors(errors, components) {
+  const expectedTags = components.map((componentName) =>
+    componentName.toLowerCase(),
+  )
+  for (const relativePath of [
+    'apps/html-demo/vue/vite.config.ts',
+    'apps/native-app-demo/vue/vite.config.ts',
+    'apps/game-ui-demo/vue/vite.config.ts',
+    'packages/cli/src/integrate.ts',
+    'packages/html/volar-plugin.cjs',
+  ]) {
+    errors.push(
+      ...collectHtmlTagMirrorErrors(
+        relativePath,
+        readText(relativePath),
+        expectedTags,
+      ),
+    )
   }
 }
 

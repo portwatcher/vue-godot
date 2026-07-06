@@ -1009,7 +1009,7 @@ test('release readiness summary includes missing evidence next actions', () => {
     )
     assert.ok(
       realDeviceAction.commands.includes(
-        `npm run check:real-device-evidence -- --path ${shellQuote(realDeviceCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --ci-evidence ${shellQuote(ciCommandPath)} --expected-commit ${summary.commit}`,
+        `npm run check:real-device-evidence -- --path ${shellQuote(realDeviceCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --ci-evidence ${shellQuote(ciCommandPath)} --verify-runs --expected-commit ${summary.commit}`,
       ),
     )
     assert.ok(

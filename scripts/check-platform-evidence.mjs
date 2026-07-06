@@ -890,7 +890,10 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
       releaseEvidenceCommand(commit, {
         platformEvidencePath,
       }),
-      checkRealDeviceEvidenceCommand(commit, platformEvidenceOptions),
+      checkRealDeviceEvidenceCommand(commit, {
+        ...platformEvidenceOptions,
+        verifyRuns: true,
+      }),
     ],
   })
   return actions

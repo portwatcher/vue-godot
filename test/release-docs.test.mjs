@@ -278,8 +278,9 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /real-device-evidence-summary\.json/)
   assert.match(
     production,
-    /validation status, errors, initial CI evidence status, platform worksheet\s+status with compact per-platform progress counts, malformed outcome counts,\s+exact remaining\s+must-pass\/skippable check names, and structured check\s+descriptions, plus `nextActions`/,
+    /validation status, metadata\/platform\/run errors, initial CI evidence\s+status,\s+platform worksheet\s+status with compact per-platform progress counts, malformed outcome counts,\s+exact remaining\s+must-pass\/skippable check names, and structured check\s+descriptions, plus `nextActions`/,
   )
+  assert.match(production, /--verify-runs/)
   assert.match(production, /[Mm]issing-evidence assembly/)
   assert.match(
     production,
@@ -521,8 +522,9 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /real-device-evidence-summary\.json/)
   assert.match(
     readme,
-    /validation status, errors, initial CI evidence status, platform worksheet status with compact per-platform progress counts, malformed outcome counts,\s+exact remaining\s+must-pass\/skippable check names, and structured check descriptions, plus `nextActions`/,
+    /validation status, metadata\/platform\/run errors, initial CI evidence status, platform worksheet status with compact per-platform progress counts, malformed outcome counts,\s+exact remaining\s+must-pass\/skippable check names, and structured check descriptions, plus `nextActions`/,
   )
+  assert.match(readme, /--verify-runs/)
   assert.match(readme, /[Mm]issing-evidence assembly/)
   assert.match(
     readme,
@@ -750,8 +752,9 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /real-device-evidence-summary\.json/)
   assert.match(
     checklist,
-    /validation status, errors, initial CI evidence status, platform\s+worksheet status with compact per-platform progress counts, malformed outcome\s+counts,\s+exact remaining\s+must-pass\/skippable check names, and structured check\s+descriptions, plus\s+`nextActions`/,
+    /validation status, metadata\/platform\/run errors, initial CI evidence\s+status, platform\s+worksheet status with compact per-platform progress counts, malformed outcome\s+counts,\s+exact remaining\s+must-pass\/skippable check names, and structured check\s+descriptions, plus\s+`nextActions`/,
   )
+  assert.match(checklist, /--verify-runs/)
   assert.match(checklist, /[Mm]issing-evidence\s+assembly/)
   assert.match(
     checklist,

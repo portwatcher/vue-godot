@@ -33,9 +33,12 @@ metadata gaps, malformed outcome counts, remaining required checks, pass-only
 or selected-API checks that must move to `passedChecks`, worksheet drift, and
 nextActions without failing the handoff run.
 `npm run check:real-device-evidence` validates the Android/iOS export-smoke
-evidence JSON when it exists. Add
+evidence JSON when it exists. Pass `--verify-runs` after evidence assembly to
+query GitHub Actions and require the recorded Check and Godot Smoke run URLs to
+be completed successful runs for the tested release commit. Add
 `--summary-output release/real-device-evidence-summary.json` to write
-validation status, errors, initial CI evidence status, platform worksheet
+validation status, metadata/platform/run errors, initial CI evidence status,
+platform worksheet
 status with compact per-platform progress counts, malformed outcome counts,
 exact remaining must-pass/skippable check names, and structured check
 descriptions, plus `nextActions` command hints for fixing or

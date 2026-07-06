@@ -2,7 +2,10 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
 import test from 'node:test'
-import { collectPublicSurfaceAuditErrors } from '../scripts/public-surface-audit.mjs'
+import {
+  collectHtmlTagMirrorErrors,
+  collectPublicSurfaceAuditErrors,
+} from '../scripts/public-surface-audit.mjs'
 
 const repoRoot = process.cwd()
 
@@ -32,6 +35,26 @@ function assertPatterns(relativePath, patterns) {
 
 test('public surface audit passes for package READMEs, docs, templates, and demos', () => {
   assert.deepEqual(collectPublicSurfaceAuditErrors(), [])
+})
+
+test('public surface audit detects stale htmlTags mirrors', () => {
+  const source = [
+    'const htmlTags = [',
+    "  'div',",
+    "  'div',",
+    "  'legacytag',",
+    ']',
+  ].join('\n')
+
+  const errors = collectHtmlTagMirrorErrors('fixture/vite.config.ts', source, [
+    'button',
+    'div',
+    'span',
+  ]).join('\n')
+
+  assert.match(errors, /htmlTags contains duplicate div/)
+  assert.match(errors, /htmlTags is missing button, span/)
+  assert.match(errors, /htmlTags contains unexpected legacytag/)
 })
 
 test('root README links public support docs, packages, and checked-in examples', () => {

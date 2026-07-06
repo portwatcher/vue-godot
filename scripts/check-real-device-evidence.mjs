@@ -1,10 +1,13 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 import {
   describeRealDeviceEvidencePath,
   readRealDeviceEvidence,
   resolveRealDeviceEvidencePath,
-  validateRealDeviceEvidence,
+  validateRealDeviceEvidenceMetadata,
+  validateRealDevicePlatformEvidence,
+  verifyRealDeviceEvidenceRuns,
 } from './real-device-evidence.mjs'
 import {
   checkPlatformEvidenceCommand,
@@ -47,6 +50,9 @@ Options:
                       Require evidence.commit to match the given commit.
   --summary-output <file>
                       Write machine-readable validation status JSON.
+  --verify-runs       Query GitHub Actions and require the recorded Check and
+                      Godot Smoke runs to be completed successful runs for the
+                      tested release commit.
   --optional          Treat a missing evidence file as a warning.
   --help              Show this help.
 `)
@@ -60,6 +66,7 @@ function parseArgs(argv) {
     optional: false,
     platformEvidencePath: defaultPlatformEvidencePath,
     summaryOutput: null,
+    verifyRuns: false,
   }
 
   for (let index = 0; index < argv.length; index++) {
@@ -72,6 +79,11 @@ function parseArgs(argv) {
 
     if (arg === '--optional') {
       options.optional = true
+      continue
+    }
+
+    if (arg === '--verify-runs') {
+      options.verifyRuns = true
       continue
     }
 
@@ -292,7 +304,10 @@ function collectNextActions(summary) {
             customPlatformEvidenceCommandOptions(summary),
           ),
           releaseEvidenceCommand(expectedCommit, pathOptions),
-          checkRealDeviceEvidenceCommand(expectedCommit, pathOptions),
+          checkRealDeviceEvidenceCommand(expectedCommit, {
+            ...pathOptions,
+            verifyRuns: true,
+          }),
           ...realDeviceEvidenceCommitCommands(summary),
         ],
       },
@@ -312,7 +327,10 @@ function collectNextActions(summary) {
           customPlatformEvidenceCommandOptions(summary),
         ),
         releaseEvidenceCommand(expectedCommit, pathOptions),
-        checkRealDeviceEvidenceCommand(expectedCommit, pathOptions),
+        checkRealDeviceEvidenceCommand(expectedCommit, {
+          ...pathOptions,
+          verifyRuns: true,
+        }),
         ...realDeviceEvidenceCommitCommands(summary),
       ],
     },
@@ -334,22 +352,32 @@ function writeSummary(options, summary) {
   console.log(`[real-device-evidence] wrote ${path.relative(repoRoot, resolved)}`)
 }
 
-function main() {
-  const options = parseArgs(process.argv.slice(2))
+export async function buildRealDeviceEvidenceSummary(
+  options,
+  verifyRuns = verifyRealDeviceEvidenceRuns,
+) {
   const evidencePath = options.evidencePath ?? resolveRealDeviceEvidencePath()
   const { evidence, errors: readErrors } = readRealDeviceEvidence(evidencePath)
   const summary = {
+    androidErrors: [],
+    androidReady: false,
     evidencePath: describeRealDeviceEvidencePath(evidencePath),
     evidencePresent: Boolean(evidence),
     expectedCommit: options.expectedCommit ?? null,
+    iosErrors: [],
+    iosReady: false,
     initialCiEvidence: null,
     initialCiEvidencePath: options.ciEvidencePath,
     initialCiEvidenceReady: false,
+    metadataErrors: [],
+    metadataReady: false,
     optional: options.optional,
     platformEvidence: null,
     platformEvidencePath: options.platformEvidencePath,
     platformEvidenceReady: false,
     ready: false,
+    runErrors: [],
+    runVerificationRequested: options.verifyRuns,
     usesCustomCiEvidencePath:
       options.ciEvidencePath !== defaultReleaseCiEvidencePath,
     usesCustomEvidencePath: options.evidencePath !== null,
@@ -369,40 +397,76 @@ function main() {
   summary.platformEvidenceReady = summary.platformEvidence.ready
 
   if (!evidence) {
-    const message = readErrors.join('\n')
     summary.errors = [...readErrors]
     summary.errorCount = summary.errors.length
-    writeSummary(options, summary)
-    if (options.optional) {
+    return summary
+  }
+
+  const metadataErrors = validateRealDeviceEvidenceMetadata(evidence, {
+    expectedCommit: options.expectedCommit,
+    expectedPackageVersions: currentReleasePackageVersions(),
+  })
+  const androidErrors = validateRealDevicePlatformEvidence(
+    evidence,
+    'android',
+    {
+      requireProductionProfile: true,
+    },
+  )
+  const iosErrors = validateRealDevicePlatformEvidence(evidence, 'ios', {
+    requireProductionProfile: true,
+  })
+  const errors = [...metadataErrors, ...androidErrors, ...iosErrors]
+  summary.metadataErrors = metadataErrors
+  summary.androidErrors = androidErrors
+  summary.iosErrors = iosErrors
+  summary.metadataReady = metadataErrors.length === 0
+  summary.androidReady = summary.metadataReady && androidErrors.length === 0
+  summary.iosReady = summary.metadataReady && iosErrors.length === 0
+
+  if (errors.length > 0) {
+    summary.errors = [...errors]
+    summary.errorCount = errors.length
+    return summary
+  }
+
+  if (options.verifyRuns) {
+    const runErrors = await verifyRuns(evidence)
+    if (runErrors.length > 0) {
+      summary.runErrors = runErrors
+      summary.errors = [...runErrors]
+      summary.errorCount = runErrors.length
+      return summary
+    }
+  }
+
+  summary.ready = true
+  return summary
+}
+
+async function main() {
+  const options = parseArgs(process.argv.slice(2))
+  const evidencePath = options.evidencePath ?? resolveRealDeviceEvidencePath()
+  const summary = await buildRealDeviceEvidenceSummary(options)
+  writeSummary(options, summary)
+  if (!summary.ready) {
+    const message = summary.errors.join('\n')
+    if (!summary.evidencePresent && options.optional) {
       console.warn(`[real-device-evidence] warning: ${message}`)
       return
     }
     throw new Error(message)
   }
 
-  const errors = validateRealDeviceEvidence(evidence, {
-    expectedCommit: options.expectedCommit,
-    expectedPackageVersions: currentReleasePackageVersions(),
-    requireProductionProfile: true,
-  })
-
-  if (errors.length > 0) {
-    summary.errors = [...errors]
-    summary.errorCount = errors.length
-    writeSummary(options, summary)
-    throw new Error(errors.join('\n'))
-  }
-
-  summary.ready = true
-  writeSummary(options, summary)
   console.log(
     `[real-device-evidence] passed ${describeRealDeviceEvidencePath(evidencePath)}`,
   )
 }
 
-try {
-  main()
-} catch (error) {
-  console.error(error instanceof Error ? error.message : String(error))
-  process.exit(1)
+const entryPoint = process.argv[1] ? pathToFileURL(process.argv[1]).href : ''
+if (import.meta.url === entryPoint) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error))
+    process.exit(1)
+  })
 }

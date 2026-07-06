@@ -156,7 +156,7 @@ npm run release:record-platform-evidence -- --platform ios --platform-evidence r
 npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
 npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
 npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 43f76a37f9885a3f656127479e810212ef1ffd85 --real-device-output release/real-device-evidence.json
-npm run check:real-device-evidence -- --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
+npm run check:real-device-evidence -- --verify-runs --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
 git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json
 git commit -m "Add real-device release evidence"
 git push

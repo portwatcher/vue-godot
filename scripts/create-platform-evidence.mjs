@@ -208,6 +208,7 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
     ...(ciEvidencePath !== defaultReleaseCiEvidencePath
       ? { ciEvidencePath }
       : {}),
+    verifyRuns: true,
   }
   const initialCiEvidenceReady = options.initialCiEvidence?.ready === true
   const ciEvidenceCommands = initialCiEvidenceReady

@@ -94,6 +94,10 @@ test('release handoff commands format real-device evidence assembly', () => {
     `npm run check:real-device-evidence -- --expected-commit ${commit}`,
   )
   assert.equal(
+    checkRealDeviceEvidenceCommand(commit, { verifyRuns: true }),
+    `npm run check:real-device-evidence -- --verify-runs --expected-commit ${commit}`,
+  )
+  assert.equal(
     checkRealDeviceEvidenceCommand(commit, {
       ciEvidencePath: 'release/ci runs.json',
       platformEvidencePath: "release/platform evidence's draft.json",
@@ -108,6 +112,15 @@ test('release handoff commands format real-device evidence assembly', () => {
       realDeviceEvidencePath: 'release/custom-real-device-evidence.json',
     }),
     `npm run check:real-device-evidence -- --path release/custom-real-device-evidence.json --platform-evidence release/custom-platform-evidence.json --ci-evidence release/custom-ci-runs.json --expected-commit ${commit}`,
+  )
+  assert.equal(
+    checkRealDeviceEvidenceCommand(commit, {
+      ciEvidencePath: 'release/custom-ci-runs.json',
+      platformEvidencePath: 'release/custom-platform-evidence.json',
+      realDeviceEvidencePath: 'release/custom-real-device-evidence.json',
+      verifyRuns: true,
+    }),
+    `npm run check:real-device-evidence -- --path release/custom-real-device-evidence.json --platform-evidence release/custom-platform-evidence.json --ci-evidence release/custom-ci-runs.json --verify-runs --expected-commit ${commit}`,
   )
   assert.equal(
     releaseEvidenceCommand(null, {

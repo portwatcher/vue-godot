@@ -1376,7 +1376,10 @@ function collectReadinessNextActions(
           ? []
           : [checkPlatformEvidenceCommand(commit, { platformEvidencePath })]),
         releaseEvidenceCommand(commit, realDeviceCommandOptions),
-        checkRealDeviceEvidenceCommand(commit, realDeviceCommandOptions),
+        checkRealDeviceEvidenceCommand(commit, {
+          ...realDeviceCommandOptions,
+          verifyRuns: true,
+        }),
         ...commitEvidenceFileCommands(
           [
             [platformEvidencePath, defaultPlatformEvidencePath],
