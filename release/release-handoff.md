@@ -2,8 +2,8 @@
 
 - Release candidate commit: `d2f5a89b40b9eb6e25219cfec49610c0dd45627d`
 - Handoff format: 4
-- Handoff state: 377219dbb1d6677f
-- Overall readiness: open (11 blocker(s))
+- Handoff state: 3c11e73e73ad7ac4
+- Overall readiness: open (10 blocker(s))
 - Real-device evidence: waiting
 - Android evidence: waiting
 - iOS evidence: waiting
@@ -20,10 +20,6 @@
 - TODO.md:392 Release preflight passes without warnings in the release environment.
 - TODO.md:394 All public READMEs match the final support claims.
 - TODO.md:395 The root README warning is removed in the same commit that marks this checklist complete.
-- working tree must be clean for final release readiness
-  M release/ci-runs.json
-  M release/platform-evidence.json
-  M release/release-handoff.md
 - real-device evidence missing at release/real-device-evidence.json
   Create release/real-device-evidence.json after completing docs/real-device-release.md, then run npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit d2f5a89b40b9eb6e25219cfec49610c0dd45627d.
   Real device evidence file not found: release/real-device-evidence.json
@@ -143,14 +139,6 @@
 - TODO.md:395 The root README warning is removed in the same commit that marks this checklist complete. (rootReadmeWarningReady waiting)
 
 ## Next Actions
-
-### Commit or remove local changes before strict readiness
-
-Strict release readiness requires the release evidence and final wording changes to be checked from a clean worktree.
-
-```bash
-git status --short
-```
 
 ### Complete Android and iOS real-device export evidence
 
