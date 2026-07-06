@@ -72,7 +72,8 @@ exact remaining must-pass/skippable check names, and structured check
 descriptions, separate Android/iOS real-device evidence
 status with metadata, platform, and read errors,
 release-readiness evidence status, CI workflow wiring status,
-release tooling/workflow blocker lists, public warning markers, package
+device prereq diagnostics from `release/device-test-prereqs-summary.json` or
+`--device-prereqs-summary <file>`, release tooling/workflow blocker lists, public warning markers, package
 description warning status, and `nextActions` command hints for the local
 `npm run check`, initial CI evidence collection, push/dispatch commands, and the
 remaining evidence/finalizer work as JSON and a Markdown checklist. The
@@ -87,19 +88,23 @@ testers; while real-device evidence is open, the release-readiness
 `nextActions` include handoff write and check commands before the device-evidence action
 only when `release/release-handoff.md` is missing or stale for the expected
 commit and evidence paths. The handoff lists per-platform metadata/check gaps,
-batch confirmation notes and issues, malformed outcome details, remaining check
-descriptions, Release Preflight readiness evidence paths and warning/failure
-counts, `blockedBy` dependencies, and next commands. Add `--check` to verify
-the checked-in handoff is current without rewriting it. When `--expected-commit`
-is omitted and no readiness summary is supplied, the handoff infers the tested
-release commit from `release/ci-runs.json`, or the file passed with
-`--ci-evidence <file>`, when the CI evidence contains a valid consistent commit.
+diagnostic-only device prereq status, batch confirmation notes and issues, malformed
+outcome details, remaining check descriptions, Release Preflight readiness
+evidence paths and warning/failure counts, `blockedBy` dependencies, and next
+commands. Add `--check` to verify the checked-in handoff is current without
+rewriting it. When `--expected-commit` is omitted and no readiness summary is
+supplied, the handoff infers the tested release commit from
+`release/ci-runs.json`, or the file passed with `--ci-evidence <file>`, when the
+CI evidence contains a valid consistent commit.
 The initial CI, real-device, and Release Preflight evidence actions begin
 with `npm run check` before collecting CI or assembling evidence. The
 real-device evidence action also runs
 `npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` before local or hosted device
 handoff commands so missing local tooling and hosted-provider environment
-variable names are recorded without pretending they are evidence. The
+variable names are recorded without pretending they are evidence, then
+readiness and handoff reports expose that snapshot as diagnostic-only
+`devicePrereqs` / Device Prereq Diagnostics. Pass
+`--device-prereqs-summary <file>` when the diagnostic lives elsewhere. The
 hosted-provider diagnostic covers BrowserStack, Sauce Labs, Firebase Test Lab,
 AWS Device Farm, LambdaTest, and Kobiton, and never records environment values.
 The Release Preflight evidence action also reruns
@@ -528,7 +533,10 @@ Run these before platform-specific device checks:
    variable names and partially configured missing-name hints for BrowserStack,
    Sauce Labs, Firebase Test Lab, AWS Device Farm, LambdaTest, and Kobiton, but
    never their values; when none are fully configured, the text output lists the
-   recognized provider env-set options.
+   recognized provider env-set options. The release-readiness summary and
+   Markdown handoff read the diagnostic as a `devicePrereqs` / Device Prereq
+   Diagnostics section; use `--device-prereqs-summary <file>` with readiness
+   when the diagnostic lives outside the default path.
    Android emulators are reported separately and do not satisfy the local
    release-device prerequisite. Missing local tooling or provider environment
    variables do not satisfy or fail final evidence by themselves; use a hosted

@@ -5,6 +5,7 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import {
   defaultReleaseHandoffReportPath,
+  defaultDeviceTestPrereqsSummaryPath,
   defaultPlatformEvidencePath,
   defaultRealDeviceEvidencePath,
   defaultReleaseCiEvidencePath,
@@ -347,6 +348,87 @@ function ciEvidenceLines(summary) {
   return lines
 }
 
+function prereqStatusText(value) {
+  if (value === true) {
+    return 'ready'
+  }
+  if (value === false) {
+    return 'waiting'
+  }
+  return 'not recorded'
+}
+
+function prereqPlatformLine(label, status) {
+  if (!isRecord(status)) {
+    return `- ${label}: not recorded`
+  }
+
+  return [
+    `- ${label}: ${prereqStatusText(status.ready)}`,
+    ` (${status.blockerCount ?? 0} blocker(s),`,
+    ` ${status.warningCount ?? 0} warning(s),`,
+    ` ${status.deviceCount ?? 0} device(s))`,
+  ].join('')
+}
+
+function providerLabel(provider) {
+  return typeof provider.label === 'string' && provider.label.trim().length > 0
+    ? provider.label.trim()
+    : typeof provider.id === 'string' && provider.id.trim().length > 0
+      ? provider.id.trim()
+      : 'unknown provider'
+}
+
+function configuredProviderText(provider) {
+  return `${providerLabel(provider)} (${inlineList(provider.configuredEnv)})`
+}
+
+function partialProviderText(provider) {
+  return `${providerLabel(provider)} (set: ${inlineList(
+    provider.partialEnv,
+  )}; missing: ${inlineList(provider.missingEnv)})`
+}
+
+function renderDevicePrereqDiagnostics(summary) {
+  const diagnostics = isRecord(summary.devicePrereqs)
+    ? summary.devicePrereqs
+    : {}
+  const hostedProviders = isRecord(diagnostics.hostedProviders)
+    ? diagnostics.hostedProviders
+    : {}
+  const configuredProviders = Array.isArray(
+    hostedProviders.configuredProviders,
+  )
+    ? hostedProviders.configuredProviders
+    : []
+  const partialProviders = Array.isArray(hostedProviders.partialProviders)
+    ? hostedProviders.partialProviders
+    : []
+
+  return [
+    '## Device Prereq Diagnostics',
+    '',
+    '- Diagnostic only: yes; this is not release evidence',
+    `- Summary path: \`${diagnostics.path ?? defaultDeviceTestPrereqsSummaryPath}\``,
+    `- Summary present: ${diagnostics.summaryPresent === true ? 'yes' : 'no'}`,
+    `- Status: ${prereqStatusText(diagnostics.ready)}`,
+    `- Selected platforms: ${inlineList(diagnostics.selectedPlatforms)}`,
+    prereqPlatformLine('Android', diagnostics.android),
+    prereqPlatformLine('iOS', diagnostics.ios),
+    `- Hosted provider env configured: ${
+      configuredProviders.length > 0
+        ? configuredProviders.map(configuredProviderText).join('; ')
+        : 'none'
+    }`,
+    `- Hosted provider env partial: ${
+      partialProviders.length > 0
+        ? partialProviders.map(partialProviderText).join('; ')
+        : 'none'
+    }`,
+    ...evidenceErrorLines('Read errors', diagnostics.readErrors),
+  ]
+}
+
 function platformLines(platform, status) {
   if (!isRecord(status)) {
     return [`### ${platformLabel(platform)}`, '', '- Status: missing']
@@ -643,6 +725,8 @@ export function renderReleaseHandoff(summary) {
     '## CI Evidence',
     '',
     ...ciEvidenceLines(summary),
+    '',
+    ...renderDevicePrereqDiagnostics(summary),
     '',
     ...renderPlatformEvidence(summary),
     '',

@@ -31,7 +31,7 @@ export const defaultReleaseReadinessSummaryPath =
 export const defaultReleaseReadinessChecklistPath =
   'release/release-readiness-checklist.md'
 export const defaultReleaseHandoffReportPath = 'release/release-handoff.md'
-export const releaseHandoffReportFormatVersion = 5
+export const releaseHandoffReportFormatVersion = 6
 
 function stableJson(value) {
   if (Array.isArray(value)) {
@@ -57,6 +57,10 @@ export function releaseHandoffReportStateHash(summary) {
         ? summary.checks
         : {},
     commit: summary?.commit ?? null,
+    devicePrereqs:
+      summary?.devicePrereqs && typeof summary.devicePrereqs === 'object'
+        ? summary.devicePrereqs
+        : {},
     finalTodoRequirements: Array.isArray(summary?.finalTodoRequirements)
       ? summary.finalTodoRequirements
       : [],

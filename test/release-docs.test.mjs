@@ -53,11 +53,17 @@ test('real device release checklist covers required Android and iOS gates', () =
     /^## iOS Release Smoke/m,
     /npm run check/,
     /npm run check:device-prereqs -- --summary-output release\/device-test-prereqs-summary\.json --allow-missing/,
+    /diagnostic-only device prereq status/,
+    /Device Prereq Diagnostics/,
+    /--device-prereqs-summary <file>/,
     /hosted-provider\s+environment variable sets/,
     hostedProviderNamesPattern,
     /partially configured missing-name hints/,
     /never their values/,
     /recognized provider env-set\s+options/,
+    /devicePrereqs/,
+    /Device Prereq\s+Diagnostics/,
+    /--device-prereqs-summary <file>/,
     /npm run check:serious-examples/,
     /npm run release:preflight[\s\S]*validates real-device evidence/,
     /npm audit --audit-level=moderate/,
@@ -317,11 +323,18 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /check:real-device-evidence/)
   assert.match(production, /check:platform-evidence/)
   assert.match(production, /check:device-prereqs/)
+  assert.match(production, /device prereq diagnostics/)
+  assert.match(production, /--device-prereqs-summary <file>/)
+  assert.match(production, /diagnostic-only `devicePrereqs`/)
   assert.match(production, /Android emulators are reported separately/)
   assert.match(production, hostedProviderNamesPattern)
   assert.match(production, /configured or partially configured environment variable names/)
   assert.match(production, /never their values/)
   assert.match(production, /recognized provider env-set\s+options/)
+  assert.match(production, /devicePrereqs/)
+  assert.match(production, /Device Prereq\s+Diagnostics/)
+  assert.match(production, /--device-prereqs-summary <file>/)
+  assert.match(production, /device prereq diagnostics/)
   assert.match(
     production,
     /Missing local tooling or provider environment\s+variables are only diagnostics/,
@@ -488,13 +501,13 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /--check[\s\S]*handoff is current/)
   assert.match(
     production,
-    /When `--expected-commit`[\s\S]*omitted[\s\S]*handoff infers the tested\s+release commit from `release\/ci-runs\.json`[\s\S]*`--ci-evidence <file>`/,
+    /When `--expected-commit`[\s\S]*omitted[\s\S]*handoff infers the tested[\s\S]*release commit from[\s\S]*`release\/ci-runs\.json`[\s\S]*`--ci-evidence <file>`/,
   )
   assert.match(
     production,
-    /per-platform metadata\/check gaps,\s+batch confirmation notes and issues,\s+malformed outcome details/,
+    /per-platform metadata\/check gaps,\s+device prereq diagnostics,\s+batch confirmation notes and issues,\s+malformed\s+outcome details/,
   )
-  assert.match(production, /Release Preflight readiness evidence paths/)
+  assert.match(production, /Release Preflight readiness\s+evidence paths/)
   assert.match(production, /warning\/failure\s+counts/)
   assert.match(
     production,
@@ -510,7 +523,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
-    /Release Preflight evidence action also reruns[\s\S]*check:real-device-evidence -- --verify-runs[\s\S]*before CI\/preflight\s+collection/,
+    /Release\s+Preflight evidence action also reruns[\s\S]*check:real-device-evidence -- --verify-runs[\s\S]*before CI\/preflight\s+collection/,
   )
   assert.match(
     production,
@@ -600,6 +613,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /check:real-device-evidence/)
   assert.match(readme, /check:platform-evidence/)
   assert.match(readme, /check:device-prereqs/)
+  assert.match(readme, /device prereq diagnostics/)
+  assert.match(readme, /Device Prereq\s+Diagnostics/)
+  assert.match(readme, /--device-prereqs-summary <file>/)
+  assert.match(readme, /diagnostic-only `devicePrereqs`/)
   assert.match(readme, /Android emulators are reported separately/)
   assert.match(readme, hostedProviderNamesPattern)
   assert.match(readme, /configured or partially configured environment variable names/)
@@ -949,13 +966,13 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /--check[\s\S]*handoff is current/)
   assert.match(
     checklist,
-    /When `--expected-commit`[\s\S]*omitted[\s\S]*handoff infers the tested\s+release commit from `release\/ci-runs\.json`[\s\S]*`--ci-evidence <file>`/,
+    /When `--expected-commit`[\s\S]*omitted[\s\S]*handoff infers the tested[\s\S]*release commit from[\s\S]*`release\/ci-runs\.json`[\s\S]*`--ci-evidence <file>`/,
   )
   assert.match(
     checklist,
-    /per-platform metadata\/check gaps,\s+batch confirmation notes and issues,\s+malformed outcome details/,
+    /per-platform metadata\/check gaps,\s+diagnostic-only device prereq status,\s+batch confirmation notes and issues,\s+malformed\s+outcome details/,
   )
-  assert.match(checklist, /Release Preflight readiness evidence paths/)
+  assert.match(checklist, /Release Preflight readiness\s+evidence paths/)
   assert.match(checklist, /warning\/failure\s+counts/)
   assert.match(
     checklist,

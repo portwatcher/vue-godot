@@ -305,6 +305,46 @@ test('release readiness checklist renders final proof and next actions', () => {
       strictCiEvidence: false,
     },
     commit: '0123456789abcdef0123456789abcdef01234567',
+    devicePrereqs: {
+      android: {
+        blockerCount: 1,
+        blockers: ['adb not found'],
+        command: 'adb devices -l',
+        deviceCount: 0,
+        ready: false,
+        warningCount: 0,
+        warnings: [],
+      },
+      diagnosticOnly: true,
+      hostedProviders: {
+        anyConfigured: true,
+        configuredProviders: [
+          {
+            configuredEnv: [
+              'BROWSERSTACK_USERNAME',
+              'BROWSERSTACK_ACCESS_KEY',
+            ],
+            id: 'browserstack',
+            label: 'BrowserStack App Automate',
+          },
+        ],
+        partialProviders: [
+          {
+            id: 'aws-device-farm',
+            label: 'AWS Device Farm',
+            missingEnv: ['AWS_SECRET_ACCESS_KEY', 'AWS_REGION'],
+            partialEnv: ['AWS_ACCESS_KEY_ID'],
+          },
+        ],
+        providerCount: 6,
+      },
+      ios: null,
+      path: 'release/device-test-prereqs-summary.json',
+      readErrors: [],
+      ready: false,
+      selectedPlatforms: ['android'],
+      summaryPresent: true,
+    },
     finalTodoRequirements: [
       {
         checked: true,
@@ -386,6 +426,18 @@ test('release readiness checklist renders final proof and next actions', () => {
     /\[ \] TODO\.md:389 unchecked: androidRealDeviceEvidenceReady waiting/,
   )
   assert.match(checklist, /\[ \] Real-device evidence/)
+  assert.match(checklist, /## Device Prereq Diagnostics/)
+  assert.match(checklist, /Diagnostic only: yes; this is not release evidence/)
+  assert.match(checklist, /Android: waiting \(1 blocker\(s\), 0 warning\(s\), 0 device\(s\)\)/)
+  assert.match(checklist, /iOS: not recorded/)
+  assert.match(
+    checklist,
+    /Hosted provider env configured: BrowserStack App Automate \(`BROWSERSTACK_USERNAME`, `BROWSERSTACK_ACCESS_KEY`\)/,
+  )
+  assert.match(
+    checklist,
+    /Hosted provider env partial: AWS Device Farm \(set: `AWS_ACCESS_KEY_ID`; missing: `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`\)/,
+  )
   assert.match(checklist, /Android evidence missing/)
   assert.match(
     checklist,
@@ -405,6 +457,114 @@ test('release readiness checklist renders final proof and next actions', () => {
     checklist,
     /#### Run After Device Evidence Is Recorded[\s\S]*npm run release:evidence -- --commit 0123456789abcdef0123456789abcdef01234567/,
   )
+})
+
+test('release readiness summary includes device prereq diagnostics', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
+  const summaryPath = path.join(tempDir, 'release-readiness-summary.json')
+  const checklistPath = path.join(tempDir, 'release-readiness-checklist.md')
+  const prereqPath = path.join(tempDir, 'device-prereqs.json')
+  const ciEvidence = readCommittedReleaseCiEvidence()
+  const prereqSummary = {
+    android: {
+      blockers: ['adb not found'],
+      command: 'adb devices -l',
+      devices: [],
+      ready: false,
+      warnings: ['Android SDK platform-tools missing'],
+    },
+    blockers: ['adb not found'],
+    hostedDeviceEvidenceAccepted: true,
+    hostedProviders: {
+      anyConfigured: true,
+      providers: [
+        {
+          configured: true,
+          configuredEnv: [
+            'BROWSERSTACK_USERNAME',
+            'BROWSERSTACK_ACCESS_KEY',
+          ],
+          id: 'browserstack',
+          label: 'BrowserStack App Automate',
+          missingEnv: [],
+          partialEnv: [],
+          partiallyConfigured: false,
+        },
+        {
+          configured: false,
+          configuredEnv: [],
+          id: 'aws-device-farm',
+          label: 'AWS Device Farm',
+          missingEnv: ['AWS_SECRET_ACCESS_KEY', 'AWS_REGION'],
+          partialEnv: ['AWS_ACCESS_KEY_ID'],
+          partiallyConfigured: true,
+        },
+      ],
+    },
+    ios: {
+      blockers: [],
+      command: 'xcrun xctrace list devices',
+      devices: [{ identifier: '00008110-001234', name: 'Release iPhone' }],
+      ready: true,
+      warnings: [],
+    },
+    ready: false,
+    selectedPlatforms: ['android', 'ios'],
+  }
+
+  try {
+    fs.writeFileSync(prereqPath, `${JSON.stringify(prereqSummary, null, 2)}\n`)
+    const result = runReadiness([
+      '--allow-open',
+      '--expected-commit',
+      ciEvidence.commit,
+      '--device-prereqs-summary',
+      prereqPath,
+      '--summary-output',
+      summaryPath,
+      '--checklist-output',
+      checklistPath,
+    ])
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+    const checklist = fs.readFileSync(checklistPath, 'utf-8')
+    const diagnostics = summary.devicePrereqs
+
+    assert.equal(result.status, 0)
+    assert.equal(diagnostics.diagnosticOnly, true)
+    assert.equal(diagnostics.summaryPresent, true)
+    assert.equal(diagnostics.ready, false)
+    assert.deepEqual(diagnostics.selectedPlatforms, ['android', 'ios'])
+    assert.equal(diagnostics.android.ready, false)
+    assert.equal(diagnostics.android.blockerCount, 1)
+    assert.equal(diagnostics.android.warningCount, 1)
+    assert.equal(diagnostics.android.deviceCount, 0)
+    assert.equal(diagnostics.ios.ready, true)
+    assert.equal(diagnostics.ios.deviceCount, 1)
+    assert.equal(diagnostics.hostedProviders.anyConfigured, true)
+    assert.equal(diagnostics.hostedProviders.providerCount, 2)
+    assert.deepEqual(
+      diagnostics.hostedProviders.configuredProviders[0].configuredEnv,
+      ['BROWSERSTACK_USERNAME', 'BROWSERSTACK_ACCESS_KEY'],
+    )
+    assert.deepEqual(
+      diagnostics.hostedProviders.partialProviders[0].missingEnv,
+      ['AWS_SECRET_ACCESS_KEY', 'AWS_REGION'],
+    )
+    assert.match(checklist, /## Device Prereq Diagnostics/)
+    assert.match(checklist, /Diagnostic only: yes; this is not release evidence/)
+    assert.match(checklist, /Android: waiting \(1 blocker\(s\), 1 warning\(s\), 0 device\(s\)\)/)
+    assert.match(checklist, /iOS: ready \(0 blocker\(s\), 0 warning\(s\), 1 device\(s\)\)/)
+    assert.match(
+      checklist,
+      /Hosted provider env configured: BrowserStack App Automate \(`BROWSERSTACK_USERNAME`, `BROWSERSTACK_ACCESS_KEY`\)/,
+    )
+    assert.match(
+      checklist,
+      /Hosted provider env partial: AWS Device Farm \(set: `AWS_ACCESS_KEY_ID`; missing: `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`\)/,
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
 })
 
 test('release readiness requires release tooling scripts', () => {
@@ -770,9 +930,56 @@ test('release readiness writes a machine-readable blocker summary', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
   const summaryPath = path.join(tempDir, 'release-readiness-summary.json')
   const checklistPath = path.join(tempDir, 'release-readiness-checklist.md')
+  const devicePrereqsPath = path.join(tempDir, 'device-prereqs-summary.json')
   const exampleCommit = '0123456789abcdef0123456789abcdef01234567'
 
   try {
+    fs.writeFileSync(
+      devicePrereqsPath,
+      `${JSON.stringify(
+        {
+          android: {
+            blockers: ['adb not found'],
+            command: 'adb devices -l',
+            devices: [],
+            ready: false,
+            warnings: ['Android device emulator-5554 appears to be an emulator.'],
+          },
+          hostedProviders: {
+            anyConfigured: true,
+            providers: [
+              {
+                configured: true,
+                configuredEnv: [
+                  'BROWSERSTACK_USERNAME',
+                  'BROWSERSTACK_ACCESS_KEY',
+                ],
+                id: 'browserstack',
+                label: 'BrowserStack App Automate',
+              },
+              {
+                id: 'aws-device-farm',
+                label: 'AWS Device Farm',
+                missingEnv: ['AWS_SECRET_ACCESS_KEY', 'AWS_REGION'],
+                partialEnv: ['AWS_ACCESS_KEY_ID'],
+                partiallyConfigured: true,
+              },
+            ],
+          },
+          ios: {
+            blockers: [],
+            command: 'xcrun xctrace list devices',
+            devices: [{ identifier: 'iphone-device-id', name: 'iPhone 16' }],
+            ready: true,
+            warnings: [],
+          },
+          ready: false,
+          selectedPlatforms: ['android', 'ios'],
+        },
+        null,
+        2,
+      )}\n`,
+    )
     const result = runReadiness([
       '--allow-open',
       '--real-device-path',
@@ -781,6 +988,8 @@ test('release readiness writes a machine-readable blocker summary', () => {
       'docs/release-readiness-evidence.example.json',
       '--expected-commit',
       exampleCommit,
+      '--device-prereqs-summary',
+      devicePrereqsPath,
       '--summary-output',
       summaryPath,
       '--checklist-output',
@@ -805,6 +1014,39 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.deepEqual(summary.releaseToolingBlockers, [])
     assert.equal(summary.releaseWorkflowBlockerCount, 0)
     assert.deepEqual(summary.releaseWorkflowBlockers, [])
+    assert.equal(summary.devicePrereqs.diagnosticOnly, true)
+    assert.equal(summary.devicePrereqs.summaryPresent, true)
+    assert.match(summary.devicePrereqs.path, /device-prereqs-summary\.json$/)
+    assert.equal(summary.devicePrereqs.android.ready, false)
+    assert.equal(summary.devicePrereqs.android.blockerCount, 1)
+    assert.equal(summary.devicePrereqs.android.warningCount, 1)
+    assert.equal(summary.devicePrereqs.ios.ready, true)
+    assert.equal(summary.devicePrereqs.ios.deviceCount, 1)
+    assert.deepEqual(
+      summary.devicePrereqs.hostedProviders.configuredProviders.map(
+        (provider) => [provider.id, provider.configuredEnv],
+      ),
+      [
+        [
+          'browserstack',
+          ['BROWSERSTACK_USERNAME', 'BROWSERSTACK_ACCESS_KEY'],
+        ],
+      ],
+    )
+    assert.deepEqual(
+      summary.devicePrereqs.hostedProviders.partialProviders.map((provider) => [
+        provider.id,
+        provider.partialEnv,
+        provider.missingEnv,
+      ]),
+      [
+        [
+          'aws-device-farm',
+          ['AWS_ACCESS_KEY_ID'],
+          ['AWS_SECRET_ACCESS_KEY', 'AWS_REGION'],
+        ],
+      ],
+    )
     assert.deepEqual(summary.realDeviceEvidence, {
       androidErrors: [],
       androidReady: true,
@@ -1046,6 +1288,18 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.match(checklist, new RegExp(`- Expected commit: ${exampleCommit}`))
     assert.match(checklist, /## Final TODO Proof/)
     assert.match(checklist, /Check\/Godot Smoke CI evidence/)
+    assert.match(checklist, /## Device Prereq Diagnostics/)
+    assert.match(checklist, /Diagnostic only: yes; this is not release evidence/)
+    assert.match(checklist, /Android: waiting \(1 blocker\(s\), 1 warning\(s\), 0 device\(s\)\)/)
+    assert.match(checklist, /iOS: ready \(0 blocker\(s\), 0 warning\(s\), 1 device\(s\)\)/)
+    assert.match(
+      checklist,
+      /Hosted provider env configured: BrowserStack App Automate \(`BROWSERSTACK_USERNAME`, `BROWSERSTACK_ACCESS_KEY`\)/,
+    )
+    assert.match(
+      checklist,
+      /Hosted provider env partial: AWS Device Farm \(set: `AWS_ACCESS_KEY_ID`; missing: `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`\)/,
+    )
     assert.match(checklist, /## Blocking Issues/)
     assert.match(checklist, /root README production warning/)
     assert.match(checklist, /## Next Actions/)

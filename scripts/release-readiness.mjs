@@ -149,6 +149,9 @@ Options:
   --allow-open                  Print blockers but exit 0.
   --ci-evidence <file>          Read initial Check/Godot Smoke CI evidence from
                                 a specific file. Defaults to ${defaultReleaseCiEvidencePath}.
+  --device-prereqs-summary <file>
+                                Read diagnostic device prerequisite status from
+                                a specific file. Defaults to ${defaultDeviceTestPrereqsSummaryPath}.
   --platform-evidence <file>    Read Android/iOS platform worksheet evidence
                                 from a specific file. Defaults to ${defaultPlatformEvidencePath}.
   --real-device-path <file>     Read Android/iOS evidence from a specific file.
@@ -171,6 +174,7 @@ function parseArgs(argv) {
     allowOpen: false,
     checklistOutput: null,
     ciEvidencePath: null,
+    devicePrereqsSummaryPath: null,
     expectedCommit: null,
     platformEvidencePath: null,
     realDevicePath: null,
@@ -218,6 +222,23 @@ function parseArgs(argv) {
       options.ciEvidencePath = path.resolve(
         repoRoot,
         arg.slice('--ci-evidence='.length),
+      )
+      continue
+    }
+
+    if (arg === '--device-prereqs-summary') {
+      const value = argv[++index]
+      if (!value) {
+        throw new Error('--device-prereqs-summary requires a value')
+      }
+      options.devicePrereqsSummaryPath = path.resolve(repoRoot, value)
+      continue
+    }
+
+    if (arg.startsWith('--device-prereqs-summary=')) {
+      options.devicePrereqsSummaryPath = path.resolve(
+        repoRoot,
+        arg.slice('--device-prereqs-summary='.length),
       )
       continue
     }
@@ -410,6 +431,131 @@ function readJsonEvidence(evidencePath) {
       ],
     }
   }
+}
+
+function stringList(values) {
+  if (!Array.isArray(values)) {
+    return []
+  }
+
+  return values
+    .filter((value) => typeof value === 'string')
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0)
+}
+
+function devicePrereqPlatformStatus(summary, platform) {
+  const status = isRecord(summary?.[platform]) ? summary[platform] : null
+  if (!status) {
+    return null
+  }
+
+  const blockers = stringList(status.blockers)
+  const warnings = stringList(status.warnings)
+  const devices = Array.isArray(status.devices) ? status.devices : []
+  const command =
+    typeof status.command === 'string' && status.command.trim().length > 0
+      ? status.command.trim()
+      : null
+
+  return {
+    blockerCount: blockers.length,
+    blockers,
+    command,
+    deviceCount: devices.length,
+    ready: status.ready === true,
+    warningCount: warnings.length,
+    warnings,
+  }
+}
+
+function providerText(provider, key, fallback) {
+  const value = provider[key]
+  return typeof value === 'string' && value.trim().length > 0
+    ? value.trim()
+    : fallback
+}
+
+function normalizeHostedDeviceProviders(summary) {
+  const hostedProviders = isRecord(summary.hostedProviders)
+    ? summary.hostedProviders
+    : {}
+  const providers = Array.isArray(hostedProviders.providers)
+    ? hostedProviders.providers.filter(isRecord)
+    : []
+
+  return {
+    anyConfigured: hostedProviders.anyConfigured === true,
+    configuredProviders: providers
+      .filter((provider) => provider.configured === true)
+      .map((provider) => ({
+        configuredEnv: stringList(provider.configuredEnv),
+        id: providerText(provider, 'id', 'unknown-provider'),
+        label: providerText(provider, 'label', 'Unknown provider'),
+      })),
+    partialProviders: providers
+      .filter((provider) => provider.partiallyConfigured === true)
+      .map((provider) => ({
+        id: providerText(provider, 'id', 'unknown-provider'),
+        label: providerText(provider, 'label', 'Unknown provider'),
+        missingEnv: stringList(provider.missingEnv),
+        partialEnv: stringList(provider.partialEnv),
+      })),
+    providerCount: providers.length,
+  }
+}
+
+function collectDevicePrereqDiagnostics(options) {
+  const configuredPath =
+    options.devicePrereqsSummaryPath ?? defaultDeviceTestPrereqsSummaryPath
+  const resolvedPath = path.resolve(repoRoot, configuredPath)
+  const diagnostic = {
+    android: null,
+    diagnosticOnly: true,
+    hostedProviders: {
+      anyConfigured: false,
+      configuredProviders: [],
+      partialProviders: [],
+      providerCount: 0,
+    },
+    ios: null,
+    path: relative(resolvedPath),
+    readErrors: [],
+    ready: null,
+    selectedPlatforms: [],
+    summaryPresent: false,
+  }
+
+  if (!fs.existsSync(resolvedPath)) {
+    return diagnostic
+  }
+
+  diagnostic.summaryPresent = true
+  let summary
+  try {
+    summary = JSON.parse(fs.readFileSync(resolvedPath, 'utf-8'))
+  } catch (error) {
+    diagnostic.ready = false
+    diagnostic.readErrors.push(
+      `Device prereq summary is not valid JSON: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    )
+    return diagnostic
+  }
+
+  if (!isRecord(summary)) {
+    diagnostic.ready = false
+    diagnostic.readErrors.push('Device prereq summary must be a JSON object')
+    return diagnostic
+  }
+
+  diagnostic.ready = summary.ready === true
+  diagnostic.selectedPlatforms = stringList(summary.selectedPlatforms)
+  diagnostic.android = devicePrereqPlatformStatus(summary, 'android')
+  diagnostic.ios = devicePrereqPlatformStatus(summary, 'ios')
+  diagnostic.hostedProviders = normalizeHostedDeviceProviders(summary)
+  return diagnostic
 }
 
 function assertCommitSha(record, key, errors, label) {
@@ -1682,8 +1828,102 @@ function formatActionLines(action) {
   return lines
 }
 
+function devicePrereqStatusText(value) {
+  if (value === true) {
+    return 'ready'
+  }
+  if (value === false) {
+    return 'waiting'
+  }
+  return 'not recorded'
+}
+
+function inlineDiagnosticList(values) {
+  if (!Array.isArray(values) || values.length === 0) {
+    return 'none'
+  }
+
+  return values.map((value) => `\`${String(value)}\``).join(', ')
+}
+
+function formatDevicePrereqPlatformChecklistLine(label, status) {
+  if (!isRecord(status)) {
+    return `- ${label}: not recorded`
+  }
+
+  return [
+    `- ${label}: ${devicePrereqStatusText(status.ready)}`,
+    ` (${displayValue(status.blockerCount)} blocker(s),`,
+    ` ${displayValue(status.warningCount)} warning(s),`,
+    ` ${displayValue(status.deviceCount)} device(s))`,
+  ].join('')
+}
+
+function providerLabel(provider) {
+  return typeof provider.label === 'string' && provider.label.trim().length > 0
+    ? provider.label.trim()
+    : typeof provider.id === 'string' && provider.id.trim().length > 0
+      ? provider.id.trim()
+      : 'unknown provider'
+}
+
+function formatConfiguredProvider(provider) {
+  return `${providerLabel(provider)} (${inlineDiagnosticList(
+    provider.configuredEnv,
+  )})`
+}
+
+function formatPartialProvider(provider) {
+  return `${providerLabel(provider)} (set: ${inlineDiagnosticList(
+    provider.partialEnv,
+  )}; missing: ${inlineDiagnosticList(provider.missingEnv)})`
+}
+
+function formatDevicePrereqDiagnosticLines(devicePrereqs) {
+  const diagnostics = isRecord(devicePrereqs) ? devicePrereqs : {}
+  const hostedProviders = isRecord(diagnostics.hostedProviders)
+    ? diagnostics.hostedProviders
+    : {}
+  const configuredProviders = Array.isArray(
+    hostedProviders.configuredProviders,
+  )
+    ? hostedProviders.configuredProviders
+    : []
+  const partialProviders = Array.isArray(hostedProviders.partialProviders)
+    ? hostedProviders.partialProviders
+    : []
+
+  return [
+    '## Device Prereq Diagnostics',
+    '',
+    '- Diagnostic only: yes; this is not release evidence',
+    `- Summary path: ${displayValue(diagnostics.path)}`,
+    `- Summary present: ${displayValue(diagnostics.summaryPresent)}`,
+    `- Status: ${devicePrereqStatusText(diagnostics.ready)}`,
+    `- Selected platforms: ${inlineDiagnosticList(
+      diagnostics.selectedPlatforms,
+    )}`,
+    formatDevicePrereqPlatformChecklistLine('Android', diagnostics.android),
+    formatDevicePrereqPlatformChecklistLine('iOS', diagnostics.ios),
+    `- Hosted provider env configured: ${
+      configuredProviders.length > 0
+        ? configuredProviders.map(formatConfiguredProvider).join('; ')
+        : 'none'
+    }`,
+    `- Hosted provider env partial: ${
+      partialProviders.length > 0
+        ? partialProviders.map(formatPartialProvider).join('; ')
+        : 'none'
+    }`,
+    ...formatIssueLines('Read errors', diagnostics.readErrors),
+  ]
+}
+
 export function formatReleaseReadinessChecklist(summary) {
   const checks = isRecord(summary.checks) ? summary.checks : {}
+  const devicePrereqs = isRecord(summary.devicePrereqs)
+    ? summary.devicePrereqs
+    : {}
   const finalTodoRequirements = Array.isArray(summary.finalTodoRequirements)
     ? summary.finalTodoRequirements
     : []
@@ -1799,6 +2039,8 @@ export function formatReleaseReadinessChecklist(summary) {
       displayValue(checks.strictCiEvidence),
     ),
     '',
+    ...formatDevicePrereqDiagnosticLines(devicePrereqs),
+    '',
     '## Blocking Issues',
     '',
     ...formatIssueLines('Blockers', summary.blockers),
@@ -1843,6 +2085,7 @@ function writeReadinessSummary(
   releaseReadinessEvidence,
   initialCiEvidence,
   platformEvidence,
+  devicePrereqs,
 ) {
   if (!options.summaryOutput && !options.checklistOutput) {
     return
@@ -1866,6 +2109,7 @@ function writeReadinessSummary(
         checks,
         commit: expectedCommit,
         finalTodoRequirements: finalTodoRequirementStatuses,
+        devicePrereqs,
         initialCiEvidence,
         platformEvidence,
         realDeviceEvidence,
@@ -1896,6 +2140,7 @@ function writeReadinessSummary(
       })),
     },
     checks: { ...checks },
+    devicePrereqs: { ...devicePrereqs },
     realDeviceEvidence: { ...realDeviceEvidence },
     releaseReadinessEvidence: { ...releaseReadinessEvidence },
     initialCiEvidence: { ...initialCiEvidence },
@@ -1948,6 +2193,7 @@ async function main() {
     options,
     expectedCommit ?? undefined,
   )
+  const devicePrereqDiagnostics = collectDevicePrereqDiagnostics(options)
   const platformEvidenceStatus = readPlatformEvidenceAudit(
     options.platformEvidencePath ?? defaultPlatformEvidencePath,
   )
@@ -2065,6 +2311,7 @@ async function main() {
       releaseReadinessEvidenceStatus,
       initialCiEvidenceStatus,
       platformEvidenceStatus,
+      devicePrereqDiagnostics,
     )
   } catch (error) {
     blockers.push(

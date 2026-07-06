@@ -64,6 +64,54 @@ function sampleReadinessSummary(ciEvidencePath = 'release/ci-runs.json') {
       realDeviceEvidence: false,
       releaseReadinessEvidence: false,
     },
+    devicePrereqs: {
+      android: {
+        blockerCount: 1,
+        blockers: ['adb not found'],
+        command: 'adb devices -l',
+        deviceCount: 0,
+        ready: false,
+        warningCount: 0,
+        warnings: [],
+      },
+      diagnosticOnly: true,
+      hostedProviders: {
+        anyConfigured: true,
+        configuredProviders: [
+          {
+            configuredEnv: [
+              'BROWSERSTACK_USERNAME',
+              'BROWSERSTACK_ACCESS_KEY',
+            ],
+            id: 'browserstack',
+            label: 'BrowserStack App Automate',
+          },
+        ],
+        partialProviders: [
+          {
+            id: 'aws-device-farm',
+            label: 'AWS Device Farm',
+            missingEnv: ['AWS_SECRET_ACCESS_KEY', 'AWS_REGION'],
+            partialEnv: ['AWS_ACCESS_KEY_ID'],
+          },
+        ],
+        providerCount: 6,
+      },
+      ios: {
+        blockerCount: 0,
+        blockers: [],
+        command: 'xcrun xctrace list devices',
+        deviceCount: 1,
+        ready: true,
+        warningCount: 0,
+        warnings: [],
+      },
+      path: 'release/device-test-prereqs-summary.json',
+      readErrors: [],
+      ready: false,
+      selectedPlatforms: ['android', 'ios'],
+      summaryPresent: true,
+    },
     initialCiEvidence: {
       commit,
       path: ciEvidencePath,
@@ -210,6 +258,19 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
     ),
   )
   assert.match(markdown, /Real-device evidence: waiting/)
+  assert.match(markdown, /## Device Prereq Diagnostics/)
+  assert.match(markdown, /Diagnostic only: yes; this is not release evidence/)
+  assert.match(markdown, /Summary path: `release\/device-test-prereqs-summary\.json`/)
+  assert.match(markdown, /Android: waiting \(1 blocker\(s\), 0 warning\(s\), 0 device\(s\)\)/)
+  assert.match(markdown, /iOS: ready \(0 blocker\(s\), 0 warning\(s\), 1 device\(s\)\)/)
+  assert.match(
+    markdown,
+    /Hosted provider env configured: BrowserStack App Automate \(`BROWSERSTACK_USERNAME`, `BROWSERSTACK_ACCESS_KEY`\)/,
+  )
+  assert.match(
+    markdown,
+    /Hosted provider env partial: AWS Device Farm \(set: `AWS_ACCESS_KEY_ID`; missing: `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`\)/,
+  )
   assert.match(markdown, /## Release Preflight Evidence/)
   assert.match(markdown, /Readiness evidence path: `release\/release-readiness-evidence\.json`/)
   assert.match(markdown, /Summary JSON: `release\/release-preflight-summary\.json`/)
@@ -347,6 +408,16 @@ test('release handoff state hash tracks structured release evidence', () => {
         path: 'release/real-device-evidence.json',
         readErrors: ['missing evidence file'],
         ready: false,
+      },
+    }),
+    stateHash,
+  )
+  assert.notEqual(
+    releaseHandoffReportStateHash({
+      ...summary,
+      devicePrereqs: {
+        ...summary.devicePrereqs,
+        ready: true,
       },
     }),
     stateHash,

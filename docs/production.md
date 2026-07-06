@@ -117,7 +117,10 @@ Run `npm run check:device-prereqs -- --summary-output release/device-test-prereq
 sessions to report whether `adb`, Xcode device listing, and attached Android or
 iOS devices are available, and whether common hosted-provider environment
 variable sets are configured, then leave a gitignored JSON diagnostic next to
-the other release helper summaries. The hosted-provider diagnostic reports
+the other release helper summaries. The release-readiness summary and Markdown
+handoff read that file into a diagnostic-only `devicePrereqs` / Device Prereq
+Diagnostics section; pass `--device-prereqs-summary <file>` to readiness when
+the diagnostic lives elsewhere. The hosted-provider diagnostic reports
 configured or partially configured environment variable names for BrowserStack,
 Sauce Labs, Firebase Test Lab, AWS Device Farm, LambdaTest, and Kobiton, but
 never their values; when none are fully configured, the text output lists the
@@ -227,7 +230,9 @@ warning markers, package description warning status, release tooling/workflow
 blocker lists, TODO counts, unchecked TODO item details, final TODO proof status,
 structured readiness check and evidence status, local Git state, release
 handoff report currentness/format/state status, and
-`nextActions` command hints for the remaining evidence/finalizer work, including
+device prereq diagnostics from `release/device-test-prereqs-summary.json` or
+`--device-prereqs-summary <file>`, and `nextActions` command hints for the
+remaining evidence/finalizer work, including
 the local `npm run check`, initial CI evidence collection, push/dispatch
 commands, platform worksheet audit status with compact per-platform progress
 counts plus exact remaining must-pass/skippable check names and structured check descriptions, separate
@@ -245,19 +250,22 @@ testers; while real-device evidence is open, the release-readiness
 `nextActions` include handoff write and check commands before the device-evidence action
 only when `release/release-handoff.md` is missing or stale for the expected
 commit and evidence paths. The handoff lists per-platform metadata/check gaps,
-batch confirmation notes and issues, malformed outcome details, remaining check
-descriptions, Release Preflight readiness evidence paths and warning/failure
-counts, `blockedBy` dependencies, and next commands. Add `--check` to verify
-the checked-in handoff is current without rewriting it. When `--expected-commit`
-is omitted and no readiness summary is supplied, the handoff infers the tested
-release commit from `release/ci-runs.json`, or the file passed with
-`--ci-evidence <file>`, when the CI evidence contains a valid consistent commit.
+device prereq diagnostics, batch confirmation notes and issues, malformed
+outcome details, remaining check descriptions, Release Preflight readiness
+evidence paths and warning/failure counts, `blockedBy` dependencies, and next
+commands. Add `--check` to verify the checked-in handoff is current without
+rewriting it. When `--expected-commit` is omitted and no readiness summary is
+supplied, the handoff infers the tested release commit from
+`release/ci-runs.json`, or the file passed with `--ci-evidence <file>`, when the
+CI evidence contains a valid consistent commit.
 The initial CI, real-device, and
 Release Preflight evidence actions begin with `npm run check` before collecting
 CI or assembling evidence. The real-device evidence action also runs
 `npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` before local or hosted device
-handoff commands so missing local tooling is recorded without pretending it is
-evidence. The Release Preflight evidence action also reruns
+handoff commands so missing local tooling and hosted-provider environment
+variable names are recorded without pretending they are evidence, then
+readiness exposes that snapshot as diagnostic-only `devicePrereqs`. The Release
+Preflight evidence action also reruns
 `npm run check:real-device-evidence -- --verify-runs` before CI/preflight
 collection continues, so stale device evidence or unverified Check/Godot Smoke
 run URLs fail before dispatching preflight.
@@ -302,7 +310,7 @@ list-checks, per-check, and pass-remaining
 emits
 `npm run release:platform-evidence -- --production-profile` when the worksheet
 is missing. Before final evidence assembly it runs the strict platform worksheet
-audit. The platform, real-device, and readiness summary/checklist outputs are
+audit. The platform, device-prereq, real-device, and readiness summary/checklist outputs are
 gitignored helper files for local handoff work; the committed evidence files stay
 limited to the worksheet, CI evidence, assembled real-device evidence, preflight
 summary/checklist, and readiness evidence. Before final evidence assembly it stages
