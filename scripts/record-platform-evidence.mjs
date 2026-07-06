@@ -10,6 +10,7 @@ import {
 import { isRecord } from './release-evidence-utils.mjs'
 import { defaultPlatformEvidencePath } from './release-handoff-commands.mjs'
 import {
+  isReleaseEvidencePlaceholder,
   passOnlyRealDeviceChecks,
   requiredRealDeviceChecks,
   selectedApiRequiredCheckMap,
@@ -77,6 +78,9 @@ function parseSkipSpec(value) {
   const reason = value.slice(separatorIndex + 1).trim()
   if (check.length === 0 || reason.length === 0) {
     throw new Error('--skip requires a non-empty check and reason')
+  }
+  if (isReleaseEvidencePlaceholder(reason)) {
+    throw new Error(`--skip ${check} requires a real reason, not ${reason}`)
   }
   return [check, reason]
 }
@@ -356,6 +360,9 @@ export function recordPlatformEvidence(evidence, options) {
   ])
 
   for (const [key, value] of Object.entries(options.updates)) {
+    if (isReleaseEvidencePlaceholder(value)) {
+      throw new Error(`${platform}.${key} requires a real value, not ${value}`)
+    }
     platformEvidence[key] = value
   }
 

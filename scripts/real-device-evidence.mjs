@@ -426,6 +426,16 @@ function assertString(record, key, errors, label) {
   }
 }
 
+export function isReleaseEvidencePlaceholder(value) {
+  return typeof value === 'string' && /<[^>\n]+>/.test(value.trim())
+}
+
+function assertNoPlaceholderString(record, key, errors, label) {
+  if (isReleaseEvidencePlaceholder(record[key])) {
+    errors.push(`${label}.${key} must replace placeholder ${record[key]}`)
+  }
+}
+
 function assertCommitSha(record, key, errors, label) {
   assertString(record, key, errors, label)
   if (hasNonEmptyString(record, key) && !isFullCommitSha(record[key])) {
@@ -519,6 +529,7 @@ function validatePlatformEvidence(evidence, platform, errors, options = {}) {
     'locale',
   ]) {
     assertString(platformEvidence, key, errors, platform)
+    assertNoPlaceholderString(platformEvidence, key, errors, platform)
   }
 
   for (const field of realDeviceWorksheetFields) {
@@ -580,6 +591,11 @@ function validatePlatformEvidence(evidence, platform, errors, options = {}) {
     const skipReason = skippedChecks[check]
     const hasSkipReason =
       typeof skipReason === 'string' && skipReason.trim().length > 0
+    if (hasSkipReason && isReleaseEvidencePlaceholder(skipReason)) {
+      errors.push(
+        `${platform}.skippedChecks.${check} must replace placeholder ${skipReason}`,
+      )
+    }
     if (!passedChecks.has(check) && !hasSkipReason) {
       errors.push(
         `${platform} must pass ${check} or document a skippedChecks.${check} reason`,

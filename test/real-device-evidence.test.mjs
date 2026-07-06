@@ -117,6 +117,25 @@ test('real device evidence requires every platform check to pass or be skipped w
   assert.deepEqual(validateRealDeviceEvidence(evidence), [])
 })
 
+test('real device evidence rejects placeholder metadata and skip reasons', () => {
+  const evidence = validEvidence()
+  evidence.android.artifact = '<android-apk-aab-or-hosted-build-id>'
+  evidence.ios.skippedChecks = {
+    'deep-links-share-notifications-if-selected':
+      '<skip-reason-if-not-selected>',
+  }
+
+  const errors = validateRealDeviceEvidence(evidence).join('\n')
+  assert.match(
+    errors,
+    /android\.artifact must replace placeholder <android-apk-aab-or-hosted-build-id>/,
+  )
+  assert.match(
+    errors,
+    /ios\.skippedChecks\.deep-links-share-notifications-if-selected must replace placeholder <skip-reason-if-not-selected>/,
+  )
+})
+
 test('real device evidence requires core platform checks to pass', () => {
   const evidence = validEvidence()
   evidence.android.passedChecks = evidence.android.passedChecks.filter(

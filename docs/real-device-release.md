@@ -222,11 +222,13 @@ After every unresolved must-pass check for that platform has actually passed,
 use `--pass-remaining` to move the remaining must-pass checks into
 `passedChecks` in one batch. Skippable checks still need an explicit `--pass` or
 `--skip check=reason`; generated handoff commands include skip placeholders for
-currently skippable gaps. It preserves existing and newly supplied
-`--skip check=reason` entries, and the same pass-only and selected-API
-validation still applies. When `--summary-output` is supplied, the recorder
-writes the updated audit and follow-up `nextActions` using the same evidence and
-summary paths.
+currently skippable gaps. Replace every placeholder before recording evidence;
+the recorder, worksheet audit, and final evidence validator reject placeholder
+metadata and placeholder skip reasons. It preserves existing and newly supplied
+`--skip check=reason` entries, and the same pass-only and selected-API validation
+still applies. When `--summary-output` is supplied, the recorder writes the
+updated audit and follow-up `nextActions` using the same evidence and summary
+paths.
 
 After the release candidate is pushed, verify the required CI runs and capture
 their URLs and structured workflow readiness status:

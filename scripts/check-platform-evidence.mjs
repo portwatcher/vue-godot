@@ -7,6 +7,7 @@ import {
   realDeviceWorksheetFields,
   requiredRealDeviceChecks,
   describeRealDeviceCheck,
+  isReleaseEvidencePlaceholder,
   selectedApiRequiredCheckMap,
   unknownRealDeviceSelectedApis,
 } from './real-device-evidence.mjs'
@@ -193,6 +194,9 @@ function checkRequiredString(record, key, label, errors) {
     errors.push(`${label}.${key} must be a non-empty string`)
     return key
   }
+  if (isReleaseEvidencePlaceholder(record[key])) {
+    errors.push(`${label}.${key} must replace placeholder ${record[key]}`)
+  }
   return null
 }
 
@@ -288,6 +292,13 @@ function checkSkippedChecks(record, platform, errors) {
       invalidSkippedChecks.push(check)
       errors.push(
         `${platform}.skippedChecks.${check} must be a non-empty release-specific reason`,
+      )
+      continue
+    }
+    if (isReleaseEvidencePlaceholder(reason)) {
+      invalidSkippedChecks.push(check)
+      errors.push(
+        `${platform}.skippedChecks.${check} must replace placeholder ${reason}`,
       )
     }
   }

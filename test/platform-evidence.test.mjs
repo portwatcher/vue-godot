@@ -188,6 +188,37 @@ test('platform evidence audit reports malformed worksheet fields without throwin
   )
 })
 
+test('platform evidence audit rejects placeholder metadata and skip reasons', () => {
+  const template = buildPlatformEvidenceTemplate({
+    androidArtifact: '<android-apk-aab-or-hosted-build-id>',
+    androidDevice: 'Pixel hosted device',
+    androidOs: 'Android 15',
+    iosArtifact: 'TestFlight build 1',
+    iosDevice: 'iPhone hosted device',
+    iosOs: 'iOS 18',
+    locale: 'en-US',
+    orientation: 'portrait and landscape',
+    productionProfile: true,
+  })
+  template.ios.skippedChecks = {
+    'deep-links-share-notifications-if-selected':
+      '<skip-reason-if-not-selected>',
+  }
+
+  const summary = auditPlatformEvidence(template)
+  const errors = summary.errors.join('\n')
+
+  assert.equal(summary.ready, false)
+  assert.match(
+    errors,
+    /android\.artifact must replace placeholder <android-apk-aab-or-hosted-build-id>/,
+  )
+  assert.match(
+    errors,
+    /ios\.skippedChecks\.deep-links-share-notifications-if-selected must replace placeholder <skip-reason-if-not-selected>/,
+  )
+})
+
 test('platform evidence audit accepts non-production profile when allowed', () => {
   const template = buildPlatformEvidenceTemplate({
     androidArtifact: 'vue-godot-android-release.aab',
@@ -342,6 +373,67 @@ test('record-platform-evidence CLI rejects skipped must-pass checks', () => {
     const unchanged = JSON.parse(fs.readFileSync(evidencePath, 'utf-8'))
     assert.deepEqual(unchanged.ios.passedChecks, [])
     assert.deepEqual(unchanged.ios.skippedChecks, {})
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
+test('record-platform-evidence CLI rejects unreplaced placeholders', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-platform-'))
+  const evidencePath = path.join(tempDir, 'platform-evidence.json')
+
+  try {
+    fs.writeFileSync(
+      evidencePath,
+      `${JSON.stringify(buildPlatformEvidenceTemplate({ productionProfile: true }), null, 2)}\n`,
+    )
+    const metadataResult = spawnSync(
+      process.execPath,
+      [
+        'scripts/record-platform-evidence.mjs',
+        '--platform',
+        'android',
+        '--platform-evidence',
+        evidencePath,
+        '--artifact',
+        '<android-apk-aab-or-hosted-build-id>',
+        '--pass',
+        'cold-launch',
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf-8',
+      },
+    )
+
+    assert.equal(metadataResult.status, 1)
+    assert.match(
+      metadataResult.stderr,
+      /android\.artifact requires a real value, not <android-apk-aab-or-hosted-build-id>/,
+    )
+
+    const skipResult = spawnSync(
+      process.execPath,
+      [
+        'scripts/record-platform-evidence.mjs',
+        '--platform',
+        'ios',
+        '--platform-evidence',
+        evidencePath,
+        '--skip',
+        'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>',
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf-8',
+      },
+    )
+
+    assert.equal(skipResult.status, 1)
+    assert.match(
+      skipResult.stderr,
+      /--skip deep-links-share-notifications-if-selected requires a real reason, not <skip-reason-if-not-selected>/,
+    )
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }

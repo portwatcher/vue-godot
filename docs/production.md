@@ -106,10 +106,12 @@ artifact/export-preset/device metadata, `--pass` check names, and
 must-pass check has actually passed, add `--pass-remaining` to record the
 remaining must-pass checks in one batch. Skippable checks still need an explicit
 `--pass` or `--skip check=reason`; generated handoff commands include skip
-placeholders for currently skippable gaps. The helper rejects unknown check
-names and refuses to skip pass-only or selected-API-required checks. When
-`--summary-output` is supplied, the recorder writes the updated audit and
-follow-up `nextActions` using the same evidence and summary paths.
+placeholders for currently skippable gaps. Replace every placeholder before
+recording evidence; the recorder, worksheet audit, and final evidence validator
+reject placeholder metadata and placeholder skip reasons. The helper rejects
+unknown check names and refuses to skip pass-only or selected-API-required
+checks. When `--summary-output` is supplied, the recorder writes the updated
+audit and follow-up `nextActions` using the same evidence and summary paths.
 The production profile currently expands to `fetch`, `WebSocket`,
 `checkNetworkReachability`, `navigator.onLine`, `localStorage`,
 `sessionStorage`, `navigator.permissions.query`, `navigator.clipboard`,
