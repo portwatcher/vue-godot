@@ -1,8 +1,8 @@
 # Release Handoff
 
-- Release candidate commit: `43f76a37f9885a3f656127479e810212ef1ffd85`
+- Release candidate commit: `22a9e0bfe4e6edc691b46f15205752d68ae43e9e`
 - Handoff format: 4
-- Handoff state: b25cf4957cd67ae2
+- Handoff state: c6cef5608431cb28
 - Overall readiness: open (10 blocker(s))
 - Real-device evidence: waiting
 - Android evidence: waiting
@@ -27,8 +27,8 @@
 
 - Status: ready
 - Path: `release/ci-runs.json`
-- Check: https://github.com/portwatcher/vue-godot/actions/runs/28768381979 (success)
-- Godot Smoke: https://github.com/portwatcher/vue-godot/actions/runs/28768391129 (success)
+- Check: https://github.com/portwatcher/vue-godot/actions/runs/28779293712 (success)
+- Godot Smoke: https://github.com/portwatcher/vue-godot/actions/runs/28779293734 (success)
 
 ## Platform Evidence
 
@@ -151,12 +151,12 @@ Commands with `<...>` placeholders must be edited before running; unresolved pla
 
 ```bash
 npm run check
-npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output release/platform-evidence-summary.json --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output release/platform-evidence-summary.json --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
-npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
-npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
-npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 43f76a37f9885a3f656127479e810212ef1ffd85 --real-device-output release/real-device-evidence.json
-npm run check:real-device-evidence -- --verify-runs --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
+npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output release/platform-evidence-summary.json --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output release/platform-evidence-summary.json --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
+npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
+npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
+npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e --real-device-output release/real-device-evidence.json
+npm run check:real-device-evidence -- --verify-runs --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
 git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json
 git commit -m "Add real-device release evidence"
 git push
@@ -172,15 +172,15 @@ Commands with `<...>` placeholders must be edited before running; unresolved pla
 
 ```bash
 npm run check
-npm run check:real-device-evidence -- --verify-runs --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
-npm run release:ci -- --commit 43f76a37f9885a3f656127479e810212ef1ffd85 --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --wait --output release/ci-runs.json
-GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit 43f76a37f9885a3f656127479e810212ef1ffd85 --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json
-GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit 43f76a37f9885a3f656127479e810212ef1ffd85 --output release/release-preflight-summary.json
-npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 43f76a37f9885a3f656127479e810212ef1ffd85 --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json
+npm run check:real-device-evidence -- --verify-runs --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
+npm run release:ci -- --commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --wait --output release/ci-runs.json
+GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json
+GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e --output release/release-preflight-summary.json
+npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json
 git add release/ci-runs.json release/release-preflight-summary.json release/real-device-evidence.json release/release-readiness-evidence.json
 git commit -m "Add release readiness evidence"
 git push
-npm run release:readiness -- --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
+npm run release:readiness -- --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
 ```
 
 ### Remove public warning wording through the guarded finalizer
@@ -190,12 +190,12 @@ Blocked by: `real-device-evidence`, `release-preflight-evidence`
 Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks, removes public warning wording, then stages and commits those edits before the final strict readiness check.
 
 ```bash
-npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
+npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
 npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json
 npm run check
 git add TODO.md README.md docs/compatibility.md docs/production.md docs/real-device-release.md
 git commit -m "Finalize production readiness"
 git push
-npm run release:readiness -- --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
+npm run release:readiness -- --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
 ```
 
