@@ -268,10 +268,11 @@ test('release handoff commands quote custom refs and evidence paths', () => {
   assert.equal(
     checkPlatformEvidenceCommand(commit, {
       allowOpen: true,
+      checklistOutput: 'release/platform checklist.md',
       platformEvidencePath: "release/platform evidence's draft.json",
       summaryOutput: 'release/platform summary.json',
     }),
-    `npm run check:platform-evidence -- --platform-evidence 'release/platform evidence'\\''s draft.json' --summary-output 'release/platform summary.json' --allow-open --expected-commit ${commit}`,
+    `npm run check:platform-evidence -- --platform-evidence 'release/platform evidence'\\''s draft.json' --summary-output 'release/platform summary.json' --checklist-output 'release/platform checklist.md' --allow-open --expected-commit ${commit}`,
   )
 
   assert.equal(

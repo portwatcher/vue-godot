@@ -13,6 +13,7 @@ import {
   checkPlatformEvidenceCommand,
   checkRealDeviceEvidenceCommand,
   commitEvidenceFileCommands,
+  defaultPlatformEvidenceChecklistPath,
   defaultPlatformEvidencePath,
   defaultRealDeviceEvidencePath,
   defaultReleaseCiEvidencePath,
@@ -280,6 +281,7 @@ function collectNextActions(summary) {
           checkPlatformEvidenceCommand(expectedCommit, {
             allowOpen: true,
             ...customPlatformEvidenceCommandOptions(summary, {
+              checklistOutput: defaultPlatformEvidenceChecklistPath,
               summaryOutput: 'release/platform-evidence-summary.json',
             }),
           }),

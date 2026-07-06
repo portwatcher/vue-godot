@@ -548,6 +548,7 @@ test('release readiness suggests expected commit for committed CI evidence', () 
       summaryPath,
     ])
     const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+    const output = `${result.stdout}\n${result.stderr}`
 
     assert.equal(result.status, 0)
     assert.equal(summary.commit, headCommit)
@@ -568,6 +569,18 @@ test('release readiness suggests expected commit for committed CI evidence', () 
     assert.ok(expectedCommitAction)
     assert.ok(
       expectedCommitAction.commands.includes(
+        `npm run release:readiness -- --allow-open --expected-commit ${testedCommit} --ci-evidence ${ciEvidencePath} --summary-output release/release-readiness-summary.json`,
+      ),
+    )
+    assert.match(output, /tested release commit evidence found/)
+    assert.match(
+      output,
+      new RegExp(
+        `ci-runs\\.json validates ${testedCommit}, not ${headCommit}`,
+      ),
+    )
+    assert.ok(
+      output.includes(
         `npm run release:readiness -- --allow-open --expected-commit ${testedCommit} --ci-evidence ${ciEvidencePath} --summary-output release/release-readiness-summary.json`,
       ),
     )
@@ -1003,7 +1016,7 @@ test('release readiness summary includes missing evidence next actions', () => {
     )
     assert.ok(
       realDeviceAction.commands.includes(
-        `npm run check:platform-evidence -- --platform-evidence ${shellQuote(platformCommandPath)} --summary-output release/platform-evidence-summary.json --allow-open --expected-commit ${summary.commit}`,
+        `npm run check:platform-evidence -- --platform-evidence ${shellQuote(platformCommandPath)} --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit ${summary.commit}`,
       ),
     )
     assert.ok(

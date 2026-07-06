@@ -641,7 +641,7 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
             "npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>",
           ) &&
           action.commands.includes(
-            'npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit <release-candidate-sha>',
+            'npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit <release-candidate-sha>',
           ),
       ),
     )
@@ -715,7 +715,7 @@ test('check-real-device-evidence next actions honor expected commits', () => {
             `npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output release/platform-evidence-summary.json --expected-commit ${expectedCommit}`,
           ) &&
           action.commands.includes(
-            `npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit ${expectedCommit}`,
+            `npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit ${expectedCommit}`,
           ),
       ),
     )
@@ -984,7 +984,7 @@ test('check-real-device-evidence next actions honor custom completed input paths
     assert.ok(completeAction)
     assert.ok(
       completeAction.commands.includes(
-        `npm run check:platform-evidence -- --platform-evidence ${shellQuote(platformCommandPath)} --summary-output release/platform-evidence-summary.json --allow-open --expected-commit ${ciEvidence.commit}`,
+        `npm run check:platform-evidence -- --platform-evidence ${shellQuote(platformCommandPath)} --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit ${ciEvidence.commit}`,
       ),
     )
     assert.ok(assembleAction)

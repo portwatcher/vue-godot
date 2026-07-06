@@ -170,7 +170,7 @@ test('platform evidence template lists required checks without passing them', ()
         /Android: 3 metadata field\(s\) missing/.test(action.detail) &&
         /iOS must-pass remaining: cold-launch/.test(action.detail) &&
         action.commands.includes(
-          'npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit <release-candidate-sha>',
+          'npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit <release-candidate-sha>',
         ),
     ),
   )
@@ -228,7 +228,7 @@ test('platform evidence template next actions honor custom output paths', () => 
   assert.ok(recordAction)
   assert.ok(
     recordAction.commands.includes(
-      `npm run check:platform-evidence -- --platform-evidence 'release/custom platform'\\''s evidence.json' --summary-output release/platform-evidence-summary.json --allow-open --expected-commit ${commit}`,
+      `npm run check:platform-evidence -- --platform-evidence 'release/custom platform'\\''s evidence.json' --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit ${commit}`,
     ),
   )
   assert.ok(assembleAction)

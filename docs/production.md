@@ -28,10 +28,11 @@ serious example README smoke coverage, compatibility docs, and `apps/html-demo`
 component coverage.
 `npm run check:platform-evidence` audits the Android/iOS worksheet before final
 evidence assembly. Use `--allow-open --summary-output
-release/platform-evidence-summary.json` during device testing to report
+release/platform-evidence-summary.json --checklist-output
+release/platform-evidence-checklist.md` during device testing to report
 metadata gaps, malformed outcome counts, remaining required checks, pass-only
-or selected-API checks that must move to `passedChecks`, worksheet drift, and
-nextActions without failing the handoff run.
+or selected-API checks that must move to `passedChecks`, worksheet drift,
+nextActions, and a focused Markdown checklist without failing the handoff run.
 `npm run check:real-device-evidence` validates the Android/iOS export-smoke
 evidence JSON when it exists. Pass `--verify-runs` after evidence assembly to
 query GitHub Actions and require the recorded Check and Godot Smoke run URLs to
@@ -234,7 +235,8 @@ Check/Godot Smoke collection commands from later `nextActions`. If checked-in or
 supplied CI evidence is valid for a different tested release commit and
 `--expected-commit` is omitted, the summary also adds an `expected-commit`
 `nextActions` entry with the exact
-`npm run release:readiness -- --allow-open --expected-commit ...` command. If
+`npm run release:readiness -- --allow-open --expected-commit ...` command. The
+terminal output also prints a tested release commit hint with that command. If
 `--ci-evidence <file>`, `--platform-evidence <file>`,
 `--real-device-path <file>`, or `--readiness-path <file>` is supplied with a
 path inside the Git worktree, generated `nextActions` keep that path through
@@ -252,7 +254,8 @@ That later action includes the `--dispatch-missing`,
 `--release-preflight-run-commit`, and `--real-device-evidence-path` inputs for
 the workflow-dispatch-only preflight workflow. The real-device evidence action
 reuses an existing platform worksheet and writes
-`release/platform-evidence-summary.json` when it still has gaps. Its detail
+`release/platform-evidence-summary.json` plus
+`release/platform-evidence-checklist.md` when it still has gaps. Its detail
 includes Android/iOS metadata-field counts, malformed outcome counts,
 required-check counts, and exact remaining must-pass/skippable check names in
 its detail, attaches

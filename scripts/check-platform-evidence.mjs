@@ -14,6 +14,7 @@ import {
 import {
   checkPlatformEvidenceCommand,
   checkRealDeviceEvidenceCommand,
+  defaultPlatformEvidenceChecklistPath,
   commitEvidenceFileCommands,
   defaultPlatformEvidencePath,
   defaultRealDeviceEvidencePath,
@@ -42,6 +43,7 @@ missing device-test outcomes.
 Options:
   --platform-evidence <file>       Worksheet path. Default: ${defaultPlatformEvidencePath}
   --summary-output <file>          Write machine-readable audit JSON.
+  --checklist-output <file>        Write a tester-facing Markdown checklist.
   --expected-commit <sha>          Full tested release-candidate commit SHA for
                                   generated nextActions command hints.
   --allow-open                     Exit 0 while worksheet gaps remain.
@@ -55,12 +57,14 @@ function parseArgs(argv) {
   const options = {
     allowNonProductionProfile: false,
     allowOpen: false,
+    checklistOutput: null,
     expectedCommit: null,
     platformEvidencePath: defaultPlatformEvidencePath,
     summaryOutput: null,
   }
 
   const valueOptions = [
+    ['--checklist-output', 'checklistOutput'],
     ['--expected-commit', 'expectedCommit'],
     ['--platform-evidence', 'platformEvidencePath'],
     ['--summary-output', 'summaryOutput'],
@@ -817,6 +821,8 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
   const actions = []
   const platformEvidencePath =
     options.platformEvidencePath ?? defaultPlatformEvidencePath
+  const checklistOutput =
+    options.checklistOutput ?? defaultPlatformEvidenceChecklistPath
   const usesCustomPlatformEvidencePath =
     platformEvidencePath !== defaultPlatformEvidencePath
   const platformEvidenceOptions = usesCustomPlatformEvidencePath
@@ -875,6 +881,7 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
         }),
         checkPlatformEvidenceCommand(commit, {
           allowOpen: true,
+          checklistOutput,
           platformEvidencePath,
           summaryOutput: options.summaryOutput ?? 'release/platform-evidence-summary.json',
         }),
@@ -925,6 +932,129 @@ function writeSummary(outputPath, summary) {
   console.log(`[platform-evidence] wrote ${describePath(resolved)}`)
 }
 
+function markdownCodeList(values) {
+  return values.length > 0
+    ? values.map((value) => `\`${value}\``).join(', ')
+    : 'none'
+}
+
+function markdownStatus(value) {
+  return value ? 'ready' : 'waiting'
+}
+
+function metadataLines(status) {
+  const metadataFields = [
+    'artifact',
+    'exportPreset',
+    'deviceModel',
+    'osVersion',
+    'orientation',
+    'locale',
+  ]
+
+  return metadataFields.map((field) => {
+    const checked = status?.missingFields?.includes(field) ? ' ' : 'x'
+    return `- [${checked}] \`${field}\``
+  })
+}
+
+function checkDetailLines(platform, status) {
+  const details = collectRemainingCheckDetails(platform, status)
+  if (details.length === 0) {
+    return ['- All required checks have been recorded.']
+  }
+
+  return details.map((detail) => {
+    const selectedApiText =
+      detail.selectedApis.length > 0
+        ? ` Selected APIs: ${markdownCodeList(detail.selectedApis)}.`
+        : ''
+    const requirement = detail.mustPass
+      ? 'Record in `passedChecks`.'
+      : 'Record in `passedChecks` or `skippedChecks` with a release-specific reason.'
+    return [
+      `- [ ] \`${detail.check}\``,
+      `  ${requirement}`,
+      `  ${detail.description}${selectedApiText}`,
+    ].join('\n')
+  })
+}
+
+function platformChecklistLines(platform, status) {
+  const label = formatPlatformLabel(platform)
+  if (!isRecord(status)) {
+    return [`## ${label}`, '', '- Worksheet section missing.']
+  }
+
+  return [
+    `## ${label}`,
+    '',
+    `- Status: ${markdownStatus(status.ready)}`,
+    `- Progress: ${status.completedCheckCount}/${status.requiredCheckCount} required checks recorded`,
+    `- Selected APIs: ${markdownCodeList(status.selectedApis)}`,
+    `- Must-pass remaining: ${markdownCodeList(status.mustPassMissingChecks)}`,
+    `- Skippable remaining: ${markdownCodeList(status.skippableMissingChecks)}`,
+    '',
+    '### Metadata',
+    '',
+    ...metadataLines(status),
+    '',
+    '### Remaining Checks',
+    '',
+    ...checkDetailLines(platform, status),
+  ]
+}
+
+function commandLines(summary) {
+  const commands = Array.isArray(summary.nextActions)
+    ? summary.nextActions.flatMap((action) =>
+        Array.isArray(action.commands) ? action.commands : [],
+      )
+    : []
+
+  if (commands.length === 0) {
+    return []
+  }
+
+  return [
+    '## Commands',
+    '',
+    '```bash',
+    ...commands,
+    '```',
+  ]
+}
+
+export function formatPlatformEvidenceChecklist(summary) {
+  const lines = [
+    '# Platform Evidence Checklist',
+    '',
+    `- Status: ${markdownStatus(summary.ready)}`,
+    `- Worksheet: \`${summary.path ?? defaultPlatformEvidencePath}\``,
+    `- Summary: ${formatPlatformEvidenceProgress(summary)}`,
+    '',
+    ...platformChecklistLines('android', summary.platforms?.android),
+    '',
+    ...platformChecklistLines('ios', summary.platforms?.ios),
+    '',
+    ...commandLines(summary),
+    '',
+  ]
+
+  return `${lines.join('\n').replace(/\n{3,}/g, '\n\n')}\n`
+}
+
+function writeChecklist(outputPath, summary) {
+  if (!outputPath) {
+    return
+  }
+
+  const resolved = path.resolve(repoRoot, outputPath)
+  fs.mkdirSync(path.dirname(resolved), { recursive: true })
+  fs.writeFileSync(resolved, formatPlatformEvidenceChecklist(summary))
+  console.log(`[platform-evidence] wrote ${describePath(resolved)}`)
+}
+
 function printBlockers(summary) {
   if (summary.ready) {
     console.log('[platform-evidence] ready')
@@ -947,11 +1077,13 @@ function main() {
   })
   summary.nextActions = collectPlatformEvidenceNextActions(summary, {
     expectedCommit: options.expectedCommit,
+    checklistOutput: options.checklistOutput,
     platformEvidencePath: options.platformEvidencePath,
     summaryOutput: options.summaryOutput,
   })
 
   writeSummary(options.summaryOutput, summary)
+  writeChecklist(options.checklistOutput, summary)
   printBlockers(summary)
 
   if (!summary.ready) {

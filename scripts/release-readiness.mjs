@@ -36,6 +36,7 @@ import {
   checkRealDeviceEvidenceCommand,
   commitEvidenceFileCommands,
   currentHeadCommitCommand,
+  defaultPlatformEvidenceChecklistPath,
   defaultPlatformEvidencePath,
   defaultReleaseCiEvidencePath,
   defaultReleaseHandoffReportPath,
@@ -1344,6 +1345,7 @@ function collectReadinessNextActions(
       platformEvidenceCommands.push(
         checkPlatformEvidenceCommand(commit, {
           allowOpen: true,
+          checklistOutput: defaultPlatformEvidenceChecklistPath,
           platformEvidencePath,
           summaryOutput: 'release/platform-evidence-summary.json',
         }),
@@ -1507,6 +1509,42 @@ function collectReadinessNextActions(
   }
 
   return actions
+}
+
+function printExpectedCommitHint(
+  options,
+  expectedCommit,
+  checks,
+  initialCiEvidence,
+  realDeviceEvidence,
+  releaseReadinessEvidence,
+  platformEvidence,
+) {
+  if (
+    options.expectedCommit ||
+    checks.initialCiEvidence ||
+    !initialCiEvidence?.validForCommit ||
+    initialCiEvidence.validForCommit === expectedCommit
+  ) {
+    return
+  }
+
+  const pathOptions = collectPathOptions(
+    initialCiEvidence,
+    realDeviceEvidence,
+    releaseReadinessEvidence,
+    platformEvidence,
+  )
+  console.log('\n[release-readiness] tested release commit evidence found')
+  console.log(
+    `- ${initialCiEvidence.path} validates ${initialCiEvidence.validForCommit}, not ${expectedCommit}.`,
+  )
+  console.log(
+    `- ${releaseReadinessCommand(initialCiEvidence.validForCommit, pathOptions, {
+      allowOpen: true,
+      summaryOutput: 'release/release-readiness-summary.json',
+    })}`,
+  )
 }
 
 function writeReadinessSummary(
@@ -1761,6 +1799,16 @@ async function main() {
     console.log(`- ${formatFinalTodoRequirementStatus(status)}`)
   }
 
+  printExpectedCommitHint(
+    options,
+    expectedCommit,
+    checks,
+    initialCiEvidenceStatus,
+    realDeviceEvidenceStatus,
+    releaseReadinessEvidenceStatus,
+    platformEvidenceStatus,
+  )
+
   if (warningMarkers.length > 0) {
     console.log('\n[release-readiness] public warning markers still present')
     for (const marker of warningMarkers) {
@@ -1783,6 +1831,7 @@ async function main() {
     console.log(
       `- ${checkPlatformEvidenceCommand(expectedCommit, {
         allowOpen: true,
+        checklistOutput: defaultPlatformEvidenceChecklistPath,
         summaryOutput: 'release/platform-evidence-summary.json',
       })}`,
     )

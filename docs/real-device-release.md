@@ -103,7 +103,8 @@ ready and omits the duplicate Check/Godot Smoke collection commands from later
 tested release commit and `--expected-commit` is omitted, the summary also adds
 an `expected-commit`
 `nextActions` entry with the exact
-`npm run release:readiness -- --allow-open --expected-commit ...` command. If
+`npm run release:readiness -- --allow-open --expected-commit ...` command. The
+terminal output also prints a tested release commit hint with that command. If
 `--ci-evidence <file>`, `--platform-evidence <file>`,
 `--real-device-path <file>`, or `--readiness-path <file>` is supplied with a
 path inside the Git worktree, generated `nextActions` keep that path through
@@ -122,7 +123,8 @@ commit is current `HEAD`. That later action includes the `--dispatch-missing`,
 `--release-preflight-run-commit`, and `--real-device-evidence-path` inputs for
 the workflow-dispatch-only preflight workflow. The real-device evidence action
 reuses an existing platform worksheet and writes
-`release/platform-evidence-summary.json` when it still has gaps. Its detail
+`release/platform-evidence-summary.json` plus
+`release/platform-evidence-checklist.md` when it still has gaps. Its detail
 includes Android/iOS metadata-field counts, malformed outcome counts,
 required-check counts, and exact remaining must-pass/skippable check names in
 its detail, attaches
@@ -195,14 +197,17 @@ During device testing, audit worksheet progress without failing the handoff:
 npm run check:platform-evidence -- \
   --allow-open \
   --expected-commit <release-candidate-sha> \
-  --summary-output release/platform-evidence-summary.json
+  --summary-output release/platform-evidence-summary.json \
+  --checklist-output release/platform-evidence-checklist.md
 ```
 
 The summary reports Android and iOS metadata gaps, remaining required checks,
 exact must-pass/skippable check names and structured check descriptions, pass-only and selected-API checks that
 still must be in `passedChecks`, worksheet drift from the maintained check lists, and follow-up `nextActions`. Those
 actions include Android and iOS `release:record-platform-evidence` command
-templates before the strict worksheet audit. Once the worksheet is complete,
+templates before the strict worksheet audit. The Markdown checklist contains
+the same remaining metadata fields, per-platform checks, selected API context,
+and command block in a tester-facing format. Once the worksheet is complete,
 they include final evidence assembly, validation, commit, and push commands.
 Before assembling final evidence, run the same command without `--allow-open`;
 it must pass.

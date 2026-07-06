@@ -10,6 +10,8 @@ export const releaseCandidateDispatchRefPlaceholder =
   '<release-candidate-branch-or-tag>'
 export const evidenceDispatchRefPlaceholder = '<evidence-branch-or-tag>'
 export const defaultPlatformEvidencePath = 'release/platform-evidence.json'
+export const defaultPlatformEvidenceChecklistPath =
+  'release/platform-evidence-checklist.md'
 export const defaultReleaseCiEvidencePath = 'release/ci-runs.json'
 export const defaultRealDeviceEvidencePath = 'release/real-device-evidence.json'
 export const defaultReleasePreflightSummaryPath =
@@ -135,6 +137,10 @@ export function checkPlatformEvidenceCommand(commit, options = {}) {
 
   if (options.summaryOutput) {
     args.push('--summary-output', options.summaryOutput)
+  }
+
+  if (options.checklistOutput) {
+    args.push('--checklist-output', options.checklistOutput)
   }
 
   if (options.allowOpen) {

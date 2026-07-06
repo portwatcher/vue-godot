@@ -7,6 +7,7 @@ import test from 'node:test'
 
 import {
   auditPlatformEvidence,
+  formatPlatformEvidenceChecklist,
   formatPlatformEvidenceProgress,
   formatPlatformEvidenceRemaining,
 } from '../scripts/check-platform-evidence.mjs'
@@ -410,7 +411,7 @@ test('record-platform-evidence CLI records one platform result batch', () => {
     )
     assert.ok(
       summary.nextActions[0].commands.includes(
-        `npm run check:platform-evidence -- --platform-evidence ${shellQuote(evidencePath)} --summary-output ${shellQuote(summaryPath)} --allow-open --expected-commit ${commit}`,
+        `npm run check:platform-evidence -- --platform-evidence ${shellQuote(evidencePath)} --summary-output ${shellQuote(summaryPath)} --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit ${commit}`,
       ),
     )
   } finally {
@@ -661,6 +662,7 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-platform-'))
   const evidencePath = path.join(tempDir, 'platform-evidence.json')
   const summaryPath = path.join(tempDir, 'platform-summary.json')
+  const checklistPath = path.join(tempDir, 'platform-checklist.md')
 
   try {
     fs.writeFileSync(
@@ -678,6 +680,8 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
         commit,
         '--summary-output',
         summaryPath,
+        '--checklist-output',
+        checklistPath,
       ],
       {
         cwd: repoRoot,
@@ -689,6 +693,24 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
     const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
     assert.equal(summary.ready, false)
     assert.equal(summary.path, path.relative(repoRoot, evidencePath))
+    const checklist = fs.readFileSync(checklistPath, 'utf-8')
+    assert.match(checklist, /# Platform Evidence Checklist/)
+    assert.match(checklist, /- Worksheet: `\.\.\/\.\.\/\.\./)
+    assert.match(checklist, /## Android/)
+    assert.match(checklist, /- \[ \] `artifact`/)
+    assert.match(checklist, /- \[x\] `exportPreset`/)
+    assert.match(checklist, /`network-if-selected`/)
+    assert.match(checklist, /Record in `passedChecks`\./)
+    assert.match(checklist, /Selected APIs: `fetch`, `WebSocket`/)
+    assert.match(checklist, /## Commands/)
+    assert.match(
+      checklist,
+      /npm run release:record-platform-evidence -- --platform android/,
+    )
+    assert.match(
+      checklist,
+      /npm run check:platform-evidence -- --platform-evidence/,
+    )
     assert.equal(summary.nextActions[0].id, 'complete-platform-evidence')
     assert.match(summary.nextActions[0].detail, /Android: 5 metadata/)
     assert.match(summary.nextActions[0].detail, /iOS: 5 metadata/)
@@ -738,12 +760,26 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
     )
     assert.ok(
       summary.nextActions[0].commands.includes(
-        `npm run check:platform-evidence -- --platform-evidence ${evidencePath} --summary-output ${summaryPath} --allow-open --expected-commit ${commit}`,
+        `npm run check:platform-evidence -- --platform-evidence ${evidencePath} --summary-output ${summaryPath} --checklist-output ${checklistPath} --allow-open --expected-commit ${commit}`,
       ),
     )
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }
+})
+
+test('platform evidence checklist renders ready worksheets', () => {
+  const summary = auditPlatformEvidence(completedTemplate())
+  summary.path = 'release/platform-evidence.json'
+  summary.nextActions = []
+
+  const checklist = formatPlatformEvidenceChecklist(summary)
+
+  assert.match(checklist, /- Status: ready/)
+  assert.match(checklist, /## Android/)
+  assert.match(checklist, /- \[x\] `artifact`/)
+  assert.match(checklist, /All required checks have been recorded\./)
+  assert.doesNotMatch(checklist, /## Commands/)
 })
 
 test('check-platform-evidence missing custom worksheet creates custom output next action', () => {

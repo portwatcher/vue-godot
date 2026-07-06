@@ -19,6 +19,7 @@ import {
 import {
   checkPlatformEvidenceCommand,
   checkRealDeviceEvidenceCommand,
+  defaultPlatformEvidenceChecklistPath,
   defaultReleaseCiEvidencePath,
   initialReleaseCiCommands,
   recordPlatformEvidenceCommand,
@@ -218,6 +219,7 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
     ? 'Committed CI evidence already validates Check and Godot Smoke for the tested release candidate; generate release/real-device-evidence.json from this worksheet after device testing.'
     : 'After CI runs exist for the tested release candidate, generate release/real-device-evidence.json from this worksheet.'
   const platformEvidenceSummaryPath = 'release/platform-evidence-summary.json'
+  const platformEvidenceChecklistPath = defaultPlatformEvidenceChecklistPath
   const platformAudit = options.platformAudit
   const platformCheckDetails = platformAudit
     ? collectPlatformEvidenceRemainingCheckDetails(platformAudit)
@@ -275,6 +277,7 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
       commands: [
         checkPlatformEvidenceCommand(commit, {
           allowOpen: true,
+          checklistOutput: platformEvidenceChecklistPath,
           platformEvidencePath,
           summaryOutput: platformEvidenceSummaryPath,
         }),

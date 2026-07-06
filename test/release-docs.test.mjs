@@ -275,6 +275,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /check:real-device-evidence/)
   assert.match(production, /check:platform-evidence/)
   assert.match(production, /platform-evidence-summary\.json/)
+  assert.match(production, /platform-evidence-checklist\.md/)
   assert.match(production, /real-device-evidence-summary\.json/)
   assert.match(
     production,
@@ -527,6 +528,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /check:real-device-evidence/)
   assert.match(readme, /check:platform-evidence/)
   assert.match(readme, /platform-evidence-summary\.json/)
+  assert.match(readme, /platform-evidence-checklist\.md/)
   assert.match(readme, /real-device-evidence-summary\.json/)
   assert.match(
     readme,
@@ -985,6 +987,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(checklist, /check:platform-evidence/)
   assert.match(checklist, /platform-evidence-summary\.json/)
+  assert.match(checklist, /platform-evidence-checklist\.md/)
   assert.match(checklist, /--production-profile/)
   assert.match(
     checklist,
