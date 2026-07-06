@@ -185,7 +185,10 @@ commands, platform worksheet audit status with compact per-platform progress
 counts plus exact remaining must-pass/skippable check names, separate
 Android/iOS real-device evidence status with metadata, platform, and read
 errors, release-readiness evidence status, and CI workflow wiring status, as
-JSON for release handoff. The initial CI, real-device, and
+JSON for release handoff. Run
+`npm run release:handoff -- --expected-commit <release-candidate-sha> --output release/release-handoff.md`
+to render the same allow-open audit as a Markdown handoff for Android/iOS
+testers. The initial CI, real-device, and
 Release Preflight evidence actions begin with `npm run check` before collecting
 CI or assembling evidence.
 Later `nextActions` include a `blockedBy` list when they depend on earlier

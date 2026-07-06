@@ -268,6 +268,10 @@ test('release preflight enforces real device evidence', () => {
     packageJson.scripts['release:preflight-summary'],
     'node scripts/download-release-preflight-summary.mjs',
   )
+  assert.equal(
+    packageJson.scripts['release:handoff'],
+    'node scripts/release-handoff-report.mjs',
+  )
   assert.match(production, /check:real-device-evidence/)
   assert.match(production, /check:platform-evidence/)
   assert.match(production, /platform-evidence-summary\.json/)
@@ -390,6 +394,14 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(production, /local Git state/)
   assert.match(production, /local\s+`npm run check`/)
+  assert.match(
+    production,
+    /release:handoff[\s\S]*release\/release-handoff\.md[\s\S]*Markdown handoff/,
+  )
+  assert.match(
+    production,
+    /`blockedBy` list[\s\S]*real-device evidence before Release Preflight/,
+  )
   assert.match(
     production,
     /initial CI, real-device, and\s+Release Preflight evidence\s+actions begin with `npm run check`/,
@@ -558,6 +570,14 @@ test('release preflight enforces real device evidence', () => {
   assert.match(
     readme,
     /initial CI, real-device, and\s+Release Preflight evidence actions begin with `npm run check`/,
+  )
+  assert.match(
+    readme,
+    /release:handoff[\s\S]*release\/release-handoff\.md[\s\S]*Markdown handoff/,
+  )
+  assert.match(
+    readme,
+    /`blockedBy` dependencies[\s\S]*next commands/,
   )
   assert.match(
     readme,
@@ -752,6 +772,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(
     checklist,
     /initial CI, real-device, and\s+Release Preflight evidence actions[\s\S]*begin\s+with `npm run check`/,
+  )
+  assert.match(
+    checklist,
+    /release:handoff[\s\S]*release\/release-handoff\.md[\s\S]*Markdown handoff/,
   )
   assert.match(
     checklist,

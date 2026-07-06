@@ -25,6 +25,7 @@
     "release:preflight-summary": "node scripts/download-release-preflight-summary.mjs",
     "release:finalize-readiness": "node scripts/finalize-release-readiness.mjs",
     "release:readiness": "node scripts/release-readiness.mjs",
+    "release:handoff": "node scripts/release-handoff-report.mjs",
     "release:preflight": "node scripts/release-preflight.mjs",
     "release:publish": "node scripts/release-publish.mjs",
     "check": "npm run build && npm run test && npm run smoke:cli && npm run check:serious-examples && npm run bench:performance",

@@ -72,8 +72,10 @@ release-readiness evidence status, CI workflow wiring status,
 release tooling/workflow blocker lists, public warning markers, package
 description warning status, and `nextActions` command hints for the local
 `npm run check`, initial CI evidence collection, push/dispatch commands, and the
-remaining evidence/finalizer work as JSON. The initial CI, real-device, and
-Release Preflight evidence actions begin
+remaining evidence/finalizer work as JSON. Run
+`npm run release:handoff -- --expected-commit <release-candidate-sha> --output release/release-handoff.md`
+to render the same allow-open audit as a Markdown handoff for Android/iOS
+testers. The initial CI, real-device, and Release Preflight evidence actions begin
 with `npm run check` before collecting CI or assembling evidence. The initial CI
 action captures Check and Godot Smoke, while Release Preflight is captured later
 after real-device evidence is committed. The real-device evidence action runs
