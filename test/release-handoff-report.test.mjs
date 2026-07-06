@@ -72,6 +72,16 @@ function sampleReadinessSummary(ciEvidencePath = 'release/ci-runs.json') {
           missingFields: ['artifact'],
           mustPassMissingChecks: ['cold-launch'],
           ready: false,
+          remainingCheckDetails: [
+            {
+              check: 'cold-launch',
+              description:
+                'Install the exported build, cold launch into the main scene.',
+              mustPass: true,
+              passOnly: true,
+              selectedApis: [],
+            },
+          ],
           requiredCheckCount: 14,
           skippableMissingChecks: [],
         },
@@ -81,6 +91,16 @@ function sampleReadinessSummary(ciEvidencePath = 'release/ci-runs.json') {
           missingFields: ['artifact', 'deviceModel'],
           mustPassMissingChecks: ['cold-launch'],
           ready: false,
+          remainingCheckDetails: [
+            {
+              check: 'deep-links-share-notifications-if-selected',
+              description:
+                'Verify deep links, share sheets, and notification delivery.',
+              mustPass: false,
+              passOnly: false,
+              selectedApis: [],
+            },
+          ],
           requiredCheckCount: 15,
           skippableMissingChecks: [
             'deep-links-share-notifications-if-selected',
@@ -137,6 +157,11 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
   assert.match(markdown, /Required checks complete: 1\/14/)
   assert.match(markdown, /Metadata gaps: `artifact`, `deviceModel`/)
   assert.match(markdown, /Skippable remaining: `deep-links-share-notifications-if-selected`/)
+  assert.match(markdown, /`cold-launch` \(must pass\): Install the exported build/)
+  assert.match(
+    markdown,
+    /`deep-links-share-notifications-if-selected` \(skippable\): Verify deep links/,
+  )
   assert.match(markdown, /Blocked by: `real-device-evidence`/)
   assert.match(markdown, /TODO\.md:389 Android export/)
   assert.match(markdown, /Write Android\/iOS tester handoff/)

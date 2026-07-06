@@ -86,6 +86,56 @@ export const passOnlyRealDeviceChecks = {
   ],
 }
 
+const commonRealDeviceCheckDescriptions = {
+  'cold-launch':
+    'Install the exported build, cold launch into the main scene, and confirm the app reaches the expected UI.',
+  'no-godotjs-load-diagnostics':
+    'Confirm the device logs do not show GodotJS missing-module, script-load, chunk-load, asset-load, or signal wiring diagnostics.',
+  'storage-restart':
+    'Write and read the selected storage APIs, restart the app, and confirm persisted state is restored from user://.',
+  'network-if-selected':
+    'Exercise fetch, WebSocket, and reachability or online/offline behavior when network APIs are selected.',
+  'clipboard-if-selected':
+    'Verify selected clipboard read/write APIs and denied or unsupported states on the exported device build.',
+  'permission-prompts-if-selected':
+    'Verify permission prompts, granted states, denied states, and plugin-managed permission fallbacks for selected capabilities.',
+  'adapter-states-if-selected':
+    'Verify unsupported platform, missing plugin, export misconfiguration, permission denied, and success states for selected adapters.',
+  'hardware-adapters-if-selected':
+    'Verify selected camera, geolocation, media device, or other hardware-backed adapters on real or hosted hardware.',
+  'haptics-if-selected':
+    'Verify handheld or controller vibration APIs report support accurately and run successfully when selected.',
+  'audio-input-if-selected':
+    'Verify microphone/audio input permissions, stream setup, and captured audio frames or adapter success states when selected.',
+  'sensors-if-selected':
+    'Verify accelerometer, gyroscope, magnetometer, gravity, or device motion/orientation values when selected.',
+  'background-foreground':
+    'Background and foreground the app, then confirm resources, adapters, and app state resume correctly.',
+}
+
+export const realDeviceCheckDescriptions = {
+  android: {
+    ...commonRealDeviceCheckDescriptions,
+    'safe-area-keyboard':
+      'Verify SafeAreaView and KeyboardAvoidingView behavior with the Android virtual keyboard and tested orientations.',
+    'android-back-handling':
+      'Verify Android back handling from nested screens, modal/dialog states, and the app root.',
+  },
+  ios: {
+    ...commonRealDeviceCheckDescriptions,
+    'plist-entitlements':
+      'Confirm iOS usage descriptions, entitlements, associated domains, and plugin files are present for selected capabilities.',
+    'safe-area-keyboard-rotation-text-input':
+      'Verify safe area, virtual keyboard, rotation, and text input behavior on the tested iPhone or iPad family.',
+    'deep-links-share-notifications-if-selected':
+      'Verify cold-start and warm-start deep links, share sheets, and notification delivery when those adapters are selected.',
+  },
+}
+
+export function describeRealDeviceCheck(platform, check) {
+  return realDeviceCheckDescriptions[platform]?.[check] ?? check
+}
+
 export const realDeviceWorksheetFields = [
   'requiredChecks',
   'passOnlyChecks',

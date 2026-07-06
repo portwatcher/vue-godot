@@ -6,6 +6,7 @@ import {
   passOnlyRealDeviceChecks,
   realDeviceWorksheetFields,
   requiredRealDeviceChecks,
+  describeRealDeviceCheck,
   selectedApiRequiredCheckMap,
   unknownRealDeviceSelectedApis,
 } from './real-device-evidence.mjs'
@@ -313,6 +314,7 @@ function auditPlatformWorksheet(record, platform, options = {}) {
     mustPassMissingChecks: [],
     passedChecks: [],
     ready: false,
+    remainingCheckDetails: [],
     remainingChecks: [],
     requiredCheckCount: requiredChecks.length,
     requiredChecks: [...requiredChecks],
@@ -457,6 +459,15 @@ function auditPlatformWorksheet(record, platform, options = {}) {
   status.skippableMissingChecks = status.remainingChecks.filter(
     (check) => !mustPassSet.has(check),
   )
+  status.remainingCheckDetails = status.remainingChecks.map((check) => ({
+    check,
+    description: describeRealDeviceCheck(platform, check),
+    mustPass: mustPassSet.has(check),
+    passOnly: passOnlyChecks.includes(check),
+    selectedApis: Array.isArray(status.selectedApiRequiredChecks[check])
+      ? [...status.selectedApiRequiredChecks[check]]
+      : [],
+  }))
   status.completedCheckCount = status.completedChecks.length
   status.errorCount = errors.length
   status.ready = errors.length === 0

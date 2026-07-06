@@ -257,6 +257,35 @@ function platformLines(platform, status) {
     return [`### ${platformLabel(platform)}`, '', '- Status: missing']
   }
 
+  const details = Array.isArray(status.remainingCheckDetails)
+    ? status.remainingCheckDetails.filter(isRecord)
+    : []
+  const detailLines =
+    details.length > 0
+      ? [
+          '- Remaining check details:',
+          ...details.map((detail) => {
+            const check = String(detail.check ?? 'unknown-check')
+            const state = detail.mustPass === true ? 'must pass' : 'skippable'
+            const selectedApis = Array.isArray(detail.selectedApis)
+              ? detail.selectedApis
+                  .filter((apiName) => typeof apiName === 'string')
+                  .map((apiName) => apiName.trim())
+                  .filter((apiName) => apiName.length > 0)
+              : []
+            const selectedApiText =
+              selectedApis.length > 0
+                ? `; selected APIs: ${selectedApis.join(', ')}`
+                : ''
+            const description =
+              typeof detail.description === 'string'
+                ? detail.description
+                : check
+            return `  - \`${check}\` (${state}${selectedApiText}): ${description}`
+          }),
+        ]
+      : []
+
   return [
     `### ${platformLabel(platform)}`,
     '',
@@ -265,6 +294,7 @@ function platformLines(platform, status) {
     `- Metadata gaps: ${inlineList(status.missingFields)}`,
     `- Must-pass remaining: ${inlineList(status.mustPassMissingChecks)}`,
     `- Skippable remaining: ${inlineList(status.skippableMissingChecks)}`,
+    ...detailLines,
   ]
 }
 

@@ -61,8 +61,33 @@ test('platform evidence audit reports incomplete worksheet gaps', () => {
     summary.platforms.android.mustPassMissingChecks.includes('cold-launch'),
   )
   assert.ok(
+    summary.platforms.android.remainingCheckDetails.some(
+      (detail) =>
+        detail.check === 'cold-launch' &&
+        detail.mustPass === true &&
+        detail.passOnly === true &&
+        detail.description.includes('cold launch'),
+    ),
+  )
+  assert.ok(
+    summary.platforms.android.remainingCheckDetails.some(
+      (detail) =>
+        detail.check === 'network-if-selected' &&
+        detail.mustPass === true &&
+        detail.selectedApis.includes('fetch'),
+    ),
+  )
+  assert.ok(
     summary.platforms.ios.remainingChecks.includes(
       'safe-area-keyboard-rotation-text-input',
+    ),
+  )
+  assert.ok(
+    summary.platforms.ios.remainingCheckDetails.some(
+      (detail) =>
+        detail.check === 'deep-links-share-notifications-if-selected' &&
+        detail.mustPass === false &&
+        detail.description.includes('deep links'),
     ),
   )
   assert.deepEqual(summary.progress.android, {
