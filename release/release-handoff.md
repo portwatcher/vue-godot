@@ -1,7 +1,7 @@
 # Release Handoff
 
 - Release candidate commit: `24b76d634a09a0d998db81a01bd1a7b247e0e617`
-- Handoff format: 4
+- Handoff format: 5
 - Handoff state: 90587bea223b8a9d
 - Overall readiness: open (10 blocker(s))
 - Real-device evidence: waiting
@@ -187,6 +187,7 @@ Commands with `<...>` placeholders must be edited before running; unresolved pla
 
 ```bash
 npm run check
+npm run release:preflight -- --local --skip-check --skip-godot --expected-commit 24b76d634a09a0d998db81a01bd1a7b247e0e617 --summary-output /tmp/vue-godot-local-preflight-summary.json
 npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit 24b76d634a09a0d998db81a01bd1a7b247e0e617
 npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit 24b76d634a09a0d998db81a01bd1a7b247e0e617
 npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit 24b76d634a09a0d998db81a01bd1a7b247e0e617
