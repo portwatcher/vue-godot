@@ -1,13 +1,18 @@
 import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import test from 'node:test'
 
 import {
   collectDeviceTestPrereqStatus,
+  collectExportTemplateStatus,
   collectHostedDeviceProviderStatus,
   formatHostedProviderStatus,
   isAndroidEmulatorDevice,
   parseAdbDevices,
   parseXctraceDevices,
+  requiredAndroidExportTemplateFiles,
 } from '../scripts/check-device-test-prereqs.mjs'
 
 test('device prereq parser reads adb device states', () => {
@@ -17,21 +22,18 @@ emulator-5554 device product:sdk model:Pixel_8 device:emu64a transport_id:1
 R58M123 unauthorized usb:336592896X transport_id:2
 `)
 
-  assert.deepEqual(
-    devices,
-    [
-      {
-        details: 'product:sdk model:Pixel_8 device:emu64a transport_id:1',
-        serial: 'emulator-5554',
-        state: 'device',
-      },
-      {
-        details: 'usb:336592896X transport_id:2',
-        serial: 'R58M123',
-        state: 'unauthorized',
-      },
-    ],
-  )
+  assert.deepEqual(devices, [
+    {
+      details: 'product:sdk model:Pixel_8 device:emu64a transport_id:1',
+      serial: 'emulator-5554',
+      state: 'device',
+    },
+    {
+      details: 'usb:336592896X transport_id:2',
+      serial: 'R58M123',
+      state: 'unauthorized',
+    },
+  ])
   assert.equal(isAndroidEmulatorDevice(devices[0]), true)
   assert.equal(isAndroidEmulatorDevice(devices[1]), false)
 })
@@ -198,7 +200,10 @@ test('device prereq status explains missing full Xcode when xctrace is unavailab
   assert.match(summary.ios.blockers[0], /xcrun xctrace list devices failed/)
   assert.match(summary.ios.blockers[1], /Full Xcode is not selected/)
   assert.match(summary.ios.blockers.join('\n'), /Xcode\.app/)
-  assert.match(summary.ios.blockers.join('\n'), /App Store \(app id 497799835\)/)
+  assert.match(
+    summary.ios.blockers.join('\n'),
+    /App Store \(app id 497799835\)/,
+  )
   assert.match(summary.ios.blockers.join('\n'), /Apple ID/)
 })
 
@@ -218,14 +223,8 @@ test('hosted provider status reports configured env names without values', () =>
       .filter((provider) => provider.configured)
       .map((provider) => [provider.id, provider.configuredEnv]),
     [
-      [
-        'browserstack',
-        ['BROWSERSTACK_USERNAME', 'BROWSERSTACK_ACCESS_KEY'],
-      ],
-      [
-        'lambdatest',
-        ['LAMBDATEST_USERNAME', 'LAMBDATEST_ACCESS_KEY'],
-      ],
+      ['browserstack', ['BROWSERSTACK_USERNAME', 'BROWSERSTACK_ACCESS_KEY']],
+      ['lambdatest', ['LAMBDATEST_USERNAME', 'LAMBDATEST_ACCESS_KEY']],
     ],
   )
   assert.equal(
@@ -253,11 +252,7 @@ test('hosted provider status reports partial env names without values', () => {
         provider.missingEnv,
       ]),
     [
-      [
-        'browserstack',
-        ['BROWSERSTACK_USERNAME'],
-        ['BROWSERSTACK_ACCESS_KEY'],
-      ],
+      ['browserstack', ['BROWSERSTACK_USERNAME'], ['BROWSERSTACK_ACCESS_KEY']],
       [
         'aws-device-farm',
         ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY'],
@@ -364,4 +359,89 @@ test('device prereq status includes hosted provider diagnostics', () => {
   )
   assert.equal(summary.blockers.length, 1)
   assert.match(summary.blockers[0], /adb not found/)
+})
+
+test('export template status reports installed Android GodotJS templates', (t) => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-templates-'))
+  t.after(() => fs.rmSync(tempDir, { force: true, recursive: true }))
+
+  const templateVersion = '4.4.1.rc.custom_build.test'
+  const templatesDir = path.join(tempDir, templateVersion)
+  fs.mkdirSync(templatesDir, { recursive: true })
+  for (const file of requiredAndroidExportTemplateFiles) {
+    fs.writeFileSync(path.join(templatesDir, file), `${file}\n`)
+  }
+  fs.writeFileSync(
+    path.join(templatesDir, 'version.txt'),
+    `${templateVersion}\n`,
+  )
+
+  const status = collectExportTemplateStatus({
+    platform: 'android',
+    templateVersion,
+    templatesRoot: tempDir,
+  })
+
+  assert.equal(status.android.ready, true)
+  assert.equal(status.android.templateVersion, templateVersion)
+  assert.equal(status.android.templatesDir, templatesDir)
+  assert.deepEqual(status.android.missingFiles, [])
+  assert.deepEqual(status.android.requiredFiles, [
+    ...requiredAndroidExportTemplateFiles,
+  ])
+  assert.equal(status.ios, null)
+})
+
+test('export template diagnostics do not change local device readiness', () => {
+  const tempDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'vue-godot-missing-templates-'),
+  )
+  try {
+    const summary = collectDeviceTestPrereqStatus({
+      platform: 'android',
+      templateVersion: 'missing-version',
+      templatesRoot: tempDir,
+      runCommand(command, args) {
+        assert.equal(command, 'adb')
+        assert.equal(args.join(' '), 'devices -l')
+        return {
+          errorCode: null,
+          status: 0,
+          stderr: '',
+          stdout: [
+            'List of devices attached',
+            'R5CT12345 device product:shiba model:Pixel_8 device:shiba',
+          ].join('\n'),
+        }
+      },
+    })
+
+    assert.equal(summary.ready, true)
+    assert.deepEqual(summary.blockers, [])
+    assert.equal(summary.exportTemplates.android.ready, false)
+    assert.match(
+      summary.exportTemplates.android.blockers.join('\n'),
+      /Android GodotJS export templates are incomplete/,
+    )
+    assert.match(
+      summary.exportTemplates.android.warnings.join('\n'),
+      /setup:godotjs/,
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
+test('export template status records unavailable pinned iOS templates', () => {
+  const status = collectExportTemplateStatus({
+    platform: 'ios',
+  })
+
+  assert.equal(status.android, null)
+  assert.equal(status.ios.ready, false)
+  assert.equal(status.ios.availableInPinnedRelease, false)
+  assert.match(
+    status.ios.notes.join('\n'),
+    /does not publish an iOS export-template asset/,
+  )
 })

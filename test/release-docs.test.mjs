@@ -28,14 +28,8 @@ test('release helper outputs are ignored separately from committed evidence', ()
     assert.match(gitignore, new RegExp(`^${file}$`, 'm'))
   }
 
-  assert.doesNotMatch(
-    gitignore,
-    /^release\/release-preflight-summary\.json$/m,
-  )
-  assert.doesNotMatch(
-    gitignore,
-    /^release\/release-preflight-checklist\.md$/m,
-  )
+  assert.doesNotMatch(gitignore, /^release\/release-preflight-summary\.json$/m)
+  assert.doesNotMatch(gitignore, /^release\/release-preflight-checklist\.md$/m)
   assert.match(production, /gitignored helper files/)
   assert.match(production, /release-readiness-checklist\.md/)
   assert.match(readme, /gitignored helper files/)
@@ -61,6 +55,9 @@ test('real device release checklist covers required Android and iOS gates', () =
     /partially configured missing-name hints/,
     /never their values/,
     /recognized provider env-set\s+options/,
+    /pinned GodotJS Android\s+export templates/,
+    /does not publish an iOS\s+export-template asset/,
+    /export-template details/,
     /devicePrereqs/,
     /Device Prereq\s+Diagnostics/,
     /--device-prereqs-summary <file>/,
@@ -168,7 +165,9 @@ test('release preflight validates package export targets in tarballs', () => {
 test('release preflight enforces real device evidence', () => {
   const preflight = readDoc('scripts/release-preflight.mjs')
   const realDeviceEvidence = readDoc('scripts/real-device-evidence.mjs')
-  const realDeviceEvidenceCheck = readDoc('scripts/check-real-device-evidence.mjs')
+  const realDeviceEvidenceCheck = readDoc(
+    'scripts/check-real-device-evidence.mjs',
+  )
   const platformEvidenceHelper = readDoc('scripts/create-platform-evidence.mjs')
   const releaseCi = readDoc('scripts/check-release-ci-runs.mjs')
   const evidenceHelper = readDoc('scripts/create-release-evidence.mjs')
@@ -346,9 +345,15 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(production, /Apple Developer download path requires an Apple ID/)
   assert.match(production, hostedProviderNamesPattern)
-  assert.match(production, /configured or partially configured environment variable names/)
+  assert.match(
+    production,
+    /configured or partially configured environment variable names/,
+  )
   assert.match(production, /never their values/)
   assert.match(production, /recognized provider env-set\s+options/)
+  assert.match(production, /pinned GodotJS Android export templates/)
+  assert.match(production, /does not publish an iOS\s+export-template asset/)
+  assert.match(production, /export-template details/)
   assert.match(production, /devicePrereqs/)
   assert.match(production, /Device Prereq\s+Diagnostics/)
   assert.match(production, /--device-prereqs-summary <file>/)
@@ -419,7 +424,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /npm@\^11\.15\.0/)
   assert.match(production, /release:platform-evidence/)
   assert.match(production, /release:record-platform-evidence/)
-  assert.match(production, /command templates before the strict\s+worksheet audit/)
+  assert.match(
+    production,
+    /command templates before the strict\s+worksheet audit/,
+  )
   assert.match(production, /--platform android/)
   assert.match(production, /--platform ios/)
   assert.match(production, /per-check/)
@@ -435,7 +443,10 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(production, /placeholder confirmation notes/)
   assert.match(production, /`passedChecks`[\s\S]*non-empty string array/)
-  assert.match(production, /`skippedChecks`[\s\S]*non-empty\s+release-specific reasons/)
+  assert.match(
+    production,
+    /`skippedChecks`[\s\S]*non-empty\s+release-specific reasons/,
+  )
   assert.match(production, /A check\s+must not appear in both/)
   assert.match(
     production,
@@ -455,7 +466,10 @@ test('release preflight enforces real device evidence', () => {
     production,
     /[Tt]he worksheet reads `release\/ci-runs\.json` by default[\s\S]*`--ci-evidence <file>`[\s\S]*records an `initialCiEvidence` status object[\s\S]*duplicate Check\/Godot Smoke collection\s+commands/,
   )
-  assert.match(production, /Final release evidence must include every production-profile API/)
+  assert.match(
+    production,
+    /Final release evidence must include every production-profile API/,
+  )
   assert.match(production, /passOnlyChecks/)
   assert.match(production, /selectedApiRequiredChecks/)
   assert.match(production, /navigator\.mediaDevices\.getUserMedia/)
@@ -467,7 +481,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /selected APIs must be recorded in `passedChecks`/)
   assert.match(production, /top-level `nextActions` section/)
   assert.match(production, /audited progress/)
-  assert.match(production, /exact\s+remaining metadata\/must-pass\/skippable gap names and structured `platformCheckDetails` descriptions/)
+  assert.match(
+    production,
+    /exact\s+remaining metadata\/must-pass\/skippable gap names and structured `platformCheckDetails` descriptions/,
+  )
   assert.match(production, /release\s+CI\s+wait\/dispatch commands/)
   assert.match(production, /allow-open worksheet audit\s+command/)
   assert.match(
@@ -498,10 +515,7 @@ test('release preflight enforces real device evidence', () => {
     /full 40-character commit SHAs for the tested release commit and workflow run\s+commits/,
   )
   assert.match(production, /--commit <release-candidate-sha>/)
-  assert.match(
-    production,
-    /tested release commit rather than\s+current `HEAD`/,
-  )
+  assert.match(production, /tested release commit rather than\s+current `HEAD`/)
   assert.match(
     production,
     /separate\s+Android\/iOS\s+real-device\s+evidence\s+status/,
@@ -597,7 +611,10 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(production, /strict platform worksheet\s+audit/)
   assert.match(production, /git commit -m "Add release readiness evidence"/)
-  assert.match(production, /git add TODO\.md README\.md docs\/compatibility\.md docs\/production\.md docs\/real-device-release\.md/)
+  assert.match(
+    production,
+    /git add TODO\.md README\.md docs\/compatibility\.md docs\/production\.md docs\/real-device-release\.md/,
+  )
   assert.match(production, /git commit -m "Finalize production readiness"/)
   assert.match(production, /before pushing or dispatching missing workflows/)
   assert.match(production, /initial CI evidence\s+collection/)
@@ -649,9 +666,15 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(readme, /Apple Developer download path requires an Apple ID/)
   assert.match(readme, hostedProviderNamesPattern)
-  assert.match(readme, /configured or partially configured environment variable names/)
+  assert.match(
+    readme,
+    /configured or partially configured environment variable names/,
+  )
   assert.match(readme, /never their values/)
   assert.match(readme, /recognized provider env-set\s+options/)
+  assert.match(readme, /pinned GodotJS Android export templates/)
+  assert.match(readme, /does not publish an iOS\s+export-template asset/)
+  assert.match(readme, /export-template details/)
   assert.match(
     readme,
     /Missing local tooling or\s+provider\s+environment\s+variables are only diagnostics/,
@@ -679,7 +702,10 @@ test('release preflight enforces real device evidence', () => {
     readme,
     /pass `--ci-evidence <file>` or `--platform-evidence <file>`/,
   )
-  assert.match(readme, /resolve\s+command placeholders\s+to\s+`--expected-commit`/)
+  assert.match(
+    readme,
+    /resolve\s+command placeholders\s+to\s+`--expected-commit`/,
+  )
   assert.match(readme, /release:ci/)
   assert.match(
     readme,
@@ -726,12 +752,12 @@ test('release preflight enforces real device evidence', () => {
     readme,
     /validates the normalized platform evidence before fetching GitHub run metadata/,
   )
-  assert.match(readme, /full 40-character evidence commit and workflow run SHAs/)
-  assert.match(readme, /--commit <release-candidate-sha>/)
   assert.match(
     readme,
-    /tested release commit rather than current `HEAD`/,
+    /full 40-character evidence commit and workflow run SHAs/,
   )
+  assert.match(readme, /--commit <release-candidate-sha>/)
+  assert.match(readme, /tested release commit rather than current `HEAD`/)
   assert.match(readme, /separate Android\/iOS real-device evidence status/)
   assert.match(readme, /local Git state/)
   assert.match(readme, /local `npm run check`/)
@@ -762,10 +788,7 @@ test('release preflight enforces real device evidence', () => {
     readme,
     /real-device evidence is open[\s\S]*`nextActions` include handoff write and check commands before the device-evidence action[\s\S]*missing or stale/,
   )
-  assert.match(
-    readme,
-    /`blockedBy` dependencies[\s\S]*next commands/,
-  )
+  assert.match(readme, /`blockedBy` dependencies[\s\S]*next commands/)
   assert.match(
     readme,
     /initial CI action captures Check and Godot Smoke, while Release Preflight is captured later after real-device evidence is committed/,
@@ -851,14 +874,20 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(readme, /placeholder confirmation notes/)
   assert.match(readme, /`passedChecks`[\s\S]*non-empty string array/)
-  assert.match(readme, /`skippedChecks`[\s\S]*non-empty\s+release-specific reasons/)
+  assert.match(
+    readme,
+    /`skippedChecks`[\s\S]*non-empty\s+release-specific reasons/,
+  )
   assert.match(readme, /A check must not appear in both/)
   assert.match(
     readme,
     /Markdown handoff separates ready-to-run\s+commands,\s+templates with `<\.\.\.>` placeholders,\s+and downstream evidence\s+assembly,\s+validation,\s+commit,\s+and push commands,\s+and flags placeholders/,
   )
   assert.match(readme, /rejects unknown checks/)
-  assert.match(readme, /refuses to\s+skip pass-only or selected-API-required checks/)
+  assert.match(
+    readme,
+    /refuses to\s+skip pass-only or selected-API-required checks/,
+  )
   assert.match(
     readme,
     /When\s+`--summary-output`\s+is\s+supplied[\s\S]*recorder\s+writes the\s+updated\s+audit\s+and\s+follow-up `nextActions`/,
@@ -869,7 +898,10 @@ test('release preflight enforces real device evidence', () => {
     readme,
     /worksheet reads `release\/ci-runs\.json` by default[\s\S]*`--ci-evidence <file>`[\s\S]*records an `initialCiEvidence` status object[\s\S]*duplicate Check\/Godot Smoke collection commands/,
   )
-  assert.match(readme, /Final release evidence must include every\s+production-profile API/)
+  assert.match(
+    readme,
+    /Final release evidence must include every\s+production-profile API/,
+  )
   assert.match(readme, /passOnlyChecks/)
   assert.match(readme, /selectedApiRequiredChecks/)
   assert.match(readme, /navigator\.mediaDevices\.getUserMedia/)
@@ -882,7 +914,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /top-level `nextActions` section/)
   assert.match(readme, /audited progress/)
   assert.match(readme, /malformed outcome counts/)
-  assert.match(readme, /exact remaining metadata\/must-pass\/skippable gap names/)
+  assert.match(
+    readme,
+    /exact remaining metadata\/must-pass\/skippable gap names/,
+  )
   assert.match(readme, /release\s+CI\s+wait\/dispatch commands/)
   assert.match(readme, /worksheet\s+audit\s+command/)
   assert.match(
@@ -896,7 +931,10 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(readme, /release:evidence/)
   assert.match(readme, /release:preflight-summary/)
-  assert.match(readme, /release:preflight-summary[\s\S]*--commit <release-candidate-sha>/)
+  assert.match(
+    readme,
+    /release:preflight-summary[\s\S]*--commit <release-candidate-sha>/,
+  )
   assert.match(readme, /--checklist-output/)
   assert.match(readme, /release-preflight-checklist/)
   assert.match(readme, /when using `--run-url` manually/)
@@ -1066,7 +1104,10 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(checklist, /strict platform worksheet audit/)
   assert.match(checklist, /git commit -m "Add release readiness evidence"/)
-  assert.match(checklist, /git add TODO\.md README\.md docs\/compatibility\.md docs\/production\.md docs\/real-device-release\.md/)
+  assert.match(
+    checklist,
+    /git add TODO\.md README\.md docs\/compatibility\.md docs\/production\.md docs\/real-device-release\.md/,
+  )
   assert.match(checklist, /git commit -m "Finalize production readiness"/)
   assert.match(checklist, /initial CI evidence\s+collection/)
   assert.match(checklist, /push\/dispatch\s+commands/)
@@ -1108,7 +1149,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /follow-up evidence commit/)
   assert.match(checklist, /release:platform-evidence/)
   assert.match(checklist, /release:record-platform-evidence/)
-  assert.match(checklist, /command\s+templates before the strict worksheet audit/)
+  assert.match(
+    checklist,
+    /command\s+templates before the strict worksheet audit/,
+  )
   assert.match(checklist, /--platform android/)
   assert.match(checklist, /--platform ios/)
   assert.match(checklist, /--export-preset <android-export-preset>/)
@@ -1131,7 +1175,10 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(checklist, /placeholder confirmation notes/)
   assert.match(checklist, /`passedChecks`[\s\S]*non-empty\s+string array/)
-  assert.match(checklist, /`skippedChecks`[\s\S]*non-empty\s+release-specific reasons/)
+  assert.match(
+    checklist,
+    /`skippedChecks`[\s\S]*non-empty\s+release-specific reasons/,
+  )
   assert.match(checklist, /A check must not appear in both/)
   assert.match(
     checklist,
@@ -1154,8 +1201,14 @@ test('release preflight enforces real device evidence', () => {
     checklist,
     /[Ii]t reads\s+`release\/ci-runs\.json` by default[\s\S]*`--ci-evidence <file>`[\s\S]*records an `initialCiEvidence` status object[\s\S]*duplicate Check\/Godot Smoke collection\s+commands/,
   )
-  assert.match(checklist, /fetch[\s\S]*WebSocket[\s\S]*navigator\.permissions\.query/)
-  assert.match(checklist, /Final release evidence must include every production-profile API/)
+  assert.match(
+    checklist,
+    /fetch[\s\S]*WebSocket[\s\S]*navigator\.permissions\.query/,
+  )
+  assert.match(
+    checklist,
+    /Final release evidence must include every production-profile API/,
+  )
   assert.match(checklist, /passOnlyChecks/)
   assert.match(checklist, /selectedApiRequiredChecks/)
   assert.match(checklist, /navigator\.mediaDevices\.getUserMedia/)
@@ -1308,7 +1361,10 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(production, /release-readiness-checklist/)
   assert.match(production, /--expected-commit <release-candidate-sha>/)
   assert.match(production, /tested commit instead of the evidence commit/)
-  assert.match(production, /reports final-removal blockers and\s+final TODO proof status/)
+  assert.match(
+    production,
+    /reports final-removal blockers and\s+final TODO proof status/,
+  )
   assert.match(production, /TODO counts/)
   assert.match(production, /unchecked\s+TODO item details/)
   assert.match(production, /final TODO proof status/)
@@ -1358,7 +1414,10 @@ test('release readiness audit documents final removal blockers', () => {
   )
   assert.match(readme, /release tooling\/workflow blocker lists/)
   assert.match(readme, /structured readiness check and evidence status/)
-  assert.match(readme, /release handoff report currentness\/format\/state status/)
+  assert.match(
+    readme,
+    /release handoff report currentness\/format\/state status/,
+  )
   assert.match(readme, /metadata\/platform\/read errors/)
   assert.match(readme, /release-readiness evidence status/)
   assert.match(readme, /`nextActions` command hints/)
@@ -1366,7 +1425,10 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(readme, /prematurely checked final TODO boxes/)
   assert.match(readme, /source text drift/)
   assert.match(readme, /dirty\s+worktree/)
-  assert.match(readDoc('docs/real-device-release.md'), /release:finalize-readiness/)
+  assert.match(
+    readDoc('docs/real-device-release.md'),
+    /release:finalize-readiness/,
+  )
   assert.match(readDoc('docs/real-device-release.md'), /source text drift/)
   assert.match(todo, /release:readiness/)
   assert.equal(example.releasePreflightRunConclusion, 'success')

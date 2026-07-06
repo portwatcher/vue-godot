@@ -3,8 +3,24 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { repoRoot } from './release-utils.mjs'
+import {
+  defaultGodotExportTemplatesRoot,
+  pinnedGodotJsRelease,
+} from './setup-godotjs.mjs'
 
 const platforms = ['android', 'ios']
+const androidExportTemplateAsset = 'prebuilt_android_v8'
+export const requiredAndroidExportTemplateFiles = Object.freeze([
+  'android_debug.apk',
+  'android_release.apk',
+  'android_source.zip',
+  'godot-lib.template_debug.aar',
+  'godot-lib.template_release.aar',
+  'version.txt',
+])
+
+const androidExportTemplateInstallCommand =
+  'npm run setup:godotjs -- --asset prebuilt_android_v8 --asset-kind templates --install-templates --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir'
 
 const hostedDeviceProviderEnvSets = [
   {
@@ -63,6 +79,10 @@ common hosted-provider environment variables without treating them as evidence.
 Options:
   --platform <android|ios|all>  Platform to check. Default: all.
   --summary-output <file>       Write machine-readable JSON status.
+  --template-version <version>  Check Android export templates under this
+                                Godot export-template version directory.
+  --templates-root <dir>        Godot export_templates root. Defaults to the
+                                current platform's Godot user data directory.
   --allow-missing               Exit 0 even when local tooling/devices are
                                 missing. Useful in handoff commands.
   --json                        Print machine-readable JSON to stdout.
@@ -76,6 +96,8 @@ function parseArgs(argv) {
     json: false,
     platform: 'all',
     summaryOutput: null,
+    templateVersion: null,
+    templatesRoot: null,
   }
 
   for (let index = 0; index < argv.length; index++) {
@@ -121,6 +143,34 @@ function parseArgs(argv) {
 
     if (arg.startsWith('--summary-output=')) {
       options.summaryOutput = arg.slice('--summary-output='.length)
+      continue
+    }
+
+    if (arg === '--template-version') {
+      const value = argv[++index]
+      if (!value) {
+        throw new Error('--template-version requires a value')
+      }
+      options.templateVersion = value
+      continue
+    }
+
+    if (arg.startsWith('--template-version=')) {
+      options.templateVersion = arg.slice('--template-version='.length)
+      continue
+    }
+
+    if (arg === '--templates-root') {
+      const value = argv[++index]
+      if (!value) {
+        throw new Error('--templates-root requires a value')
+      }
+      options.templatesRoot = value
+      continue
+    }
+
+    if (arg.startsWith('--templates-root=')) {
+      options.templatesRoot = arg.slice('--templates-root='.length)
       continue
     }
 
@@ -386,6 +436,197 @@ function checkIos(runCommand) {
   }
 }
 
+function readTrimmedFile(filePath) {
+  try {
+    return fs.readFileSync(filePath, 'utf-8').trim()
+  } catch {
+    return null
+  }
+}
+
+function checkTemplateFileSet(templatesDir, requiredFiles) {
+  const installedFiles = []
+  const missingFiles = []
+
+  for (const file of requiredFiles) {
+    if (fs.existsSync(path.join(templatesDir, file))) {
+      installedFiles.push(file)
+    } else {
+      missingFiles.push(file)
+    }
+  }
+
+  return {
+    installedFiles,
+    missingFiles,
+  }
+}
+
+function inspectAndroidExportTemplateDir(templatesDir) {
+  const { installedFiles, missingFiles } = checkTemplateFileSet(
+    templatesDir,
+    requiredAndroidExportTemplateFiles,
+  )
+  const versionText = readTrimmedFile(path.join(templatesDir, 'version.txt'))
+  const inferredTemplateVersion =
+    versionText && versionText.length > 0
+      ? versionText
+      : path.basename(templatesDir)
+
+  return {
+    installedFiles,
+    missingFiles,
+    ready: missingFiles.length === 0,
+    templateVersion: inferredTemplateVersion,
+    templatesDir,
+  }
+}
+
+function listAndroidExportTemplateCandidates(templatesRoot) {
+  let entries
+  try {
+    entries = fs.readdirSync(templatesRoot, { withFileTypes: true })
+  } catch {
+    return []
+  }
+
+  return entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) =>
+      inspectAndroidExportTemplateDir(path.join(templatesRoot, entry.name)),
+    )
+    .sort(
+      (left, right) =>
+        Number(right.ready) - Number(left.ready) ||
+        right.installedFiles.length - left.installedFiles.length ||
+        left.templateVersion.localeCompare(right.templateVersion),
+    )
+}
+
+function resolveTemplatesRoot(options) {
+  if (options.templatesRoot) {
+    return path.resolve(repoRoot, options.templatesRoot)
+  }
+
+  return defaultGodotExportTemplatesRoot(
+    options.hostPlatform ?? process.platform,
+    options.env ?? process.env,
+    options.homeDir,
+  )
+}
+
+function collectAndroidExportTemplateStatus(options = {}) {
+  const blockers = []
+  const warnings = []
+  let templatesRoot
+
+  try {
+    templatesRoot = resolveTemplatesRoot(options)
+  } catch (error) {
+    return {
+      asset: androidExportTemplateAsset,
+      blockers: [
+        error instanceof Error
+          ? error.message
+          : `Unable to resolve Godot export templates root: ${String(error)}`,
+      ],
+      installCommand: androidExportTemplateInstallCommand,
+      installedFiles: [],
+      missingFiles: [...requiredAndroidExportTemplateFiles],
+      pinnedRelease: pinnedGodotJsRelease,
+      ready: false,
+      requiredFiles: [...requiredAndroidExportTemplateFiles],
+      templateVersion: options.templateVersion?.trim() || null,
+      templatesDir: null,
+      templatesRoot: null,
+      warnings,
+    }
+  }
+
+  const requestedTemplateVersion = options.templateVersion?.trim() || null
+  let inspected = null
+  let candidateCount = 0
+  if (requestedTemplateVersion) {
+    inspected = inspectAndroidExportTemplateDir(
+      path.join(templatesRoot, requestedTemplateVersion),
+    )
+  } else {
+    const candidates = listAndroidExportTemplateCandidates(templatesRoot)
+    candidateCount = candidates.length
+    inspected = candidates[0] ?? null
+  }
+
+  if (!inspected) {
+    blockers.push(
+      `No Android GodotJS export template directory found under ${templatesRoot}.`,
+    )
+  } else if (!inspected.ready) {
+    blockers.push(
+      `Android GodotJS export templates are incomplete in ${inspected.templatesDir}; missing ${inspected.missingFiles.join(', ')}.`,
+    )
+  }
+
+  if (blockers.length > 0) {
+    warnings.push(
+      `Install the pinned Android templates with: ${androidExportTemplateInstallCommand}`,
+    )
+  }
+
+  return {
+    asset: androidExportTemplateAsset,
+    blockers,
+    candidateCount,
+    installCommand: androidExportTemplateInstallCommand,
+    installedFiles: inspected?.installedFiles ?? [],
+    missingFiles: inspected?.missingFiles ?? [
+      ...requiredAndroidExportTemplateFiles,
+    ],
+    pinnedRelease: pinnedGodotJsRelease,
+    ready: blockers.length === 0,
+    requiredFiles: [...requiredAndroidExportTemplateFiles],
+    templateVersion: inspected?.templateVersion ?? requestedTemplateVersion,
+    templatesDir: inspected?.templatesDir ?? null,
+    templatesRoot,
+    warnings,
+  }
+}
+
+function collectIosExportTemplateStatus() {
+  return {
+    asset: null,
+    availableInPinnedRelease: false,
+    blockers: [],
+    missingFiles: [],
+    notes: [
+      `Pinned GodotJS release ${pinnedGodotJsRelease} does not publish an iOS export-template asset; use hosted real Apple-device evidence with a matching build pipeline or provide custom iOS templates.`,
+    ],
+    pinnedRelease: pinnedGodotJsRelease,
+    ready: false,
+    requiredFiles: [],
+    templateVersion: null,
+    templatesDir: null,
+    templatesRoot: null,
+    warnings: [],
+  }
+}
+
+export function collectExportTemplateStatus(options = {}) {
+  const selectedPlatforms =
+    options.selectedPlatforms ??
+    (options.platform && options.platform !== 'all'
+      ? [options.platform]
+      : platforms)
+
+  return {
+    android: selectedPlatforms.includes('android')
+      ? collectAndroidExportTemplateStatus(options)
+      : null,
+    ios: selectedPlatforms.includes('ios')
+      ? collectIosExportTemplateStatus()
+      : null,
+  }
+}
+
 export function collectDeviceTestPrereqStatus(options = {}) {
   const runCommand = options.runCommand ?? defaultRunCommand
   const env = options.env ?? process.env
@@ -397,6 +638,7 @@ export function collectDeviceTestPrereqStatus(options = {}) {
   const summary = {
     android: null,
     blockers: [],
+    exportTemplates: null,
     ios: null,
     ready: false,
     selectedPlatforms,
@@ -417,6 +659,14 @@ export function collectDeviceTestPrereqStatus(options = {}) {
   summary.hostedProviders = collectHostedDeviceProviderStatus(env)
   summary.note =
     'Hosted real-device runs satisfy the release gate when the final evidence records artifact ids, device metadata, and non-local http(s) evidence URLs.'
+  summary.exportTemplates = collectExportTemplateStatus({
+    env,
+    homeDir: options.homeDir,
+    hostPlatform: options.hostPlatform,
+    selectedPlatforms,
+    templateVersion: options.templateVersion,
+    templatesRoot: options.templatesRoot,
+  })
 
   return summary
 }
@@ -487,11 +737,73 @@ function formatPlatformStatus(label, status) {
   return lines
 }
 
+function exportTemplateState(status) {
+  if (status.ready) {
+    return 'ready'
+  }
+
+  if (status.availableInPinnedRelease === false) {
+    return 'unavailable'
+  }
+
+  return 'waiting'
+}
+
+function formatExportTemplateStatus(label, status) {
+  if (!status) {
+    return []
+  }
+
+  const lines = [
+    `[device-prereqs] ${label} export templates: ${exportTemplateState(status)}`,
+    `[device-prereqs] ${label} export templates pinned release: ${status.pinnedRelease}`,
+  ]
+
+  if (status.asset) {
+    lines.push(
+      `[device-prereqs] ${label} export templates asset: ${status.asset}`,
+    )
+  }
+  if (status.templatesRoot) {
+    lines.push(
+      `[device-prereqs] ${label} export templates root: ${status.templatesRoot}`,
+    )
+  }
+  if (status.templatesDir) {
+    lines.push(
+      `[device-prereqs] ${label} export templates dir: ${status.templatesDir}`,
+    )
+  }
+  if (status.templateVersion) {
+    lines.push(
+      `[device-prereqs] ${label} export templates version: ${status.templateVersion}`,
+    )
+  }
+  if (status.missingFiles?.length > 0) {
+    lines.push(
+      `[device-prereqs] ${label} export templates missing files: ${status.missingFiles.join(', ')}`,
+    )
+  }
+  for (const note of status.notes ?? []) {
+    lines.push(`[device-prereqs] export template note: ${note}`)
+  }
+  for (const warning of status.warnings ?? []) {
+    lines.push(`[device-prereqs] export template warning: ${warning}`)
+  }
+  for (const blocker of status.blockers ?? []) {
+    lines.push(`[device-prereqs] export template blocker: ${blocker}`)
+  }
+
+  return lines
+}
+
 function printText(summary) {
   const lines = [
     `[device-prereqs] status: ${summary.ready ? 'ready' : 'waiting'}`,
     ...formatPlatformStatus('Android', summary.android),
     ...formatPlatformStatus('iOS', summary.ios),
+    ...formatExportTemplateStatus('Android', summary.exportTemplates?.android),
+    ...formatExportTemplateStatus('iOS', summary.exportTemplates?.ios),
     ...formatHostedProviderStatus(summary.hostedProviders),
   ]
   if (!summary.ready) {
@@ -515,6 +827,8 @@ function main() {
     const options = parseArgs(process.argv.slice(2))
     const summary = collectDeviceTestPrereqStatus({
       platform: options.platform,
+      templateVersion: options.templateVersion,
+      templatesRoot: options.templatesRoot,
     })
     writeSummary(options.summaryOutput, summary)
     if (options.json) {

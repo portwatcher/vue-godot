@@ -46,6 +46,67 @@ function devicePrereqPlatformStatus(summary, platform) {
   }
 }
 
+function optionalString(value) {
+  return typeof value === 'string' && value.trim().length > 0
+    ? value.trim()
+    : null
+}
+
+function nullableBoolean(value) {
+  if (typeof value === 'boolean') {
+    return value
+  }
+
+  return null
+}
+
+function exportTemplatePlatformStatus(summary, platform) {
+  const exportTemplates = isRecord(summary.exportTemplates)
+    ? summary.exportTemplates
+    : {}
+  const status = isRecord(exportTemplates[platform])
+    ? exportTemplates[platform]
+    : null
+  if (!status) {
+    return null
+  }
+
+  const blockers = stringList(status.blockers)
+  const warnings = stringList(status.warnings)
+  const notes = stringList(status.notes)
+  const missingFiles = stringList(status.missingFiles)
+
+  return {
+    asset: optionalString(status.asset),
+    availableInPinnedRelease: nullableBoolean(status.availableInPinnedRelease),
+    blockerCount: blockers.length,
+    blockers,
+    candidateCount: Number.isInteger(status.candidateCount)
+      ? status.candidateCount
+      : null,
+    installedFiles: stringList(status.installedFiles),
+    installCommand: optionalString(status.installCommand),
+    missingFiles,
+    missingFileCount: missingFiles.length,
+    notes,
+    pinnedRelease: optionalString(status.pinnedRelease),
+    ready: status.ready === true,
+    requiredFiles: stringList(status.requiredFiles),
+    templateVersion: optionalString(status.templateVersion),
+    templatesDir: optionalString(status.templatesDir),
+    templatesRoot: optionalString(status.templatesRoot),
+    warningCount: warnings.length,
+    warnings,
+  }
+}
+
+function exportTemplateDiagnostics(summary) {
+  return {
+    android: exportTemplatePlatformStatus(summary, 'android'),
+    ios: exportTemplatePlatformStatus(summary, 'ios'),
+  }
+}
+
 function providerText(provider, key, fallback) {
   const value = provider[key]
   return typeof value === 'string' && value.trim().length > 0
@@ -89,6 +150,10 @@ export function collectDevicePrereqDiagnostics(options) {
   const diagnostic = {
     android: null,
     diagnosticOnly: true,
+    exportTemplates: {
+      android: null,
+      ios: null,
+    },
     hostedProviders: {
       anyConfigured: false,
       configuredProviders: [],
@@ -131,6 +196,7 @@ export function collectDevicePrereqDiagnostics(options) {
   diagnostic.selectedPlatforms = stringList(summary.selectedPlatforms)
   diagnostic.android = devicePrereqPlatformStatus(summary, 'android')
   diagnostic.ios = devicePrereqPlatformStatus(summary, 'ios')
+  diagnostic.exportTemplates = exportTemplateDiagnostics(summary)
   diagnostic.hostedProviders = normalizeHostedDeviceProviders(summary)
   return diagnostic
 }
@@ -253,6 +319,70 @@ function formatPlatformDiagnosticLines(label, status, { countMissing }) {
   return lines
 }
 
+function exportTemplateStatusText(status) {
+  if (!isRecord(status)) {
+    return null
+  }
+
+  if (status.ready === true) {
+    return 'ready'
+  }
+
+  if (status.availableInPinnedRelease === false) {
+    return 'unavailable'
+  }
+
+  return 'waiting'
+}
+
+function formatExportTemplateDiagnosticLines(label, status) {
+  const state = exportTemplateStatusText(status)
+  if (state === null) {
+    return []
+  }
+
+  const lines = [
+    [
+      `- ${label}: ${state}`,
+      ` (${formatDiagnosticCount(status.blockerCount, 'missing')} blocker(s),`,
+      ` ${formatDiagnosticCount(status.warningCount, 'missing')} warning(s),`,
+      ` ${formatDiagnosticCount(status.missingFileCount, 'missing')} missing file(s))`,
+    ].join(''),
+  ]
+
+  if (status.pinnedRelease) {
+    lines.push(`  - Pinned release: \`${status.pinnedRelease}\``)
+  }
+  if (status.asset) {
+    lines.push(`  - Asset: \`${status.asset}\``)
+  }
+  if (status.templatesRoot) {
+    lines.push(`  - Templates root: \`${status.templatesRoot}\``)
+  }
+  if (status.templatesDir) {
+    lines.push(`  - Templates dir: \`${status.templatesDir}\``)
+  }
+  if (status.templateVersion) {
+    lines.push(`  - Template version: \`${status.templateVersion}\``)
+  }
+  if (Array.isArray(status.missingFiles) && status.missingFiles.length > 0) {
+    lines.push(
+      `  - Missing files: ${inlineDiagnosticList(status.missingFiles)}`,
+    )
+  }
+  if (status.installCommand) {
+    lines.push(`  - Install command: \`${status.installCommand}\``)
+  }
+
+  lines.push(
+    ...formatNestedDiagnosticIssues('Notes', status.notes),
+    ...formatNestedDiagnosticIssues('Blockers', status.blockers),
+    ...formatNestedDiagnosticIssues('Warnings', status.warnings),
+  )
+
+  return lines
+}
+
 export function formatDevicePrereqDiagnosticLines(
   devicePrereqs,
   {
@@ -265,9 +395,7 @@ export function formatDevicePrereqDiagnosticLines(
   const hostedProviders = isRecord(diagnostics.hostedProviders)
     ? diagnostics.hostedProviders
     : {}
-  const configuredProviders = Array.isArray(
-    hostedProviders.configuredProviders,
-  )
+  const configuredProviders = Array.isArray(hostedProviders.configuredProviders)
     ? hostedProviders.configuredProviders
     : []
   const partialProviders = Array.isArray(hostedProviders.partialProviders)
@@ -291,6 +419,14 @@ export function formatDevicePrereqDiagnosticLines(
     ...formatPlatformDiagnosticLines('iOS', diagnostics.ios, {
       countMissing,
     }),
+    ...formatExportTemplateDiagnosticLines(
+      'Android export templates',
+      diagnostics.exportTemplates?.android,
+    ),
+    ...formatExportTemplateDiagnosticLines(
+      'iOS export templates',
+      diagnostics.exportTemplates?.ios,
+    ),
     `- Hosted provider env configured: ${
       configuredProviders.length > 0
         ? configuredProviders.map(formatConfiguredProvider).join('; ')
