@@ -1,6 +1,6 @@
 # Release Handoff
 
-- Release candidate commit: `de41cd0b6abdd23db0720862c2d23a27b4c9d762`
+- Release candidate commit: `43f76a37f9885a3f656127479e810212ef1ffd85`
 - Overall readiness: open (10 blocker(s))
 - Real-device evidence: waiting
 - Android evidence: waiting
@@ -25,8 +25,8 @@
 
 - Status: ready
 - Path: `release/ci-runs.json`
-- Check: https://github.com/portwatcher/vue-godot/actions/runs/28768139002 (success)
-- Godot Smoke: https://github.com/portwatcher/vue-godot/actions/runs/28768146503 (success)
+- Check: https://github.com/portwatcher/vue-godot/actions/runs/28768381979 (success)
+- Godot Smoke: https://github.com/portwatcher/vue-godot/actions/runs/28768391129 (success)
 
 ## Platform Evidence
 
@@ -69,12 +69,12 @@ Run the local check and selected API export checks on real or hosted devices, re
 
 ```bash
 npm run check
-npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit de41cd0b6abdd23db0720862c2d23a27b4c9d762
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit de41cd0b6abdd23db0720862c2d23a27b4c9d762
-npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit de41cd0b6abdd23db0720862c2d23a27b4c9d762
-npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit de41cd0b6abdd23db0720862c2d23a27b4c9d762
-npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit de41cd0b6abdd23db0720862c2d23a27b4c9d762 --real-device-output release/real-device-evidence.json
-npm run check:real-device-evidence -- --expected-commit de41cd0b6abdd23db0720862c2d23a27b4c9d762
+npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
+npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
+npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
+npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 43f76a37f9885a3f656127479e810212ef1ffd85 --real-device-output release/real-device-evidence.json
+npm run check:real-device-evidence -- --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
 git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json
 git commit -m "Add real-device release evidence"
 git push
@@ -88,14 +88,14 @@ Run the local check after the tested release candidate and real-device evidence 
 
 ```bash
 npm run check
-npm run release:ci -- --commit de41cd0b6abdd23db0720862c2d23a27b4c9d762 --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --wait --output release/ci-runs.json
-GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit de41cd0b6abdd23db0720862c2d23a27b4c9d762 --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json
-GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit de41cd0b6abdd23db0720862c2d23a27b4c9d762 --output release/release-preflight-summary.json
-npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit de41cd0b6abdd23db0720862c2d23a27b4c9d762 --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json
+npm run release:ci -- --commit 43f76a37f9885a3f656127479e810212ef1ffd85 --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --wait --output release/ci-runs.json
+GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit 43f76a37f9885a3f656127479e810212ef1ffd85 --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json
+GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit 43f76a37f9885a3f656127479e810212ef1ffd85 --output release/release-preflight-summary.json
+npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 43f76a37f9885a3f656127479e810212ef1ffd85 --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json
 git add release/ci-runs.json release/release-preflight-summary.json release/real-device-evidence.json release/release-readiness-evidence.json
 git commit -m "Add release readiness evidence"
 git push
-npm run release:readiness -- --expected-commit de41cd0b6abdd23db0720862c2d23a27b4c9d762
+npm run release:readiness -- --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
 ```
 
 ### Remove public warning wording through the guarded finalizer
@@ -105,12 +105,12 @@ Blocked by: `real-device-evidence`, `release-preflight-evidence`
 Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks, removes public warning wording, then stages and commits those edits before the final strict readiness check.
 
 ```bash
-npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit de41cd0b6abdd23db0720862c2d23a27b4c9d762
+npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
 npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json
 npm run check
 git add TODO.md README.md docs/compatibility.md docs/production.md docs/real-device-release.md
 git commit -m "Finalize production readiness"
 git push
-npm run release:readiness -- --expected-commit de41cd0b6abdd23db0720862c2d23a27b4c9d762
+npm run release:readiness -- --expected-commit 43f76a37f9885a3f656127479e810212ef1ffd85
 ```
 
