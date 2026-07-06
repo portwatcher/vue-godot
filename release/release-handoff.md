@@ -2,7 +2,7 @@
 
 - Release candidate commit: `1087588e2a2f7989a51df1c428eb647d17ea3ab8`
 - Handoff format: 7
-- Handoff state: a2cc441755d3fdc4
+- Handoff state: 780dfbf694351352
 - Overall readiness: open (10 blocker(s))
 - Real-device evidence: waiting
 - Android evidence: waiting
@@ -44,7 +44,7 @@
 - Android: waiting (1 blocker(s), 0 warning(s), 0 device(s))
   - Command: `adb devices -l`
   - Blockers:
-    - adb not found; install Android platform-tools or use a hosted real Android device.
+    - No authorized physical Android devices reported by adb; connect and authorize a real device or use hosted real-device evidence.
 - iOS: waiting (1 blocker(s), 0 warning(s), 0 device(s))
   - Command: `xcrun xctrace list devices`
   - Blockers:
