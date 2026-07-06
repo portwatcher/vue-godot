@@ -50,9 +50,9 @@ function readyFinalizationSummary() {
 
   return {
     allowOpen: false,
-    blockers: finalTodoRequirements.map(
-      (status) => `${status.file}:${status.line} ${status.text}`,
-    ),
+    blockers: finalTodoRequirements
+      .filter((status) => status.checked !== true)
+      .map((status) => `${status.file}:${status.line} ${status.text}`),
     checks: {
       androidRealDeviceEvidence: true,
       checkedFinalTodosBackedByEvidence: true,
@@ -133,6 +133,23 @@ test('release readiness finalizer rejects unsafe summaries', () => {
   assert.match(
     validateFinalizationSummary(duplicateBlockersSummary).join('\n'),
     /duplicate release-readiness blocker: TODO\.md:/,
+  )
+
+  const summaryWithReadyCheckedTodo = readyFinalizationSummary()
+  assert.ok(
+    summaryWithReadyCheckedTodo.finalTodoRequirements.some(
+      (status) =>
+        status.text === '`npm run check` passes locally and in CI.' &&
+        status.checked === true,
+    ),
+  )
+  assert.doesNotMatch(
+    summaryWithReadyCheckedTodo.blockers.join('\n'),
+    /`npm run check` passes locally and in CI\./,
+  )
+  assert.deepEqual(
+    validateFinalizationSummary(summaryWithReadyCheckedTodo),
+    [],
   )
 })
 

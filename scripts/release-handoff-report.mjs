@@ -243,21 +243,42 @@ function platformLabel(platform) {
   return 'Platform'
 }
 
+function commandHasPlaceholder(command) {
+  return typeof command === 'string' && /<[^>\n]+>/.test(command.trim())
+}
+
+function fencedCommandBlock(commands) {
+  return ['```bash', ...commands, '```']
+}
+
 function commandBlock(commands) {
   if (!Array.isArray(commands) || commands.length === 0) {
     return ['No commands recorded.']
   }
 
-  return ['```bash', ...commands, '```']
+  const readyCommands = commands.filter(
+    (command) => !commandHasPlaceholder(command),
+  )
+  const placeholderCommands = commands.filter(commandHasPlaceholder)
+  if (readyCommands.length === 0 || placeholderCommands.length === 0) {
+    return fencedCommandBlock(commands)
+  }
+
+  return [
+    '#### Ready To Run',
+    '',
+    ...fencedCommandBlock(readyCommands),
+    '',
+    '#### Replace Placeholders First',
+    '',
+    ...fencedCommandBlock(placeholderCommands),
+  ]
 }
 
 function hasCommandPlaceholders(commands) {
   return (
     Array.isArray(commands) &&
-    commands.some(
-      (command) =>
-        typeof command === 'string' && /<[^>\n]+>/.test(command.trim()),
-    )
+    commands.some((command) => commandHasPlaceholder(command))
   )
 }
 

@@ -355,9 +355,9 @@ placeholders for currently open gaps, plus per-check commands that prefill each 
 for incremental device sessions. Replace every placeholder before recording evidence; the recorder,
 worksheet audit, and final evidence validator reject placeholder metadata,
 placeholder confirmation notes,
-and placeholder skip reasons. The Markdown handoff flags command blocks that
-still contain `<...>` placeholders so device testers know to edit them before
-running. When `--summary-output` is supplied, the
+and placeholder skip reasons. The Markdown handoff separates ready-to-run
+commands from templates with `<...>` placeholders and flags those placeholders
+so device testers know to edit them before running. When `--summary-output` is supplied, the
 recorder writes the updated audit and follow-up `nextActions`
 using the same evidence and summary paths. The helper rejects unknown checks and
 refuses to skip pass-only or selected-API-required checks. Selected API names are

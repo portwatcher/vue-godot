@@ -221,6 +221,7 @@ function expectedTodoBlockers(summary) {
     statuses.flatMap((status) => {
       if (
         !isRecord(status) ||
+        status.checked === true ||
         typeof status.file !== 'string' ||
         typeof status.line !== 'number' ||
         typeof status.text !== 'string'

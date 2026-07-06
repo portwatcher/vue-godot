@@ -264,9 +264,9 @@ placeholder confirmation notes,
 and placeholder skip reasons. Final `passedChecks` must be a non-empty
 string array without duplicates, and final `skippedChecks` must be an object whose
 values are non-empty release-specific reasons. A check must not appear in both.
-The Markdown handoff flags command blocks
-that still contain `<...>` placeholders so device testers know to edit them
-before running. It preserves existing and newly supplied `--skip check=reason`
+The Markdown handoff separates ready-to-run commands from templates with
+`<...>` placeholders and flags those placeholders so device testers know to edit
+them before running. It preserves existing and newly supplied `--skip check=reason`
 entries, and the same pass-only and selected-API validation still applies. When
 `--summary-output` is supplied, the recorder writes the updated audit and
 follow-up `nextActions` using the same evidence and summary paths.

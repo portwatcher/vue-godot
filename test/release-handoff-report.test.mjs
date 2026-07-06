@@ -255,6 +255,16 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
     markdown,
     /Commands with `<\.\.\.>` placeholders must be edited before running; unresolved placeholders are not valid release evidence or dispatch inputs\./,
   )
+  assert.match(markdown, /#### Ready To Run/)
+  assert.match(markdown, /#### Replace Placeholders First/)
+  assert.match(
+    markdown,
+    /#### Ready To Run[\s\S]*npm run check[\s\S]*npm run release:evidence -- --commit[\s\S]*#### Replace Placeholders First/,
+  )
+  assert.match(
+    markdown,
+    /#### Replace Placeholders First[\s\S]*<android-apk-aab-or-hosted-build-id>/,
+  )
   assert.match(markdown, /TODO\.md:389 Android export/)
   assert.match(
     markdown,
