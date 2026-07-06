@@ -516,10 +516,10 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
           action.detail.includes('Android: 5 metadata field(s) missing') &&
           action.detail.includes('iOS: 5 metadata field(s) missing') &&
           action.commands.includes(
-            'npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass <comma-separated-passed-checks> --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
+            'npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
           ) &&
           action.commands.includes(
-            'npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass <comma-separated-passed-checks> --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
+            'npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
           ) &&
           action.commands.includes(
             'npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit <release-candidate-sha>',
@@ -582,10 +582,10 @@ test('check-real-device-evidence next actions honor expected commits', () => {
           action.detail.includes('Android: 5 metadata field(s) missing') &&
           action.detail.includes('iOS: 5 metadata field(s) missing') &&
           action.commands.includes(
-            `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass <comma-separated-passed-checks> --summary-output release/platform-evidence-summary.json --expected-commit ${expectedCommit}`,
+            `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit ${expectedCommit}`,
           ) &&
           action.commands.includes(
-            `npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass <comma-separated-passed-checks> --summary-output release/platform-evidence-summary.json --expected-commit ${expectedCommit}`,
+            `npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit ${expectedCommit}`,
           ) &&
           action.commands.includes(
             `npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit ${expectedCommit}`,

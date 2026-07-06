@@ -34,6 +34,8 @@ Options:
   --orientation <value>            Tested orientation coverage.
   --locale <value>                 Tested locale.
   --pass <check[,check...]>        Record required check(s) in passedChecks.
+  --pass-remaining                 Record every unskipped required check in
+                                  passedChecks.
   --passed-check <check[,check...]> Alias for --pass.
   --skip <check=reason>            Record a skippable required check with reason.
                                   Can be repeated. ":" is also accepted.
@@ -85,6 +87,7 @@ function parseArgs(argv) {
     summaryOutput: null,
     updates: {},
     passedChecks: [],
+    passRemaining: false,
     skippedChecks: {},
   }
 
@@ -111,6 +114,11 @@ function parseArgs(argv) {
 
     if (arg === '--dry-run') {
       options.dryRun = true
+      continue
+    }
+
+    if (arg === '--pass-remaining') {
+      options.passRemaining = true
       continue
     }
 
@@ -204,10 +212,11 @@ function parseArgs(argv) {
   const hasUpdates =
     Object.keys(options.updates).length > 0 ||
     options.passedChecks.length > 0 ||
+    options.passRemaining ||
     Object.keys(options.skippedChecks).length > 0
   if (!hasUpdates) {
     throw new Error(
-      'Provide at least one metadata field, --pass, or --skip update',
+      'Provide at least one metadata field, --pass, --pass-remaining, or --skip update',
     )
   }
 
@@ -298,12 +307,12 @@ export function recordPlatformEvidence(evidence, options) {
     throw new Error(`${platform}.skippedChecks must be an object`)
   }
 
-  const newPassedChecks = uniqueStrings(options.passedChecks)
+  const explicitPassedChecks = uniqueStrings(options.passedChecks ?? [])
   const newSkippedChecks = Object.keys(options.skippedChecks)
-  validateCheckNames(platform, newPassedChecks, '--pass')
+  validateCheckNames(platform, explicitPassedChecks, '--pass')
   validateCheckNames(platform, newSkippedChecks, '--skip')
 
-  const conflictingChecks = newPassedChecks.filter((check) =>
+  const conflictingChecks = explicitPassedChecks.filter((check) =>
     newSkippedChecks.includes(check),
   )
   if (conflictingChecks.length > 0) {
@@ -323,6 +332,22 @@ export function recordPlatformEvidence(evidence, options) {
       `${platform} check(s) must be recorded in passedChecks, not skippedChecks: ${invalidSkippedChecks.join(', ')}`,
     )
   }
+
+  const passRemainingChecks = options.passRemaining
+    ? requiredRealDeviceChecks[platform].filter((check) => {
+        if (explicitPassedChecks.includes(check)) {
+          return false
+        }
+        if (newSkippedChecks.includes(check)) {
+          return false
+        }
+        return typeof platformEvidence.skippedChecks[check] !== 'string'
+      })
+    : []
+  const newPassedChecks = uniqueStrings([
+    ...explicitPassedChecks,
+    ...passRemainingChecks,
+  ])
 
   for (const [key, value] of Object.entries(options.updates)) {
     platformEvidence[key] = value
@@ -373,6 +398,7 @@ function main() {
   summary.updatedPlatform = options.platform
   summary.dryRun = options.dryRun
   summary.expectedCommit = options.expectedCommit
+  summary.passRemaining = options.passRemaining
 
   if (!options.dryRun) {
     writeJson(options.platformEvidencePath, updated)

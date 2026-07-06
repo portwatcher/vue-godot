@@ -189,6 +189,11 @@ npm run release:record-platform-evidence -- \
 Use `--platform ios` for the iOS pass. The recorder rejects unknown check names
 and refuses to put pass-only or selected-API-required checks in `skippedChecks`;
 those checks must be recorded with `--pass` after they actually pass.
+After every unresolved required check for that platform has actually passed,
+use `--pass-remaining` to move all unskipped required checks into
+`passedChecks` in one batch. It preserves existing and newly supplied
+`--skip check=reason` entries, and the same pass-only and selected-API
+validation still applies.
 
 After the release candidate is pushed, verify the required CI runs and capture
 their URLs and structured workflow readiness status:

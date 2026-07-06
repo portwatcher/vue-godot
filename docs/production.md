@@ -94,8 +94,10 @@ initial CI for the tested commit.
 Use `npm run release:record-platform-evidence -- --platform android` or
 `--platform ios` after each hosted or real-device pass to record
 artifact/device metadata, `--pass` check names, and `--skip check=reason`
-outcomes without hand-editing JSON. The helper rejects unknown check names and
-refuses to skip pass-only or selected-API-required checks.
+outcomes without hand-editing JSON. After every unresolved platform check has
+actually passed, add `--pass-remaining` to record all unskipped required checks
+in one batch. The helper rejects unknown check names and refuses to skip
+pass-only or selected-API-required checks.
 The production profile currently expands to `fetch`, `WebSocket`,
 `checkNetworkReachability`, `navigator.onLine`, `localStorage`,
 `sessionStorage`, `navigator.permissions.query`, `navigator.clipboard`,

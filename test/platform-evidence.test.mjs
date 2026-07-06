@@ -276,6 +276,62 @@ test('record-platform-evidence CLI rejects skipped must-pass checks', () => {
   }
 })
 
+test('record-platform-evidence CLI can pass all remaining unskipped checks', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-platform-'))
+  const evidencePath = path.join(tempDir, 'platform-evidence.json')
+  const summaryPath = path.join(tempDir, 'platform-summary.json')
+
+  try {
+    fs.writeFileSync(
+      evidencePath,
+      `${JSON.stringify(buildPlatformEvidenceTemplate({ selectedApis: [] }), null, 2)}\n`,
+    )
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/record-platform-evidence.mjs',
+        '--platform',
+        'android',
+        '--platform-evidence',
+        evidencePath,
+        '--skip',
+        'network-if-selected=Network APIs were not selected for this hosted pass',
+        '--pass-remaining',
+        '--summary-output',
+        summaryPath,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf-8',
+      },
+    )
+
+    assert.equal(result.status, 0, result.stderr || result.stdout)
+    const updated = JSON.parse(fs.readFileSync(evidencePath, 'utf-8'))
+    assert.deepEqual(
+      updated.android.passedChecks,
+      requiredRealDeviceChecks.android.filter(
+        (check) => check !== 'network-if-selected',
+      ),
+    )
+    assert.equal(
+      updated.android.skippedChecks['network-if-selected'],
+      'Network APIs were not selected for this hosted pass',
+    )
+
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+    assert.equal(summary.updatedPlatform, 'android')
+    assert.equal(summary.passRemaining, true)
+    assert.equal(
+      summary.progress.android.completedCheckCount,
+      requiredRealDeviceChecks.android.length,
+    )
+    assert.deepEqual(summary.platforms.android.remainingChecks, [])
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
 test('check-platform-evidence CLI writes summary and supports allow-open', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-platform-'))
   const evidencePath = path.join(tempDir, 'platform-evidence.json')
@@ -313,12 +369,12 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
     assert.match(summary.nextActions[0].detail, /iOS: 5 metadata/)
     assert.ok(
       summary.nextActions[0].commands.includes(
-        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass <comma-separated-passed-checks> --summary-output ${summaryPath} --expected-commit ${commit}`,
+        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output ${summaryPath} --expected-commit ${commit}`,
       ),
     )
     assert.ok(
       summary.nextActions[0].commands.includes(
-        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass <comma-separated-passed-checks> --summary-output ${summaryPath} --expected-commit ${commit}`,
+        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output ${summaryPath} --expected-commit ${commit}`,
       ),
     )
     assert.ok(

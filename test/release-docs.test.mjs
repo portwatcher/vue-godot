@@ -308,7 +308,12 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /command templates before the strict\s+worksheet audit/)
   assert.match(production, /--platform android/)
   assert.match(production, /--platform ios/)
-  assert.match(production, /refuses to skip pass-only or selected-API-required checks/)
+  assert.match(production, /--pass-remaining/)
+  assert.match(production, /all unskipped required checks/)
+  assert.match(
+    production,
+    /refuses to skip\s+pass-only or selected-API-required checks/,
+  )
   assert.match(production, /--production-profile/)
   assert.match(production, /production-profile selected API set/)
   assert.match(
@@ -558,6 +563,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /before the worksheet audit command/)
   assert.match(readme, /--platform android/)
   assert.match(readme, /--platform ios/)
+  assert.match(readme, /--pass-remaining/)
+  assert.match(readme, /all unskipped required checks/)
   assert.match(readme, /rejects unknown checks/)
   assert.match(readme, /refuses to skip pass-only or selected-API-required checks/)
   assert.match(readme, /--production-profile/)
@@ -731,6 +738,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /--platform ios/)
   assert.match(checklist, /--pass cold-launch,no-godotjs-load-diagnostics/)
   assert.match(checklist, /--skip audio-input-if-selected/)
+  assert.match(checklist, /--pass-remaining/)
+  assert.match(checklist, /preserves existing and newly supplied/)
   assert.match(checklist, /refuses to put pass-only or selected-API-required checks/)
   assert.match(checklist, /check:platform-evidence/)
   assert.match(checklist, /platform-evidence-summary\.json/)
