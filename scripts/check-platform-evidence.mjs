@@ -578,13 +578,15 @@ export function readPlatformEvidenceAudit(
   return summary
 }
 
-function collectNextActions(summary, options) {
+export function collectPlatformEvidenceNextActions(summary, options = {}) {
   const commit = options.expectedCommit
   const actions = []
+  const platformEvidencePath =
+    options.platformEvidencePath ?? defaultPlatformEvidencePath
   const usesCustomPlatformEvidencePath =
-    options.platformEvidencePath !== defaultPlatformEvidencePath
+    platformEvidencePath !== defaultPlatformEvidencePath
   const platformEvidenceOptions = usesCustomPlatformEvidencePath
-    ? { platformEvidencePath: options.platformEvidencePath }
+    ? { platformEvidencePath }
     : {}
 
   if (!summary.evidencePresent) {
@@ -617,16 +619,16 @@ function collectNextActions(summary, options) {
       ].join(' '),
       commands: [
         recordPlatformEvidenceCommand('android', commit, {
-          platformEvidencePath: options.platformEvidencePath,
+          platformEvidencePath,
           summaryOutput: options.summaryOutput ?? 'release/platform-evidence-summary.json',
         }),
         recordPlatformEvidenceCommand('ios', commit, {
-          platformEvidencePath: options.platformEvidencePath,
+          platformEvidencePath,
           summaryOutput: options.summaryOutput ?? 'release/platform-evidence-summary.json',
         }),
         checkPlatformEvidenceCommand(commit, {
           allowOpen: true,
-          platformEvidencePath: options.platformEvidencePath,
+          platformEvidencePath,
           summaryOutput: options.summaryOutput ?? 'release/platform-evidence-summary.json',
         }),
       ],
@@ -642,7 +644,7 @@ function collectNextActions(summary, options) {
     commands: [
       'npm run check',
       releaseEvidenceCommand(commit, {
-        platformEvidencePath: options.platformEvidencePath,
+        platformEvidencePath,
       }),
       checkRealDeviceEvidenceCommand(commit, platformEvidenceOptions),
     ],
@@ -678,7 +680,7 @@ function main() {
   const summary = readPlatformEvidenceAudit(options.platformEvidencePath, {
     allowNonProductionProfile: options.allowNonProductionProfile,
   })
-  summary.nextActions = collectNextActions(summary, {
+  summary.nextActions = collectPlatformEvidenceNextActions(summary, {
     expectedCommit: options.expectedCommit,
     platformEvidencePath: options.platformEvidencePath,
     summaryOutput: options.summaryOutput,

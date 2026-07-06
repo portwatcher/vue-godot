@@ -99,7 +99,9 @@ artifact/device metadata, `--pass` check names, and `--skip check=reason`
 outcomes without hand-editing JSON. After every unresolved platform check has
 actually passed, add `--pass-remaining` to record all unskipped required checks
 in one batch. The helper rejects unknown check names and refuses to skip
-pass-only or selected-API-required checks.
+pass-only or selected-API-required checks. When `--summary-output` is supplied,
+the recorder writes the updated audit and follow-up `nextActions` using the
+same evidence and summary paths.
 The production profile currently expands to `fetch`, `WebSocket`,
 `checkNetworkReachability`, `navigator.onLine`, `localStorage`,
 `sessionStorage`, `navigator.permissions.query`, `navigator.clipboard`,

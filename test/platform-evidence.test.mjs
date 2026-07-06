@@ -171,7 +171,9 @@ test('platform evidence audit accepts non-production profile when allowed', () =
 })
 
 test('record-platform-evidence CLI records one platform result batch', () => {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-platform-'))
+  const tempDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), "vue godot platform's "),
+  )
   const evidencePath = path.join(tempDir, 'platform-evidence.json')
   const summaryPath = path.join(tempDir, 'platform-summary.json')
 
@@ -233,6 +235,17 @@ test('record-platform-evidence CLI records one platform result batch', () => {
     assert.equal(summary.updatedPlatform, 'android')
     assert.equal(summary.expectedCommit, commit)
     assert.equal(summary.progress.android.completedCheckCount, 3)
+    assert.equal(summary.nextActions[0].id, 'complete-platform-evidence')
+    assert.ok(
+      summary.nextActions[0].commands.includes(
+        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${shellQuote(evidencePath)} --artifact <android-apk-aab-or-hosted-build-id> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output ${shellQuote(summaryPath)} --expected-commit ${commit}`,
+      ),
+    )
+    assert.ok(
+      summary.nextActions[0].commands.includes(
+        `npm run check:platform-evidence -- --platform-evidence ${shellQuote(evidencePath)} --summary-output ${shellQuote(summaryPath)} --allow-open --expected-commit ${commit}`,
+      ),
+    )
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }

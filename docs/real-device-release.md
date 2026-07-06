@@ -199,7 +199,9 @@ After every unresolved required check for that platform has actually passed,
 use `--pass-remaining` to move all unskipped required checks into
 `passedChecks` in one batch. It preserves existing and newly supplied
 `--skip check=reason` entries, and the same pass-only and selected-API
-validation still applies.
+validation still applies. When `--summary-output` is supplied, the recorder
+writes the updated audit and follow-up `nextActions` using the same evidence and
+summary paths.
 
 After the release candidate is pushed, verify the required CI runs and capture
 their URLs and structured workflow readiness status:

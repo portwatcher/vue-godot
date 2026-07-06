@@ -329,6 +329,10 @@ test('release preflight enforces real device evidence', () => {
     production,
     /refuses to skip\s+pass-only or selected-API-required checks/,
   )
+  assert.match(
+    production,
+    /When `--summary-output` is supplied[\s\S]*recorder writes the updated audit and follow-up `nextActions`/,
+  )
   assert.match(production, /--production-profile/)
   assert.match(production, /production-profile selected API set/)
   assert.match(
@@ -503,6 +507,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /npm@\^11\.15\.0/)
   assert.match(readme, /--ci-evidence/)
   assert.match(readme, /--summary-output/)
+  assert.match(
+    readme,
+    /When `--summary-output` is supplied[\s\S]*recorder writes the updated audit and follow-up `nextActions`/,
+  )
   assert.match(readme, /--release-preflight-summary/)
   assert.match(
     readme,
@@ -594,6 +602,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /all unskipped required checks/)
   assert.match(readme, /rejects unknown checks/)
   assert.match(readme, /refuses to skip pass-only or selected-API-required checks/)
+  assert.match(
+    readme,
+    /When `--summary-output` is supplied[\s\S]*recorder writes the updated audit and follow-up `nextActions`/,
+  )
   assert.match(readme, /--production-profile/)
   assert.match(readme, /production-profile selected API set/)
   assert.match(
@@ -667,6 +679,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /running `npm run check` before\s+pushing/)
   assert.match(checklist, /pushing or dispatching missing\s+workflows/)
   assert.match(checklist, /--ci-evidence/)
+  assert.match(
+    checklist,
+    /When `--summary-output` is supplied[\s\S]*recorder\s+writes the updated audit and follow-up `nextActions`/,
+  )
   assert.match(checklist, /--release-preflight-summary/)
   assert.match(
     checklist,
@@ -776,6 +792,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /--pass-remaining/)
   assert.match(checklist, /preserves existing and newly supplied/)
   assert.match(checklist, /refuses to put pass-only or selected-API-required checks/)
+  assert.match(
+    checklist,
+    /When `--summary-output` is supplied[\s\S]*recorder[\s\S]*writes the updated audit and follow-up `nextActions`/,
+  )
   assert.match(checklist, /check:platform-evidence/)
   assert.match(checklist, /platform-evidence-summary\.json/)
   assert.match(checklist, /--production-profile/)

@@ -3,6 +3,7 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import {
   auditPlatformEvidence,
+  collectPlatformEvidenceNextActions,
   formatPlatformEvidenceProgress,
 } from './check-platform-evidence.mjs'
 import { isRecord } from './release-evidence-utils.mjs'
@@ -399,6 +400,11 @@ function main() {
   summary.dryRun = options.dryRun
   summary.expectedCommit = options.expectedCommit
   summary.passRemaining = options.passRemaining
+  summary.nextActions = collectPlatformEvidenceNextActions(summary, {
+    expectedCommit: options.expectedCommit,
+    platformEvidencePath: options.platformEvidencePath,
+    summaryOutput: options.summaryOutput,
+  })
 
   if (!options.dryRun) {
     writeJson(options.platformEvidencePath, updated)
