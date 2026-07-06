@@ -29,6 +29,9 @@ device testing.
 Options:
   --expected-commit <sha>          Full tested release-candidate commit SHA.
   --output <file>                  Write Markdown to a file. Defaults to stdout.
+  --check                          Verify the output file is current without
+                                  writing it. Defaults to ${defaultReleaseHandoffReportPath}
+                                  when --output is omitted.
   --readiness-summary <file>       Render an existing release-readiness summary
                                   instead of running the allow-open audit.
   --ci-evidence <file>             CI evidence path passed to readiness.
@@ -45,6 +48,7 @@ Options:
 
 function parseArgs(argv) {
   const options = {
+    check: false,
     ciEvidencePath: null,
     expectedCommit: null,
     output: null,
@@ -70,6 +74,11 @@ function parseArgs(argv) {
     if (arg === '--help' || arg === '-h') {
       usage()
       process.exit(0)
+    }
+
+    if (arg === '--check') {
+      options.check = true
+      continue
     }
 
     let handled = false
@@ -112,6 +121,10 @@ function isRecord(value) {
 
 function repoPath(filePath) {
   return path.isAbsolute(filePath) ? filePath : path.resolve(repoRoot, filePath)
+}
+
+function repoRelativePath(filePath) {
+  return path.relative(repoRoot, repoPath(filePath)).split(path.sep).join('/')
 }
 
 function readJson(filePath) {
@@ -434,17 +447,85 @@ export function prepareReleaseHandoffSummary(summary, outputPath) {
     return summary
   }
 
+  const outputRelativePath = repoRelativePath(outputPath)
+  const blockers = Array.isArray(summary.blockers) ? summary.blockers : []
+  const cleanWorktreeBlocker = blockers.find((blocker) =>
+    isSelfOutputDirtyBlocker(blocker, outputRelativePath),
+  )
+  const onlySelfOutputIsDirty = Boolean(cleanWorktreeBlocker)
+
   const actions = Array.isArray(summary.nextActions)
-    ? summary.nextActions.filter(
-        (action) =>
-          !isRecord(action) || action.id !== 'release-handoff-report',
-      )
+    ? summary.nextActions.filter((action) => {
+        if (!isRecord(action)) {
+          return true
+        }
+        if (action.id === 'release-handoff-report') {
+          return false
+        }
+        if (onlySelfOutputIsDirty && action.id === 'clean-worktree') {
+          return false
+        }
+        return true
+      })
     : summary.nextActions
+  const preparedBlockers = onlySelfOutputIsDirty
+    ? blockers.filter((blocker) => blocker !== cleanWorktreeBlocker)
+    : blockers
 
   return {
     ...summary,
+    blockerCount: onlySelfOutputIsDirty
+      ? preparedBlockers.length
+      : summary.blockerCount,
+    blockers: preparedBlockers,
+    checks:
+      onlySelfOutputIsDirty && isRecord(summary.checks)
+        ? {
+            ...summary.checks,
+            cleanWorktree: true,
+          }
+        : summary.checks,
+    localGit:
+      onlySelfOutputIsDirty && isRecord(summary.localGit)
+        ? {
+            ...summary.localGit,
+            dirtyWorktree: false,
+          }
+        : summary.localGit,
     nextActions: actions,
+    ready: onlySelfOutputIsDirty
+      ? preparedBlockers.length === 0
+      : summary.ready,
   }
+}
+
+function dirtyStatusPath(line) {
+  const text = String(line).trim()
+  const match = text.match(/^(?:[ MADRCU?!]{1,2}\s+)?(.+)$/)
+  const dirtyPath = match ? match[1] : text
+  const renamedPath = dirtyPath.includes(' -> ')
+    ? dirtyPath.split(' -> ').at(-1)
+    : dirtyPath
+
+  return String(renamedPath).replace(/^"|"$/g, '')
+}
+
+function isSelfOutputDirtyBlocker(blocker, outputRelativePath) {
+  if (typeof blocker !== 'string') {
+    return false
+  }
+
+  const [title, ...statusLines] = blocker.split('\n')
+  if (
+    title !== 'working tree must be clean for final release readiness' ||
+    statusLines.length === 0
+  ) {
+    return false
+  }
+
+  return statusLines.every(
+    (line) => dirtyStatusPath(line) === outputRelativePath,
+  )
 }
 
 function renderFinalTodoProofs(summary) {
@@ -512,13 +593,48 @@ function writeOutput(outputPath, markdown) {
   console.log(`[release-handoff] wrote ${path.relative(repoRoot, resolved)}`)
 }
 
+function checkOutput(outputPath, markdown) {
+  const targetPath = outputPath ?? defaultReleaseHandoffReportPath
+  const resolved = repoPath(targetPath)
+  const expected = `${markdown}\n`
+
+  if (!fs.existsSync(resolved)) {
+    throw new Error(
+      `[release-handoff] ${path.relative(repoRoot, resolved)} is missing`,
+    )
+  }
+
+  const actual = fs.readFileSync(resolved, 'utf-8')
+  if (actual !== expected) {
+    throw new Error(
+      `[release-handoff] ${path.relative(repoRoot, resolved)} is stale; run ${[
+        'npm',
+        'run',
+        'release:handoff',
+        '--',
+        ...(outputPath ? ['--output', outputPath] : ['--output', targetPath]),
+      ].join(' ')}`,
+    )
+  }
+
+  console.log(`[release-handoff] ${path.relative(repoRoot, resolved)} is current`)
+}
+
 function main() {
   const options = parseArgs(process.argv.slice(2))
   const summary = prepareReleaseHandoffSummary(
     runReadinessSummary(options),
-    options.output,
+    options.check
+      ? (options.output ?? defaultReleaseHandoffReportPath)
+      : options.output,
   )
-  writeOutput(options.output, renderReleaseHandoff(summary))
+  const markdown = renderReleaseHandoff(summary)
+  if (options.check) {
+    checkOutput(options.output, markdown)
+    return
+  }
+
+  writeOutput(options.output, markdown)
 }
 
 const entryPoint = process.argv[1] ? pathToFileURL(process.argv[1]).href : ''

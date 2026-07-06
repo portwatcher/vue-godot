@@ -417,6 +417,7 @@ test('release preflight enforces real device evidence', () => {
     production,
     /release:handoff[\s\S]*release\/release-handoff\.md[\s\S]*Markdown handoff/,
   )
+  assert.match(production, /--check[\s\S]*handoff is current/)
   assert.match(
     production,
     /per-platform metadata\/check gaps,\s+batch confirmation notes and issues,\s+malformed outcome details/,
@@ -607,6 +608,7 @@ test('release preflight enforces real device evidence', () => {
     readme,
     /release:handoff[\s\S]*release\/release-handoff\.md[\s\S]*Markdown handoff/,
   )
+  assert.match(readme, /--check[\s\S]*handoff is current/)
   assert.match(
     readme,
     /per-platform metadata\/check gaps, batch confirmation notes and issues, malformed outcome details/,
@@ -837,6 +839,7 @@ test('release preflight enforces real device evidence', () => {
     checklist,
     /release:handoff[\s\S]*release\/release-handoff\.md[\s\S]*Markdown handoff/,
   )
+  assert.match(checklist, /--check[\s\S]*handoff is current/)
   assert.match(
     checklist,
     /per-platform metadata\/check gaps,\s+batch confirmation notes and issues,\s+malformed outcome details/,

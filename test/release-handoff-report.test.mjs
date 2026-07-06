@@ -283,6 +283,85 @@ test('release handoff summary omits completed default handoff action', () => {
   assert.match(markdown, /Complete Android and iOS real-device export evidence/)
 })
 
+test('release handoff summary ignores its own default output dirty blocker', () => {
+  const source = sampleReadinessSummary()
+  const dirtyBlocker = [
+    'working tree must be clean for final release readiness',
+    'M release/release-handoff.md',
+  ].join('\n')
+  const summary = prepareReleaseHandoffSummary(
+    {
+      ...source,
+      blockerCount: source.blockers.length + 1,
+      blockers: [...source.blockers, dirtyBlocker],
+      checks: {
+        ...source.checks,
+        cleanWorktree: false,
+      },
+      localGit: {
+        dirtyWorktree: true,
+      },
+      nextActions: [
+        {
+          id: 'clean-worktree',
+          title: 'Commit or remove local changes before strict readiness',
+          commands: ['git status --short'],
+        },
+        ...source.nextActions,
+      ],
+    },
+    'release/release-handoff.md',
+  )
+  const markdown = renderReleaseHandoff(summary)
+
+  assert.equal(summary.blockerCount, source.blockers.length)
+  assert.equal(summary.checks.cleanWorktree, true)
+  assert.equal(summary.localGit.dirtyWorktree, false)
+  assert.doesNotMatch(markdown, /working tree must be clean/)
+  assert.doesNotMatch(markdown, /git status --short/)
+  assert.doesNotMatch(markdown, /Write Android\/iOS tester handoff/)
+})
+
+test('release handoff summary keeps non-output dirty blockers', () => {
+  const source = sampleReadinessSummary()
+  const dirtyBlocker = [
+    'working tree must be clean for final release readiness',
+    'M README.md',
+    'M release/release-handoff.md',
+  ].join('\n')
+  const summary = prepareReleaseHandoffSummary(
+    {
+      ...source,
+      blockerCount: source.blockers.length + 1,
+      blockers: [...source.blockers, dirtyBlocker],
+      checks: {
+        ...source.checks,
+        cleanWorktree: false,
+      },
+      localGit: {
+        dirtyWorktree: true,
+      },
+      nextActions: [
+        {
+          id: 'clean-worktree',
+          title: 'Commit or remove local changes before strict readiness',
+          commands: ['git status --short'],
+        },
+        ...source.nextActions,
+      ],
+    },
+    'release/release-handoff.md',
+  )
+  const markdown = renderReleaseHandoff(summary)
+
+  assert.equal(summary.blockerCount, source.blockers.length + 1)
+  assert.equal(summary.checks.cleanWorktree, false)
+  assert.equal(summary.localGit.dirtyWorktree, true)
+  assert.match(markdown, /working tree must be clean/)
+  assert.match(markdown, /M README\.md/)
+  assert.match(markdown, /git status --short/)
+})
+
 test('release handoff CLI writes a Markdown report from a readiness summary', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-handoff-'))
   const ciEvidencePath = path.join(tempDir, 'ci-runs.json')
@@ -324,6 +403,74 @@ test('release handoff CLI writes a Markdown report from a readiness summary', ()
       /Godot Smoke: https:\/\/github\.com\/portwatcher\/vue-godot\/actions\/runs\/2 \(success\)/,
     )
     assert.match(markdown, /Complete Android and iOS real-device export evidence/)
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
+test('release handoff CLI check verifies current output without writing', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-handoff-'))
+  const ciEvidencePath = path.join(tempDir, 'ci-runs.json')
+  const summaryPath = path.join(tempDir, 'readiness.json')
+  const outputPath = path.join(tempDir, 'handoff.md')
+
+  try {
+    fs.writeFileSync(
+      ciEvidencePath,
+      `${JSON.stringify(sampleCiEvidence(), null, 2)}\n`,
+    )
+    fs.writeFileSync(
+      summaryPath,
+      `${JSON.stringify(sampleReadinessSummary(ciEvidencePath), null, 2)}\n`,
+    )
+
+    const writeResult = spawnSync(
+      process.execPath,
+      [
+        'scripts/release-handoff-report.mjs',
+        '--readiness-summary',
+        summaryPath,
+        '--output',
+        outputPath,
+      ],
+      { cwd: repoRoot, encoding: 'utf-8' },
+    )
+    assert.equal(writeResult.status, 0, writeResult.stderr)
+    const before = fs.readFileSync(outputPath, 'utf-8')
+
+    const checkResult = spawnSync(
+      process.execPath,
+      [
+        'scripts/release-handoff-report.mjs',
+        '--readiness-summary',
+        summaryPath,
+        '--output',
+        outputPath,
+        '--check',
+      ],
+      { cwd: repoRoot, encoding: 'utf-8' },
+    )
+
+    assert.equal(checkResult.status, 0, checkResult.stderr)
+    assert.match(checkResult.stdout, /is current/)
+    assert.equal(fs.readFileSync(outputPath, 'utf-8'), before)
+
+    fs.writeFileSync(outputPath, `${before}\n<!-- stale -->\n`)
+    const staleResult = spawnSync(
+      process.execPath,
+      [
+        'scripts/release-handoff-report.mjs',
+        '--readiness-summary',
+        summaryPath,
+        '--output',
+        outputPath,
+        '--check',
+      ],
+      { cwd: repoRoot, encoding: 'utf-8' },
+    )
+
+    assert.equal(staleResult.status, 1)
+    assert.match(`${staleResult.stdout}\n${staleResult.stderr}`, /is stale/)
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }
