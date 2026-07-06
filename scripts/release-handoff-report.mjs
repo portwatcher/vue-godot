@@ -25,8 +25,7 @@ import {
 } from './release-utils.mjs'
 import { formatIssueBulletLines } from './markdown-checklist-utils.mjs'
 import {
-  devicePrereqProviderLabel,
-  devicePrereqStatusText,
+  formatDevicePrereqDiagnosticLines,
 } from './device-prereq-diagnostics.mjs'
 
 function usage() {
@@ -352,73 +351,12 @@ function ciEvidenceLines(summary) {
   return lines
 }
 
-function prereqPlatformLine(label, status) {
-  if (!isRecord(status)) {
-    return `- ${label}: not recorded`
-  }
-
-  return [
-    `- ${label}: ${devicePrereqStatusText(status.ready)}`,
-    ` (${status.blockerCount ?? 0} blocker(s),`,
-    ` ${status.warningCount ?? 0} warning(s),`,
-    ` ${status.deviceCount ?? 0} device(s))`,
-  ].join('')
-}
-
-function providerEnvList(provider, key) {
-  return isRecord(provider) ? provider[key] : []
-}
-
-function configuredProviderText(provider) {
-  return `${devicePrereqProviderLabel(provider)} (${inlineList(
-    providerEnvList(provider, 'configuredEnv'),
-  )})`
-}
-
-function partialProviderText(provider) {
-  return `${devicePrereqProviderLabel(provider)} (set: ${inlineList(
-    providerEnvList(provider, 'partialEnv'),
-  )}; missing: ${inlineList(providerEnvList(provider, 'missingEnv'))})`
-}
-
 function renderDevicePrereqDiagnostics(summary) {
-  const diagnostics = isRecord(summary.devicePrereqs)
-    ? summary.devicePrereqs
-    : {}
-  const hostedProviders = isRecord(diagnostics.hostedProviders)
-    ? diagnostics.hostedProviders
-    : {}
-  const configuredProviders = Array.isArray(
-    hostedProviders.configuredProviders,
-  )
-    ? hostedProviders.configuredProviders
-    : []
-  const partialProviders = Array.isArray(hostedProviders.partialProviders)
-    ? hostedProviders.partialProviders
-    : []
-
-  return [
-    '## Device Prereq Diagnostics',
-    '',
-    '- Diagnostic only: yes; this is not release evidence',
-    `- Summary path: \`${diagnostics.path ?? defaultDeviceTestPrereqsSummaryPath}\``,
-    `- Summary present: ${diagnostics.summaryPresent === true ? 'yes' : 'no'}`,
-    `- Status: ${devicePrereqStatusText(diagnostics.ready)}`,
-    `- Selected platforms: ${inlineList(diagnostics.selectedPlatforms)}`,
-    prereqPlatformLine('Android', diagnostics.android),
-    prereqPlatformLine('iOS', diagnostics.ios),
-    `- Hosted provider env configured: ${
-      configuredProviders.length > 0
-        ? configuredProviders.map(configuredProviderText).join('; ')
-        : 'none'
-    }`,
-    `- Hosted provider env partial: ${
-      partialProviders.length > 0
-        ? partialProviders.map(partialProviderText).join('; ')
-        : 'none'
-    }`,
-    ...evidenceErrorLines('Read errors', diagnostics.readErrors),
-  ]
+  return formatDevicePrereqDiagnosticLines(summary.devicePrereqs, {
+    countMissing: '0',
+    formatPath: (value) => `\`${value}\``,
+    pathFallback: defaultDeviceTestPrereqsSummaryPath,
+  })
 }
 
 function platformLines(platform, status) {

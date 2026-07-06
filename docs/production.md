@@ -119,8 +119,9 @@ iOS devices are available, and whether common hosted-provider environment
 variable sets are configured, then leave a gitignored JSON diagnostic next to
 the other release helper summaries. The release-readiness summary and Markdown
 handoff read that file into a diagnostic-only `devicePrereqs` / Device Prereq
-Diagnostics section; pass `--device-prereqs-summary <file>` to readiness when
-the diagnostic lives elsewhere. The hosted-provider diagnostic reports
+Diagnostics section with per-platform command, blocker, and warning details;
+pass `--device-prereqs-summary <file>` to readiness when the diagnostic lives
+elsewhere. The hosted-provider diagnostic reports
 configured or partially configured environment variable names for BrowserStack,
 Sauce Labs, Firebase Test Lab, AWS Device Farm, LambdaTest, and Kobiton, but
 never their values; when none are fully configured, the text output lists the
@@ -264,7 +265,8 @@ CI or assembling evidence. The real-device evidence action also runs
 `npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` before local or hosted device
 handoff commands so missing local tooling and hosted-provider environment
 variable names are recorded without pretending they are evidence, then
-readiness exposes that snapshot as diagnostic-only `devicePrereqs`. The Release
+readiness exposes that snapshot as diagnostic-only `devicePrereqs` with
+per-platform command, blocker, and warning details. The Release
 Preflight evidence action also reruns
 `npm run check:real-device-evidence -- --verify-runs` before CI/preflight
 collection continues, so stale device evidence or unverified Check/Godot Smoke

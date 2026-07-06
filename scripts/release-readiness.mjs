@@ -25,8 +25,7 @@ import {
 } from './markdown-checklist-utils.mjs'
 import {
   collectDevicePrereqDiagnostics,
-  devicePrereqProviderLabel,
-  devicePrereqStatusText,
+  formatDevicePrereqDiagnosticLines,
 } from './device-prereq-diagnostics.mjs'
 import { readInitialCiEvidenceStatus } from './release-ci-evidence.mjs'
 
@@ -1706,83 +1705,6 @@ function formatActionLines(action) {
     '',
   )
   return lines
-}
-
-function inlineDiagnosticList(values) {
-  if (!Array.isArray(values) || values.length === 0) {
-    return 'none'
-  }
-
-  return values.map((value) => `\`${String(value)}\``).join(', ')
-}
-
-function formatDevicePrereqPlatformChecklistLine(label, status) {
-  if (!isRecord(status)) {
-    return `- ${label}: not recorded`
-  }
-
-  return [
-    `- ${label}: ${devicePrereqStatusText(status.ready)}`,
-    ` (${displayValue(status.blockerCount)} blocker(s),`,
-    ` ${displayValue(status.warningCount)} warning(s),`,
-    ` ${displayValue(status.deviceCount)} device(s))`,
-  ].join('')
-}
-
-function providerEnvValues(provider, key) {
-  return isRecord(provider) ? provider[key] : []
-}
-
-function formatConfiguredProvider(provider) {
-  return `${devicePrereqProviderLabel(provider)} (${inlineDiagnosticList(
-    providerEnvValues(provider, 'configuredEnv'),
-  )})`
-}
-
-function formatPartialProvider(provider) {
-  return `${devicePrereqProviderLabel(provider)} (set: ${inlineDiagnosticList(
-    providerEnvValues(provider, 'partialEnv'),
-  )}; missing: ${inlineDiagnosticList(providerEnvValues(provider, 'missingEnv'))})`
-}
-
-function formatDevicePrereqDiagnosticLines(devicePrereqs) {
-  const diagnostics = isRecord(devicePrereqs) ? devicePrereqs : {}
-  const hostedProviders = isRecord(diagnostics.hostedProviders)
-    ? diagnostics.hostedProviders
-    : {}
-  const configuredProviders = Array.isArray(
-    hostedProviders.configuredProviders,
-  )
-    ? hostedProviders.configuredProviders
-    : []
-  const partialProviders = Array.isArray(hostedProviders.partialProviders)
-    ? hostedProviders.partialProviders
-    : []
-
-  return [
-    '## Device Prereq Diagnostics',
-    '',
-    '- Diagnostic only: yes; this is not release evidence',
-    `- Summary path: ${displayValue(diagnostics.path)}`,
-    `- Summary present: ${displayValue(diagnostics.summaryPresent)}`,
-    `- Status: ${devicePrereqStatusText(diagnostics.ready)}`,
-    `- Selected platforms: ${inlineDiagnosticList(
-      diagnostics.selectedPlatforms,
-    )}`,
-    formatDevicePrereqPlatformChecklistLine('Android', diagnostics.android),
-    formatDevicePrereqPlatformChecklistLine('iOS', diagnostics.ios),
-    `- Hosted provider env configured: ${
-      configuredProviders.length > 0
-        ? configuredProviders.map(formatConfiguredProvider).join('; ')
-        : 'none'
-    }`,
-    `- Hosted provider env partial: ${
-      partialProviders.length > 0
-        ? partialProviders.map(formatPartialProvider).join('; ')
-        : 'none'
-    }`,
-    ...formatIssueLines('Read errors', diagnostics.readErrors),
-  ]
 }
 
 export function formatReleaseReadinessChecklist(summary) {

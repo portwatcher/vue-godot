@@ -429,6 +429,8 @@ test('release readiness checklist renders final proof and next actions', () => {
   assert.match(checklist, /## Device Prereq Diagnostics/)
   assert.match(checklist, /Diagnostic only: yes; this is not release evidence/)
   assert.match(checklist, /Android: waiting \(1 blocker\(s\), 0 warning\(s\), 0 device\(s\)\)/)
+  assert.match(checklist, /  - Command: `adb devices -l`/)
+  assert.match(checklist, /  - Blockers:\n    - adb not found/)
   assert.match(checklist, /iOS: not recorded/)
   assert.match(
     checklist,
@@ -553,7 +555,14 @@ test('release readiness summary includes device prereq diagnostics', () => {
     assert.match(checklist, /## Device Prereq Diagnostics/)
     assert.match(checklist, /Diagnostic only: yes; this is not release evidence/)
     assert.match(checklist, /Android: waiting \(1 blocker\(s\), 1 warning\(s\), 0 device\(s\)\)/)
+    assert.match(checklist, /  - Command: `adb devices -l`/)
+    assert.match(checklist, /  - Blockers:\n    - adb not found/)
+    assert.match(
+      checklist,
+      /  - Warnings:\n    - Android SDK platform-tools missing/,
+    )
     assert.match(checklist, /iOS: ready \(0 blocker\(s\), 0 warning\(s\), 1 device\(s\)\)/)
+    assert.match(checklist, /  - Command: `xcrun xctrace list devices`/)
     assert.match(
       checklist,
       /Hosted provider env configured: BrowserStack App Automate \(`BROWSERSTACK_USERNAME`, `BROWSERSTACK_ACCESS_KEY`\)/,
@@ -1291,7 +1300,14 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.match(checklist, /## Device Prereq Diagnostics/)
     assert.match(checklist, /Diagnostic only: yes; this is not release evidence/)
     assert.match(checklist, /Android: waiting \(1 blocker\(s\), 1 warning\(s\), 0 device\(s\)\)/)
+    assert.match(checklist, /  - Command: `adb devices -l`/)
+    assert.match(checklist, /  - Blockers:\n    - adb not found/)
+    assert.match(
+      checklist,
+      /  - Warnings:\n    - Android device emulator-5554 appears to be an emulator\./,
+    )
     assert.match(checklist, /iOS: ready \(0 blocker\(s\), 0 warning\(s\), 1 device\(s\)\)/)
+    assert.match(checklist, /  - Command: `xcrun xctrace list devices`/)
     assert.match(
       checklist,
       /Hosted provider env configured: BrowserStack App Automate \(`BROWSERSTACK_USERNAME`, `BROWSERSTACK_ACCESS_KEY`\)/,

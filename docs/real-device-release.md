@@ -103,8 +103,9 @@ real-device evidence action also runs
 handoff commands so missing local tooling and hosted-provider environment
 variable names are recorded without pretending they are evidence, then
 readiness and handoff reports expose that snapshot as diagnostic-only
-`devicePrereqs` / Device Prereq Diagnostics. Pass
-`--device-prereqs-summary <file>` when the diagnostic lives elsewhere. The
+`devicePrereqs` / Device Prereq Diagnostics with per-platform command, blocker,
+and warning details. Pass `--device-prereqs-summary <file>` when the diagnostic
+lives elsewhere. The
 hosted-provider diagnostic covers BrowserStack, Sauce Labs, Firebase Test Lab,
 AWS Device Farm, LambdaTest, and Kobiton, and never records environment values.
 The Release Preflight evidence action also reruns

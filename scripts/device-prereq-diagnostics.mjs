@@ -3,6 +3,7 @@ import path from 'node:path'
 import { isRecord } from './release-evidence-utils.mjs'
 import { defaultDeviceTestPrereqsSummaryPath } from './release-handoff-commands.mjs'
 import { repoRoot } from './release-utils.mjs'
+import { splitIssueLines } from './markdown-checklist-utils.mjs'
 
 function relative(filePath) {
   const relativePath = path.relative(repoRoot, filePath)
@@ -158,4 +159,148 @@ export function devicePrereqProviderLabel(provider) {
   }
 
   return 'unknown provider'
+}
+
+function formatDiagnosticValue(value) {
+  if (typeof value === 'boolean') {
+    return value ? 'yes' : 'no'
+  }
+
+  if (Number.isInteger(value)) {
+    return String(value)
+  }
+
+  if (typeof value === 'string' && value.trim().length > 0) {
+    return value.trim()
+  }
+
+  return 'missing'
+}
+
+function formatDiagnosticCount(value, missing) {
+  return Number.isInteger(value) ? String(value) : missing
+}
+
+function inlineDiagnosticList(values) {
+  if (!Array.isArray(values) || values.length === 0) {
+    return 'none'
+  }
+
+  return values.map((value) => `\`${String(value)}\``).join(', ')
+}
+
+function providerEnvValues(provider, key) {
+  return isRecord(provider) ? provider[key] : []
+}
+
+function formatConfiguredProvider(provider) {
+  return `${devicePrereqProviderLabel(provider)} (${inlineDiagnosticList(
+    providerEnvValues(provider, 'configuredEnv'),
+  )})`
+}
+
+function formatPartialProvider(provider) {
+  return `${devicePrereqProviderLabel(provider)} (set: ${inlineDiagnosticList(
+    providerEnvValues(provider, 'partialEnv'),
+  )}; missing: ${inlineDiagnosticList(providerEnvValues(provider, 'missingEnv'))})`
+}
+
+function formatNestedDiagnosticIssues(label, values) {
+  const lines = splitIssueLines(values)
+  if (lines.length === 0) {
+    return []
+  }
+
+  return [`  - ${label}:`, ...lines.map((line) => `    - ${line}`)]
+}
+
+function formatReadErrorLines(values) {
+  const lines = splitIssueLines(values)
+  if (lines.length === 0) {
+    return ['- Read errors: none']
+  }
+
+  return ['- Read errors:', ...lines.map((line) => `  - ${line}`)]
+}
+
+function formatPlatformDiagnosticLines(label, status, { countMissing }) {
+  if (!isRecord(status)) {
+    return [`- ${label}: not recorded`]
+  }
+
+  const command =
+    typeof status.command === 'string' && status.command.trim().length > 0
+      ? status.command.trim()
+      : null
+  const lines = [
+    [
+      `- ${label}: ${devicePrereqStatusText(status.ready)}`,
+      ` (${formatDiagnosticCount(status.blockerCount, countMissing)} blocker(s),`,
+      ` ${formatDiagnosticCount(status.warningCount, countMissing)} warning(s),`,
+      ` ${formatDiagnosticCount(status.deviceCount, countMissing)} device(s))`,
+    ].join(''),
+  ]
+
+  if (command) {
+    lines.push(`  - Command: \`${command}\``)
+  }
+
+  lines.push(
+    ...formatNestedDiagnosticIssues('Blockers', status.blockers),
+    ...formatNestedDiagnosticIssues('Warnings', status.warnings),
+  )
+
+  return lines
+}
+
+export function formatDevicePrereqDiagnosticLines(
+  devicePrereqs,
+  {
+    countMissing = 'missing',
+    formatPath = formatDiagnosticValue,
+    pathFallback = null,
+  } = {},
+) {
+  const diagnostics = isRecord(devicePrereqs) ? devicePrereqs : {}
+  const hostedProviders = isRecord(diagnostics.hostedProviders)
+    ? diagnostics.hostedProviders
+    : {}
+  const configuredProviders = Array.isArray(
+    hostedProviders.configuredProviders,
+  )
+    ? hostedProviders.configuredProviders
+    : []
+  const partialProviders = Array.isArray(hostedProviders.partialProviders)
+    ? hostedProviders.partialProviders
+    : []
+  const summaryPath = diagnostics.path ?? pathFallback
+
+  return [
+    '## Device Prereq Diagnostics',
+    '',
+    '- Diagnostic only: yes; this is not release evidence',
+    `- Summary path: ${formatPath(summaryPath)}`,
+    `- Summary present: ${formatDiagnosticValue(diagnostics.summaryPresent)}`,
+    `- Status: ${devicePrereqStatusText(diagnostics.ready)}`,
+    `- Selected platforms: ${inlineDiagnosticList(
+      diagnostics.selectedPlatforms,
+    )}`,
+    ...formatPlatformDiagnosticLines('Android', diagnostics.android, {
+      countMissing,
+    }),
+    ...formatPlatformDiagnosticLines('iOS', diagnostics.ios, {
+      countMissing,
+    }),
+    `- Hosted provider env configured: ${
+      configuredProviders.length > 0
+        ? configuredProviders.map(formatConfiguredProvider).join('; ')
+        : 'none'
+    }`,
+    `- Hosted provider env partial: ${
+      partialProviders.length > 0
+        ? partialProviders.map(formatPartialProvider).join('; ')
+        : 'none'
+    }`,
+    ...formatReadErrorLines(diagnostics.readErrors),
+  ]
 }

@@ -262,7 +262,10 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
   assert.match(markdown, /Diagnostic only: yes; this is not release evidence/)
   assert.match(markdown, /Summary path: `release\/device-test-prereqs-summary\.json`/)
   assert.match(markdown, /Android: waiting \(1 blocker\(s\), 0 warning\(s\), 0 device\(s\)\)/)
+  assert.match(markdown, /  - Command: `adb devices -l`/)
+  assert.match(markdown, /  - Blockers:\n    - adb not found/)
   assert.match(markdown, /iOS: ready \(0 blocker\(s\), 0 warning\(s\), 1 device\(s\)\)/)
+  assert.match(markdown, /  - Command: `xcrun xctrace list devices`/)
   assert.match(
     markdown,
     /Hosted provider env configured: BrowserStack App Automate \(`BROWSERSTACK_USERNAME`, `BROWSERSTACK_ACCESS_KEY`\)/,
