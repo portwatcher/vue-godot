@@ -192,8 +192,8 @@ function platformEvidencePlaceholders(platform) {
       platformName === 'ios' ? '<ios-device-model>' : '<android-device-model>',
     evidenceUrl:
       platformName === 'ios'
-        ? '<ios-device-evidence-url>'
-        : '<android-device-evidence-url>',
+        ? '<ios-non-local-device-evidence-url>'
+        : '<android-non-local-device-evidence-url>',
     exportPreset:
       platformName === 'ios' ? '<ios-export-preset>' : '<android-export-preset>',
     observedCheck: `<observed-${platformName}-check-name>`,

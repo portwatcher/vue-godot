@@ -497,7 +497,7 @@ test('platform evidence template rejects invalid evidence URLs', () => {
   assert.throws(
     () =>
       buildPlatformEvidenceTemplate({
-        iosEvidenceUrl: '<ios-device-evidence-url>',
+        iosEvidenceUrl: '<ios-non-local-device-evidence-url>',
       }),
     /ios\.evidenceUrl requires a non-local http\(s\) URL/,
   )
