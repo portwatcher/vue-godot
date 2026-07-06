@@ -187,6 +187,7 @@ Commands with `<...>` placeholders must be edited before running; unresolved pla
 
 ```bash
 npm run check
+npm run check:device-prereqs -- --allow-missing
 npm run release:preflight -- --local --skip-check --skip-godot --expected-commit af72f6556b570a79667cb9abe0321b1a993c003b --summary-output /tmp/vue-godot-local-preflight-summary.json
 npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit af72f6556b570a79667cb9abe0321b1a993c003b
 npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit af72f6556b570a79667cb9abe0321b1a993c003b
