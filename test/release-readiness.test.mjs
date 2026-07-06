@@ -1335,6 +1335,11 @@ test('release readiness summary includes missing evidence next actions', () => {
       (action) => action.id === 'final-warning-removal',
     )
     assert.ok(finalWarningAction)
+    assert.match(
+      finalWarningAction.detail,
+      /generated commands then run npm run check/,
+    )
+    assert.doesNotMatch(finalWarningAction.detail, /then stages and commits/)
     assert.deepEqual(finalWarningAction.blockedBy, [
       'real-device-evidence',
       'release-preflight-evidence',

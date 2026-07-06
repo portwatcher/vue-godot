@@ -1559,7 +1559,7 @@ function collectReadinessNextActions(
           id: 'final-warning-removal',
           title: 'Remove public warning wording through the guarded finalizer',
           detail:
-            'Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks, removes public warning wording, then stages and commits those edits before the final strict readiness check.',
+            'Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks and removes public warning wording. The generated commands then run npm run check, stage those edits, commit them, push, and run the final strict readiness check.',
           commands: [
             releaseReadinessCommand(commit, pathOptions, {
               checklistOutput: '/tmp/vue-godot-readiness.md',
