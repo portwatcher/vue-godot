@@ -395,8 +395,16 @@ test('record-platform-evidence CLI records one platform result batch', () => {
     assert.equal(summary.nextActions[0].id, 'complete-platform-evidence')
     assert.match(result.stdout, /iOS missing metadata: artifact/)
     assert.match(result.stdout, /Android must-pass remaining: storage-restart/)
+    const androidPassCommand = summary.nextActions[0].commands.find(
+      (command) =>
+        command.includes('--platform android') &&
+        command.includes('--pass <observed-android-check-name>'),
+    )
+    assert.ok(androidPassCommand)
     const androidRecordCommand = summary.nextActions[0].commands.find(
-      (command) => command.includes('--platform android'),
+      (command) =>
+        command.includes('--platform android') &&
+        command.includes('--pass-remaining'),
     )
     assert.ok(androidRecordCommand)
     assert.match(
@@ -759,7 +767,17 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
     )
     assert.ok(
       summary.nextActions[0].commands.includes(
+        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass <observed-android-check-name> --summary-output ${summaryPath} --expected-commit ${commit}`,
+      ),
+    )
+    assert.ok(
+      summary.nextActions[0].commands.includes(
         `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output ${summaryPath} --expected-commit ${commit}`,
+      ),
+    )
+    assert.ok(
+      summary.nextActions[0].commands.includes(
+        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass <observed-ios-check-name> --summary-output ${summaryPath} --expected-commit ${commit}`,
       ),
     )
     assert.ok(

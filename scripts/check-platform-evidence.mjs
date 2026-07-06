@@ -21,7 +21,7 @@ import {
   defaultRealDeviceEvidencePath,
   defaultRealDeviceEvidenceSummaryPath,
   defaultReleaseCiEvidencePath,
-  recordPlatformEvidenceCommand,
+  recordPlatformEvidenceCommands,
   releaseEvidenceCommand,
   productionProfilePlatformEvidenceCommand,
 } from './release-handoff-commands.mjs'
@@ -872,7 +872,7 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
       ].join('\n'),
       ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
       commands: [
-        recordPlatformEvidenceCommand('android', commit, {
+        ...recordPlatformEvidenceCommands('android', commit, {
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(
             summary,
@@ -880,7 +880,7 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
           ),
           summaryOutput: options.summaryOutput ?? 'release/platform-evidence-summary.json',
         }),
-        recordPlatformEvidenceCommand('ios', commit, {
+        ...recordPlatformEvidenceCommands('ios', commit, {
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(
             summary,

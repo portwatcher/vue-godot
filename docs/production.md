@@ -115,7 +115,8 @@ device run; the recorder stores that confirmation on the platform evidence so
 `release/real-device-evidence.json` keeps the audit note. Skippable checks still
 need an explicit `--pass` or `--skip check=reason`; generated handoff commands
 include skip and pass-remaining confirmation placeholders for currently
-open gaps. Replace every placeholder before recording evidence; the recorder,
+open gaps, plus single-check `--pass <observed-...-check-name>` placeholders
+for incremental device sessions. Replace every placeholder before recording evidence; the recorder,
 worksheet audit, and final evidence validator reject placeholder metadata,
 placeholder confirmation notes,
 and placeholder skip reasons. Final `passedChecks`
@@ -150,7 +151,8 @@ Because the production profile includes `navigator.mediaDevices.getUserMedia`,
 production evidence.
 Conditional checks required by selected APIs must be recorded in `passedChecks`,
 not `skippedChecks`. Its top-level `nextActions` section records Android/iOS
-`release:record-platform-evidence` command templates, audited progress, exact
+single-check and pass-remaining `release:record-platform-evidence` command
+templates, audited progress, exact
 remaining metadata/must-pass/skippable gap names and structured `platformCheckDetails` descriptions, the allow-open worksheet audit
 command, `npm run check`, release CI wait/dispatch commands, and final evidence
 assembly, validation, commit, and push commands for after the worksheet is complete. Run
@@ -263,7 +265,8 @@ includes Android/iOS metadata-field counts, malformed outcome counts,
 required-check counts, and exact remaining must-pass/skippable check names in
 its detail, attaches
 `platformCheckDetails` with descriptions and selected API context, and includes Android/iOS
-`release:record-platform-evidence` command templates while gaps remain. It only
+single-check and pass-remaining `release:record-platform-evidence` command
+templates while gaps remain. It only
 emits
 `npm run release:platform-evidence -- --production-profile` when the worksheet
 is missing. Before final evidence assembly it runs the strict platform worksheet

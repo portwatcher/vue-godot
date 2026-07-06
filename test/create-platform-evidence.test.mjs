@@ -141,8 +141,16 @@ test('platform evidence template lists required checks without passing them', ()
         detail.description.includes('Verify cold-start'),
     ),
   )
-  const androidRecordCommand = completeAction.commands.find((command) =>
-    command.includes('--platform android'),
+  const androidPassCommand = completeAction.commands.find(
+    (command) =>
+      command.includes('--platform android') &&
+      command.includes('--pass <observed-android-check-name>'),
+  )
+  assert.ok(androidPassCommand)
+  const androidRecordCommand = completeAction.commands.find(
+    (command) =>
+      command.includes('--platform android') &&
+      command.includes('--pass-remaining'),
   )
   assert.ok(androidRecordCommand)
   assert.match(androidRecordCommand, /--pass-remaining/)
@@ -154,8 +162,16 @@ test('platform evidence template lists required checks without passing them', ()
     androidRecordCommand,
     /--skip 'clipboard-if-selected=<skip-reason-if-not-selected>'/,
   )
-  const iosRecordCommand = completeAction.commands.find((command) =>
-    command.includes('--platform ios'),
+  const iosPassCommand = completeAction.commands.find(
+    (command) =>
+      command.includes('--platform ios') &&
+      command.includes('--pass <observed-ios-check-name>'),
+  )
+  assert.ok(iosPassCommand)
+  const iosRecordCommand = completeAction.commands.find(
+    (command) =>
+      command.includes('--platform ios') &&
+      command.includes('--pass-remaining'),
   )
   assert.ok(iosRecordCommand)
   assert.match(iosRecordCommand, /--pass-remaining/)

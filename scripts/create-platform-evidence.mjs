@@ -23,7 +23,7 @@ import {
   defaultRealDeviceEvidenceSummaryPath,
   defaultReleaseCiEvidencePath,
   initialReleaseCiCommands,
-  recordPlatformEvidenceCommand,
+  recordPlatformEvidenceCommands,
   releaseEvidenceCommand,
 } from './release-handoff-commands.mjs'
 import { readInitialCiEvidenceStatus } from './release-ci-evidence.mjs'
@@ -243,7 +243,7 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
         .join('\n'),
       ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
       commands: [
-        recordPlatformEvidenceCommand('android', commit, {
+        ...recordPlatformEvidenceCommands('android', commit, {
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(
             platformAudit,
@@ -251,7 +251,7 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
           ),
           summaryOutput: platformEvidenceSummaryPath,
         }),
-        recordPlatformEvidenceCommand('ios', commit, {
+        ...recordPlatformEvidenceCommands('ios', commit, {
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(
             platformAudit,

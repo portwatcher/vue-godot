@@ -364,6 +364,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /command templates before the strict\s+worksheet audit/)
   assert.match(production, /--platform android/)
   assert.match(production, /--platform ios/)
+  assert.match(production, /single-check/)
+  assert.match(production, /--pass <observed-\.\.\.-check-name>/)
   assert.match(production, /--pass-remaining/)
   assert.match(production, /--pass-remaining-confirmation/)
   assert.match(production, /keeps the audit note/)
@@ -735,6 +737,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /worksheet audit/)
   assert.match(readme, /--platform android/)
   assert.match(readme, /--platform ios/)
+  assert.match(readme, /single-check/)
+  assert.match(readme, /--pass <observed-\.\.\.-check-name>/)
   assert.match(readme, /--pass-remaining/)
   assert.match(readme, /--pass-remaining-confirmation/)
   assert.match(readme, /keeps the audit note/)
@@ -946,7 +950,10 @@ test('release preflight enforces real device evidence', () => {
     /outside the Git worktree[\s\S]*copy it into\s+the standard `release\/` evidence file/,
   )
   assert.match(checklist, /reuses an existing platform worksheet/)
-  assert.match(checklist, /release:record-platform-evidence` command templates/)
+  assert.match(
+    checklist,
+    /single-check and pass-remaining `release:record-platform-evidence`\s+command templates/,
+  )
   assert.match(
     checklist,
     /includes Android\/iOS metadata-field counts, malformed outcome counts,\s+required-check counts, and exact remaining must-pass\/skippable check names in\s+its detail[\s\S]*attaches\s+`platformCheckDetails` with descriptions and selected API context[\s\S]*only emits\s+`npm run release:platform-evidence -- --production-profile` when the worksheet\s+is missing/,
@@ -1000,6 +1007,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /--platform ios/)
   assert.match(checklist, /--export-preset <android-export-preset>/)
   assert.match(checklist, /--export-preset <ios-export-preset>/)
+  assert.match(checklist, /single-check/)
+  assert.match(checklist, /--pass <observed-\.\.\.-check-name>/)
   assert.match(
     checklist,
     /--pass cold-launch,no-godotjs-load-diagnostics,audio-input-if-selected/,

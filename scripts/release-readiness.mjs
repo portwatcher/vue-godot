@@ -54,7 +54,7 @@ import {
   formatHandoffCommand,
   initialReleaseCiCommands,
   productionProfilePlatformEvidenceCommand,
-  recordPlatformEvidenceCommand,
+  recordPlatformEvidenceCommands,
   releaseEvidenceCommand,
   releaseCommitLabel,
   releaseHandoffReportFormatVersion,
@@ -1367,7 +1367,7 @@ function collectReadinessNextActions(
       )
     } else if (!platformEvidence.ready) {
       platformEvidenceCommands.push(
-        recordPlatformEvidenceCommand('android', commit, {
+        ...recordPlatformEvidenceCommands('android', commit, {
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(
             platformEvidence,
@@ -1375,7 +1375,7 @@ function collectReadinessNextActions(
           ),
           summaryOutput: 'release/platform-evidence-summary.json',
         }),
-        recordPlatformEvidenceCommand('ios', commit, {
+        ...recordPlatformEvidenceCommands('ios', commit, {
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(
             platformEvidence,

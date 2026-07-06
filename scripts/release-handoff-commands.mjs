@@ -162,39 +162,79 @@ export function checkPlatformEvidenceCommand(commit, options = {}) {
   return formatHandoffCommand(args)
 }
 
-export function recordPlatformEvidenceCommand(platform, commit, options = {}) {
+function platformEvidencePlaceholders(platform) {
   const platformName = platform === 'ios' ? 'ios' : 'android'
-  const artifactPlaceholder =
-    platformName === 'ios'
-      ? '<ios-archive-testflight-or-hosted-build-id>'
-      : '<android-apk-aab-or-hosted-build-id>'
-  const exportPresetPlaceholder =
-    platformName === 'ios' ? '<ios-export-preset>' : '<android-export-preset>'
-  const devicePlaceholder =
-    platformName === 'ios' ? '<ios-device-model>' : '<android-device-model>'
-  const osPlaceholder =
-    platformName === 'ios' ? '<ios-version>' : '<android-os-version>'
-  const args = [
+
+  return {
+    artifact:
+      platformName === 'ios'
+        ? '<ios-archive-testflight-or-hosted-build-id>'
+        : '<android-apk-aab-or-hosted-build-id>',
+    device:
+      platformName === 'ios' ? '<ios-device-model>' : '<android-device-model>',
+    exportPreset:
+      platformName === 'ios' ? '<ios-export-preset>' : '<android-export-preset>',
+    observedCheck: `<observed-${platformName}-check-name>`,
+    os: platformName === 'ios' ? '<ios-version>' : '<android-os-version>',
+    platformName,
+  }
+}
+
+function recordPlatformEvidenceBaseArgs(platform, options = {}) {
+  const placeholders = platformEvidencePlaceholders(platform)
+
+  return [
     'npm',
     'run',
     'release:record-platform-evidence',
     '--',
     '--platform',
-    platformName,
+    placeholders.platformName,
     '--platform-evidence',
     options.platformEvidencePath ?? defaultPlatformEvidencePath,
     '--artifact',
-    artifactPlaceholder,
+    placeholders.artifact,
     '--export-preset',
-    exportPresetPlaceholder,
+    placeholders.exportPreset,
     '--device',
-    devicePlaceholder,
+    placeholders.device,
     '--os',
-    osPlaceholder,
+    placeholders.os,
     '--orientation',
     '<tested-orientations>',
     '--locale',
     '<tested-locale>',
+  ]
+}
+
+function appendPlatformEvidenceSummaryArgs(args, commit, options = {}) {
+  args.push(
+    '--summary-output',
+    options.summaryOutput ?? 'release/platform-evidence-summary.json',
+    '--expected-commit',
+    releaseCommitLabel(commit),
+  )
+}
+
+export function recordPlatformEvidencePassCommand(
+  platform,
+  commit,
+  options = {},
+) {
+  const args = [
+    ...recordPlatformEvidenceBaseArgs(platform, options),
+    '--pass',
+    options.check ?? platformEvidencePlaceholders(platform).observedCheck,
+  ]
+
+  appendPlatformEvidenceSummaryArgs(args, commit, options)
+
+  return formatHandoffCommand(args)
+}
+
+export function recordPlatformEvidenceCommand(platform, commit, options = {}) {
+  const args = [
+    ...recordPlatformEvidenceBaseArgs(platform, options),
     '--pass-remaining',
     '--pass-remaining-confirmation',
     '<confirm-all-remaining-must-pass-checks-after-testing>',
@@ -204,14 +244,16 @@ export function recordPlatformEvidenceCommand(platform, commit, options = {}) {
     args.push('--skip', `${check}=<skip-reason-if-not-selected>`)
   }
 
-  args.push(
-    '--summary-output',
-    options.summaryOutput ?? 'release/platform-evidence-summary.json',
-    '--expected-commit',
-    releaseCommitLabel(commit),
-  )
+  appendPlatformEvidenceSummaryArgs(args, commit, options)
 
   return formatHandoffCommand(args)
+}
+
+export function recordPlatformEvidenceCommands(platform, commit, options = {}) {
+  return [
+    recordPlatformEvidencePassCommand(platform, commit, options),
+    recordPlatformEvidenceCommand(platform, commit, options),
+  ]
 }
 
 export function releaseCiCommand(commit, options = {}) {

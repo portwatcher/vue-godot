@@ -130,7 +130,8 @@ includes Android/iOS metadata-field counts, malformed outcome counts,
 required-check counts, and exact remaining must-pass/skippable check names in
 its detail, attaches
 `platformCheckDetails` with descriptions and selected API context, and includes Android/iOS
-`release:record-platform-evidence` command templates while gaps remain. It only emits
+single-check and pass-remaining `release:record-platform-evidence` command
+templates while gaps remain. It only emits
 `npm run release:platform-evidence -- --production-profile` when the worksheet
 is missing, then runs the strict platform worksheet audit before final evidence
 assembly. The platform, real-device, and readiness summary/checklist outputs are
@@ -176,7 +177,8 @@ shows which conditional checks came from the selected API set. Selected API
 names are validated, so typos or unknown names fail before conditional checks
 can be omitted. Conditional checks for selected APIs must be moved into
 `passedChecks`. The generated top-level `nextActions` section records Android
-and iOS `release:record-platform-evidence` command templates, audited progress,
+and iOS single-check and pass-remaining `release:record-platform-evidence`
+command templates, audited progress,
 malformed outcome counts, exact remaining metadata/must-pass/skippable gap names and structured `platformCheckDetails` descriptions, the allow-open worksheet
 audit command, the local `npm run check`, any still-needed release CI
 wait/dispatch commands, and final evidence assembly, validation, commit, and
@@ -251,7 +253,8 @@ device run; the recorder stores that confirmation on the platform evidence so
 `release/real-device-evidence.json` keeps the audit note. Skippable checks still
 need an explicit `--pass` or `--skip check=reason`; generated handoff commands
 include skip and pass-remaining confirmation placeholders for currently
-open gaps. Replace every placeholder before recording evidence; the recorder,
+open gaps, plus single-check `--pass <observed-...-check-name>` placeholders
+for incremental device sessions. Replace every placeholder before recording evidence; the recorder,
 worksheet audit, and final evidence validator reject placeholder metadata,
 placeholder confirmation notes,
 and placeholder skip reasons. Final `passedChecks` must be a non-empty
