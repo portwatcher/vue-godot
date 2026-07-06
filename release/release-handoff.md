@@ -183,9 +183,24 @@ Remaining check details:
 
 Commands with `<...>` placeholders must be edited before running; unresolved placeholders are not valid release evidence or dispatch inputs.
 
+#### Ready To Run
+
 ```bash
 npm run check
 npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
+npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
+npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
+npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 717f0120628bd19d0e5358075c43b518ab3812df --real-device-output release/real-device-evidence.json
+npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
+git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json
+git commit -m "Add real-device release evidence"
+git push
+```
+
+#### Replace Placeholders First
+
+```bash
 npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
 npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass no-godotjs-load-diagnostics --summary-output release/platform-evidence-summary.json --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
 npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass storage-restart --summary-output release/platform-evidence-summary.json --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
@@ -201,7 +216,6 @@ npm run release:record-platform-evidence -- --platform android --platform-eviden
 npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass android-back-handling --summary-output release/platform-evidence-summary.json --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
 npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass background-foreground --summary-output release/platform-evidence-summary.json --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
 npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output release/platform-evidence-summary.json --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
 npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
 npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass no-godotjs-load-diagnostics --summary-output release/platform-evidence-summary.json --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
 npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass plist-entitlements --summary-output release/platform-evidence-summary.json --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
@@ -218,13 +232,6 @@ npm run release:record-platform-evidence -- --platform ios --platform-evidence r
 npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass background-foreground --summary-output release/platform-evidence-summary.json --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
 npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass deep-links-share-notifications-if-selected --summary-output release/platform-evidence-summary.json --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
 npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output release/platform-evidence-summary.json --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
-npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
-npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
-npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 717f0120628bd19d0e5358075c43b518ab3812df --real-device-output release/real-device-evidence.json
-npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
-git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json
-git commit -m "Add real-device release evidence"
-git push
 ```
 
 ### Collect CI and warning-free Release Preflight evidence
@@ -235,17 +242,24 @@ Run the local check after the tested release candidate and real-device evidence 
 
 Commands with `<...>` placeholders must be edited before running; unresolved placeholders are not valid release evidence or dispatch inputs.
 
+#### Ready To Run
+
 ```bash
 npm run check
 npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
 npm run release:ci -- --commit 717f0120628bd19d0e5358075c43b518ab3812df --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --wait --output release/ci-runs.json
-GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit 717f0120628bd19d0e5358075c43b518ab3812df --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json
 GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit 717f0120628bd19d0e5358075c43b518ab3812df --output release/release-preflight-summary.json --checklist-output release/release-preflight-checklist.md
 npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 717f0120628bd19d0e5358075c43b518ab3812df --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json
 git add release/ci-runs.json release/release-preflight-summary.json release/release-preflight-checklist.md release/real-device-evidence.json release/release-readiness-evidence.json
 git commit -m "Add release readiness evidence"
 git push
 npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit 717f0120628bd19d0e5358075c43b518ab3812df
+```
+
+#### Replace Placeholders First
+
+```bash
+GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit 717f0120628bd19d0e5358075c43b518ab3812df --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json
 ```
 
 ### Remove public warning wording through the guarded finalizer
