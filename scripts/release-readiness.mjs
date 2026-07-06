@@ -18,6 +18,7 @@ import {
   isRecord,
   verifyGitHubActionsRunUrl,
 } from './release-evidence-utils.mjs'
+import { formatIssueLines } from './markdown-checklist-utils.mjs'
 import { readInitialCiEvidenceStatus } from './release-ci-evidence.mjs'
 
 export { validateInitialCiEvidence } from './release-ci-evidence.mjs'
@@ -1627,20 +1628,6 @@ function displayValue(value) {
 
 function checklistLine(ready, label, detail) {
   return `- ${ready ? '[x]' : '[ ]'} ${label}: ${detail}`
-}
-
-function formatIssueLines(label, values) {
-  const issues = Array.isArray(values)
-    ? values
-        .map((value) => String(value).trim())
-        .filter((value) => value.length > 0)
-    : []
-
-  if (issues.length === 0) {
-    return [`- ${label}: none`]
-  }
-
-  return [`- ${label}:`, ...issues.map((issue) => `  - ${issue}`)]
 }
 
 function formatFinalTodoChecklistLine(status) {

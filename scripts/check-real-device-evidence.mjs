@@ -37,6 +37,7 @@ import {
   normalizeCommitSha,
   repoRoot,
 } from './release-utils.mjs'
+import { formatIssueLines } from './markdown-checklist-utils.mjs'
 
 function usage() {
   console.log(`Usage: node scripts/check-real-device-evidence.mjs [options]
@@ -395,20 +396,6 @@ function platformLabel(platform) {
     return 'iOS'
   }
   return platform
-}
-
-function formatIssueLines(label, values) {
-  const errors = Array.isArray(values)
-    ? values
-        .map((value) => String(value).trim())
-        .filter((value) => value.length > 0)
-    : []
-
-  if (errors.length === 0) {
-    return [`- ${label}: none`]
-  }
-
-  return [`- ${label}:`, ...errors.map((error) => `  - ${error}`)]
 }
 
 function platformProgressLine(summary, platform) {

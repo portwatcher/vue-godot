@@ -285,8 +285,12 @@ test('release readiness requires the final TODO evidence checklist shape', () =>
 test('release readiness checklist renders final proof and next actions', () => {
   const summary = {
     allowOpen: true,
-    blockerCount: 2,
-    blockers: ['Android evidence missing', 'Release Preflight missing'],
+    blockerCount: 3,
+    blockers: [
+      'Android evidence missing',
+      'Release Preflight missing',
+      'Real device evidence missing\nCreate release/real-device-evidence.json after Android/iOS testing\nRun the verification command',
+    ],
     checks: {
       androidRealDeviceEvidence: false,
       cleanWorktree: true,
@@ -373,6 +377,10 @@ test('release readiness checklist renders final proof and next actions', () => {
   )
   assert.match(checklist, /\[ \] Real-device evidence/)
   assert.match(checklist, /Android evidence missing/)
+  assert.match(
+    checklist,
+    /  - Real device evidence missing\n    Create release\/real-device-evidence\.json after Android\/iOS testing\n    Run the verification command/,
+  )
   assert.match(checklist, /Blocked by: real-device-evidence/)
   assert.match(checklist, /```bash\nnpm run check\n```/)
 })

@@ -626,6 +626,53 @@ test('real device evidence checklist renders ready evidence without follow-up ac
   assert.match(checklist, /## Next Actions[\s\S]*- none/)
 })
 
+test('real device evidence checklist keeps multiline blockers nested', () => {
+  const summary = {
+    androidErrors: [],
+    androidReady: false,
+    errors: [
+      'Real device evidence file not found: release/real-device-evidence.json\nCreate release/real-device-evidence.json after testing',
+    ],
+    evidencePath: 'release/real-device-evidence.json',
+    evidencePresent: false,
+    expectedCommit: '0123456789abcdef0123456789abcdef01234567',
+    initialCiEvidencePath: 'release/ci-runs.json',
+    initialCiEvidenceReady: true,
+    iosErrors: [],
+    iosReady: false,
+    metadataErrors: [],
+    metadataReady: false,
+    platformEvidence: {
+      platforms: {
+        android: {
+          completedCheckCount: 13,
+          errorCount: 1,
+          ready: false,
+          requiredCheckCount: 14,
+        },
+        ios: {
+          completedCheckCount: 14,
+          errorCount: 1,
+          ready: false,
+          requiredCheckCount: 15,
+        },
+      },
+    },
+    platformEvidencePath: 'release/platform-evidence.json',
+    platformEvidenceReady: false,
+    ready: false,
+    runErrors: [],
+    runVerificationRequested: false,
+  }
+
+  const checklist = formatRealDeviceEvidenceChecklist(summary)
+
+  assert.match(
+    checklist,
+    /  - Real device evidence file not found: release\/real-device-evidence\.json\n    Create release\/real-device-evidence\.json after testing/,
+  )
+})
+
 test('real device evidence path resolves from the release environment variable', () => {
   assert.equal(
     resolveRealDeviceEvidencePath({
