@@ -852,6 +852,7 @@ async function checkReleaseReadinessEvidence(blockers, options, expectedCommit) 
   const evidencePath = resolveReadinessEvidencePath(options)
   const { evidence, errors: readErrors } = readJsonEvidence(evidencePath)
   const status = {
+    evidence: null,
     errorCount: 0,
     evidencePresent: Boolean(evidence),
     path: relative(evidencePath),
@@ -873,6 +874,23 @@ async function checkReleaseReadinessEvidence(blockers, options, expectedCommit) 
         .join('\n'),
     )
     return status
+  }
+
+  status.evidence = {
+    commit: evidence.commit ?? null,
+    releasePreflightRunUrl: evidence.releasePreflightRunUrl ?? null,
+    releasePreflightRunWorkflowName:
+      evidence.releasePreflightRunWorkflowName ?? null,
+    releasePreflightRunCommit: evidence.releasePreflightRunCommit ?? null,
+    releasePreflightRunConclusion:
+      evidence.releasePreflightRunConclusion ?? null,
+    releasePreflightLocalOnly: evidence.releasePreflightLocalOnly ?? null,
+    releasePreflightSkipCheck: evidence.releasePreflightSkipCheck ?? null,
+    releasePreflightSkipGodot: evidence.releasePreflightSkipGodot ?? null,
+    releasePreflightSkipSeriousExamples:
+      evidence.releasePreflightSkipSeriousExamples ?? null,
+    releasePreflightFailureCount: evidence.releasePreflightFailureCount ?? null,
+    releasePreflightWarningCount: evidence.releasePreflightWarningCount ?? null,
   }
 
   const errors = validateReleaseReadinessEvidence(evidence, expectedCommit)

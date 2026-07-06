@@ -69,6 +69,18 @@ function sampleReadinessSummary(ciEvidencePath = 'release/ci-runs.json') {
       path: ciEvidencePath,
       ready: true,
     },
+    releaseReadinessEvidence: {
+      errorCount: 1,
+      evidence: null,
+      evidencePresent: false,
+      path: 'release/release-readiness-evidence.json',
+      ready: false,
+      readErrors: [
+        `Release-readiness evidence file not found: ${repoRoot}/release/release-readiness-evidence.json`,
+      ],
+      runErrors: [],
+      validationErrors: [],
+    },
     platformEvidence: {
       errorCount: 3,
       path: 'release/platform-evidence.json',
@@ -198,6 +210,12 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
     ),
   )
   assert.match(markdown, /Real-device evidence: waiting/)
+  assert.match(markdown, /## Release Preflight Evidence/)
+  assert.match(markdown, /Readiness evidence path: `release\/release-readiness-evidence\.json`/)
+  assert.match(markdown, /Summary JSON: `release\/release-preflight-summary\.json`/)
+  assert.match(markdown, /Summary checklist: `release\/release-preflight-checklist\.md`/)
+  assert.match(markdown, /Evidence present: no/)
+  assert.match(markdown, /Read errors:\n- Release-readiness evidence file not found: release\/release-readiness-evidence\.json/)
   assert.match(markdown, /Required checks complete: 1\/14/)
   assert.match(
     markdown,
@@ -246,6 +264,49 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
     markdown,
     /Release-readiness evidence file not found: release\/release-readiness-evidence\.json/,
   )
+})
+
+test('release handoff renderer summarizes recorded release preflight evidence', () => {
+  const source = sampleReadinessSummary()
+  const markdown = renderReleaseHandoff({
+    ...source,
+    releaseReadinessEvidence: {
+      errorCount: 0,
+      evidence: {
+        commit,
+        releasePreflightFailureCount: 0,
+        releasePreflightLocalOnly: false,
+        releasePreflightRunCommit: commit,
+        releasePreflightRunConclusion: 'success',
+        releasePreflightRunUrl:
+          'https://github.com/portwatcher/vue-godot/actions/runs/3',
+        releasePreflightRunWorkflowName: 'Release Preflight',
+        releasePreflightSkipCheck: false,
+        releasePreflightSkipGodot: false,
+        releasePreflightSkipSeriousExamples: false,
+        releasePreflightWarningCount: 0,
+      },
+      evidencePresent: true,
+      path: 'release/release-readiness-evidence.json',
+      ready: true,
+      readErrors: [],
+      runErrors: [],
+      validationErrors: [],
+    },
+  })
+
+  assert.match(markdown, /Release Preflight Evidence/)
+  assert.match(markdown, /Status: ready \(0 blocker\(s\)\)/)
+  assert.match(markdown, /Evidence present: yes/)
+  assert.match(markdown, /Run URL: https:\/\/github\.com\/portwatcher\/vue-godot\/actions\/runs\/3/)
+  assert.match(markdown, new RegExp(`Run commit: ${commit}`))
+  assert.match(markdown, /Run conclusion: success/)
+  assert.match(markdown, /Local-only: false/)
+  assert.match(markdown, /Skipped Check: false/)
+  assert.match(markdown, /Skipped Godot: false/)
+  assert.match(markdown, /Skipped serious examples: false/)
+  assert.match(markdown, /Failure count: 0/)
+  assert.match(markdown, /Warning count: 0/)
 })
 
 test('release handoff state hash tracks structured release evidence', () => {

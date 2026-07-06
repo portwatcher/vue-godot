@@ -681,6 +681,20 @@ test('release readiness writes a machine-readable blocker summary', () => {
       runErrors: [],
     })
     assert.deepEqual(summary.releaseReadinessEvidence, {
+      evidence: {
+        commit: exampleCommit,
+        releasePreflightFailureCount: 0,
+        releasePreflightLocalOnly: false,
+        releasePreflightRunCommit: exampleCommit,
+        releasePreflightRunConclusion: 'success',
+        releasePreflightRunUrl:
+          'https://github.com/portwatcher/vue-godot/actions/runs/0000000003',
+        releasePreflightRunWorkflowName: 'Release Preflight',
+        releasePreflightSkipCheck: false,
+        releasePreflightSkipGodot: false,
+        releasePreflightSkipSeriousExamples: false,
+        releasePreflightWarningCount: 0,
+      },
       errorCount: 0,
       evidencePresent: true,
       path: 'docs/release-readiness-evidence.example.json',

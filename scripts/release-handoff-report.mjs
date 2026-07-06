@@ -8,6 +8,8 @@ import {
   defaultPlatformEvidencePath,
   defaultRealDeviceEvidencePath,
   defaultReleaseCiEvidencePath,
+  defaultReleasePreflightChecklistPath,
+  defaultReleasePreflightSummaryPath,
   defaultReleaseReadinessEvidencePath,
   formatHandoffCommand,
   releaseHandoffReportFormatVersion,
@@ -401,6 +403,66 @@ function renderPlatformEvidence(summary) {
   ]
 }
 
+function displayEvidenceValue(value) {
+  if (typeof value === 'boolean') {
+    return String(value)
+  }
+  if (Number.isInteger(value)) {
+    return String(value)
+  }
+  if (typeof value === 'string' && value.trim().length > 0) {
+    return value.trim()
+  }
+  return 'missing'
+}
+
+function evidenceErrorLines(label, errors) {
+  const values = Array.isArray(errors) ? errors : []
+  return [`- ${label}:`, ...limitedBullets(values)]
+}
+
+function renderReleasePreflightEvidence(summary) {
+  const status = isRecord(summary.releaseReadinessEvidence)
+    ? summary.releaseReadinessEvidence
+    : {}
+  const evidence = isRecord(status.evidence) ? status.evidence : {}
+
+  return [
+    '## Release Preflight Evidence',
+    '',
+    `- Status: ${statusText(status.ready)} (${status.errorCount ?? 0} blocker(s))`,
+    `- Readiness evidence path: \`${status.path ?? defaultReleaseReadinessEvidencePath}\``,
+    `- Summary JSON: \`${defaultReleasePreflightSummaryPath}\``,
+    `- Summary checklist: \`${defaultReleasePreflightChecklistPath}\``,
+    `- Evidence present: ${status.evidencePresent === true ? 'yes' : 'no'}`,
+    `- Release commit: ${displayEvidenceValue(evidence.commit)}`,
+    `- Run URL: ${displayEvidenceValue(evidence.releasePreflightRunUrl)}`,
+    `- Run commit: ${displayEvidenceValue(evidence.releasePreflightRunCommit)}`,
+    `- Run conclusion: ${displayEvidenceValue(
+      evidence.releasePreflightRunConclusion,
+    )}`,
+    `- Local-only: ${displayEvidenceValue(evidence.releasePreflightLocalOnly)}`,
+    `- Skipped Check: ${displayEvidenceValue(
+      evidence.releasePreflightSkipCheck,
+    )}`,
+    `- Skipped Godot: ${displayEvidenceValue(
+      evidence.releasePreflightSkipGodot,
+    )}`,
+    `- Skipped serious examples: ${displayEvidenceValue(
+      evidence.releasePreflightSkipSeriousExamples,
+    )}`,
+    `- Failure count: ${displayEvidenceValue(
+      evidence.releasePreflightFailureCount,
+    )}`,
+    `- Warning count: ${displayEvidenceValue(
+      evidence.releasePreflightWarningCount,
+    )}`,
+    ...evidenceErrorLines('Read errors', status.readErrors),
+    ...evidenceErrorLines('Validation errors', status.validationErrors),
+    ...evidenceErrorLines('Run verification errors', status.runErrors),
+  ]
+}
+
 function renderNextActions(summary) {
   const actions = Array.isArray(summary.nextActions) ? summary.nextActions : []
   const lines = ['## Next Actions', '']
@@ -575,6 +637,8 @@ export function renderReleaseHandoff(summary) {
     ...ciEvidenceLines(summary),
     '',
     ...renderPlatformEvidence(summary),
+    '',
+    ...renderReleasePreflightEvidence(summary),
     '',
     ...renderFinalTodoProofs(summary),
     '',

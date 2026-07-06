@@ -2,7 +2,7 @@
 
 - Release candidate commit: `22a9e0bfe4e6edc691b46f15205752d68ae43e9e`
 - Handoff format: 4
-- Handoff state: c6cef5608431cb28
+- Handoff state: b1b4e7c4dd1d4006
 - Overall readiness: open (10 blocker(s))
 - Real-device evidence: waiting
 - Android evidence: waiting
@@ -97,6 +97,30 @@
   - `safe-area-keyboard-rotation-text-input` (must pass; selected APIs: SafeAreaView, KeyboardAvoidingView): Verify safe area, virtual keyboard, rotation, and text input behavior on the tested iPhone or iPad family.
   - `background-foreground` (must pass): Background and foreground the app, then confirm resources, adapters, and app state resume correctly.
   - `deep-links-share-notifications-if-selected` (skippable): Verify cold-start and warm-start deep links, share sheets, and notification delivery when those adapters are selected.
+
+## Release Preflight Evidence
+
+- Status: waiting (1 blocker(s))
+- Readiness evidence path: `release/release-readiness-evidence.json`
+- Summary JSON: `release/release-preflight-summary.json`
+- Summary checklist: `release/release-preflight-checklist.md`
+- Evidence present: no
+- Release commit: missing
+- Run URL: missing
+- Run commit: missing
+- Run conclusion: missing
+- Local-only: missing
+- Skipped Check: missing
+- Skipped Godot: missing
+- Skipped serious examples: missing
+- Failure count: missing
+- Warning count: missing
+- Read errors:
+- Release-readiness evidence file not found: release/release-readiness-evidence.json
+- Validation errors:
+- none
+- Run verification errors:
+- none
 
 ## Final TODO Proofs
 

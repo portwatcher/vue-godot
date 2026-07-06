@@ -218,8 +218,9 @@ testers; while real-device evidence is open, the release-readiness
 only when `release/release-handoff.md` is missing or stale for the expected
 commit and evidence paths. The handoff lists per-platform metadata/check gaps,
 batch confirmation notes and issues, malformed outcome details, remaining check
-descriptions, `blockedBy` dependencies, and next commands. Add `--check` to
-verify the checked-in handoff is current without rewriting it.
+descriptions, Release Preflight readiness evidence paths and warning/failure
+counts, `blockedBy` dependencies, and next commands. Add `--check` to verify
+the checked-in handoff is current without rewriting it.
 The initial CI, real-device, and
 Release Preflight evidence actions begin with `npm run check` before collecting
 CI or assembling evidence. The Release Preflight evidence action also reruns

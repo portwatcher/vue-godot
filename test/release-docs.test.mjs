@@ -452,6 +452,8 @@ test('release preflight enforces real device evidence', () => {
     production,
     /per-platform metadata\/check gaps,\s+batch confirmation notes and issues,\s+malformed outcome details/,
   )
+  assert.match(production, /Release Preflight readiness evidence paths/)
+  assert.match(production, /warning\/failure\s+counts/)
   assert.match(
     production,
     /real-device evidence is open[\s\S]*`nextActions` include that handoff command before the device-evidence action[\s\S]*missing or stale/,
@@ -646,6 +648,8 @@ test('release preflight enforces real device evidence', () => {
     readme,
     /per-platform metadata\/check gaps, batch confirmation notes and issues, malformed outcome details/,
   )
+  assert.match(readme, /Release Preflight readiness evidence paths/)
+  assert.match(readme, /warning\/failure counts/)
   assert.match(
     readme,
     /real-device evidence is open[\s\S]*`nextActions` include the same handoff command before the device-evidence action[\s\S]*missing or stale/,
@@ -882,6 +886,8 @@ test('release preflight enforces real device evidence', () => {
     checklist,
     /per-platform metadata\/check gaps,\s+batch confirmation notes and issues,\s+malformed outcome details/,
   )
+  assert.match(checklist, /Release Preflight readiness evidence paths/)
+  assert.match(checklist, /warning\/failure\s+counts/)
   assert.match(
     checklist,
     /real-device evidence is open[\s\S]*`nextActions` include that handoff command before the device-evidence action[\s\S]*missing or stale/,
