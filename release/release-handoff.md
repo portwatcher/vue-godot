@@ -142,7 +142,13 @@
 
 ### Complete Android and iOS real-device export evidence
 
-Run the local check and selected API export checks on real or hosted devices, reuse the platform worksheet when it exists, then assemble and validate release/real-device-evidence.json for the tested release commit. Android: 5 metadata field(s) missing, 14/14 required check(s) unresolved, 14 must-pass check(s) missing; iOS: 5 metadata field(s) missing, 15/15 required check(s) unresolved, 14 must-pass check(s) missing Android missing metadata: artifact, deviceModel, osVersion, orientation, locale Android must-pass remaining: cold-launch, no-godotjs-load-diagnostics, storage-restart, network-if-selected, clipboard-if-selected, permission-prompts-if-selected, adapter-states-if-selected, hardware-adapters-if-selected, haptics-if-selected, audio-input-if-selected, sensors-if-selected, safe-area-keyboard, android-back-handling, background-foreground iOS missing metadata: artifact, deviceModel, osVersion, orientation, locale iOS must-pass remaining: cold-launch, no-godotjs-load-diagnostics, plist-entitlements, storage-restart, network-if-selected, clipboard-if-selected, permission-prompts-if-selected, adapter-states-if-selected, hardware-adapters-if-selected, haptics-if-selected, audio-input-if-selected, sensors-if-selected, safe-area-keyboard-rotation-text-input, background-foreground iOS skippable remaining: deep-links-share-notifications-if-selected
+Run the local check and selected API export checks on real or hosted devices, reuse the platform worksheet when it exists, then assemble and validate release/real-device-evidence.json for the tested release commit.
+Android: 5 metadata field(s) missing, 14/14 required check(s) unresolved, 14 must-pass check(s) missing; iOS: 5 metadata field(s) missing, 15/15 required check(s) unresolved, 14 must-pass check(s) missing
+Android missing metadata: artifact, deviceModel, osVersion, orientation, locale
+Android must-pass remaining: cold-launch, no-godotjs-load-diagnostics, storage-restart, network-if-selected, clipboard-if-selected, permission-prompts-if-selected, adapter-states-if-selected, hardware-adapters-if-selected, haptics-if-selected, audio-input-if-selected, sensors-if-selected, safe-area-keyboard, android-back-handling, background-foreground
+iOS missing metadata: artifact, deviceModel, osVersion, orientation, locale
+iOS must-pass remaining: cold-launch, no-godotjs-load-diagnostics, plist-entitlements, storage-restart, network-if-selected, clipboard-if-selected, permission-prompts-if-selected, adapter-states-if-selected, hardware-adapters-if-selected, haptics-if-selected, audio-input-if-selected, sensors-if-selected, safe-area-keyboard-rotation-text-input, background-foreground
+iOS skippable remaining: deep-links-share-notifications-if-selected
 
 Remaining check details:
 - Android `cold-launch` (must pass): Install the exported build, cold launch into the main scene, and confirm the app reaches the expected UI.
