@@ -639,6 +639,30 @@ test('record-platform-evidence CLI rejects unreplaced placeholders', () => {
       /android\.evidenceUrl requires an http\(s\) URL/,
     )
 
+    const blankMetadataResult = spawnSync(
+      process.execPath,
+      [
+        'scripts/record-platform-evidence.mjs',
+        '--platform',
+        'android',
+        '--platform-evidence',
+        evidencePath,
+        '--device=',
+        '--pass',
+        'cold-launch',
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf-8',
+      },
+    )
+
+    assert.equal(blankMetadataResult.status, 1)
+    assert.match(
+      blankMetadataResult.stderr,
+      /android\.deviceModel requires a non-empty value/,
+    )
+
     const skipResult = spawnSync(
       process.execPath,
       [

@@ -419,6 +419,9 @@ export function recordPlatformEvidence(evidence, options) {
   ])
 
   for (const [key, value] of Object.entries(options.updates)) {
+    if (typeof value !== 'string' || value.trim().length === 0) {
+      throw new Error(`${platform}.${key} requires a non-empty value`)
+    }
     if (isReleaseEvidencePlaceholder(value)) {
       throw new Error(`${platform}.${key} requires a real value, not ${value}`)
     }
