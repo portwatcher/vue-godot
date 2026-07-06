@@ -3,6 +3,10 @@
 
 declare module '*.vue' {
   import type { DefineComponent } from '@vue/runtime-core'
-  const component: DefineComponent<{}, {}, any>
+  const component: DefineComponent<
+    Record<string, unknown>,
+    Record<string, unknown>,
+    Record<string, unknown>
+  >
   export default component
 }

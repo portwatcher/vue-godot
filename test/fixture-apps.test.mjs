@@ -320,6 +320,15 @@ test('fixture app workspaces expose the regression build contract', () => {
       )
     }
 
+    const envPath = fixturePath(fixture, 'vue/src/env.d.ts')
+    const envDts = readText(envPath)
+    assertIncludes(envDts, 'Record<string, unknown>', envPath)
+    assert.doesNotMatch(
+      envDts,
+      /\bany\b/,
+      `${path.relative(repoRoot, envPath)} must not use permissive any`,
+    )
+
     const viteConfigPath = fixturePath(fixture, 'vue/vite.config.ts')
     const viteConfig = readText(viteConfigPath)
     for (const marker of [
