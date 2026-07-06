@@ -21,6 +21,7 @@ import {
   validateReleaseReadinessEvidence,
 } from '../scripts/release-readiness.mjs'
 import {
+  defaultReleaseHandoffReportPath,
   releaseHandoffReportFormatVersion,
 } from '../scripts/release-handoff-commands.mjs'
 import { shellQuote } from '../scripts/release-utils.mjs'
@@ -1022,6 +1023,12 @@ test('release readiness summary includes missing evidence next actions', () => {
     )
     assert.ok(handoffAction)
     assert.equal('blockedBy' in handoffAction, false)
+    assert.deepEqual(summary.releaseHandoffReport, {
+      path: defaultReleaseHandoffReportPath,
+      formatVersion: releaseHandoffReportFormatVersion,
+      current: false,
+      command: `npm run release:handoff -- --expected-commit ${summary.commit} --output release/release-handoff.md --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
+    })
     assert.equal(
       handoffAction.commands[0],
       `npm run release:handoff -- --expected-commit ${summary.commit} --output release/release-handoff.md --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
@@ -1224,6 +1231,12 @@ test('release readiness matches default handoff action to report currentness', (
     assert.equal(result.status, 0)
     assert.equal(summary.checks.initialCiEvidence, true)
     const reportIsCurrent = isReleaseHandoffReportCurrent(ciEvidence.commit)
+    assert.deepEqual(summary.releaseHandoffReport, {
+      path: defaultReleaseHandoffReportPath,
+      formatVersion: releaseHandoffReportFormatVersion,
+      current: reportIsCurrent,
+      command: `npm run release:handoff -- --expected-commit ${ciEvidence.commit} --output release/release-handoff.md`,
+    })
     assert.equal(
       summary.nextActions.some(
         (action) => action.id === 'release-handoff-report',

@@ -1057,6 +1057,15 @@ export function isReleaseHandoffReportCurrent(
   )
 }
 
+function collectReleaseHandoffReportStatus(commit, pathOptions = {}) {
+  return {
+    path: defaultReleaseHandoffReportPath,
+    formatVersion: releaseHandoffReportFormatVersion,
+    current: isReleaseHandoffReportCurrent(commit, pathOptions),
+    command: releaseHandoffCommand(commit, pathOptions),
+  }
+}
+
 function preflightSummaryCommand(commit, pathOptions = {}) {
   const body = formatHandoffCommand([
     'npm',
@@ -1484,6 +1493,16 @@ function writeReadinessSummary(
   const localGit = expectedCommit
     ? collectLocalGitReleaseState(expectedCommit)
     : null
+  const pathOptions = collectPathOptions(
+    initialCiEvidence,
+    realDeviceEvidence,
+    releaseReadinessEvidence,
+    platformEvidence,
+  )
+  const releaseHandoffReport = collectReleaseHandoffReportStatus(
+    expectedCommit,
+    pathOptions,
+  )
   const checkedTodoItems = todoItems.filter((item) => item.checked)
   const uncheckedTodoItems = todoItems.filter((item) => !item.checked)
   const summary = {
@@ -1511,6 +1530,7 @@ function writeReadinessSummary(
     releaseReadinessEvidence: { ...releaseReadinessEvidence },
     initialCiEvidence: { ...initialCiEvidence },
     platformEvidence: { ...platformEvidence },
+    releaseHandoffReport,
     nextActions: collectReadinessNextActions(
       checks,
       expectedCommit,

@@ -64,7 +64,8 @@ readiness audit stays offline and prints final TODO proof status so it can be
 used before final evidence exists.
 Add `--summary-output release/release-readiness-summary.json` to either form to
 capture the current blockers, TODO counts, unchecked TODO item details, final TODO proof status,
-readiness check and evidence status, local Git state, platform worksheet audit
+readiness check and evidence status, local Git state, release handoff report
+currentness/format status, platform worksheet audit
 status with compact per-platform progress counts, malformed outcome counts,
 exact remaining must-pass/skippable check names, and structured check
 descriptions, separate Android/iOS real-device evidence

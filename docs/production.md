@@ -191,7 +191,8 @@ contact GitHub. Add
 `--summary-output release/release-readiness-summary.json` to write blockers,
 warning markers, package description warning status, release tooling/workflow
 blocker lists, TODO counts, unchecked TODO item details, final TODO proof status,
-structured readiness check and evidence status, local Git state, and
+structured readiness check and evidence status, local Git state, release
+handoff report currentness/format status, and
 `nextActions` command hints for the remaining evidence/finalizer work, including
 the local `npm run check`, initial CI evidence collection, push/dispatch
 commands, platform worksheet audit status with compact per-platform progress
