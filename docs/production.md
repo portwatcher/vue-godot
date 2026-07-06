@@ -199,7 +199,7 @@ only; non-local preflight fails when either gate is skipped.
 `npm run release:readiness -- --allow-open` reports final-removal blockers and
 final TODO proof status while the production TODO remains open and does not
 contact GitHub. Add
-`--summary-output release/release-readiness-summary.json` to write blockers,
+`--summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md` to write blockers,
 warning markers, package description warning status, release tooling/workflow
 blocker lists, TODO counts, unchecked TODO item details, final TODO proof status,
 structured readiness check and evidence status, local Git state, release
@@ -210,7 +210,7 @@ commands, platform worksheet audit status with compact per-platform progress
 counts plus exact remaining must-pass/skippable check names and structured check descriptions, separate
 Android/iOS real-device evidence status with metadata, platform, and read
 errors, release-readiness evidence status, and CI workflow wiring status, as
-JSON for release handoff. Run
+JSON and a Markdown checklist for final gate handoff. Run
 `npm run release:handoff -- --expected-commit <release-candidate-sha> --output release/release-handoff.md`
 to render the same allow-open audit as a Markdown handoff for Android/iOS
 testers; while real-device evidence is open, the release-readiness

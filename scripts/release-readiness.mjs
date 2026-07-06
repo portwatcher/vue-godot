@@ -44,7 +44,9 @@ import {
   defaultReleaseHandoffReportPath,
   defaultReleasePreflightChecklistPath,
   defaultReleasePreflightSummaryPath,
+  defaultReleaseReadinessChecklistPath,
   defaultReleaseReadinessEvidencePath,
+  defaultReleaseReadinessSummaryPath,
   formatHandoffCommand,
   initialReleaseCiCommands,
   productionProfilePlatformEvidenceCommand,
@@ -147,6 +149,8 @@ Options:
                                 Use this when evidence files are committed
                                 after testing a release-candidate commit.
   --summary-output <file>       Write machine-readable readiness blockers JSON.
+  --checklist-output <file>     Write a Markdown checklist with readiness
+                                blockers, final TODO proof, and next commands.
   --help                        Show this help.
 `)
 }
@@ -154,6 +158,7 @@ Options:
 function parseArgs(argv) {
   const options = {
     allowOpen: false,
+    checklistOutput: null,
     ciEvidencePath: null,
     expectedCommit: null,
     platformEvidencePath: null,
@@ -181,6 +186,20 @@ function parseArgs(argv) {
         throw new Error('--ci-evidence requires a value')
       }
       options.ciEvidencePath = path.resolve(repoRoot, value)
+      continue
+    }
+
+    if (arg === '--checklist-output') {
+      const value = argv[++index]
+      if (!value) {
+        throw new Error('--checklist-output requires a value')
+      }
+      options.checklistOutput = value
+      continue
+    }
+
+    if (arg.startsWith('--checklist-output=')) {
+      options.checklistOutput = arg.slice('--checklist-output='.length)
       continue
     }
 
@@ -1021,6 +1040,9 @@ function releaseReadinessCommand(commit, pathOptions = {}, options = {}) {
   if (options.summaryOutput && !options.allowOpen) {
     args.push('--summary-output', options.summaryOutput)
   }
+  if (options.checklistOutput && !options.allowOpen) {
+    args.push('--checklist-output', options.checklistOutput)
+  }
   args.push('--expected-commit', releaseCommitLabel(commit))
   if (pathOptions.ciEvidencePath) {
     args.push('--ci-evidence', pathOptions.ciEvidencePath)
@@ -1037,6 +1059,9 @@ function releaseReadinessCommand(commit, pathOptions = {}, options = {}) {
 
   if (options.summaryOutput && options.allowOpen) {
     args.push('--summary-output', options.summaryOutput)
+  }
+  if (options.checklistOutput && options.allowOpen) {
+    args.push('--checklist-output', options.checklistOutput)
   }
 
   return formatHandoffCommand(args)
@@ -1294,7 +1319,8 @@ function collectReadinessNextActions(
       commands: [
         releaseReadinessCommand(initialCiEvidence.validForCommit, pathOptions, {
           allowOpen: true,
-          summaryOutput: 'release/release-readiness-summary.json',
+          checklistOutput: defaultReleaseReadinessChecklistPath,
+          summaryOutput: defaultReleaseReadinessSummaryPath,
         }),
       ],
     })
@@ -1477,7 +1503,10 @@ function collectReadinessNextActions(
               'Add release readiness evidence',
               { push: true },
             ),
-            releaseReadinessCommand(commit, repoLocalPathOptions),
+            releaseReadinessCommand(commit, repoLocalPathOptions, {
+              checklistOutput: defaultReleaseReadinessChecklistPath,
+              summaryOutput: defaultReleaseReadinessSummaryPath,
+            }),
           ],
         },
         realDeviceEvidenceBlocked ? ['real-device-evidence'] : [],
@@ -1520,6 +1549,7 @@ function collectReadinessNextActions(
             'Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks, removes public warning wording, then stages and commits those edits before the final strict readiness check.',
           commands: [
             releaseReadinessCommand(commit, pathOptions, {
+              checklistOutput: '/tmp/vue-godot-readiness.md',
               summaryOutput: '/tmp/vue-godot-readiness.json',
             }),
             'npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json',
@@ -1527,7 +1557,10 @@ function collectReadinessNextActions(
             `git add ${finalizationFiles.join(' ')}`,
             'git commit -m "Finalize production readiness"',
             'git push',
-            releaseReadinessCommand(commit, pathOptions),
+            releaseReadinessCommand(commit, pathOptions, {
+              checklistOutput: defaultReleaseReadinessChecklistPath,
+              summaryOutput: defaultReleaseReadinessSummaryPath,
+            }),
           ],
         },
         dependencies,
@@ -1569,9 +1602,224 @@ function printExpectedCommitHint(
   console.log(
     `- ${releaseReadinessCommand(initialCiEvidence.validForCommit, pathOptions, {
       allowOpen: true,
-      summaryOutput: 'release/release-readiness-summary.json',
+      checklistOutput: defaultReleaseReadinessChecklistPath,
+      summaryOutput: defaultReleaseReadinessSummaryPath,
     })}`,
   )
+}
+
+function displayValue(value) {
+  if (typeof value === 'boolean') {
+    return value ? 'yes' : 'no'
+  }
+  if (Number.isInteger(value)) {
+    return String(value)
+  }
+  if (typeof value === 'string' && value.trim().length > 0) {
+    return value.trim()
+  }
+  return 'missing'
+}
+
+function checklistLine(ready, label, detail) {
+  return `- ${ready ? '[x]' : '[ ]'} ${label}: ${detail}`
+}
+
+function formatIssueLines(label, values) {
+  const issues = Array.isArray(values)
+    ? values
+        .map((value) => String(value).trim())
+        .filter((value) => value.length > 0)
+    : []
+
+  if (issues.length === 0) {
+    return [`- ${label}: none`]
+  }
+
+  return [`- ${label}:`, ...issues.map((issue) => `  - ${issue}`)]
+}
+
+function formatFinalTodoChecklistLine(status) {
+  const location =
+    status.file && status.line != null
+      ? `${status.file}:${status.line}`
+      : 'missing final TODO item'
+  const todoState =
+    status.itemCount === 1
+      ? status.checked
+        ? 'checked'
+        : 'unchecked'
+      : `${displayValue(status.itemCount)} matching TODO items`
+  const proofState = status.ready ? 'ready' : 'waiting'
+
+  return checklistLine(
+    status.ready === true && status.checked === true,
+    `${location} ${todoState}`,
+    `${status.proof} ${proofState}; ${status.reason}`,
+  )
+}
+
+function formatActionLines(action) {
+  const lines = [`### ${action.title ?? action.id ?? 'Action'}`, '']
+  if (typeof action.detail === 'string' && action.detail.trim()) {
+    lines.push(action.detail.trim(), '')
+  }
+  if (Array.isArray(action.blockedBy) && action.blockedBy.length > 0) {
+    lines.push(`Blocked by: ${action.blockedBy.join(', ')}`, '')
+  }
+  const commands = Array.isArray(action.commands) ? action.commands : []
+  if (commands.length > 0) {
+    lines.push('```bash', ...commands, '```', '')
+  } else {
+    lines.push('- no commands', '')
+  }
+  return lines
+}
+
+export function formatReleaseReadinessChecklist(summary) {
+  const checks = isRecord(summary.checks) ? summary.checks : {}
+  const finalTodoRequirements = Array.isArray(summary.finalTodoRequirements)
+    ? summary.finalTodoRequirements
+    : []
+  const nextActions = Array.isArray(summary.nextActions)
+    ? summary.nextActions
+    : []
+  const releaseHandoffReport = isRecord(summary.releaseHandoffReport)
+    ? summary.releaseHandoffReport
+    : {}
+  const realDeviceEvidence = isRecord(summary.realDeviceEvidence)
+    ? summary.realDeviceEvidence
+    : {}
+  const releaseReadinessEvidence = isRecord(summary.releaseReadinessEvidence)
+    ? summary.releaseReadinessEvidence
+    : {}
+  const platformEvidence = isRecord(summary.platformEvidence)
+    ? summary.platformEvidence
+    : {}
+  const initialCiEvidence = isRecord(summary.initialCiEvidence)
+    ? summary.initialCiEvidence
+    : {}
+
+  const lines = [
+    '# Release Readiness Checklist',
+    '',
+    `- Status: ${summary.ready ? 'ready' : 'waiting'}`,
+    `- Expected commit: ${displayValue(summary.commit)}`,
+    `- Allow open: ${displayValue(summary.allowOpen)}`,
+    `- Blockers: ${displayValue(summary.blockerCount)}`,
+    `- Release handoff: ${
+      releaseHandoffReport.current === true ? 'current' : 'needs update'
+    }`,
+    '',
+    '## Final TODO Proof',
+    '',
+  ]
+
+  if (finalTodoRequirements.length === 0) {
+    lines.push('- [ ] Final TODO proof status: missing')
+  } else {
+    lines.push(
+      ...finalTodoRequirements.map((status) =>
+        formatFinalTodoChecklistLine(status),
+      ),
+    )
+  }
+
+  lines.push(
+    '',
+    '## Release Gates',
+    '',
+    checklistLine(
+      checks.cleanWorktree === true,
+      'Clean worktree',
+      displayValue(checks.cleanWorktree),
+    ),
+    checklistLine(
+      checks.initialCiEvidence === true,
+      'Check/Godot Smoke CI evidence',
+      `${displayValue(initialCiEvidence.path)} for ${displayValue(
+        initialCiEvidence.expectedCommit ?? summary.commit,
+      )}`,
+    ),
+    checklistLine(
+      checks.platformEvidence === true,
+      'Platform worksheet',
+      `${displayValue(platformEvidence.path)} with ${displayValue(
+        platformEvidence.errorCount,
+      )} blocker(s)`,
+    ),
+    checklistLine(
+      checks.realDeviceEvidence === true,
+      'Real-device evidence',
+      `${displayValue(realDeviceEvidence.path)} with ${displayValue(
+        realDeviceEvidence.errorCount,
+      )} blocker(s)`,
+    ),
+    checklistLine(
+      checks.androidRealDeviceEvidence === true,
+      'Android selected APIs',
+      displayValue(realDeviceEvidence.androidReady),
+    ),
+    checklistLine(
+      checks.iosRealDeviceEvidence === true,
+      'iOS selected APIs',
+      displayValue(realDeviceEvidence.iosReady),
+    ),
+    checklistLine(
+      checks.releaseReadinessEvidence === true,
+      'Release Preflight evidence',
+      `${displayValue(releaseReadinessEvidence.path)} with ${displayValue(
+        releaseReadinessEvidence.errorCount,
+      )} blocker(s)`,
+    ),
+    checklistLine(
+      checks.publicSurface === true,
+      'Public surface docs',
+      displayValue(checks.publicSurface),
+    ),
+    checklistLine(
+      checks.publicWarningMarkersRemoved === true,
+      'Public warning wording removed',
+      displayValue(checks.publicWarningMarkersRemoved),
+    ),
+    checklistLine(
+      checks.packageDescriptionWarningsRemoved === true,
+      'Package warning wording removed',
+      displayValue(checks.packageDescriptionWarningsRemoved),
+    ),
+    checklistLine(
+      checks.strictCiEvidence === true,
+      'Strict CI evidence',
+      displayValue(checks.strictCiEvidence),
+    ),
+    '',
+    '## Blocking Issues',
+    '',
+    ...formatIssueLines('Blockers', summary.blockers),
+    ...formatIssueLines('Warning markers', summary.warningMarkers),
+    ...formatIssueLines(
+      'Package description warnings',
+      summary.packageDescriptionWarnings,
+    ),
+    ...formatIssueLines('Release tooling blockers', summary.releaseToolingBlockers),
+    ...formatIssueLines(
+      'Release workflow blockers',
+      summary.releaseWorkflowBlockers,
+    ),
+    '',
+    '## Next Actions',
+    '',
+  )
+
+  if (nextActions.length === 0) {
+    lines.push('- none')
+  } else {
+    for (const action of nextActions) {
+      lines.push(...formatActionLines(action))
+    }
+  }
+
+  return `${lines.join('\n')}\n`
 }
 
 function writeReadinessSummary(
@@ -1590,11 +1838,10 @@ function writeReadinessSummary(
   initialCiEvidence,
   platformEvidence,
 ) {
-  if (!options.summaryOutput) {
+  if (!options.summaryOutput && !options.checklistOutput) {
     return
   }
 
-  const resolved = path.resolve(repoRoot, options.summaryOutput)
   const localGit = expectedCommit
     ? collectLocalGitReleaseState(expectedCommit)
     : null
@@ -1668,9 +1915,19 @@ function writeReadinessSummary(
     releaseWorkflowBlockers: [...releaseWorkflowBlockers],
   }
 
-  fs.mkdirSync(path.dirname(resolved), { recursive: true })
-  fs.writeFileSync(resolved, `${JSON.stringify(summary, null, 2)}\n`)
-  console.log(`[release-readiness] wrote ${relative(resolved)}`)
+  if (options.summaryOutput) {
+    const resolved = path.resolve(repoRoot, options.summaryOutput)
+    fs.mkdirSync(path.dirname(resolved), { recursive: true })
+    fs.writeFileSync(resolved, `${JSON.stringify(summary, null, 2)}\n`)
+    console.log(`[release-readiness] wrote ${relative(resolved)}`)
+  }
+
+  if (options.checklistOutput) {
+    const resolved = path.resolve(repoRoot, options.checklistOutput)
+    fs.mkdirSync(path.dirname(resolved), { recursive: true })
+    fs.writeFileSync(resolved, formatReleaseReadinessChecklist(summary))
+    console.log(`[release-readiness] wrote ${relative(resolved)}`)
+  }
 }
 
 async function main() {
@@ -1805,7 +2062,7 @@ async function main() {
     )
   } catch (error) {
     blockers.push(
-      `Unable to write release readiness summary: ${
+      `Unable to write release readiness output: ${
         error instanceof Error ? error.message : String(error)
       }`,
     )

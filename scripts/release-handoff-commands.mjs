@@ -24,6 +24,10 @@ export const defaultReleasePreflightChecklistPath =
   'release/release-preflight-checklist.md'
 export const defaultReleaseReadinessEvidencePath =
   'release/release-readiness-evidence.json'
+export const defaultReleaseReadinessSummaryPath =
+  'release/release-readiness-summary.json'
+export const defaultReleaseReadinessChecklistPath =
+  'release/release-readiness-checklist.md'
 export const defaultReleaseHandoffReportPath = 'release/release-handoff.md'
 export const releaseHandoffReportFormatVersion = 4
 

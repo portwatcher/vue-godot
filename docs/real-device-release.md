@@ -62,7 +62,7 @@ The final strict `release:readiness` gate applies the same check and also
 verifies the recorded Release Preflight run metadata. The `--allow-open`
 readiness audit stays offline and prints final TODO proof status so it can be
 used before final evidence exists.
-Add `--summary-output release/release-readiness-summary.json` to either form to
+Add `--summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md` to either form to
 capture the current blockers, TODO counts, unchecked TODO item details, final TODO proof status,
 readiness check and evidence status, local Git state, release handoff report
 currentness/format/state status, platform worksheet audit
@@ -74,7 +74,7 @@ release-readiness evidence status, CI workflow wiring status,
 release tooling/workflow blocker lists, public warning markers, package
 description warning status, and `nextActions` command hints for the local
 `npm run check`, initial CI evidence collection, push/dispatch commands, and the
-remaining evidence/finalizer work as JSON. Run
+remaining evidence/finalizer work as JSON and a Markdown checklist. Run
 `npm run release:handoff -- --expected-commit <release-candidate-sha> --output release/release-handoff.md`
 to render the same allow-open audit as a Markdown handoff for Android/iOS
 testers; while real-device evidence is open, the release-readiness

@@ -16,6 +16,7 @@ import {
   collectTodoItems,
   collectUncheckedTodoItems,
   formatFinalTodoRequirementStatus,
+  formatReleaseReadinessChecklist,
   isReleaseHandoffReportCurrent,
   validateInitialCiEvidence,
   validateReleaseReadinessEvidence,
@@ -279,6 +280,101 @@ test('release readiness requires the final TODO evidence checklist shape', () =>
     output,
     /must include "All public READMEs match the final support claims\."/,
   )
+})
+
+test('release readiness checklist renders final proof and next actions', () => {
+  const summary = {
+    allowOpen: true,
+    blockerCount: 2,
+    blockers: ['Android evidence missing', 'Release Preflight missing'],
+    checks: {
+      androidRealDeviceEvidence: false,
+      cleanWorktree: true,
+      initialCiEvidence: true,
+      iosRealDeviceEvidence: false,
+      packageDescriptionWarningsRemoved: true,
+      platformEvidence: false,
+      publicSurface: true,
+      publicWarningMarkersRemoved: false,
+      realDeviceEvidence: false,
+      releaseReadinessEvidence: false,
+      strictCiEvidence: false,
+    },
+    commit: '0123456789abcdef0123456789abcdef01234567',
+    finalTodoRequirements: [
+      {
+        checked: true,
+        file: 'TODO.md',
+        itemCount: 1,
+        line: 24,
+        proof: 'checkCiEvidenceReady',
+        ready: true,
+        reason:
+          'committed release/ci-runs.json evidence must verify a successful Check workflow run',
+        text: '`npm run check` passes locally and in CI.',
+      },
+      {
+        checked: false,
+        file: 'TODO.md',
+        itemCount: 1,
+        line: 389,
+        proof: 'androidRealDeviceEvidenceReady',
+        ready: false,
+        reason:
+          'Android real-device evidence must validate the selected API export checks',
+        text: 'Android export with selected device APIs has been tested.',
+      },
+    ],
+    initialCiEvidence: {
+      expectedCommit: '0123456789abcdef0123456789abcdef01234567',
+      path: 'release/ci-runs.json',
+    },
+    nextActions: [
+      {
+        blockedBy: ['real-device-evidence'],
+        commands: ['npm run check'],
+        detail: 'Run the local check first.',
+        id: 'release-preflight-evidence',
+        title: 'Collect Release Preflight evidence',
+      },
+    ],
+    packageDescriptionWarnings: [],
+    platformEvidence: {
+      errorCount: 69,
+      path: 'release/platform-evidence.json',
+    },
+    ready: false,
+    realDeviceEvidence: {
+      androidReady: false,
+      errorCount: 1,
+      iosReady: false,
+      path: 'release/real-device-evidence.json',
+    },
+    releaseHandoffReport: {
+      current: false,
+    },
+    releaseReadinessEvidence: {
+      errorCount: 1,
+      path: 'release/release-readiness-evidence.json',
+    },
+    releaseToolingBlockers: [],
+    releaseWorkflowBlockers: [],
+    warningMarkers: ['README.md: root README production warning'],
+  }
+
+  const checklist = formatReleaseReadinessChecklist(summary)
+
+  assert.match(checklist, /# Release Readiness Checklist/)
+  assert.match(checklist, /- Status: waiting/)
+  assert.match(checklist, /\[x\] TODO\.md:24 checked: checkCiEvidenceReady ready/)
+  assert.match(
+    checklist,
+    /\[ \] TODO\.md:389 unchecked: androidRealDeviceEvidenceReady waiting/,
+  )
+  assert.match(checklist, /\[ \] Real-device evidence/)
+  assert.match(checklist, /Android evidence missing/)
+  assert.match(checklist, /Blocked by: real-device-evidence/)
+  assert.match(checklist, /```bash\nnpm run check\n```/)
 })
 
 test('release readiness requires release tooling scripts', () => {
@@ -576,7 +672,7 @@ test('release readiness suggests expected commit for committed CI evidence', () 
     assert.ok(expectedCommitAction)
     assert.ok(
       expectedCommitAction.commands.includes(
-        `npm run release:readiness -- --allow-open --expected-commit ${testedCommit} --ci-evidence ${ciEvidencePath} --summary-output release/release-readiness-summary.json`,
+        `npm run release:readiness -- --allow-open --expected-commit ${testedCommit} --ci-evidence ${ciEvidencePath} --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md`,
       ),
     )
     assert.match(output, /tested release commit evidence found/)
@@ -588,7 +684,7 @@ test('release readiness suggests expected commit for committed CI evidence', () 
     )
     assert.ok(
       output.includes(
-        `npm run release:readiness -- --allow-open --expected-commit ${testedCommit} --ci-evidence ${ciEvidencePath} --summary-output release/release-readiness-summary.json`,
+        `npm run release:readiness -- --allow-open --expected-commit ${testedCommit} --ci-evidence ${ciEvidencePath} --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md`,
       ),
     )
   } finally {
@@ -642,6 +738,7 @@ test('release readiness explains evidence commits for tested release candidates'
 test('release readiness writes a machine-readable blocker summary', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
   const summaryPath = path.join(tempDir, 'release-readiness-summary.json')
+  const checklistPath = path.join(tempDir, 'release-readiness-checklist.md')
   const exampleCommit = '0123456789abcdef0123456789abcdef01234567'
 
   try {
@@ -655,12 +752,16 @@ test('release readiness writes a machine-readable blocker summary', () => {
       exampleCommit,
       '--summary-output',
       summaryPath,
+      '--checklist-output',
+      checklistPath,
     ])
     const output = `${result.stdout}\n${result.stderr}`
     const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+    const checklist = fs.readFileSync(checklistPath, 'utf-8')
 
     assert.equal(result.status, 0)
     assert.match(output, /wrote .*release-readiness-summary\.json/)
+    assert.match(output, /wrote .*release-readiness-checklist\.md/)
     assert.equal(summary.commit, exampleCommit)
     assert.equal(summary.allowOpen, true)
     assert.equal(summary.localGit.commitIsHead, false)
@@ -782,7 +883,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.ok(releasePreflightAction.commands.includes('git push'))
     assert.ok(
       releasePreflightAction.commands.includes(
-        `npm run release:readiness -- --expected-commit ${exampleCommit} --real-device-path docs/real-device-evidence.example.json --readiness-path docs/release-readiness-evidence.example.json`,
+        `npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit ${exampleCommit} --real-device-path docs/real-device-evidence.example.json --readiness-path docs/release-readiness-evidence.example.json`,
       ),
     )
     assert.ok(
@@ -797,7 +898,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
           }
 
           const readinessSummaryIndex = action.commands.indexOf(
-            `npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit ${exampleCommit} --real-device-path docs/real-device-evidence.example.json --readiness-path docs/release-readiness-evidence.example.json`,
+            `npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --checklist-output /tmp/vue-godot-readiness.md --expected-commit ${exampleCommit} --real-device-path docs/real-device-evidence.example.json --readiness-path docs/release-readiness-evidence.example.json`,
           )
           const finalizerIndex = action.commands.indexOf(
             'npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json',
@@ -811,7 +912,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
           )
           const gitPushIndex = action.commands.indexOf('git push')
           const finalReadinessIndex = action.commands.indexOf(
-            `npm run release:readiness -- --expected-commit ${exampleCommit} --real-device-path docs/real-device-evidence.example.json --readiness-path docs/release-readiness-evidence.example.json`,
+            `npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit ${exampleCommit} --real-device-path docs/real-device-evidence.example.json --readiness-path docs/release-readiness-evidence.example.json`,
           )
 
           return (
@@ -909,6 +1010,15 @@ test('release readiness writes a machine-readable blocker summary', () => {
         marker.includes('README.md: root README final-removal wording'),
       ),
     )
+    assert.match(checklist, /# Release Readiness Checklist/)
+    assert.match(checklist, /- Status: waiting/)
+    assert.match(checklist, new RegExp(`- Expected commit: ${exampleCommit}`))
+    assert.match(checklist, /## Final TODO Proof/)
+    assert.match(checklist, /Check\/Godot Smoke CI evidence/)
+    assert.match(checklist, /## Blocking Issues/)
+    assert.match(checklist, /root README production warning/)
+    assert.match(checklist, /## Next Actions/)
+    assert.match(checklist, /release:finalize-readiness/)
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }
@@ -1178,7 +1288,7 @@ test('release readiness summary includes missing evidence next actions', () => {
     assert.ok(releasePreflightAction.commands.includes('git push'))
     assert.ok(
       releasePreflightAction.commands.includes(
-        `npm run release:readiness -- --expected-commit ${summary.commit}`,
+        `npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit ${summary.commit}`,
       ),
     )
     const finalWarningAction = summary.nextActions.find(
@@ -1191,12 +1301,12 @@ test('release readiness summary includes missing evidence next actions', () => {
     ])
     assert.ok(
       finalWarningAction.commands.includes(
-        `npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit ${summary.commit} --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
+        `npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --checklist-output /tmp/vue-godot-readiness.md --expected-commit ${summary.commit} --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
       ),
     )
     assert.ok(
       finalWarningAction.commands.includes(
-        `npm run release:readiness -- --expected-commit ${summary.commit} --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
+        `npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit ${summary.commit} --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
       ),
     )
   } finally {

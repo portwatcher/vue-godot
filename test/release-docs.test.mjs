@@ -20,6 +20,7 @@ test('release helper outputs are ignored separately from committed evidence', ()
     'release/real-device-evidence-summary.json',
     'release/real-device-evidence-checklist.md',
     'release/release-readiness-summary.json',
+    'release/release-readiness-checklist.md',
   ]) {
     assert.match(gitignore, new RegExp(`^${file}$`, 'm'))
   }
@@ -33,7 +34,9 @@ test('release helper outputs are ignored separately from committed evidence', ()
     /^release\/release-preflight-checklist\.md$/m,
   )
   assert.match(production, /gitignored helper files/)
+  assert.match(production, /release-readiness-checklist\.md/)
   assert.match(readme, /gitignored helper files/)
+  assert.match(readme, /release-readiness-checklist\.md/)
 })
 
 test('real device release checklist covers required Android and iOS gates', () => {
@@ -988,6 +991,7 @@ test('release preflight enforces real device evidence', () => {
     /dispatch those workflows first from a\s+release-candidate ref[\s\S]*dispatch Release Preflight from the evidence ref/,
   )
   assert.match(checklist, /release-readiness-summary/)
+  assert.match(checklist, /release-readiness-checklist/)
   assert.match(checklist, /--expected-commit <release-candidate-sha>/)
   assert.match(checklist, /follow-up evidence commit/)
   assert.match(checklist, /release:platform-evidence/)
@@ -1186,6 +1190,7 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(production, /release:finalize-readiness/)
   assert.match(production, /\/tmp\/vue-godot-readiness\.json/)
   assert.match(production, /release-readiness-summary/)
+  assert.match(production, /release-readiness-checklist/)
   assert.match(production, /--expected-commit <release-candidate-sha>/)
   assert.match(production, /tested commit instead of the evidence commit/)
   assert.match(production, /reports final-removal blockers and\s+final TODO proof status/)
@@ -1219,6 +1224,7 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(readme, /release:finalize-readiness/)
   assert.match(readme, /\/tmp\/vue-godot-readiness\.json/)
   assert.match(readme, /release-readiness-summary/)
+  assert.match(readme, /release-readiness-checklist/)
   assert.match(readme, /release-readiness-evidence\.json/)
   assert.match(
     readme,

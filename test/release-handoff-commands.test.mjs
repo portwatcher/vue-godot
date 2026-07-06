@@ -11,6 +11,8 @@ import {
   defaultRealDeviceEvidencePath,
   defaultReleasePreflightSummaryPath,
   defaultReleaseReadinessEvidencePath,
+  defaultReleaseReadinessChecklistPath,
+  defaultReleaseReadinessSummaryPath,
   defaultReleaseCiEvidencePath,
   defaultRealDeviceEvidenceChecklistPath,
   defaultRealDeviceEvidenceSummaryPath,
@@ -57,6 +59,14 @@ test('release handoff commands format release CI waits and dispatches', () => {
   assert.equal(
     defaultReleasePreflightChecklistPath,
     'release/release-preflight-checklist.md',
+  )
+  assert.equal(
+    defaultReleaseReadinessSummaryPath,
+    'release/release-readiness-summary.json',
+  )
+  assert.equal(
+    defaultReleaseReadinessChecklistPath,
+    'release/release-readiness-checklist.md',
   )
   assert.equal(
     productionProfilePlatformEvidenceCommand(null),
