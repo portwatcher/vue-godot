@@ -1,8 +1,8 @@
 # Release Handoff
 
 - Release candidate commit: `0b5d09fbc0dafb75a624e833f82fae6d131cb6f5`
-- Handoff format: 5
-- Handoff state: 6ef8798f8d984067
+- Handoff format: 6
+- Handoff state: a754d410ba153039
 - Overall readiness: open (10 blocker(s))
 - Real-device evidence: waiting
 - Android evidence: waiting
@@ -33,6 +33,20 @@
 - Path: `release/ci-runs.json`
 - Check: https://github.com/portwatcher/vue-godot/actions/runs/28803549804 (success)
 - Godot Smoke: https://github.com/portwatcher/vue-godot/actions/runs/28803551263 (success)
+
+## Device Prereq Diagnostics
+
+- Diagnostic only: yes; this is not release evidence
+- Summary path: `release/device-test-prereqs-summary.json`
+- Summary present: yes
+- Status: waiting
+- Selected platforms: `android`, `ios`
+- Android: waiting (1 blocker(s), 0 warning(s), 0 device(s))
+- iOS: waiting (1 blocker(s), 0 warning(s), 0 device(s))
+- Hosted provider env configured: none
+- Hosted provider env partial: none
+- Read errors:
+- none
 
 ## Platform Evidence
 
