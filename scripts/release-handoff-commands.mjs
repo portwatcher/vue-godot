@@ -79,6 +79,8 @@ export function recordPlatformEvidenceCommand(platform, commit, options = {}) {
     platformName === 'ios'
       ? '<ios-archive-testflight-or-hosted-build-id>'
       : '<android-apk-aab-or-hosted-build-id>'
+  const exportPresetPlaceholder =
+    platformName === 'ios' ? '<ios-export-preset>' : '<android-export-preset>'
   const devicePlaceholder =
     platformName === 'ios' ? '<ios-device-model>' : '<android-device-model>'
   const osPlaceholder =
@@ -94,6 +96,8 @@ export function recordPlatformEvidenceCommand(platform, commit, options = {}) {
     options.platformEvidencePath ?? defaultPlatformEvidencePath,
     '--artifact',
     artifactPlaceholder,
+    '--export-preset',
+    exportPresetPlaceholder,
     '--device',
     devicePlaceholder,
     '--os',

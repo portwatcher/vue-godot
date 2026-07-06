@@ -71,12 +71,12 @@ test('platform evidence audit reports incomplete worksheet gaps', () => {
     completedCheckCount: 0,
     requiredCheckCount: requiredRealDeviceChecks.android.length,
     remainingCheckCount: requiredRealDeviceChecks.android.length,
-    mustPassMissingCheckCount: requiredRealDeviceChecks.android.length - 1,
-    skippableMissingCheckCount: 1,
+    mustPassMissingCheckCount: requiredRealDeviceChecks.android.length,
+    skippableMissingCheckCount: 0,
   })
   assert.match(
     formatPlatformEvidenceProgress(summary),
-    /Android: 5 metadata field\(s\) missing, 14\/14 required check\(s\) unresolved, 13 must-pass check\(s\) missing/,
+    /Android: 5 metadata field\(s\) missing, 14\/14 required check\(s\) unresolved, 14 must-pass check\(s\) missing/,
   )
 })
 
@@ -238,7 +238,7 @@ test('record-platform-evidence CLI records one platform result batch', () => {
     assert.equal(summary.nextActions[0].id, 'complete-platform-evidence')
     assert.ok(
       summary.nextActions[0].commands.includes(
-        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${shellQuote(evidencePath)} --artifact <android-apk-aab-or-hosted-build-id> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output ${shellQuote(summaryPath)} --expected-commit ${commit}`,
+        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${shellQuote(evidencePath)} --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output ${shellQuote(summaryPath)} --expected-commit ${commit}`,
       ),
     )
     assert.ok(
@@ -383,12 +383,12 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
     assert.match(summary.nextActions[0].detail, /iOS: 5 metadata/)
     assert.ok(
       summary.nextActions[0].commands.includes(
-        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output ${summaryPath} --expected-commit ${commit}`,
+        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output ${summaryPath} --expected-commit ${commit}`,
       ),
     )
     assert.ok(
       summary.nextActions[0].commands.includes(
-        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output ${summaryPath} --expected-commit ${commit}`,
+        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output ${summaryPath} --expected-commit ${commit}`,
       ),
     )
     assert.ok(

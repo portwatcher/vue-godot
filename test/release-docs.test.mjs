@@ -342,6 +342,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /Final release evidence must include every production-profile API/)
   assert.match(production, /passOnlyChecks/)
   assert.match(production, /selectedApiRequiredChecks/)
+  assert.match(production, /navigator\.mediaDevices\.getUserMedia/)
+  assert.match(
+    production,
+    /audio-input-if-selected[\s\S]*must-pass Android and iOS worksheet check/,
+  )
   assert.match(production, /Selected API names are validated/)
   assert.match(production, /selected APIs must be recorded in `passedChecks`/)
   assert.match(production, /top-level `nextActions` section/)
@@ -595,13 +600,13 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /release:platform-evidence/)
   assert.match(readme, /release:record-platform-evidence/)
   assert.match(readme, /command templates/)
-  assert.match(readme, /before the worksheet audit command/)
+  assert.match(readme, /worksheet audit/)
   assert.match(readme, /--platform android/)
   assert.match(readme, /--platform ios/)
   assert.match(readme, /--pass-remaining/)
   assert.match(readme, /all unskipped required checks/)
   assert.match(readme, /rejects unknown checks/)
-  assert.match(readme, /refuses to skip pass-only or selected-API-required checks/)
+  assert.match(readme, /refuses to\s+skip pass-only or selected-API-required checks/)
   assert.match(
     readme,
     /When `--summary-output` is supplied[\s\S]*recorder writes the updated audit and follow-up `nextActions`/,
@@ -612,14 +617,19 @@ test('release preflight enforces real device evidence', () => {
     readme,
     /worksheet reads `release\/ci-runs\.json` by default[\s\S]*`--ci-evidence <file>`[\s\S]*records an `initialCiEvidence` status object[\s\S]*duplicate Check\/Godot Smoke collection commands/,
   )
-  assert.match(readme, /Final release evidence must include every production-profile API/)
+  assert.match(readme, /Final release evidence must include every\s+production-profile API/)
   assert.match(readme, /passOnlyChecks/)
   assert.match(readme, /selectedApiRequiredChecks/)
-  assert.match(readme, /Selected API names are validated/)
+  assert.match(readme, /navigator\.mediaDevices\.getUserMedia/)
+  assert.match(
+    readme,
+    /audio-input-if-selected[\s\S]*must-pass production worksheet check/,
+  )
+  assert.match(readme, /Selected API names are\s+validated/)
   assert.match(readme, /must be in `passedChecks`/)
   assert.match(readme, /top-level `nextActions` section/)
   assert.match(readme, /release\s+CI\s+wait\/dispatch commands/)
-  assert.match(readme, /worksheet\s+audit command/)
+  assert.match(readme, /worksheet\s+audit\s+command/)
   assert.match(readme, /final evidence assembly commands/)
   assert.match(readme, /worksheet fields/)
   assert.match(
@@ -787,8 +797,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /command\s+templates before the strict worksheet audit/)
   assert.match(checklist, /--platform android/)
   assert.match(checklist, /--platform ios/)
-  assert.match(checklist, /--pass cold-launch,no-godotjs-load-diagnostics/)
-  assert.match(checklist, /--skip audio-input-if-selected/)
+  assert.match(
+    checklist,
+    /--pass cold-launch,no-godotjs-load-diagnostics,audio-input-if-selected/,
+  )
+  assert.match(checklist, /--skip deep-links-share-notifications-if-selected/)
   assert.match(checklist, /--pass-remaining/)
   assert.match(checklist, /preserves existing and newly supplied/)
   assert.match(checklist, /refuses to put pass-only or selected-API-required checks/)
@@ -807,6 +820,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /Final release evidence must include every production-profile API/)
   assert.match(checklist, /passOnlyChecks/)
   assert.match(checklist, /selectedApiRequiredChecks/)
+  assert.match(checklist, /navigator\.mediaDevices\.getUserMedia/)
+  assert.match(
+    checklist,
+    /audio-input-if-selected[\s\S]*must-pass Android and iOS device check/,
+  )
   assert.match(checklist, /top-level `nextActions`/)
   assert.match(checklist, /release\s+CI\s+wait\/dispatch commands/)
   assert.match(checklist, /worksheet\s+audit command/)

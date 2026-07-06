@@ -95,7 +95,7 @@ duplicate Check/Godot Smoke collection commands when that file already validates
 initial CI for the tested commit.
 Use `npm run release:record-platform-evidence -- --platform android` or
 `--platform ios` after each hosted or real-device pass to record
-artifact/device metadata, `--pass` check names, and `--skip check=reason`
+artifact/export-preset/device metadata, `--pass` check names, and `--skip check=reason`
 outcomes without hand-editing JSON. After every unresolved platform check has
 actually passed, add `--pass-remaining` to record all unskipped required checks
 in one batch. The helper rejects unknown check names and refuses to skip
@@ -120,6 +120,9 @@ Use its `selectedApiRequiredChecks` worksheet to see which conditional checks
 the selected APIs made mandatory, including network, clipboard, haptics,
 audio-input, sensor, hardware-adapter, permission, and safe-area/keyboard
 checks.
+Because the production profile includes `navigator.mediaDevices.getUserMedia`,
+`audio-input-if-selected` is a must-pass Android and iOS worksheet check for
+production evidence.
 Conditional checks required by selected APIs must be recorded in `passedChecks`,
 not `skippedChecks`. Its top-level `nextActions` section records Android/iOS
 `release:record-platform-evidence` command templates, the allow-open worksheet

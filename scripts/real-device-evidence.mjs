@@ -116,6 +116,10 @@ const audioInputSelectedChecks = [
   'audio-input-if-selected',
 ]
 const audioInputProbeSelectedChecks = ['audio-input-if-selected']
+const mediaCaptureSelectedChecks = [
+  ...pluginHardwareSelectedChecks,
+  'audio-input-if-selected',
+]
 const sensorsSelectedChecks = ['sensors-if-selected']
 
 export const selectedApiRequiredRealDeviceChecks = {
@@ -198,19 +202,19 @@ export const selectedApiRequiredRealDeviceChecks = {
     all: pluginHardwareSelectedChecks,
   },
   'navigator.mediaDevices.getUserMedia': {
-    all: pluginHardwareSelectedChecks,
+    all: mediaCaptureSelectedChecks,
   },
   MediaStream: {
-    all: pluginHardwareSelectedChecks,
+    all: mediaCaptureSelectedChecks,
   },
   '@vue-godot/device/media-devices': {
-    all: pluginHardwareSelectedChecks,
+    all: mediaCaptureSelectedChecks,
   },
   MediaDevicesAdapter: {
-    all: pluginHardwareSelectedChecks,
+    all: mediaCaptureSelectedChecks,
   },
   createMediaDevicesAdapter: {
-    all: pluginHardwareSelectedChecks,
+    all: mediaCaptureSelectedChecks,
   },
   CameraView: {
     all: pluginHardwareSelectedChecks,

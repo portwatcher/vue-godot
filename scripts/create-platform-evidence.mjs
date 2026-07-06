@@ -27,8 +27,8 @@ function usage() {
 
 Creates a starter Android/iOS platform evidence JSON file for real-device
 release testing. The generated file is intentionally not release-ready: fill
-artifact/device details and move each requiredChecks entry into passedChecks or
-skippedChecks with a release-specific reason after testing.
+artifact/export-preset/device details and move each requiredChecks entry into
+passedChecks or skippedChecks with a release-specific reason after testing.
 Checks listed in passOnlyChecks and selectedApiRequiredChecks must be recorded
 in passedChecks.
 The top-level nextActions array records the follow-up commands for recording

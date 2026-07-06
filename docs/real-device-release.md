@@ -50,6 +50,9 @@ When a selected API maps to a conditional check such as `network-if-selected`,
 `haptics-if-selected`, `audio-input-if-selected`, `sensors-if-selected`, or
 `deep-links-share-notifications-if-selected`, that conditional check must be in
 `passedChecks`; `skippedChecks` is only accepted outside the selected API set.
+The maintained production profile includes `navigator.mediaDevices.getUserMedia`,
+so `audio-input-if-selected` is a must-pass Android and iOS device check for the
+production release worksheet.
 
 Non-local `release:preflight` reads the recorded Check and Godot Smoke run URLs
 from the GitHub Actions API and fails if either run is not completed,
@@ -186,8 +189,7 @@ npm run release:record-platform-evidence -- \
   --os <os-version> \
   --orientation "portrait and landscape" \
   --locale en-US \
-  --pass cold-launch,no-godotjs-load-diagnostics \
-  --skip audio-input-if-selected="not selected for this release profile" \
+  --pass cold-launch,no-godotjs-load-diagnostics,audio-input-if-selected \
   --expected-commit <release-candidate-sha> \
   --summary-output release/platform-evidence-summary.json
 ```
@@ -195,6 +197,10 @@ npm run release:record-platform-evidence -- \
 Use `--platform ios` for the iOS pass. The recorder rejects unknown check names
 and refuses to put pass-only or selected-API-required checks in `skippedChecks`;
 those checks must be recorded with `--pass` after they actually pass.
+Only use `--skip check=reason` for conditional checks that are genuinely outside
+the selected release profile, such as
+`--skip deep-links-share-notifications-if-selected="not selected for this release profile"`
+on an iOS build that does not include deep links, share sheets, or notifications.
 After every unresolved required check for that platform has actually passed,
 use `--pass-remaining` to move all unskipped required checks into
 `passedChecks` in one batch. It preserves existing and newly supplied

@@ -108,10 +108,10 @@ test('platform evidence template lists required checks without passing them', ()
       (action) =>
         action.id === 'complete-platform-evidence' &&
         action.commands.includes(
-          'npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
+          'npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
         ) &&
         action.commands.includes(
-          'npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
+          'npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
         ),
     ),
   )
@@ -301,6 +301,7 @@ test('platform evidence template expands production profile selected APIs', () =
       'navigator.mediaDevices.getUserMedia',
     ],
     'haptics-if-selected': ['navigator.vibrate'],
+    'audio-input-if-selected': ['navigator.mediaDevices.getUserMedia'],
     'sensors-if-selected': ['readDeviceMotion'],
     'safe-area-keyboard': ['SafeAreaView', 'KeyboardAvoidingView'],
   })
@@ -327,6 +328,7 @@ test('platform evidence template expands production profile selected APIs', () =
       'navigator.mediaDevices.getUserMedia',
     ],
     'haptics-if-selected': ['navigator.vibrate'],
+    'audio-input-if-selected': ['navigator.mediaDevices.getUserMedia'],
     'sensors-if-selected': ['readDeviceMotion'],
     'safe-area-keyboard-rotation-text-input': [
       'SafeAreaView',

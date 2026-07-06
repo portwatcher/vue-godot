@@ -49,14 +49,13 @@
       "adapter-states-if-selected",
       "hardware-adapters-if-selected",
       "haptics-if-selected",
+      "audio-input-if-selected",
       "sensors-if-selected",
       "safe-area-keyboard",
       "android-back-handling",
       "background-foreground"
     ],
-    "skippedChecks": {
-      "audio-input-if-selected": "Example build does not select low-level audio input helpers."
-    }
+    "skippedChecks": {}
   },
   "ios": {
     "artifact": "TestFlight build 1",
@@ -92,13 +91,12 @@
       "adapter-states-if-selected",
       "hardware-adapters-if-selected",
       "haptics-if-selected",
+      "audio-input-if-selected",
       "sensors-if-selected",
       "safe-area-keyboard-rotation-text-input",
       "background-foreground",
       "deep-links-share-notifications-if-selected"
     ],
-    "skippedChecks": {
-      "audio-input-if-selected": "Example build does not select low-level audio input helpers."
-    }
+    "skippedChecks": {}
   }
 }

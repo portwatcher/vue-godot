@@ -314,7 +314,54 @@ The `Check` and `Godot Smoke` GitHub Actions workflows run on Node 24 with `npm@
 
 After pushing a release candidate, `npm run release:ci -- --commit <sha> --output release/ci-runs.json` queries GitHub Actions for completed successful `Check` and `Godot Smoke` workflow runs on that exact commit. Release commit options (`--commit`, `--expected-commit`, and `--release-preflight-run-commit`) require full 40-character git commit SHAs; use `git rev-parse HEAD` or the full pushed release-candidate/evidence commit. The JSON includes `ready`, `commitFound`, required/passed/missing workflow names, structured workflow checks, local Git branch/upstream diagnostics, hints for unpushed commits or stale upstreams, `nextActions` command hints for running `npm run check` before pushing or dispatching missing workflows, and the run URLs used by release evidence. When an existing ready output file already contains the same workflow evidence, reruns keep that file unchanged so evidence-only commits do not churn on local Git diagnostics alone. Add `--wait` to poll while workflows are still running. If it reports that the commit was not found on GitHub, push the release-candidate commit first. If either workflow did not run automatically for a docs/evidence-only release commit, run `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit <sha> --dispatch-missing --wait --ref <release-candidate-branch-or-tag> --output release/ci-runs.json`; the dispatch ref must resolve to the same commit on GitHub. Pass the generated file to `npm run release:evidence -- --ci-evidence release/ci-runs.json` so the real-device evidence uses the verified run URLs and rejects not-ready or inconsistent structured CI summaries. After the `Release Preflight` workflow passes, rerun `npm run release:ci -- --commit <release-candidate-sha> --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --output release/ci-runs.json` from the evidence commit so final readiness evidence can also import the verified preflight run URL from the same CI evidence file. Omit `--release-preflight-run-commit` only when the preflight run attaches to the release-candidate commit itself.
 
-`npm run release:platform-evidence -- --production-profile` creates a starter `release/platform-evidence.json` with the exact Android/iOS required check names for the maintained production-profile selected API set: `fetch`, `WebSocket`, `checkNetworkReachability`, `navigator.onLine`, `localStorage`, `sessionStorage`, `navigator.permissions.query`, `navigator.clipboard`, `navigator.geolocation`, `navigator.mediaDevices.getUserMedia`, `navigator.vibrate`, `readDeviceMotion`, `SafeAreaView`, and `KeyboardAvoidingView`. Pass `--commit <release-candidate-sha>` with the full 40-character tested commit SHA when it is known so generated `nextActions` commands use that commit for CI collection, worksheet audit, evidence assembly, and validation. The worksheet reads `release/ci-runs.json` by default, or `--ci-evidence <file>`, records an `initialCiEvidence` status object, and omits duplicate Check/Godot Smoke collection commands when that file already validates initial CI for the tested commit. Final release evidence must include every production-profile API on both Android and iOS; release evidence assembly, the real-device evidence checker, release preflight, and strict release readiness reject evidence that omits any profile API. The starter is intentionally not release-ready: fill the artifact, device, OS, orientation, locale, and selected APIs, then move each `requiredChecks` entry into `passedChecks` or `skippedChecks` with a release-specific reason after real device testing. Use `npm run release:record-platform-evidence -- --platform android` or `--platform ios` after each hosted or real-device pass to record artifact/device metadata, `--pass` check names, and `--skip check=reason` outcomes without hand-editing JSON; after every unresolved platform check has actually passed, add `--pass-remaining` to record all unskipped required checks in one batch. When `--summary-output` is supplied, the recorder writes the updated audit and follow-up `nextActions` using the same evidence and summary paths. The helper rejects unknown checks and refuses to skip pass-only or selected-API-required checks. Selected API names are validated, so typos or unknown names fail before evidence can omit conditional checks. Its `passOnlyChecks` worksheet lists core launch/runtime checks that must never be skipped, and `selectedApiRequiredChecks` shows which conditional checks were triggered by the selected APIs. Those checks, such as `network-if-selected`, `clipboard-if-selected`, `haptics-if-selected`, `audio-input-if-selected`, `sensors-if-selected`, or `hardware-adapters-if-selected`, must be in `passedChecks`. Use `npm run check:platform-evidence -- --allow-open --summary-output release/platform-evidence-summary.json` during device testing to write per-platform remaining checks, metadata gaps, worksheet drift, and nextActions; run it without `--allow-open` before `npm run release:evidence`. The top-level `nextActions` section records `npm run check`, any still-needed release CI wait/dispatch commands, Android/iOS `release:record-platform-evidence` command templates before the worksheet audit command, and final evidence assembly commands for after the worksheet is complete. Keep worksheet fields only in `release/platform-evidence.json`; final `release/real-device-evidence.json` must not contain `requiredChecks`, `passOnlyChecks`, or `selectedApiRequiredChecks`.
+`npm run release:platform-evidence -- --production-profile` creates a starter
+`release/platform-evidence.json` with the exact Android/iOS required check names
+for the maintained production-profile selected API set: `fetch`, `WebSocket`,
+`checkNetworkReachability`, `navigator.onLine`, `localStorage`,
+`sessionStorage`, `navigator.permissions.query`, `navigator.clipboard`,
+`navigator.geolocation`, `navigator.mediaDevices.getUserMedia`,
+`navigator.vibrate`, `readDeviceMotion`, `SafeAreaView`, and
+`KeyboardAvoidingView`. Pass `--commit <release-candidate-sha>` with the full
+40-character tested commit SHA when it is known so generated `nextActions`
+commands use that commit for CI collection, worksheet audit, evidence assembly,
+and validation. The worksheet reads `release/ci-runs.json` by default, or
+`--ci-evidence <file>`, records an `initialCiEvidence` status object, and omits
+duplicate Check/Godot Smoke collection commands when that file already validates
+initial CI for the tested commit. Final release evidence must include every
+production-profile API on both Android and iOS; release evidence assembly, the
+real-device evidence checker, release preflight, and strict release readiness
+reject evidence that omits any profile API. The starter is intentionally not
+release-ready: fill the artifact, export preset, device, OS, orientation,
+locale, and selected APIs, then move each `requiredChecks` entry into
+`passedChecks` or `skippedChecks` with a release-specific reason after real
+device testing. Use `npm run release:record-platform-evidence -- --platform android`
+or `--platform ios` after each hosted or real-device pass to record
+artifact/export-preset/device metadata, `--pass` check names, and
+`--skip check=reason` outcomes without hand-editing JSON; after every
+unresolved platform check has actually passed, add `--pass-remaining` to record
+all unskipped required checks in one batch. When `--summary-output` is supplied,
+the recorder writes the updated audit and follow-up `nextActions` using the same
+evidence and summary paths. The helper rejects unknown checks and refuses to
+skip pass-only or selected-API-required checks. Selected API names are
+validated, so typos or unknown names fail before evidence can omit conditional
+checks. Its `passOnlyChecks` worksheet lists core launch/runtime checks that
+must never be skipped, and `selectedApiRequiredChecks` shows which conditional
+checks were triggered by the selected APIs. Those checks, such as
+`network-if-selected`, `clipboard-if-selected`, `haptics-if-selected`,
+`audio-input-if-selected`, `sensors-if-selected`, or
+`hardware-adapters-if-selected`, must be in `passedChecks`; because the
+production profile includes `navigator.mediaDevices.getUserMedia`,
+`audio-input-if-selected` is a must-pass production worksheet check on both
+Android and iOS. Use `npm run check:platform-evidence -- --allow-open --summary-output release/platform-evidence-summary.json`
+during device testing to write per-platform remaining checks, metadata gaps,
+worksheet drift, and nextActions; run it without `--allow-open` before
+`npm run release:evidence`. The top-level `nextActions` section records
+`npm run check`, any still-needed release CI wait/dispatch commands, Android/iOS
+`release:record-platform-evidence` command templates before the worksheet audit
+command, and final evidence assembly commands for after the worksheet is
+complete. Keep worksheet fields only in `release/platform-evidence.json`; final
+`release/real-device-evidence.json` must not contain `requiredChecks`,
+`passOnlyChecks`, or `selectedApiRequiredChecks`.
 
 `npm run release:evidence` assembles `release/real-device-evidence.json` and optionally `release/release-readiness-evidence.json` after the real Android/iOS checks and GitHub Actions runs exist. It reads the Android/iOS platform evidence JSON, strips worksheet fields, validates the normalized platform evidence before fetching GitHub run metadata, records current package versions, verifies the supplied or CI-evidence-derived Check/Godot Smoke/Release Preflight run URLs against GitHub Actions metadata, rejects not-ready or inconsistent structured CI summaries including malformed workflow run commit SHAs, imports the commit, local/skip flags, failure count, and warning count from `--release-preflight-summary release/release-preflight-summary.json` when readiness evidence is requested, rejects local-only, skipped, failed, or warning-bearing preflight summaries, then validates the generated evidence before writing it. Pass `--commit <release-candidate-sha>` when generating evidence from a follow-up evidence commit so the evidence records the tested release commit rather than current `HEAD`; pass `--release-preflight-run-commit "$(git rev-parse HEAD)"` with a manually supplied Release Preflight URL when that workflow attached to the current evidence commit, or pass the full evidence commit SHA if you are not on it. Directly copied platform evidence is rejected by the final evidence validator.
 
