@@ -20,8 +20,12 @@
 - TODO.md:392 Release preflight passes without warnings in the release environment.
 - TODO.md:394 All public READMEs match the final support claims.
 - TODO.md:395 The root README warning is removed in the same commit that marks this checklist complete.
-- real-device evidence missing at release/real-device-evidence.json; Create release/real-device-evidence.json after completing docs/real-device-release.md, then run npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit b3348aafdaade8e976578b5ad799543c79845b98.; Real device evidence file not found: release/real-device-evidence.json
-- release-readiness evidence missing at release/release-readiness-evidence.json; Create it after the Release Preflight workflow passes without warnings.; Release-readiness evidence file not found: release/release-readiness-evidence.json
+- real-device evidence missing at release/real-device-evidence.json
+  Create release/real-device-evidence.json after completing docs/real-device-release.md, then run npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit b3348aafdaade8e976578b5ad799543c79845b98.
+  Real device evidence file not found: release/real-device-evidence.json
+- release-readiness evidence missing at release/release-readiness-evidence.json
+  Create it after the Release Preflight workflow passes without warnings.
+  Release-readiness evidence file not found: release/release-readiness-evidence.json
 
 ## CI Evidence
 
