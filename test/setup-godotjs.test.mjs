@@ -47,6 +47,7 @@ test('GodotJS setup plan resolves pinned release, asset, cache paths, and URL', 
 
   assert.equal(plan.release, pinnedGodotJsRelease)
   assert.equal(plan.asset, 'prebuilt_macos_arm64_v8')
+  assert.equal(plan.assetKind, 'editor')
   assert.equal(plan.cacheDir, path.join(repoRoot, '.tmp-godot-cache'))
   assert.equal(
     plan.assetDir,
@@ -68,9 +69,44 @@ test('GodotJS setup plan resolves pinned release, asset, cache paths, and URL', 
   assert.equal(plan.url, godotJsReleaseAssetUrl(plan.release, plan.asset))
 })
 
+test('GodotJS setup plan supports export template assets', () => {
+  const plan = resolveGodotJsSetupPlan({
+    asset: 'prebuilt_android_v8',
+    assetKind: 'templates',
+    cacheDir: '.tmp-godot-cache',
+  })
+
+  assert.equal(plan.release, pinnedGodotJsRelease)
+  assert.equal(plan.asset, 'prebuilt_android_v8')
+  assert.equal(plan.assetKind, 'templates')
+  assert.equal(
+    plan.assetDir,
+    path.join(
+      repoRoot,
+      '.tmp-godot-cache',
+      pinnedGodotJsRelease,
+      'prebuilt_android_v8',
+    ),
+  )
+  assert.equal(
+    plan.url,
+    'https://github.com/ialex32x/GodotJS-Build/releases/download/GodotJS_1.0.0-2/prebuilt_android_v8.zip',
+  )
+})
+
+test('GodotJS setup plan rejects unknown asset kinds', () => {
+  assert.throws(
+    () => resolveGodotJsSetupPlan({ assetKind: 'runtime' }),
+    /Unsupported GodotJS asset kind: runtime/,
+  )
+})
+
 test('GodotJS setup is exposed through npm and the shared CI action', () => {
   const packageJson = JSON.parse(readText('package.json'))
   const action = readText('.github/actions/setup-godotjs/action.yml')
+  const script = readText('scripts/setup-godotjs.mjs')
+  const readme = readText('README.md')
+  const productionDocs = readText('docs/production.md')
 
   assert.equal(
     packageJson.scripts['setup:godotjs'],
@@ -81,6 +117,10 @@ test('GodotJS setup is exposed through npm and the shared CI action', () => {
   assert.match(action, /actions\/cache@v5/)
   assert.match(action, /node scripts\/setup-godotjs\.mjs/)
   assert.match(action, /--github-env "\$GITHUB_ENV"/)
+  assert.match(script, /--asset-kind <kind>/)
+  assert.match(script, /GODOTJS_ASSET_DIR/)
+  assert.match(readme, /--asset prebuilt_android_v8 --asset-kind templates/)
+  assert.match(productionDocs, /--asset prebuilt_android_v8 --asset-kind templates/)
   assert.doesNotMatch(action, /curl --fail/)
   assert.doesNotMatch(action, /find "\$GODOTJS_CACHE_DIR"/)
 })

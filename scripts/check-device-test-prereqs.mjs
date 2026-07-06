@@ -163,6 +163,9 @@ function xctraceUtilityMissing(result) {
   return /unable to find utility "xctrace"/i.test(commandOutput(result))
 }
 
+const fullXcodeInstallGuidance =
+  'Install Xcode.app from the App Store (app id 497799835), resume any paused App Store download when prompted, or install from Apple Developer downloads with an Apple ID.'
+
 function collectXcodeSelectionBlockers(runCommand) {
   const blockers = []
   const selected = runCommand('xcode-select', ['-p'])
@@ -181,13 +184,13 @@ function collectXcodeSelectionBlockers(runCommand) {
   const developerDir = selected.stdout.trim()
   if (/CommandLineTools(?:\/|$)/.test(developerDir)) {
     blockers.push(
-      `Full Xcode is not selected; active developer directory is ${developerDir}. Install Xcode.app and run sudo xcode-select -s /Applications/Xcode.app/Contents/Developer, or use hosted real Apple-device evidence.`,
+      `Full Xcode is not selected; active developer directory is ${developerDir}. ${fullXcodeInstallGuidance} Then run sudo xcode-select -s /Applications/Xcode.app/Contents/Developer, or use hosted real Apple-device evidence.`,
     )
   }
 
   if (!fs.existsSync('/Applications/Xcode.app')) {
     blockers.push(
-      'Full Xcode.app was not found at /Applications/Xcode.app; install Xcode from the App Store (app id 497799835), resume any paused App Store download when prompted, or install from Apple Developer downloads with an Apple ID, then rerun the iOS device prerequisite check.',
+      `Full Xcode.app was not found at /Applications/Xcode.app; ${fullXcodeInstallGuidance} Then rerun the iOS device prerequisite check.`,
     )
   }
 

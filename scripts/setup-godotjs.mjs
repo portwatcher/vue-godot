@@ -20,15 +20,17 @@ const defaultAssetByPlatformArch = new Map([
 function usage() {
   console.log(`Usage: node scripts/setup-godotjs.mjs [options]
 
-Downloads the pinned GodotJS editor bundle into .cache/godotjs and prints or
-exports a GODOT_BIN path usable by the smoke scripts.
+Downloads the pinned GodotJS editor or export-template bundle into .cache/godotjs
+and prints or exports the resolved path.
 
 Options:
   --release <tag>       GodotJS release tag. Default: ${pinnedGodotJsRelease}
   --asset <name>        Release asset without .zip. Defaults by platform.
+  --asset-kind <kind>   Asset kind: editor or templates. Default: editor.
   --cache-dir <path>    Cache directory. Default: ${defaultGodotJsCacheDir}
-  --github-env <path>   Append GODOTJS_RELEASE, GODOTJS_ASSET, and GODOT_BIN.
+  --github-env <path>   Append setup variables for GitHub Actions.
   --print-bin           Print only the resolved Godot executable path.
+  --print-dir           Print only the extracted template asset directory.
   --dry-run             Print the resolved setup plan as JSON without I/O.
   --platform <name>     Override platform for planning/tests.
   --arch <name>         Override architecture for planning/tests.
@@ -54,11 +56,22 @@ export function godotJsReleaseAssetUrl(release, asset) {
   return `https://github.com/ialex32x/GodotJS-Build/releases/download/${release}/${asset}.zip`
 }
 
+function normalizeGodotJsAssetKind(assetKind = 'editor') {
+  if (assetKind === 'editor' || assetKind === 'templates') {
+    return assetKind
+  }
+
+  throw new Error(
+    `Unsupported GodotJS asset kind: ${assetKind}; expected editor or templates.`,
+  )
+}
+
 export function resolveGodotJsSetupPlan(options = {}) {
   const release = options.release ?? pinnedGodotJsRelease
   const asset =
     options.asset ??
     defaultGodotJsAssetForPlatform(options.platform, options.arch)
+  const assetKind = normalizeGodotJsAssetKind(options.assetKind)
   const cacheDir = path.resolve(
     repoRoot,
     options.cacheDir ?? defaultGodotJsCacheDir,
@@ -69,6 +82,7 @@ export function resolveGodotJsSetupPlan(options = {}) {
   return {
     release,
     asset,
+    assetKind,
     cacheDir,
     assetDir,
     archivePath,
@@ -80,6 +94,7 @@ function parseArgs(argv) {
   const valueOptions = [
     ['--release', 'release'],
     ['--asset', 'asset'],
+    ['--asset-kind', 'assetKind'],
     ['--cache-dir', 'cacheDir'],
     ['--github-env', 'githubEnv'],
     ['--platform', 'platform'],
@@ -88,9 +103,11 @@ function parseArgs(argv) {
   const options = {
     release: undefined,
     asset: undefined,
+    assetKind: undefined,
     cacheDir: undefined,
     githubEnv: undefined,
     printBin: false,
+    printDir: false,
     dryRun: false,
     platform: undefined,
     arch: undefined,
@@ -106,6 +123,11 @@ function parseArgs(argv) {
 
     if (arg === '--print-bin') {
       options.printBin = true
+      continue
+    }
+
+    if (arg === '--print-dir') {
+      options.printDir = true
       continue
     }
 
@@ -140,12 +162,26 @@ function parseArgs(argv) {
     throw new Error(`Unknown option: ${arg}`)
   }
 
+  options.assetKind = normalizeGodotJsAssetKind(options.assetKind)
+
+  if (options.printBin && options.printDir) {
+    throw new Error('--print-bin and --print-dir cannot be used together')
+  }
+
+  if (options.printBin && options.assetKind !== 'editor') {
+    throw new Error('--print-bin requires --asset-kind editor')
+  }
+
+  if (options.printDir && options.assetKind !== 'templates') {
+    throw new Error('--print-dir requires --asset-kind templates')
+  }
+
   return options
 }
 
 function createLogger(options) {
   return (message) => {
-    if (options.printBin) {
+    if (options.printBin || options.printDir) {
       console.error(message)
     } else {
       console.log(message)
@@ -158,6 +194,38 @@ function findGodotBin(assetDir) {
     return resolveGodotBin(assetDir)
   } catch {
     return null
+  }
+}
+
+function hasExtractedAssetEntries(plan) {
+  let entries
+  try {
+    entries = fs.readdirSync(plan.assetDir)
+  } catch {
+    return false
+  }
+
+  const archiveName = path.basename(plan.archivePath)
+  const tempArchiveName = `${archiveName}.tmp`
+  return entries.some(
+    (entry) => entry !== archiveName && entry !== tempArchiveName,
+  )
+}
+
+async function ensureAssetArchiveExtracted(plan, log, isReady) {
+  if (!fs.existsSync(plan.archivePath) && !isReady()) {
+    const tempArchivePath = `${plan.archivePath}.tmp`
+    fs.rmSync(tempArchivePath, { force: true })
+    await downloadFile(plan.url, tempArchivePath, log)
+    fs.renameSync(tempArchivePath, plan.archivePath)
+  }
+
+  if (!isReady()) {
+    log(`[setup-godotjs] extracting ${path.relative(repoRoot, plan.archivePath)}`)
+    assertCommandSucceeded(
+      extractArchive(plan.archivePath, plan.assetDir),
+      'GodotJS archive extraction',
+    )
   }
 }
 
@@ -271,20 +339,25 @@ export async function setupGodotJs(options = {}) {
 
   fs.mkdirSync(plan.assetDir, { recursive: true })
 
-  if (!fs.existsSync(plan.archivePath) && !findGodotBin(plan.assetDir)) {
-    const tempArchivePath = `${plan.archivePath}.tmp`
-    fs.rmSync(tempArchivePath, { force: true })
-    await downloadFile(plan.url, tempArchivePath, log)
-    fs.renameSync(tempArchivePath, plan.archivePath)
+  if (plan.assetKind === 'templates') {
+    await ensureAssetArchiveExtracted(plan, log, () =>
+      hasExtractedAssetEntries(plan),
+    )
+
+    if (options.githubEnv) {
+      appendGitHubEnv(options.githubEnv, {
+        GODOTJS_RELEASE: plan.release,
+        GODOTJS_ASSET: plan.asset,
+        GODOTJS_ASSET_DIR: plan.assetDir,
+      })
+    }
+
+    return plan.assetDir
   }
 
-  if (!findGodotBin(plan.assetDir)) {
-    log(`[setup-godotjs] extracting ${path.relative(repoRoot, plan.archivePath)}`)
-    assertCommandSucceeded(
-      extractArchive(plan.archivePath, plan.assetDir),
-      'GodotJS archive extraction',
-    )
-  }
+  await ensureAssetArchiveExtracted(plan, log, () =>
+    Boolean(findGodotBin(plan.assetDir)),
+  )
 
   const godotBin = findGodotBin(plan.assetDir)
   if (!godotBin) {
@@ -320,11 +393,15 @@ async function main() {
     return
   }
 
-  const godotBin = await setupGodotJs(options)
+  const resolvedPath = await setupGodotJs(options)
   if (options.printBin) {
-    console.log(godotBin)
+    console.log(resolvedPath)
+  } else if (options.printDir) {
+    console.log(resolvedPath)
+  } else if (options.assetKind === 'templates') {
+    console.log(`[setup-godotjs] GODOTJS_ASSET_DIR=${resolvedPath}`)
   } else {
-    console.log(`[setup-godotjs] GODOT_BIN=${godotBin}`)
+    console.log(`[setup-godotjs] GODOT_BIN=${resolvedPath}`)
   }
 }
 

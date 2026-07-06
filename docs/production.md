@@ -523,7 +523,11 @@ Both CI and local runs use `scripts/setup-godotjs.mjs` to resolve, download,
 cache, and probe the editor executable. Run
 `npm run setup:godotjs -- --print-bin` locally to download the pinned asset for
 the current platform and print a `GODOT_BIN` path that can be reused for Godot
-smokes or `release:preflight`.
+smokes or `release:preflight`. Template-only assets use the explicit
+`templates` mode because they do not contain a runnable editor; for example,
+`npm run setup:godotjs -- --asset prebuilt_android_v8 --asset-kind templates --print-dir`
+downloads the pinned Android export-template bundle and prints its extracted
+asset directory.
 
 When updating GodotJS:
 
