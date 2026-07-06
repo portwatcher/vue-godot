@@ -988,7 +988,7 @@ function releaseReadinessCommand(commit, pathOptions = {}, options = {}) {
   return formatHandoffCommand(args)
 }
 
-function preflightSummaryCommand(pathOptions = {}) {
+function preflightSummaryCommand(commit, pathOptions = {}) {
   const body = formatHandoffCommand([
     'npm',
     'run',
@@ -996,6 +996,8 @@ function preflightSummaryCommand(pathOptions = {}) {
     '--',
     '--ci-evidence',
     pathOptions.ciEvidencePath ?? defaultReleaseCiEvidencePath,
+    '--commit',
+    releaseCommitLabel(commit),
     '--output',
     defaultReleasePreflightSummaryPath,
   ])
@@ -1258,7 +1260,7 @@ function collectReadinessNextActions(
           realDeviceEvidencePath,
           releasePreflightRunCommit: currentHeadCommitCommand,
         }),
-        preflightSummaryCommand(pathOptions),
+        preflightSummaryCommand(commit, pathOptions),
         releaseEvidenceCommand(
           commit,
           releaseReadinessEvidenceCommandOptions(pathOptions),

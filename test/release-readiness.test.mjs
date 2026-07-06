@@ -1006,7 +1006,7 @@ test('release readiness summary includes missing evidence next actions', () => {
     )
     assert.ok(
       releasePreflightAction.commands.includes(
-        `GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence ${shellQuote(ciCommandPath)} --output release/release-preflight-summary.json`,
+        `GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence ${shellQuote(ciCommandPath)} --commit ${summary.commit} --output release/release-preflight-summary.json`,
       ),
     )
     assert.ok(

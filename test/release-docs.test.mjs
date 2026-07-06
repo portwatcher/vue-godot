@@ -458,6 +458,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /release-preflight-summary/)
   assert.match(
     production,
+    /release:preflight-summary[\s\S]*--commit <release-candidate-sha>/,
+  )
+  assert.match(
+    production,
     /validates the summary JSON against the\s+tested release commit[\s\S]*workflow run against the\s+`Release Preflight` run commit/,
   )
   assert.match(production, /--release-preflight-run-commit/)
@@ -656,6 +660,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(readme, /release:evidence/)
   assert.match(readme, /release:preflight-summary/)
+  assert.match(readme, /release:preflight-summary[\s\S]*--commit <release-candidate-sha>/)
   assert.match(readme, /when using `--run-url` manually/)
   assert.match(readme, /recorded Release Preflight run commit/)
   assert.match(readme, /real-device-evidence\.json/)
@@ -808,6 +813,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /warning-bearing/)
   assert.match(checklist, /release-preflight-summary/)
   assert.match(checklist, /release:preflight-summary/)
+  assert.match(
+    checklist,
+    /release:preflight-summary[\s\S]*--commit <release-candidate-sha>/,
+  )
   assert.match(
     checklist,
     /validates the summary commit[\s\S]*workflow run against the\s+`Release Preflight` run commit/,

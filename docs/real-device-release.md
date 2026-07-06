@@ -315,6 +315,7 @@ Then fetch the matching `release-preflight-summary` artifact:
 ```bash
 GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- \
   --ci-evidence release/ci-runs.json \
+  --commit <release-candidate-sha> \
   --output release/release-preflight-summary.json
 ```
 

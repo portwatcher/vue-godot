@@ -45,6 +45,7 @@ Options:
 Example:
   npm run release:preflight-summary -- \\
     --ci-evidence release/ci-runs.json \\
+    --commit <release-candidate-sha> \\
     --output release/release-preflight-summary.json
 `)
 }

@@ -148,7 +148,7 @@ including malformed workflow run commit SHAs, before writing the final evidence;
 `requiredChecks`, `passOnlyChecks`, or `selectedApiRequiredChecks`, and copied
 platform evidence is rejected. For final readiness evidence, fetch the
 `release-preflight-summary` artifact from the Release Preflight workflow with
-`GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --output release/release-preflight-summary.json`,
+`GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --output release/release-preflight-summary.json`,
 then pass it to `release:evidence` with
 `--release-preflight-summary release/release-preflight-summary.json`. The
 helpers check that the summary commit matches and that the preflight had zero
@@ -294,6 +294,7 @@ Then download the matching summary artifact:
 ```bash
 GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- \
   --ci-evidence release/ci-runs.json \
+  --commit <release-candidate-sha> \
   --output release/release-preflight-summary.json
 ```
 
