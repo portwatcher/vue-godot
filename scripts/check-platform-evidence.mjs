@@ -534,25 +534,39 @@ function formatRemainingParts(platform, status) {
   ].filter(Boolean)
 }
 
-function formatCheckDetail(detail) {
+function normalizeRemainingCheckDetail(platform, detail) {
   const check = String(detail.check ?? 'unknown-check')
-  const state = detail.mustPass === true ? 'must pass' : 'skippable'
   const selectedApis = Array.isArray(detail.selectedApis)
     ? detail.selectedApis
         .filter((apiName) => typeof apiName === 'string')
         .map((apiName) => apiName.trim())
         .filter((apiName) => apiName.length > 0)
     : []
-  const selectedApiText =
-    selectedApis.length > 0 ? `; selected APIs: ${formatList(selectedApis)}` : ''
   const description =
     typeof detail.description === 'string' && detail.description.trim()
       ? detail.description.trim()
       : check
-  return `${check} (${state}${selectedApiText}): ${description}`
+  return {
+    check,
+    description,
+    mustPass: detail.mustPass === true,
+    passOnly: detail.passOnly === true,
+    platform,
+    platformLabel: platform ? formatPlatformLabel(platform) : '',
+    selectedApis,
+  }
 }
 
-function formatRemainingCheckDetails(platform, status) {
+function formatNormalizedCheckDetail(detail) {
+  const state = detail.mustPass ? 'must pass' : 'skippable'
+  const selectedApiText =
+    detail.selectedApis.length > 0
+      ? `; selected APIs: ${formatList(detail.selectedApis)}`
+      : ''
+  return `${detail.check} (${state}${selectedApiText}): ${detail.description}`
+}
+
+function collectRemainingCheckDetails(platform, status) {
   if (
     !isRecord(status) ||
     status.ready ||
@@ -561,9 +575,15 @@ function formatRemainingCheckDetails(platform, status) {
     return []
   }
 
-  const details = status.remainingCheckDetails
+  return status.remainingCheckDetails
     .filter(isRecord)
-    .map((detail) => formatCheckDetail(detail))
+    .map((detail) => normalizeRemainingCheckDetail(platform, detail))
+}
+
+function formatRemainingCheckDetails(platform, status) {
+  const details = collectRemainingCheckDetails(platform, status).map((detail) =>
+    formatNormalizedCheckDetail(detail),
+  )
   if (details.length === 0) {
     return []
   }
@@ -600,6 +620,16 @@ export function formatPlatformEvidenceRemainingDetails(summary) {
 
   return ['android', 'ios'].flatMap((platform) =>
     formatRemainingCheckDetails(platform, summary.platforms[platform]),
+  )
+}
+
+export function collectPlatformEvidenceRemainingCheckDetails(summary) {
+  if (!isRecord(summary?.platforms)) {
+    return []
+  }
+
+  return ['android', 'ios'].flatMap((platform) =>
+    collectRemainingCheckDetails(platform, summary.platforms[platform]),
   )
 }
 
@@ -703,8 +733,8 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
   if (!summary.ready) {
     const progress = formatPlatformEvidenceProgress(summary)
     const remaining = formatPlatformEvidenceRemaining(summary).join(' ')
-    const remainingDetails =
-      formatPlatformEvidenceRemainingDetails(summary).join(' ')
+    const platformCheckDetails =
+      collectPlatformEvidenceRemainingCheckDetails(summary)
     actions.push({
       id: 'complete-platform-evidence',
       title: 'Finish Android and iOS worksheet evidence',
@@ -713,8 +743,8 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
         'passOnlyChecks and selectedApiRequiredChecks must be in passedChecks.',
         progress,
         remaining,
-        remainingDetails,
       ].join(' '),
+      ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
       commands: [
         recordPlatformEvidenceCommand('android', commit, {
           platformEvidencePath,

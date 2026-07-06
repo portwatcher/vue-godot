@@ -108,17 +108,27 @@ test('platform evidence template lists required checks without passing them', ()
       (action) =>
         action.id === 'complete-platform-evidence' &&
         /Android must-pass remaining: cold-launch/.test(action.detail) &&
-        /Android remaining check details: cold-launch \(must pass\): Install the exported build/.test(
-          action.detail,
+        action.platformCheckDetails.some(
+          (detail) =>
+            detail.platform === 'android' &&
+            detail.check === 'cold-launch' &&
+            detail.description.includes('Install the exported build'),
         ) &&
-        /network-if-selected \(must pass; selected APIs: fetch\):/.test(
-          action.detail,
+        action.platformCheckDetails.some(
+          (detail) =>
+            detail.check === 'network-if-selected' &&
+            detail.mustPass === true &&
+            detail.selectedApis.includes('fetch'),
         ) &&
         /iOS skippable remaining: .*deep-links-share-notifications-if-selected/.test(
           action.detail,
         ) &&
-        /iOS remaining check details: .*deep-links-share-notifications-if-selected \(skippable\): Verify cold-start/.test(
-          action.detail,
+        action.platformCheckDetails.some(
+          (detail) =>
+            detail.platform === 'ios' &&
+            detail.check === 'deep-links-share-notifications-if-selected' &&
+            detail.mustPass === false &&
+            detail.description.includes('Verify cold-start'),
         ) &&
         action.commands.includes(
           'npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
@@ -300,9 +310,14 @@ test('platform evidence template expands production profile selected APIs', () =
     completeAction.detail,
     /Android must-pass remaining: .*audio-input-if-selected/,
   )
-  assert.match(
-    completeAction.detail,
-    /network-if-selected \(must pass; selected APIs: fetch, WebSocket/,
+  assert.ok(
+    completeAction.platformCheckDetails.some(
+      (detail) =>
+        detail.check === 'network-if-selected' &&
+        detail.mustPass === true &&
+        detail.selectedApis.includes('fetch') &&
+        detail.selectedApis.includes('WebSocket'),
+    ),
   )
   assert.match(
     completeAction.detail,

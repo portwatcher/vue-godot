@@ -37,7 +37,7 @@ evidence JSON when it exists. Add
 `--summary-output release/real-device-evidence-summary.json` to write
 validation status, errors, initial CI evidence status, platform worksheet
 status with compact per-platform progress counts plus exact remaining
-must-pass/skippable check names and descriptions, and `nextActions` command hints for fixing or
+must-pass/skippable check names and structured check descriptions, and `nextActions` command hints for fixing or
 creating evidence. Pass `--ci-evidence <file>` or
 `--platform-evidence <file>` when a handoff is using non-default evidence or
 worksheet paths so generated creation, validation, and assembly commands
@@ -132,7 +132,7 @@ production evidence.
 Conditional checks required by selected APIs must be recorded in `passedChecks`,
 not `skippedChecks`. Its top-level `nextActions` section records Android/iOS
 `release:record-platform-evidence` command templates, audited progress, exact
-remaining metadata/must-pass/skippable gap names and check descriptions, the allow-open worksheet audit
+remaining metadata/must-pass/skippable gap names and structured `platformCheckDetails` descriptions, the allow-open worksheet audit
 command, `npm run check`, release CI wait/dispatch commands, and final evidence
 assembly commands for after the worksheet is complete. Run
 `npm run check:platform-evidence` without `--allow-open` before
@@ -182,7 +182,7 @@ structured readiness check and evidence status, local Git state, and
 `nextActions` command hints for the remaining evidence/finalizer work, including
 the local `npm run check`, initial CI evidence collection, push/dispatch
 commands, platform worksheet audit status with compact per-platform progress
-counts plus exact remaining must-pass/skippable check names and descriptions, separate
+counts plus exact remaining must-pass/skippable check names and structured check descriptions, separate
 Android/iOS real-device evidence status with metadata, platform, and read
 errors, release-readiness evidence status, and CI workflow wiring status, as
 JSON for release handoff. Run
@@ -226,7 +226,8 @@ the workflow-dispatch-only preflight workflow. The real-device evidence action
 reuses an existing platform worksheet and writes
 `release/platform-evidence-summary.json` when it still has gaps. Its detail
 includes Android/iOS metadata-field counts, required-check counts, and exact
-remaining must-pass/skippable check names and descriptions, and includes Android/iOS
+remaining must-pass/skippable check names in its detail, attaches
+`platformCheckDetails` with descriptions and selected API context, and includes Android/iOS
 `release:record-platform-evidence` command templates while gaps remain. It only
 emits
 `npm run release:platform-evidence -- --production-profile` when the worksheet

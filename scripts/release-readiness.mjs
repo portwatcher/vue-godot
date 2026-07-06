@@ -24,9 +24,9 @@ export { validateInitialCiEvidence } from './release-ci-evidence.mjs'
 import { collectPublicSurfaceAuditErrors } from './public-surface-audit.mjs'
 import { collectLocalGitReleaseState } from './check-release-ci-runs.mjs'
 import {
+  collectPlatformEvidenceRemainingCheckDetails,
   formatPlatformEvidenceProgress,
   formatPlatformEvidenceRemaining,
-  formatPlatformEvidenceRemainingDetails,
   readPlatformEvidenceAudit,
 } from './check-platform-evidence.mjs'
 import { finalizationFiles } from './release-finalization-files.mjs'
@@ -1267,9 +1267,10 @@ function collectReadinessNextActions(
     const platformEvidenceRemaining = platformEvidence?.ready
       ? ''
       : formatPlatformEvidenceRemaining(platformEvidence).join(' ')
-    const platformEvidenceRemainingDetails = platformEvidence?.ready
-      ? ''
-      : formatPlatformEvidenceRemainingDetails(platformEvidence).join(' ')
+    const platformCheckDetails =
+      platformEvidence?.ready || !platformEvidence
+        ? []
+        : collectPlatformEvidenceRemainingCheckDetails(platformEvidence)
     if (!platformEvidence?.evidencePresent) {
       platformEvidenceCommands.push(
         productionProfilePlatformEvidenceCommand(
@@ -1322,10 +1323,10 @@ function collectReadinessNextActions(
         'Run the local check and selected API export checks on real or hosted devices, reuse the platform worksheet when it exists, then assemble and validate release/real-device-evidence.json for the tested release commit.',
         platformEvidenceProgress,
         platformEvidenceRemaining,
-        platformEvidenceRemainingDetails,
       ]
         .filter(Boolean)
         .join(' '),
+      ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
       commands: [
         'npm run check',
         ...platformEvidenceCommands,

@@ -138,6 +138,17 @@ function sampleReadinessSummary(ciEvidencePath = 'release/ci-runs.json') {
         id: 'real-device-evidence',
         title: 'Complete Android and iOS real-device export evidence',
         detail: 'Run the selected API export checks on real or hosted devices.',
+        platformCheckDetails: [
+          {
+            check: 'network-if-selected',
+            description: 'Exercise fetch and WebSocket on the exported build.',
+            mustPass: true,
+            passOnly: false,
+            platform: 'android',
+            platformLabel: 'Android',
+            selectedApis: ['fetch', 'WebSocket'],
+          },
+        ],
         commands: [
           'npm run check',
           `npm run release:evidence -- --commit ${commit}`,
@@ -163,6 +174,7 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
     /`deep-links-share-notifications-if-selected` \(skippable\): Verify deep links/,
   )
   assert.match(markdown, /Blocked by: `real-device-evidence`/)
+  assert.match(markdown, /Remaining check details:\n- Android `network-if-selected` \(must pass; selected APIs: fetch, WebSocket\): Exercise fetch/)
   assert.match(markdown, /TODO\.md:389 Android export/)
   assert.match(markdown, /Write Android\/iOS tester handoff/)
   assert.match(markdown, /npm run release:evidence -- --commit/)

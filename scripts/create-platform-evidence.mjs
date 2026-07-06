@@ -3,9 +3,9 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import {
   auditPlatformEvidence,
+  collectPlatformEvidenceRemainingCheckDetails,
   formatPlatformEvidenceProgress,
   formatPlatformEvidenceRemaining,
-  formatPlatformEvidenceRemainingDetails,
 } from './check-platform-evidence.mjs'
 import {
   knownRealDeviceSelectedApis,
@@ -228,15 +228,15 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
     : 'After CI runs exist for the tested release candidate, generate release/real-device-evidence.json from this worksheet.'
   const platformEvidenceSummaryPath = 'release/platform-evidence-summary.json'
   const platformAudit = options.platformAudit
+  const platformCheckDetails = platformAudit
+    ? collectPlatformEvidenceRemainingCheckDetails(platformAudit)
+    : []
   const platformAuditDetail = platformAudit?.ready
     ? ''
     : [
         platformAudit ? formatPlatformEvidenceProgress(platformAudit) : '',
         platformAudit
           ? formatPlatformEvidenceRemaining(platformAudit).join(' ')
-          : '',
-        platformAudit
-          ? formatPlatformEvidenceRemainingDetails(platformAudit).join(' ')
           : '',
       ]
         .filter(Boolean)
@@ -252,6 +252,7 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
       ]
         .filter(Boolean)
         .join(' '),
+      ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
       commands: [
         recordPlatformEvidenceCommand('android', commit, {
           platformEvidencePath,

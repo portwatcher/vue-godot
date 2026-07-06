@@ -66,7 +66,7 @@ Add `--summary-output release/release-readiness-summary.json` to either form to
 capture the current blockers, TODO counts, unchecked TODO item details, final TODO proof status,
 readiness check and evidence status, local Git state, platform worksheet audit
 status with compact per-platform progress counts plus exact remaining
-must-pass/skippable check names and descriptions, separate Android/iOS real-device evidence
+must-pass/skippable check names and structured check descriptions, separate Android/iOS real-device evidence
 status with metadata, platform, and read errors,
 release-readiness evidence status, CI workflow wiring status,
 release tooling/workflow blocker lists, public warning markers, package
@@ -115,7 +115,8 @@ the workflow-dispatch-only preflight workflow. The real-device evidence action
 reuses an existing platform worksheet and writes
 `release/platform-evidence-summary.json` when it still has gaps. Its detail
 includes Android/iOS metadata-field counts, required-check counts, and exact
-remaining must-pass/skippable check names and descriptions, and includes Android/iOS
+remaining must-pass/skippable check names in its detail, attaches
+`platformCheckDetails` with descriptions and selected API context, and includes Android/iOS
 `release:record-platform-evidence` command templates while gaps remain. It only emits
 `npm run release:platform-evidence -- --production-profile` when the worksheet
 is missing, then runs the strict platform worksheet audit before final evidence
@@ -158,7 +159,7 @@ names are validated, so typos or unknown names fail before conditional checks
 can be omitted. Conditional checks for selected APIs must be moved into
 `passedChecks`. The generated top-level `nextActions` section records Android
 and iOS `release:record-platform-evidence` command templates, audited progress,
-exact remaining metadata/must-pass/skippable gap names and check descriptions, the allow-open worksheet
+exact remaining metadata/must-pass/skippable gap names and structured `platformCheckDetails` descriptions, the allow-open worksheet
 audit command, the local `npm run check`, any still-needed release CI
 wait/dispatch commands, and final evidence assembly commands for turning the
 completed worksheet into final real-device evidence. It reads
@@ -186,7 +187,7 @@ npm run check:platform-evidence -- \
 ```
 
 The summary reports Android and iOS metadata gaps, remaining required checks,
-exact must-pass/skippable check names and descriptions, pass-only and selected-API checks that
+exact must-pass/skippable check names and structured check descriptions, pass-only and selected-API checks that
 still must be in `passedChecks`, worksheet drift from the maintained check lists, and follow-up `nextActions`. Those
 actions include Android and iOS `release:record-platform-evidence` command
 templates before the strict worksheet audit. Before assembling final evidence,
@@ -282,7 +283,7 @@ strict release gates reject it.
 Use `npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json`
 to write validation status, errors, initial CI evidence status, platform
 worksheet status with compact per-platform progress counts plus exact remaining
-must-pass/skippable check names and descriptions, and `nextActions` command hints for fixing or
+must-pass/skippable check names and structured check descriptions, and `nextActions` command hints for fixing or
 creating evidence. Pass `--ci-evidence <file>` or
 `--platform-evidence <file>` when those inputs use non-default handoff paths so
 generated creation, validation, and assembly commands target those files. If a

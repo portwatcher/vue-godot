@@ -207,7 +207,13 @@ function limitedBullets(values, limit = 12) {
 }
 
 function platformLabel(platform) {
-  return platform === 'ios' ? 'iOS' : 'Android'
+  if (platform === 'ios') {
+    return 'iOS'
+  }
+  if (platform === 'android') {
+    return 'Android'
+  }
+  return 'Platform'
 }
 
 function commandBlock(commands) {
@@ -216,6 +222,46 @@ function commandBlock(commands) {
   }
 
   return ['```bash', ...commands, '```']
+}
+
+function checkDetailText(detail) {
+  const check = String(detail.check ?? 'unknown-check')
+  const state = detail.mustPass === true ? 'must pass' : 'skippable'
+  const selectedApis = Array.isArray(detail.selectedApis)
+    ? detail.selectedApis
+        .filter((apiName) => typeof apiName === 'string')
+        .map((apiName) => apiName.trim())
+        .filter((apiName) => apiName.length > 0)
+    : []
+  const selectedApiText =
+    selectedApis.length > 0
+      ? `; selected APIs: ${selectedApis.join(', ')}`
+      : ''
+  const description =
+    typeof detail.description === 'string' && detail.description.trim()
+      ? detail.description.trim()
+      : check
+  return `\`${check}\` (${state}${selectedApiText}): ${description}`
+}
+
+function actionCheckDetailLines(action) {
+  const details = Array.isArray(action.platformCheckDetails)
+    ? action.platformCheckDetails.filter(isRecord)
+    : []
+  if (details.length === 0) {
+    return []
+  }
+
+  return [
+    'Remaining check details:',
+    ...details.map((detail) => {
+      const label =
+        typeof detail.platformLabel === 'string' && detail.platformLabel.trim()
+          ? detail.platformLabel.trim()
+          : platformLabel(detail.platform)
+      return `- ${label} ${checkDetailText(detail)}`
+    }),
+  ]
 }
 
 function ciEvidenceLines(summary) {
@@ -264,25 +310,7 @@ function platformLines(platform, status) {
     details.length > 0
       ? [
           '- Remaining check details:',
-          ...details.map((detail) => {
-            const check = String(detail.check ?? 'unknown-check')
-            const state = detail.mustPass === true ? 'must pass' : 'skippable'
-            const selectedApis = Array.isArray(detail.selectedApis)
-              ? detail.selectedApis
-                  .filter((apiName) => typeof apiName === 'string')
-                  .map((apiName) => apiName.trim())
-                  .filter((apiName) => apiName.length > 0)
-              : []
-            const selectedApiText =
-              selectedApis.length > 0
-                ? `; selected APIs: ${selectedApis.join(', ')}`
-                : ''
-            const description =
-              typeof detail.description === 'string'
-                ? detail.description
-                : check
-            return `  - \`${check}\` (${state}${selectedApiText}): ${description}`
-          }),
+          ...details.map((detail) => `  - ${checkDetailText(detail)}`),
         ]
       : []
 
@@ -336,6 +364,11 @@ function renderNextActions(summary) {
     }
     if (typeof action.detail === 'string' && action.detail.length > 0) {
       lines.push(action.detail)
+      lines.push('')
+    }
+    const checkDetailLines = actionCheckDetailLines(action)
+    if (checkDetailLines.length > 0) {
+      lines.push(...checkDetailLines)
       lines.push('')
     }
     lines.push(...commandBlock(action.commands))

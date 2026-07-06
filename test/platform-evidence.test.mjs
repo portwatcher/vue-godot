@@ -428,17 +428,31 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
       summary.nextActions[0].detail,
       /Android must-pass remaining: cold-launch/,
     )
-    assert.match(
-      summary.nextActions[0].detail,
-      /Android remaining check details: cold-launch \(must pass\): Install the exported build/,
+    assert.ok(
+      summary.nextActions[0].platformCheckDetails.some(
+        (detail) =>
+          detail.platform === 'android' &&
+          detail.check === 'cold-launch' &&
+          detail.description.includes('Install the exported build'),
+      ),
     )
-    assert.match(
-      summary.nextActions[0].detail,
-      /network-if-selected \(must pass; selected APIs: fetch, WebSocket/,
+    assert.ok(
+      summary.nextActions[0].platformCheckDetails.some(
+        (detail) =>
+          detail.check === 'network-if-selected' &&
+          detail.mustPass === true &&
+          detail.selectedApis.includes('fetch') &&
+          detail.selectedApis.includes('WebSocket'),
+      ),
     )
-    assert.match(
-      summary.nextActions[0].detail,
-      /iOS remaining check details: .*deep-links-share-notifications-if-selected \(skippable\): Verify cold-start/,
+    assert.ok(
+      summary.nextActions[0].platformCheckDetails.some(
+        (detail) =>
+          detail.platform === 'ios' &&
+          detail.check === 'deep-links-share-notifications-if-selected' &&
+          detail.mustPass === false &&
+          detail.description.includes('Verify cold-start'),
+      ),
     )
     assert.match(
       result.stdout,
