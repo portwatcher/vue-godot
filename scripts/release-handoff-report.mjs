@@ -10,6 +10,7 @@ import {
   defaultReleaseCiEvidencePath,
   defaultReleaseReadinessEvidencePath,
   releaseHandoffReportFormatVersion,
+  releaseHandoffReportStateHash,
 } from './release-handoff-commands.mjs'
 import {
   formatCommandFailure,
@@ -458,6 +459,7 @@ export function renderReleaseHandoff(summary) {
     '',
     `- Release candidate commit: \`${commit}\``,
     `- Handoff format: ${releaseHandoffReportFormatVersion}`,
+    `- Handoff state: ${releaseHandoffReportStateHash(summary)}`,
     `- Overall readiness: ${summary.ready === true ? 'ready' : 'open'} (${summary.blockerCount ?? blockers.length} blocker(s))`,
     `- Real-device evidence: ${statusText(checks.realDeviceEvidence)}`,
     `- Android evidence: ${statusText(checks.androidRealDeviceEvidence)}`,

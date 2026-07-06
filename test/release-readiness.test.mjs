@@ -1023,12 +1023,20 @@ test('release readiness summary includes missing evidence next actions', () => {
     )
     assert.ok(handoffAction)
     assert.equal('blockedBy' in handoffAction, false)
-    assert.deepEqual(summary.releaseHandoffReport, {
-      path: defaultReleaseHandoffReportPath,
-      formatVersion: releaseHandoffReportFormatVersion,
-      current: false,
-      command: `npm run release:handoff -- --expected-commit ${summary.commit} --output release/release-handoff.md --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
-    })
+    assert.equal(
+      summary.releaseHandoffReport.path,
+      defaultReleaseHandoffReportPath,
+    )
+    assert.equal(
+      summary.releaseHandoffReport.formatVersion,
+      releaseHandoffReportFormatVersion,
+    )
+    assert.match(summary.releaseHandoffReport.stateHash, /^[0-9a-f]{16}$/)
+    assert.equal(summary.releaseHandoffReport.current, false)
+    assert.equal(
+      summary.releaseHandoffReport.command,
+      `npm run release:handoff -- --expected-commit ${summary.commit} --output release/release-handoff.md --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
+    )
     assert.equal(
       handoffAction.commands[0],
       `npm run release:handoff -- --expected-commit ${summary.commit} --output release/release-handoff.md --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
@@ -1230,13 +1238,33 @@ test('release readiness matches default handoff action to report currentness', (
 
     assert.equal(result.status, 0)
     assert.equal(summary.checks.initialCiEvidence, true)
-    const reportIsCurrent = isReleaseHandoffReportCurrent(ciEvidence.commit)
-    assert.deepEqual(summary.releaseHandoffReport, {
-      path: defaultReleaseHandoffReportPath,
-      formatVersion: releaseHandoffReportFormatVersion,
-      current: reportIsCurrent,
-      command: `npm run release:handoff -- --expected-commit ${ciEvidence.commit} --output release/release-handoff.md`,
-    })
+    const reportIsCurrent = isReleaseHandoffReportCurrent(
+      ciEvidence.commit,
+      {},
+      {
+        stateHash: summary.releaseHandoffReport.stateHash,
+      },
+    )
+    assert.equal(
+      summary.releaseHandoffReport.path,
+      defaultReleaseHandoffReportPath,
+    )
+    assert.equal(
+      summary.releaseHandoffReport.formatVersion,
+      releaseHandoffReportFormatVersion,
+    )
+    assert.match(summary.releaseHandoffReport.stateHash, /^[0-9a-f]{16}$/)
+    assert.equal(summary.releaseHandoffReport.current, reportIsCurrent)
+    assert.equal(
+      isReleaseHandoffReportCurrent(ciEvidence.commit, {}, {
+        stateHash: summary.releaseHandoffReport.stateHash,
+      }),
+      reportIsCurrent,
+    )
+    assert.equal(
+      summary.releaseHandoffReport.command,
+      `npm run release:handoff -- --expected-commit ${ciEvidence.commit} --output release/release-handoff.md`,
+    )
     assert.equal(
       summary.nextActions.some(
         (action) => action.id === 'release-handoff-report',
@@ -1256,6 +1284,7 @@ test('release handoff report currentness rejects stale commits and commands', ()
   const reportPath = path.join(tempDir, 'release-handoff.md')
   const commit = '1234567890abcdef1234567890abcdef12345678'
   const command = `npm run release:handoff -- --expected-commit ${commit} --output release/release-handoff.md`
+  const stateHash = '0123456789abcdef'
 
   try {
     fs.writeFileSync(
@@ -1265,6 +1294,7 @@ test('release handoff report currentness rejects stale commits and commands', ()
         '',
         `- Release candidate commit: \`${commit}\``,
         `- Handoff format: ${releaseHandoffReportFormatVersion}`,
+        `- Handoff state: ${stateHash}`,
         '',
         '## Next Actions',
         '',
@@ -1276,14 +1306,21 @@ test('release handoff report currentness rejects stale commits and commands', ()
     )
 
     assert.equal(
-      isReleaseHandoffReportCurrent(commit, {}, { reportPath }),
+      isReleaseHandoffReportCurrent(commit, {}, { reportPath, stateHash }),
       true,
+    )
+    assert.equal(
+      isReleaseHandoffReportCurrent(commit, {}, {
+        reportPath,
+        stateHash: 'fedcba9876543210',
+      }),
+      false,
     )
     assert.equal(
       isReleaseHandoffReportCurrent(
         'ffffffffffffffffffffffffffffffffffffffff',
         {},
-        { reportPath },
+        { reportPath, stateHash },
       ),
       false,
     )
@@ -1294,6 +1331,7 @@ test('release handoff report currentness rejects stale commits and commands', ()
         '# Release Handoff',
         '',
         `- Release candidate commit: \`${commit}\``,
+        `- Handoff format: ${releaseHandoffReportFormatVersion}`,
         '',
         '## Next Actions',
         '',
@@ -1304,7 +1342,28 @@ test('release handoff report currentness rejects stale commits and commands', ()
       ].join('\n'),
     )
     assert.equal(
-      isReleaseHandoffReportCurrent(commit, {}, { reportPath }),
+      isReleaseHandoffReportCurrent(commit, {}, { reportPath, stateHash }),
+      false,
+    )
+
+    fs.writeFileSync(
+      reportPath,
+      [
+        '# Release Handoff',
+        '',
+        `- Release candidate commit: \`${commit}\``,
+        `- Handoff state: ${stateHash}`,
+        '',
+        '## Next Actions',
+        '',
+        '```bash',
+        command,
+        '```',
+        '',
+      ].join('\n'),
+    )
+    assert.equal(
+      isReleaseHandoffReportCurrent(commit, {}, { reportPath, stateHash }),
       false,
     )
 
@@ -1315,6 +1374,7 @@ test('release handoff report currentness rejects stale commits and commands', ()
         '',
         `- Release candidate commit: \`${commit}\``,
         `- Handoff format: ${releaseHandoffReportFormatVersion}`,
+        `- Handoff state: ${stateHash}`,
         '',
         '## Next Actions',
         '',
@@ -1323,14 +1383,14 @@ test('release handoff report currentness rejects stale commits and commands', ()
       ].join('\n'),
     )
     assert.equal(
-      isReleaseHandoffReportCurrent(commit, {}, { reportPath }),
+      isReleaseHandoffReportCurrent(commit, {}, { reportPath, stateHash }),
       true,
     )
     assert.equal(
       isReleaseHandoffReportCurrent(
         commit,
         { realDeviceEvidencePath: 'custom/real-device-evidence.json' },
-        { reportPath },
+        { reportPath, stateHash },
       ),
       false,
     )
@@ -1342,6 +1402,7 @@ test('release handoff report currentness rejects stale commits and commands', ()
         '',
         `- Release candidate commit: \`${commit}\``,
         `- Handoff format: ${releaseHandoffReportFormatVersion}`,
+        `- Handoff state: ${stateHash}`,
         '',
         '## Next Actions',
         '',
@@ -1352,7 +1413,7 @@ test('release handoff report currentness rejects stale commits and commands', ()
       ].join('\n'),
     )
     assert.equal(
-      isReleaseHandoffReportCurrent(commit, {}, { reportPath }),
+      isReleaseHandoffReportCurrent(commit, {}, { reportPath, stateHash }),
       false,
     )
   } finally {

@@ -10,6 +10,7 @@ import {
 } from '../scripts/release-handoff-report.mjs'
 import {
   releaseHandoffReportFormatVersion,
+  releaseHandoffReportStateHash,
 } from '../scripts/release-handoff-commands.mjs'
 
 const repoRoot = path.resolve(import.meta.dirname, '..')
@@ -179,6 +180,12 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
     markdown,
     new RegExp(`Handoff format: ${releaseHandoffReportFormatVersion}`),
   )
+  assert.match(
+    markdown,
+    new RegExp(
+      `Handoff state: ${releaseHandoffReportStateHash(sampleReadinessSummary())}`,
+    ),
+  )
   assert.match(markdown, /Real-device evidence: waiting/)
   assert.match(markdown, /Required checks complete: 1\/14/)
   assert.match(markdown, /Metadata gaps: `artifact`, `deviceModel`/)
@@ -212,6 +219,34 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
   assert.match(
     markdown,
     /Release-readiness evidence file not found: release\/release-readiness-evidence\.json/,
+  )
+})
+
+test('release handoff state hash tracks structured release evidence', () => {
+  const summary = sampleReadinessSummary()
+  const stateHash = releaseHandoffReportStateHash(summary)
+
+  assert.notEqual(
+    releaseHandoffReportStateHash({
+      ...summary,
+      realDeviceEvidence: {
+        path: 'release/real-device-evidence.json',
+        readErrors: ['missing evidence file'],
+        ready: false,
+      },
+    }),
+    stateHash,
+  )
+  assert.notEqual(
+    releaseHandoffReportStateHash({
+      ...summary,
+      releaseReadinessEvidence: {
+        path: 'release/release-readiness-evidence.json',
+        readErrors: ['missing evidence file'],
+        ready: false,
+      },
+    }),
+    stateHash,
   )
 })
 

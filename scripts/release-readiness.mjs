@@ -48,6 +48,7 @@ import {
   releaseEvidenceCommand,
   releaseCommitLabel,
   releaseHandoffReportFormatVersion,
+  releaseHandoffReportStateHash,
   releasePreflightCiCommands,
   repoLocalEvidencePath,
 } from './release-handoff-commands.mjs'
@@ -1041,6 +1042,9 @@ export function isReleaseHandoffReportCurrent(
     commit,
   )}\``
   const expectedFormatLine = `- Handoff format: ${releaseHandoffReportFormatVersion}`
+  const expectedStateLine = options.stateHash
+    ? `- Handoff state: ${options.stateHash}`
+    : null
   const expectedHandoffCommand = releaseHandoffCommand(
     commit,
     pathOptions,
@@ -1051,17 +1055,26 @@ export function isReleaseHandoffReportCurrent(
   return (
     source.includes(expectedCommitLine) &&
     source.includes(expectedFormatLine) &&
+    (!expectedStateLine || source.includes(expectedStateLine)) &&
     source.includes('## Next Actions') &&
     (source.includes(expectedHandoffCommand) ||
       (usesDefaultEvidencePaths && !source.includes(handoffCommandPattern)))
   )
 }
 
-function collectReleaseHandoffReportStatus(commit, pathOptions = {}) {
+function collectReleaseHandoffReportStatus(
+  commit,
+  pathOptions = {},
+  options = {},
+) {
+  const stateHash = options.stateHash ?? null
   return {
     path: defaultReleaseHandoffReportPath,
     formatVersion: releaseHandoffReportFormatVersion,
-    current: isReleaseHandoffReportCurrent(commit, pathOptions),
+    stateHash,
+    current: isReleaseHandoffReportCurrent(commit, pathOptions, {
+      stateHash,
+    }),
     command: releaseHandoffCommand(commit, pathOptions),
   }
 }
@@ -1190,6 +1203,7 @@ function collectReadinessNextActions(
   realDeviceEvidence,
   releaseReadinessEvidence,
   platformEvidence,
+  options = {},
 ) {
   const actions = []
   const pathOptions = collectPathOptions(
@@ -1327,7 +1341,11 @@ function collectReadinessNextActions(
       )
     }
 
-    if (!isReleaseHandoffReportCurrent(commit, pathOptions)) {
+    if (
+      !isReleaseHandoffReportCurrent(commit, pathOptions, {
+        stateHash: options.handoffStateHash,
+      })
+    ) {
       actions.push({
         id: 'release-handoff-report',
         title: 'Write Android/iOS tester handoff',
@@ -1502,6 +1520,18 @@ function writeReadinessSummary(
   const releaseHandoffReport = collectReleaseHandoffReportStatus(
     expectedCommit,
     pathOptions,
+    {
+      stateHash: releaseHandoffReportStateHash({
+        blockers,
+        checks,
+        commit: expectedCommit,
+        finalTodoRequirements: finalTodoRequirementStatuses,
+        initialCiEvidence,
+        platformEvidence,
+        realDeviceEvidence,
+        releaseReadinessEvidence,
+      }),
+    },
   )
   const checkedTodoItems = todoItems.filter((item) => item.checked)
   const uncheckedTodoItems = todoItems.filter((item) => !item.checked)
@@ -1539,6 +1569,7 @@ function writeReadinessSummary(
       realDeviceEvidence,
       releaseReadinessEvidence,
       platformEvidence,
+      { handoffStateHash: releaseHandoffReport.stateHash },
     ),
     finalTodoRequirements: finalTodoRequirementStatuses.map((status) => ({
       ...status,

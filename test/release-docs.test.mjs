@@ -1110,7 +1110,7 @@ test('release readiness audit documents final removal blockers', () => {
   assert.match(production, /structured readiness check and evidence status/)
   assert.match(
     production,
-    /release\s+handoff report currentness\/format status/,
+    /release\s+handoff report currentness\/format\/state status/,
   )
   assert.match(
     production,
@@ -1150,7 +1150,7 @@ test('release readiness audit documents final removal blockers', () => {
   )
   assert.match(readme, /release tooling\/workflow blocker lists/)
   assert.match(readme, /structured readiness check and evidence status/)
-  assert.match(readme, /release handoff report currentness\/format status/)
+  assert.match(readme, /release handoff report currentness\/format\/state status/)
   assert.match(readme, /metadata\/platform\/read errors/)
   assert.match(readme, /release-readiness evidence status/)
   assert.match(readme, /`nextActions` command hints/)

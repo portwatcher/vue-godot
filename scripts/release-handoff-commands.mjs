@@ -1,3 +1,4 @@
+import crypto from 'node:crypto'
 import path from 'node:path'
 import { repoRoot, shellQuote } from './release-utils.mjs'
 
@@ -17,6 +18,60 @@ export const defaultReleaseReadinessEvidencePath =
   'release/release-readiness-evidence.json'
 export const defaultReleaseHandoffReportPath = 'release/release-handoff.md'
 export const releaseHandoffReportFormatVersion = 2
+
+function stableJson(value) {
+  if (Array.isArray(value)) {
+    return value.map(stableJson)
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map((key) => [key, stableJson(value[key])]),
+    )
+  }
+
+  return value
+}
+
+export function releaseHandoffReportStateHash(summary) {
+  const state = {
+    blockers: Array.isArray(summary?.blockers) ? summary.blockers : [],
+    checks:
+      summary?.checks && typeof summary.checks === 'object'
+        ? summary.checks
+        : {},
+    commit: summary?.commit ?? null,
+    finalTodoRequirements: Array.isArray(summary?.finalTodoRequirements)
+      ? summary.finalTodoRequirements
+      : [],
+    initialCiEvidence:
+      summary?.initialCiEvidence && typeof summary.initialCiEvidence === 'object'
+        ? summary.initialCiEvidence
+        : {},
+    platformEvidence:
+      summary?.platformEvidence && typeof summary.platformEvidence === 'object'
+        ? summary.platformEvidence
+        : {},
+    realDeviceEvidence:
+      summary?.realDeviceEvidence &&
+      typeof summary.realDeviceEvidence === 'object'
+        ? summary.realDeviceEvidence
+        : {},
+    releaseReadinessEvidence:
+      summary?.releaseReadinessEvidence &&
+      typeof summary.releaseReadinessEvidence === 'object'
+        ? summary.releaseReadinessEvidence
+        : {},
+  }
+
+  return crypto
+    .createHash('sha256')
+    .update(JSON.stringify(stableJson(state)))
+    .digest('hex')
+    .slice(0, 16)
+}
 
 function shellArg(value) {
   const text = String(value)
