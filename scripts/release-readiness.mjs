@@ -38,6 +38,7 @@ import {
 import { finalizationFiles } from './release-finalization-files.mjs'
 import {
   checkPlatformEvidenceCommand,
+  checkDevicePrereqsCommand,
   checkRealDeviceEvidenceCommand,
   commitEvidenceFileCommands,
   currentHeadCommitCommand,
@@ -645,6 +646,7 @@ export function collectFinalTodoStructureBlockers(
 
 const releaseToolingScriptRequirements = [
   ['check:public-surface', 'node scripts/public-surface-audit.mjs'],
+  ['check:device-prereqs', 'node scripts/check-device-test-prereqs.mjs'],
   ['check:platform-evidence', 'node scripts/check-platform-evidence.mjs'],
   ['check:real-device-evidence', 'node scripts/check-real-device-evidence.mjs'],
   ['check:serious-examples', 'node scripts/check-serious-example-apps.mjs'],
@@ -1433,6 +1435,7 @@ function collectReadinessNextActions(
       ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
       commands: [
         'npm run check',
+        checkDevicePrereqsCommand({ allowMissing: true }),
         localReleasePreflightCommand(commit, {
           skipCheck: true,
           skipGodot: true,

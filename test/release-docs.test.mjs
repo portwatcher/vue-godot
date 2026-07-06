@@ -49,6 +49,7 @@ test('real device release checklist covers required Android and iOS gates', () =
     /^## Android Release Smoke/m,
     /^## iOS Release Smoke/m,
     /npm run check/,
+    /npm run check:device-prereqs -- --allow-missing/,
     /npm run check:serious-examples/,
     /npm run release:preflight[\s\S]*validates real-device evidence/,
     /npm audit --audit-level=moderate/,
@@ -278,6 +279,10 @@ test('release preflight enforces real device evidence', () => {
     'node scripts/check-real-device-evidence.mjs',
   )
   assert.equal(
+    packageJson.scripts['check:device-prereqs'],
+    'node scripts/check-device-test-prereqs.mjs',
+  )
+  assert.equal(
     packageJson.scripts['release:ci'],
     'node scripts/check-release-ci-runs.mjs',
   )
@@ -303,6 +308,11 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(production, /check:real-device-evidence/)
   assert.match(production, /check:platform-evidence/)
+  assert.match(production, /check:device-prereqs/)
+  assert.match(
+    production,
+    /Missing local tooling is only a diagnostic[\s\S]*hosted\s+real-device runs still satisfy the release gate/,
+  )
   assert.match(production, /platform-evidence-summary\.json/)
   assert.match(production, /platform-evidence-checklist\.md/)
   assert.match(production, /real-device-evidence-summary\.json/)

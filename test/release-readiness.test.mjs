@@ -391,6 +391,7 @@ test('release readiness requires release tooling scripts', () => {
       scripts: {
         check:
           'npm run build && npm run test && npm run smoke:cli && npm run check:serious-examples && npm run bench:performance',
+        'check:device-prereqs': 'node scripts/check-device-test-prereqs.mjs',
         'check:public-surface': 'node scripts/public-surface-audit.mjs',
         'check:platform-evidence':
           'node scripts/check-platform-evidence.mjs',
@@ -1148,6 +1149,10 @@ test('release readiness summary includes missing evidence next actions', () => {
     assert.equal(realDeviceAction.commands[0], 'npm run check')
     assert.equal(
       realDeviceAction.commands[1],
+      'npm run check:device-prereqs -- --allow-missing',
+    )
+    assert.equal(
+      realDeviceAction.commands[2],
       `npm run release:preflight -- --local --skip-check --skip-godot --expected-commit ${summary.commit} --summary-output /tmp/vue-godot-local-preflight-summary.json`,
     )
     assert.ok(

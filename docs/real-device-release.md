@@ -87,8 +87,11 @@ descriptions, Release Preflight readiness evidence paths and warning/failure
 counts, `blockedBy` dependencies, and next commands. Add `--check` to verify
 the checked-in handoff is current without rewriting it.
 The initial CI, real-device, and Release Preflight evidence actions begin
-with `npm run check` before collecting CI or assembling evidence. The Release
-Preflight evidence action also reruns
+with `npm run check` before collecting CI or assembling evidence. The
+real-device evidence action also runs
+`npm run check:device-prereqs -- --allow-missing` before local or hosted device
+handoff commands so missing local tooling is visible without pretending it is
+evidence. The Release Preflight evidence action also reruns
 `npm run check:real-device-evidence -- --verify-runs` before CI/preflight
 collection continues, so stale device evidence or unverified Check/Godot Smoke
 run URLs fail before dispatching preflight. The initial CI action captures Check
@@ -503,15 +506,19 @@ Run these before platform-specific device checks:
 
 1. Start from a clean commit.
 2. Run `npm run check`.
-3. Run `npm run check:serious-examples`.
-4. Run `npm audit --audit-level=moderate`.
-5. Optionally run `npm run release:preflight -- --local` as a local dry run;
+3. Run `npm run check:device-prereqs -- --allow-missing` to see whether local
+   Android/iOS device tooling and attached devices are available. Missing local
+   tooling does not satisfy or fail final evidence by itself; use a hosted
+   real-device lab when the final evidence can link to the lab run.
+4. Run `npm run check:serious-examples`.
+5. Run `npm audit --audit-level=moderate`.
+6. Optionally run `npm run release:preflight -- --local` as a local dry run;
    treat missing real-device evidence, missing trusted publishing, or missing
    Godot metadata as warnings only.
-6. Confirm Check, Godot smoke, generated Godot smoke, and editor reload smoke
+7. Confirm Check, Godot smoke, generated Godot smoke, and editor reload smoke
    passed in CI for the same commit.
-7. Build exported release artifacts from the production `export_presets.cfg`.
-8. Confirm `dist/app.js` and any `dist/chunks/*.js` files are included in the
+8. Build exported release artifacts from the production `export_presets.cfg`.
+9. Confirm `dist/app.js` and any `dist/chunks/*.js` files are included in the
    export.
 
 Run non-local `npm run release:preflight` or the `Release Preflight` workflow

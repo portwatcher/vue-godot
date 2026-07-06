@@ -18,6 +18,7 @@
     "check:public-surface": "node scripts/public-surface-audit.mjs",
     "check:platform-evidence": "node scripts/check-platform-evidence.mjs",
     "check:real-device-evidence": "node scripts/check-real-device-evidence.mjs",
+    "check:device-prereqs": "node scripts/check-device-test-prereqs.mjs",
     "release:ci": "node scripts/check-release-ci-runs.mjs",
     "release:platform-evidence": "node scripts/create-platform-evidence.mjs",
     "release:record-platform-evidence": "node scripts/record-platform-evidence.mjs",

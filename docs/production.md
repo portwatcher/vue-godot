@@ -112,6 +112,11 @@ must be `http` or `https` links to the device test run, lab session, or signed
 evidence artifact. Add `--list-checks` first when testers need the valid check
 names, descriptions, current worksheet outcomes, and selected-API must-pass
 context without modifying the worksheet.
+Run `npm run check:device-prereqs -- --allow-missing` before local device
+sessions to report whether `adb`, Xcode device listing, and attached Android or
+iOS devices are available. Missing local tooling is only a diagnostic; hosted
+real-device runs still satisfy the release gate when the final evidence records
+artifact IDs, device metadata, and http(s) evidence URLs.
 After every unresolved
 must-pass check has actually passed, add `--pass-remaining` to record the
 remaining must-pass checks in one batch, and include
@@ -230,7 +235,10 @@ counts, `blockedBy` dependencies, and next commands. Add `--check` to verify
 the checked-in handoff is current without rewriting it.
 The initial CI, real-device, and
 Release Preflight evidence actions begin with `npm run check` before collecting
-CI or assembling evidence. The Release Preflight evidence action also reruns
+CI or assembling evidence. The real-device evidence action also runs
+`npm run check:device-prereqs -- --allow-missing` before local or hosted device
+handoff commands so missing local tooling is visible without pretending it is
+evidence. The Release Preflight evidence action also reruns
 `npm run check:real-device-evidence -- --verify-runs` before CI/preflight
 collection continues, so stale device evidence or unverified Check/Godot Smoke
 run URLs fail before dispatching preflight.

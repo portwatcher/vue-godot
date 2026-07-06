@@ -162,6 +162,22 @@ export function checkPlatformEvidenceCommand(commit, options = {}) {
   return formatHandoffCommand(args)
 }
 
+export function checkDevicePrereqsCommand(options = {}) {
+  const args = ['npm', 'run', 'check:device-prereqs', '--']
+
+  if (options.platform) {
+    args.push('--platform', options.platform)
+  }
+  if (options.summaryOutput) {
+    args.push('--summary-output', options.summaryOutput)
+  }
+  if (options.allowMissing) {
+    args.push('--allow-missing')
+  }
+
+  return formatHandoffCommand(args)
+}
+
 function platformEvidencePlaceholders(platform) {
   const platformName = platform === 'ios' ? 'ios' : 'android'
 

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
+  checkDevicePrereqsCommand,
   checkPlatformEvidenceCommand,
   checkRealDeviceEvidenceCommand,
   commitEvidenceCommands,
@@ -108,6 +109,18 @@ test('release handoff commands format real-device evidence assembly', () => {
   assert.equal(
     checkPlatformEvidenceCommand(commit),
     `npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit ${commit}`,
+  )
+  assert.equal(
+    checkDevicePrereqsCommand({ allowMissing: true }),
+    'npm run check:device-prereqs -- --allow-missing',
+  )
+  assert.equal(
+    checkDevicePrereqsCommand({
+      allowMissing: true,
+      platform: 'android',
+      summaryOutput: 'release/device prereqs.json',
+    }),
+    "npm run check:device-prereqs -- --platform android --summary-output 'release/device prereqs.json' --allow-missing",
   )
   assert.equal(
     recordPlatformEvidencePassCommand('android', commit),
