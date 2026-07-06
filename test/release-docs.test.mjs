@@ -1255,6 +1255,7 @@ test('Godot smoke gate covers serious example apps', () => {
   )
   assert.match(readme, /setup:godotjs -- --print-bin/)
   assert.match(readme, /scripts\/setup-godotjs\.mjs/)
+  assert.match(setupAction, /actions\/cache@v5/)
   assert.match(setupAction, /scripts\/setup-godotjs\.mjs/)
   assert.match(setupAction, /--github-env "\$GITHUB_ENV"/)
   assert.match(setupScript, /GodotJS_1\.0\.0-2/)

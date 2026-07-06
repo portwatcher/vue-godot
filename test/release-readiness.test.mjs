@@ -394,6 +394,13 @@ test('release readiness requires Release Preflight expected commit wiring', () =
         'xvfb-run',
       ].join('\n')
     }
+    if (file === '.github/actions/setup-godotjs/action.yml') {
+      return [
+        'actions/cache@v5',
+        'node scripts/setup-godotjs.mjs',
+        '--github-env "$GITHUB_ENV"',
+      ].join('\n')
+    }
     return [
       'name: Release Preflight',
       'workflow_dispatch:',

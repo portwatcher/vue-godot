@@ -16,7 +16,7 @@ runs:
   steps:
     - name: Cache GodotJS
       id: cache-godotjs
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: .cache/godotjs/${{ inputs.release }}/${{ inputs.asset }}
         key: godotjs-${{ runner.os }}-${{ inputs.release }}-${{ inputs.asset }}

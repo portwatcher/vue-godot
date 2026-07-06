@@ -717,6 +717,15 @@ const releaseWorkflowRequirements = [
       'xvfb-run',
     ],
   },
+  {
+    file: '.github/actions/setup-godotjs/action.yml',
+    label: 'Setup GodotJS action',
+    snippets: [
+      'actions/cache@v5',
+      'node scripts/setup-godotjs.mjs',
+      '--github-env "$GITHUB_ENV"',
+    ],
+  },
 ]
 
 export function collectReleaseWorkflowBlockers(readWorkflow = readText) {

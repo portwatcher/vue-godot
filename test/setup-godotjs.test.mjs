@@ -78,6 +78,7 @@ test('GodotJS setup is exposed through npm and the shared CI action', () => {
   )
   assert.match(action, /default: GodotJS_1\.0\.0-2/)
   assert.match(action, /default: prebuilt_linux_x64_v8/)
+  assert.match(action, /actions\/cache@v5/)
   assert.match(action, /node scripts\/setup-godotjs\.mjs/)
   assert.match(action, /--github-env "\$GITHUB_ENV"/)
   assert.doesNotMatch(action, /curl --fail/)
