@@ -355,12 +355,24 @@ export function collectDeviceTestPrereqStatus(options = {}) {
   return summary
 }
 
-function formatHostedProviderStatus(status) {
+function formatProviderRequiredEnvSets(provider) {
+  return provider.requiredEnvSets
+    .map((envSet) => envSet.join(' + '))
+    .join(' or ')
+}
+
+export function formatHostedProviderStatus(status) {
   const configuredProviders = status.providers.filter(
     (provider) => provider.configured,
   )
   if (configuredProviders.length === 0) {
-    return ['[device-prereqs] hosted provider env: none detected']
+    return [
+      '[device-prereqs] hosted provider env: none detected',
+      ...status.providers.map(
+        (provider) =>
+          `[device-prereqs] hosted provider env option: ${provider.label} (${formatProviderRequiredEnvSets(provider)})`,
+      ),
+    ]
   }
 
   return configuredProviders.map(

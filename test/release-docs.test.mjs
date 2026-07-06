@@ -56,6 +56,7 @@ test('real device release checklist covers required Android and iOS gates', () =
     /hosted-provider\s+environment variable sets/,
     hostedProviderNamesPattern,
     /never their values/,
+    /recognized provider env-set\s+options/,
     /npm run check:serious-examples/,
     /npm run release:preflight[\s\S]*validates real-device evidence/,
     /npm audit --audit-level=moderate/,
@@ -318,6 +319,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /Android emulators are reported separately/)
   assert.match(production, hostedProviderNamesPattern)
   assert.match(production, /never their values/)
+  assert.match(production, /recognized provider env-set\s+options/)
   assert.match(
     production,
     /Missing local tooling or provider environment\s+variables are only diagnostics/,
@@ -599,6 +601,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /Android emulators are reported separately/)
   assert.match(readme, hostedProviderNamesPattern)
   assert.match(readme, /never their values/)
+  assert.match(readme, /recognized provider env-set\s+options/)
   assert.match(
     readme,
     /Missing local tooling or provider environment\s+variables are only diagnostics/,

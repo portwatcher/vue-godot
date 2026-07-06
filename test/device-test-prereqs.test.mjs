@@ -4,6 +4,7 @@ import test from 'node:test'
 import {
   collectDeviceTestPrereqStatus,
   collectHostedDeviceProviderStatus,
+  formatHostedProviderStatus,
   isAndroidEmulatorDevice,
   parseAdbDevices,
   parseXctraceDevices,
@@ -199,6 +200,40 @@ test('hosted provider status reports configured env names without values', () =>
     false,
   )
   assert.doesNotMatch(JSON.stringify(status), /secret|release-user|lt-user/)
+})
+
+test('hosted provider text lists accepted env sets when none are configured', () => {
+  const status = collectHostedDeviceProviderStatus({})
+  const lines = formatHostedProviderStatus(status)
+
+  assert.equal(lines[0], '[device-prereqs] hosted provider env: none detected')
+  assert.match(
+    lines.join('\n'),
+    /BrowserStack App Automate \(BROWSERSTACK_USERNAME \+ BROWSERSTACK_ACCESS_KEY\)/,
+  )
+  assert.match(
+    lines.join('\n'),
+    /Firebase Test Lab \(GOOGLE_APPLICATION_CREDENTIALS \+ GCLOUD_PROJECT or GOOGLE_APPLICATION_CREDENTIALS \+ GOOGLE_CLOUD_PROJECT or FIREBASE_TOKEN \+ GCLOUD_PROJECT or FIREBASE_TOKEN \+ GOOGLE_CLOUD_PROJECT\)/,
+  )
+  assert.match(
+    lines.join('\n'),
+    /LambdaTest Real Device Cloud \(LT_USERNAME \+ LT_ACCESS_KEY or LAMBDATEST_USERNAME \+ LAMBDATEST_ACCESS_KEY\)/,
+  )
+})
+
+test('hosted provider text reports configured env names without values', () => {
+  const status = collectHostedDeviceProviderStatus({
+    BROWSERSTACK_ACCESS_KEY: 'secret',
+    BROWSERSTACK_USERNAME: 'release-user',
+  })
+  const text = formatHostedProviderStatus(status).join('\n')
+
+  assert.match(
+    text,
+    /BrowserStack App Automate \(BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY\)/,
+  )
+  assert.doesNotMatch(text, /secret|release-user/)
+  assert.doesNotMatch(text, /hosted provider env option/)
 })
 
 test('device prereq status includes hosted provider diagnostics', () => {

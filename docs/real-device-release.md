@@ -526,11 +526,12 @@ Run these before platform-specific device checks:
    environment variable sets are available and to write a gitignored JSON
    diagnostic. The hosted-provider diagnostic reports configured environment
    variable names for BrowserStack, Sauce Labs, Firebase Test Lab, AWS Device
-   Farm, LambdaTest, and Kobiton, but never their values. Android emulators are
-   reported separately and do not satisfy the local release-device prerequisite.
-   Missing local tooling or provider environment variables do not satisfy or
-   fail final evidence by themselves; use a hosted real-device lab when the
-   final evidence can link to the lab run.
+   Farm, LambdaTest, and Kobiton, but never their values; when none are
+   configured, the text output lists the recognized provider env-set options.
+   Android emulators are reported separately and do not satisfy the local
+   release-device prerequisite. Missing local tooling or provider environment
+   variables do not satisfy or fail final evidence by themselves; use a hosted
+   real-device lab when the final evidence can link to the lab run.
 4. Run `npm run check:serious-examples`.
 5. Run `npm audit --audit-level=moderate`.
 6. Optionally run `npm run release:preflight -- --local` as a local dry run;
