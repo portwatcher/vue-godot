@@ -107,7 +107,10 @@ initial CI for the tested commit.
 Use `npm run release:record-platform-evidence -- --platform android` or
 `--platform ios` after each hosted or real-device pass to record
 artifact/export-preset/device metadata, `--pass` check names, and
-`--skip check=reason` outcomes without hand-editing JSON. After every unresolved
+`--skip check=reason` outcomes without hand-editing JSON. Add `--list-checks`
+first when testers need the valid check names, descriptions, current worksheet
+outcomes, and selected-API must-pass context without modifying the worksheet.
+After every unresolved
 must-pass check has actually passed, add `--pass-remaining` to record the
 remaining must-pass checks in one batch, and include
 `--pass-remaining-confirmation "<release-specific confirmation>"` after the

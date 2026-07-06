@@ -10,6 +10,7 @@ import {
 import { isRecord } from './release-evidence-utils.mjs'
 import { defaultPlatformEvidencePath } from './release-handoff-commands.mjs'
 import {
+  describeRealDeviceCheck,
   isReleaseEvidencePlaceholder,
   passOnlyRealDeviceChecks,
   requiredRealDeviceChecks,
@@ -48,6 +49,11 @@ Options:
   --passed-check <check[,check...]> Alias for --pass.
   --skip <check=reason>            Record a skippable required check with reason.
                                   Can be repeated. ":" is also accepted.
+  --list-checks                    Print valid check names, descriptions, and
+                                  current worksheet outcome state without
+                                  modifying the worksheet. With --platform,
+                                  only prints that platform; otherwise prints
+                                  both Android and iOS.
   --summary-output <file>          Write machine-readable audit JSON after update.
   --expected-commit <sha>          Full tested release-candidate commit SHA for
                                   summary metadata.
@@ -94,6 +100,7 @@ function parseArgs(argv) {
   const options = {
     dryRun: false,
     expectedCommit: null,
+    listChecks: false,
     platform: null,
     platformEvidencePath: defaultPlatformEvidencePath,
     summaryOutput: null,
@@ -127,6 +134,11 @@ function parseArgs(argv) {
 
     if (arg === '--dry-run') {
       options.dryRun = true
+      continue
+    }
+
+    if (arg === '--list-checks') {
+      options.listChecks = true
       continue
     }
 
@@ -234,7 +246,7 @@ function parseArgs(argv) {
     '--expected-commit',
   )
 
-  if (!platforms.includes(options.platform)) {
+  if (options.platform !== null && !platforms.includes(options.platform)) {
     throw new Error('--platform must be android or ios')
   }
 
@@ -243,6 +255,20 @@ function parseArgs(argv) {
     options.passedChecks.length > 0 ||
     options.passRemaining ||
     Object.keys(options.skippedChecks).length > 0
+
+  if (options.listChecks) {
+    if (hasUpdates || options.passRemainingConfirmation !== null) {
+      throw new Error(
+        '--list-checks cannot be combined with metadata, --pass, --pass-remaining, or --skip updates',
+      )
+    }
+    return options
+  }
+
+  if (!platforms.includes(options.platform)) {
+    throw new Error('--platform must be android or ios')
+  }
+
   if (!hasUpdates) {
     throw new Error(
       'Provide at least one metadata field, --pass, --pass-remaining, or --skip update',
@@ -434,9 +460,83 @@ function writeSummary(filePath, summary) {
   console.log(`[platform-evidence] wrote ${path.relative(repoRoot, resolved)}`)
 }
 
+function formatPlatformLabel(platform) {
+  return platform === 'ios' ? 'iOS' : 'Android'
+}
+
+function formatCheckQualifiers(platform, check, status) {
+  const qualifiers = []
+  const passOnly = passOnlyRealDeviceChecks[platform].includes(check)
+  const selectedApis = Array.isArray(status.selectedApiRequiredChecks[check])
+    ? status.selectedApiRequiredChecks[check]
+    : []
+
+  if (status.mustPassChecks.includes(check)) {
+    qualifiers.push('must pass')
+  } else {
+    qualifiers.push('skippable')
+  }
+  if (passOnly) {
+    qualifiers.push('pass-only')
+  }
+  if (selectedApis.length > 0) {
+    qualifiers.push(`selected APIs: ${selectedApis.join(', ')}`)
+  }
+  if (status.passedChecks.includes(check)) {
+    qualifiers.push('outcome: passed')
+  } else if (status.skippedCheckNames.includes(check)) {
+    qualifiers.push('outcome: skipped')
+  } else {
+    qualifiers.push('outcome: remaining')
+  }
+
+  return qualifiers.join('; ')
+}
+
+function printCheckList(summary, selectedPlatform) {
+  const platformsToPrint = selectedPlatform ? [selectedPlatform] : platforms
+
+  for (const platform of platformsToPrint) {
+    const status = summary.platforms?.[platform]
+    if (!status) {
+      continue
+    }
+
+    console.log(
+      `[platform-evidence] ${formatPlatformLabel(platform)} required checks`,
+    )
+    if (status.selectedApis.length > 0) {
+      console.log(
+        `[platform-evidence] selected APIs: ${status.selectedApis.join(', ')}`,
+      )
+    }
+    for (const check of requiredRealDeviceChecks[platform]) {
+      console.log(
+        [
+          `[platform-evidence] - ${check}`,
+          `(${formatCheckQualifiers(platform, check, status)})`,
+          describeRealDeviceCheck(platform, check),
+        ].join(' '),
+      )
+    }
+  }
+}
+
 function main() {
   const options = parseArgs(process.argv.slice(2))
   const evidence = readJson(options.platformEvidencePath)
+  if (options.listChecks) {
+    const summary = auditPlatformEvidence(evidence)
+    summary.path = path.relative(
+      repoRoot,
+      path.resolve(repoRoot, options.platformEvidencePath),
+    )
+    summary.expectedCommit = options.expectedCommit
+    printCheckList(summary, options.platform)
+    writeSummary(options.summaryOutput, summary)
+    return
+  }
+
   const updated = recordPlatformEvidence(evidence, options)
   const summary = auditPlatformEvidence(updated)
   summary.path = path.relative(

@@ -441,6 +441,81 @@ test('record-platform-evidence CLI records one platform result batch', () => {
   }
 })
 
+test('record-platform-evidence CLI lists check names without updating worksheet', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-platform-'))
+  const evidencePath = path.join(tempDir, 'platform-evidence.json')
+  const summaryPath = path.join(tempDir, 'platform-summary.json')
+  const worksheet = buildPlatformEvidenceTemplate({ productionProfile: true })
+
+  try {
+    fs.writeFileSync(evidencePath, `${JSON.stringify(worksheet, null, 2)}\n`)
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/record-platform-evidence.mjs',
+        '--platform',
+        'android',
+        '--platform-evidence',
+        evidencePath,
+        '--list-checks',
+        '--summary-output',
+        summaryPath,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf-8',
+      },
+    )
+
+    assert.equal(result.status, 0, result.stderr || result.stdout)
+    assert.match(result.stdout, /Android required checks/)
+    assert.match(result.stdout, /selected APIs: fetch, WebSocket/)
+    assert.match(
+      result.stdout,
+      /network-if-selected \(must pass; selected APIs: fetch, WebSocket, checkNetworkReachability, navigator\.onLine; outcome: remaining\)/,
+    )
+    assert.match(
+      result.stdout,
+      /cold-launch \(must pass; pass-only; outcome: remaining\)/,
+    )
+    assert.doesNotMatch(result.stdout, /iOS required checks/)
+    assert.deepEqual(
+      JSON.parse(fs.readFileSync(evidencePath, 'utf-8')),
+      worksheet,
+    )
+
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+    assert.equal(summary.path, path.relative(repoRoot, evidencePath))
+    assert.equal(summary.platforms.android.remainingChecks[0], 'cold-launch')
+
+    const updateResult = spawnSync(
+      process.execPath,
+      [
+        'scripts/record-platform-evidence.mjs',
+        '--platform',
+        'android',
+        '--platform-evidence',
+        evidencePath,
+        '--list-checks',
+        '--pass',
+        'cold-launch',
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf-8',
+      },
+    )
+
+    assert.equal(updateResult.status, 1)
+    assert.match(
+      updateResult.stderr,
+      /--list-checks cannot be combined with metadata, --pass, --pass-remaining, or --skip updates/,
+    )
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
 test('record-platform-evidence CLI rejects skipped must-pass checks', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-platform-'))
   const evidencePath = path.join(tempDir, 'platform-evidence.json')

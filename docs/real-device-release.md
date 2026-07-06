@@ -237,6 +237,10 @@ npm run release:record-platform-evidence -- \
   --summary-output release/platform-evidence-summary.json
 ```
 
+Add `--list-checks` before recording outcomes when testers need the valid check
+names, descriptions, current worksheet outcomes, and selected-API must-pass
+context without modifying `release/platform-evidence.json`.
+
 Use `--platform ios` with `--export-preset <ios-export-preset>` for the iOS
 pass. The recorder rejects unknown check names and refuses to put pass-only or
 selected-API-required checks in `skippedChecks`; those checks must be recorded
