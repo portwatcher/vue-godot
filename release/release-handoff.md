@@ -267,7 +267,7 @@ GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit 773803bc36d5c3e4ff904
 
 Blocked by: `real-device-evidence`, `release-preflight-evidence`
 
-Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks, removes public warning wording, then stages and commits those edits before the final strict readiness check.
+Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks and removes public warning wording. The generated commands then run npm run check, stage those edits, commit them, push, and run the final strict readiness check.
 
 ```bash
 npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --checklist-output /tmp/vue-godot-readiness.md --expected-commit 773803bc36d5c3e4ff904020210144c3506a3577
