@@ -143,6 +143,7 @@
 ### Complete Android and iOS real-device export evidence
 
 Run the local check and selected API export checks on real or hosted devices, record the evidence URL in the platform worksheet, then assemble and validate release/real-device-evidence.json for the tested release commit.
+The device prereq summary records local tooling availability and configured hosted-provider environment variable names for handoff diagnostics only; final evidence still needs non-local device run URLs, artifact IDs, and device metadata.
 Android: 6 metadata field(s) missing, 14/14 required check(s) unresolved, 14 must-pass check(s) missing; iOS: 6 metadata field(s) missing, 15/15 required check(s) unresolved, 14 must-pass check(s) missing
 Android missing metadata: artifact, evidenceUrl, deviceModel, osVersion, orientation, locale
 Android must-pass remaining: cold-launch, no-godotjs-load-diagnostics, storage-restart, network-if-selected, clipboard-if-selected, permission-prompts-if-selected, adapter-states-if-selected, hardware-adapters-if-selected, haptics-if-selected, audio-input-if-selected, sensors-if-selected, safe-area-keyboard, android-back-handling, background-foreground
