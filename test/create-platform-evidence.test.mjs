@@ -144,7 +144,7 @@ test('platform evidence template lists required checks without passing them', ()
   const androidPassCommand = completeAction.commands.find(
     (command) =>
       command.includes('--platform android') &&
-      command.includes('--pass <observed-android-check-name>'),
+      command.includes('--pass cold-launch'),
   )
   assert.ok(androidPassCommand)
   const androidRecordCommand = completeAction.commands.find(
@@ -165,7 +165,7 @@ test('platform evidence template lists required checks without passing them', ()
   const iosPassCommand = completeAction.commands.find(
     (command) =>
       command.includes('--platform ios') &&
-      command.includes('--pass <observed-ios-check-name>'),
+      command.includes('--pass cold-launch'),
   )
   assert.ok(iosPassCommand)
   const iosRecordCommand = completeAction.commands.find(

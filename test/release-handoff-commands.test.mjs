@@ -111,6 +111,12 @@ test('release handoff commands format real-device evidence assembly', () => {
     `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass <observed-android-check-name> --summary-output release/platform-evidence-summary.json --expected-commit ${commit}`,
   )
   assert.equal(
+    recordPlatformEvidencePassCommand('ios', commit, {
+      check: 'cold-launch',
+    }),
+    `npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit ${commit}`,
+  )
+  assert.equal(
     recordPlatformEvidenceCommand('android', commit),
     `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output release/platform-evidence-summary.json --expected-commit ${commit}`,
   )

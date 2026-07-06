@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url'
 import {
   auditPlatformEvidence,
   collectPlatformEvidenceRemainingCheckDetails,
+  collectPlatformEvidenceSuggestedPassCheck,
   collectPlatformEvidenceSkippableMissingChecks,
   formatPlatformEvidenceRemainingBlock,
 } from './check-platform-evidence.mjs'
@@ -244,6 +245,10 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
       ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
       commands: [
         ...recordPlatformEvidenceCommands('android', commit, {
+          check: collectPlatformEvidenceSuggestedPassCheck(
+            platformAudit,
+            'android',
+          ),
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(
             platformAudit,
@@ -252,6 +257,7 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
           summaryOutput: platformEvidenceSummaryPath,
         }),
         ...recordPlatformEvidenceCommands('ios', commit, {
+          check: collectPlatformEvidenceSuggestedPassCheck(platformAudit, 'ios'),
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(
             platformAudit,

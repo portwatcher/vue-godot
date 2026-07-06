@@ -697,6 +697,28 @@ export function collectPlatformEvidenceSkippableMissingChecks(
     .filter((check) => check.length > 0)
 }
 
+export function collectPlatformEvidenceSuggestedPassCheck(summary, platform) {
+  const status = summary?.platforms?.[platform]
+  if (!isRecord(status)) {
+    return null
+  }
+
+  for (const checks of [status.mustPassMissingChecks, status.remainingChecks]) {
+    if (!Array.isArray(checks)) {
+      continue
+    }
+
+    const check = checks.find(
+      (value) => typeof value === 'string' && value.trim().length > 0,
+    )
+    if (check) {
+      return check.trim()
+    }
+  }
+
+  return null
+}
+
 function formatRemainingCheckDetails(platform, status) {
   const details = collectRemainingCheckDetails(platform, status).map((detail) =>
     formatNormalizedCheckDetail(detail),
@@ -873,6 +895,7 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
       ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
       commands: [
         ...recordPlatformEvidenceCommands('android', commit, {
+          check: collectPlatformEvidenceSuggestedPassCheck(summary, 'android'),
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(
             summary,
@@ -881,6 +904,7 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
           summaryOutput: options.summaryOutput ?? 'release/platform-evidence-summary.json',
         }),
         ...recordPlatformEvidenceCommands('ios', commit, {
+          check: collectPlatformEvidenceSuggestedPassCheck(summary, 'ios'),
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(
             summary,

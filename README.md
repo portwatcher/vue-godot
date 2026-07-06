@@ -348,7 +348,7 @@ device run; the recorder stores that confirmation on the platform evidence so
 `release/real-device-evidence.json` keeps the audit note. Skippable checks still
 need an explicit `--pass` or `--skip check=reason`; generated handoff commands
 include skip and pass-remaining confirmation placeholders for currently
-open gaps, plus single-check `--pass <observed-...-check-name>` placeholders
+open gaps, plus single-check commands that prefill a suggested remaining check name
 for incremental device sessions. Replace every placeholder before recording evidence; the recorder,
 worksheet audit, and final evidence validator reject placeholder metadata,
 placeholder confirmation notes,

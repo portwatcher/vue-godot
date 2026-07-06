@@ -7,6 +7,7 @@ import test from 'node:test'
 
 import {
   auditPlatformEvidence,
+  collectPlatformEvidenceSuggestedPassCheck,
   formatPlatformEvidenceChecklist,
   formatPlatformEvidenceProgress,
   formatPlatformEvidenceRemainingBlock,
@@ -133,6 +134,14 @@ test('platform evidence audit reports incomplete worksheet gaps', () => {
   assert.match(
     formatPlatformEvidenceRemainingBlock(summary),
     /iOS: 5 metadata field\(s\) missing, 15\/15 required check\(s\) unresolved, 14 must-pass check\(s\) missing\nAndroid missing metadata: artifact, deviceModel, osVersion, orientation, locale/,
+  )
+  assert.equal(
+    collectPlatformEvidenceSuggestedPassCheck(summary, 'android'),
+    'cold-launch',
+  )
+  assert.equal(
+    collectPlatformEvidenceSuggestedPassCheck(summary, 'ios'),
+    'cold-launch',
   )
 })
 
@@ -398,7 +407,7 @@ test('record-platform-evidence CLI records one platform result batch', () => {
     const androidPassCommand = summary.nextActions[0].commands.find(
       (command) =>
         command.includes('--platform android') &&
-        command.includes('--pass <observed-android-check-name>'),
+        command.includes('--pass storage-restart'),
     )
     assert.ok(androidPassCommand)
     const androidRecordCommand = summary.nextActions[0].commands.find(
@@ -767,7 +776,7 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
     )
     assert.ok(
       summary.nextActions[0].commands.includes(
-        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass <observed-android-check-name> --summary-output ${summaryPath} --expected-commit ${commit}`,
+        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output ${summaryPath} --expected-commit ${commit}`,
       ),
     )
     assert.ok(
@@ -777,7 +786,7 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
     )
     assert.ok(
       summary.nextActions[0].commands.includes(
-        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass <observed-ios-check-name> --summary-output ${summaryPath} --expected-commit ${commit}`,
+        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output ${summaryPath} --expected-commit ${commit}`,
       ),
     )
     assert.ok(
