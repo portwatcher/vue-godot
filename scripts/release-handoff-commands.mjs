@@ -29,7 +29,7 @@ export const defaultReleaseReadinessSummaryPath =
 export const defaultReleaseReadinessChecklistPath =
   'release/release-readiness-checklist.md'
 export const defaultReleaseHandoffReportPath = 'release/release-handoff.md'
-export const releaseHandoffReportFormatVersion = 4
+export const releaseHandoffReportFormatVersion = 5
 
 function stableJson(value) {
   if (Array.isArray(value)) {
@@ -421,6 +421,28 @@ export function releasePreflightSummaryCommand(commit, options = {}) {
   return options.withGitHubToken
     ? `GH_TOKEN="$(gh auth token)" ${command}`
     : command
+}
+
+export function localReleasePreflightCommand(commit, options = {}) {
+  const args = ['npm', 'run', 'release:preflight', '--', '--local']
+
+  if (options.skipCheck) {
+    args.push('--skip-check')
+  }
+  if (options.skipGodot) {
+    args.push('--skip-godot')
+  }
+  if (options.skipSeriousExamples) {
+    args.push('--skip-serious-examples')
+  }
+
+  args.push('--expected-commit', releaseCommitLabel(commit))
+
+  if (options.summaryOutput) {
+    args.push('--summary-output', options.summaryOutput)
+  }
+
+  return formatHandoffCommand(args)
 }
 
 export function releaseEvidenceCommand(commit, options = {}) {

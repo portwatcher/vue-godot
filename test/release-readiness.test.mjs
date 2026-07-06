@@ -1146,6 +1146,10 @@ test('release readiness summary includes missing evidence next actions', () => {
       ),
     )
     assert.equal(realDeviceAction.commands[0], 'npm run check')
+    assert.equal(
+      realDeviceAction.commands[1],
+      `npm run release:preflight -- --local --skip-check --skip-godot --expected-commit ${summary.commit} --summary-output /tmp/vue-godot-local-preflight-summary.json`,
+    )
     assert.ok(
       realDeviceAction.commands.every(
         (command) =>

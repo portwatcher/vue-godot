@@ -19,6 +19,7 @@ import {
   defaultReleasePreflightChecklistPath,
   evidenceDispatchRefPlaceholder,
   initialReleaseCiCommands,
+  localReleasePreflightCommand,
   productionProfilePlatformEvidenceCommand,
   recordPlatformEvidenceCommand,
   recordPlatformEvidenceCommands,
@@ -295,6 +296,14 @@ test('release handoff commands include preflight evidence input only for preflig
       runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/3',
     }),
     `npm run release:preflight-summary -- --run-url https://github.com/portwatcher/vue-godot/actions/runs/3 --commit ${commit} --release-preflight-run-commit ${evidenceCommit} --output release/release-preflight-summary.json`,
+  )
+  assert.equal(
+    localReleasePreflightCommand(commit, {
+      skipCheck: true,
+      skipGodot: true,
+      summaryOutput: '/tmp/vue-godot-local-preflight-summary.json',
+    }),
+    `npm run release:preflight -- --local --skip-check --skip-godot --expected-commit ${commit} --summary-output /tmp/vue-godot-local-preflight-summary.json`,
   )
 
   assert.equal(

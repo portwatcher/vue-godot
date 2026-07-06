@@ -54,6 +54,7 @@ import {
   defaultReleaseReadinessSummaryPath,
   formatHandoffCommand,
   initialReleaseCiCommands,
+  localReleasePreflightCommand,
   productionProfilePlatformEvidenceCommand,
   recordPlatformEvidenceCommands,
   releaseEvidenceCommand,
@@ -1432,6 +1433,11 @@ function collectReadinessNextActions(
       ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
       commands: [
         'npm run check',
+        localReleasePreflightCommand(commit, {
+          skipCheck: true,
+          skipGodot: true,
+          summaryOutput: '/tmp/vue-godot-local-preflight-summary.json',
+        }),
         ...platformEvidenceCommands,
         ...(checks.initialCiEvidence
           ? []
