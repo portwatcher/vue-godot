@@ -987,6 +987,16 @@ test('release readiness summary includes missing evidence next actions', () => {
     )
     assert.ok(realDeviceAction.commands.includes('git push'))
 
+    const handoffAction = summary.nextActions.find(
+      (action) => action.id === 'release-handoff-report',
+    )
+    assert.ok(handoffAction)
+    assert.equal('blockedBy' in handoffAction, false)
+    assert.equal(
+      handoffAction.commands[0],
+      `npm run release:handoff -- --expected-commit ${summary.commit} --output release/release-handoff.md --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
+    )
+
     const releasePreflightAction = summary.nextActions.find(
       (action) => action.id === 'release-preflight-evidence',
     )
@@ -1086,6 +1096,13 @@ test('release readiness summary includes missing evidence next actions', () => {
 test('release readiness reuses committed initial CI evidence in next actions', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
   const summaryPath = path.join(tempDir, 'release-readiness-summary.json')
+  const realDevicePath = path.join(tempDir, 'missing-real-device-evidence.json')
+  const readinessPath = path.join(
+    tempDir,
+    'missing-release-readiness-evidence.json',
+  )
+  const realDeviceCommandPath = path.relative(process.cwd(), realDevicePath)
+  const readinessCommandPath = path.relative(process.cwd(), readinessPath)
   const ciEvidence = readCommittedReleaseCiEvidence()
 
   try {
@@ -1094,9 +1111,9 @@ test('release readiness reuses committed initial CI evidence in next actions', (
       '--expected-commit',
       ciEvidence.commit,
       '--real-device-path',
-      path.join(tempDir, 'missing-real-device-evidence.json'),
+      realDevicePath,
       '--readiness-path',
-      path.join(tempDir, 'missing-release-readiness-evidence.json'),
+      readinessPath,
       '--summary-output',
       summaryPath,
     ])
@@ -1129,6 +1146,15 @@ test('release readiness reuses committed initial CI evidence in next actions', (
       realDeviceAction.commands.every(
         (command) => !command.includes('npm run release:ci --'),
       ),
+    )
+
+    const handoffAction = summary.nextActions.find(
+      (action) => action.id === 'release-handoff-report',
+    )
+    assert.ok(handoffAction)
+    assert.equal(
+      handoffAction.commands[0],
+      `npm run release:handoff -- --expected-commit ${ciEvidence.commit} --output release/release-handoff.md --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
     )
 
     const releasePreflightAction = summary.nextActions.find(

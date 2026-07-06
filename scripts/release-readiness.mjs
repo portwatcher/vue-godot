@@ -991,6 +991,34 @@ function releaseReadinessCommand(commit, pathOptions = {}, options = {}) {
   return formatHandoffCommand(args)
 }
 
+function releaseHandoffCommand(commit, pathOptions = {}, options = {}) {
+  const args = [
+    'npm',
+    'run',
+    'release:handoff',
+    '--',
+    '--expected-commit',
+    releaseCommitLabel(commit),
+    '--output',
+    options.output ?? 'release/release-handoff.md',
+  ]
+
+  if (pathOptions.ciEvidencePath) {
+    args.push('--ci-evidence', pathOptions.ciEvidencePath)
+  }
+  if (pathOptions.platformEvidencePath) {
+    args.push('--platform-evidence', pathOptions.platformEvidencePath)
+  }
+  if (pathOptions.realDeviceEvidencePath) {
+    args.push('--real-device-path', pathOptions.realDeviceEvidencePath)
+  }
+  if (pathOptions.readinessEvidencePath) {
+    args.push('--readiness-path', pathOptions.readinessEvidencePath)
+  }
+
+  return formatHandoffCommand(args)
+}
+
 function preflightSummaryCommand(commit, pathOptions = {}) {
   const body = formatHandoffCommand([
     'npm',
@@ -1239,6 +1267,14 @@ function collectReadinessNextActions(
         }),
       )
     }
+
+    actions.push({
+      id: 'release-handoff-report',
+      title: 'Write Android/iOS tester handoff',
+      detail:
+        'Render the current allow-open readiness audit as Markdown so device testers can see the exact platform gaps, dependencies, and commands for this release candidate.',
+      commands: [releaseHandoffCommand(commit, pathOptions)],
+    })
 
     actions.push({
       id: 'real-device-evidence',

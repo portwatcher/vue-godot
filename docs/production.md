@@ -188,7 +188,9 @@ errors, release-readiness evidence status, and CI workflow wiring status, as
 JSON for release handoff. Run
 `npm run release:handoff -- --expected-commit <release-candidate-sha> --output release/release-handoff.md`
 to render the same allow-open audit as a Markdown handoff for Android/iOS
-testers. The initial CI, real-device, and
+testers; while real-device evidence is open, the release-readiness
+`nextActions` include that handoff command before the device-evidence action.
+The initial CI, real-device, and
 Release Preflight evidence actions begin with `npm run check` before collecting
 CI or assembling evidence.
 Later `nextActions` include a `blockedBy` list when they depend on earlier

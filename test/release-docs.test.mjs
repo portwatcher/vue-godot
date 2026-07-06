@@ -400,6 +400,10 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
+    /real-device evidence is open[\s\S]*`nextActions` include that handoff command before the device-evidence action/,
+  )
+  assert.match(
+    production,
     /`blockedBy` list[\s\S]*real-device evidence before Release Preflight/,
   )
   assert.match(
@@ -574,6 +578,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(
     readme,
     /release:handoff[\s\S]*release\/release-handoff\.md[\s\S]*Markdown handoff/,
+  )
+  assert.match(
+    readme,
+    /real-device evidence is open[\s\S]*`nextActions` include the same handoff command before the device-evidence action/,
   )
   assert.match(
     readme,
@@ -776,6 +784,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(
     checklist,
     /release:handoff[\s\S]*release\/release-handoff\.md[\s\S]*Markdown handoff/,
+  )
+  assert.match(
+    checklist,
+    /real-device evidence is open[\s\S]*`nextActions` include that handoff command before the device-evidence action/,
   )
   assert.match(
     checklist,
