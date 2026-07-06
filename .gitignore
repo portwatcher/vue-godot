@@ -15,6 +15,12 @@ node_modules
 # Testing
 coverage
 
+# Release helper outputs
+release/platform-evidence-summary.json
+release/platform-evidence-checklist.md
+release/real-device-evidence-summary.json
+release/release-readiness-summary.json
+
 # Turbo
 .turbo
 

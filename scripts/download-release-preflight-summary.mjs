@@ -13,6 +13,18 @@ import {
   isRecord,
   validateGitHubActionsRunMetadata,
 } from './release-evidence-utils.mjs'
+import {
+  defaultPlatformEvidencePath,
+  defaultRealDeviceEvidencePath,
+  defaultReleaseCiEvidencePath,
+  defaultReleasePreflightChecklistPath,
+  defaultReleasePreflightSummaryPath,
+  defaultReleaseReadinessEvidencePath,
+  formatHandoffCommand,
+  releaseCommitLabel,
+  releaseEvidenceCommand,
+  releasePreflightSummaryCommand,
+} from './release-handoff-commands.mjs'
 import { normalizeCommitSha, repoRoot, run } from './release-utils.mjs'
 
 export const releasePreflightSummaryArtifactName = 'release-preflight-summary'
@@ -21,7 +33,9 @@ export const releasePreflightSummaryEntryNames = [
   'release-preflight-summary.json',
 ]
 export const defaultReleasePreflightSummaryOutput =
-  'release/release-preflight-summary.json'
+  defaultReleasePreflightSummaryPath
+export const defaultReleasePreflightChecklistOutput =
+  defaultReleasePreflightChecklistPath
 
 function usage() {
   console.log(`Usage: node scripts/download-release-preflight-summary.mjs [options]
@@ -40,13 +54,17 @@ Options:
                          Defaults to --commit or CI evidence.
   --output <file>        Summary JSON output path.
                          Default: ${defaultReleasePreflightSummaryOutput}.
+  --checklist-output <file>
+                         Markdown checklist output path for the validated
+                         summary, run metadata, and follow-up evidence commands.
   --help                 Show this help.
 
 Example:
   npm run release:preflight-summary -- \\
     --ci-evidence release/ci-runs.json \\
     --commit <release-candidate-sha> \\
-    --output release/release-preflight-summary.json
+    --output release/release-preflight-summary.json \\
+    --checklist-output release/release-preflight-checklist.md
 `)
 }
 
@@ -57,6 +75,7 @@ function parseArgs(argv) {
     commit: null,
     releasePreflightRunCommit: null,
     output: defaultReleasePreflightSummaryOutput,
+    checklistOutput: null,
   }
 
   const valueOptions = [
@@ -65,6 +84,7 @@ function parseArgs(argv) {
     ['--commit', 'commit'],
     ['--release-preflight-run-commit', 'releasePreflightRunCommit'],
     ['--output', 'output'],
+    ['--checklist-output', 'checklistOutput'],
   ]
 
   for (let index = 0; index < argv.length; index++) {
@@ -140,6 +160,201 @@ function writeJson(filePath, data) {
   console.log(
     `[release-preflight-summary] wrote ${path.relative(repoRoot, resolved)}`,
   )
+}
+
+function writeText(filePath, text) {
+  const resolved = resolveOutputPath(filePath)
+  fs.mkdirSync(path.dirname(resolved), { recursive: true })
+  fs.writeFileSync(resolved, text.endsWith('\n') ? text : `${text}\n`)
+  console.log(
+    `[release-preflight-summary] wrote ${path.relative(repoRoot, resolved)}`,
+  )
+}
+
+function displayValue(value) {
+  return typeof value === 'string' && value.trim().length > 0
+    ? value
+    : '(not recorded)'
+}
+
+function displaySummaryValue(summary, key) {
+  if (!isRecord(summary)) {
+    return '(missing)'
+  }
+
+  const value = summary[key]
+  if (typeof value === 'boolean') {
+    return String(value)
+  }
+  if (Number.isInteger(value)) {
+    return String(value)
+  }
+  if (typeof value === 'string' && value.trim().length > 0) {
+    return value
+  }
+  return '(missing)'
+}
+
+function checklistLine(ready, label, detail) {
+  return `- ${ready ? '[x]' : '[ ]'} ${label}: ${detail}`
+}
+
+function splitIssueLines(errors) {
+  return errors.flatMap((error) =>
+    String(error)
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0),
+  )
+}
+
+function releaseReadinessCommand(commit) {
+  return formatHandoffCommand([
+    'npm',
+    'run',
+    'release:readiness',
+    '--',
+    '--expected-commit',
+    releaseCommitLabel(commit),
+  ])
+}
+
+function checklistPreflightSummaryCommand(commit, options) {
+  return releasePreflightSummaryCommand(commit, {
+    ...(options.ciEvidencePath
+      ? { ciEvidencePath: options.ciEvidencePath }
+      : { runUrl: options.runUrl }),
+    ...(options.releasePreflightRunCommit
+      ? { releasePreflightRunCommit: options.releasePreflightRunCommit }
+      : {}),
+    checklistOutput:
+      options.checklistOutput ?? defaultReleasePreflightChecklistOutput,
+    output: options.summaryOutput ?? defaultReleasePreflightSummaryOutput,
+    withGitHubToken: true,
+  })
+}
+
+function checklistReleaseEvidenceCommand(commit, options) {
+  return releaseEvidenceCommand(commit, {
+    ciEvidencePath: options.ciEvidencePath ?? defaultReleaseCiEvidencePath,
+    platformEvidencePath:
+      options.platformEvidencePath ?? defaultPlatformEvidencePath,
+    realDeviceEvidencePath:
+      options.realDeviceEvidencePath ?? defaultRealDeviceEvidencePath,
+    readinessEvidencePath:
+      options.readinessEvidencePath ?? defaultReleaseReadinessEvidencePath,
+    releasePreflightSummaryPath:
+      options.summaryOutput ?? defaultReleasePreflightSummaryOutput,
+  })
+}
+
+export function formatReleasePreflightSummaryChecklist(summary, options = {}) {
+  const commit =
+    options.commit ??
+    (isRecord(summary) && typeof summary.commit === 'string'
+      ? summary.commit
+      : null)
+  const summaryEvidence =
+    typeof commit === 'string' && commit.trim().length > 0
+      ? extractReleasePreflightWarningCount(summary, commit)
+      : {
+          warningCount: null,
+          failureCount: null,
+          localOnly: null,
+          skipCheck: null,
+          skipGodot: null,
+          skipSeriousExamples: null,
+          errors: ['Release commit is required to validate the summary'],
+        }
+  const issues = splitIssueLines(summaryEvidence.errors)
+  const status = issues.length === 0 ? 'ready' : 'blocked'
+  const runCommit = options.runCommit ?? options.releasePreflightRunCommit
+  const summaryOutput = options.summaryOutput ?? defaultReleasePreflightSummaryOutput
+  const checklistOutput =
+    options.checklistOutput ?? defaultReleasePreflightChecklistOutput
+  const releaseEvidenceCommandText = checklistReleaseEvidenceCommand(commit, {
+    ...options,
+    summaryOutput,
+  })
+  const lines = [
+    '# Release Preflight Evidence Checklist',
+    '',
+    `- Status: ${status}`,
+    `- Release commit: ${displayValue(commit)}`,
+    `- Release Preflight run URL: ${displayValue(options.runUrl)}`,
+    `- Release Preflight run commit: ${displayValue(runCommit)}`,
+    `- Release Preflight conclusion: ${displayValue(options.runConclusion)}`,
+    `- Release Preflight workflow: ${displayValue(options.workflowName)}`,
+    `- Artifact: ${displayValue(options.artifactName)}`,
+    `- Artifact id: ${displayValue(
+      options.artifactId == null ? null : String(options.artifactId),
+    )}`,
+    `- Summary JSON: ${summaryOutput}`,
+    `- Checklist: ${checklistOutput}`,
+    '',
+    '## Gate Status',
+    '',
+    checklistLine(
+      summaryEvidence.localOnly === false,
+      'Non-local preflight',
+      `localOnly=${displaySummaryValue(summary, 'localOnly')}`,
+    ),
+    checklistLine(
+      summaryEvidence.skipCheck === false,
+      'Check gate ran',
+      `skipCheck=${displaySummaryValue(summary, 'skipCheck')}`,
+    ),
+    checklistLine(
+      summaryEvidence.skipGodot === false,
+      'Godot gate ran',
+      `skipGodot=${displaySummaryValue(summary, 'skipGodot')}`,
+    ),
+    checklistLine(
+      summaryEvidence.skipSeriousExamples === false,
+      'Serious examples gate ran',
+      `skipSeriousExamples=${displaySummaryValue(
+        summary,
+        'skipSeriousExamples',
+      )}`,
+    ),
+    checklistLine(
+      summaryEvidence.failureCount === 0,
+      'No release preflight failures',
+      `failureCount=${displaySummaryValue(summary, 'failureCount')}`,
+    ),
+    checklistLine(
+      summaryEvidence.warningCount === 0,
+      'No release preflight warnings',
+      `warningCount=${displaySummaryValue(summary, 'warningCount')}`,
+    ),
+    '',
+  ]
+
+  if (issues.length > 0) {
+    lines.push('## Blocking Issues', '')
+    for (const issue of issues) {
+      lines.push(`- ${issue}`)
+    }
+    lines.push('')
+  }
+
+  lines.push(
+    '## Evidence Commands',
+    '',
+    '```bash',
+    checklistPreflightSummaryCommand(commit, {
+      ...options,
+      checklistOutput,
+      summaryOutput,
+    }),
+    releaseEvidenceCommandText,
+    releaseReadinessCommand(commit),
+    '```',
+    '',
+    'If the summary was downloaded with `--run-url`, final readiness evidence still needs Check and Godot Smoke run metadata from `--ci-evidence` or the explicit `release:evidence` run URL options.',
+  )
+
+  return `${lines.join('\n')}\n`
 }
 
 function runTime(artifact) {
@@ -365,6 +580,24 @@ async function main() {
   }
 
   writeJson(options.output, summary)
+  if (options.checklistOutput) {
+    writeText(
+      options.checklistOutput,
+      formatReleasePreflightSummaryChecklist(summary, {
+        artifactId: artifact.id,
+        artifactName: artifact.name,
+        checklistOutput: options.checklistOutput,
+        ciEvidencePath: options.ciEvidencePath,
+        commit,
+        releasePreflightRunCommit,
+        runCommit: releasePreflightRun.head_sha,
+        runConclusion: releasePreflightRun.conclusion,
+        runUrl,
+        summaryOutput: options.output,
+        workflowName: releasePreflightRun.name,
+      }),
+    )
+  }
 }
 
 const entryPoint = process.argv[1] ? pathToFileURL(process.argv[1]).href : ''

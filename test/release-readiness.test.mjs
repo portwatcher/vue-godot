@@ -745,7 +745,12 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.ok(preflightDispatchIndex > preflightWaitIndex)
     assert.ok(
       releasePreflightAction.commands.includes(
-        'git add release/ci-runs.json release/release-preflight-summary.json docs/real-device-evidence.example.json docs/release-readiness-evidence.example.json',
+        `GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit ${exampleCommit} --output release/release-preflight-summary.json --checklist-output release/release-preflight-checklist.md`,
+      ),
+    )
+    assert.ok(
+      releasePreflightAction.commands.includes(
+        'git add release/ci-runs.json release/release-preflight-summary.json release/release-preflight-checklist.md docs/real-device-evidence.example.json docs/release-readiness-evidence.example.json',
       ),
     )
     assert.ok(
@@ -1114,7 +1119,7 @@ test('release readiness summary includes missing evidence next actions', () => {
     )
     assert.ok(
       releasePreflightAction.commands.includes(
-        `GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence ${shellQuote(ciCommandPath)} --commit ${summary.commit} --output release/release-preflight-summary.json`,
+        `GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence ${shellQuote(ciCommandPath)} --commit ${summary.commit} --output release/release-preflight-summary.json --checklist-output release/release-preflight-checklist.md`,
       ),
     )
     assert.ok(
@@ -1141,7 +1146,7 @@ test('release readiness summary includes missing evidence next actions', () => {
         `cp ${shellQuote(ciCommandPath)} release/ci-runs.json`,
         `cp ${shellQuote(realDeviceCommandPath)} release/real-device-evidence.json`,
         `cp ${shellQuote(readinessCommandPath)} release/release-readiness-evidence.json`,
-        'git add release/ci-runs.json release/release-preflight-summary.json release/real-device-evidence.json release/release-readiness-evidence.json',
+        'git add release/ci-runs.json release/release-preflight-summary.json release/release-preflight-checklist.md release/real-device-evidence.json release/release-readiness-evidence.json',
       ].every((command) => releasePreflightAction.commands.includes(command)),
     )
     assert.ok(

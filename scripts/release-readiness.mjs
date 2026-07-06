@@ -40,6 +40,7 @@ import {
   defaultPlatformEvidencePath,
   defaultReleaseCiEvidencePath,
   defaultReleaseHandoffReportPath,
+  defaultReleasePreflightChecklistPath,
   defaultReleasePreflightSummaryPath,
   defaultReleaseReadinessEvidencePath,
   formatHandoffCommand,
@@ -51,6 +52,7 @@ import {
   releaseHandoffReportFormatVersion,
   releaseHandoffReportStateHash,
   releasePreflightCiCommands,
+  releasePreflightSummaryCommand,
   repoLocalEvidencePath,
 } from './release-handoff-commands.mjs'
 import {
@@ -1095,22 +1097,6 @@ function collectReleaseHandoffReportStatus(
   }
 }
 
-function preflightSummaryCommand(commit, pathOptions = {}) {
-  const body = formatHandoffCommand([
-    'npm',
-    'run',
-    'release:preflight-summary',
-    '--',
-    '--ci-evidence',
-    pathOptions.ciEvidencePath ?? defaultReleaseCiEvidencePath,
-    '--commit',
-    releaseCommitLabel(commit),
-    '--output',
-    defaultReleasePreflightSummaryPath,
-  ])
-  return `GH_TOKEN="$(gh auth token)" ${body}`
-}
-
 function collectPathOptions(
   initialCiEvidence,
   realDeviceEvidence,
@@ -1432,7 +1418,12 @@ function collectReadinessNextActions(
               realDeviceEvidencePath: repoLocalRealDeviceEvidencePath,
               releasePreflightRunCommit: currentHeadCommitCommand,
             }),
-            preflightSummaryCommand(commit, pathOptions),
+            releasePreflightSummaryCommand(commit, {
+              ...pathOptions,
+              checklistOutput: defaultReleasePreflightChecklistPath,
+              output: defaultReleasePreflightSummaryPath,
+              withGitHubToken: true,
+            }),
             releaseEvidenceCommand(
               commit,
               releaseReadinessEvidenceCommandOptions(pathOptions),
@@ -1443,6 +1434,10 @@ function collectReadinessNextActions(
                 [
                   defaultReleasePreflightSummaryPath,
                   defaultReleasePreflightSummaryPath,
+                ],
+                [
+                  defaultReleasePreflightChecklistPath,
+                  defaultReleasePreflightChecklistPath,
                 ],
                 [realDeviceEvidencePath, defaultRealDeviceEvidencePath],
                 [readinessEvidencePath, defaultReleaseReadinessEvidencePath],

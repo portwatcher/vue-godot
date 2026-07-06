@@ -175,9 +175,9 @@ npm run check
 npm run check:real-device-evidence -- --verify-runs --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
 npm run release:ci -- --commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --wait --output release/ci-runs.json
 GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json
-GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e --output release/release-preflight-summary.json
+GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e --output release/release-preflight-summary.json --checklist-output release/release-preflight-checklist.md
 npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json
-git add release/ci-runs.json release/release-preflight-summary.json release/real-device-evidence.json release/release-readiness-evidence.json
+git add release/ci-runs.json release/release-preflight-summary.json release/release-preflight-checklist.md release/real-device-evidence.json release/release-readiness-evidence.json
 git commit -m "Add release readiness evidence"
 git push
 npm run release:readiness -- --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e

@@ -16,6 +16,8 @@ export const defaultReleaseCiEvidencePath = 'release/ci-runs.json'
 export const defaultRealDeviceEvidencePath = 'release/real-device-evidence.json'
 export const defaultReleasePreflightSummaryPath =
   'release/release-preflight-summary.json'
+export const defaultReleasePreflightChecklistPath =
+  'release/release-preflight-checklist.md'
 export const defaultReleaseReadinessEvidencePath =
   'release/release-readiness-evidence.json'
 export const defaultReleaseHandoffReportPath = 'release/release-handoff.md'
@@ -293,6 +295,39 @@ export function releasePreflightCiCommands(commit, options = {}) {
       withGitHubToken: true,
     }),
   ]
+}
+
+export function releasePreflightSummaryCommand(commit, options = {}) {
+  const args = ['npm', 'run', 'release:preflight-summary', '--']
+
+  if (options.runUrl) {
+    args.push('--run-url', options.runUrl)
+  } else {
+    args.push(
+      '--ci-evidence',
+      options.ciEvidencePath ?? defaultReleaseCiEvidencePath,
+    )
+  }
+
+  args.push('--commit', releaseCommitLabel(commit))
+
+  if (options.releasePreflightRunCommit) {
+    args.push(
+      '--release-preflight-run-commit',
+      options.releasePreflightRunCommit,
+    )
+  }
+
+  args.push('--output', options.output ?? defaultReleasePreflightSummaryPath)
+
+  if (options.checklistOutput) {
+    args.push('--checklist-output', options.checklistOutput)
+  }
+
+  const command = formatHandoffCommand(args)
+  return options.withGitHubToken
+    ? `GH_TOKEN="$(gh auth token)" ${command}`
+    : command
 }
 
 export function releaseEvidenceCommand(commit, options = {}) {

@@ -9,6 +9,7 @@ import zlib from 'node:zlib'
 import {
   extractReleasePreflightRunUrl,
   extractReleasePreflightSummaryFromZip,
+  formatReleasePreflightSummaryChecklist,
   releasePreflightSummaryArtifactName,
   selectReleasePreflightSummaryArtifact,
 } from '../scripts/download-release-preflight-summary.mjs'
@@ -217,6 +218,51 @@ test('release preflight summary artifact extraction accepts flattened artifact p
     JSON.parse(extractReleasePreflightSummaryFromZip(zipBuffer)),
     summary,
   )
+})
+
+test('release preflight summary checklist renders gate status and evidence commands', () => {
+  const runUrl = 'https://github.com/portwatcher/vue-godot/actions/runs/3'
+  const summary = {
+    commit,
+    localOnly: false,
+    skipCheck: false,
+    skipGodot: false,
+    skipSeriousExamples: false,
+    warningCount: 0,
+    failureCount: 0,
+    warnings: [],
+    failures: [],
+  }
+
+  const checklist = formatReleasePreflightSummaryChecklist(summary, {
+    artifactId: 9,
+    artifactName: releasePreflightSummaryArtifactName,
+    checklistOutput: 'release/release-preflight-checklist.md',
+    ciEvidencePath: 'release/ci-runs.json',
+    commit,
+    runCommit: evidenceCommit,
+    runConclusion: 'success',
+    runUrl,
+    summaryOutput: 'release/release-preflight-summary.json',
+    workflowName: 'Release Preflight',
+  })
+
+  assert.match(checklist, /# Release Preflight Evidence Checklist/)
+  assert.match(checklist, /- Status: ready/)
+  assert.match(checklist, /\[x\] Non-local preflight: localOnly=false/)
+  assert.match(checklist, /\[x\] No release preflight warnings: warningCount=0/)
+  assert.match(checklist, new RegExp(`Release Preflight run URL: ${runUrl}`))
+  assert.match(
+    checklist,
+    /release:preflight-summary -- --ci-evidence release\/ci-runs\.json/,
+  )
+  assert.match(
+    checklist,
+    /--checklist-output release\/release-preflight-checklist\.md/,
+  )
+  assert.match(checklist, /release:evidence/)
+  assert.match(checklist, /--release-preflight-summary release\/release-preflight-summary\.json/)
+  assert.match(checklist, /release:readiness/)
 })
 
 test('release preflight summary run URL can be read from CI evidence', () => {

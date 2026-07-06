@@ -132,7 +132,12 @@ its detail, attaches
 `release:record-platform-evidence` command templates while gaps remain. It only emits
 `npm run release:platform-evidence -- --production-profile` when the worksheet
 is missing, then runs the strict platform worksheet audit before final evidence
-assembly. The final warning-removal action runs
+assembly. The platform, real-device, and readiness summary/checklist outputs are
+gitignored helper files for local handoff work; the committed evidence files stay
+limited to `release/platform-evidence.json`, `release/ci-runs.json`,
+`release/real-device-evidence.json`, `release/release-preflight-summary.json`,
+`release/release-preflight-checklist.md`, and
+`release/release-readiness-evidence.json`. The final warning-removal action runs
 `npm run check` after the finalizer, stages the finalizer files, commits them,
 pushes, and then runs the final strict readiness check. When an expected
 commit is known, the summary resolves evidence and
@@ -371,7 +376,8 @@ Then fetch the matching `release-preflight-summary` artifact:
 GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- \
   --ci-evidence release/ci-runs.json \
   --commit <release-candidate-sha> \
-  --output release/release-preflight-summary.json
+  --output release/release-preflight-summary.json \
+  --checklist-output release/release-preflight-checklist.md
 ```
 
 With `--ci-evidence`, `release:preflight-summary` validates the summary commit
@@ -380,6 +386,8 @@ against the tested release candidate and validates the workflow run against the
 manually for a preflight run attached to a follow-up evidence commit, also pass
 `--release-preflight-run-commit "$(git rev-parse HEAD)"`, or the full evidence
 commit SHA if you are not on it.
+The checklist output records the non-local, skip-flag, failure-count, and
+warning-count status alongside the follow-up evidence commands.
 
 To dispatch and wait for `Release Preflight` from the same helper, add the
 workflow input:
@@ -433,7 +441,7 @@ the summary artifact is also supplied.
 Commit the final evidence files before running strict readiness:
 
 ```bash
-git add release/ci-runs.json release/release-preflight-summary.json release/real-device-evidence.json release/release-readiness-evidence.json
+git add release/ci-runs.json release/release-preflight-summary.json release/release-preflight-checklist.md release/real-device-evidence.json release/release-readiness-evidence.json
 git commit -m "Add release readiness evidence"
 git push
 ```

@@ -174,12 +174,14 @@ skipped before writing the final evidence;
 `initialCiEvidence`, or top-level `nextActions`, and copied platform evidence is
 rejected. For final readiness evidence, fetch the
 `release-preflight-summary` artifact from the Release Preflight workflow with
-`GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --output release/release-preflight-summary.json`,
+`GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --output release/release-preflight-summary.json --checklist-output release/release-preflight-checklist.md`,
 then pass it to `release:evidence` with
 `--release-preflight-summary release/release-preflight-summary.json`. The
 helpers check that the summary commit matches and that the preflight had zero
 failures, zero warnings, did not use local-only mode, and did not skip release
-gates before recording those facts in final readiness evidence. When the
+gates before recording those facts in final readiness evidence. The checklist
+records the same gate status plus the follow-up `release:evidence` and
+`release:readiness` commands. When the
 preflight run URL is supplied manually from a follow-up evidence commit, pass
 `--release-preflight-run-commit "$(git rev-parse HEAD)"` from the evidence
 commit, or the full evidence commit SHA if you are not on it, so the run
@@ -264,13 +266,17 @@ its detail, attaches
 emits
 `npm run release:platform-evidence -- --production-profile` when the worksheet
 is missing. Before final evidence assembly it runs the strict platform worksheet
-audit, stages
+audit. The platform, real-device, and readiness summary/checklist outputs are
+gitignored helper files for local handoff work; the committed evidence files stay
+limited to the worksheet, CI evidence, assembled real-device evidence, preflight
+summary/checklist, and readiness evidence. Before final evidence assembly it stages
 `release/platform-evidence.json`,
 `release/ci-runs.json`, and `release/real-device-evidence.json`, commits them
 with `git commit -m "Add real-device release evidence"`, then pushes so the
 Release Preflight workflow can run from that evidence ref. The
 release-readiness evidence action stages `release/ci-runs.json`,
-`release/release-preflight-summary.json`, `release/real-device-evidence.json`,
+`release/release-preflight-summary.json`,
+`release/release-preflight-checklist.md`, `release/real-device-evidence.json`,
 and `release/release-readiness-evidence.json`, then commits them with
 `git commit -m "Add release readiness evidence"` and pushes the commit. The
 final warning-removal action runs `npm run check` after the finalizer, stages
@@ -345,7 +351,8 @@ Then download the matching summary artifact:
 GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- \
   --ci-evidence release/ci-runs.json \
   --commit <release-candidate-sha> \
-  --output release/release-preflight-summary.json
+  --output release/release-preflight-summary.json \
+  --checklist-output release/release-preflight-checklist.md
 ```
 
 When using `--ci-evidence`, the downloader validates the summary JSON against the
@@ -354,6 +361,8 @@ tested release commit and validates the workflow run against the
 `--run-url` manually for a preflight run attached to a follow-up evidence commit,
 also pass `--release-preflight-run-commit "$(git rev-parse HEAD)"`, or the full
 evidence commit SHA if you are not on it.
+The checklist output records the non-local, skip-flag, failure-count, and
+warning-count status alongside the follow-up evidence commands.
 
 To dispatch and wait for the preflight workflow from the command line, include
 the workflow and evidence input:

@@ -12,6 +12,7 @@ import {
   defaultReleasePreflightSummaryPath,
   defaultReleaseReadinessEvidencePath,
   defaultReleaseCiEvidencePath,
+  defaultReleasePreflightChecklistPath,
   evidenceDispatchRefPlaceholder,
   initialReleaseCiCommands,
   productionProfilePlatformEvidenceCommand,
@@ -24,6 +25,7 @@ import {
   releaseDispatchRefPlaceholder,
   releasePreflightRunCommitPlaceholder,
   releasePreflightCiCommands,
+  releasePreflightSummaryCommand,
   repoLocalEvidencePath,
 } from '../scripts/release-handoff-commands.mjs'
 
@@ -42,6 +44,10 @@ test('release handoff commands format release CI waits and dispatches', () => {
   assert.equal(evidenceDispatchRefPlaceholder, '<evidence-branch-or-tag>')
   assert.equal(defaultPlatformEvidencePath, 'release/platform-evidence.json')
   assert.equal(defaultReleaseCiEvidencePath, 'release/ci-runs.json')
+  assert.equal(
+    defaultReleasePreflightChecklistPath,
+    'release/release-preflight-checklist.md',
+  )
   assert.equal(
     productionProfilePlatformEvidenceCommand(null),
     'npm run release:platform-evidence -- --production-profile --commit <release-candidate-sha>',
@@ -213,6 +219,20 @@ test('release handoff commands include preflight evidence input only for preflig
       `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${commit} --include-release-preflight --release-preflight-run-commit ${evidenceCommit} --dispatch-missing --wait --ref ${evidenceDispatchRefPlaceholder} --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
     ],
   )
+  assert.equal(
+    releasePreflightSummaryCommand(commit, {
+      checklistOutput: defaultReleasePreflightChecklistPath,
+      withGitHubToken: true,
+    }),
+    `GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit ${commit} --output release/release-preflight-summary.json --checklist-output release/release-preflight-checklist.md`,
+  )
+  assert.equal(
+    releasePreflightSummaryCommand(commit, {
+      releasePreflightRunCommit: evidenceCommit,
+      runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/3',
+    }),
+    `npm run release:preflight-summary -- --run-url https://github.com/portwatcher/vue-godot/actions/runs/3 --commit ${commit} --release-preflight-run-commit ${evidenceCommit} --output release/release-preflight-summary.json`,
+  )
 
   assert.equal(
     releaseCiCommand(commit, {
@@ -263,6 +283,16 @@ test('release handoff commands quote custom refs and evidence paths', () => {
       releasePreflightSummaryPath: 'release/preflight summary.json',
     }),
     `npm run release:evidence -- --platform-evidence 'release/platform evidence'\\''s draft.json' --ci-evidence 'release/ci runs.json' --commit ${commit} --real-device-output 'release/real device evidence.json' --release-preflight-summary 'release/preflight summary.json' --readiness-output 'release/readiness evidence.json'`,
+  )
+
+  assert.equal(
+    releasePreflightSummaryCommand(commit, {
+      checklistOutput: 'release/preflight checklist.md',
+      ciEvidencePath: 'release/ci runs.json',
+      output: 'release/preflight summary.json',
+      withGitHubToken: true,
+    }),
+    `GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence 'release/ci runs.json' --commit ${commit} --output 'release/preflight summary.json' --checklist-output 'release/preflight checklist.md'`,
   )
 
   assert.equal(

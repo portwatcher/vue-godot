@@ -9,6 +9,32 @@ function readDoc(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), 'utf-8')
 }
 
+test('release helper outputs are ignored separately from committed evidence', () => {
+  const gitignore = readDoc('.gitignore')
+  const production = readDoc('docs/production.md')
+  const readme = readDoc('README.md')
+
+  for (const file of [
+    'release/platform-evidence-summary.json',
+    'release/platform-evidence-checklist.md',
+    'release/real-device-evidence-summary.json',
+    'release/release-readiness-summary.json',
+  ]) {
+    assert.match(gitignore, new RegExp(`^${file}$`, 'm'))
+  }
+
+  assert.doesNotMatch(
+    gitignore,
+    /^release\/release-preflight-summary\.json$/m,
+  )
+  assert.doesNotMatch(
+    gitignore,
+    /^release\/release-preflight-checklist\.md$/m,
+  )
+  assert.match(production, /gitignored helper files/)
+  assert.match(readme, /gitignored helper files/)
+})
+
 test('real device release checklist covers required Android and iOS gates', () => {
   const checklist = readDoc('docs/real-device-release.md')
 
@@ -508,6 +534,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /release:preflight-summary/)
   assert.match(production, /--release-preflight-summary/)
   assert.match(production, /release-preflight-summary/)
+  assert.match(production, /--checklist-output/)
+  assert.match(production, /release-preflight-checklist/)
   assert.match(
     production,
     /release:preflight-summary[\s\S]*--commit <release-candidate-sha>/,
@@ -754,6 +782,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /release:evidence/)
   assert.match(readme, /release:preflight-summary/)
   assert.match(readme, /release:preflight-summary[\s\S]*--commit <release-candidate-sha>/)
+  assert.match(readme, /--checklist-output/)
+  assert.match(readme, /release-preflight-checklist/)
   assert.match(readme, /when using `--run-url` manually/)
   assert.match(readme, /recorded Release Preflight run commit/)
   assert.match(readme, /real-device-evidence\.json/)
@@ -932,6 +962,8 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /warning-bearing/)
   assert.match(checklist, /release-preflight-summary/)
   assert.match(checklist, /release:preflight-summary/)
+  assert.match(checklist, /--checklist-output/)
+  assert.match(checklist, /release-preflight-checklist/)
   assert.match(
     checklist,
     /release:preflight-summary[\s\S]*--commit <release-candidate-sha>/,
