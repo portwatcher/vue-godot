@@ -372,7 +372,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /remaining must-pass checks/)
   assert.match(
     production,
-    /generated handoff commands\s+include skip and\s+pass-remaining confirmation placeholders/,
+    /generated handoff commands\s+include read-only list-checks commands, skip and\s+pass-remaining confirmation\s+placeholders/,
   )
   assert.match(production, /placeholder confirmation notes/)
   assert.match(production, /`passedChecks`[\s\S]*non-empty string array/)
@@ -745,7 +745,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /remaining must-pass checks/)
   assert.match(
     readme,
-    /generated handoff commands\s+include skip and\s+pass-remaining confirmation placeholders/,
+    /generated handoff commands\s+include read-only list-checks commands, skip and\s+pass-remaining confirmation\s+placeholders/,
   )
   assert.match(readme, /placeholder confirmation notes/)
   assert.match(readme, /`passedChecks`[\s\S]*non-empty string array/)
@@ -1020,7 +1020,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /remaining must-pass checks/)
   assert.match(
     checklist,
-    /generated handoff commands\s+include skip and\s+pass-remaining confirmation placeholders/,
+    /generated handoff commands\s+include read-only list-checks commands, skip and\s+pass-remaining confirmation\s+placeholders/,
   )
   assert.match(checklist, /placeholder confirmation notes/)
   assert.match(checklist, /`passedChecks`[\s\S]*non-empty\s+string array/)
