@@ -318,6 +318,13 @@ GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- \
   --output release/release-preflight-summary.json
 ```
 
+With `--ci-evidence`, `release:preflight-summary` validates the summary commit
+against the tested release candidate and validates the workflow run against the
+`Release Preflight` run commit recorded in CI evidence. If you pass `--run-url`
+manually for a preflight run attached to a follow-up evidence commit, also pass
+`--release-preflight-run-commit "$(git rev-parse HEAD)"`, or the full evidence
+commit SHA if you are not on it.
+
 To dispatch and wait for `Release Preflight` from the same helper, add the
 workflow input:
 

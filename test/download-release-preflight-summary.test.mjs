@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import test from 'node:test'
 import zlib from 'node:zlib'
 
@@ -11,6 +14,7 @@ import {
 } from '../scripts/download-release-preflight-summary.mjs'
 
 const commit = '0123456789abcdef0123456789abcdef01234567'
+const evidenceCommit = 'abcdef0123456789abcdef0123456789abcdef01'
 
 test('release preflight summary rejects non-SHA commit inputs', () => {
   const result = spawnSync(
@@ -30,6 +34,83 @@ test('release preflight summary rejects non-SHA commit inputs', () => {
     `${result.stdout}\n${result.stderr}`,
     /--commit must be a full 40-character git commit SHA/,
   )
+})
+
+test('release preflight summary rejects non-SHA preflight run commit inputs', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/download-release-preflight-summary.mjs',
+      '--run-url',
+      'https://github.com/portwatcher/vue-godot/actions/runs/1',
+      '--release-preflight-run-commit',
+      'evidence-branch',
+    ],
+    { cwd: process.cwd(), encoding: 'utf-8' },
+  )
+
+  assert.equal(result.status, 1)
+  assert.match(
+    `${result.stdout}\n${result.stderr}`,
+    /--release-preflight-run-commit must be a full 40-character git commit SHA/,
+  )
+})
+
+test('release preflight summary rejects conflicting preflight run commits', () => {
+  const tempDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'vue-godot-preflight-summary-'),
+  )
+  const ciEvidencePath = path.join(tempDir, 'ci-runs.json')
+
+  try {
+    fs.writeFileSync(
+      ciEvidencePath,
+      `${JSON.stringify({
+        evidence: {
+          commit,
+          workflows: {
+            Check: {
+              runUrl:
+                'https://github.com/portwatcher/vue-godot/actions/runs/1',
+            },
+            'Godot Smoke': {
+              runUrl:
+                'https://github.com/portwatcher/vue-godot/actions/runs/2',
+            },
+            'Release Preflight': {
+              runUrl:
+                'https://github.com/portwatcher/vue-godot/actions/runs/3',
+              runCommit: evidenceCommit,
+            },
+          },
+        },
+        errors: [],
+      })}\n`,
+    )
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/download-release-preflight-summary.mjs',
+        '--ci-evidence',
+        ciEvidencePath,
+        '--commit',
+        commit,
+        '--release-preflight-run-commit',
+        commit,
+      ],
+      { cwd: process.cwd(), encoding: 'utf-8' },
+    )
+
+    assert.equal(result.status, 1)
+    assert.match(
+      `${result.stdout}\n${result.stderr}`,
+      /--release-preflight-run-commit does not match --ci-evidence Release Preflight/,
+    )
+    assert.doesNotMatch(`${result.stdout}\n${result.stderr}`, /GitHub API/)
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
 })
 
 function zipEntry(name, contents) {
@@ -163,6 +244,39 @@ test('release preflight summary run URL can be read from CI evidence', () => {
     ),
     {
       runUrl,
+      runCommit: null,
+      errors: [],
+    },
+  )
+})
+
+test('release preflight summary run commit can be read from CI evidence', () => {
+  const runUrl = 'https://github.com/portwatcher/vue-godot/actions/runs/3'
+  assert.deepEqual(
+    extractReleasePreflightRunUrl(
+      {
+        evidence: {
+          commit,
+          workflows: {
+            Check: {
+              runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+            },
+            'Godot Smoke': {
+              runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+            },
+            'Release Preflight': {
+              runUrl,
+              runCommit: evidenceCommit,
+            },
+          },
+        },
+        errors: [],
+      },
+      commit,
+    ),
+    {
+      runUrl,
+      runCommit: evidenceCommit,
       errors: [],
     },
   )

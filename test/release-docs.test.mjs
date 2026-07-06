@@ -207,6 +207,9 @@ test('release preflight enforces real device evidence', () => {
     /downloadGitHubActionsArtifactZip/,
     /extractReleasePreflightSummaryFromZip/,
     /extractReleasePreflightRunUrl/,
+    /releasePreflightRunCommit/,
+    /--release-preflight-run-commit/,
+    /does not match --ci-evidence Release Preflight/,
   ]) {
     assert.match(preflightSummaryHelper, pattern)
   }
@@ -455,6 +458,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /release-preflight-summary/)
   assert.match(
     production,
+    /validates the summary JSON against the\s+tested release commit[\s\S]*workflow run against the\s+`Release Preflight` run commit/,
+  )
+  assert.match(production, /--release-preflight-run-commit/)
+  assert.match(
+    production,
     /dispatch those workflows first from a release-candidate ref[\s\S]*dispatch Release Preflight from the evidence ref/,
   )
   assert.match(production, /did not use local-only mode/)
@@ -569,6 +577,10 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(readme, /--real-device-evidence-path/)
   assert.match(readme, /--release-preflight-run-commit/)
+  assert.match(
+    readme,
+    /validates the summary JSON against the tested release commit[\s\S]*workflow run against the recorded Release Preflight run commit/,
+  )
   assert.match(readme, /--ref <release-candidate-branch-or-tag>/)
   assert.match(readme, /--ref <evidence-branch-or-tag>/)
   assert.match(readme, /expected_commit/)
@@ -644,6 +656,8 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(readme, /release:evidence/)
   assert.match(readme, /release:preflight-summary/)
+  assert.match(readme, /when using `--run-url` manually/)
+  assert.match(readme, /recorded Release Preflight run commit/)
   assert.match(readme, /real-device-evidence\.json/)
   assert.match(readme, /GitHub Actions metadata/)
   assert.match(checklist, /release:ci/)
@@ -794,6 +808,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /warning-bearing/)
   assert.match(checklist, /release-preflight-summary/)
   assert.match(checklist, /release:preflight-summary/)
+  assert.match(
+    checklist,
+    /validates the summary commit[\s\S]*workflow run against the\s+`Release Preflight` run commit/,
+  )
+  assert.match(checklist, /--release-preflight-run-commit/)
   assert.match(
     checklist,
     /dispatch those workflows first from a\s+release-candidate ref[\s\S]*dispatch Release Preflight from the evidence ref/,

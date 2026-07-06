@@ -35,6 +35,9 @@ Options:
                          --include-release-preflight.
   --run-url <url>        Release Preflight workflow run URL.
   --commit <sha>         Expected release commit. Default: current HEAD.
+  --release-preflight-run-commit <sha>
+                         Commit that has the Release Preflight workflow run.
+                         Defaults to --commit or CI evidence.
   --output <file>        Summary JSON output path.
                          Default: ${defaultReleasePreflightSummaryOutput}.
   --help                 Show this help.
@@ -51,6 +54,7 @@ function parseArgs(argv) {
     ciEvidencePath: null,
     runUrl: null,
     commit: null,
+    releasePreflightRunCommit: null,
     output: defaultReleasePreflightSummaryOutput,
   }
 
@@ -58,6 +62,7 @@ function parseArgs(argv) {
     ['--ci-evidence', 'ciEvidencePath'],
     ['--run-url', 'runUrl'],
     ['--commit', 'commit'],
+    ['--release-preflight-run-commit', 'releasePreflightRunCommit'],
     ['--output', 'output'],
   ]
 
@@ -96,6 +101,10 @@ function parseArgs(argv) {
   }
 
   options.commit = normalizeCommitSha(options.commit, '--commit')
+  options.releasePreflightRunCommit = normalizeCommitSha(
+    options.releasePreflightRunCommit,
+    '--release-preflight-run-commit',
+  )
   return options
 }
 
@@ -261,6 +270,7 @@ export function extractReleasePreflightRunUrl(ciResult, commit) {
 
   return {
     runUrl: ciEvidence.releasePreflightRunUrl,
+    runCommit: ciEvidence.releasePreflightRunCommit,
     errors: ciEvidence.errors,
   }
 }
@@ -272,7 +282,20 @@ function mergeRunUrl(explicitRunUrl, evidenceRunUrl) {
   return explicitRunUrl ?? evidenceRunUrl
 }
 
-function readCiEvidenceRunUrl(options, commit) {
+function mergeRunCommit(explicitRunCommit, evidenceRunCommit) {
+  if (
+    explicitRunCommit &&
+    evidenceRunCommit &&
+    explicitRunCommit !== evidenceRunCommit
+  ) {
+    throw new Error(
+      '--release-preflight-run-commit does not match --ci-evidence Release Preflight',
+    )
+  }
+  return explicitRunCommit ?? evidenceRunCommit
+}
+
+function readCiEvidenceRun(options, commit) {
   if (!options.ciEvidencePath) {
     return null
   }
@@ -283,7 +306,7 @@ function readCiEvidenceRunUrl(options, commit) {
   if (ciEvidence.errors.length > 0) {
     throw new Error(ciEvidence.errors.join('\n'))
   }
-  return ciEvidence.runUrl
+  return ciEvidence
 }
 
 async function main() {
@@ -293,17 +316,20 @@ async function main() {
   }
 
   const commit = options.commit ?? currentCommit()
-  const evidenceRunUrl = readCiEvidenceRunUrl(options, commit)
-  const runUrl = mergeRunUrl(options.runUrl, evidenceRunUrl)
+  const evidenceRun = readCiEvidenceRun(options, commit)
+  const runUrl = mergeRunUrl(options.runUrl, evidenceRun?.runUrl)
   if (!runUrl) {
     throw new Error('Missing Release Preflight run URL')
   }
+  const releasePreflightRunCommit =
+    mergeRunCommit(options.releasePreflightRunCommit, evidenceRun?.runCommit) ??
+    commit
 
   const releasePreflightRun = await fetchGitHubActionsRun(runUrl)
   const runErrors = validateGitHubActionsRunMetadata(releasePreflightRun, {
     label: 'Release Preflight',
     workflowName: 'Release Preflight',
-    commit,
+    commit: releasePreflightRunCommit,
     conclusion: 'success',
   })
   if (runErrors.length > 0) {
