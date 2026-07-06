@@ -1,9 +1,9 @@
 {
   "initialCiEvidence": {
-    "commit": "3472fc09fcc55f4bbcc66ed35c8fc4d4b1779a34",
+    "commit": "30aaf0c25861f38cb02637e45101e714602a51e4",
     "errorCount": 0,
     "errors": [],
-    "expectedCommit": "3472fc09fcc55f4bbcc66ed35c8fc4d4b1779a34",
+    "expectedCommit": "30aaf0c25861f38cb02637e45101e714602a51e4",
     "path": "release/ci-runs.json",
     "ready": true,
     "validForCommit": null
@@ -14,8 +14,8 @@
       "title": "Fill Android and iOS device evidence fields",
       "detail": "Record artifact IDs, export presets, device models, OS versions, orientation, locale, selected APIs, and real test outcomes before assembling final evidence. Android: 5 metadata field(s) missing, 14/14 required check(s) unresolved, 14 must-pass check(s) missing; iOS: 5 metadata field(s) missing, 15/15 required check(s) unresolved, 14 must-pass check(s) missing Android missing metadata: artifact, deviceModel, osVersion, orientation, locale Android must-pass remaining: cold-launch, no-godotjs-load-diagnostics, storage-restart, network-if-selected, clipboard-if-selected, permission-prompts-if-selected, adapter-states-if-selected, hardware-adapters-if-selected, haptics-if-selected, audio-input-if-selected, sensors-if-selected, safe-area-keyboard, android-back-handling, background-foreground iOS missing metadata: artifact, deviceModel, osVersion, orientation, locale iOS must-pass remaining: cold-launch, no-godotjs-load-diagnostics, plist-entitlements, storage-restart, network-if-selected, clipboard-if-selected, permission-prompts-if-selected, adapter-states-if-selected, hardware-adapters-if-selected, haptics-if-selected, audio-input-if-selected, sensors-if-selected, safe-area-keyboard-rotation-text-input, background-foreground iOS skippable remaining: deep-links-share-notifications-if-selected",
       "commands": [
-        "npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit 3472fc09fcc55f4bbcc66ed35c8fc4d4b1779a34",
-        "npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit 3472fc09fcc55f4bbcc66ed35c8fc4d4b1779a34"
+        "npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit 30aaf0c25861f38cb02637e45101e714602a51e4",
+        "npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit 30aaf0c25861f38cb02637e45101e714602a51e4"
       ]
     },
     {
@@ -23,7 +23,7 @@
       "title": "Move worksheet checks into passedChecks or skippedChecks",
       "detail": "Every requiredChecks entry must move to passedChecks or skippedChecks with a release-specific reason; passOnlyChecks and selectedApiRequiredChecks must move to passedChecks. Android: 5 metadata field(s) missing, 14/14 required check(s) unresolved, 14 must-pass check(s) missing; iOS: 5 metadata field(s) missing, 15/15 required check(s) unresolved, 14 must-pass check(s) missing Android missing metadata: artifact, deviceModel, osVersion, orientation, locale Android must-pass remaining: cold-launch, no-godotjs-load-diagnostics, storage-restart, network-if-selected, clipboard-if-selected, permission-prompts-if-selected, adapter-states-if-selected, hardware-adapters-if-selected, haptics-if-selected, audio-input-if-selected, sensors-if-selected, safe-area-keyboard, android-back-handling, background-foreground iOS missing metadata: artifact, deviceModel, osVersion, orientation, locale iOS must-pass remaining: cold-launch, no-godotjs-load-diagnostics, plist-entitlements, storage-restart, network-if-selected, clipboard-if-selected, permission-prompts-if-selected, adapter-states-if-selected, hardware-adapters-if-selected, haptics-if-selected, audio-input-if-selected, sensors-if-selected, safe-area-keyboard-rotation-text-input, background-foreground iOS skippable remaining: deep-links-share-notifications-if-selected",
       "commands": [
-        "npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit 3472fc09fcc55f4bbcc66ed35c8fc4d4b1779a34"
+        "npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit 30aaf0c25861f38cb02637e45101e714602a51e4"
       ]
     },
     {
@@ -32,9 +32,9 @@
       "detail": "Committed CI evidence already validates Check and Godot Smoke for the tested release candidate; generate release/real-device-evidence.json from this worksheet after device testing.",
       "commands": [
         "npm run check",
-        "npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit 3472fc09fcc55f4bbcc66ed35c8fc4d4b1779a34",
-        "npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 3472fc09fcc55f4bbcc66ed35c8fc4d4b1779a34 --real-device-output release/real-device-evidence.json",
-        "npm run check:real-device-evidence -- --expected-commit 3472fc09fcc55f4bbcc66ed35c8fc4d4b1779a34"
+        "npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit 30aaf0c25861f38cb02637e45101e714602a51e4",
+        "npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 30aaf0c25861f38cb02637e45101e714602a51e4 --real-device-output release/real-device-evidence.json",
+        "npm run check:real-device-evidence -- --expected-commit 30aaf0c25861f38cb02637e45101e714602a51e4"
       ]
     }
   ],
