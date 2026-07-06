@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import https from 'node:https'
+import os from 'node:os'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -29,8 +30,12 @@ Options:
   --asset-kind <kind>   Asset kind: editor or templates. Default: editor.
   --cache-dir <path>    Cache directory. Default: ${defaultGodotJsCacheDir}
   --github-env <path>   Append setup variables for GitHub Actions.
+  --install-templates   Copy a template asset into Godot's export_templates dir.
+  --template-version <v> Export template version dir to install into.
+  --templates-root <p>  Export templates root. Defaults to the Godot user dir.
+  --godot-bin <path>    Godot executable used to infer --template-version.
   --print-bin           Print only the resolved Godot executable path.
-  --print-dir           Print only the extracted template asset directory.
+  --print-dir           Print only the template asset or install directory.
   --dry-run             Print the resolved setup plan as JSON without I/O.
   --platform <name>     Override platform for planning/tests.
   --arch <name>         Override architecture for planning/tests.
@@ -54,6 +59,42 @@ export function defaultGodotJsAssetForPlatform(
 
 export function godotJsReleaseAssetUrl(release, asset) {
   return `https://github.com/ialex32x/GodotJS-Build/releases/download/${release}/${asset}.zip`
+}
+
+export function defaultGodotExportTemplatesRoot(
+  platform = process.platform,
+  env = process.env,
+  homeDir = os.homedir(),
+) {
+  if (platform === 'darwin') {
+    return path.join(
+      homeDir,
+      'Library',
+      'Application Support',
+      'Godot',
+      'export_templates',
+    )
+  }
+
+  if (platform === 'linux') {
+    return path.join(
+      env.XDG_DATA_HOME ?? path.join(homeDir, '.local', 'share'),
+      'godot',
+      'export_templates',
+    )
+  }
+
+  if (platform === 'win32') {
+    return path.join(
+      env.APPDATA ?? path.join(homeDir, 'AppData', 'Roaming'),
+      'Godot',
+      'export_templates',
+    )
+  }
+
+  throw new Error(
+    `No Godot export template directory is configured for ${platform}; pass --templates-root explicitly.`,
+  )
 }
 
 function normalizeGodotJsAssetKind(assetKind = 'editor') {
@@ -97,6 +138,9 @@ function parseArgs(argv) {
     ['--asset-kind', 'assetKind'],
     ['--cache-dir', 'cacheDir'],
     ['--github-env', 'githubEnv'],
+    ['--template-version', 'templateVersion'],
+    ['--templates-root', 'templatesRoot'],
+    ['--godot-bin', 'godotBin'],
     ['--platform', 'platform'],
     ['--arch', 'arch'],
   ]
@@ -106,6 +150,10 @@ function parseArgs(argv) {
     assetKind: undefined,
     cacheDir: undefined,
     githubEnv: undefined,
+    templateVersion: undefined,
+    templatesRoot: undefined,
+    godotBin: undefined,
+    installTemplates: false,
     printBin: false,
     printDir: false,
     dryRun: false,
@@ -133,6 +181,11 @@ function parseArgs(argv) {
 
     if (arg === '--dry-run') {
       options.dryRun = true
+      continue
+    }
+
+    if (arg === '--install-templates') {
+      options.installTemplates = true
       continue
     }
 
@@ -176,6 +229,10 @@ function parseArgs(argv) {
     throw new Error('--print-dir requires --asset-kind templates')
   }
 
+  if (options.installTemplates && options.assetKind !== 'templates') {
+    throw new Error('--install-templates requires --asset-kind templates')
+  }
+
   return options
 }
 
@@ -212,6 +269,22 @@ function hasExtractedAssetEntries(plan) {
   )
 }
 
+function listTemplateAssetEntries(plan) {
+  let entries
+  try {
+    entries = fs.readdirSync(plan.assetDir, { withFileTypes: true })
+  } catch {
+    return []
+  }
+
+  const archiveName = path.basename(plan.archivePath)
+  const tempArchiveName = `${archiveName}.tmp`
+  return entries
+    .map((entry) => entry.name)
+    .filter((entry) => entry !== archiveName && entry !== tempArchiveName)
+    .sort()
+}
+
 async function ensureAssetArchiveExtracted(plan, log, isReady) {
   if (!fs.existsSync(plan.archivePath) && !isReady()) {
     const tempArchivePath = `${plan.archivePath}.tmp`
@@ -226,6 +299,63 @@ async function ensureAssetArchiveExtracted(plan, log, isReady) {
       extractArchive(plan.archivePath, plan.assetDir),
       'GodotJS archive extraction',
     )
+  }
+}
+
+function probeGodotVersion(godotBin) {
+  const version = spawnSync(godotBin, ['--version'], {
+    encoding: 'utf-8',
+  })
+  assertCommandSucceeded(version, 'GodotJS version probe')
+  return version.stdout.trim().split(/\s+/)[0]
+}
+
+function resolveTemplateVersion(options) {
+  const templateVersion = options.templateVersion?.trim()
+  if (templateVersion) {
+    return templateVersion
+  }
+
+  const godotBinInput = options.godotBin ?? process.env.GODOT_BIN
+  if (!godotBinInput) {
+    throw new Error(
+      '--install-templates requires --template-version, --godot-bin, or GODOT_BIN to infer the Godot export template version.',
+    )
+  }
+
+  return probeGodotVersion(resolveGodotBin(godotBinInput))
+}
+
+export function installGodotJsTemplateAsset(plan, options = {}) {
+  const templateVersion = resolveTemplateVersion(options)
+  const templatesRoot = path.resolve(
+    repoRoot,
+    options.templatesRoot ??
+      defaultGodotExportTemplatesRoot(process.platform, process.env),
+  )
+  const templatesDir = path.join(templatesRoot, templateVersion)
+  const entries = listTemplateAssetEntries(plan)
+
+  if (entries.length === 0) {
+    throw new Error(
+      `Unable to locate extracted template files in ${path.relative(repoRoot, plan.assetDir)}`,
+    )
+  }
+
+  fs.mkdirSync(templatesDir, { recursive: true })
+  for (const entry of entries) {
+    fs.cpSync(path.join(plan.assetDir, entry), path.join(templatesDir, entry), {
+      force: true,
+      recursive: true,
+    })
+  }
+  fs.writeFileSync(path.join(templatesDir, 'version.txt'), `${templateVersion}\n`)
+
+  return {
+    entries,
+    templatesDir,
+    templatesRoot,
+    templateVersion,
   }
 }
 
@@ -344,15 +474,30 @@ export async function setupGodotJs(options = {}) {
       hasExtractedAssetEntries(plan),
     )
 
+    let installedTemplates = null
+    if (options.installTemplates) {
+      installedTemplates = installGodotJsTemplateAsset(plan, options)
+      log(
+        `[setup-godotjs] installed ${installedTemplates.entries.length} template file(s) to ${installedTemplates.templatesDir}`,
+      )
+    }
+
     if (options.githubEnv) {
       appendGitHubEnv(options.githubEnv, {
         GODOTJS_RELEASE: plan.release,
         GODOTJS_ASSET: plan.asset,
         GODOTJS_ASSET_DIR: plan.assetDir,
+        ...(installedTemplates
+          ? {
+              GODOTJS_EXPORT_TEMPLATES_DIR: installedTemplates.templatesDir,
+              GODOTJS_EXPORT_TEMPLATE_VERSION:
+                installedTemplates.templateVersion,
+            }
+          : {}),
       })
     }
 
-    return plan.assetDir
+    return installedTemplates?.templatesDir ?? plan.assetDir
   }
 
   await ensureAssetArchiveExtracted(plan, log, () =>
@@ -398,6 +543,8 @@ async function main() {
     console.log(resolvedPath)
   } else if (options.printDir) {
     console.log(resolvedPath)
+  } else if (options.assetKind === 'templates' && options.installTemplates) {
+    console.log(`[setup-godotjs] GODOTJS_EXPORT_TEMPLATES_DIR=${resolvedPath}`)
   } else if (options.assetKind === 'templates') {
     console.log(`[setup-godotjs] GODOTJS_ASSET_DIR=${resolvedPath}`)
   } else {

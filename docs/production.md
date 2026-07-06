@@ -525,9 +525,12 @@ cache, and probe the editor executable. Run
 the current platform and print a `GODOT_BIN` path that can be reused for Godot
 smokes or `release:preflight`. Template-only assets use the explicit
 `templates` mode because they do not contain a runnable editor; for example,
-`npm run setup:godotjs -- --asset prebuilt_android_v8 --asset-kind templates --print-dir`
-downloads the pinned Android export-template bundle and prints its extracted
-asset directory.
+`npm run setup:godotjs -- --asset prebuilt_android_v8 --asset-kind templates --install-templates --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir`
+downloads the pinned Android export-template bundle, copies it into the Godot
+export-template directory for the pinned editor version, and prints that
+installed directory. Use `--template-version <version>` instead of
+`--godot-bin` when the release process already knows the exact Godot export
+template version string.
 
 When updating GodotJS:
 

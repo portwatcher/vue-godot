@@ -1,11 +1,14 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
 
 import {
+  defaultGodotExportTemplatesRoot,
   defaultGodotJsAssetForPlatform,
   godotJsReleaseAssetUrl,
+  installGodotJsTemplateAsset,
   pinnedGodotJsRelease,
   resolveGodotJsSetupPlan,
 } from '../scripts/setup-godotjs.mjs'
@@ -101,6 +104,88 @@ test('GodotJS setup plan rejects unknown asset kinds', () => {
   )
 })
 
+test('Godot export template root resolves platform user directories', () => {
+  assert.equal(
+    defaultGodotExportTemplatesRoot('darwin', {}, '/Users/dev'),
+    path.join(
+      '/Users/dev',
+      'Library',
+      'Application Support',
+      'Godot',
+      'export_templates',
+    ),
+  )
+  assert.equal(
+    defaultGodotExportTemplatesRoot('linux', {}, '/home/dev'),
+    path.join('/home/dev', '.local', 'share', 'godot', 'export_templates'),
+  )
+  assert.equal(
+    defaultGodotExportTemplatesRoot(
+      'linux',
+      { XDG_DATA_HOME: '/data/share' },
+      '/home/dev',
+    ),
+    path.join('/data/share', 'godot', 'export_templates'),
+  )
+  assert.equal(
+    defaultGodotExportTemplatesRoot(
+      'win32',
+      { APPDATA: 'C:\\Users\\dev\\AppData\\Roaming' },
+      'C:\\Users\\dev',
+    ),
+    path.join(
+      'C:\\Users\\dev\\AppData\\Roaming',
+      'Godot',
+      'export_templates',
+    ),
+  )
+})
+
+test('GodotJS template asset installation copies templates and version marker', () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-templates-'))
+  try {
+    const assetDir = path.join(tempRoot, 'asset')
+    const templatesRoot = path.join(tempRoot, 'templates')
+    const archivePath = path.join(assetDir, 'prebuilt_android_v8.zip')
+    fs.mkdirSync(assetDir)
+    fs.writeFileSync(path.join(assetDir, 'android_debug.apk'), 'debug')
+    fs.writeFileSync(path.join(assetDir, 'android_release.apk'), 'release')
+    fs.writeFileSync(path.join(assetDir, 'godot-lib.template_debug.aar'), 'aar')
+    fs.writeFileSync(archivePath, 'archive')
+
+    const install = installGodotJsTemplateAsset(
+      { assetDir, archivePath },
+      {
+        templateVersion: '4.4.1.rc.custom_build.daa4b058e',
+        templatesRoot,
+      },
+    )
+
+    assert.deepEqual(install.entries, [
+      'android_debug.apk',
+      'android_release.apk',
+      'godot-lib.template_debug.aar',
+    ])
+    assert.equal(
+      install.templatesDir,
+      path.join(templatesRoot, '4.4.1.rc.custom_build.daa4b058e'),
+    )
+    assert.equal(
+      fs.readFileSync(path.join(install.templatesDir, 'version.txt'), 'utf-8'),
+      '4.4.1.rc.custom_build.daa4b058e\n',
+    )
+    assert.equal(
+      fs.readFileSync(
+        path.join(install.templatesDir, 'android_release.apk'),
+        'utf-8',
+      ),
+      'release',
+    )
+  } finally {
+    fs.rmSync(tempRoot, { force: true, recursive: true })
+  }
+})
+
 test('GodotJS setup is exposed through npm and the shared CI action', () => {
   const packageJson = JSON.parse(readText('package.json'))
   const action = readText('.github/actions/setup-godotjs/action.yml')
@@ -119,6 +204,8 @@ test('GodotJS setup is exposed through npm and the shared CI action', () => {
   assert.match(action, /--github-env "\$GITHUB_ENV"/)
   assert.match(script, /--asset-kind <kind>/)
   assert.match(script, /GODOTJS_ASSET_DIR/)
+  assert.match(script, /--install-templates/)
+  assert.match(script, /GODOTJS_EXPORT_TEMPLATES_DIR/)
   assert.match(readme, /--asset prebuilt_android_v8 --asset-kind templates/)
   assert.match(productionDocs, /--asset prebuilt_android_v8 --asset-kind templates/)
   assert.doesNotMatch(action, /curl --fail/)
