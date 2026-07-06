@@ -7,6 +7,7 @@ import test from 'node:test'
 
 import {
   auditPlatformEvidence,
+  collectPlatformEvidenceNextActions,
   collectPlatformEvidenceSuggestedPassCheck,
   formatPlatformEvidenceChecklist,
   formatPlatformEvidenceProgress,
@@ -342,6 +343,47 @@ test('platform evidence audit rejects local-only evidence URLs', () => {
     /android\.evidenceUrl must be a non-local http\(s\) URL/,
   )
   assert.match(errors, /ios\.evidenceUrl must be a non-local http\(s\) URL/)
+})
+
+test('platform evidence audit next actions reuse valid metadata', () => {
+  const template = buildPlatformEvidenceTemplate({
+    androidArtifact: 'android-release.aab',
+    androidDevice: 'Pixel 8 Pro',
+    androidEvidenceUrl: 'https://device-lab.example.com/android/runs/77',
+    androidOs: 'Android 15',
+    locale: 'en-US',
+    orientation: 'portrait',
+    productionProfile: true,
+  })
+  const summary = auditPlatformEvidence(template)
+  const actions = collectPlatformEvidenceNextActions(summary, {
+    expectedCommit: commit,
+    platformEvidencePath: 'release/platform-evidence.json',
+    summaryOutput: 'release/platform-evidence-summary.json',
+  })
+  const completeAction = actions.find(
+    (action) => action.id === 'complete-platform-evidence',
+  )
+
+  assert.ok(completeAction)
+  const androidPassCommand = completeAction.commands.find(
+    (command) =>
+      command.includes('--platform android') &&
+      command.includes('--pass cold-launch'),
+  )
+  const iosPassCommand = completeAction.commands.find(
+    (command) =>
+      command.includes('--platform ios') &&
+      command.includes('--pass cold-launch'),
+  )
+
+  assert.equal(
+    androidPassCommand,
+    `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact android-release.aab --evidence-url https://device-lab.example.com/android/runs/77 --export-preset 'Android Release' --device 'Pixel 8 Pro' --os 'Android 15' --orientation portrait --locale en-US --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit ${commit}`,
+  )
+  assert.ok(iosPassCommand)
+  assert.match(iosPassCommand, /<ios-archive-testflight-or-hosted-build-id>/)
+  assert.match(iosPassCommand, /--orientation portrait --locale en-US/)
 })
 
 test('platform evidence audit accepts non-production profile when allowed', () => {
@@ -982,17 +1024,17 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
     )
     assert.ok(
       summary.nextActions[0].commands.includes(
-        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --evidence-url <android-non-local-device-evidence-url> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output ${summaryPath} --expected-commit ${commit}`,
+        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --evidence-url <android-non-local-device-evidence-url> --export-preset 'Android Release' --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output ${summaryPath} --expected-commit ${commit}`,
       ),
     )
     assert.ok(
       summary.nextActions[0].commands.includes(
-        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --evidence-url <android-non-local-device-evidence-url> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass storage-restart --summary-output ${summaryPath} --expected-commit ${commit}`,
+        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --evidence-url <android-non-local-device-evidence-url> --export-preset 'Android Release' --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass storage-restart --summary-output ${summaryPath} --expected-commit ${commit}`,
       ),
     )
     assert.ok(
       summary.nextActions[0].commands.includes(
-        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --evidence-url <android-non-local-device-evidence-url> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output ${summaryPath} --expected-commit ${commit}`,
+        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --evidence-url <android-non-local-device-evidence-url> --export-preset 'Android Release' --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output ${summaryPath} --expected-commit ${commit}`,
       ),
     )
     assert.ok(
@@ -1002,17 +1044,17 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
     )
     assert.ok(
       summary.nextActions[0].commands.includes(
-        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output ${summaryPath} --expected-commit ${commit}`,
+        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output ${summaryPath} --expected-commit ${commit}`,
       ),
     )
     assert.ok(
       summary.nextActions[0].commands.includes(
-        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass plist-entitlements --summary-output ${summaryPath} --expected-commit ${commit}`,
+        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass plist-entitlements --summary-output ${summaryPath} --expected-commit ${commit}`,
       ),
     )
     assert.ok(
       summary.nextActions[0].commands.includes(
-        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output ${summaryPath} --expected-commit ${commit}`,
+        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output ${summaryPath} --expected-commit ${commit}`,
       ),
     )
     assert.ok(

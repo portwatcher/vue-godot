@@ -194,6 +194,30 @@ function checkRequiredHttpUrl(record, key, label, errors) {
   return null
 }
 
+function collectValidMetadata(record) {
+  const metadata = {}
+
+  for (const key of realDevicePlatformMetadataFields) {
+    const value = record[key]
+    if (
+      typeof value !== 'string' ||
+      value.trim().length === 0 ||
+      isReleaseEvidencePlaceholder(value)
+    ) {
+      continue
+    }
+
+    const trimmed = value.trim()
+    if (key === 'evidenceUrl' && !isReleaseEvidenceUrl(trimmed)) {
+      continue
+    }
+
+    metadata[key] = trimmed
+  }
+
+  return metadata
+}
+
 function missingExpectedValues(actual, expected) {
   const actualSet = new Set(actual)
   return expected.filter((value) => !actualSet.has(value))
@@ -314,6 +338,7 @@ function auditPlatformWorksheet(record, platform, options = {}) {
     errorCount: 0,
     errors,
     invalidSkippedChecks: [],
+    metadata: {},
     missingFields: [],
     missingProductionProfileApis: [],
     mustPassChecks: [],
@@ -341,6 +366,8 @@ function auditPlatformWorksheet(record, platform, options = {}) {
     status.errorCount = errors.length
     return status
   }
+
+  status.metadata = collectValidMetadata(record)
 
   for (const key of realDevicePlatformMetadataFields) {
     const missingField =
@@ -720,6 +747,19 @@ export function collectPlatformEvidencePassChecks(summary, platform) {
   )
 }
 
+export function collectPlatformEvidenceCommandMetadata(summary, platform) {
+  const metadata = summary?.platforms?.[platform]?.metadata
+  if (!isRecord(metadata)) {
+    return {}
+  }
+
+  return Object.fromEntries(
+    realDevicePlatformMetadataFields
+      .filter((field) => typeof metadata[field] === 'string')
+      .map((field) => [field, metadata[field]]),
+  )
+}
+
 export function collectPlatformEvidenceSuggestedPassCheck(summary, platform) {
   const status = summary?.platforms?.[platform]
   if (!isRecord(status)) {
@@ -918,6 +958,7 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
       ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
       commands: [
         ...recordPlatformEvidenceCommands('android', commit, {
+          ...collectPlatformEvidenceCommandMetadata(summary, 'android'),
           checks: collectPlatformEvidencePassChecks(summary, 'android'),
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(
@@ -927,6 +968,7 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
           summaryOutput: options.summaryOutput ?? 'release/platform-evidence-summary.json',
         }),
         ...recordPlatformEvidenceCommands('ios', commit, {
+          ...collectPlatformEvidenceCommandMetadata(summary, 'ios'),
           checks: collectPlatformEvidencePassChecks(summary, 'ios'),
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(

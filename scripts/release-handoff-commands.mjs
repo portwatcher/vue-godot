@@ -202,6 +202,12 @@ function platformEvidencePlaceholders(platform) {
   }
 }
 
+function commandValue(value, fallback) {
+  return typeof value === 'string' && value.trim().length > 0
+    ? value.trim()
+    : fallback
+}
+
 function recordPlatformEvidenceBaseArgs(platform, options = {}) {
   const placeholders = platformEvidencePlaceholders(platform)
 
@@ -215,19 +221,19 @@ function recordPlatformEvidenceBaseArgs(platform, options = {}) {
     '--platform-evidence',
     options.platformEvidencePath ?? defaultPlatformEvidencePath,
     '--artifact',
-    placeholders.artifact,
+    commandValue(options.artifact, placeholders.artifact),
     '--evidence-url',
-    placeholders.evidenceUrl,
+    commandValue(options.evidenceUrl, placeholders.evidenceUrl),
     '--export-preset',
-    placeholders.exportPreset,
+    commandValue(options.exportPreset, placeholders.exportPreset),
     '--device',
-    placeholders.device,
+    commandValue(options.deviceModel, placeholders.device),
     '--os',
-    placeholders.os,
+    commandValue(options.osVersion, placeholders.os),
     '--orientation',
-    '<tested-orientations>',
+    commandValue(options.orientation, '<tested-orientations>'),
     '--locale',
-    '<tested-locale>',
+    commandValue(options.locale, '<tested-locale>'),
   ]
 }
 

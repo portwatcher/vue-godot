@@ -3,6 +3,7 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import {
   auditPlatformEvidence,
+  collectPlatformEvidenceCommandMetadata,
   collectPlatformEvidencePassChecks,
   collectPlatformEvidenceRemainingCheckDetails,
   collectPlatformEvidenceSkippableMissingChecks,
@@ -265,6 +266,7 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
       ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
       commands: [
         ...recordPlatformEvidenceCommands('android', commit, {
+          ...collectPlatformEvidenceCommandMetadata(platformAudit, 'android'),
           checks: collectPlatformEvidencePassChecks(platformAudit, 'android'),
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(
@@ -274,6 +276,7 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
           summaryOutput: platformEvidenceSummaryPath,
         }),
         ...recordPlatformEvidenceCommands('ios', commit, {
+          ...collectPlatformEvidenceCommandMetadata(platformAudit, 'ios'),
           checks: collectPlatformEvidencePassChecks(platformAudit, 'ios'),
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(

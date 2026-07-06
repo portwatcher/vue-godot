@@ -25,6 +25,7 @@ import {
   releaseEvidenceCommand,
 } from './release-handoff-commands.mjs'
 import {
+  collectPlatformEvidenceCommandMetadata,
   collectPlatformEvidencePassChecks,
   collectPlatformEvidenceRemainingCheckDetails,
   collectPlatformEvidenceSkippableMissingChecks,
@@ -288,6 +289,10 @@ function collectNextActions(summary) {
             'android',
             expectedCommit,
             customPlatformEvidenceCommandOptions(summary, {
+              ...collectPlatformEvidenceCommandMetadata(
+                platformEvidence,
+                'android',
+              ),
               checks: collectPlatformEvidencePassChecks(
                 platformEvidence,
                 'android',
@@ -303,6 +308,10 @@ function collectNextActions(summary) {
             'ios',
             expectedCommit,
             customPlatformEvidenceCommandOptions(summary, {
+              ...collectPlatformEvidenceCommandMetadata(
+                platformEvidence,
+                'ios',
+              ),
               checks: collectPlatformEvidencePassChecks(
                 platformEvidence,
                 'ios',

@@ -295,6 +295,38 @@ test('platform evidence template next actions honor custom output paths', () => 
   )
 })
 
+test('platform evidence template reuses prefilled metadata in record commands', () => {
+  const template = buildPlatformEvidenceTemplate({
+    androidArtifact: 'vue-godot-android-release.aab',
+    androidDevice: 'Pixel 8',
+    androidEvidenceUrl: 'https://device-lab.example.com/android/runs/42',
+    androidOs: 'Android 15',
+    commit,
+    locale: 'en-US',
+    orientation: 'portrait and landscape',
+    selectedApis: ['fetch'],
+  })
+  const completeAction = template.nextActions.find(
+    (action) => action.id === 'complete-platform-evidence',
+  )
+
+  assert.ok(completeAction)
+  const androidPassCommand = completeAction.commands.find(
+    (command) =>
+      command.includes('--platform android') &&
+      command.includes('--pass cold-launch'),
+  )
+  assert.ok(androidPassCommand)
+  assert.equal(
+    androidPassCommand,
+    `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact vue-godot-android-release.aab --evidence-url https://device-lab.example.com/android/runs/42 --export-preset 'Android Release' --device 'Pixel 8' --os 'Android 15' --orientation 'portrait and landscape' --locale en-US --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit ${commit}`,
+  )
+  assert.doesNotMatch(
+    androidPassCommand,
+    /<android-non-local-device-evidence-url>/,
+  )
+})
+
 test('platform evidence template reuses ready initial CI evidence', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-ci-'))
   const ciEvidencePath = path.join(tempDir, 'ci-runs.json')
