@@ -500,6 +500,29 @@ function formatProgressPart(platform, status) {
   ].join(', ')
 }
 
+function formatList(values) {
+  return values.length > 0 ? values.join(', ') : 'none'
+}
+
+function formatRemainingParts(platform, status) {
+  if (!status || status.ready) {
+    return []
+  }
+
+  const label = formatPlatformLabel(platform)
+  return [
+    status.missingFields.length > 0
+      ? `${label} missing metadata: ${formatList(status.missingFields)}`
+      : null,
+    status.mustPassMissingChecks.length > 0
+      ? `${label} must-pass remaining: ${formatList(status.mustPassMissingChecks)}`
+      : null,
+    status.skippableMissingChecks.length > 0
+      ? `${label} skippable remaining: ${formatList(status.skippableMissingChecks)}`
+      : null,
+  ].filter(Boolean)
+}
+
 export function formatPlatformEvidenceProgress(summary) {
   if (!isRecord(summary?.platforms)) {
     return 'Platform worksheet status is unavailable.'
@@ -508,6 +531,16 @@ export function formatPlatformEvidenceProgress(summary) {
   return ['android', 'ios']
     .map((platform) => formatProgressPart(platform, summary.platforms[platform]))
     .join('; ')
+}
+
+export function formatPlatformEvidenceRemaining(summary) {
+  if (!isRecord(summary?.platforms)) {
+    return []
+  }
+
+  return ['android', 'ios'].flatMap((platform) =>
+    formatRemainingParts(platform, summary.platforms[platform]),
+  )
 }
 
 export function auditPlatformEvidence(evidence, options = {}) {
@@ -609,6 +642,7 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
 
   if (!summary.ready) {
     const progress = formatPlatformEvidenceProgress(summary)
+    const remaining = formatPlatformEvidenceRemaining(summary).join(' ')
     actions.push({
       id: 'complete-platform-evidence',
       title: 'Finish Android and iOS worksheet evidence',
@@ -616,6 +650,7 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
         'Fill missing metadata and record every required check as passedChecks or skippedChecks.',
         'passOnlyChecks and selectedApiRequiredChecks must be in passedChecks.',
         progress,
+        remaining,
       ].join(' '),
       commands: [
         recordPlatformEvidenceCommand('android', commit, {
@@ -670,6 +705,9 @@ function printBlockers(summary) {
   }
 
   console.log('[platform-evidence] blockers')
+  for (const line of formatPlatformEvidenceRemaining(summary)) {
+    console.log(`[platform-evidence] ${line}`)
+  }
   for (const error of summary.errors) {
     console.log(`- ${error}`)
   }

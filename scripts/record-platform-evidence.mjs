@@ -5,6 +5,7 @@ import {
   auditPlatformEvidence,
   collectPlatformEvidenceNextActions,
   formatPlatformEvidenceProgress,
+  formatPlatformEvidenceRemaining,
 } from './check-platform-evidence.mjs'
 import { isRecord } from './release-evidence-utils.mjs'
 import { defaultPlatformEvidencePath } from './release-handoff-commands.mjs'
@@ -413,6 +414,9 @@ function main() {
     console.log(`[platform-evidence] dry run for ${summary.path}`)
   }
   console.log(`[platform-evidence] ${formatPlatformEvidenceProgress(summary)}`)
+  for (const line of formatPlatformEvidenceRemaining(summary)) {
+    console.log(`[platform-evidence] ${line}`)
+  }
   writeSummary(options.summaryOutput, summary)
 }
 

@@ -65,8 +65,9 @@ used before final evidence exists.
 Add `--summary-output release/release-readiness-summary.json` to either form to
 capture the current blockers, TODO counts, unchecked TODO item details, final TODO proof status,
 readiness check and evidence status, local Git state, platform worksheet audit
-status with compact per-platform progress counts and gaps, separate Android/iOS
-real-device evidence status with metadata, platform, and read errors,
+status with compact per-platform progress counts plus exact remaining
+must-pass/skippable check names, separate Android/iOS real-device evidence
+status with metadata, platform, and read errors,
 release-readiness evidence status, CI workflow wiring status,
 release tooling/workflow blocker lists, public warning markers, package
 description warning status, and `nextActions` command hints for the local
@@ -101,9 +102,9 @@ commit is current `HEAD`. That later action includes the `--dispatch-missing`,
 the workflow-dispatch-only preflight workflow. The real-device evidence action
 reuses an existing platform worksheet and writes
 `release/platform-evidence-summary.json` when it still has gaps. Its detail
-includes Android/iOS metadata-field and required-check counts, and includes
-Android/iOS `release:record-platform-evidence` command templates while gaps
-remain. It only emits
+includes Android/iOS metadata-field counts, required-check counts, and exact
+remaining must-pass/skippable check names, and includes Android/iOS
+`release:record-platform-evidence` command templates while gaps remain. It only emits
 `npm run release:platform-evidence -- --production-profile` when the worksheet
 is missing, then runs the strict platform worksheet audit before final evidence
 assembly. The final warning-removal action runs
@@ -172,8 +173,8 @@ npm run check:platform-evidence -- \
 ```
 
 The summary reports Android and iOS metadata gaps, remaining required checks,
-pass-only and selected-API checks that still must be in `passedChecks`, worksheet
-drift from the maintained check lists, and follow-up `nextActions`. Those
+exact must-pass/skippable check names, pass-only and selected-API checks that
+still must be in `passedChecks`, worksheet drift from the maintained check lists, and follow-up `nextActions`. Those
 actions include Android and iOS `release:record-platform-evidence` command
 templates before the strict worksheet audit. Before assembling final evidence,
 run the same command without `--allow-open`; it must pass.
@@ -185,6 +186,7 @@ without hand-editing JSON:
 npm run release:record-platform-evidence -- \
   --platform android \
   --artifact <apk-aab-or-hosted-build-id> \
+  --export-preset <android-export-preset> \
   --device <device-model> \
   --os <os-version> \
   --orientation "portrait and landscape" \
@@ -194,9 +196,10 @@ npm run release:record-platform-evidence -- \
   --summary-output release/platform-evidence-summary.json
 ```
 
-Use `--platform ios` for the iOS pass. The recorder rejects unknown check names
-and refuses to put pass-only or selected-API-required checks in `skippedChecks`;
-those checks must be recorded with `--pass` after they actually pass.
+Use `--platform ios` with `--export-preset <ios-export-preset>` for the iOS
+pass. The recorder rejects unknown check names and refuses to put pass-only or
+selected-API-required checks in `skippedChecks`; those checks must be recorded
+with `--pass` after they actually pass.
 Only use `--skip check=reason` for conditional checks that are genuinely outside
 the selected release profile, such as
 `--skip deep-links-share-notifications-if-selected="not selected for this release profile"`
@@ -265,8 +268,9 @@ The helper strips worksheet fields before writing final evidence. If
 strict release gates reject it.
 Use `npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json`
 to write validation status, errors, initial CI evidence status, platform
-worksheet status with compact per-platform progress counts, and `nextActions`
-command hints for fixing or creating evidence. Pass `--ci-evidence <file>` or
+worksheet status with compact per-platform progress counts plus exact remaining
+must-pass/skippable check names, and `nextActions` command hints for fixing or
+creating evidence. Pass `--ci-evidence <file>` or
 `--platform-evidence <file>` when those inputs use non-default handoff paths;
 missing-evidence assembly and invalid-evidence regeneration hints begin with
 `npm run check`, run the platform worksheet audit before final evidence

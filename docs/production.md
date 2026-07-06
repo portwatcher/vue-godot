@@ -36,8 +36,9 @@ the handoff run.
 evidence JSON when it exists. Add
 `--summary-output release/real-device-evidence-summary.json` to write
 validation status, errors, initial CI evidence status, platform worksheet
-status with compact per-platform progress counts, and `nextActions` command
-hints for fixing or creating evidence. Pass `--ci-evidence <file>` or
+status with compact per-platform progress counts plus exact remaining
+must-pass/skippable check names, and `nextActions` command hints for fixing or
+creating evidence. Pass `--ci-evidence <file>` or
 `--platform-evidence <file>` when a handoff is using non-default evidence or
 worksheet paths so generated commands continue to target the same files;
 missing-evidence assembly and invalid-evidence regeneration hints begin with
@@ -81,7 +82,8 @@ before writing evidence.
 `npm run release:platform-evidence -- --production-profile` creates a starter
 Android/iOS platform evidence file with the exact required device check names
 for the maintained production-profile selected API set; it still must be filled
-with real artifact, device, OS, API, pass, and skip data after testing. Pass
+with real artifact, export preset, device, OS, API, pass, and skip data after
+testing. Pass
 `--commit <release-candidate-sha>` with the full 40-character tested commit SHA
 when it is known so generated `nextActions` commands use that commit for CI
 collection, worksheet audit, evidence assembly, and validation.
@@ -175,9 +177,10 @@ structured readiness check and evidence status, local Git state, and
 `nextActions` command hints for the remaining evidence/finalizer work, including
 the local `npm run check`, initial CI evidence collection, push/dispatch
 commands, platform worksheet audit status with compact per-platform progress
-counts and gaps, separate Android/iOS real-device evidence status with
-metadata, platform, and read errors, release-readiness evidence status, and CI
-workflow wiring status, as JSON for release handoff. The initial CI, real-device, and
+counts plus exact remaining must-pass/skippable check names, separate
+Android/iOS real-device evidence status with metadata, platform, and read
+errors, release-readiness evidence status, and CI workflow wiring status, as
+JSON for release handoff. The initial CI, real-device, and
 Release Preflight evidence actions begin with `npm run check` before collecting
 CI or assembling evidence.
 The initial CI action captures Check and Godot Smoke, while Release Preflight is
@@ -204,9 +207,10 @@ That later action includes the `--dispatch-missing`,
 the workflow-dispatch-only preflight workflow. The real-device evidence action
 reuses an existing platform worksheet and writes
 `release/platform-evidence-summary.json` when it still has gaps. Its detail
-includes Android/iOS metadata-field and required-check counts, and includes
-Android/iOS `release:record-platform-evidence` command templates while gaps
-remain. It only emits
+includes Android/iOS metadata-field counts, required-check counts, and exact
+remaining must-pass/skippable check names, and includes Android/iOS
+`release:record-platform-evidence` command templates while gaps remain. It only
+emits
 `npm run release:platform-evidence -- --production-profile` when the worksheet
 is missing. Before final evidence assembly it runs the strict platform worksheet
 audit, stages

@@ -8,6 +8,7 @@ import test from 'node:test'
 import {
   auditPlatformEvidence,
   formatPlatformEvidenceProgress,
+  formatPlatformEvidenceRemaining,
 } from '../scripts/check-platform-evidence.mjs'
 import { buildPlatformEvidenceTemplate } from '../scripts/create-platform-evidence.mjs'
 import {
@@ -77,6 +78,21 @@ test('platform evidence audit reports incomplete worksheet gaps', () => {
   assert.match(
     formatPlatformEvidenceProgress(summary),
     /Android: 5 metadata field\(s\) missing, 14\/14 required check\(s\) unresolved, 14 must-pass check\(s\) missing/,
+  )
+  assert.ok(
+    formatPlatformEvidenceRemaining(summary).includes(
+      'Android missing metadata: artifact, deviceModel, osVersion, orientation, locale',
+    ),
+  )
+  assert.ok(
+    formatPlatformEvidenceRemaining(summary).some((line) =>
+      line.includes('Android must-pass remaining: cold-launch'),
+    ),
+  )
+  assert.ok(
+    formatPlatformEvidenceRemaining(summary).some((line) =>
+      line.includes('iOS must-pass remaining: cold-launch'),
+    ),
   )
 })
 
@@ -236,6 +252,8 @@ test('record-platform-evidence CLI records one platform result batch', () => {
     assert.equal(summary.expectedCommit, commit)
     assert.equal(summary.progress.android.completedCheckCount, 3)
     assert.equal(summary.nextActions[0].id, 'complete-platform-evidence')
+    assert.match(result.stdout, /iOS missing metadata: artifact/)
+    assert.match(result.stdout, /Android must-pass remaining: storage-restart/)
     assert.ok(
       summary.nextActions[0].commands.includes(
         `npm run release:record-platform-evidence -- --platform android --platform-evidence ${shellQuote(evidencePath)} --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output ${shellQuote(summaryPath)} --expected-commit ${commit}`,
@@ -381,6 +399,14 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
     assert.equal(summary.nextActions[0].id, 'complete-platform-evidence')
     assert.match(summary.nextActions[0].detail, /Android: 5 metadata/)
     assert.match(summary.nextActions[0].detail, /iOS: 5 metadata/)
+    assert.match(
+      summary.nextActions[0].detail,
+      /Android must-pass remaining: cold-launch/,
+    )
+    assert.match(
+      result.stdout,
+      /iOS missing metadata: artifact, deviceModel, osVersion, orientation, locale/,
+    )
     assert.ok(
       summary.nextActions[0].commands.includes(
         `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output ${summaryPath} --expected-commit ${commit}`,
