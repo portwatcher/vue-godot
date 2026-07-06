@@ -1,16 +1,16 @@
 {
   "ready": true,
-  "commit": "906cbbeb4862908c2c5211ff0a8d7f5b6a12ba3b",
+  "commit": "4a6fc5639114800e1640b4689e759641ee3af19f",
   "commitFound": true,
   "releasePreflightRunCommit": null,
   "localGit": {
     "currentBranch": "develop",
-    "currentHead": "906cbbeb4862908c2c5211ff0a8d7f5b6a12ba3b",
+    "currentHead": "4a6fc5639114800e1640b4689e759641ee3af19f",
     "commitIsHead": true,
     "upstreamRef": "origin/develop",
-    "upstreamCommit": "906cbbeb4862908c2c5211ff0a8d7f5b6a12ba3b",
+    "upstreamCommit": "4a6fc5639114800e1640b4689e759641ee3af19f",
     "upstreamMatchesCommit": true,
-    "dirtyWorktree": false
+    "dirtyWorktree": true
   },
   "requiredWorkflowNames": [
     "Check",
@@ -27,29 +27,40 @@
     "godotSmokeWorkflow": true
   },
   "evidence": {
-    "commit": "906cbbeb4862908c2c5211ff0a8d7f5b6a12ba3b",
+    "commit": "4a6fc5639114800e1640b4689e759641ee3af19f",
     "workflows": {
       "Check": {
         "workflowName": "Check",
-        "runUrl": "https://github.com/portwatcher/vue-godot/actions/runs/28766837655",
-        "runId": 28766837655,
-        "runNumber": 69,
+        "runUrl": "https://github.com/portwatcher/vue-godot/actions/runs/28767224379",
+        "runId": 28767224379,
+        "runNumber": 71,
         "runAttempt": 1,
-        "runCommit": "906cbbeb4862908c2c5211ff0a8d7f5b6a12ba3b",
+        "runCommit": "4a6fc5639114800e1640b4689e759641ee3af19f",
         "runConclusion": "success"
       },
       "Godot Smoke": {
         "workflowName": "Godot Smoke",
-        "runUrl": "https://github.com/portwatcher/vue-godot/actions/runs/28766850679",
-        "runId": 28766850679,
-        "runNumber": 35,
+        "runUrl": "https://github.com/portwatcher/vue-godot/actions/runs/28767237219",
+        "runId": 28767237219,
+        "runNumber": 36,
         "runAttempt": 1,
-        "runCommit": "906cbbeb4862908c2c5211ff0a8d7f5b6a12ba3b",
+        "runCommit": "4a6fc5639114800e1640b4689e759641ee3af19f",
         "runConclusion": "success"
       }
     }
   },
   "errors": [],
-  "hints": [],
-  "nextActions": []
+  "hints": [
+    "Working tree has local changes; final release readiness still requires a clean worktree."
+  ],
+  "nextActions": [
+    {
+      "id": "clean-worktree",
+      "title": "Commit or remove local changes before final release evidence",
+      "detail": "The CI run evidence can be collected with local changes present, but strict final readiness requires a clean worktree.",
+      "commands": [
+        "git status --short"
+      ]
+    }
+  ]
 }
