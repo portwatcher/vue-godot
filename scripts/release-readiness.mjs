@@ -32,6 +32,7 @@ import { finalizationFiles } from './release-finalization-files.mjs'
 import {
   checkPlatformEvidenceCommand,
   checkRealDeviceEvidenceCommand,
+  commitEvidenceCommands,
   currentHeadCommitCommand,
   defaultPlatformEvidencePath,
   defaultReleaseCiEvidencePath,
@@ -1080,19 +1081,6 @@ export function ciEvidenceCommands(commit, localGit, options = {}) {
       output: options.ciEvidencePath ?? defaultReleaseCiEvidencePath,
     }),
   ]
-}
-
-function commitEvidenceCommands(files, message, options = {}) {
-  const commands = [
-    `git add ${files.map((file) => shellQuote(file)).join(' ')}`,
-    `git commit -m "${message}"`,
-  ]
-
-  if (options.push) {
-    commands.push('git push')
-  }
-
-  return commands
 }
 
 function collectReadinessNextActions(

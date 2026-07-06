@@ -3,25 +3,39 @@
 // ---------------------------------------------------------------------------
 
 /**
+ * Simplified abort event.
+ */
+export interface GodotAbortEvent {
+  type: 'abort'
+  target: GodotAbortSignal
+}
+
+/**
  * Simplified AbortSignal.
  */
 export class GodotAbortSignal {
   aborted = false
-  reason: any = undefined
+  reason: unknown = undefined
 
-  private _listeners: Array<(ev: any) => void> = []
+  private _listeners: Array<(ev: GodotAbortEvent) => void> = []
 
-  addEventListener(_type: 'abort', listener: (ev: any) => void): void {
+  addEventListener(
+    _type: 'abort',
+    listener: (ev: GodotAbortEvent) => void,
+  ): void {
     this._listeners.push(listener)
   }
 
-  removeEventListener(_type: 'abort', listener: (ev: any) => void): void {
+  removeEventListener(
+    _type: 'abort',
+    listener: (ev: GodotAbortEvent) => void,
+  ): void {
     const idx = this._listeners.indexOf(listener)
     if (idx !== -1) this._listeners.splice(idx, 1)
   }
 
   /** @internal */
-  _abort(reason?: any): void {
+  _abort(reason?: unknown): void {
     if (this.aborted) return
     this.aborted = true
     this.reason = reason ?? new Error('The operation was aborted.')
@@ -47,7 +61,7 @@ export class GodotAbortSignal {
 export class GodotAbortController {
   readonly signal = new GodotAbortSignal()
 
-  abort(reason?: any): void {
+  abort(reason?: unknown): void {
     this.signal._abort(reason)
   }
 }

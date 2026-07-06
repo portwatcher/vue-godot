@@ -262,3 +262,16 @@ export function checkRealDeviceEvidenceCommand(commit, options = {}) {
 
   return formatHandoffCommand(args)
 }
+
+export function commitEvidenceCommands(files, message, options = {}) {
+  const commands = [
+    `git add ${files.map((file) => shellQuote(file)).join(' ')}`,
+    `git commit -m "${message}"`,
+  ]
+
+  if (options.push) {
+    commands.push('git push')
+  }
+
+  return commands
+}

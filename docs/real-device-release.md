@@ -276,7 +276,8 @@ creating evidence. Pass `--ci-evidence <file>` or
 missing-evidence assembly and invalid-evidence regeneration hints begin with
 `npm run check`, run the platform worksheet audit before final evidence
 assembly or regeneration, then run any still-needed release CI wait/dispatch or
-evidence commands.
+evidence commands, stage the platform/CI/real-device evidence files, commit them
+with `git commit -m "Add real-device release evidence"`, and push.
 The helper validates the normalized platform evidence before fetching GitHub run
 metadata, so missing device details, unknown selected APIs, or selected-API
 checks left in `skippedChecks` fail before network calls.

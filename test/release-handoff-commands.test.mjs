@@ -4,6 +4,7 @@ import test from 'node:test'
 import {
   checkPlatformEvidenceCommand,
   checkRealDeviceEvidenceCommand,
+  commitEvidenceCommands,
   currentHeadCommitCommand,
   defaultPlatformEvidencePath,
   defaultRealDeviceEvidencePath,
@@ -119,6 +120,32 @@ test('release handoff commands format real-device evidence assembly', () => {
     }),
     `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${commit} --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json`,
   )
+  assert.deepEqual(
+    commitEvidenceCommands(
+      [
+        'release/platform-evidence.json',
+        'release/ci-runs.json',
+        'release/real-device-evidence.json',
+      ],
+      'Add real-device release evidence',
+      { push: true },
+    ),
+    [
+      'git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json',
+      'git commit -m "Add real-device release evidence"',
+      'git push',
+    ],
+  )
+  assert.deepEqual(
+    commitEvidenceCommands(
+      ["release/platform evidence's draft.json", 'release/ci runs.json'],
+      'Refresh release evidence',
+    ),
+    [
+      "git add 'release/platform evidence'\\''s draft.json' 'release/ci runs.json'",
+      'git commit -m "Refresh release evidence"',
+    ],
+  )
 })
 
 test('release handoff commands include preflight evidence input only for preflight', () => {
@@ -204,5 +231,19 @@ test('release handoff commands quote custom refs and evidence paths', () => {
       realDeviceEvidencePath: 'release/real device evidence.json',
     }),
     `npm run check:real-device-evidence -- --path 'release/real device evidence.json' --platform-evidence 'release/platform evidence'\\''s draft.json' --ci-evidence 'release/ci runs.json' --expected-commit ${commit}`,
+  )
+  assert.deepEqual(
+    commitEvidenceCommands(
+      [
+        "release/platform evidence's draft.json",
+        'release/ci runs.json',
+        'release/real device evidence.json',
+      ],
+      'Add real-device release evidence',
+    ),
+    [
+      "git add 'release/platform evidence'\\''s draft.json' 'release/ci runs.json' 'release/real device evidence.json'",
+      'git commit -m "Add real-device release evidence"',
+    ],
   )
 })

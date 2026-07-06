@@ -9,6 +9,7 @@ import {
 import {
   checkPlatformEvidenceCommand,
   checkRealDeviceEvidenceCommand,
+  commitEvidenceCommands,
   defaultPlatformEvidencePath,
   defaultReleaseCiEvidencePath,
   initialReleaseCiCommands,
@@ -179,6 +180,18 @@ function customCiEvidenceCommandOptions(summary) {
     : {}
 }
 
+function realDeviceEvidenceCommitCommands(summary) {
+  return commitEvidenceCommands(
+    [
+      summary.platformEvidencePath,
+      summary.initialCiEvidencePath,
+      summary.evidencePath,
+    ],
+    'Add real-device release evidence',
+    { push: true },
+  )
+}
+
 function collectNextActions(summary) {
   if (summary.ready) {
     return []
@@ -266,6 +279,7 @@ function collectNextActions(summary) {
           ),
           releaseEvidenceCommand(expectedCommit, pathOptions),
           checkRealDeviceEvidenceCommand(expectedCommit, pathOptions),
+          ...realDeviceEvidenceCommitCommands(summary),
         ],
       },
     ]
@@ -285,6 +299,7 @@ function collectNextActions(summary) {
         ),
         releaseEvidenceCommand(expectedCommit, pathOptions),
         checkRealDeviceEvidenceCommand(expectedCommit, pathOptions),
+        ...realDeviceEvidenceCommitCommands(summary),
       ],
     },
   ]

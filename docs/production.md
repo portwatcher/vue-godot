@@ -44,8 +44,9 @@ worksheet paths so generated commands continue to target the same files;
 missing-evidence assembly and invalid-evidence regeneration hints begin with
 `npm run check`, run the platform worksheet audit before final evidence
 assembly or regeneration, then run any still-needed release CI wait/dispatch or
-evidence commands and resolve command placeholders to `--expected-commit` when
-it is supplied.
+evidence commands, stage the platform/CI/real-device evidence files, commit them
+with `git commit -m "Add real-device release evidence"`, push, and resolve
+command placeholders to `--expected-commit` when it is supplied.
 `release:preflight` verifies package metadata,
 generated package specs, dry-run package contents including every
 `package.json` export target, registry state, publish environment assumptions,

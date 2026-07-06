@@ -64,6 +64,22 @@ function validEvidence() {
   }
 }
 
+function realDeviceEvidenceCommitCommands(
+  platformEvidencePath,
+  ciEvidencePath,
+  evidencePath,
+) {
+  return [
+    `git add ${[
+      platformEvidencePath,
+      ciEvidencePath,
+      evidencePath,
+    ].map((file) => shellQuote(file)).join(' ')}`,
+    'git commit -m "Add real-device release evidence"',
+    'git push',
+  ]
+}
+
 test('real device evidence accepts a complete Android and iOS sign-off', () => {
   const evidence = validEvidence()
 
@@ -555,7 +571,12 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
           ) &&
           action.commands.includes(
             `npm run check:real-device-evidence -- --path ${commandEvidencePath} --expected-commit <release-candidate-sha>`,
-          ),
+          ) &&
+          realDeviceEvidenceCommitCommands(
+            'release/platform-evidence.json',
+            'release/ci-runs.json',
+            commandEvidencePath,
+          ).every((command) => action.commands.includes(command)),
       ),
     )
   } finally {
@@ -631,6 +652,21 @@ test('check-real-device-evidence next actions honor expected commits', () => {
         `npm run check:real-device-evidence -- --path ${commandEvidencePath} --expected-commit ${expectedCommit}`,
       ),
     )
+    assert.ok(
+      realDeviceEvidenceCommitCommands(
+        'release/platform-evidence.json',
+        'release/ci-runs.json',
+        commandEvidencePath,
+      ).every((command) => assembleAction.commands.includes(command)),
+    )
+    assert.ok(
+      assembleAction.commands.indexOf(
+        `npm run check:real-device-evidence -- --path ${commandEvidencePath} --expected-commit ${expectedCommit}`,
+      ) <
+        assembleAction.commands.indexOf(
+          'git commit -m "Add real-device release evidence"',
+        ),
+    )
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }
@@ -704,6 +740,13 @@ test('check-real-device-evidence next actions honor missing custom evidence path
         `npm run check:real-device-evidence -- --path ${shellQuote(commandEvidencePath)} --platform-evidence ${shellQuote(commandPlatformEvidencePath)} --ci-evidence ${shellQuote(ciEvidencePath)} --expected-commit ${expectedCommit}`,
       ),
     )
+    assert.ok(
+      realDeviceEvidenceCommitCommands(
+        commandPlatformEvidencePath,
+        ciEvidencePath,
+        commandEvidencePath,
+      ).every((command) => assembleAction.commands.includes(command)),
+    )
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }
@@ -766,6 +809,13 @@ test('check-real-device-evidence reuses committed initial CI evidence', () => {
       assembleAction.commands.includes(
         `npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit ${ciEvidence.commit} --real-device-output ${commandEvidencePath}`,
       ),
+    )
+    assert.ok(
+      realDeviceEvidenceCommitCommands(
+        'release/platform-evidence.json',
+        'release/ci-runs.json',
+        commandEvidencePath,
+      ).every((command) => assembleAction.commands.includes(command)),
     )
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
@@ -859,6 +909,13 @@ test('check-real-device-evidence next actions honor custom completed input paths
         `npm run check:real-device-evidence -- --path ${shellQuote(realDeviceCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --ci-evidence ${shellQuote(ciEvidencePath)} --expected-commit ${ciEvidence.commit}`,
       ),
     )
+    assert.ok(
+      realDeviceEvidenceCommitCommands(
+        platformCommandPath,
+        ciEvidencePath,
+        realDeviceCommandPath,
+      ).every((command) => assembleAction.commands.includes(command)),
+    )
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }
@@ -920,7 +977,12 @@ test('check-real-device-evidence writes validation errors before failing', () =>
           ) &&
           action.commands.some((command) =>
             command.includes(`--real-device-output ${commandEvidencePath}`),
-          ),
+          ) &&
+          realDeviceEvidenceCommitCommands(
+            'release/platform-evidence.json',
+            'release/ci-runs.json',
+            commandEvidencePath,
+          ).every((command) => action.commands.includes(command)),
       ),
     )
   } finally {
