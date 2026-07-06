@@ -108,10 +108,12 @@ remaining must-pass checks in one batch. Skippable checks still need an explicit
 `--pass` or `--skip check=reason`; generated handoff commands include skip
 placeholders for currently skippable gaps. Replace every placeholder before
 recording evidence; the recorder, worksheet audit, and final evidence validator
-reject placeholder metadata and placeholder skip reasons. The helper rejects
-unknown check names and refuses to skip pass-only or selected-API-required
-checks. When `--summary-output` is supplied, the recorder writes the updated
-audit and follow-up `nextActions` using the same evidence and summary paths.
+reject placeholder metadata and placeholder skip reasons. The Markdown handoff
+flags command blocks that still contain `<...>` placeholders so device testers
+know to edit them before running. The helper rejects unknown check names and
+refuses to skip pass-only or selected-API-required checks. When
+`--summary-output` is supplied, the recorder writes the updated audit and
+follow-up `nextActions` using the same evidence and summary paths.
 The production profile currently expands to `fetch`, `WebSocket`,
 `checkNetworkReachability`, `navigator.onLine`, `localStorage`,
 `sessionStorage`, `navigator.permissions.query`, `navigator.clipboard`,

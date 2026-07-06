@@ -224,11 +224,12 @@ use `--pass-remaining` to move the remaining must-pass checks into
 `--skip check=reason`; generated handoff commands include skip placeholders for
 currently skippable gaps. Replace every placeholder before recording evidence;
 the recorder, worksheet audit, and final evidence validator reject placeholder
-metadata and placeholder skip reasons. It preserves existing and newly supplied
-`--skip check=reason` entries, and the same pass-only and selected-API validation
-still applies. When `--summary-output` is supplied, the recorder writes the
-updated audit and follow-up `nextActions` using the same evidence and summary
-paths.
+metadata and placeholder skip reasons. The Markdown handoff flags command blocks
+that still contain `<...>` placeholders so device testers know to edit them
+before running. It preserves existing and newly supplied `--skip check=reason`
+entries, and the same pass-only and selected-API validation still applies. When
+`--summary-output` is supplied, the recorder writes the updated audit and
+follow-up `nextActions` using the same evidence and summary paths.
 
 After the release candidate is pushed, verify the required CI runs and capture
 their URLs and structured workflow readiness status:

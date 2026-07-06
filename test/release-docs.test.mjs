@@ -338,6 +338,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /reject placeholder metadata and placeholder skip reasons/)
   assert.match(
     production,
+    /Markdown handoff\s+flags command blocks that still contain `<\.\.\.>` placeholders/,
+  )
+  assert.match(
+    production,
     /refuses to\s+skip\s+pass-only or selected-API-required\s+checks/,
   )
   assert.match(
@@ -665,6 +669,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /remaining must-pass checks/)
   assert.match(readme, /generated handoff commands include\s+skip placeholders/)
   assert.match(readme, /reject placeholder metadata and placeholder skip reasons/)
+  assert.match(
+    readme,
+    /Markdown handoff\s+flags command blocks that still contain `<\.\.\.>` placeholders/,
+  )
   assert.match(readme, /rejects unknown checks/)
   assert.match(readme, /refuses to\s+skip pass-only or selected-API-required checks/)
   assert.match(
@@ -897,6 +905,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /remaining must-pass checks/)
   assert.match(checklist, /generated handoff commands include skip placeholders/)
   assert.match(checklist, /reject placeholder\s+metadata and placeholder skip reasons/)
+  assert.match(
+    checklist,
+    /Markdown handoff flags command blocks\s+that still contain `<\.\.\.>` placeholders/,
+  )
   assert.match(checklist, /preserves existing and newly supplied/)
   assert.match(
     checklist,
