@@ -2,8 +2,8 @@
 
 - Release candidate commit: `1087588e2a2f7989a51df1c428eb647d17ea3ab8`
 - Handoff format: 7
-- Handoff state: dbabe365d828571f
-- Overall readiness: open (10 blocker(s))
+- Handoff state: e0ac43aa85de60bd
+- Overall readiness: open (11 blocker(s))
 - Real-device evidence: waiting
 - Android evidence: waiting
 - iOS evidence: waiting
@@ -20,6 +20,9 @@
 - TODO.md:392 Release preflight passes without warnings in the release environment.
 - TODO.md:394 All public READMEs match the final support claims.
 - TODO.md:395 The root README warning is removed in the same commit that marks this checklist complete.
+- working tree must be clean for final release readiness
+  M release/release-handoff.md
+  M scripts/device-prereq-diagnostics.mjs
 - real-device evidence missing at release/real-device-evidence.json
   Create release/real-device-evidence.json after completing docs/real-device-release.md, then run npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 1087588e2a2f7989a51df1c428eb647d17ea3ab8.
   Real device evidence file not found: release/real-device-evidence.json
@@ -49,6 +52,17 @@
   - Command: `xcrun xctrace list devices`
   - Blockers:
     - No physical iPhone, iPad, or iPod devices reported by xcrun xctrace; connect a trusted device or use hosted real Apple-device evidence.
+- Android export templates: ready (0 blocker(s), 0 warning(s), 0 missing file(s))
+  - Pinned release: `GodotJS_1.0.0-2`
+  - Asset: `prebuilt_android_v8`
+  - Templates root: `~/Library/Application Support/Godot/export_templates`
+  - Templates dir: `~/Library/Application Support/Godot/export_templates/4.4.1.rc.custom_build.daa4b058e`
+  - Template version: `4.4.1.rc.custom_build.daa4b058e`
+  - Install command: `npm run setup:godotjs -- --asset prebuilt_android_v8 --asset-kind templates --install-templates --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir`
+- iOS export templates: unavailable (0 blocker(s), 0 warning(s), 0 missing file(s))
+  - Pinned release: `GodotJS_1.0.0-2`
+  - Notes:
+    - Pinned GodotJS release GodotJS_1.0.0-2 does not publish an iOS export-template asset; use hosted real Apple-device evidence with a matching build pipeline or provide custom iOS templates.
 - Hosted provider env configured: none
 - Hosted provider env partial: none
 - Read errors: none
@@ -158,6 +172,14 @@
 - TODO.md:395 The root README warning is removed in the same commit that marks this checklist complete. (rootReadmeWarningReady waiting)
 
 ## Next Actions
+
+### Commit or remove local changes before strict readiness
+
+Strict release readiness requires the release evidence and final wording changes to be checked from a clean worktree.
+
+```bash
+git status --short
+```
 
 ### Complete Android and iOS real-device export evidence
 

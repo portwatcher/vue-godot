@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { isRecord } from './release-evidence-utils.mjs'
 import { defaultDeviceTestPrereqsSummaryPath } from './release-handoff-commands.mjs'
@@ -289,6 +290,29 @@ function formatReadErrorLines(values) {
   return ['- Read errors:', ...lines.map((line) => `  - ${line}`)]
 }
 
+function portableLocalPath(value) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return null
+  }
+
+  const trimmed = value.trim()
+  const homeDir = os.homedir()
+  if (!homeDir) {
+    return trimmed
+  }
+
+  if (trimmed === homeDir) {
+    return '~'
+  }
+
+  const relativeToHome = path.relative(homeDir, trimmed)
+  if (!relativeToHome.startsWith('..') && !path.isAbsolute(relativeToHome)) {
+    return `~/${relativeToHome.split(path.sep).join('/')}`
+  }
+
+  return trimmed
+}
+
 function formatPlatformDiagnosticLines(label, status, { countMissing }) {
   if (!isRecord(status)) {
     return [`- ${label}: not recorded`]
@@ -335,7 +359,7 @@ function exportTemplateStatusText(status) {
   return 'waiting'
 }
 
-function formatExportTemplateDiagnosticLines(label, status) {
+function formatExportTemplateDiagnosticLines(label, status, { formatPath }) {
   const state = exportTemplateStatusText(status)
   if (state === null) {
     return []
@@ -356,11 +380,13 @@ function formatExportTemplateDiagnosticLines(label, status) {
   if (status.asset) {
     lines.push(`  - Asset: \`${status.asset}\``)
   }
-  if (status.templatesRoot) {
-    lines.push(`  - Templates root: \`${status.templatesRoot}\``)
+  const templatesRoot = portableLocalPath(status.templatesRoot)
+  if (templatesRoot) {
+    lines.push(`  - Templates root: ${formatPath(templatesRoot)}`)
   }
-  if (status.templatesDir) {
-    lines.push(`  - Templates dir: \`${status.templatesDir}\``)
+  const templatesDir = portableLocalPath(status.templatesDir)
+  if (templatesDir) {
+    lines.push(`  - Templates dir: ${formatPath(templatesDir)}`)
   }
   if (status.templateVersion) {
     lines.push(`  - Template version: \`${status.templateVersion}\``)
@@ -422,10 +448,12 @@ export function formatDevicePrereqDiagnosticLines(
     ...formatExportTemplateDiagnosticLines(
       'Android export templates',
       diagnostics.exportTemplates?.android,
+      { formatPath },
     ),
     ...formatExportTemplateDiagnosticLines(
       'iOS export templates',
       diagnostics.exportTemplates?.ios,
+      { formatPath },
     ),
     `- Hosted provider env configured: ${
       configuredProviders.length > 0
