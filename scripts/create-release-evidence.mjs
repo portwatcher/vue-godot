@@ -253,7 +253,7 @@ function workflowRunUrl(ciEvidence, workflowName, errors, options = {}) {
   return workflow.runUrl
 }
 
-function workflowRunCommit(ciEvidence, workflowName, errors) {
+function workflowRunCommit(ciEvidence, workflowName, errors, options = {}) {
   const workflow = isRecord(ciEvidence.workflows?.[workflowName])
     ? ciEvidence.workflows[workflowName]
     : null
@@ -266,6 +266,14 @@ function workflowRunCommit(ciEvidence, workflowName, errors) {
       `CI evidence ${workflowName}.runCommit must be a full 40-character git commit SHA`,
     )
     return null
+  }
+  if (
+    options.expectedCommit &&
+    workflow.runCommit !== options.expectedCommit
+  ) {
+    errors.push(
+      `CI evidence ${workflowName}.runCommit must match ${options.expectedCommit}`,
+    )
   }
 
   return workflow.runCommit
@@ -420,8 +428,10 @@ export function extractCiRunUrls(ciResult, commit, options = {}) {
     errors,
     { required: options.requireReleasePreflight === true },
   )
-  workflowRunCommit(ciEvidence, 'Check', errors)
-  workflowRunCommit(ciEvidence, 'Godot Smoke', errors)
+  workflowRunCommit(ciEvidence, 'Check', errors, { expectedCommit: commit })
+  workflowRunCommit(ciEvidence, 'Godot Smoke', errors, {
+    expectedCommit: commit,
+  })
   const releasePreflightRunCommit = releasePreflightRunUrl
     ? workflowRunCommit(ciEvidence, 'Release Preflight', errors)
     : null

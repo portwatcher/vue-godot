@@ -454,6 +454,15 @@ test('release readiness validates initial CI evidence for Check and Godot Smoke'
     validateInitialCiEvidence(evidence, commit).join('\n'),
     /missing required workflow\(s\): Godot Smoke/,
   )
+
+  const staleRunEvidence = JSON.parse(JSON.stringify(evidence))
+  staleRunEvidence.missingWorkflowNames = []
+  staleRunEvidence.evidence.workflows.Check.runCommit =
+    differentCommitSha(commit)
+  assert.match(
+    validateInitialCiEvidence(staleRunEvidence, commit).join('\n'),
+    new RegExp(`CI evidence Check\\.runCommit must match ${commit}`),
+  )
 })
 
 test('release readiness scans package descriptions for final warning wording', () => {

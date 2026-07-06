@@ -566,6 +566,37 @@ test('extractCiRunUrls rejects malformed workflow run commits', () => {
   )
 })
 
+test('extractCiRunUrls rejects stale required workflow run commits', () => {
+  const result = extractCiRunUrls(
+    ciRunResult({
+      Check: {
+        runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/1',
+        runCommit: evidenceCommit,
+      },
+      'Godot Smoke': {
+        runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/2',
+        runCommit: commit,
+      },
+      'Release Preflight': {
+        runUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/3',
+        runCommit: evidenceCommit,
+      },
+    }),
+    commit,
+    { requireReleasePreflight: true },
+  )
+
+  assert.equal(result.releasePreflightRunCommit, evidenceCommit)
+  assert.match(
+    result.errors.join('\n'),
+    new RegExp(`CI evidence Check\\.runCommit must match ${commit}`),
+  )
+  assert.doesNotMatch(
+    result.errors.join('\n'),
+    /CI evidence Release Preflight\.runCommit must match/,
+  )
+})
+
 test('extractCiRunUrls rejects stale or incomplete CI evidence', () => {
   const result = extractCiRunUrls(
     {

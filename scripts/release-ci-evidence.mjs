@@ -8,7 +8,11 @@ import { isFullCommitSha, repoRoot } from './release-utils.mjs'
 
 export const defaultInitialCiWorkflowNames = ['Check', 'Godot Smoke']
 
-export function workflowEvidenceErrors(ciEvidence, workflowName) {
+export function workflowEvidenceErrors(
+  ciEvidence,
+  workflowName,
+  expectedCommit,
+) {
   const errors = []
   const workflow = isRecord(ciEvidence.workflows?.[workflowName])
     ? ciEvidence.workflows[workflowName]
@@ -23,6 +27,10 @@ export function workflowEvidenceErrors(ciEvidence, workflowName) {
   if (!isFullCommitSha(workflow.runCommit)) {
     errors.push(
       `CI evidence ${workflowName}.runCommit must be a full 40-character git commit SHA`,
+    )
+  } else if (workflow.runCommit !== expectedCommit) {
+    errors.push(
+      `CI evidence ${workflowName}.runCommit must match ${expectedCommit}`,
     )
   }
 
@@ -107,7 +115,9 @@ export function validateInitialCiEvidence(ciResult, expectedCommit) {
   }
 
   for (const workflowName of defaultInitialCiWorkflowNames) {
-    errors.push(...workflowEvidenceErrors(ciEvidence, workflowName))
+    errors.push(
+      ...workflowEvidenceErrors(ciEvidence, workflowName, expectedCommit),
+    )
   }
 
   return errors
