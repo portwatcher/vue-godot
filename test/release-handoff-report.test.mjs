@@ -16,6 +16,10 @@ import {
 const repoRoot = path.resolve(import.meta.dirname, '..')
 const commit = '0123456789abcdef0123456789abcdef01234567'
 
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 function sampleCiEvidence() {
   return {
     ready: true,
@@ -411,8 +415,31 @@ test('release handoff CLI writes a Markdown report from a readiness summary', ()
 test('release handoff CLI check verifies current output without writing', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-handoff-'))
   const ciEvidencePath = path.join(tempDir, 'ci-runs.json')
+  const platformEvidencePath = path.join(tempDir, 'platform-evidence.json')
+  const realDeviceEvidencePath = path.join(tempDir, 'real-device-evidence.json')
+  const readinessEvidencePath = path.join(
+    tempDir,
+    'release-readiness-evidence.json',
+  )
   const summaryPath = path.join(tempDir, 'readiness.json')
   const outputPath = path.join(tempDir, 'handoff.md')
+  const renderArgs = [
+    'scripts/release-handoff-report.mjs',
+    '--expected-commit',
+    commit,
+    '--readiness-summary',
+    summaryPath,
+    '--output',
+    outputPath,
+    '--ci-evidence',
+    ciEvidencePath,
+    '--platform-evidence',
+    platformEvidencePath,
+    '--real-device-path',
+    realDeviceEvidencePath,
+    '--readiness-path',
+    readinessEvidencePath,
+  ]
 
   try {
     fs.writeFileSync(
@@ -426,13 +453,7 @@ test('release handoff CLI check verifies current output without writing', () => 
 
     const writeResult = spawnSync(
       process.execPath,
-      [
-        'scripts/release-handoff-report.mjs',
-        '--readiness-summary',
-        summaryPath,
-        '--output',
-        outputPath,
-      ],
+      renderArgs,
       { cwd: repoRoot, encoding: 'utf-8' },
     )
     assert.equal(writeResult.status, 0, writeResult.stderr)
@@ -440,14 +461,7 @@ test('release handoff CLI check verifies current output without writing', () => 
 
     const checkResult = spawnSync(
       process.execPath,
-      [
-        'scripts/release-handoff-report.mjs',
-        '--readiness-summary',
-        summaryPath,
-        '--output',
-        outputPath,
-        '--check',
-      ],
+      [...renderArgs, '--check'],
       { cwd: repoRoot, encoding: 'utf-8' },
     )
 
@@ -458,19 +472,39 @@ test('release handoff CLI check verifies current output without writing', () => 
     fs.writeFileSync(outputPath, `${before}\n<!-- stale -->\n`)
     const staleResult = spawnSync(
       process.execPath,
-      [
-        'scripts/release-handoff-report.mjs',
-        '--readiness-summary',
-        summaryPath,
-        '--output',
-        outputPath,
-        '--check',
-      ],
+      [...renderArgs, '--check'],
       { cwd: repoRoot, encoding: 'utf-8' },
     )
 
     assert.equal(staleResult.status, 1)
-    assert.match(`${staleResult.stdout}\n${staleResult.stderr}`, /is stale/)
+    const staleOutput = `${staleResult.stdout}\n${staleResult.stderr}`
+    assert.match(staleOutput, /is stale/)
+    assert.match(staleOutput, new RegExp(`--expected-commit ${commit}`))
+    assert.match(
+      staleOutput,
+      new RegExp(`--output ${escapeRegExp(outputPath)}`),
+    )
+    assert.match(
+      staleOutput,
+      new RegExp(`--readiness-summary ${escapeRegExp(summaryPath)}`),
+    )
+    assert.match(
+      staleOutput,
+      new RegExp(`--ci-evidence ${escapeRegExp(ciEvidencePath)}`),
+    )
+    assert.match(
+      staleOutput,
+      new RegExp(`--platform-evidence ${escapeRegExp(platformEvidencePath)}`),
+    )
+    assert.match(
+      staleOutput,
+      new RegExp(`--real-device-path ${escapeRegExp(realDeviceEvidencePath)}`),
+    )
+    assert.match(
+      staleOutput,
+      new RegExp(`--readiness-path ${escapeRegExp(readinessEvidencePath)}`),
+    )
+    assert.doesNotMatch(staleOutput, /--check/)
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }

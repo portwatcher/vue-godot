@@ -9,6 +9,7 @@ import {
   defaultRealDeviceEvidencePath,
   defaultReleaseCiEvidencePath,
   defaultReleaseReadinessEvidencePath,
+  formatHandoffCommand,
   releaseHandoffReportFormatVersion,
   releaseHandoffReportStateHash,
 } from './release-handoff-commands.mjs'
@@ -593,7 +594,26 @@ function writeOutput(outputPath, markdown) {
   console.log(`[release-handoff] wrote ${path.relative(repoRoot, resolved)}`)
 }
 
-function checkOutput(outputPath, markdown) {
+function releaseHandoffWriteCommand(options, outputPath) {
+  const args = ['npm', 'run', 'release:handoff', '--']
+  const pushOption = (name, value) => {
+    if (value) {
+      args.push(name, value)
+    }
+  }
+
+  pushOption('--expected-commit', options.expectedCommit)
+  args.push('--output', outputPath)
+  pushOption('--readiness-summary', options.readinessSummaryPath)
+  pushOption('--ci-evidence', options.ciEvidencePath)
+  pushOption('--platform-evidence', options.platformEvidencePath)
+  pushOption('--real-device-path', options.realDeviceEvidencePath)
+  pushOption('--readiness-path', options.readinessEvidencePath)
+
+  return formatHandoffCommand(args)
+}
+
+function checkOutput(outputPath, markdown, options) {
   const targetPath = outputPath ?? defaultReleaseHandoffReportPath
   const resolved = repoPath(targetPath)
   const expected = `${markdown}\n`
@@ -606,14 +626,9 @@ function checkOutput(outputPath, markdown) {
 
   const actual = fs.readFileSync(resolved, 'utf-8')
   if (actual !== expected) {
+    const command = releaseHandoffWriteCommand(options, targetPath)
     throw new Error(
-      `[release-handoff] ${path.relative(repoRoot, resolved)} is stale; run ${[
-        'npm',
-        'run',
-        'release:handoff',
-        '--',
-        ...(outputPath ? ['--output', outputPath] : ['--output', targetPath]),
-      ].join(' ')}`,
+      `[release-handoff] ${path.relative(repoRoot, resolved)} is stale; run ${command}`,
     )
   }
 
@@ -630,7 +645,7 @@ function main() {
   )
   const markdown = renderReleaseHandoff(summary)
   if (options.check) {
-    checkOutput(options.output, markdown)
+    checkOutput(options.output, markdown, options)
     return
   }
 
