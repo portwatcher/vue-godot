@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url'
 import {
   missingProductionProfileSelectedApis,
   passOnlyRealDeviceChecks,
+  realDevicePlatformMetadataFields,
   realDeviceWorksheetFields,
   requiredRealDeviceChecks,
   describeRealDeviceCheck,
@@ -181,6 +182,31 @@ function checkRequiredString(record, key, label, errors) {
   return null
 }
 
+function isHttpUrl(value) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return false
+  }
+
+  try {
+    const url = new URL(value)
+    return url.protocol === 'https:' || url.protocol === 'http:'
+  } catch {
+    return false
+  }
+}
+
+function checkRequiredHttpUrl(record, key, label, errors) {
+  const missingField = checkRequiredString(record, key, label, errors)
+  if (missingField || isReleaseEvidencePlaceholder(record[key])) {
+    return missingField
+  }
+
+  if (!isHttpUrl(record[key])) {
+    errors.push(`${label}.${key} must be an http(s) URL`)
+  }
+  return null
+}
+
 function missingExpectedValues(actual, expected) {
   const actualSet = new Set(actual)
   return expected.filter((value) => !actualSet.has(value))
@@ -329,15 +355,11 @@ function auditPlatformWorksheet(record, platform, options = {}) {
     return status
   }
 
-  for (const key of [
-    'artifact',
-    'exportPreset',
-    'deviceModel',
-    'osVersion',
-    'orientation',
-    'locale',
-  ]) {
-    const missingField = checkRequiredString(record, key, platform, errors)
+  for (const key of realDevicePlatformMetadataFields) {
+    const missingField =
+      key === 'evidenceUrl'
+        ? checkRequiredHttpUrl(record, key, platform, errors)
+        : checkRequiredString(record, key, platform, errors)
     if (missingField) {
       status.missingFields.push(missingField)
     }
@@ -992,16 +1014,7 @@ function markdownStatus(value) {
 }
 
 function metadataLines(status) {
-  const metadataFields = [
-    'artifact',
-    'exportPreset',
-    'deviceModel',
-    'osVersion',
-    'orientation',
-    'locale',
-  ]
-
-  return metadataFields.map((field) => {
+  return realDevicePlatformMetadataFields.map((field) => {
     const checked = status?.missingFields?.includes(field) ? ' ' : 'x'
     return `- [${checked}] \`${field}\``
   })

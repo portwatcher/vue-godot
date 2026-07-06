@@ -32,6 +32,7 @@ Options:
   --platform <android|ios>         Platform to update. Required.
   --platform-evidence <file>       Worksheet path. Default: ${defaultPlatformEvidencePath}
   --artifact <name>                APK/AAB, archive, TestFlight, or hosted build id.
+  --evidence-url <url>             Device test run, lab session, or signed evidence URL.
   --export-preset <name>           Godot export preset tested.
   --device <model>                 Tested device model.
   --os <version>                   Tested OS version.
@@ -117,6 +118,7 @@ function parseArgs(argv) {
     ['--summary-output', 'summaryOutput'],
     ['--expected-commit', 'expectedCommit'],
     ['--artifact', 'artifact'],
+    ['--evidence-url', 'evidenceUrl'],
     ['--export-preset', 'exportPreset'],
     ['--device', 'deviceModel'],
     ['--os', 'osVersion'],

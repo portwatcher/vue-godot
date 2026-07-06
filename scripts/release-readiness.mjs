@@ -1425,7 +1425,7 @@ function collectReadinessNextActions(
       id: 'real-device-evidence',
       title: 'Complete Android and iOS real-device export evidence',
       detail: [
-        'Run the local check and selected API export checks on real or hosted devices, reuse the platform worksheet when it exists, then assemble and validate release/real-device-evidence.json for the tested release commit.',
+        'Run the local check and selected API export checks on real or hosted devices, record the evidence URL in the platform worksheet, then assemble and validate release/real-device-evidence.json for the tested release commit.',
         platformEvidenceRemaining,
       ]
         .filter(Boolean)

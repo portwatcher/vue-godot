@@ -18,6 +18,7 @@
   "godotSmokeRunConclusion": "success",
   "android": {
     "artifact": "vue-godot-android-release.aab",
+    "evidenceUrl": "https://github.com/portwatcher/vue-godot/actions/runs/0000000003",
     "exportPreset": "Android Release",
     "deviceModel": "Pixel 8 hosted device",
     "osVersion": "Android 15",
@@ -60,6 +61,7 @@
   },
   "ios": {
     "artifact": "TestFlight build 1",
+    "evidenceUrl": "https://github.com/portwatcher/vue-godot/actions/runs/0000000004",
     "exportPreset": "iOS Release",
     "deviceModel": "iPhone 15 hosted device",
     "osVersion": "iOS 18",

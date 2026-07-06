@@ -110,7 +110,7 @@ test('platform evidence template lists required checks without passing them', ()
   assert.match(completeAction.detail, /Android must-pass remaining: cold-launch/)
   assert.match(
     completeAction.detail,
-    /assembling final evidence\.\nAndroid: 3 metadata/,
+    /assembling final evidence\.\nAndroid: 4 metadata/,
   )
   assert.ok(
     completeAction.platformCheckDetails.some(
@@ -201,7 +201,7 @@ test('platform evidence template lists required checks without passing them', ()
     template.nextActions.some(
       (action) =>
         action.id === 'record-required-checks' &&
-        /Android: 3 metadata field\(s\) missing/.test(action.detail) &&
+        /Android: 4 metadata field\(s\) missing/.test(action.detail) &&
         /iOS must-pass remaining: cold-launch/.test(action.detail) &&
         action.commands.includes(
           'npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit <release-candidate-sha>',
@@ -490,7 +490,11 @@ test('completed platform template validates after required checks are recorded',
   const template = buildPlatformEvidenceTemplate({
     selectedApis: ['fetch', 'WebSocket', 'SafeAreaView'],
     androidArtifact: 'vue-godot-android-release.aab',
+    androidEvidenceUrl:
+      'https://github.com/portwatcher/vue-godot/actions/runs/111',
     iosArtifact: 'TestFlight build 1',
+    iosEvidenceUrl:
+      'https://github.com/portwatcher/vue-godot/actions/runs/222',
     androidDevice: 'Pixel hosted device',
     iosDevice: 'iPhone hosted device',
     androidOs: 'Android 15',

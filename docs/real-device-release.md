@@ -19,6 +19,7 @@ marking Android or iOS device validation complete:
 - `npm run release:preflight` result from the release environment
 - Android APK/AAB artifact name or hosted-device build identifier
 - iOS archive, TestFlight, or hosted-device build identifier
+- Android and iOS device test run, lab session, or signed evidence URLs
 - tested device model, OS version, orientation, and locale for each platform
 - selected browser/device APIs and native adapters enabled in the build
 - observed failures, skipped capabilities, and accepted release risks
@@ -42,8 +43,8 @@ tested commit SHA, package versions matching the current package manifests,
 GodotJS version, successful Check and Godot Smoke GitHub Actions run URLs,
 workflow names, and full 40-character run commit SHAs for
 `portwatcher/vue-godot`, Android and iOS artifacts or hosted-device build
-identifiers, device model/OS/orientation/locale, selected APIs, and passed or
-explicitly skipped platform checks.
+identifiers, device evidence URLs, device model/OS/orientation/locale, selected
+APIs, and passed or explicitly skipped platform checks.
 When a selected API maps to a conditional check such as `network-if-selected`,
 `clipboard-if-selected`, `permission-prompts-if-selected`,
 `adapter-states-if-selected`, `hardware-adapters-if-selected`,
@@ -227,6 +228,7 @@ without hand-editing JSON:
 npm run release:record-platform-evidence -- \
   --platform android \
   --artifact <apk-aab-or-hosted-build-id> \
+  --evidence-url <device-test-run-or-lab-url> \
   --export-preset <android-export-preset> \
   --device <device-model> \
   --os <os-version> \

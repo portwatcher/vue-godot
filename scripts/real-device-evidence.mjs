@@ -145,6 +145,16 @@ export const realDeviceWorksheetFields = [
   'selectedApiRequiredChecks',
 ]
 
+export const realDevicePlatformMetadataFields = [
+  'artifact',
+  'evidenceUrl',
+  'exportPreset',
+  'deviceModel',
+  'osVersion',
+  'orientation',
+  'locale',
+]
+
 export const realDeviceTopLevelWorksheetFields = [
   'initialCiEvidence',
   'nextActions',
@@ -434,6 +444,22 @@ function assertString(record, key, errors, label) {
   }
 }
 
+function assertHttpUrl(record, key, errors, label) {
+  assertString(record, key, errors, label)
+  if (!hasNonEmptyString(record, key)) {
+    return
+  }
+
+  try {
+    const url = new URL(record[key])
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+      errors.push(`${label}.${key} must be an http(s) URL`)
+    }
+  } catch {
+    errors.push(`${label}.${key} must be an http(s) URL`)
+  }
+}
+
 export function isReleaseEvidencePlaceholder(value) {
   return typeof value === 'string' && /<[^>\n]+>/.test(value.trim())
 }
@@ -572,15 +598,12 @@ function validatePlatformEvidence(evidence, platform, errors, options = {}) {
     return
   }
 
-  for (const key of [
-    'artifact',
-    'exportPreset',
-    'deviceModel',
-    'osVersion',
-    'orientation',
-    'locale',
-  ]) {
-    assertString(platformEvidence, key, errors, platform)
+  for (const key of realDevicePlatformMetadataFields) {
+    if (key === 'evidenceUrl') {
+      assertHttpUrl(platformEvidence, key, errors, platform)
+    } else {
+      assertString(platformEvidence, key, errors, platform)
+    }
     assertNoPlaceholderString(platformEvidence, key, errors, platform)
   }
   if ('passRemainingConfirmation' in platformEvidence) {

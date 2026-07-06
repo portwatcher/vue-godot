@@ -91,8 +91,8 @@ before writing evidence.
 `npm run release:platform-evidence -- --production-profile` creates a starter
 Android/iOS platform evidence file with the exact required device check names
 for the maintained production-profile selected API set; it still must be filled
-with real artifact, export preset, device, OS, API, pass, and skip data after
-testing. Pass
+with real artifact, evidence URL, export preset, device, OS, API, pass, and
+skip data after testing. Pass
 `--commit <release-candidate-sha>` with the full 40-character tested commit SHA
 when it is known so generated `nextActions` commands use that commit for CI
 collection, worksheet audit, evidence assembly, and validation.
@@ -106,7 +106,7 @@ duplicate Check/Godot Smoke collection commands when that file already validates
 initial CI for the tested commit.
 Use `npm run release:record-platform-evidence -- --platform android` or
 `--platform ios` after each hosted or real-device pass to record
-artifact/export-preset/device metadata, `--pass` check names, and
+artifact/evidence URL/export-preset/device metadata, `--pass` check names, and
 `--skip check=reason` outcomes without hand-editing JSON. Add `--list-checks`
 first when testers need the valid check names, descriptions, current worksheet
 outcomes, and selected-API must-pass context without modifying the worksheet.

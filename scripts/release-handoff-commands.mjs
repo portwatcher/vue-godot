@@ -172,6 +172,10 @@ function platformEvidencePlaceholders(platform) {
         : '<android-apk-aab-or-hosted-build-id>',
     device:
       platformName === 'ios' ? '<ios-device-model>' : '<android-device-model>',
+    evidenceUrl:
+      platformName === 'ios'
+        ? '<ios-device-evidence-url>'
+        : '<android-device-evidence-url>',
     exportPreset:
       platformName === 'ios' ? '<ios-export-preset>' : '<android-export-preset>',
     observedCheck: `<observed-${platformName}-check-name>`,
@@ -194,6 +198,8 @@ function recordPlatformEvidenceBaseArgs(platform, options = {}) {
     options.platformEvidencePath ?? defaultPlatformEvidencePath,
     '--artifact',
     placeholders.artifact,
+    '--evidence-url',
+    placeholders.evidenceUrl,
     '--export-preset',
     placeholders.exportPreset,
     '--device',

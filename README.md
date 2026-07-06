@@ -332,14 +332,14 @@ initial CI for the tested commit. Final release evidence must include every
 production-profile API on both Android and iOS; release evidence assembly, the
 real-device evidence checker, release preflight, and strict release readiness
 reject evidence that omits any profile API. The starter is intentionally not
-release-ready: fill the artifact, export preset, device, OS, orientation,
-locale, and selected APIs, then move each `requiredChecks` entry into
+release-ready: fill the artifact, evidence URL, export preset, device, OS,
+orientation, locale, and selected APIs, then move each `requiredChecks` entry into
 `passedChecks` or `skippedChecks` with a release-specific reason after real
 device testing. `passedChecks` must be a non-empty string array without
 duplicates, and `skippedChecks` must be an object whose values are non-empty
 release-specific reasons. A check must not appear in both. Use `npm run release:record-platform-evidence -- --platform android`
 or `--platform ios` after each hosted or real-device pass to record
-artifact/export-preset/device metadata, `--pass` check names, and
+artifact/evidence URL/export-preset/device metadata, `--pass` check names, and
 `--skip check=reason` outcomes without hand-editing JSON; add `--list-checks`
 first when you need the valid check names, descriptions, current worksheet
 outcomes, and selected-API must-pass context without modifying the worksheet.
