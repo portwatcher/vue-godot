@@ -1,4 +1,5 @@
-import { shellQuote } from './release-utils.mjs'
+import path from 'node:path'
+import { repoRoot, shellQuote } from './release-utils.mjs'
 
 export const releaseCandidateCommitPlaceholder = '<release-candidate-sha>'
 export const releasePreflightRunCommitPlaceholder = '<evidence-commit-sha>'
@@ -274,4 +275,40 @@ export function commitEvidenceCommands(files, message, options = {}) {
   }
 
   return commands
+}
+
+export function isRepoLocalPath(filePath) {
+  const relative = path.relative(repoRoot, path.resolve(repoRoot, filePath))
+  return (
+    relative === '' ||
+    (!relative.startsWith('..') && !path.isAbsolute(relative))
+  )
+}
+
+export function repoLocalEvidencePath(filePath, defaultPath) {
+  if (!isRepoLocalPath(filePath)) {
+    return defaultPath
+  }
+
+  return path.relative(repoRoot, path.resolve(repoRoot, filePath)) || filePath
+}
+
+export function copyOutsideRepoEvidenceCommands(files) {
+  return files
+    .filter(([source]) => !isRepoLocalPath(source))
+    .map(
+      ([source, target]) =>
+        `cp ${shellQuote(source)} ${shellQuote(target)}`,
+    )
+}
+
+export function commitEvidenceFileCommands(files, message, options = {}) {
+  return [
+    ...copyOutsideRepoEvidenceCommands(files),
+    ...commitEvidenceCommands(
+      files.map(([source, target]) => repoLocalEvidencePath(source, target)),
+      message,
+      options,
+    ),
+  ]
 }

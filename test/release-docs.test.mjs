@@ -276,7 +276,7 @@ test('release preflight enforces real device evidence', () => {
     production,
     /validation status, errors, initial CI evidence status, platform worksheet\s+status with compact per-platform progress counts(?: plus| and) exact remaining\s+must-pass\/skippable check names, and `nextActions`/,
   )
-  assert.match(production, /missing-evidence assembly/)
+  assert.match(production, /[Mm]issing-evidence assembly/)
   assert.match(
     production,
     /invalid-evidence regeneration\s+hints\s+begin with\s+`npm run check`/,
@@ -408,7 +408,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
-    /`--ci-evidence <file>`,\s+`--platform-evidence <file>`,\s+`--real-device-path <file>`,\s+or `--readiness-path <file>`[\s\S]*generated `nextActions` keep those paths[\s\S]*release CI refreshes[\s\S]*final strict readiness checks/,
+    /`--ci-evidence <file>`,\s+`--platform-evidence <file>`,\s+`--real-device-path <file>`,\s+or `--readiness-path <file>`[\s\S]*path inside the Git worktree[\s\S]*generated `nextActions` keep that path[\s\S]*release CI refreshes[\s\S]*final strict readiness checks/,
   )
   assert.match(
     production,
@@ -433,6 +433,10 @@ test('release preflight enforces real device evidence', () => {
     /final\s+warning-removal action\s+runs\s+`npm run check` after the finalizer/,
   )
   assert.match(production, /git commit -m "Add real-device release evidence"/)
+  assert.match(
+    production,
+    /outside the Git worktree[\s\S]*copy it into the standard `release\/` evidence file/,
+  )
   assert.match(production, /reuses an existing platform worksheet/)
   assert.match(
     production,
@@ -481,7 +485,7 @@ test('release preflight enforces real device evidence', () => {
     readme,
     /validation status, errors, initial CI evidence status, platform worksheet status with compact per-platform progress counts(?: plus| and) exact remaining\s+must-pass\/skippable check names, and `nextActions`/,
   )
-  assert.match(readme, /missing-evidence assembly/)
+  assert.match(readme, /[Mm]issing-evidence assembly/)
   assert.match(
     readme,
     /invalid-evidence regeneration\s+hints\s+begin with `npm run check`/,
@@ -569,7 +573,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     readme,
-    /`--ci-evidence <file>`, `--platform-evidence <file>`, `--real-device-path <file>`, or `--readiness-path <file>`[\s\S]*generated `nextActions` keep those paths[\s\S]*release CI refreshes[\s\S]*final strict readiness checks/,
+    /`--ci-evidence <file>`, `--platform-evidence <file>`, `--real-device-path <file>`, or `--readiness-path <file>`[\s\S]*path inside the Git worktree[\s\S]*generated `nextActions` keep that path[\s\S]*release CI refreshes[\s\S]*final strict readiness checks/,
   )
   assert.match(
     readme,
@@ -598,6 +602,10 @@ test('release preflight enforces real device evidence', () => {
     /final\s+warning-removal action\s+runs\s+`npm run check` after the finalizer/,
   )
   assert.match(readme, /git commit -m "Add real-device release evidence"/)
+  assert.match(
+    readme,
+    /outside the Git worktree[\s\S]*copy it into the standard `release\/` evidence file/,
+  )
   assert.match(readme, /reuses an existing platform worksheet/)
   assert.match(readme, /release:record-platform-evidence` command templates/)
   assert.match(
@@ -675,7 +683,7 @@ test('release preflight enforces real device evidence', () => {
     checklist,
     /validation status, errors, initial CI evidence status, platform\s+worksheet status with compact per-platform progress counts(?: plus| and) exact remaining\s+must-pass\/skippable check names, and\s+`nextActions`/,
   )
-  assert.match(checklist, /missing-evidence\s+assembly/)
+  assert.match(checklist, /[Mm]issing-evidence\s+assembly/)
   assert.match(
     checklist,
     /invalid-evidence\s+regeneration\s+hints\s+begin with\s+`npm run check`/,
@@ -759,7 +767,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     checklist,
-    /`--ci-evidence <file>`,\s+`--platform-evidence <file>`,\s+`--real-device-path <file>`,\s+or `--readiness-path <file>`[\s\S]*generated `nextActions` keep those paths[\s\S]*release CI refreshes[\s\S]*final strict readiness checks/,
+    /`--ci-evidence <file>`,\s+`--platform-evidence <file>`,\s+`--real-device-path <file>`,\s+or `--readiness-path <file>`[\s\S]*path inside the Git worktree[\s\S]*generated `nextActions` keep that path[\s\S]*release CI refreshes[\s\S]*final strict readiness checks/,
   )
   assert.match(
     checklist,
@@ -784,6 +792,10 @@ test('release preflight enforces real device evidence', () => {
     /final\s+warning-removal action\s+runs\s+`npm run check` after the finalizer/,
   )
   assert.match(checklist, /git commit -m "Add real-device release evidence"/)
+  assert.match(
+    checklist,
+    /outside the Git worktree[\s\S]*copy it into\s+the standard `release\/` evidence file/,
+  )
   assert.match(checklist, /reuses an existing platform worksheet/)
   assert.match(checklist, /release:record-platform-evidence` command templates/)
   assert.match(

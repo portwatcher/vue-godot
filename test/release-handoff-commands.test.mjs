@@ -5,6 +5,7 @@ import {
   checkPlatformEvidenceCommand,
   checkRealDeviceEvidenceCommand,
   commitEvidenceCommands,
+  commitEvidenceFileCommands,
   currentHeadCommitCommand,
   defaultPlatformEvidencePath,
   defaultRealDeviceEvidencePath,
@@ -23,6 +24,7 @@ import {
   releaseDispatchRefPlaceholder,
   releasePreflightRunCommitPlaceholder,
   releasePreflightCiCommands,
+  repoLocalEvidencePath,
 } from '../scripts/release-handoff-commands.mjs'
 
 const commit = '0123456789abcdef0123456789abcdef01234567'
@@ -144,6 +146,41 @@ test('release handoff commands format real-device evidence assembly', () => {
     [
       "git add 'release/platform evidence'\\''s draft.json' 'release/ci runs.json'",
       'git commit -m "Refresh release evidence"',
+    ],
+  )
+  assert.equal(
+    repoLocalEvidencePath(
+      '/tmp/vue-godot-release/platform evidence.json',
+      defaultPlatformEvidencePath,
+    ),
+    defaultPlatformEvidencePath,
+  )
+  assert.equal(
+    repoLocalEvidencePath(
+      'release/custom-platform-evidence.json',
+      defaultPlatformEvidencePath,
+    ),
+    'release/custom-platform-evidence.json',
+  )
+  assert.deepEqual(
+    commitEvidenceFileCommands(
+      [
+        [
+          '/tmp/vue-godot-release/platform evidence.json',
+          defaultPlatformEvidencePath,
+        ],
+        ['release/custom-ci-runs.json', defaultReleaseCiEvidencePath],
+        ['../real-device-evidence.json', defaultRealDeviceEvidencePath],
+      ],
+      'Add real-device release evidence',
+      { push: true },
+    ),
+    [
+      "cp '/tmp/vue-godot-release/platform evidence.json' release/platform-evidence.json",
+      'cp ../real-device-evidence.json release/real-device-evidence.json',
+      'git add release/platform-evidence.json release/custom-ci-runs.json release/real-device-evidence.json',
+      'git commit -m "Add real-device release evidence"',
+      'git push',
     ],
   )
 })

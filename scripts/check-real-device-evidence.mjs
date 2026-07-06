@@ -9,8 +9,9 @@ import {
 import {
   checkPlatformEvidenceCommand,
   checkRealDeviceEvidenceCommand,
-  commitEvidenceCommands,
+  commitEvidenceFileCommands,
   defaultPlatformEvidencePath,
+  defaultRealDeviceEvidencePath,
   defaultReleaseCiEvidencePath,
   initialReleaseCiCommands,
   productionProfilePlatformEvidenceCommand,
@@ -181,11 +182,11 @@ function customCiEvidenceCommandOptions(summary) {
 }
 
 function realDeviceEvidenceCommitCommands(summary) {
-  return commitEvidenceCommands(
+  return commitEvidenceFileCommands(
     [
-      summary.platformEvidencePath,
-      summary.initialCiEvidencePath,
-      summary.evidencePath,
+      [summary.platformEvidencePath, defaultPlatformEvidencePath],
+      [summary.initialCiEvidencePath, defaultReleaseCiEvidencePath],
+      [summary.evidencePath, defaultRealDeviceEvidencePath],
     ],
     'Add real-device release evidence',
     { push: true },

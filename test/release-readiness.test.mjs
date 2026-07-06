@@ -966,9 +966,12 @@ test('release readiness summary includes missing evidence next actions', () => {
       ),
     )
     assert.ok(
-      realDeviceAction.commands.includes(
-        `git add ${shellQuote(platformCommandPath)} ${shellQuote(ciCommandPath)} ${shellQuote(realDeviceCommandPath)}`,
-      ),
+      [
+        `cp ${shellQuote(platformCommandPath)} release/platform-evidence.json`,
+        `cp ${shellQuote(ciCommandPath)} release/ci-runs.json`,
+        `cp ${shellQuote(realDeviceCommandPath)} release/real-device-evidence.json`,
+        'git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json',
+      ].every((command) => realDeviceAction.commands.includes(command)),
     )
     assert.ok(
       realDeviceAction.commands.includes(
@@ -995,7 +998,7 @@ test('release readiness summary includes missing evidence next actions', () => {
     assert.ok(
       releasePreflightAction.commands.some((command) =>
         command.includes(
-          `--real-device-evidence-path ${shellQuote(realDeviceCommandPath)}`,
+          '--real-device-evidence-path release/real-device-evidence.json',
         ),
       ),
     )
@@ -1029,9 +1032,12 @@ test('release readiness summary includes missing evidence next actions', () => {
       ),
     )
     assert.ok(
-      releasePreflightAction.commands.includes(
-        `git add ${shellQuote(ciCommandPath)} release/release-preflight-summary.json ${shellQuote(realDeviceCommandPath)} ${shellQuote(readinessCommandPath)}`,
-      ),
+      [
+        `cp ${shellQuote(ciCommandPath)} release/ci-runs.json`,
+        `cp ${shellQuote(realDeviceCommandPath)} release/real-device-evidence.json`,
+        `cp ${shellQuote(readinessCommandPath)} release/release-readiness-evidence.json`,
+        'git add release/ci-runs.json release/release-preflight-summary.json release/real-device-evidence.json release/release-readiness-evidence.json',
+      ].every((command) => releasePreflightAction.commands.includes(command)),
     )
     assert.ok(
       releasePreflightAction.commands.includes(
@@ -1041,7 +1047,7 @@ test('release readiness summary includes missing evidence next actions', () => {
     assert.ok(releasePreflightAction.commands.includes('git push'))
     assert.ok(
       releasePreflightAction.commands.includes(
-        `npm run release:readiness -- --expected-commit ${summary.commit} --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
+        `npm run release:readiness -- --expected-commit ${summary.commit}`,
       ),
     )
     const finalWarningAction = summary.nextActions.find(

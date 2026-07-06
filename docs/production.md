@@ -40,13 +40,16 @@ status with compact per-platform progress counts plus exact remaining
 must-pass/skippable check names, and `nextActions` command hints for fixing or
 creating evidence. Pass `--ci-evidence <file>` or
 `--platform-evidence <file>` when a handoff is using non-default evidence or
-worksheet paths so generated commands continue to target the same files;
-missing-evidence assembly and invalid-evidence regeneration hints begin with
-`npm run check`, run the platform worksheet audit before final evidence
-assembly or regeneration, then run any still-needed release CI wait/dispatch or
-evidence commands, stage the platform/CI/real-device evidence files, commit them
-with `git commit -m "Add real-device release evidence"`, push, and resolve
-command placeholders to `--expected-commit` when it is supplied.
+worksheet paths so generated creation, validation, and assembly commands
+continue to target those files. If a handoff path is outside the Git worktree,
+generated commit commands copy it into the standard `release/` evidence file
+before staging. Missing-evidence assembly and invalid-evidence regeneration
+hints begin with `npm run check`, run the platform worksheet audit before final
+evidence assembly or regeneration, then run any still-needed release CI
+wait/dispatch or evidence commands, stage the platform/CI/real-device evidence
+files, commit them with `git commit -m "Add real-device release evidence"`,
+push, and resolve command placeholders to `--expected-commit` when it is
+supplied.
 `release:preflight` verifies package metadata,
 generated package specs, dry-run package contents including every
 `package.json` export target, registry state, publish environment assumptions,
@@ -196,11 +199,15 @@ supplied CI evidence is valid for a different tested release commit and
 `nextActions` entry with the exact
 `npm run release:readiness -- --allow-open --expected-commit ...` command. If
 `--ci-evidence <file>`, `--platform-evidence <file>`,
-`--real-device-path <file>`, or `--readiness-path <file>` is supplied,
-generated `nextActions` keep those paths through release CI refreshes,
-platform worksheet audits, real-device evidence assembly and validation,
-Release Preflight evidence, `git add`, and the final strict readiness checks. If
-initial CI evidence is still missing, the release-readiness evidence action
+`--real-device-path <file>`, or `--readiness-path <file>` is supplied with a
+path inside the Git worktree, generated `nextActions` keep that path through
+release CI refreshes, platform worksheet audits, real-device evidence assembly
+and validation, Release Preflight evidence, `git add`, and the final strict
+readiness checks. If a handoff path is outside the Git worktree,
+evidence-commit commands copy it into the standard `release/` evidence file
+before staging, and the preflight dispatch plus final strict readiness checks
+reference that repo-local copy. If initial CI evidence is still missing, the
+release-readiness evidence action
 refreshes Check and Godot Smoke from the release-candidate ref before
 dispatching Release Preflight from the current evidence commit ref with
 `--release-preflight-run-commit "$(git rev-parse HEAD)"`.

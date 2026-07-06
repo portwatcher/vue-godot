@@ -32,7 +32,7 @@ import { finalizationFiles } from './release-finalization-files.mjs'
 import {
   checkPlatformEvidenceCommand,
   checkRealDeviceEvidenceCommand,
-  commitEvidenceCommands,
+  commitEvidenceFileCommands,
   currentHeadCommitCommand,
   defaultPlatformEvidencePath,
   defaultReleaseCiEvidencePath,
@@ -45,6 +45,7 @@ import {
   releaseEvidenceCommand,
   releaseCommitLabel,
   releasePreflightCiCommands,
+  repoLocalEvidencePath,
 } from './release-handoff-commands.mjs'
 import {
   currentReleasePackageVersions,
@@ -1068,6 +1069,28 @@ function releaseReadinessEvidenceCommandOptions(pathOptions) {
   }
 }
 
+function repoLocalCommandPathOptions(pathOptions) {
+  const options = {}
+  const pathMappings = [
+    ['ciEvidencePath', defaultReleaseCiEvidencePath],
+    ['platformEvidencePath', defaultPlatformEvidencePath],
+    ['realDeviceEvidencePath', defaultRealDeviceEvidencePath],
+    ['readinessEvidencePath', defaultReleaseReadinessEvidencePath],
+  ]
+
+  for (const [key, defaultPath] of pathMappings) {
+    const filePath = pathOptions[key]
+    if (!filePath) continue
+
+    const repoLocalPath = repoLocalEvidencePath(filePath, defaultPath)
+    if (repoLocalPath !== defaultPath) {
+      options[key] = repoLocalPath
+    }
+  }
+
+  return options
+}
+
 export function ciEvidenceCommands(commit, localGit, options = {}) {
   const pushCommand =
     localGit?.currentBranch && !localGit.upstreamRef
@@ -1109,6 +1132,11 @@ function collectReadinessNextActions(
     pathOptions.readinessEvidencePath ?? defaultReleaseReadinessEvidencePath
   const initialCiOptions = initialCiCommandOptions(pathOptions)
   const realDeviceCommandOptions = realDeviceEvidenceCommandOptions(pathOptions)
+  const repoLocalPathOptions = repoLocalCommandPathOptions(pathOptions)
+  const repoLocalRealDeviceEvidencePath = repoLocalEvidencePath(
+    realDeviceEvidencePath,
+    defaultRealDeviceEvidencePath,
+  )
 
   if (!checks.cleanWorktree) {
     actions.push({
@@ -1219,11 +1247,11 @@ function collectReadinessNextActions(
           : [checkPlatformEvidenceCommand(commit, { platformEvidencePath })]),
         releaseEvidenceCommand(commit, realDeviceCommandOptions),
         checkRealDeviceEvidenceCommand(commit, realDeviceCommandOptions),
-        ...commitEvidenceCommands(
+        ...commitEvidenceFileCommands(
           [
-            platformEvidencePath,
-            ciEvidencePath,
-            realDeviceEvidencePath,
+            [platformEvidencePath, defaultPlatformEvidencePath],
+            [ciEvidencePath, defaultReleaseCiEvidencePath],
+            [realDeviceEvidencePath, defaultRealDeviceEvidencePath],
           ],
           'Add real-device release evidence',
           { push: true },
@@ -1245,7 +1273,7 @@ function collectReadinessNextActions(
           : initialReleaseCiCommands(commit, initialCiOptions)),
         ...releasePreflightCiCommands(commit, {
           output: ciEvidencePath,
-          realDeviceEvidencePath,
+          realDeviceEvidencePath: repoLocalRealDeviceEvidencePath,
           releasePreflightRunCommit: currentHeadCommitCommand,
         }),
         preflightSummaryCommand(commit, pathOptions),
@@ -1253,17 +1281,20 @@ function collectReadinessNextActions(
           commit,
           releaseReadinessEvidenceCommandOptions(pathOptions),
         ),
-        ...commitEvidenceCommands(
+        ...commitEvidenceFileCommands(
           [
-            ciEvidencePath,
-            defaultReleasePreflightSummaryPath,
-            realDeviceEvidencePath,
-            readinessEvidencePath,
+            [ciEvidencePath, defaultReleaseCiEvidencePath],
+            [
+              defaultReleasePreflightSummaryPath,
+              defaultReleasePreflightSummaryPath,
+            ],
+            [realDeviceEvidencePath, defaultRealDeviceEvidencePath],
+            [readinessEvidencePath, defaultReleaseReadinessEvidencePath],
           ],
           'Add release readiness evidence',
           { push: true },
         ),
-        releaseReadinessCommand(commit, pathOptions),
+        releaseReadinessCommand(commit, repoLocalPathOptions),
       ],
     })
   }

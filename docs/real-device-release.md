@@ -88,11 +88,15 @@ an `expected-commit`
 `nextActions` entry with the exact
 `npm run release:readiness -- --allow-open --expected-commit ...` command. If
 `--ci-evidence <file>`, `--platform-evidence <file>`,
-`--real-device-path <file>`, or `--readiness-path <file>` is supplied,
-generated `nextActions` keep those paths through release CI refreshes,
-platform worksheet audits, real-device evidence assembly and validation,
-Release Preflight evidence, `git add`, and the final strict readiness checks. If
-initial CI evidence is still missing, the release-readiness evidence action
+`--real-device-path <file>`, or `--readiness-path <file>` is supplied with a
+path inside the Git worktree, generated `nextActions` keep that path through
+release CI refreshes, platform worksheet audits, real-device evidence assembly
+and validation, Release Preflight evidence, `git add`, and the final strict
+readiness checks. If a handoff path is outside the Git worktree,
+evidence-commit commands copy it into the standard `release/` evidence file
+before staging, and the preflight dispatch plus final strict readiness checks
+reference that repo-local copy. If initial CI evidence is still missing, the
+release-readiness evidence action
 refreshes Check and Godot Smoke from the release-candidate ref before
 dispatching Release Preflight from the evidence ref. In generated `nextActions`,
 that preflight dispatch uses
@@ -272,12 +276,15 @@ to write validation status, errors, initial CI evidence status, platform
 worksheet status with compact per-platform progress counts plus exact remaining
 must-pass/skippable check names, and `nextActions` command hints for fixing or
 creating evidence. Pass `--ci-evidence <file>` or
-`--platform-evidence <file>` when those inputs use non-default handoff paths;
-missing-evidence assembly and invalid-evidence regeneration hints begin with
-`npm run check`, run the platform worksheet audit before final evidence
-assembly or regeneration, then run any still-needed release CI wait/dispatch or
-evidence commands, stage the platform/CI/real-device evidence files, commit them
-with `git commit -m "Add real-device release evidence"`, and push.
+`--platform-evidence <file>` when those inputs use non-default handoff paths so
+generated creation, validation, and assembly commands target those files. If a
+handoff path is outside the Git worktree, generated commit commands copy it into
+the standard `release/` evidence file before staging. Missing-evidence assembly
+and invalid-evidence regeneration hints begin with `npm run check`, run the
+platform worksheet audit before final evidence assembly or regeneration, then
+run any still-needed release CI wait/dispatch or evidence commands, stage the
+platform/CI/real-device evidence files, commit them with
+`git commit -m "Add real-device release evidence"`, and push.
 The helper validates the normalized platform evidence before fetching GitHub run
 metadata, so missing device details, unknown selected APIs, or selected-API
 checks left in `skippedChecks` fail before network calls.
