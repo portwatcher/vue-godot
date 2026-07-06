@@ -204,7 +204,7 @@ npm run release:evidence -- --platform-evidence release/platform-evidence.json -
 git add release/ci-runs.json release/release-preflight-summary.json release/release-preflight-checklist.md release/real-device-evidence.json release/release-readiness-evidence.json
 git commit -m "Add release readiness evidence"
 git push
-npm run release:readiness -- --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
+npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
 ```
 
 ### Remove public warning wording through the guarded finalizer
@@ -214,12 +214,12 @@ Blocked by: `real-device-evidence`, `release-preflight-evidence`
 Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks, removes public warning wording, then stages and commits those edits before the final strict readiness check.
 
 ```bash
-npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
+npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --checklist-output /tmp/vue-godot-readiness.md --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
 npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json
 npm run check
 git add TODO.md README.md docs/compatibility.md docs/production.md docs/real-device-release.md
 git commit -m "Finalize production readiness"
 git push
-npm run release:readiness -- --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
+npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
 ```
 
