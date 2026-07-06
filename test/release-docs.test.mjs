@@ -207,8 +207,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(platformEvidenceHelper, /selectedApiRequiredChecks/)
   assert.match(platformEvidenceHelper, /selectedApiRequiredCheckMap/)
   assert.match(platformEvidenceHelper, /nextActions/)
-  assert.match(platformEvidenceHelper, /formatPlatformEvidenceProgress/)
-  assert.match(platformEvidenceHelper, /formatPlatformEvidenceRemaining/)
+  assert.match(platformEvidenceHelper, /formatPlatformEvidenceRemainingBlock/)
 
   for (const pattern of [
     /release-preflight-summary/,

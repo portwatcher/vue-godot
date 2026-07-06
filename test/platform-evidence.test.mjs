@@ -9,6 +9,7 @@ import {
   auditPlatformEvidence,
   formatPlatformEvidenceChecklist,
   formatPlatformEvidenceProgress,
+  formatPlatformEvidenceRemainingBlock,
   formatPlatformEvidenceRemaining,
 } from '../scripts/check-platform-evidence.mjs'
 import { buildPlatformEvidenceTemplate } from '../scripts/create-platform-evidence.mjs'
@@ -128,6 +129,10 @@ test('platform evidence audit reports incomplete worksheet gaps', () => {
     formatPlatformEvidenceRemaining(summary).some((line) =>
       line.includes('iOS must-pass remaining: cold-launch'),
     ),
+  )
+  assert.match(
+    formatPlatformEvidenceRemainingBlock(summary),
+    /iOS: 5 metadata field\(s\) missing, 15\/15 required check\(s\) unresolved, 14 must-pass check\(s\) missing\nAndroid missing metadata: artifact, deviceModel, osVersion, orientation, locale/,
   )
 })
 
@@ -713,6 +718,10 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
     )
     assert.equal(summary.nextActions[0].id, 'complete-platform-evidence')
     assert.match(summary.nextActions[0].detail, /Android: 5 metadata/)
+    assert.match(
+      summary.nextActions[0].detail,
+      /passedChecks\.\nAndroid: 5 metadata/,
+    )
     assert.match(summary.nextActions[0].detail, /iOS: 5 metadata/)
     assert.match(
       summary.nextActions[0].detail,

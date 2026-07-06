@@ -1114,6 +1114,10 @@ test('release readiness summary includes missing evidence next actions', () => {
     )
     assert.ok(realDeviceAction)
     assert.match(realDeviceAction.detail, /Android: 5 metadata field\(s\) missing/)
+    assert.match(
+      realDeviceAction.detail,
+      /tested release commit\.\nAndroid: 5 metadata field\(s\) missing/,
+    )
     assert.match(realDeviceAction.detail, /iOS: 5 metadata field\(s\) missing/)
     assert.ok(
       realDeviceAction.platformCheckDetails.some(

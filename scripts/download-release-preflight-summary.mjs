@@ -26,6 +26,11 @@ import {
   releasePreflightSummaryCommand,
 } from './release-handoff-commands.mjs'
 import { normalizeCommitSha, repoRoot, run } from './release-utils.mjs'
+import {
+  formatChecklistLine as checklistLine,
+  formatChecklistValue,
+  splitIssueLines,
+} from './markdown-checklist-utils.mjs'
 
 export const releasePreflightSummaryArtifactName = 'release-preflight-summary'
 export const releasePreflightSummaryEntryNames = [
@@ -172,9 +177,12 @@ function writeText(filePath, text) {
 }
 
 function displayValue(value) {
-  return typeof value === 'string' && value.trim().length > 0
-    ? value
-    : '(not recorded)'
+  return formatChecklistValue(value, {
+    includeBooleans: false,
+    includeIntegers: false,
+    missing: '(not recorded)',
+    trimString: false,
+  })
 }
 
 function displaySummaryValue(summary, key) {
@@ -182,30 +190,11 @@ function displaySummaryValue(summary, key) {
     return '(missing)'
   }
 
-  const value = summary[key]
-  if (typeof value === 'boolean') {
-    return String(value)
-  }
-  if (Number.isInteger(value)) {
-    return String(value)
-  }
-  if (typeof value === 'string' && value.trim().length > 0) {
-    return value
-  }
-  return '(missing)'
-}
-
-function checklistLine(ready, label, detail) {
-  return `- ${ready ? '[x]' : '[ ]'} ${label}: ${detail}`
-}
-
-function splitIssueLines(errors) {
-  return errors.flatMap((error) =>
-    String(error)
-      .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0),
-  )
+  return formatChecklistValue(summary[key], {
+    booleanStyle: 'true-false',
+    missing: '(missing)',
+    trimString: false,
+  })
 }
 
 function releaseReadinessCommand(commit) {

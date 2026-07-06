@@ -27,8 +27,7 @@ import {
 import {
   collectPlatformEvidenceRemainingCheckDetails,
   collectPlatformEvidenceSkippableMissingChecks,
-  formatPlatformEvidenceProgress,
-  formatPlatformEvidenceRemaining,
+  formatPlatformEvidenceRemainingBlock,
   readPlatformEvidenceAudit,
 } from './check-platform-evidence.mjs'
 import { readInitialCiEvidenceStatus } from './release-ci-evidence.mjs'
@@ -37,7 +36,11 @@ import {
   normalizeCommitSha,
   repoRoot,
 } from './release-utils.mjs'
-import { formatIssueLines } from './markdown-checklist-utils.mjs'
+import {
+  formatChecklistLine as checklistLine,
+  formatChecklistValue as displayValue,
+  formatIssueLines,
+} from './markdown-checklist-utils.mjs'
 
 function usage() {
   console.log(`Usage: node scripts/check-real-device-evidence.mjs [options]
@@ -268,10 +271,7 @@ function collectNextActions(summary) {
         ],
       })
     } else if (!platformEvidence.ready) {
-      const progress = formatPlatformEvidenceProgress(platformEvidence)
-      const remaining = formatPlatformEvidenceRemaining(platformEvidence).join(
-        ' ',
-      )
+      const remaining = formatPlatformEvidenceRemainingBlock(platformEvidence)
       const platformCheckDetails =
         collectPlatformEvidenceRemainingCheckDetails(platformEvidence)
       platformEvidenceCommands.push({
@@ -279,9 +279,8 @@ function collectNextActions(summary) {
         title: 'Complete Android/iOS platform evidence worksheet',
         detail: [
           'The worksheet exists; fill missing metadata and record every required check as passedChecks or skippedChecks before final evidence assembly.',
-          progress,
           remaining,
-        ].join(' '),
+        ].join('\n'),
         ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
         commands: [
           recordPlatformEvidenceCommand(
@@ -369,23 +368,6 @@ function collectNextActions(summary) {
       ],
     },
   ]
-}
-
-function displayValue(value) {
-  if (typeof value === 'boolean') {
-    return value ? 'yes' : 'no'
-  }
-  if (Number.isInteger(value)) {
-    return String(value)
-  }
-  if (typeof value === 'string' && value.trim().length > 0) {
-    return value.trim()
-  }
-  return 'missing'
-}
-
-function checklistLine(ready, label, detail) {
-  return `- ${ready ? '[x]' : '[ ]'} ${label}: ${detail}`
 }
 
 function platformLabel(platform) {

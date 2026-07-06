@@ -730,6 +730,15 @@ export function formatPlatformEvidenceRemaining(summary) {
   )
 }
 
+export function formatPlatformEvidenceRemainingBlock(summary) {
+  return [
+    formatPlatformEvidenceProgress(summary),
+    ...formatPlatformEvidenceRemaining(summary),
+  ]
+    .filter((line) => line.length > 0)
+    .join('\n')
+}
+
 export function formatPlatformEvidenceRemainingDetails(summary) {
   if (!isRecord(summary?.platforms)) {
     return []
@@ -850,8 +859,7 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
   }
 
   if (!summary.ready) {
-    const progress = formatPlatformEvidenceProgress(summary)
-    const remaining = formatPlatformEvidenceRemaining(summary).join(' ')
+    const remaining = formatPlatformEvidenceRemainingBlock(summary)
     const platformCheckDetails =
       collectPlatformEvidenceRemainingCheckDetails(summary)
     actions.push({
@@ -860,9 +868,8 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
       detail: [
         'Fill missing metadata and record every required check as passedChecks or skippedChecks.',
         'passOnlyChecks and selectedApiRequiredChecks must be in passedChecks.',
-        progress,
         remaining,
-      ].join(' '),
+      ].join('\n'),
       ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
       commands: [
         recordPlatformEvidenceCommand('android', commit, {

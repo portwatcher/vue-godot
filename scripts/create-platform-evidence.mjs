@@ -5,8 +5,7 @@ import {
   auditPlatformEvidence,
   collectPlatformEvidenceRemainingCheckDetails,
   collectPlatformEvidenceSkippableMissingChecks,
-  formatPlatformEvidenceProgress,
-  formatPlatformEvidenceRemaining,
+  formatPlatformEvidenceRemainingBlock,
 } from './check-platform-evidence.mjs'
 import {
   knownRealDeviceSelectedApis,
@@ -228,14 +227,9 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
     : []
   const platformAuditDetail = platformAudit?.ready
     ? ''
-    : [
-        platformAudit ? formatPlatformEvidenceProgress(platformAudit) : '',
-        platformAudit
-          ? formatPlatformEvidenceRemaining(platformAudit).join(' ')
-          : '',
-      ]
-        .filter(Boolean)
-        .join(' ')
+    : platformAudit
+      ? formatPlatformEvidenceRemainingBlock(platformAudit)
+      : ''
 
   return [
     {
@@ -246,7 +240,7 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
         platformAuditDetail,
       ]
         .filter(Boolean)
-        .join(' '),
+        .join('\n'),
       ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
       commands: [
         recordPlatformEvidenceCommand('android', commit, {
@@ -275,7 +269,7 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
         platformAuditDetail,
       ]
         .filter(Boolean)
-        .join(' '),
+        .join('\n'),
       commands: [
         checkPlatformEvidenceCommand(commit, {
           allowOpen: true,

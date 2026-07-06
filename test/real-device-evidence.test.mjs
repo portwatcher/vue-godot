@@ -738,6 +738,9 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
         (action) =>
           action.id === 'complete-platform-evidence' &&
           action.detail.includes('Android: 5 metadata field(s) missing') &&
+          action.detail.includes(
+            'final evidence assembly.\nAndroid: 5 metadata field(s) missing',
+          ) &&
           action.detail.includes('iOS: 5 metadata field(s) missing') &&
           action.commands.includes(
             'npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
@@ -821,6 +824,9 @@ test('check-real-device-evidence next actions honor expected commits', () => {
         (action) =>
           action.id === 'complete-platform-evidence' &&
           action.detail.includes('Android: 5 metadata field(s) missing') &&
+          action.detail.includes(
+            'final evidence assembly.\nAndroid: 5 metadata field(s) missing',
+          ) &&
           action.detail.includes('iOS: 5 metadata field(s) missing') &&
           action.commands.includes(
             `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output release/platform-evidence-summary.json --expected-commit ${expectedCommit}`,

@@ -108,6 +108,10 @@ test('platform evidence template lists required checks without passing them', ()
   )
   assert.ok(completeAction)
   assert.match(completeAction.detail, /Android must-pass remaining: cold-launch/)
+  assert.match(
+    completeAction.detail,
+    /assembling final evidence\.\nAndroid: 3 metadata/,
+  )
   assert.ok(
     completeAction.platformCheckDetails.some(
       (detail) =>

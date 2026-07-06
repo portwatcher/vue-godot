@@ -18,7 +18,11 @@ import {
   isRecord,
   verifyGitHubActionsRunUrl,
 } from './release-evidence-utils.mjs'
-import { formatIssueLines } from './markdown-checklist-utils.mjs'
+import {
+  formatChecklistLine as checklistLine,
+  formatChecklistValue as displayValue,
+  formatIssueLines,
+} from './markdown-checklist-utils.mjs'
 import { readInitialCiEvidenceStatus } from './release-ci-evidence.mjs'
 
 export { validateInitialCiEvidence } from './release-ci-evidence.mjs'
@@ -27,8 +31,7 @@ import { collectLocalGitReleaseState } from './check-release-ci-runs.mjs'
 import {
   collectPlatformEvidenceRemainingCheckDetails,
   collectPlatformEvidenceSkippableMissingChecks,
-  formatPlatformEvidenceProgress,
-  formatPlatformEvidenceRemaining,
+  formatPlatformEvidenceRemainingBlock,
   readPlatformEvidenceAudit,
 } from './check-platform-evidence.mjs'
 import { finalizationFiles } from './release-finalization-files.mjs'
@@ -1346,12 +1349,9 @@ function collectReadinessNextActions(
     !checks.iosRealDeviceEvidence
   ) {
     const platformEvidenceCommands = []
-    const platformEvidenceProgress = platformEvidence?.ready
-      ? ''
-      : formatPlatformEvidenceProgress(platformEvidence)
     const platformEvidenceRemaining = platformEvidence?.ready
       ? ''
-      : formatPlatformEvidenceRemaining(platformEvidence).join(' ')
+      : formatPlatformEvidenceRemainingBlock(platformEvidence)
     const platformCheckDetails =
       platformEvidence?.ready || !platformEvidence
         ? []
@@ -1422,11 +1422,10 @@ function collectReadinessNextActions(
       title: 'Complete Android and iOS real-device export evidence',
       detail: [
         'Run the local check and selected API export checks on real or hosted devices, reuse the platform worksheet when it exists, then assemble and validate release/real-device-evidence.json for the tested release commit.',
-        platformEvidenceProgress,
         platformEvidenceRemaining,
       ]
         .filter(Boolean)
-        .join(' '),
+        .join('\n'),
       ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
       commands: [
         'npm run check',
@@ -1611,23 +1610,6 @@ function printExpectedCommitHint(
       summaryOutput: defaultReleaseReadinessSummaryPath,
     })}`,
   )
-}
-
-function displayValue(value) {
-  if (typeof value === 'boolean') {
-    return value ? 'yes' : 'no'
-  }
-  if (Number.isInteger(value)) {
-    return String(value)
-  }
-  if (typeof value === 'string' && value.trim().length > 0) {
-    return value.trim()
-  }
-  return 'missing'
-}
-
-function checklistLine(ready, label, detail) {
-  return `- ${ready ? '[x]' : '[ ]'} ${label}: ${detail}`
 }
 
 function formatFinalTodoChecklistLine(status) {

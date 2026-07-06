@@ -2,6 +2,45 @@ function identity(value) {
   return value
 }
 
+export function formatChecklistLine(ready, label, detail) {
+  return `- ${ready ? '[x]' : '[ ]'} ${label}: ${detail}`
+}
+
+export function formatChecklistValue(
+  value,
+  {
+    booleanStyle = 'yes-no',
+    includeBooleans = true,
+    includeIntegers = true,
+    missing = 'missing',
+    trimString = true,
+  } = {},
+) {
+  if (includeBooleans && typeof value === 'boolean') {
+    return booleanStyle === 'true-false' ? String(value) : value ? 'yes' : 'no'
+  }
+  if (includeIntegers && Number.isInteger(value)) {
+    return String(value)
+  }
+  if (typeof value === 'string' && value.trim().length > 0) {
+    return trimString ? value.trim() : value
+  }
+  return missing
+}
+
+export function splitIssueLines(values, { normalizeLine = identity } = {}) {
+  if (!Array.isArray(values)) {
+    return []
+  }
+
+  return values.flatMap((value) =>
+    String(value)
+      .split(/\r?\n/)
+      .map((line) => String(normalizeLine(line)).trim())
+      .filter((line) => line.length > 0),
+  )
+}
+
 function formatIssueBlock(
   value,
   {
@@ -10,10 +49,7 @@ function formatIssueBlock(
     normalizeLine = identity,
   } = {},
 ) {
-  const lines = String(value)
-    .split(/\r?\n/)
-    .map((line) => normalizeLine(line).trim())
-    .filter((line) => line.length > 0)
+  const lines = splitIssueLines([value], { normalizeLine })
 
   if (lines.length === 0) {
     return []
