@@ -4,7 +4,10 @@ import os from 'node:os'
 import path from 'node:path'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { renderReleaseHandoff } from '../scripts/release-handoff-report.mjs'
+import {
+  prepareReleaseHandoffSummary,
+  renderReleaseHandoff,
+} from '../scripts/release-handoff-report.mjs'
 
 const repoRoot = path.resolve(import.meta.dirname, '..')
 const commit = '0123456789abcdef0123456789abcdef01234567'
@@ -103,6 +106,14 @@ function sampleReadinessSummary(ciEvidencePath = 'release/ci-runs.json') {
     ],
     nextActions: [
       {
+        id: 'release-handoff-report',
+        title: 'Write Android/iOS tester handoff',
+        detail: 'Render the current allow-open readiness audit as Markdown.',
+        commands: [
+          `npm run release:handoff -- --expected-commit ${commit} --output release/release-handoff.md`,
+        ],
+      },
+      {
         blockedBy: ['real-device-evidence'],
         id: 'real-device-evidence',
         title: 'Complete Android and iOS real-device export evidence',
@@ -128,12 +139,24 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
   assert.match(markdown, /Skippable remaining: `deep-links-share-notifications-if-selected`/)
   assert.match(markdown, /Blocked by: `real-device-evidence`/)
   assert.match(markdown, /TODO\.md:389 Android export/)
+  assert.match(markdown, /Write Android\/iOS tester handoff/)
   assert.match(markdown, /npm run release:evidence -- --commit/)
   assert.doesNotMatch(markdown, new RegExp(repoRoot.replaceAll('/', '\\/')))
   assert.match(
     markdown,
     /Release-readiness evidence file not found: release\/release-readiness-evidence\.json/,
   )
+})
+
+test('release handoff summary omits completed default handoff action', () => {
+  const summary = prepareReleaseHandoffSummary(
+    sampleReadinessSummary(),
+    'release/release-handoff.md',
+  )
+  const markdown = renderReleaseHandoff(summary)
+
+  assert.doesNotMatch(markdown, /Write Android\/iOS tester handoff/)
+  assert.match(markdown, /Complete Android and iOS real-device export evidence/)
 })
 
 test('release handoff CLI writes a Markdown report from a readiness summary', () => {

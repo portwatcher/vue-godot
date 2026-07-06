@@ -4,6 +4,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import {
+  defaultReleaseHandoffReportPath,
   defaultPlatformEvidencePath,
   defaultRealDeviceEvidencePath,
   defaultReleaseCiEvidencePath,
@@ -314,6 +315,28 @@ function renderNextActions(summary) {
   return lines
 }
 
+export function prepareReleaseHandoffSummary(summary, outputPath) {
+  if (
+    !outputPath ||
+    path.resolve(repoRoot, outputPath) !==
+      path.resolve(repoRoot, defaultReleaseHandoffReportPath)
+  ) {
+    return summary
+  }
+
+  const actions = Array.isArray(summary.nextActions)
+    ? summary.nextActions.filter(
+        (action) =>
+          !isRecord(action) || action.id !== 'release-handoff-report',
+      )
+    : summary.nextActions
+
+  return {
+    ...summary,
+    nextActions: actions,
+  }
+}
+
 function renderFinalTodoProofs(summary) {
   const requirements = Array.isArray(summary.finalTodoRequirements)
     ? summary.finalTodoRequirements
@@ -379,7 +402,10 @@ function writeOutput(outputPath, markdown) {
 
 function main() {
   const options = parseArgs(process.argv.slice(2))
-  const summary = runReadinessSummary(options)
+  const summary = prepareReleaseHandoffSummary(
+    runReadinessSummary(options),
+    options.output,
+  )
   writeOutput(options.output, renderReleaseHandoff(summary))
 }
 
