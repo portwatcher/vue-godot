@@ -217,7 +217,14 @@ function readPlatformEvidence(filePath) {
 }
 
 export function normalizePlatformEvidence(evidence) {
-  const { requiredChecks, passOnlyChecks, selectedApiRequiredChecks, ...platformEvidence } = evidence
+  const {
+    initialCiEvidence,
+    nextActions,
+    requiredChecks,
+    passOnlyChecks,
+    selectedApiRequiredChecks,
+    ...platformEvidence
+  } = evidence
   return platformEvidence
 }
 

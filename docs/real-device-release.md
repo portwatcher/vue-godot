@@ -173,9 +173,10 @@ Generated `nextActions` commands will use that commit for CI collection,
 worksheet audit, evidence assembly, and validation instead of the placeholder.
 Keep only complete `android` and `ios` evidence objects before running
 `npm run release:evidence`.
-Keep worksheet fields only in `release/platform-evidence.json`; final
+Keep platform worksheet fields and scaffold fields only in `release/platform-evidence.json`; final
 `release/real-device-evidence.json` must not contain `requiredChecks`,
-`passOnlyChecks`, or `selectedApiRequiredChecks`.
+`passOnlyChecks`, `selectedApiRequiredChecks`, top-level `initialCiEvidence`, or
+top-level `nextActions`.
 
 During device testing, audit worksheet progress without failing the handoff:
 
@@ -281,7 +282,7 @@ npm run release:evidence -- \
 
 Use `--commit <release-candidate-sha>` whenever the evidence is generated from
 a follow-up evidence commit instead of directly on the tested release candidate.
-The helper strips worksheet fields before writing final evidence. If
+The helper strips platform worksheet fields and scaffold fields before writing final evidence. If
 `release/platform-evidence.json` is copied directly to
 `release/real-device-evidence.json`, `npm run check:real-device-evidence` and
 strict release gates reject it.

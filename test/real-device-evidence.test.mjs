@@ -261,9 +261,19 @@ test('real device evidence rejects worksheet-only platform fields', () => {
   evidence.android.selectedApiRequiredChecks = {
     'network-if-selected': ['fetch'],
   }
+  evidence.initialCiEvidence = { ready: true }
+  evidence.nextActions = [{ id: 'stale-platform-action' }]
 
   const errors = validateRealDeviceEvidence(evidence).join('\n')
 
+  assert.match(
+    errors,
+    /evidence\.initialCiEvidence is platform-evidence worksheet scaffolding/,
+  )
+  assert.match(
+    errors,
+    /evidence\.nextActions is platform-evidence worksheet scaffolding/,
+  )
   assert.match(errors, /android\.requiredChecks is a platform-evidence worksheet field/)
   assert.match(errors, /android\.passOnlyChecks is a platform-evidence worksheet field/)
   assert.match(

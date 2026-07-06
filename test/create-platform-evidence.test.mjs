@@ -472,11 +472,14 @@ test('release evidence normalization removes template-only required checks', () 
   const template = buildPlatformEvidenceTemplate({
     selectedApis: ['fetch'],
   })
+  template.android.initialCiEvidence = { ready: true }
+  template.android.nextActions = [{ id: 'stale-platform-action' }]
   const normalized = normalizePlatformEvidence(template.android)
 
   assert.equal('requiredChecks' in normalized, false)
   assert.equal('passOnlyChecks' in normalized, false)
   assert.equal('selectedApiRequiredChecks' in normalized, false)
+  assert.equal('initialCiEvidence' in normalized, false)
   assert.equal('nextActions' in normalized, false)
   assert.deepEqual(normalized.passedChecks, [])
 })

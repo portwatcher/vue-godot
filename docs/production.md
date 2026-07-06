@@ -148,15 +148,16 @@ real-device and release-readiness evidence files from the current package
 versions, Android/iOS platform evidence, CI evidence, and verified GitHub
 Actions run metadata. Real-device and release-readiness evidence must record
 full 40-character commit SHAs for the tested release commit and workflow run
-commits. It strips worksheet fields and validates normalized platform evidence
+commits. It strips platform worksheet fields and scaffold fields and validates normalized platform evidence
 before fetching GitHub run metadata. Pass
 `--commit <release-candidate-sha>` when generating evidence from a follow-up
 evidence commit so the evidence records the tested release commit rather than
 current `HEAD`. It rejects not-ready or inconsistent structured CI summaries,
 including malformed workflow run commit SHAs, before writing the final evidence;
 `release/real-device-evidence.json` must not contain
-`requiredChecks`, `passOnlyChecks`, or `selectedApiRequiredChecks`, and copied
-platform evidence is rejected. For final readiness evidence, fetch the
+`requiredChecks`, `passOnlyChecks`, `selectedApiRequiredChecks`, top-level
+`initialCiEvidence`, or top-level `nextActions`, and copied platform evidence is
+rejected. For final readiness evidence, fetch the
 `release-preflight-summary` artifact from the Release Preflight workflow with
 `GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit <release-candidate-sha> --output release/release-preflight-summary.json`,
 then pass it to `release:evidence` with

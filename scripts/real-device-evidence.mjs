@@ -142,6 +142,11 @@ export const realDeviceWorksheetFields = [
   'selectedApiRequiredChecks',
 ]
 
+export const realDeviceTopLevelWorksheetFields = [
+  'initialCiEvidence',
+  'nextActions',
+]
+
 const networkSelectedChecks = ['network-if-selected']
 const storageSelectedChecks = ['storage-restart']
 const clipboardSelectedChecks = ['clipboard-if-selected']
@@ -627,6 +632,13 @@ export function validateRealDeviceEvidenceMetadata(evidence, options = {}) {
   }
 
   assertCommitSha(evidence, 'commit', errors, 'evidence')
+  for (const field of realDeviceTopLevelWorksheetFields) {
+    if (field in evidence) {
+      errors.push(
+        `evidence.${field} is platform-evidence worksheet scaffolding; remove it from final real-device evidence with npm run release:evidence`,
+      )
+    }
+  }
   assertString(evidence, 'godotJsVersion', errors, 'evidence')
   assertGitHubActionsRunUrl(evidence, 'checkRunUrl', errors, 'evidence')
   assertExactString(

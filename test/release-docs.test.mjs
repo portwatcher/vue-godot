@@ -373,7 +373,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /worksheet fields/)
   assert.match(
     production,
-    /requiredChecks[\s\S]*passOnlyChecks[\s\S]*selectedApiRequiredChecks/,
+    /requiredChecks[\s\S]*passOnlyChecks[\s\S]*selectedApiRequiredChecks[\s\S]*initialCiEvidence[\s\S]*nextActions/,
   )
   assert.match(production, /release:evidence/)
   assert.match(
@@ -704,7 +704,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /worksheet fields/)
   assert.match(
     readme,
-    /requiredChecks[\s\S]*passOnlyChecks[\s\S]*selectedApiRequiredChecks/,
+    /requiredChecks[\s\S]*passOnlyChecks[\s\S]*selectedApiRequiredChecks[\s\S]*initialCiEvidence[\s\S]*nextActions/,
   )
   assert.match(readme, /release:evidence/)
   assert.match(readme, /release:preflight-summary/)
@@ -947,7 +947,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /worksheet fields/)
   assert.match(
     checklist,
-    /requiredChecks[\s\S]*passOnlyChecks[\s\S]*selectedApiRequiredChecks/,
+    /requiredChecks[\s\S]*passOnlyChecks[\s\S]*selectedApiRequiredChecks[\s\S]*initialCiEvidence[\s\S]*nextActions/,
   )
   assert.match(checklist, /selected API set/)
   assert.match(checklist, /Selected API\s+names are validated/)
