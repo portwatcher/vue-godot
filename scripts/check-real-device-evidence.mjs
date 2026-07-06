@@ -15,7 +15,9 @@ import {
   commitEvidenceFileCommands,
   defaultPlatformEvidenceChecklistPath,
   defaultPlatformEvidencePath,
+  defaultRealDeviceEvidenceChecklistPath,
   defaultRealDeviceEvidencePath,
+  defaultRealDeviceEvidenceSummaryPath,
   defaultReleaseCiEvidencePath,
   initialReleaseCiCommands,
   productionProfilePlatformEvidenceCommand,
@@ -51,6 +53,9 @@ Options:
                       Require evidence.commit to match the given commit.
   --summary-output <file>
                       Write machine-readable validation status JSON.
+  --checklist-output <file>
+                      Write a tester-facing Markdown checklist with the same
+                      validation status and follow-up commands.
   --verify-runs       Query GitHub Actions and require the recorded Check and
                       Godot Smoke runs to be completed successful runs for the
                       tested release commit.
@@ -66,6 +71,7 @@ function parseArgs(argv) {
     expectedCommit: null,
     optional: false,
     platformEvidencePath: defaultPlatformEvidencePath,
+    checklistOutput: null,
     summaryOutput: null,
     verifyRuns: false,
   }
@@ -99,6 +105,20 @@ function parseArgs(argv) {
 
     if (arg.startsWith('--summary-output=')) {
       options.summaryOutput = arg.slice('--summary-output='.length)
+      continue
+    }
+
+    if (arg === '--checklist-output') {
+      const value = argv[++index]
+      if (!value) {
+        throw new Error('--checklist-output requires a value')
+      }
+      options.checklistOutput = value
+      continue
+    }
+
+    if (arg.startsWith('--checklist-output=')) {
+      options.checklistOutput = arg.slice('--checklist-output='.length)
       continue
     }
 
@@ -208,6 +228,13 @@ function realDeviceEvidenceCommitCommands(summary) {
   )
 }
 
+function outputSummary(summary) {
+  return {
+    ...summary,
+    nextActions: collectNextActions(summary),
+  }
+}
+
 function collectNextActions(summary) {
   if (summary.ready) {
     return []
@@ -307,7 +334,9 @@ function collectNextActions(summary) {
           ),
           releaseEvidenceCommand(expectedCommit, pathOptions),
           checkRealDeviceEvidenceCommand(expectedCommit, {
+            checklistOutput: defaultRealDeviceEvidenceChecklistPath,
             ...pathOptions,
+            summaryOutput: defaultRealDeviceEvidenceSummaryPath,
             verifyRuns: true,
           }),
           ...realDeviceEvidenceCommitCommands(summary),
@@ -330,7 +359,9 @@ function collectNextActions(summary) {
         ),
         releaseEvidenceCommand(expectedCommit, pathOptions),
         checkRealDeviceEvidenceCommand(expectedCommit, {
+          checklistOutput: defaultRealDeviceEvidenceChecklistPath,
           ...pathOptions,
+          summaryOutput: defaultRealDeviceEvidenceSummaryPath,
           verifyRuns: true,
         }),
         ...realDeviceEvidenceCommitCommands(summary),
@@ -339,19 +370,178 @@ function collectNextActions(summary) {
   ]
 }
 
+function displayValue(value) {
+  if (typeof value === 'boolean') {
+    return value ? 'yes' : 'no'
+  }
+  if (Number.isInteger(value)) {
+    return String(value)
+  }
+  if (typeof value === 'string' && value.trim().length > 0) {
+    return value.trim()
+  }
+  return 'missing'
+}
+
+function checklistLine(ready, label, detail) {
+  return `- ${ready ? '[x]' : '[ ]'} ${label}: ${detail}`
+}
+
+function platformLabel(platform) {
+  if (platform === 'android') {
+    return 'Android'
+  }
+  if (platform === 'ios') {
+    return 'iOS'
+  }
+  return platform
+}
+
+function formatIssueLines(label, values) {
+  const errors = Array.isArray(values)
+    ? values
+        .map((value) => String(value).trim())
+        .filter((value) => value.length > 0)
+    : []
+
+  if (errors.length === 0) {
+    return [`- ${label}: none`]
+  }
+
+  return [`- ${label}:`, ...errors.map((error) => `  - ${error}`)]
+}
+
+function platformProgressLine(summary, platform) {
+  const status = summary.platformEvidence?.platforms?.[platform]
+  if (!status) {
+    return checklistLine(
+      false,
+      platformLabel(platform),
+      'platform worksheet status missing',
+    )
+  }
+
+  const completed = status.completedCheckCount ?? 0
+  const required = status.requiredCheckCount ?? 0
+  const blockerCount = status.errorCount ?? 0
+  return checklistLine(
+    status.ready === true,
+    platformLabel(platform),
+    `${completed}/${required} required checks complete; ${blockerCount} blocker(s)`,
+  )
+}
+
+export function formatRealDeviceEvidenceChecklist(summary) {
+  const status = outputSummary(summary)
+  const lines = [
+    '# Real Device Evidence Checklist',
+    '',
+    `- Status: ${status.ready ? 'ready' : 'waiting'}`,
+    `- Expected commit: ${displayValue(status.expectedCommit)}`,
+    `- Real-device evidence: ${status.evidencePath}`,
+    `- Platform evidence: ${status.platformEvidencePath}`,
+    `- CI evidence: ${status.initialCiEvidencePath}`,
+    `- Run verification requested: ${displayValue(
+      status.runVerificationRequested,
+    )}`,
+    '',
+    '## Evidence Status',
+    '',
+    checklistLine(
+      status.evidencePresent === true,
+      'Evidence file exists',
+      displayValue(status.evidencePath),
+    ),
+    checklistLine(
+      status.initialCiEvidenceReady === true,
+      'Check/Godot Smoke CI evidence',
+      `${displayValue(status.initialCiEvidencePath)} for ${displayValue(
+        status.initialCiEvidence?.expectedCommit ?? status.expectedCommit,
+      )}`,
+    ),
+    checklistLine(
+      status.platformEvidenceReady === true,
+      'Platform worksheet',
+      `${displayValue(status.platformEvidencePath)} with Android/iOS production checks`,
+    ),
+    checklistLine(
+      status.metadataReady === true,
+      'Metadata',
+      `${status.metadataErrors.length} blocker(s)`,
+    ),
+    checklistLine(
+      status.androidReady === true,
+      'Android evidence',
+      `${status.androidErrors.length} blocker(s)`,
+    ),
+    checklistLine(
+      status.iosReady === true,
+      'iOS evidence',
+      `${status.iosErrors.length} blocker(s)`,
+    ),
+    checklistLine(
+      status.runErrors.length === 0,
+      'GitHub run verification',
+      `${status.runErrors.length} blocker(s)`,
+    ),
+    '',
+    '## Platform Worksheet Progress',
+    '',
+    platformProgressLine(status, 'android'),
+    platformProgressLine(status, 'ios'),
+    '',
+    '## Blocking Issues',
+    '',
+    ...formatIssueLines(
+      'Read errors',
+      status.evidencePresent ? [] : status.errors,
+    ),
+    ...formatIssueLines('Metadata errors', status.metadataErrors),
+    ...formatIssueLines('Android errors', status.androidErrors),
+    ...formatIssueLines('iOS errors', status.iosErrors),
+    ...formatIssueLines('Run verification errors', status.runErrors),
+    '',
+    '## Next Actions',
+    '',
+  ]
+
+  if (status.nextActions.length === 0) {
+    lines.push('- none')
+  } else {
+    for (const action of status.nextActions) {
+      lines.push(`### ${action.title ?? action.id ?? 'Action'}`, '')
+      if (typeof action.detail === 'string' && action.detail.trim()) {
+        lines.push(action.detail.trim(), '')
+      }
+      lines.push('```bash', ...action.commands, '```', '')
+    }
+  }
+
+  return `${lines.join('\n')}\n`
+}
+
 function writeSummary(options, summary) {
-  if (!options.summaryOutput) {
+  if (!options.summaryOutput && !options.checklistOutput) {
     return
   }
 
-  const resolved = path.resolve(repoRoot, options.summaryOutput)
-  const output = {
-    ...summary,
-    nextActions: collectNextActions(summary),
+  const output = outputSummary(summary)
+  if (options.summaryOutput) {
+    const resolved = path.resolve(repoRoot, options.summaryOutput)
+    fs.mkdirSync(path.dirname(resolved), { recursive: true })
+    fs.writeFileSync(resolved, `${JSON.stringify(output, null, 2)}\n`)
+    console.log(
+      `[real-device-evidence] wrote ${path.relative(repoRoot, resolved)}`,
+    )
   }
-  fs.mkdirSync(path.dirname(resolved), { recursive: true })
-  fs.writeFileSync(resolved, `${JSON.stringify(output, null, 2)}\n`)
-  console.log(`[real-device-evidence] wrote ${path.relative(repoRoot, resolved)}`)
+  if (options.checklistOutput) {
+    const resolved = path.resolve(repoRoot, options.checklistOutput)
+    fs.mkdirSync(path.dirname(resolved), { recursive: true })
+    fs.writeFileSync(resolved, formatRealDeviceEvidenceChecklist(summary))
+    console.log(
+      `[real-device-evidence] wrote ${path.relative(repoRoot, resolved)}`,
+    )
+  }
 }
 
 export async function buildRealDeviceEvidenceSummary(

@@ -12,6 +12,8 @@ import {
   defaultReleasePreflightSummaryPath,
   defaultReleaseReadinessEvidencePath,
   defaultReleaseCiEvidencePath,
+  defaultRealDeviceEvidenceChecklistPath,
+  defaultRealDeviceEvidenceSummaryPath,
   defaultReleasePreflightChecklistPath,
   evidenceDispatchRefPlaceholder,
   initialReleaseCiCommands,
@@ -44,6 +46,14 @@ test('release handoff commands format release CI waits and dispatches', () => {
   assert.equal(evidenceDispatchRefPlaceholder, '<evidence-branch-or-tag>')
   assert.equal(defaultPlatformEvidencePath, 'release/platform-evidence.json')
   assert.equal(defaultReleaseCiEvidencePath, 'release/ci-runs.json')
+  assert.equal(
+    defaultRealDeviceEvidenceSummaryPath,
+    'release/real-device-evidence-summary.json',
+  )
+  assert.equal(
+    defaultRealDeviceEvidenceChecklistPath,
+    'release/real-device-evidence-checklist.md',
+  )
   assert.equal(
     defaultReleasePreflightChecklistPath,
     'release/release-preflight-checklist.md',
@@ -105,11 +115,13 @@ test('release handoff commands format real-device evidence assembly', () => {
   )
   assert.equal(
     checkRealDeviceEvidenceCommand(commit, {
+      checklistOutput: 'release/real checklist.md',
       ciEvidencePath: 'release/ci runs.json',
       platformEvidencePath: "release/platform evidence's draft.json",
       realDeviceEvidencePath: 'release/real device evidence.json',
+      summaryOutput: 'release/real summary.json',
     }),
-    `npm run check:real-device-evidence -- --path 'release/real device evidence.json' --platform-evidence 'release/platform evidence'\\''s draft.json' --ci-evidence 'release/ci runs.json' --expected-commit ${commit}`,
+    `npm run check:real-device-evidence -- --path 'release/real device evidence.json' --platform-evidence 'release/platform evidence'\\''s draft.json' --ci-evidence 'release/ci runs.json' --summary-output 'release/real summary.json' --checklist-output 'release/real checklist.md' --expected-commit ${commit}`,
   )
   assert.equal(
     checkRealDeviceEvidenceCommand(commit, {
@@ -122,11 +134,13 @@ test('release handoff commands format real-device evidence assembly', () => {
   assert.equal(
     checkRealDeviceEvidenceCommand(commit, {
       ciEvidencePath: 'release/custom-ci-runs.json',
+      checklistOutput: 'release/real-device-checklist.md',
       platformEvidencePath: 'release/custom-platform-evidence.json',
       realDeviceEvidencePath: 'release/custom-real-device-evidence.json',
+      summaryOutput: 'release/real-device-summary.json',
       verifyRuns: true,
     }),
-    `npm run check:real-device-evidence -- --path release/custom-real-device-evidence.json --platform-evidence release/custom-platform-evidence.json --ci-evidence release/custom-ci-runs.json --verify-runs --expected-commit ${commit}`,
+    `npm run check:real-device-evidence -- --path release/custom-real-device-evidence.json --platform-evidence release/custom-platform-evidence.json --ci-evidence release/custom-ci-runs.json --summary-output release/real-device-summary.json --checklist-output release/real-device-checklist.md --verify-runs --expected-commit ${commit}`,
   )
   assert.equal(
     releaseEvidenceCommand(null, {

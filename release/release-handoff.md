@@ -2,7 +2,7 @@
 
 - Release candidate commit: `22a9e0bfe4e6edc691b46f15205752d68ae43e9e`
 - Handoff format: 4
-- Handoff state: b1b4e7c4dd1d4006
+- Handoff state: 673833a793f43f61
 - Overall readiness: open (10 blocker(s))
 - Real-device evidence: waiting
 - Android evidence: waiting
@@ -20,7 +20,7 @@
 - TODO.md:392 Release preflight passes without warnings in the release environment.
 - TODO.md:394 All public READMEs match the final support claims.
 - TODO.md:395 The root README warning is removed in the same commit that marks this checklist complete.
-- real-device evidence missing at release/real-device-evidence.json; Create release/real-device-evidence.json after completing docs/real-device-release.md, then run npm run check:real-device-evidence -- --verify-runs.; Real device evidence file not found: release/real-device-evidence.json
+- real-device evidence missing at release/real-device-evidence.json; Create release/real-device-evidence.json after completing docs/real-device-release.md, then run npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e.; Real device evidence file not found: release/real-device-evidence.json
 - release-readiness evidence missing at release/release-readiness-evidence.json; Create it after the Release Preflight workflow passes without warnings.; Release-readiness evidence file not found: release/release-readiness-evidence.json
 
 ## CI Evidence
@@ -180,7 +180,7 @@ npm run release:record-platform-evidence -- --platform ios --platform-evidence r
 npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
 npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
 npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e --real-device-output release/real-device-evidence.json
-npm run check:real-device-evidence -- --verify-runs --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
+npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
 git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json
 git commit -m "Add real-device release evidence"
 git push
@@ -196,7 +196,7 @@ Commands with `<...>` placeholders must be edited before running; unresolved pla
 
 ```bash
 npm run check
-npm run check:real-device-evidence -- --verify-runs --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
+npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e
 npm run release:ci -- --commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --wait --output release/ci-runs.json
 GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json
 GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit 22a9e0bfe4e6edc691b46f15205752d68ae43e9e --output release/release-preflight-summary.json --checklist-output release/release-preflight-checklist.md

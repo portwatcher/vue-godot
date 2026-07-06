@@ -38,6 +38,8 @@ import {
   currentHeadCommitCommand,
   defaultPlatformEvidenceChecklistPath,
   defaultPlatformEvidencePath,
+  defaultRealDeviceEvidenceChecklistPath,
+  defaultRealDeviceEvidenceSummaryPath,
   defaultReleaseCiEvidencePath,
   defaultReleaseHandoffReportPath,
   defaultReleasePreflightChecklistPath,
@@ -780,6 +782,14 @@ async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
 
   if (!evidence) {
     status.errorCount = readErrors.length
+    const checkCommand = checkRealDeviceEvidenceCommand(expectedCommit, {
+      ...(options.realDevicePath
+        ? { realDeviceEvidencePath: options.realDevicePath }
+        : {}),
+      checklistOutput: defaultRealDeviceEvidenceChecklistPath,
+      summaryOutput: defaultRealDeviceEvidenceSummaryPath,
+      verifyRuns: true,
+    })
     blockers.push(
       [
         `real-device evidence missing at ${describeRealDeviceEvidencePath(
@@ -787,7 +797,7 @@ async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
         )}`,
         `Create ${describeRealDeviceEvidencePath(
           evidencePath,
-        )} after completing docs/real-device-release.md, then run npm run check:real-device-evidence -- --verify-runs.`,
+        )} after completing docs/real-device-release.md, then run ${checkCommand}.`,
         readErrors.join('\n'),
       ]
         .filter(Boolean)
@@ -1398,7 +1408,9 @@ function collectReadinessNextActions(
           : [checkPlatformEvidenceCommand(commit, { platformEvidencePath })]),
         releaseEvidenceCommand(commit, realDeviceCommandOptions),
         checkRealDeviceEvidenceCommand(commit, {
+          checklistOutput: defaultRealDeviceEvidenceChecklistPath,
           ...realDeviceCommandOptions,
+          summaryOutput: defaultRealDeviceEvidenceSummaryPath,
           verifyRuns: true,
         }),
         ...commitEvidenceFileCommands(
@@ -1425,7 +1437,9 @@ function collectReadinessNextActions(
           commands: [
             'npm run check',
             checkRealDeviceEvidenceCommand(commit, {
+              checklistOutput: defaultRealDeviceEvidenceChecklistPath,
               ...realDeviceCommandOptions,
+              summaryOutput: defaultRealDeviceEvidenceSummaryPath,
               verifyRuns: true,
             }),
             ...(checks.initialCiEvidence

@@ -17,7 +17,9 @@ import {
   defaultPlatformEvidenceChecklistPath,
   commitEvidenceFileCommands,
   defaultPlatformEvidencePath,
+  defaultRealDeviceEvidenceChecklistPath,
   defaultRealDeviceEvidencePath,
+  defaultRealDeviceEvidenceSummaryPath,
   defaultReleaseCiEvidencePath,
   recordPlatformEvidenceCommand,
   releaseEvidenceCommand,
@@ -904,7 +906,9 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
         platformEvidencePath,
       }),
       checkRealDeviceEvidenceCommand(commit, {
+        checklistOutput: defaultRealDeviceEvidenceChecklistPath,
         ...platformEvidenceOptions,
+        summaryOutput: defaultRealDeviceEvidenceSummaryPath,
         verifyRuns: true,
       }),
       ...commitEvidenceFileCommands(

@@ -14,6 +14,10 @@ export const defaultPlatformEvidenceChecklistPath =
   'release/platform-evidence-checklist.md'
 export const defaultReleaseCiEvidencePath = 'release/ci-runs.json'
 export const defaultRealDeviceEvidencePath = 'release/real-device-evidence.json'
+export const defaultRealDeviceEvidenceSummaryPath =
+  'release/real-device-evidence-summary.json'
+export const defaultRealDeviceEvidenceChecklistPath =
+  'release/real-device-evidence-checklist.md'
 export const defaultReleasePreflightSummaryPath =
   'release/release-preflight-summary.json'
 export const defaultReleasePreflightChecklistPath =
@@ -376,6 +380,12 @@ export function checkRealDeviceEvidenceCommand(commit, options = {}) {
   }
   if (options.ciEvidencePath) {
     args.push('--ci-evidence', options.ciEvidencePath)
+  }
+  if (options.summaryOutput) {
+    args.push('--summary-output', options.summaryOutput)
+  }
+  if (options.checklistOutput) {
+    args.push('--checklist-output', options.checklistOutput)
   }
   if (options.verifyRuns) {
     args.push('--verify-runs')

@@ -37,13 +37,13 @@ nextActions, and a focused Markdown checklist without failing the handoff run.
 evidence JSON when it exists. Pass `--verify-runs` after evidence assembly to
 query GitHub Actions and require the recorded Check and Godot Smoke run URLs to
 be completed successful runs for the tested release commit. Add
-`--summary-output release/real-device-evidence-summary.json` to write
+`--summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md` to write
 validation status, metadata/platform/run errors, initial CI evidence status,
 platform worksheet
 status with compact per-platform progress counts, malformed outcome counts,
 exact remaining must-pass/skippable check names, and structured check
 descriptions, plus `nextActions` command hints for fixing or
-creating evidence. Pass `--ci-evidence <file>` or
+creating evidence in both JSON and Markdown forms. Pass `--ci-evidence <file>` or
 `--platform-evidence <file>` when a handoff is using non-default evidence or
 worksheet paths so generated creation, validation, and assembly commands
 continue to target those files. If a handoff path is outside the Git worktree,

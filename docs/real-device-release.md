@@ -318,13 +318,13 @@ The helper strips platform worksheet fields and scaffold fields before writing f
 `release/platform-evidence.json` is copied directly to
 `release/real-device-evidence.json`, `npm run check:real-device-evidence` and
 strict release gates reject it.
-Use `npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json`
+Use `npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md`
 to write validation status, metadata/platform/run errors, initial CI evidence
 status, platform
 worksheet status with compact per-platform progress counts, malformed outcome
 counts, exact remaining must-pass/skippable check names, and structured check
 descriptions, plus `nextActions` command hints for fixing or
-creating evidence. Pass `--ci-evidence <file>` or
+creating evidence in both JSON and Markdown forms. Pass `--ci-evidence <file>` or
 `--platform-evidence <file>` when those inputs use non-default handoff paths so
 generated creation, validation, and assembly commands target those files. If a
 handoff path is outside the Git worktree, generated commit commands copy it into

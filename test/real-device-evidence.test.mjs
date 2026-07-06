@@ -4,7 +4,10 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
-import { buildRealDeviceEvidenceSummary } from '../scripts/check-real-device-evidence.mjs'
+import {
+  buildRealDeviceEvidenceSummary,
+  formatRealDeviceEvidenceChecklist,
+} from '../scripts/check-real-device-evidence.mjs'
 import {
   knownRealDeviceSelectedApis,
   passOnlyRealDeviceChecks,
@@ -26,6 +29,8 @@ import {
 } from '../scripts/release-utils.mjs'
 
 const repoRoot = process.cwd()
+const realDeviceCheckOutputs =
+  '--summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md'
 
 function platformEvidence(platform) {
   return {
@@ -572,6 +577,55 @@ test('checked-in real device evidence example matches the validator schema', () 
   )
 })
 
+test('real device evidence checklist renders ready evidence without follow-up actions', () => {
+  const summary = {
+    androidErrors: [],
+    androidReady: true,
+    errorCount: 0,
+    errors: [],
+    evidencePath: 'release/real-device-evidence.json',
+    evidencePresent: true,
+    expectedCommit: validEvidence().commit,
+    initialCiEvidence: {
+      expectedCommit: validEvidence().commit,
+    },
+    initialCiEvidencePath: 'release/ci-runs.json',
+    initialCiEvidenceReady: true,
+    iosErrors: [],
+    iosReady: true,
+    metadataErrors: [],
+    metadataReady: true,
+    platformEvidence: {
+      platforms: {
+        android: {
+          completedCheckCount: 14,
+          errorCount: 0,
+          ready: true,
+          requiredCheckCount: 14,
+        },
+        ios: {
+          completedCheckCount: 15,
+          errorCount: 0,
+          ready: true,
+          requiredCheckCount: 15,
+        },
+      },
+    },
+    platformEvidencePath: 'release/platform-evidence.json',
+    platformEvidenceReady: true,
+    ready: true,
+    runErrors: [],
+    runVerificationRequested: true,
+  }
+
+  const checklist = formatRealDeviceEvidenceChecklist(summary)
+
+  assert.match(checklist, /- Status: ready/)
+  assert.match(checklist, /\[x\] Android evidence: 0 blocker\(s\)/)
+  assert.match(checklist, /\[x\] iOS: 15\/15 required checks complete/)
+  assert.match(checklist, /## Next Actions[\s\S]*- none/)
+})
+
 test('real device evidence path resolves from the release environment variable', () => {
   assert.equal(
     resolveRealDeviceEvidencePath({
@@ -598,6 +652,7 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-evidence-'))
   const evidencePath = path.join(tempDir, 'missing-real-device-evidence.json')
   const summaryPath = path.join(tempDir, 'real-device-summary.json')
+  const checklistPath = path.join(tempDir, 'real-device-checklist.md')
   const commandEvidencePath = path.relative(repoRoot, evidencePath)
 
   try {
@@ -610,10 +665,13 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
         evidencePath,
         '--summary-output',
         summaryPath,
+        '--checklist-output',
+        checklistPath,
       ],
       { cwd: repoRoot, encoding: 'utf-8' },
     )
     const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
+    const checklist = fs.readFileSync(checklistPath, 'utf-8')
 
     assert.equal(result.status, 0)
     assert.equal(summary.ready, false)
@@ -657,7 +715,7 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
             'npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit <release-candidate-sha>',
           ) &&
           action.commands.includes(
-            `npm run check:real-device-evidence -- --path ${commandEvidencePath} --verify-runs --expected-commit <release-candidate-sha>`,
+            `npm run check:real-device-evidence -- --path ${commandEvidencePath} ${realDeviceCheckOutputs} --verify-runs --expected-commit <release-candidate-sha>`,
           ) &&
           copyEvidenceCommands([
             [commandEvidencePath, 'release/real-device-evidence.json'],
@@ -667,6 +725,15 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
           ),
       ),
     )
+    assert.match(checklist, /# Real Device Evidence Checklist/)
+    assert.match(checklist, /- Status: waiting/)
+    assert.match(checklist, /\[ \] Evidence file exists/)
+    assert.match(checklist, /## Platform Worksheet Progress/)
+    assert.match(checklist, /Android\/iOS production checks/)
+    assert.match(checklist, /## Next Actions/)
+    assert.match(checklist, /release:record-platform-evidence/)
+    assert.match(checklist, /release\/real-device-evidence-summary\.json/)
+    assert.match(checklist, /release\/real-device-evidence-checklist\.md/)
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }
@@ -737,7 +804,7 @@ test('check-real-device-evidence next actions honor expected commits', () => {
     )
     assert.ok(
       assembleAction.commands.includes(
-        `npm run check:real-device-evidence -- --path ${commandEvidencePath} --verify-runs --expected-commit ${expectedCommit}`,
+        `npm run check:real-device-evidence -- --path ${commandEvidencePath} ${realDeviceCheckOutputs} --verify-runs --expected-commit ${expectedCommit}`,
       ),
     )
     assert.ok(
@@ -752,7 +819,7 @@ test('check-real-device-evidence next actions honor expected commits', () => {
     )
     assert.ok(
       assembleAction.commands.indexOf(
-        `npm run check:real-device-evidence -- --path ${commandEvidencePath} --verify-runs --expected-commit ${expectedCommit}`,
+        `npm run check:real-device-evidence -- --path ${commandEvidencePath} ${realDeviceCheckOutputs} --verify-runs --expected-commit ${expectedCommit}`,
       ) <
         assembleAction.commands.indexOf(
           'git commit -m "Add real-device release evidence"',
@@ -828,7 +895,7 @@ test('check-real-device-evidence next actions honor missing custom evidence path
     )
     assert.ok(
       assembleAction.commands.includes(
-        `npm run check:real-device-evidence -- --path ${shellQuote(commandEvidencePath)} --platform-evidence ${shellQuote(commandPlatformEvidencePath)} --ci-evidence ${shellQuote(ciEvidencePath)} --verify-runs --expected-commit ${expectedCommit}`,
+        `npm run check:real-device-evidence -- --path ${shellQuote(commandEvidencePath)} --platform-evidence ${shellQuote(commandPlatformEvidencePath)} --ci-evidence ${shellQuote(ciEvidencePath)} ${realDeviceCheckOutputs} --verify-runs --expected-commit ${expectedCommit}`,
       ),
     )
     assert.ok(
@@ -1005,7 +1072,7 @@ test('check-real-device-evidence next actions honor custom completed input paths
     )
     assert.ok(
       assembleAction.commands.includes(
-        `npm run check:real-device-evidence -- --path ${shellQuote(realDeviceCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --ci-evidence ${shellQuote(ciEvidencePath)} --verify-runs --expected-commit ${ciEvidence.commit}`,
+        `npm run check:real-device-evidence -- --path ${shellQuote(realDeviceCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --ci-evidence ${shellQuote(ciEvidencePath)} ${realDeviceCheckOutputs} --verify-runs --expected-commit ${ciEvidence.commit}`,
       ),
     )
     assert.ok(
@@ -1162,4 +1229,28 @@ test('check-real-device-evidence writes a passing summary', () => {
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }
+})
+
+test('real device evidence checklist renders passing status without next actions', async () => {
+  const evidencePath = path.join(
+    repoRoot,
+    'docs/real-device-evidence.example.json',
+  )
+  const summary = await buildRealDeviceEvidenceSummary(
+    {
+      ciEvidencePath: 'release/ci-runs.json',
+      evidencePath,
+      expectedCommit: null,
+      optional: false,
+      platformEvidencePath: 'release/platform-evidence.json',
+      summaryOutput: null,
+      verifyRuns: false,
+    },
+    async () => [],
+  )
+  const checklist = formatRealDeviceEvidenceChecklist(summary)
+
+  assert.match(checklist, /- Status: ready/)
+  assert.match(checklist, /\[x\] Evidence file exists/)
+  assert.match(checklist, /## Next Actions\n\n- none/)
 })

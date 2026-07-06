@@ -18,6 +18,7 @@ test('release helper outputs are ignored separately from committed evidence', ()
     'release/platform-evidence-summary.json',
     'release/platform-evidence-checklist.md',
     'release/real-device-evidence-summary.json',
+    'release/real-device-evidence-checklist.md',
     'release/release-readiness-summary.json',
   ]) {
     assert.match(gitignore, new RegExp(`^${file}$`, 'm'))
@@ -303,6 +304,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /platform-evidence-summary\.json/)
   assert.match(production, /platform-evidence-checklist\.md/)
   assert.match(production, /real-device-evidence-summary\.json/)
+  assert.match(production, /real-device-evidence-checklist\.md/)
   assert.match(
     production,
     /validation status, metadata\/platform\/run errors, initial CI evidence\s+status,\s+platform worksheet\s+status with compact per-platform progress counts, malformed outcome counts,\s+exact remaining\s+must-pass\/skippable check names, and structured check\s+descriptions, plus `nextActions`/,
@@ -560,6 +562,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /platform-evidence-summary\.json/)
   assert.match(readme, /platform-evidence-checklist\.md/)
   assert.match(readme, /real-device-evidence-summary\.json/)
+  assert.match(readme, /real-device-evidence-checklist\.md/)
   assert.match(
     readme,
     /validation status, metadata\/platform\/run errors, initial CI evidence status, platform worksheet status with compact per-platform progress counts, malformed outcome counts,\s+exact remaining\s+must-pass\/skippable check names, and structured check descriptions, plus `nextActions`/,
@@ -798,6 +801,7 @@ test('release preflight enforces real device evidence', () => {
     /Release commit options \(`--commit`,\s+`--expected-commit`, and `--release-preflight-run-commit`\) require full\s+40-character git commit SHAs/,
   )
   assert.match(checklist, /real-device-evidence-summary\.json/)
+  assert.match(checklist, /real-device-evidence-checklist\.md/)
   assert.match(
     checklist,
     /validation status, metadata\/platform\/run errors, initial CI evidence\s+status, platform\s+worksheet status with compact per-platform progress counts, malformed outcome\s+counts,\s+exact remaining\s+must-pass\/skippable check names, and structured check\s+descriptions, plus\s+`nextActions`/,

@@ -20,6 +20,8 @@ import {
   checkPlatformEvidenceCommand,
   checkRealDeviceEvidenceCommand,
   defaultPlatformEvidenceChecklistPath,
+  defaultRealDeviceEvidenceChecklistPath,
+  defaultRealDeviceEvidenceSummaryPath,
   defaultReleaseCiEvidencePath,
   initialReleaseCiCommands,
   recordPlatformEvidenceCommand,
@@ -297,7 +299,11 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
           ciEvidencePath,
           platformEvidencePath,
         }),
-        checkRealDeviceEvidenceCommand(commit, realDeviceCheckOptions),
+        checkRealDeviceEvidenceCommand(commit, {
+          checklistOutput: defaultRealDeviceEvidenceChecklistPath,
+          ...realDeviceCheckOptions,
+          summaryOutput: defaultRealDeviceEvidenceSummaryPath,
+        }),
       ],
     },
   ]
