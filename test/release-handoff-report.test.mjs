@@ -40,7 +40,10 @@ function sampleReadinessSummary(ciEvidencePath = 'release/ci-runs.json') {
     blockers: [
       'TODO.md:26 Android and iOS export smoke apps run on real or hosted devices for the production profile.',
       'real-device evidence missing at release/real-device-evidence.json',
-      'release-readiness evidence missing at release/release-readiness-evidence.json',
+      [
+        'release-readiness evidence missing at release/release-readiness-evidence.json',
+        `Release-readiness evidence file not found: ${repoRoot}/release/release-readiness-evidence.json`,
+      ].join('\n'),
     ],
     checks: {
       androidRealDeviceEvidence: false,
@@ -126,6 +129,11 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
   assert.match(markdown, /Blocked by: `real-device-evidence`/)
   assert.match(markdown, /TODO\.md:389 Android export/)
   assert.match(markdown, /npm run release:evidence -- --commit/)
+  assert.doesNotMatch(markdown, new RegExp(repoRoot.replaceAll('/', '\\/')))
+  assert.match(
+    markdown,
+    /Release-readiness evidence file not found: release\/release-readiness-evidence\.json/,
+  )
 })
 
 test('release handoff CLI writes a Markdown report from a readiness summary', () => {

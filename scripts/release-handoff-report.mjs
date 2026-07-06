@@ -180,6 +180,16 @@ function inlineList(values) {
   return values.map((value) => `\`${String(value)}\``).join(', ')
 }
 
+function reportText(value) {
+  const normalizedRoot = repoRoot.split(path.sep).join('/')
+  return String(value)
+    .replaceAll(`${repoRoot}${path.sep}`, '')
+    .replaceAll(`${normalizedRoot}/`, '')
+    .replaceAll(repoRoot, '.')
+    .replaceAll(normalizedRoot, '.')
+    .replace(/\s*\n\s*/g, '; ')
+}
+
 function limitedBullets(values, limit = 12) {
   if (!Array.isArray(values) || values.length === 0) {
     return ['- none']
@@ -187,7 +197,7 @@ function limitedBullets(values, limit = 12) {
 
   const lines = values
     .slice(0, limit)
-    .map((value) => `- ${String(value).replace(/\s*\n\s*/g, '; ')}`)
+    .map((value) => `- ${reportText(value)}`)
   const remaining = values.length - limit
   if (remaining > 0) {
     lines.push(`- ... ${remaining} more`)
