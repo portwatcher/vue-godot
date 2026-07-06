@@ -283,6 +283,20 @@ test('real device evidence rejects malformed outcome containers', () => {
   )
 })
 
+test('real device evidence rejects checks recorded as both passed and skipped', () => {
+  const evidence = validEvidence()
+  evidence.android.skippedChecks = {
+    'cold-launch': 'Contradictory hand-edited evidence.',
+  }
+
+  const errors = validateRealDeviceEvidence(evidence).join('\n')
+
+  assert.match(
+    errors,
+    /android\.cold-launch cannot be both passedChecks and skippedChecks/,
+  )
+})
+
 test('real device evidence rejects worksheet-only platform fields', () => {
   const evidence = validEvidence()
   evidence.android.requiredChecks = [...requiredRealDeviceChecks.android]

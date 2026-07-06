@@ -163,6 +163,24 @@ test('platform evidence audit reports malformed worksheet arrays', () => {
   )
 })
 
+test('platform evidence audit rejects checks recorded as both passed and skipped', () => {
+  const template = completedTemplate()
+  template.android.skippedChecks = {
+    'cold-launch': 'Contradictory hand-edited evidence.',
+  }
+
+  const summary = auditPlatformEvidence(template)
+
+  assert.equal(summary.ready, false)
+  assert.deepEqual(summary.platforms.android.passedSkippedChecks, [
+    'cold-launch',
+  ])
+  assert.match(
+    summary.platforms.android.errors.join('\n'),
+    /android\.cold-launch cannot be both passedChecks and skippedChecks/,
+  )
+})
+
 test('platform evidence audit reports malformed worksheet fields without throwing', () => {
   const template = buildPlatformEvidenceTemplate({
     androidArtifact: 'vue-godot-android-release.aab',

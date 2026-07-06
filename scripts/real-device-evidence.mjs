@@ -9,6 +9,7 @@ import {
 } from './release-evidence-utils.mjs'
 import {
   duplicateStrings,
+  intersectStrings,
   isFullCommitSha,
   releasePackageConfigs,
   repoRoot,
@@ -629,6 +630,12 @@ function validatePlatformEvidence(evidence, platform, errors, options = {}) {
   const skippedChecks = validateSkippedChecks(platformEvidence, platform, errors)
 
   validateCheckNames(platform, passedChecks, skippedChecks, errors)
+  for (const check of intersectStrings(
+    [...passedChecks],
+    Object.keys(skippedChecks),
+  )) {
+    errors.push(`${platform}.${check} cannot be both passedChecks and skippedChecks`)
+  }
 
   for (const check of requiredRealDeviceChecks[platform]) {
     const skipReason = skippedChecks[check]

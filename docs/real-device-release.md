@@ -227,7 +227,8 @@ currently skippable gaps. Replace every placeholder before recording evidence;
 the recorder, worksheet audit, and final evidence validator reject placeholder
 metadata and placeholder skip reasons. Final `passedChecks` must be a non-empty
 string array without duplicates, and final `skippedChecks` must be an object whose
-values are non-empty release-specific reasons. The Markdown handoff flags command blocks
+values are non-empty release-specific reasons. A check must not appear in both.
+The Markdown handoff flags command blocks
 that still contain `<...>` placeholders so device testers know to edit them
 before running. It preserves existing and newly supplied `--skip check=reason`
 entries, and the same pass-only and selected-API validation still applies. When
@@ -284,7 +285,7 @@ npm run release:evidence -- \
 
 Use `--commit <release-candidate-sha>` whenever the evidence is generated from
 a follow-up evidence commit instead of directly on the tested release candidate.
-The helper strips platform worksheet fields and scaffold fields before writing final evidence and rejects malformed `passedChecks` arrays or `skippedChecks` reason maps. If
+The helper strips platform worksheet fields and scaffold fields before writing final evidence and rejects malformed `passedChecks` arrays, malformed `skippedChecks` reason maps, or checks recorded as both passed and skipped. If
 `release/platform-evidence.json` is copied directly to
 `release/real-device-evidence.json`, `npm run check:real-device-evidence` and
 strict release gates reject it.

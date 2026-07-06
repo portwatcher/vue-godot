@@ -126,6 +126,11 @@ export function duplicateStrings(values) {
   return [...duplicates]
 }
 
+export function intersectStrings(firstValues, secondValues) {
+  const second = new Set(uniqueStrings(secondValues))
+  return uniqueStrings(firstValues).filter((value) => second.has(value))
+}
+
 export function run(command, commandArgs, options = {}) {
   return spawnSync(command, commandArgs, {
     cwd: options.cwd ?? repoRoot,

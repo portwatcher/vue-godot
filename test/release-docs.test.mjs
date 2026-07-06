@@ -338,6 +338,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /reject placeholder metadata and placeholder skip reasons/)
   assert.match(production, /`passedChecks`[\s\S]*non-empty string array/)
   assert.match(production, /`skippedChecks`[\s\S]*non-empty\s+release-specific reasons/)
+  assert.match(production, /A check\s+must not appear in both/)
   assert.match(
     production,
     /Markdown handoff\s+flags command blocks that still contain `<\.\.\.>` placeholders/,
@@ -384,7 +385,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
-    /malformed `passedChecks` arrays[\s\S]*malformed `skippedChecks` reason maps/,
+    /malformed `passedChecks` arrays[\s\S]*malformed `skippedChecks` reason maps[\s\S]*checks recorded as both passed and\s+skipped/,
   )
   assert.match(production, /malformed workflow run commit SHAs/)
   assert.match(
@@ -677,6 +678,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /reject placeholder metadata and placeholder skip reasons/)
   assert.match(readme, /`passedChecks`[\s\S]*non-empty string array/)
   assert.match(readme, /`skippedChecks`[\s\S]*non-empty\s+release-specific reasons/)
+  assert.match(readme, /A check must not appear in both/)
   assert.match(
     readme,
     /Markdown handoff\s+flags command blocks that still contain `<\.\.\.>` placeholders/,
@@ -915,6 +917,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /reject placeholder\s+metadata and placeholder skip reasons/)
   assert.match(checklist, /`passedChecks`[\s\S]*non-empty\s+string array/)
   assert.match(checklist, /`skippedChecks`[\s\S]*non-empty\s+release-specific reasons/)
+  assert.match(checklist, /A check must not appear in both/)
   assert.match(
     checklist,
     /Markdown handoff flags command blocks\s+that still contain `<\.\.\.>` placeholders/,

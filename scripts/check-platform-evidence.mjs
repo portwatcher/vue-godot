@@ -22,6 +22,7 @@ import {
 import { isRecord } from './release-evidence-utils.mjs'
 import {
   duplicateStrings,
+  intersectStrings,
   normalizeCommitSha,
   repoRoot,
   uniqueStrings,
@@ -295,6 +296,7 @@ function auditPlatformWorksheet(record, platform, options = {}) {
     mustPassChecks: [],
     mustPassMissingChecks: [],
     passedChecks: [],
+    passedSkippedChecks: [],
     ready: false,
     remainingCheckDetails: [],
     remainingChecks: [],
@@ -399,6 +401,13 @@ function auditPlatformWorksheet(record, platform, options = {}) {
       (check) => !skipped.invalidSkippedChecks.includes(check),
     ),
   )
+  status.passedSkippedChecks = intersectStrings(
+    status.passedChecks,
+    status.skippedCheckNames,
+  )
+  for (const check of status.passedSkippedChecks) {
+    errors.push(`${platform}.${check} cannot be both passedChecks and skippedChecks`)
+  }
   const selectedApiMustPassChecks = Object.keys(status.selectedApiRequiredChecks)
   status.mustPassChecks = uniqueStrings([
     ...passOnlyChecks,
