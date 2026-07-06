@@ -614,6 +614,31 @@ test('record-platform-evidence CLI rejects unreplaced placeholders', () => {
       /android\.artifact requires a real value, not <android-apk-aab-or-hosted-build-id>/,
     )
 
+    const invalidEvidenceUrlResult = spawnSync(
+      process.execPath,
+      [
+        'scripts/record-platform-evidence.mjs',
+        '--platform',
+        'android',
+        '--platform-evidence',
+        evidencePath,
+        '--evidence-url',
+        'file:///tmp/android-device-run.txt',
+        '--pass',
+        'cold-launch',
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf-8',
+      },
+    )
+
+    assert.equal(invalidEvidenceUrlResult.status, 1)
+    assert.match(
+      invalidEvidenceUrlResult.stderr,
+      /android\.evidenceUrl requires an http\(s\) URL/,
+    )
+
     const skipResult = spawnSync(
       process.execPath,
       [

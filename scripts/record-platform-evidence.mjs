@@ -72,6 +72,19 @@ function addCsv(values, value) {
   }
 }
 
+function isHttpUrl(value) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return false
+  }
+
+  try {
+    const url = new URL(value)
+    return url.protocol === 'https:' || url.protocol === 'http:'
+  } catch {
+    return false
+  }
+}
+
 function parseSkipSpec(value) {
   const equalsIndex = value.indexOf('=')
   const colonIndex = value.indexOf(':')
@@ -421,6 +434,9 @@ export function recordPlatformEvidence(evidence, options) {
   for (const [key, value] of Object.entries(options.updates)) {
     if (isReleaseEvidencePlaceholder(value)) {
       throw new Error(`${platform}.${key} requires a real value, not ${value}`)
+    }
+    if (key === 'evidenceUrl' && !isHttpUrl(value)) {
+      throw new Error(`${platform}.evidenceUrl requires an http(s) URL`)
     }
     platformEvidence[key] = value
   }
