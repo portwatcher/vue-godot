@@ -500,6 +500,53 @@ test('release handoff CLI writes a Markdown report from a readiness summary', ()
   }
 })
 
+test('release handoff CLI infers expected commit from CI evidence', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-handoff-'))
+  const ciEvidencePath = path.join(tempDir, 'ci-runs.json')
+  const platformEvidencePath = path.join(tempDir, 'platform-evidence.json')
+  const realDeviceEvidencePath = path.join(tempDir, 'real-device-evidence.json')
+  const readinessEvidencePath = path.join(
+    tempDir,
+    'release-readiness-evidence.json',
+  )
+  const outputPath = path.join(tempDir, 'handoff.md')
+
+  try {
+    fs.writeFileSync(
+      ciEvidencePath,
+      `${JSON.stringify(sampleCiEvidence(), null, 2)}\n`,
+    )
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/release-handoff-report.mjs',
+        '--ci-evidence',
+        ciEvidencePath,
+        '--platform-evidence',
+        platformEvidencePath,
+        '--real-device-path',
+        realDeviceEvidencePath,
+        '--readiness-path',
+        readinessEvidencePath,
+        '--output',
+        outputPath,
+      ],
+      { cwd: repoRoot, encoding: 'utf-8' },
+    )
+
+    assert.equal(result.status, 0, result.stderr)
+    const markdown = fs.readFileSync(outputPath, 'utf-8')
+    assert.match(
+      markdown,
+      new RegExp(`Release candidate commit: \`${commit}\``),
+    )
+    assert.match(markdown, new RegExp(`--expected-commit ${commit}`))
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true })
+  }
+})
+
 test('release handoff CLI check verifies current output without writing', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-handoff-'))
   const ciEvidencePath = path.join(tempDir, 'ci-runs.json')

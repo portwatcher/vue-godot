@@ -42,6 +42,7 @@ import {
   checkRealDeviceEvidenceCommand,
   commitEvidenceFileCommands,
   currentHeadCommitCommand,
+  defaultDeviceTestPrereqsSummaryPath,
   defaultPlatformEvidenceChecklistPath,
   defaultPlatformEvidencePath,
   defaultRealDeviceEvidenceChecklistPath,
@@ -1435,7 +1436,10 @@ function collectReadinessNextActions(
       ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
       commands: [
         'npm run check',
-        checkDevicePrereqsCommand({ allowMissing: true }),
+        checkDevicePrereqsCommand({
+          allowMissing: true,
+          summaryOutput: defaultDeviceTestPrereqsSummaryPath,
+        }),
         localReleasePreflightCommand(commit, {
           skipCheck: true,
           skipGodot: true,

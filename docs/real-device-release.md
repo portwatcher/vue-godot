@@ -85,12 +85,15 @@ commit and evidence paths. The handoff lists per-platform metadata/check gaps,
 batch confirmation notes and issues, malformed outcome details, remaining check
 descriptions, Release Preflight readiness evidence paths and warning/failure
 counts, `blockedBy` dependencies, and next commands. Add `--check` to verify
-the checked-in handoff is current without rewriting it.
+the checked-in handoff is current without rewriting it. When `--expected-commit`
+is omitted and no readiness summary is supplied, the handoff infers the tested
+release commit from `release/ci-runs.json`, or the file passed with
+`--ci-evidence <file>`, when the CI evidence contains a valid consistent commit.
 The initial CI, real-device, and Release Preflight evidence actions begin
 with `npm run check` before collecting CI or assembling evidence. The
 real-device evidence action also runs
-`npm run check:device-prereqs -- --allow-missing` before local or hosted device
-handoff commands so missing local tooling is visible without pretending it is
+`npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` before local or hosted device
+handoff commands so missing local tooling is recorded without pretending it is
 evidence. The Release Preflight evidence action also reruns
 `npm run check:real-device-evidence -- --verify-runs` before CI/preflight
 collection continues, so stale device evidence or unverified Check/Godot Smoke
@@ -509,10 +512,11 @@ Run these before platform-specific device checks:
 
 1. Start from a clean commit.
 2. Run `npm run check`.
-3. Run `npm run check:device-prereqs -- --allow-missing` to see whether local
-   Android/iOS device tooling and attached devices are available. Missing local
-   tooling does not satisfy or fail final evidence by itself; use a hosted
-   real-device lab when the final evidence can link to the lab run.
+3. Run `npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` to see whether local
+   Android/iOS device tooling and attached devices are available and to write a
+   gitignored JSON diagnostic. Missing local tooling does not satisfy or fail
+   final evidence by itself; use a hosted real-device lab when the final
+   evidence can link to the lab run.
 4. Run `npm run check:serious-examples`.
 5. Run `npm audit --audit-level=moderate`.
 6. Optionally run `npm run release:preflight -- --local` as a local dry run;

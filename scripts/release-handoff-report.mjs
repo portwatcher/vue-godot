@@ -115,8 +115,36 @@ function parseArgs(argv) {
     options.expectedCommit,
     '--expected-commit',
   )
+  if (!options.expectedCommit && !options.readinessSummaryPath) {
+    options.expectedCommit = inferExpectedCommitFromCiEvidence(options)
+  }
 
   return options
+}
+
+function inferExpectedCommitFromCiEvidence(options) {
+  const ciEvidence = readJsonOptional(
+    options.ciEvidencePath ?? defaultReleaseCiEvidencePath,
+  )
+  if (!isRecord(ciEvidence)) {
+    return null
+  }
+
+  const evidence = isRecord(ciEvidence.evidence) ? ciEvidence.evidence : {}
+  const commit = ciEvidence.commit ?? evidence.commit
+  if (
+    typeof ciEvidence.commit === 'string' &&
+    typeof evidence.commit === 'string' &&
+    ciEvidence.commit !== evidence.commit
+  ) {
+    return null
+  }
+
+  try {
+    return normalizeCommitSha(commit, 'CI evidence commit')
+  } catch {
+    return null
+  }
 }
 
 function isRecord(value) {

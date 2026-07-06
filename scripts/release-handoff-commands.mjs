@@ -18,6 +18,8 @@ export const defaultRealDeviceEvidenceSummaryPath =
   'release/real-device-evidence-summary.json'
 export const defaultRealDeviceEvidenceChecklistPath =
   'release/real-device-evidence-checklist.md'
+export const defaultDeviceTestPrereqsSummaryPath =
+  'release/device-test-prereqs-summary.json'
 export const defaultReleasePreflightSummaryPath =
   'release/release-preflight-summary.json'
 export const defaultReleasePreflightChecklistPath =

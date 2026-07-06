@@ -17,6 +17,7 @@ test('release helper outputs are ignored separately from committed evidence', ()
   for (const file of [
     'release/platform-evidence-summary.json',
     'release/platform-evidence-checklist.md',
+    'release/device-test-prereqs-summary.json',
     'release/real-device-evidence-summary.json',
     'release/real-device-evidence-checklist.md',
     'release/release-readiness-summary.json',
@@ -49,7 +50,7 @@ test('real device release checklist covers required Android and iOS gates', () =
     /^## Android Release Smoke/m,
     /^## iOS Release Smoke/m,
     /npm run check/,
-    /npm run check:device-prereqs -- --allow-missing/,
+    /npm run check:device-prereqs -- --summary-output release\/device-test-prereqs-summary\.json --allow-missing/,
     /npm run check:serious-examples/,
     /npm run release:preflight[\s\S]*validates real-device evidence/,
     /npm audit --audit-level=moderate/,
@@ -467,6 +468,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /--check[\s\S]*handoff is current/)
   assert.match(
     production,
+    /When `--expected-commit`[\s\S]*omitted[\s\S]*handoff infers the tested\s+release commit from `release\/ci-runs\.json`[\s\S]*`--ci-evidence <file>`/,
+  )
+  assert.match(
+    production,
     /per-platform metadata\/check gaps,\s+batch confirmation notes and issues,\s+malformed outcome details/,
   )
   assert.match(production, /Release Preflight readiness evidence paths/)
@@ -662,6 +667,10 @@ test('release preflight enforces real device evidence', () => {
     /release:handoff[\s\S]*release\/release-handoff\.md[\s\S]*Markdown handoff/,
   )
   assert.match(readme, /--check[\s\S]*handoff is current/)
+  assert.match(
+    readme,
+    /When `--expected-commit` is omitted[\s\S]*handoff infers the tested release commit from `release\/ci-runs\.json`[\s\S]*`--ci-evidence <file>`/,
+  )
   assert.match(
     readme,
     /per-platform metadata\/check gaps, batch confirmation notes and issues, malformed outcome details/,
@@ -904,6 +913,10 @@ test('release preflight enforces real device evidence', () => {
     /release:handoff[\s\S]*release\/release-handoff\.md[\s\S]*Markdown handoff/,
   )
   assert.match(checklist, /--check[\s\S]*handoff is current/)
+  assert.match(
+    checklist,
+    /When `--expected-commit`[\s\S]*omitted[\s\S]*handoff infers the tested\s+release commit from `release\/ci-runs\.json`[\s\S]*`--ci-evidence <file>`/,
+  )
   assert.match(
     checklist,
     /per-platform metadata\/check gaps,\s+batch confirmation notes and issues,\s+malformed outcome details/,

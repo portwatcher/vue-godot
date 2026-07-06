@@ -8,6 +8,7 @@ import {
   commitEvidenceCommands,
   commitEvidenceFileCommands,
   currentHeadCommitCommand,
+  defaultDeviceTestPrereqsSummaryPath,
   defaultPlatformEvidencePath,
   defaultRealDeviceEvidencePath,
   defaultReleasePreflightSummaryPath,
@@ -57,6 +58,10 @@ test('release handoff commands format release CI waits and dispatches', () => {
   assert.equal(
     defaultRealDeviceEvidenceSummaryPath,
     'release/real-device-evidence-summary.json',
+  )
+  assert.equal(
+    defaultDeviceTestPrereqsSummaryPath,
+    'release/device-test-prereqs-summary.json',
   )
   assert.equal(
     defaultRealDeviceEvidenceChecklistPath,

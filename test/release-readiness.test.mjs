@@ -1149,7 +1149,7 @@ test('release readiness summary includes missing evidence next actions', () => {
     assert.equal(realDeviceAction.commands[0], 'npm run check')
     assert.equal(
       realDeviceAction.commands[1],
-      'npm run check:device-prereqs -- --allow-missing',
+      'npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing',
     )
     assert.equal(
       realDeviceAction.commands[2],
