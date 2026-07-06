@@ -19,6 +19,7 @@ import {
   validateInitialCiEvidence,
   validateReleaseReadinessEvidence,
 } from '../scripts/release-readiness.mjs'
+import { shellQuote } from '../scripts/release-utils.mjs'
 
 function runReadiness(args = []) {
   return spawnSync(process.execPath, ['scripts/release-readiness.mjs', ...args], {
@@ -692,7 +693,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
       `npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --wait --output release/ci-runs.json`,
     )
     const preflightDispatchIndex = releasePreflightAction.commands.indexOf(
-      `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json`,
+      `GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit ${exampleCommit} --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path docs/real-device-evidence.example.json --output release/ci-runs.json`,
     )
     assert.ok(releaseCiWaitIndex > 0)
     assert.ok(releaseCiDispatchIndex > releaseCiWaitIndex)
@@ -700,7 +701,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.ok(preflightDispatchIndex > preflightWaitIndex)
     assert.ok(
       releasePreflightAction.commands.includes(
-        'git add release/ci-runs.json release/release-preflight-summary.json release/real-device-evidence.json release/release-readiness-evidence.json',
+        'git add release/ci-runs.json release/release-preflight-summary.json docs/real-device-evidence.example.json docs/release-readiness-evidence.example.json',
       ),
     )
     assert.ok(
@@ -711,7 +712,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.ok(releasePreflightAction.commands.includes('git push'))
     assert.ok(
       releasePreflightAction.commands.includes(
-        `npm run release:readiness -- --expected-commit ${exampleCommit}`,
+        `npm run release:readiness -- --expected-commit ${exampleCommit} --real-device-path docs/real-device-evidence.example.json --readiness-path docs/release-readiness-evidence.example.json`,
       ),
     )
     assert.ok(
@@ -722,7 +723,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
           }
 
           const readinessSummaryIndex = action.commands.indexOf(
-            `npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit ${exampleCommit}`,
+            `npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit ${exampleCommit} --real-device-path docs/real-device-evidence.example.json --readiness-path docs/release-readiness-evidence.example.json`,
           )
           const finalizerIndex = action.commands.indexOf(
             'npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json',
@@ -736,7 +737,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
           )
           const gitPushIndex = action.commands.indexOf('git push')
           const finalReadinessIndex = action.commands.indexOf(
-            `npm run release:readiness -- --expected-commit ${exampleCommit}`,
+            `npm run release:readiness -- --expected-commit ${exampleCommit} --real-device-path docs/real-device-evidence.example.json --readiness-path docs/release-readiness-evidence.example.json`,
           )
 
           return (
@@ -843,16 +844,45 @@ test('release readiness summary includes missing evidence next actions', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-readiness-'))
   const summaryPath = path.join(tempDir, 'release-readiness-summary.json')
   const ciEvidence = readCommittedReleaseCiEvidence()
+  const ciEvidencePath = path.join(tempDir, 'custom ci runs.json')
+  const platformEvidencePath = path.join(
+    tempDir,
+    'custom platform evidence.json',
+  )
+  const realDevicePath = path.join(
+    tempDir,
+    'missing real-device evidence.json',
+  )
+  const readinessPath = path.join(
+    tempDir,
+    'missing release-readiness evidence.json',
+  )
+  const ciCommandPath = ciEvidencePath
+  const platformCommandPath = path.relative(process.cwd(), platformEvidencePath)
+  const realDeviceCommandPath = path.relative(process.cwd(), realDevicePath)
+  const readinessCommandPath = path.relative(process.cwd(), readinessPath)
 
   try {
+    fs.copyFileSync(
+      path.join(process.cwd(), 'release/ci-runs.json'),
+      ciEvidencePath,
+    )
+    fs.copyFileSync(
+      path.join(process.cwd(), 'release/platform-evidence.json'),
+      platformEvidencePath,
+    )
     const result = runReadiness([
       '--allow-open',
       '--expected-commit',
       ciEvidence.commit,
+      '--ci-evidence',
+      ciEvidencePath,
+      '--platform-evidence',
+      platformEvidencePath,
       '--real-device-path',
-      path.join(tempDir, 'missing-real-device-evidence.json'),
+      realDevicePath,
       '--readiness-path',
-      path.join(tempDir, 'missing-release-readiness-evidence.json'),
+      readinessPath,
       '--summary-output',
       summaryPath,
     ])
@@ -860,8 +890,10 @@ test('release readiness summary includes missing evidence next actions', () => {
 
     assert.equal(result.status, 0)
     assert.equal(summary.checks.initialCiEvidence, true)
+    assert.equal(summary.initialCiEvidence.path, ciEvidencePath)
     assert.equal(summary.platformEvidence.evidencePresent, true)
     assert.equal(summary.platformEvidence.ready, false)
+    assert.equal(summary.platformEvidence.path, platformCommandPath)
     assert.ok(
       summary.platformEvidence.errors.some((error) =>
         error.includes('android.artifact must be a non-empty string'),
@@ -874,7 +906,7 @@ test('release readiness summary includes missing evidence next actions', () => {
     assert.equal(summary.realDeviceEvidence.errorCount, 1)
     assert.ok(
       summary.realDeviceEvidence.readErrors.some((error) =>
-        error.includes('missing-real-device-evidence.json'),
+        error.includes('missing real-device evidence.json'),
       ),
     )
     assert.equal(summary.releaseReadinessEvidence.evidencePresent, false)
@@ -882,7 +914,7 @@ test('release readiness summary includes missing evidence next actions', () => {
     assert.equal(summary.releaseReadinessEvidence.errorCount, 1)
     assert.ok(
       summary.releaseReadinessEvidence.readErrors.some((error) =>
-        error.includes('missing-release-readiness-evidence.json'),
+        error.includes('missing release-readiness evidence.json'),
       ),
     )
     const realDeviceAction = summary.nextActions.find(
@@ -900,22 +932,22 @@ test('release readiness summary includes missing evidence next actions', () => {
     )
     assert.ok(
       realDeviceAction.commands.includes(
-        `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit ${summary.commit}`,
+        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${shellQuote(platformCommandPath)} --artifact <android-apk-aab-or-hosted-build-id> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit ${summary.commit}`,
       ),
     )
     assert.ok(
       realDeviceAction.commands.includes(
-        `npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit ${summary.commit}`,
+        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${shellQuote(platformCommandPath)} --artifact <ios-archive-testflight-or-hosted-build-id> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit ${summary.commit}`,
       ),
     )
     assert.ok(
       realDeviceAction.commands.includes(
-        `npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --allow-open --expected-commit ${summary.commit}`,
+        `npm run check:platform-evidence -- --platform-evidence ${shellQuote(platformCommandPath)} --summary-output release/platform-evidence-summary.json --allow-open --expected-commit ${summary.commit}`,
       ),
     )
     assert.ok(
       realDeviceAction.commands.includes(
-        `npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit ${summary.commit}`,
+        `npm run check:platform-evidence -- --platform-evidence ${shellQuote(platformCommandPath)} --expected-commit ${summary.commit}`,
       ),
     )
     assert.ok(
@@ -925,12 +957,17 @@ test('release readiness summary includes missing evidence next actions', () => {
     )
     assert.ok(
       realDeviceAction.commands.includes(
-        `npm run check:real-device-evidence -- --expected-commit ${summary.commit}`,
+        `npm run release:evidence -- --platform-evidence ${shellQuote(platformCommandPath)} --ci-evidence ${shellQuote(ciCommandPath)} --commit ${summary.commit} --real-device-output ${shellQuote(realDeviceCommandPath)}`,
       ),
     )
     assert.ok(
       realDeviceAction.commands.includes(
-        'git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json',
+        `npm run check:real-device-evidence -- --path ${shellQuote(realDeviceCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --ci-evidence ${shellQuote(ciCommandPath)} --expected-commit ${summary.commit}`,
+      ),
+    )
+    assert.ok(
+      realDeviceAction.commands.includes(
+        `git add ${shellQuote(platformCommandPath)} ${shellQuote(ciCommandPath)} ${shellQuote(realDeviceCommandPath)}`,
       ),
     )
     assert.ok(
@@ -958,18 +995,42 @@ test('release readiness summary includes missing evidence next actions', () => {
     assert.ok(
       releasePreflightAction.commands.some((command) =>
         command.includes(
+          `--real-device-evidence-path ${shellQuote(realDeviceCommandPath)}`,
+        ),
+      ),
+    )
+    assert.ok(
+      releasePreflightAction.commands.some((command) =>
+        command.includes(`--output ${shellQuote(ciCommandPath)}`),
+      ),
+    )
+    assert.ok(
+      releasePreflightAction.commands.includes(
+        `GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence ${shellQuote(ciCommandPath)} --output release/release-preflight-summary.json`,
+      ),
+    )
+    assert.ok(
+      releasePreflightAction.commands.some((command) =>
+        command.includes(
           '--release-preflight-run-commit "$(git rev-parse HEAD)"',
         ),
       ),
     )
     assert.ok(
       releasePreflightAction.commands.some((command) =>
-        command.includes('--readiness-output release/release-readiness-evidence.json'),
+        command.includes(
+          `--readiness-output ${shellQuote(readinessCommandPath)}`,
+        ),
       ),
     )
     assert.ok(
       releasePreflightAction.commands.includes(
-        'git add release/ci-runs.json release/release-preflight-summary.json release/real-device-evidence.json release/release-readiness-evidence.json',
+        `npm run release:evidence -- --platform-evidence ${shellQuote(platformCommandPath)} --ci-evidence ${shellQuote(ciCommandPath)} --commit ${summary.commit} --real-device-output ${shellQuote(realDeviceCommandPath)} --release-preflight-summary release/release-preflight-summary.json --readiness-output ${shellQuote(readinessCommandPath)}`,
+      ),
+    )
+    assert.ok(
+      releasePreflightAction.commands.includes(
+        `git add ${shellQuote(ciCommandPath)} release/release-preflight-summary.json ${shellQuote(realDeviceCommandPath)} ${shellQuote(readinessCommandPath)}`,
       ),
     )
     assert.ok(
@@ -978,6 +1039,25 @@ test('release readiness summary includes missing evidence next actions', () => {
       ),
     )
     assert.ok(releasePreflightAction.commands.includes('git push'))
+    assert.ok(
+      releasePreflightAction.commands.includes(
+        `npm run release:readiness -- --expected-commit ${summary.commit} --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
+      ),
+    )
+    const finalWarningAction = summary.nextActions.find(
+      (action) => action.id === 'final-warning-removal',
+    )
+    assert.ok(finalWarningAction)
+    assert.ok(
+      finalWarningAction.commands.includes(
+        `npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit ${summary.commit} --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
+      ),
+    )
+    assert.ok(
+      finalWarningAction.commands.includes(
+        `npm run release:readiness -- --expected-commit ${summary.commit} --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
+      ),
+    )
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }

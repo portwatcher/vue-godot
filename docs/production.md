@@ -185,6 +185,11 @@ supplied CI evidence is valid for a different tested release commit and
 `--expected-commit` is omitted, the summary also adds an `expected-commit`
 `nextActions` entry with the exact
 `npm run release:readiness -- --allow-open --expected-commit ...` command. If
+`--ci-evidence <file>`, `--platform-evidence <file>`,
+`--real-device-path <file>`, or `--readiness-path <file>` is supplied,
+generated `nextActions` keep those paths through release CI refreshes,
+platform worksheet audits, real-device evidence assembly and validation,
+Release Preflight evidence, `git add`, and the final strict readiness checks. If
 initial CI evidence is still missing, the release-readiness evidence action
 refreshes Check and Godot Smoke from the release-candidate ref before
 dispatching Release Preflight from the current evidence commit ref with

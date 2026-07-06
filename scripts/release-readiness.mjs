@@ -36,6 +36,7 @@ import {
   defaultReleaseCiEvidencePath,
   defaultReleasePreflightSummaryPath,
   defaultReleaseReadinessEvidencePath,
+  formatHandoffCommand,
   initialReleaseCiCommands,
   productionProfilePlatformEvidenceCommand,
   recordPlatformEvidenceCommand,
@@ -122,6 +123,8 @@ Options:
   --allow-open                  Print blockers but exit 0.
   --ci-evidence <file>          Read initial Check/Godot Smoke CI evidence from
                                 a specific file. Defaults to ${defaultReleaseCiEvidencePath}.
+  --platform-evidence <file>    Read Android/iOS platform worksheet evidence
+                                from a specific file. Defaults to ${defaultPlatformEvidencePath}.
   --real-device-path <file>     Read Android/iOS evidence from a specific file.
                                 Defaults to ${realDeviceEvidenceEnvVar} or ${defaultRealDeviceEvidencePath}.
   --readiness-path <file>       Read release-readiness evidence from a specific file.
@@ -140,6 +143,7 @@ function parseArgs(argv) {
     allowOpen: false,
     ciEvidencePath: null,
     expectedCommit: null,
+    platformEvidencePath: null,
     realDevicePath: null,
     readinessPath: null,
     summaryOutput: null,
@@ -188,6 +192,23 @@ function parseArgs(argv) {
       options.expectedCommit = normalizeCommitSha(
         arg.slice('--expected-commit='.length),
         '--expected-commit',
+      )
+      continue
+    }
+
+    if (arg === '--platform-evidence') {
+      const value = argv[++index]
+      if (!value) {
+        throw new Error('--platform-evidence requires a value')
+      }
+      options.platformEvidencePath = path.resolve(repoRoot, value)
+      continue
+    }
+
+    if (arg.startsWith('--platform-evidence=')) {
+      options.platformEvidencePath = path.resolve(
+        repoRoot,
+        arg.slice('--platform-evidence='.length),
       )
       continue
     }
@@ -936,7 +957,114 @@ function checkPublicSurface(blockers) {
   return false
 }
 
-export function ciEvidenceCommands(commit, localGit) {
+function releaseReadinessCommand(commit, pathOptions = {}, options = {}) {
+  const args = ['npm', 'run', 'release:readiness', '--']
+
+  if (options.allowOpen) {
+    args.push('--allow-open')
+  }
+  if (options.summaryOutput && !options.allowOpen) {
+    args.push('--summary-output', options.summaryOutput)
+  }
+  args.push('--expected-commit', releaseCommitLabel(commit))
+  if (pathOptions.ciEvidencePath) {
+    args.push('--ci-evidence', pathOptions.ciEvidencePath)
+  }
+  if (pathOptions.platformEvidencePath) {
+    args.push('--platform-evidence', pathOptions.platformEvidencePath)
+  }
+  if (pathOptions.realDeviceEvidencePath) {
+    args.push('--real-device-path', pathOptions.realDeviceEvidencePath)
+  }
+  if (pathOptions.readinessEvidencePath) {
+    args.push('--readiness-path', pathOptions.readinessEvidencePath)
+  }
+
+  if (options.summaryOutput && options.allowOpen) {
+    args.push('--summary-output', options.summaryOutput)
+  }
+
+  return formatHandoffCommand(args)
+}
+
+function preflightSummaryCommand(pathOptions = {}) {
+  const body = formatHandoffCommand([
+    'npm',
+    'run',
+    'release:preflight-summary',
+    '--',
+    '--ci-evidence',
+    pathOptions.ciEvidencePath ?? defaultReleaseCiEvidencePath,
+    '--output',
+    defaultReleasePreflightSummaryPath,
+  ])
+  return `GH_TOKEN="$(gh auth token)" ${body}`
+}
+
+function collectPathOptions(
+  initialCiEvidence,
+  realDeviceEvidence,
+  releaseReadinessEvidence,
+  platformEvidence,
+) {
+  const options = {}
+  if (
+    initialCiEvidence?.path &&
+    initialCiEvidence.path !== defaultReleaseCiEvidencePath
+  ) {
+    options.ciEvidencePath = initialCiEvidence.path
+  }
+  if (
+    realDeviceEvidence?.path &&
+    realDeviceEvidence.path !== defaultRealDeviceEvidencePath
+  ) {
+    options.realDeviceEvidencePath = realDeviceEvidence.path
+  }
+  if (
+    releaseReadinessEvidence?.path &&
+    releaseReadinessEvidence.path !== defaultReleaseReadinessEvidencePath
+  ) {
+    options.readinessEvidencePath = releaseReadinessEvidence.path
+  }
+  if (
+    platformEvidence?.path &&
+    platformEvidence.path !== defaultPlatformEvidencePath
+  ) {
+    options.platformEvidencePath = platformEvidence.path
+  }
+  return options
+}
+
+function initialCiCommandOptions(pathOptions) {
+  return pathOptions.ciEvidencePath
+    ? { output: pathOptions.ciEvidencePath }
+    : {}
+}
+
+function realDeviceEvidenceCommandOptions(pathOptions) {
+  return {
+    ...(pathOptions.ciEvidencePath
+      ? { ciEvidencePath: pathOptions.ciEvidencePath }
+      : {}),
+    ...(pathOptions.platformEvidencePath
+      ? { platformEvidencePath: pathOptions.platformEvidencePath }
+      : {}),
+    ...(pathOptions.realDeviceEvidencePath
+      ? { realDeviceEvidencePath: pathOptions.realDeviceEvidencePath }
+      : {}),
+  }
+}
+
+function releaseReadinessEvidenceCommandOptions(pathOptions) {
+  return {
+    ...realDeviceEvidenceCommandOptions(pathOptions),
+    releasePreflightSummaryPath: defaultReleasePreflightSummaryPath,
+    readinessEvidencePath:
+      pathOptions.readinessEvidencePath ?? defaultReleaseReadinessEvidencePath,
+  }
+}
+
+export function ciEvidenceCommands(commit, localGit, options = {}) {
   const pushCommand =
     localGit?.currentBranch && !localGit.upstreamRef
       ? `git push --set-upstream origin ${shellQuote(localGit.currentBranch)}`
@@ -945,13 +1073,15 @@ export function ciEvidenceCommands(commit, localGit) {
   return [
     'npm run check',
     pushCommand,
-    ...initialReleaseCiCommands(commit),
+    ...initialReleaseCiCommands(commit, {
+      output: options.ciEvidencePath ?? defaultReleaseCiEvidencePath,
+    }),
   ]
 }
 
 function commitEvidenceCommands(files, message, options = {}) {
   const commands = [
-    `git add ${files.join(' ')}`,
+    `git add ${files.map((file) => shellQuote(file)).join(' ')}`,
     `git commit -m "${message}"`,
   ]
 
@@ -967,10 +1097,27 @@ function collectReadinessNextActions(
   commit,
   localGit,
   initialCiEvidence,
+  realDeviceEvidence,
+  releaseReadinessEvidence,
   platformEvidence,
 ) {
   const actions = []
-  const releaseCommit = releaseCommitLabel(commit)
+  const pathOptions = collectPathOptions(
+    initialCiEvidence,
+    realDeviceEvidence,
+    releaseReadinessEvidence,
+    platformEvidence,
+  )
+  const ciEvidencePath =
+    pathOptions.ciEvidencePath ?? defaultReleaseCiEvidencePath
+  const platformEvidencePath =
+    pathOptions.platformEvidencePath ?? defaultPlatformEvidencePath
+  const realDeviceEvidencePath =
+    pathOptions.realDeviceEvidencePath ?? defaultRealDeviceEvidencePath
+  const readinessEvidencePath =
+    pathOptions.readinessEvidencePath ?? defaultReleaseReadinessEvidencePath
+  const initialCiOptions = initialCiCommandOptions(pathOptions)
+  const realDeviceCommandOptions = realDeviceEvidenceCommandOptions(pathOptions)
 
   if (!checks.cleanWorktree) {
     actions.push({
@@ -987,18 +1134,16 @@ function collectReadinessNextActions(
     initialCiEvidence?.validForCommit &&
     initialCiEvidence.validForCommit !== commit
   ) {
-    const ciEvidenceOption =
-      initialCiEvidence.path &&
-      initialCiEvidence.path !== defaultReleaseCiEvidencePath
-        ? ` --ci-evidence ${shellQuote(initialCiEvidence.path)}`
-        : ''
     actions.push({
       id: 'expected-commit',
       title: 'Run readiness against the tested release commit',
       detail:
         'The checked-in or supplied CI evidence is valid for an earlier release-candidate commit; pass --expected-commit when release evidence is committed after that candidate.',
       commands: [
-        `npm run release:readiness -- --allow-open --expected-commit ${initialCiEvidence.validForCommit}${ciEvidenceOption} --summary-output release/release-readiness-summary.json`,
+        releaseReadinessCommand(initialCiEvidence.validForCommit, pathOptions, {
+          allowOpen: true,
+          summaryOutput: 'release/release-readiness-summary.json',
+        }),
       ],
     })
   }
@@ -1009,7 +1154,9 @@ function collectReadinessNextActions(
       title: 'Collect initial CI evidence for the tested release commit',
       detail:
         'Run the local check, push the release-candidate commit, wait for Check and Godot Smoke, then write release/ci-runs.json for real-device evidence assembly. Release Preflight is collected later after real-device evidence is committed.',
-      commands: ciEvidenceCommands(commit, localGit),
+      commands: ciEvidenceCommands(commit, localGit, {
+        ciEvidencePath,
+      }),
     })
   }
 
@@ -1024,30 +1171,35 @@ function collectReadinessNextActions(
       : formatPlatformEvidenceProgress(platformEvidence)
     if (!platformEvidence?.evidencePresent) {
       platformEvidenceCommands.push(
-        productionProfilePlatformEvidenceCommand(commit),
+        productionProfilePlatformEvidenceCommand(
+          commit,
+          pathOptions.platformEvidencePath
+            ? { output: pathOptions.platformEvidencePath }
+            : {},
+        ),
       )
     } else if (!platformEvidence.ready) {
       platformEvidenceCommands.push(
         recordPlatformEvidenceCommand('android', commit, {
-          platformEvidencePath: platformEvidence.path,
+          platformEvidencePath,
           summaryOutput: 'release/platform-evidence-summary.json',
         }),
         recordPlatformEvidenceCommand('ios', commit, {
-          platformEvidencePath: platformEvidence.path,
+          platformEvidencePath,
           summaryOutput: 'release/platform-evidence-summary.json',
         }),
       )
       platformEvidenceCommands.push(
         checkPlatformEvidenceCommand(commit, {
           allowOpen: true,
-          platformEvidencePath: platformEvidence.path,
+          platformEvidencePath,
           summaryOutput: 'release/platform-evidence-summary.json',
         }),
       )
     } else {
       platformEvidenceCommands.push(
         checkPlatformEvidenceCommand(commit, {
-          platformEvidencePath: platformEvidence.path,
+          platformEvidencePath,
         }),
       )
     }
@@ -1064,17 +1216,19 @@ function collectReadinessNextActions(
       commands: [
         'npm run check',
         ...platformEvidenceCommands,
-        ...(checks.initialCiEvidence ? [] : initialReleaseCiCommands(commit)),
+        ...(checks.initialCiEvidence
+          ? []
+          : initialReleaseCiCommands(commit, initialCiOptions)),
         ...(platformEvidence?.ready
           ? []
-          : [checkPlatformEvidenceCommand(commit)]),
-        releaseEvidenceCommand(commit),
-        checkRealDeviceEvidenceCommand(commit),
+          : [checkPlatformEvidenceCommand(commit, { platformEvidencePath })]),
+        releaseEvidenceCommand(commit, realDeviceCommandOptions),
+        checkRealDeviceEvidenceCommand(commit, realDeviceCommandOptions),
         ...commitEvidenceCommands(
           [
-            defaultPlatformEvidencePath,
-            defaultReleaseCiEvidencePath,
-            defaultRealDeviceEvidencePath,
+            platformEvidencePath,
+            ciEvidencePath,
+            realDeviceEvidencePath,
           ],
           'Add real-device release evidence',
           { push: true },
@@ -1091,26 +1245,30 @@ function collectReadinessNextActions(
         'Run the local check after the tested release candidate and real-device evidence are pushed, refresh Check and Godot Smoke from the release-candidate ref when CI evidence is still missing, then dispatch Release Preflight from the current evidence commit ref and write release-readiness evidence.',
       commands: [
         'npm run check',
-        ...(checks.initialCiEvidence ? [] : initialReleaseCiCommands(commit)),
+        ...(checks.initialCiEvidence
+          ? []
+          : initialReleaseCiCommands(commit, initialCiOptions)),
         ...releasePreflightCiCommands(commit, {
+          output: ciEvidencePath,
+          realDeviceEvidencePath,
           releasePreflightRunCommit: currentHeadCommitCommand,
         }),
-        'GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --output release/release-preflight-summary.json',
-        releaseEvidenceCommand(commit, {
-          releasePreflightSummaryPath: defaultReleasePreflightSummaryPath,
-          readinessEvidencePath: defaultReleaseReadinessEvidencePath,
-        }),
+        preflightSummaryCommand(pathOptions),
+        releaseEvidenceCommand(
+          commit,
+          releaseReadinessEvidenceCommandOptions(pathOptions),
+        ),
         ...commitEvidenceCommands(
           [
-            defaultReleaseCiEvidencePath,
+            ciEvidencePath,
             defaultReleasePreflightSummaryPath,
-            defaultRealDeviceEvidencePath,
-            defaultReleaseReadinessEvidencePath,
+            realDeviceEvidencePath,
+            readinessEvidencePath,
           ],
           'Add release readiness evidence',
           { push: true },
         ),
-        `npm run release:readiness -- --expected-commit ${releaseCommit}`,
+        releaseReadinessCommand(commit, pathOptions),
       ],
     })
   }
@@ -1136,13 +1294,15 @@ function collectReadinessNextActions(
       detail:
         'Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks, removes public warning wording, then stages and commits those edits before the final strict readiness check.',
       commands: [
-        `npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --expected-commit ${releaseCommit}`,
+        releaseReadinessCommand(commit, pathOptions, {
+          summaryOutput: '/tmp/vue-godot-readiness.json',
+        }),
         'npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json',
         'npm run check',
         `git add ${finalizationFiles.join(' ')}`,
         'git commit -m "Finalize production readiness"',
         'git push',
-        `npm run release:readiness -- --expected-commit ${releaseCommit}`,
+        releaseReadinessCommand(commit, pathOptions),
       ],
     })
   }
@@ -1206,6 +1366,8 @@ function writeReadinessSummary(
       expectedCommit,
       localGit,
       initialCiEvidence,
+      realDeviceEvidence,
+      releaseReadinessEvidence,
       platformEvidence,
     ),
     finalTodoRequirements: finalTodoRequirementStatuses.map((status) => ({
@@ -1236,7 +1398,7 @@ async function main() {
     expectedCommit ?? undefined,
   )
   const platformEvidenceStatus = readPlatformEvidenceAudit(
-    defaultPlatformEvidencePath,
+    options.platformEvidencePath ?? defaultPlatformEvidencePath,
   )
   const realDeviceEvidenceReady = realDeviceEvidenceStatus.ready
   const realDeviceEvidenceMetadataReady =

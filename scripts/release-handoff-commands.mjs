@@ -24,7 +24,7 @@ function shellArg(value) {
   return shellQuote(text)
 }
 
-function shellCommand(args) {
+export function formatHandoffCommand(args) {
   return args.map((arg) => shellArg(arg)).join(' ')
 }
 
@@ -47,7 +47,7 @@ export function productionProfilePlatformEvidenceCommand(commit, options = {}) {
     args.push('--output', options.output)
   }
 
-  return shellCommand(args)
+  return formatHandoffCommand(args)
 }
 
 export function checkPlatformEvidenceCommand(commit, options = {}) {
@@ -70,7 +70,7 @@ export function checkPlatformEvidenceCommand(commit, options = {}) {
 
   args.push('--expected-commit', releaseCommitLabel(commit))
 
-  return shellCommand(args)
+  return formatHandoffCommand(args)
 }
 
 export function recordPlatformEvidenceCommand(platform, commit, options = {}) {
@@ -109,7 +109,7 @@ export function recordPlatformEvidenceCommand(platform, commit, options = {}) {
     releaseCommitLabel(commit),
   ]
 
-  return shellCommand(args)
+  return formatHandoffCommand(args)
 }
 
 export function releaseCiCommand(commit, options = {}) {
@@ -148,7 +148,7 @@ export function releaseCiCommand(commit, options = {}) {
     args.push('--output', options.output)
   }
 
-  const command = shellCommand(args)
+  const command = formatHandoffCommand(args)
   return options.withGitHubToken
     ? `GH_TOKEN="$(gh auth token)" ${command}`
     : command
@@ -230,7 +230,7 @@ export function releaseEvidenceCommand(commit, options = {}) {
     args.push('--readiness-output', options.readinessEvidencePath)
   }
 
-  return shellCommand(args)
+  return formatHandoffCommand(args)
 }
 
 export function checkRealDeviceEvidenceCommand(commit, options = {}) {
@@ -256,5 +256,5 @@ export function checkRealDeviceEvidenceCommand(commit, options = {}) {
     releaseCommitLabel(commit),
   )
 
-  return shellCommand(args)
+  return formatHandoffCommand(args)
 }

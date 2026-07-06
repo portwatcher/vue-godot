@@ -392,6 +392,10 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
+    /`--ci-evidence <file>`,\s+`--platform-evidence <file>`,\s+`--real-device-path <file>`,\s+or `--readiness-path <file>`[\s\S]*generated `nextActions` keep those paths[\s\S]*release CI refreshes[\s\S]*final strict readiness checks/,
+  )
+  assert.match(
+    production,
     /initial CI evidence is\s+still missing[\s\S]*refreshes Check and Godot\s+Smoke from the release-candidate ref[\s\S]*Release Preflight from\s+the current evidence commit ref[\s\S]*--release-preflight-run-commit "\$\(git rev-parse HEAD\)"/,
   )
   assert.doesNotMatch(
@@ -533,6 +537,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(
     readme,
     /checked-in or supplied CI evidence is valid for a different tested release commit[\s\S]*`expected-commit` `nextActions` entry[\s\S]*npm run release:readiness -- --allow-open --expected-commit/,
+  )
+  assert.match(
+    readme,
+    /`--ci-evidence <file>`, `--platform-evidence <file>`, `--real-device-path <file>`, or `--readiness-path <file>`[\s\S]*generated `nextActions` keep those paths[\s\S]*release CI refreshes[\s\S]*final strict readiness checks/,
   )
   assert.match(
     readme,
@@ -697,6 +705,10 @@ test('release preflight enforces real device evidence', () => {
   assert.match(
     checklist,
     /checked-in or supplied CI evidence is valid for a different[\s\S]*tested release commit[\s\S]*`expected-commit`\s+`nextActions` entry[\s\S]*npm run release:readiness -- --allow-open --expected-commit/,
+  )
+  assert.match(
+    checklist,
+    /`--ci-evidence <file>`,\s+`--platform-evidence <file>`,\s+`--real-device-path <file>`,\s+or `--readiness-path <file>`[\s\S]*generated `nextActions` keep those paths[\s\S]*release CI refreshes[\s\S]*final strict readiness checks/,
   )
   assert.match(
     checklist,
