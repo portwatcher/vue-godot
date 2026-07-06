@@ -1073,6 +1073,7 @@ function releaseHandoffCommand(commit, pathOptions = {}, options = {}) {
     'run',
     'release:handoff',
     '--',
+    ...(options.check ? ['--check'] : []),
     '--expected-commit',
     releaseCommitLabel(commit),
     '--output',
@@ -1408,7 +1409,10 @@ function collectReadinessNextActions(
         title: 'Write Android/iOS tester handoff',
         detail:
           'Render the current allow-open readiness audit as Markdown so device testers can see the exact platform gaps, dependencies, and commands for this release candidate.',
-        commands: [releaseHandoffCommand(commit, pathOptions)],
+        commands: [
+          releaseHandoffCommand(commit, pathOptions),
+          releaseHandoffCommand(commit, pathOptions, { check: true }),
+        ],
       })
     }
 

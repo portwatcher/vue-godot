@@ -461,7 +461,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /warning\/failure\s+counts/)
   assert.match(
     production,
-    /real-device evidence is open[\s\S]*`nextActions` include that handoff command before the device-evidence action[\s\S]*missing or stale/,
+    /real-device evidence is open[\s\S]*`nextActions` include handoff write and check commands before the device-evidence action[\s\S]*missing or stale/,
   )
   assert.match(
     production,
@@ -658,7 +658,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /warning\/failure counts/)
   assert.match(
     readme,
-    /real-device evidence is open[\s\S]*`nextActions` include the same handoff command before the device-evidence action[\s\S]*missing or stale/,
+    /real-device evidence is open[\s\S]*`nextActions` include handoff write and check commands before the device-evidence action[\s\S]*missing or stale/,
   )
   assert.match(
     readme,
@@ -897,7 +897,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(checklist, /warning\/failure\s+counts/)
   assert.match(
     checklist,
-    /real-device evidence is open[\s\S]*`nextActions` include that handoff command before the device-evidence action[\s\S]*missing or stale/,
+    /real-device evidence is open[\s\S]*`nextActions` include handoff write and check commands before the device-evidence action[\s\S]*missing or stale/,
   )
   assert.match(
     checklist,

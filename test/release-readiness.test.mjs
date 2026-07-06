@@ -1213,6 +1213,10 @@ test('release readiness summary includes missing evidence next actions', () => {
       handoffAction.commands[0],
       `npm run release:handoff -- --expected-commit ${summary.commit} --output release/release-handoff.md --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
     )
+    assert.equal(
+      handoffAction.commands[1],
+      `npm run release:handoff -- --check --expected-commit ${summary.commit} --output release/release-handoff.md --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
+    )
 
     const releasePreflightAction = summary.nextActions.find(
       (action) => action.id === 'release-preflight-evidence',
@@ -1376,6 +1380,10 @@ test('release readiness reuses committed initial CI evidence in next actions', (
     assert.equal(
       handoffAction.commands[0],
       `npm run release:handoff -- --expected-commit ${ciEvidence.commit} --output release/release-handoff.md --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
+    )
+    assert.equal(
+      handoffAction.commands[1],
+      `npm run release:handoff -- --check --expected-commit ${ciEvidence.commit} --output release/release-handoff.md --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
     )
 
     const releasePreflightAction = summary.nextActions.find(

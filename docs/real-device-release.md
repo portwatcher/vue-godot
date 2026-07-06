@@ -78,7 +78,7 @@ remaining evidence/finalizer work as JSON and a Markdown checklist. Run
 `npm run release:handoff -- --expected-commit <release-candidate-sha> --output release/release-handoff.md`
 to render the same allow-open audit as a Markdown handoff for Android/iOS
 testers; while real-device evidence is open, the release-readiness
-`nextActions` include that handoff command before the device-evidence action
+`nextActions` include handoff write and check commands before the device-evidence action
 only when `release/release-handoff.md` is missing or stale for the expected
 commit and evidence paths. The handoff lists per-platform metadata/check gaps,
 batch confirmation notes and issues, malformed outcome details, remaining check
