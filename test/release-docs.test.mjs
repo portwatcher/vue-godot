@@ -333,15 +333,19 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /--platform android/)
   assert.match(production, /--platform ios/)
   assert.match(production, /--pass-remaining/)
+  assert.match(production, /--pass-remaining-confirmation/)
   assert.match(production, /remaining must-pass checks/)
-  assert.match(production, /generated handoff commands include skip\s+placeholders/)
-  assert.match(production, /reject placeholder metadata and placeholder skip reasons/)
+  assert.match(
+    production,
+    /generated handoff commands include skip and\s+pass-remaining confirmation placeholders/,
+  )
+  assert.match(production, /placeholder confirmation notes/)
   assert.match(production, /`passedChecks`[\s\S]*non-empty string array/)
   assert.match(production, /`skippedChecks`[\s\S]*non-empty\s+release-specific reasons/)
   assert.match(production, /A check\s+must not appear in both/)
   assert.match(
     production,
-    /Markdown handoff\s+flags command blocks that still contain `<\.\.\.>` placeholders/,
+    /Markdown handoff\s+flags command blocks that\s+still contain `<\.\.\.>` placeholders/,
   )
   assert.match(
     production,
@@ -681,15 +685,19 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /--platform android/)
   assert.match(readme, /--platform ios/)
   assert.match(readme, /--pass-remaining/)
+  assert.match(readme, /--pass-remaining-confirmation/)
   assert.match(readme, /remaining must-pass checks/)
-  assert.match(readme, /generated handoff commands include\s+skip placeholders/)
-  assert.match(readme, /reject placeholder metadata and placeholder skip reasons/)
+  assert.match(
+    readme,
+    /generated handoff commands include skip and\s+pass-remaining confirmation placeholders/,
+  )
+  assert.match(readme, /placeholder confirmation notes/)
   assert.match(readme, /`passedChecks`[\s\S]*non-empty string array/)
   assert.match(readme, /`skippedChecks`[\s\S]*non-empty\s+release-specific reasons/)
   assert.match(readme, /A check must not appear in both/)
   assert.match(
     readme,
-    /Markdown handoff\s+flags command blocks that still contain `<\.\.\.>` placeholders/,
+    /Markdown handoff\s+flags command blocks that\s+still contain `<\.\.\.>` placeholders/,
   )
   assert.match(readme, /rejects unknown checks/)
   assert.match(readme, /refuses to\s+skip pass-only or selected-API-required checks/)
@@ -925,15 +933,19 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(checklist, /--skip deep-links-share-notifications-if-selected/)
   assert.match(checklist, /--pass-remaining/)
+  assert.match(checklist, /--pass-remaining-confirmation/)
   assert.match(checklist, /remaining must-pass checks/)
-  assert.match(checklist, /generated handoff commands include skip placeholders/)
-  assert.match(checklist, /reject placeholder\s+metadata and placeholder skip reasons/)
+  assert.match(
+    checklist,
+    /generated handoff commands include skip and\s+pass-remaining confirmation placeholders/,
+  )
+  assert.match(checklist, /placeholder confirmation notes/)
   assert.match(checklist, /`passedChecks`[\s\S]*non-empty\s+string array/)
   assert.match(checklist, /`skippedChecks`[\s\S]*non-empty\s+release-specific reasons/)
   assert.match(checklist, /A check must not appear in both/)
   assert.match(
     checklist,
-    /Markdown handoff flags command blocks\s+that still contain `<\.\.\.>` placeholders/,
+    /Markdown handoff flags command blocks\s+that\s+still contain `<\.\.\.>` placeholders/,
   )
   assert.match(checklist, /preserves existing and newly supplied/)
   assert.match(

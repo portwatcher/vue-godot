@@ -478,6 +478,52 @@ test('record-platform-evidence CLI rejects unreplaced placeholders', () => {
       skipResult.stderr,
       /--skip deep-links-share-notifications-if-selected requires a real reason, not <skip-reason-if-not-selected>/,
     )
+
+    const missingConfirmationResult = spawnSync(
+      process.execPath,
+      [
+        'scripts/record-platform-evidence.mjs',
+        '--platform',
+        'android',
+        '--platform-evidence',
+        evidencePath,
+        '--pass-remaining',
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf-8',
+      },
+    )
+
+    assert.equal(missingConfirmationResult.status, 1)
+    assert.match(
+      missingConfirmationResult.stderr,
+      /--pass-remaining requires --pass-remaining-confirmation/,
+    )
+
+    const placeholderConfirmationResult = spawnSync(
+      process.execPath,
+      [
+        'scripts/record-platform-evidence.mjs',
+        '--platform',
+        'android',
+        '--platform-evidence',
+        evidencePath,
+        '--pass-remaining',
+        '--pass-remaining-confirmation',
+        '<confirm-all-remaining-must-pass-checks-after-testing>',
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf-8',
+      },
+    )
+
+    assert.equal(placeholderConfirmationResult.status, 1)
+    assert.match(
+      placeholderConfirmationResult.stderr,
+      /--pass-remaining-confirmation requires a real confirmation note/,
+    )
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }
@@ -504,6 +550,8 @@ test('record-platform-evidence CLI passes remaining must-pass checks only', () =
         '--skip',
         'network-if-selected=Network APIs were not selected for this hosted pass',
         '--pass-remaining',
+        '--pass-remaining-confirmation',
+        'All remaining Android must-pass checks passed on the hosted device run',
         '--summary-output',
         summaryPath,
       ],
@@ -530,6 +578,10 @@ test('record-platform-evidence CLI passes remaining must-pass checks only', () =
     const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
     assert.equal(summary.updatedPlatform, 'android')
     assert.equal(summary.passRemaining, true)
+    assert.equal(
+      summary.passRemainingConfirmation,
+      'All remaining Android must-pass checks passed on the hosted device run',
+    )
     assert.equal(summary.progress.android.completedCheckCount, 6)
     assert.ok(
       summary.platforms.android.skippableMissingChecks.includes(
@@ -613,12 +665,12 @@ test('check-platform-evidence CLI writes summary and supports allow-open', () =>
     )
     assert.ok(
       summary.nextActions[0].commands.includes(
-        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output ${summaryPath} --expected-commit ${commit}`,
+        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${evidencePath} --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output ${summaryPath} --expected-commit ${commit}`,
       ),
     )
     assert.ok(
       summary.nextActions[0].commands.includes(
-        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output ${summaryPath} --expected-commit ${commit}`,
+        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${evidencePath} --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output ${summaryPath} --expected-commit ${commit}`,
       ),
     )
     assert.ok(

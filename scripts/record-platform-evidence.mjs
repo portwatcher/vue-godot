@@ -40,6 +40,11 @@ Options:
   --pass-remaining                 Record every remaining must-pass check in
                                   passedChecks. Skippable checks still need
                                   --pass or --skip.
+  --pass-remaining-confirmation <note>
+                                  Required with --pass-remaining. Use a
+                                  release-specific note confirming the
+                                  remaining must-pass checks passed on the
+                                  tested device or hosted device run.
   --passed-check <check[,check...]> Alias for --pass.
   --skip <check=reason>            Record a skippable required check with reason.
                                   Can be repeated. ":" is also accepted.
@@ -95,6 +100,7 @@ function parseArgs(argv) {
     updates: {},
     passedChecks: [],
     passRemaining: false,
+    passRemainingConfirmation: null,
     skippedChecks: {},
   }
 
@@ -126,6 +132,22 @@ function parseArgs(argv) {
 
     if (arg === '--pass-remaining') {
       options.passRemaining = true
+      continue
+    }
+
+    if (arg === '--pass-remaining-confirmation') {
+      const value = argv[++index]
+      if (!value) {
+        throw new Error('--pass-remaining-confirmation requires a value')
+      }
+      options.passRemainingConfirmation = value
+      continue
+    }
+
+    if (arg.startsWith('--pass-remaining-confirmation=')) {
+      options.passRemainingConfirmation = arg.slice(
+        '--pass-remaining-confirmation='.length,
+      )
       continue
     }
 
@@ -224,6 +246,26 @@ function parseArgs(argv) {
   if (!hasUpdates) {
     throw new Error(
       'Provide at least one metadata field, --pass, --pass-remaining, or --skip update',
+    )
+  }
+
+  if (options.passRemaining) {
+    if (
+      typeof options.passRemainingConfirmation !== 'string' ||
+      options.passRemainingConfirmation.trim().length === 0
+    ) {
+      throw new Error(
+        '--pass-remaining requires --pass-remaining-confirmation with a release-specific confirmation note',
+      )
+    }
+    if (isReleaseEvidencePlaceholder(options.passRemainingConfirmation)) {
+      throw new Error(
+        `--pass-remaining-confirmation requires a real confirmation note, not ${options.passRemainingConfirmation}`,
+      )
+    }
+  } else if (options.passRemainingConfirmation) {
+    throw new Error(
+      '--pass-remaining-confirmation can only be used with --pass-remaining',
     )
   }
 
@@ -401,6 +443,9 @@ function main() {
   summary.dryRun = options.dryRun
   summary.expectedCommit = options.expectedCommit
   summary.passRemaining = options.passRemaining
+  summary.passRemainingConfirmation = options.passRemaining
+    ? options.passRemainingConfirmation
+    : null
   summary.nextActions = collectPlatformEvidenceNextActions(summary, {
     expectedCommit: options.expectedCommit,
     platformEvidencePath: options.platformEvidencePath,

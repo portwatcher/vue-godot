@@ -180,6 +180,8 @@ export function recordPlatformEvidenceCommand(platform, commit, options = {}) {
     '--locale',
     '<tested-locale>',
     '--pass-remaining',
+    '--pass-remaining-confirmation',
+    '<confirm-all-remaining-must-pass-checks-after-testing>',
   ]
 
   for (const check of uniqueNonEmptyStrings(options.skipChecks)) {

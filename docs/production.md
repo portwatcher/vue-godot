@@ -105,11 +105,14 @@ Use `npm run release:record-platform-evidence -- --platform android` or
 artifact/export-preset/device metadata, `--pass` check names, and
 `--skip check=reason` outcomes without hand-editing JSON. After every unresolved
 must-pass check has actually passed, add `--pass-remaining` to record the
-remaining must-pass checks in one batch. Skippable checks still need an explicit
-`--pass` or `--skip check=reason`; generated handoff commands include skip
-placeholders for currently skippable gaps. Replace every placeholder before
-recording evidence; the recorder, worksheet audit, and final evidence validator
-reject placeholder metadata and placeholder skip reasons. Final `passedChecks`
+remaining must-pass checks in one batch, and include
+`--pass-remaining-confirmation "<release-specific confirmation>"` after the
+device run. Skippable checks still need an explicit `--pass` or
+`--skip check=reason`; generated handoff commands include skip and
+pass-remaining confirmation placeholders for currently open gaps. Replace every
+placeholder before recording evidence; the recorder, worksheet audit, and final
+evidence validator reject placeholder metadata, placeholder confirmation notes,
+and placeholder skip reasons. Final `passedChecks`
 must be a non-empty string array without duplicates, and final `skippedChecks`
 must be an object whose values are non-empty release-specific reasons. A check
 must not appear in both. The Markdown handoff

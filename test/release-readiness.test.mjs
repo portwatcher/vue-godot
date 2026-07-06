@@ -970,12 +970,12 @@ test('release readiness summary includes missing evidence next actions', () => {
     )
     assert.ok(
       realDeviceAction.commands.includes(
-        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${shellQuote(platformCommandPath)} --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --summary-output release/platform-evidence-summary.json --expected-commit ${summary.commit}`,
+        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${shellQuote(platformCommandPath)} --artifact <android-apk-aab-or-hosted-build-id> --export-preset <android-export-preset> --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output release/platform-evidence-summary.json --expected-commit ${summary.commit}`,
       ),
     )
     assert.ok(
       realDeviceAction.commands.includes(
-        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${shellQuote(platformCommandPath)} --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output release/platform-evidence-summary.json --expected-commit ${summary.commit}`,
+        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${shellQuote(platformCommandPath)} --artifact <ios-archive-testflight-or-hosted-build-id> --export-preset <ios-export-preset> --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output release/platform-evidence-summary.json --expected-commit ${summary.commit}`,
       ),
     )
     assert.ok(

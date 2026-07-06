@@ -342,13 +342,16 @@ or `--platform ios` after each hosted or real-device pass to record
 artifact/export-preset/device metadata, `--pass` check names, and
 `--skip check=reason` outcomes without hand-editing JSON; after every
 unresolved must-pass check has actually passed, add `--pass-remaining` to record
-the remaining must-pass checks in one batch. Skippable checks still need an
-explicit `--pass` or `--skip check=reason`; generated handoff commands include
-skip placeholders for currently skippable gaps. Replace every placeholder before
-recording evidence; the recorder, worksheet audit, and final evidence validator
-reject placeholder metadata and placeholder skip reasons. The Markdown handoff
-flags command blocks that still contain `<...>` placeholders so device testers
-know to edit them before running. When `--summary-output` is supplied, the
+the remaining must-pass checks in one batch, and include
+`--pass-remaining-confirmation "<release-specific confirmation>"` after the
+device run. Skippable checks still need an explicit `--pass` or
+`--skip check=reason`; generated handoff commands include skip and
+pass-remaining confirmation placeholders for currently open gaps. Replace every
+placeholder before recording evidence; the recorder, worksheet audit, and final
+evidence validator reject placeholder metadata, placeholder confirmation notes,
+and placeholder skip reasons. The Markdown handoff flags command blocks that
+still contain `<...>` placeholders so device testers know to edit them before
+running. When `--summary-output` is supplied, the
 recorder writes the updated audit and follow-up `nextActions`
 using the same evidence and summary paths. The helper rejects unknown checks and
 refuses to skip pass-only or selected-API-required checks. Selected API names are

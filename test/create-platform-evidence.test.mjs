@@ -144,6 +144,10 @@ test('platform evidence template lists required checks without passing them', ()
   assert.match(androidRecordCommand, /--pass-remaining/)
   assert.match(
     androidRecordCommand,
+    /--pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing>/,
+  )
+  assert.match(
+    androidRecordCommand,
     /--skip 'clipboard-if-selected=<skip-reason-if-not-selected>'/,
   )
   const iosRecordCommand = completeAction.commands.find((command) =>
@@ -151,6 +155,10 @@ test('platform evidence template lists required checks without passing them', ()
   )
   assert.ok(iosRecordCommand)
   assert.match(iosRecordCommand, /--pass-remaining/)
+  assert.match(
+    iosRecordCommand,
+    /--pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing>/,
+  )
   assert.match(
     iosRecordCommand,
     /--skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>'/,
