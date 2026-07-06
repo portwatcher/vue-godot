@@ -328,6 +328,13 @@ function platformLines(platform, status) {
     return [`### ${platformLabel(platform)}`, '', '- Status: missing']
   }
 
+  const confirmationIssue =
+    typeof status.passRemainingConfirmationIssue === 'string' &&
+    status.passRemainingConfirmationIssue.trim().length > 0
+      ? [
+          `- Batch confirmation issue: ${status.passRemainingConfirmationIssue.trim()}`,
+        ]
+      : []
   const details = Array.isArray(status.remainingCheckDetails)
     ? status.remainingCheckDetails.filter(isRecord)
     : []
@@ -345,6 +352,7 @@ function platformLines(platform, status) {
     `- Status: ${statusText(status.ready)} (${status.errorCount ?? 0} blocker(s))`,
     `- Required checks complete: ${status.completedCheckCount ?? 0}/${status.requiredCheckCount ?? 0}`,
     `- Batch confirmation: ${optionalText(status.passRemainingConfirmation)}`,
+    ...confirmationIssue,
     `- Metadata gaps: ${inlineList(status.missingFields)}`,
     `- Must-pass remaining: ${inlineList(status.mustPassMissingChecks)}`,
     `- Skippable remaining: ${inlineList(status.skippableMissingChecks)}`,

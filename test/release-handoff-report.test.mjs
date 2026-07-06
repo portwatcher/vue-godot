@@ -103,6 +103,11 @@ function sampleReadinessSummary(ciEvidencePath = 'release/ci-runs.json') {
           errorCount: 1,
           missingFields: ['artifact', 'deviceModel'],
           mustPassMissingChecks: ['cold-launch'],
+          passRemainingConfirmationIssue:
+            [
+              'ios.passRemainingConfirmation must replace placeholder',
+              '<confirm-all-remaining-must-pass-checks-after-testing>',
+            ].join(' '),
           ready: false,
           remainingCheckDetails: [
             {
@@ -195,6 +200,16 @@ test('release handoff renderer summarizes evidence gaps and commands', () => {
     /Batch confirmation: All remaining Android must-pass checks passed on Pixel hosted run\./,
   )
   assert.match(markdown, /Batch confirmation: none/)
+  assert.match(
+    markdown,
+    new RegExp(
+      [
+        'Batch confirmation issue:',
+        'ios\\.passRemainingConfirmation must replace placeholder',
+        '<confirm-all-remaining-must-pass-checks-after-testing>',
+      ].join(' '),
+    ),
+  )
   assert.match(markdown, /Metadata gaps: `artifact`, `deviceModel`/)
   assert.match(markdown, /Skippable remaining: `deep-links-share-notifications-if-selected`/)
   assert.match(markdown, /Duplicate passed checks: `cold-launch`/)

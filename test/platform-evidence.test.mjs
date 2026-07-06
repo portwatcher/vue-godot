@@ -273,12 +273,28 @@ test('platform evidence audit rejects placeholder metadata and skip reasons', ()
     errors,
     /ios\.passRemainingConfirmation must replace placeholder <confirm-all-remaining-must-pass-checks-after-testing>/,
   )
+  assert.equal(
+    template.ios.passRemainingConfirmation,
+    '<confirm-all-remaining-must-pass-checks-after-testing>',
+  )
+  assert.equal(summary.platforms.ios.passRemainingConfirmation, undefined)
+  assert.equal(
+    summary.platforms.ios.passRemainingConfirmationIssue,
+    [
+      'ios.passRemainingConfirmation must replace placeholder',
+      '<confirm-all-remaining-must-pass-checks-after-testing>',
+    ].join(' '),
+  )
 
   template.ios.passRemainingConfirmation = ''
   const emptyConfirmationSummary = auditPlatformEvidence(template)
   assert.match(
     emptyConfirmationSummary.errors.join('\n'),
     /ios\.passRemainingConfirmation must be a non-empty release-specific confirmation note/,
+  )
+  assert.equal(
+    emptyConfirmationSummary.platforms.ios.passRemainingConfirmationIssue,
+    'ios.passRemainingConfirmation must be a non-empty release-specific confirmation note',
   )
 })
 

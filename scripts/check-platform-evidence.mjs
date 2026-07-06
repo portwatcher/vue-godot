@@ -335,23 +335,25 @@ function auditPlatformWorksheet(record, platform, options = {}) {
   }
   if ('passRemainingConfirmation' in record) {
     if (
-      typeof record.passRemainingConfirmation === 'string' &&
-      record.passRemainingConfirmation.trim().length > 0
-    ) {
-      status.passRemainingConfirmation =
-        record.passRemainingConfirmation.trim()
-    }
-    if (
       typeof record.passRemainingConfirmation !== 'string' ||
       record.passRemainingConfirmation.trim().length === 0
     ) {
-      errors.push(
-        `${platform}.passRemainingConfirmation must be a non-empty release-specific confirmation note`,
-      )
+      const message = [
+        `${platform}.passRemainingConfirmation must be a non-empty`,
+        'release-specific confirmation note',
+      ].join(' ')
+      status.passRemainingConfirmationIssue = message
+      errors.push(message)
     } else if (isReleaseEvidencePlaceholder(record.passRemainingConfirmation)) {
-      errors.push(
-        `${platform}.passRemainingConfirmation must replace placeholder ${record.passRemainingConfirmation}`,
-      )
+      const message = [
+        `${platform}.passRemainingConfirmation must replace placeholder`,
+        record.passRemainingConfirmation,
+      ].join(' ')
+      status.passRemainingConfirmationIssue = message
+      errors.push(message)
+    } else {
+      status.passRemainingConfirmation =
+        record.passRemainingConfirmation.trim()
     }
   }
 

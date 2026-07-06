@@ -1,7 +1,7 @@
 # Release Handoff
 
 - Release candidate commit: `43f76a37f9885a3f656127479e810212ef1ffd85`
-- Handoff format: 3
+- Handoff format: 4
 - Handoff state: 627a3c91e263e524
 - Overall readiness: open (10 blocker(s))
 - Real-device evidence: waiting
