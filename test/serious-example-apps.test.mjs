@@ -97,6 +97,7 @@ function createCompleteFixtureRoot(root) {
       'persistent storage',
       'camera or geolocation',
       'permission',
+      'production-profile checks',
       'SafeAreaView',
       'KeyboardAvoidingView',
       'Godot smoke',
