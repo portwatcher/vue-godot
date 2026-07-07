@@ -16,6 +16,7 @@ import {
   type DeviceCapabilityName,
   type DeviceCapabilityStatus,
 } from '@vue-godot/device'
+import { readNativeLifecycleEvidence } from './nativeLifecycleEvidence'
 
 export type ProductionProfileCheckState = 'pass' | 'fail' | 'info'
 
@@ -163,6 +164,50 @@ function checkStorage(): ProductionProfileCheckResult[] {
   }
 
   return results
+}
+
+function checkStorageRestartMarker(): ProductionProfileCheckResult {
+  const localKey = 'native-app-demo.profile-check.restart.local'
+  const sessionKey = 'native-app-demo.profile-check.restart.session'
+  const validatedKey = 'native-app-demo.profile-check.restart.validated'
+
+  try {
+    const validatedAt = localStorage.getItem(validatedKey)
+    const previousLocal = localStorage.getItem(localKey)
+    const previousSession = sessionStorage.getItem(sessionKey)
+    const token = new Date().toISOString()
+    localStorage.setItem(localKey, token)
+    sessionStorage.setItem(sessionKey, token)
+
+    if (previousLocal && previousSession === null) {
+      localStorage.setItem(validatedKey, token)
+      return pass(
+        'storage restart marker',
+        'localStorage restored and sessionStorage reset for this runtime',
+      )
+    }
+
+    if (validatedAt) {
+      return pass(
+        'storage restart marker',
+        `restart validation recorded at ${validatedAt}`,
+      )
+    }
+
+    if (previousLocal && previousSession) {
+      return info(
+        'storage restart marker',
+        'same-runtime markers present; restart app and run again',
+      )
+    }
+
+    return info(
+      'storage restart marker',
+      'marker created; restart app and run again',
+    )
+  } catch (error) {
+    return fail('storage restart marker', error)
+  }
 }
 
 async function checkPermission(
@@ -330,12 +375,39 @@ function checkLayoutPrimitives(): ProductionProfileCheckResult {
   )
 }
 
+function checkNativeLifecycle(): ProductionProfileCheckResult[] {
+  const snapshot = readNativeLifecycleEvidence()
+  const listenerResult = snapshot.listenerInstalled
+    ? pass('native lifecycle listener', 'window lifecycle callback installed')
+    : info('native lifecycle listener', 'window lifecycle callback unavailable')
+  const backResult =
+    snapshot.backRequests > 0
+      ? pass(
+          'Android back handling',
+          `requests=${snapshot.backRequests} last=${snapshot.lastBackAction}`,
+        )
+      : info('Android back handling', 'not exercised in this runtime yet')
+  const backgroundResult =
+    snapshot.blurEvents > 0 && snapshot.focusEvents > 0
+      ? pass(
+          'background/foreground lifecycle',
+          `blur=${snapshot.blurEvents} focus=${snapshot.focusEvents}`,
+        )
+      : info(
+          'background/foreground lifecycle',
+          `blur=${snapshot.blurEvents} focus=${snapshot.focusEvents}`,
+        )
+
+  return [listenerResult, backResult, backgroundResult]
+}
+
 export async function runProductionProfileChecks(): Promise<ProductionProfileCheckSummary> {
   const results: ProductionProfileCheckResult[] = []
 
   results.push(checkWebSocket())
   results.push(checkNavigatorOnline())
   results.push(...checkStorage())
+  results.push(checkStorageRestartMarker())
   results.push(await checkFetch())
   results.push(await checkReachability())
   results.push(await checkPermission('camera'))
@@ -352,6 +424,7 @@ export async function runProductionProfileChecks(): Promise<ProductionProfileChe
   results.push(checkVibration())
   results.push(checkSensors())
   results.push(checkLayoutPrimitives())
+  results.push(...checkNativeLifecycle())
 
   return summarize(results)
 }

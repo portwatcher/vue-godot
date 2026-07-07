@@ -17,6 +17,7 @@ This app exists to keep SDK-level native application flows exercised:
 | camera or geolocation     | Checks media/geolocation adapters, then calls the native APIs when available.                        |
 | permission                | Queries `navigator.permissions.query()` for camera, geolocation, microphone, clipboard, and sensors. |
 | production-profile checks | Runs the maintained release API set from the `Release checks` screen.                                |
+| Android lifecycle         | Records back-request and background/foreground counts for release evidence.                          |
 | SafeAreaView              | Wraps routed content in `<SafeAreaView>`.                                                            |
 | KeyboardAvoidingView      | Wraps form input and release checks in `<KeyboardAvoidingView>`.                                     |
 | Godot smoke               | Covered by `npm run smoke:godot`.                                                                    |

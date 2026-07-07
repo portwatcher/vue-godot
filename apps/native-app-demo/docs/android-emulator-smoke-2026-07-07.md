@@ -21,7 +21,7 @@ production-profile worksheet in `release/platform-evidence.json`.
 ## Artifact
 
 - APK: `apps/native-app-demo/build/android/native-app-demo-debug.apk`
-- SHA-256: `c254ac154365277527be9546bac51247d0eec810c484453a392e66e78e762a05`
+- SHA-256: `817d0f666fb94904a10bb8cb59d9629971ce54363600a661ca80898c18795fa3`
 - Package: `org.vuegodot.nativeappdemo`
 - Version: `1.0.0`
 - compileSdk: `34`
@@ -66,7 +66,8 @@ adb -e shell am start -n org.vuegodot.nativeappdemo/com.godot.game.GodotApp
 - APK installed successfully on the emulator.
 - Cold launch reached `org.vuegodot.nativeappdemo/com.godot.game.GodotApp`.
 - The app process stayed alive and owned emulator focus after launch, device API
-  taps, and the release-check batch.
+  taps, app restart, Android Back, background/foreground, and the release-check
+  batch.
 - GodotJS startup log included `jsb.inject loaded successfully`,
   `OnGodotSetupCompleted`, and `OnGodotMainLoopStarted`.
 - Filtered logcat after the guarded camera/geolocation taps had no
@@ -80,13 +81,19 @@ adb -e shell am start -n org.vuegodot.nativeappdemo/com.godot.game.GodotApp
 - The camera action reported `media-devices adapter: missing-plugin` without
   invoking `getUserMedia()` on an unregistered adapter.
 - The geolocation action reported `geolocation adapter is not registered`.
-- The release-check screen completed with `15 passed`, `5 informational`, and
-  `0 failed`.
+- The release-check screen completed with `19 passed`, `5 informational`, and
+  `0 failed` after the restart, Android Back, and background/foreground steps.
 - The release-check batch covered WebSocket constructor constants,
   `navigator.onLine` events, local/session storage, `fetch`, network
   reachability, permission query states, clipboard support, native adapter
   states, guarded media/geolocation calls, vibration, sensors, and layout
   primitives.
+- The restart pass reported `localStorage` restored from a prior run while
+  `sessionStorage` reset for the new runtime.
+- Android Back from the nested release-check screen returned to the home route,
+  and the follow-up release-check run reported `requests=1 last=navigate-home`.
+- Backgrounding with Home and foregrounding the same task reported
+  `blur=1 focus=1`.
 
 ## Screenshots
 
@@ -98,11 +105,12 @@ adb -e shell am start -n org.vuegodot.nativeappdemo/com.godot.game.GodotApp
 
 ![Release checks](./evidence/android-emulator-release-checks-2026-07-07.png)
 
+[Release check log excerpt](./evidence/android-emulator-release-checks-2026-07-07.log)
+
 ## Remaining Release Work
 
 This is narrower than the maintained production profile. The final Android
 release gate still needs the full `release/platform-evidence.json` Android
-worksheet to pass, including storage restart, Android back handling,
-background/foreground, complete evidence capture for every required row, and the
-selected native adapter success or accepted fallback states required by the
-release checklist.
+worksheet to pass, including complete evidence capture for every required row
+and the selected native adapter success or accepted fallback states required by
+the release checklist.

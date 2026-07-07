@@ -392,6 +392,9 @@ the final removal commit.
     production-profile Android worksheet remains open.
   - `apps/native-app-demo` now has a `Release checks` screen that exercises the
     maintained production API set before final worksheet evidence is recorded.
+  - The Android emulator smoke now covers restart storage, Android Back, and
+    background/foreground lifecycle evidence, but the formal production-profile
+    worksheet is still open.
 - [ ] iOS export with selected device APIs has been tested.
 - [ ] CI passes on a clean commit.
 - [ ] Release preflight passes without warnings in the release environment.

@@ -1,8 +1,17 @@
 import { installBrowserAPIs } from '@vue-godot/browser'
+import {
+  onAppLifecycleEvent,
+  type GodotAppLifecycleSubscription,
+} from '@vue-godot/device/system'
 import { htmlPlugin } from '@vue-godot/html'
 import { createApp } from '@vue-godot/runtime-tscn'
 import { OS, VBoxContainer } from 'godot'
 import App from './App.vue'
+import {
+  recordNativeLifecycleEvent,
+  setNativeLifecycleListenerInstalled,
+  type NativeBackAction,
+} from './app/nativeLifecycleEvidence'
 import { router } from './app/router'
 
 installBrowserAPIs()
@@ -16,8 +25,20 @@ function isSmokeEnabled(): boolean {
 
 export default class Root extends VBoxContainer {
   private app: ReturnType<typeof createApp> | null = null
+  private lifecycleSubscription: GodotAppLifecycleSubscription | null = null
 
   _ready() {
+    this.lifecycleSubscription = onAppLifecycleEvent((event) => {
+      if (event.type === 'back-request') {
+        recordNativeLifecycleEvent(event.type, this.handleBackRequest())
+        return
+      }
+
+      if (event.type === 'blur' || event.type === 'focus') {
+        recordNativeLifecycleEvent(event.type)
+      }
+    })
+    setNativeLifecycleListenerInstalled(this.lifecycleSubscription !== null)
     void this.mountApp()
   }
 
@@ -37,7 +58,19 @@ export default class Root extends VBoxContainer {
     }
   }
 
+  private handleBackRequest(): NativeBackAction {
+    if (router.currentRoute.value.path !== '/') {
+      void router.push('/')
+      return 'navigate-home'
+    }
+
+    return 'root'
+  }
+
   _exit_tree() {
+    this.lifecycleSubscription?.disconnect()
+    this.lifecycleSubscription = null
+    setNativeLifecycleListenerInstalled(false)
     this.app?.unmount()
     this.app = null
   }
