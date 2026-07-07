@@ -49,6 +49,14 @@ logcat evidence. For the restart and lifecycle rows, run the screen once, force
 stop and restart the app, run it again, press Android Back from a nested screen,
 background/foreground the app, and run the screen one final time.
 
+For unattended device or simulator runs, launch the app with
+`VUE_GODOT_RELEASE_CHECKS=1`. The app runs the same production-profile check
+batch after startup, prints the `[native-release-checks]` summary and result
+rows, prints `[native-release-checks] native-app-demo passed` when there are no
+failures, and exits with status `1` if any check fails.
+Set `VUE_GODOT_RELEASE_CHECKS_DELAY_MS` when the test harness needs time to
+background/foreground the app before the check batch starts.
+
 ## iOS Exports
 
 The checked-in `iOS Release` preset exports an Xcode project
@@ -76,6 +84,14 @@ template slices plus real Apple signing/team configuration; the published
 GodotJS 4.4 V8 iOS assets currently provide device `arm64` static libraries.
 Native notification and share-sheet plugins may require additional entitlements,
 capabilities, or plugin-specific setup.
+
+When running a simulator build through `simctl`, pass the unattended release
+check flag through the simulator environment:
+
+```bash
+SIMCTL_CHILD_VUE_GODOT_RELEASE_CHECKS=1 xcrun simctl launch --terminate-running-process booted org.vuegodot.nativeappdemo
+SIMCTL_CHILD_VUE_GODOT_RELEASE_CHECKS=1 SIMCTL_CHILD_VUE_GODOT_RELEASE_CHECKS_DELAY_MS=8000 xcrun simctl launch --terminate-running-process booted org.vuegodot.nativeappdemo
+```
 
 ## Web Exports
 

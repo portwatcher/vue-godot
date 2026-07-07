@@ -48,6 +48,7 @@ import type { HtmlStyle } from '@vue-godot/html'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
+  logProductionProfileCheckSummary,
   runProductionProfileChecks,
   type ProductionProfileCheckResult,
   type ProductionProfileCheckState,
@@ -77,29 +78,13 @@ async function runChecks(): Promise<void> {
   isRunning.value = true
   try {
     const summary = await runProductionProfileChecks()
-    logSummary(summary)
+    logProductionProfileCheckSummary(summary)
     results.value = summary.results
     passed.value = summary.passed
     failed.value = summary.failed
     info.value = summary.info
   } finally {
     isRunning.value = false
-  }
-}
-
-function logSummary(summary: {
-  results: ProductionProfileCheckResult[]
-  passed: number
-  failed: number
-  info: number
-}): void {
-  console.log(
-    `[native-release-checks] summary passed=${summary.passed} info=${summary.info} failed=${summary.failed}`,
-  )
-  for (const result of summary.results) {
-    console.log(
-      `[native-release-checks] ${result.state} ${result.name}: ${result.detail}`,
-    )
   }
 }
 

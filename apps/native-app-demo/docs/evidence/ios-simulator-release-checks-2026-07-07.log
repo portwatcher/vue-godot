@@ -1,0 +1,40 @@
+Godot Engine v4.4.2.rc.custom_build.57289976b (2026-03-20 17:27:10 UTC) - https://godotengine.org
+2026-07-07 23:35:23.796 native-app-demo[15008:51316170] Setting up an OpenGL ES 3.0 context.
+OpenGL API OpenGL ES 3.0 APPLE-23.1.1 - Compatibility - Using Device: Apple Inc. - Apple Software Renderer
+
+[jsc][Log] SetPromiseRejectCallback is not supported
+[jsb][Debug] slow process GodotJSScriptLanguage.init: 0.030974 s (modules/GodotJS/weaver/jsb_script_language.cpp:80)
+[jsb][Debug] slow process JSRealm._load_module: 0.044113 s (modules/GodotJS/bridge/jsb_environment.cpp:1131)
+[jsb][Debug] slow process JSRealm._require: 0.044134 s (modules/GodotJS/bridge/jsb_builtins.cpp:61)
+[jsb][Debug] slow process JSRealm._load_module: 0.048205 s (modules/GodotJS/bridge/jsb_environment.cpp:1131)
+[jsb][Debug] slow process JSRealm.load: 0.048213 s (modules/GodotJS/bridge/jsb_environment.cpp:1518)
+[jsb][Debug] slow process GodotJSScript.load_module: 0.048218 s (modules/GodotJS/weaver/jsb_script.cpp:520)
+[JS] [native-release-checks] waiting 8000ms before automated run
+[JS] [native-release-checks] summary passed=18 info=6 failed=0
+[JS] [native-release-checks] pass WebSocket: constructor and ready states available
+[JS] [native-release-checks] pass navigator.onLine: online/offline events dispatched
+[JS] [native-release-checks] pass localStorage: write/read succeeded
+[JS] [native-release-checks] pass sessionStorage: write/read succeeded
+[JS] [native-release-checks] pass storage restart marker: localStorage restored and sessionStorage reset for this runtime
+[JS] [native-release-checks] pass fetch: HEAD https://example.com/ -> 200
+[JS] [native-release-checks] pass checkNetworkReachability: example.com reachable
+[JS] [native-release-checks] pass navigator.permissions.query:camera: prompt
+[JS] [native-release-checks] pass navigator.permissions.query:geolocation: prompt
+[JS] [native-release-checks] pass navigator.permissions.query:microphone: prompt
+[JS] [native-release-checks] pass navigator.permissions.query:clipboard-read: granted
+[JS] [native-release-checks] pass navigator.permissions.query:accelerometer: granted
+[JS] [native-release-checks] pass navigator.clipboard: write/read succeeded
+[JS] [native-release-checks] info permissions adapter: missing-plugin
+[JS] [native-release-checks] info geolocation adapter: missing-plugin
+[JS] [native-release-checks] info media-devices adapter: missing-plugin
+[JS] [native-release-checks] info navigator.mediaDevices.getUserMedia: missing-plugin
+[JS] [native-release-checks] info navigator.geolocation: missing-plugin
+[JS] [native-release-checks] pass navigator.vibrate: supported=true accepted=true
+[JS] [native-release-checks] pass readDeviceMotion: accel=0.00,0.00,0.00 absolute=false
+[JS] [native-release-checks] pass SafeAreaView/KeyboardAvoidingView: screen is rendered inside both layout primitives
+[JS] [native-release-checks] pass native lifecycle listener: window lifecycle callback installed
+[JS] [native-release-checks] info Android back handling: not exercised in this runtime yet
+[JS] [native-release-checks] pass background/foreground lifecycle: blur=1 focus=1
+[JS] [native-release-checks] native-app-demo passed
+org.vuegodot.nativeappdemo: 15008
+

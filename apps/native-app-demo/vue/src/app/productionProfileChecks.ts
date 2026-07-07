@@ -33,6 +33,21 @@ export interface ProductionProfileCheckSummary {
   info: number
 }
 
+export const NATIVE_RELEASE_CHECKS_PREFIX = '[native-release-checks]'
+
+export function logProductionProfileCheckSummary(
+  summary: ProductionProfileCheckSummary,
+): void {
+  console.log(
+    `${NATIVE_RELEASE_CHECKS_PREFIX} summary passed=${summary.passed} info=${summary.info} failed=${summary.failed}`,
+  )
+  for (const result of summary.results) {
+    console.log(
+      `${NATIVE_RELEASE_CHECKS_PREFIX} ${result.state} ${result.name}: ${result.detail}`,
+    )
+  }
+}
+
 function pass(name: string, detail: string): ProductionProfileCheckResult {
   return { name, state: 'pass', detail }
 }

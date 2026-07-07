@@ -399,6 +399,17 @@ the final removal commit.
     The final checklist stays open until the assembled release evidence file can
     validate the Android result alongside the remaining iOS evidence.
 - [ ] iOS export with selected device APIs has been tested.
+  - iOS simulator export smoke recorded in
+    `apps/native-app-demo/docs/ios-simulator-smoke-2026-07-07.md`.
+  - The simulator smoke covers project-only Xcode export, simulator launch,
+    rendered app UI, storage restart, network/reachability, clipboard,
+    permissions, missing-plugin geolocation/media adapter states, haptics,
+    sensors, safe-area layout, and background/foreground lifecycle evidence.
+  - Remaining release risk: the simulator run uses a locally built
+    JavaScriptCore simulator template because the published GodotJS 4.4 V8 iOS
+    assets provide device `arm64` static libraries but no simulator slice. A
+    signed physical-device or upstream V8-compatible hosted run is still needed
+    before final production wording removal.
 - [ ] CI passes on a clean commit.
 - [ ] Release preflight passes without warnings in the release environment.
 - [x] `npm audit --audit-level=moderate` is clean or accepted exceptions are documented.
