@@ -1,0 +1,44 @@
+Godot Engine v4.4.2.rc.custom_build.57289976b (2026-03-20 17:27:10 UTC) - https://godotengine.org
+2026-07-08 00:15:37.382 native-app-demo[67504:51455516] Setting up an OpenGL ES 3.0 context.
+OpenGL API OpenGL ES 3.0 APPLE-23.1.1 - Compatibility - Using Device: Apple Inc. - Apple Software Renderer
+
+objc[67504]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x1113c0310) and /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x10f244398). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+[jsc][Log] SetPromiseRejectCallback is not supported
+[jsb][Debug] slow process JSEnvironment.Construct: 0.071835 s (modules/GodotJS/bridge/jsb_environment.cpp:257)
+[jsb][Debug] slow process JSRealm._load_module: 0.063114 s (modules/GodotJS/bridge/jsb_environment.cpp:1131)
+[jsb][Debug] slow process JSRealm._require: 0.063140 s (modules/GodotJS/bridge/jsb_builtins.cpp:61)
+[jsb][Debug] slow process GodotJSScriptLanguage.init: 0.194763 s (modules/GodotJS/weaver/jsb_script_language.cpp:80)
+[jsb][Debug] slow process JSRealm._load_godot_mod: 0.020242 s (modules/GodotJS/bridge/jsb_godot_module_loader.cpp:13)
+[jsb][Debug] slow process JSRealm._load_module: 0.065180 s (modules/GodotJS/bridge/jsb_environment.cpp:1131)
+[jsb][Debug] slow process JSRealm._require: 0.065194 s (modules/GodotJS/bridge/jsb_builtins.cpp:61)
+[jsb][Debug] slow process JSRealm._load_module: 0.070317 s (modules/GodotJS/bridge/jsb_environment.cpp:1131)
+[jsb][Debug] slow process JSRealm.load: 0.070325 s (modules/GodotJS/bridge/jsb_environment.cpp:1518)
+[jsb][Debug] slow process GodotJSScript.load_module: 0.070331 s (modules/GodotJS/weaver/jsb_script.cpp:520)
+[JS] [native-release-checks] waiting 8000ms before automated run
+[JS] [native-release-checks] summary passed=18 info=7 failed=0
+[JS] [native-release-checks] pass WebSocket: constructor and ready states available
+[JS] [native-release-checks] pass navigator.onLine: online/offline events dispatched
+[JS] [native-release-checks] pass localStorage: write/read succeeded
+[JS] [native-release-checks] pass sessionStorage: write/read succeeded
+[JS] [native-release-checks] pass storage restart marker: localStorage restored and sessionStorage reset for this runtime
+[JS] [native-release-checks] pass fetch: HEAD https://example.com/ -> 200
+[JS] [native-release-checks] pass checkNetworkReachability: example.com reachable
+[JS] [native-release-checks] pass navigator.permissions.query:camera: prompt
+[JS] [native-release-checks] pass navigator.permissions.query:geolocation: prompt
+[JS] [native-release-checks] pass navigator.permissions.query:microphone: prompt
+[JS] [native-release-checks] pass navigator.permissions.query:clipboard-read: granted
+[JS] [native-release-checks] pass navigator.permissions.query:accelerometer: granted
+[JS] [native-release-checks] pass navigator.clipboard: write/read succeeded
+[JS] [native-release-checks] info permissions adapter: missing-plugin
+[JS] [native-release-checks] info geolocation adapter: missing-plugin
+[JS] [native-release-checks] info media-devices adapter: missing-plugin
+[JS] [native-release-checks] info navigator.mediaDevices.getUserMedia: missing-plugin
+[JS] [native-release-checks] info navigator.geolocation: missing-plugin
+[JS] [native-release-checks] pass navigator.vibrate: supported=true accepted=true
+[JS] [native-release-checks] pass readDeviceMotion: accel=0.00,0.00,0.00 absolute=false
+[JS] [native-release-checks] pass SafeAreaView/KeyboardAvoidingView: screen is rendered inside both layout primitives
+[JS] [native-release-checks] pass virtual keyboard text input: feature=true callback=installed LineEdit=inserted TextEdit=inserted beforeHeight=0 shownHeight=0 hiddenHeight=0 callbackEvents=0
+[JS] [native-release-checks] pass native lifecycle listener: window lifecycle callback installed
+[JS] [native-release-checks] info Android back handling: not exercised in this runtime yet
+[JS] [native-release-checks] info background/foreground lifecycle: blur=0 focus=0
+[JS] [native-release-checks] native-app-demo passed

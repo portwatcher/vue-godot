@@ -404,11 +404,16 @@ the final removal commit.
   - The simulator smoke covers project-only Xcode export, simulator launch,
     rendered app UI, storage restart, network/reachability, clipboard,
     permissions, missing-plugin geolocation/media adapter states, haptics,
-    sensors, safe-area layout, and background/foreground lifecycle evidence.
+    sensors, safe-area layout, background/foreground lifecycle evidence, and
+    virtual-keyboard/text-control runtime checks for the Godot `LineEdit` and
+    `TextEdit` nodes backing `<Input>` and `<Textarea>`.
   - `release/platform-evidence.json` records the covered iOS simulator checks;
-    the remaining iOS worksheet blocker is
-    `safe-area-keyboard-rotation-text-input`, because the simulator run did not
-    exercise virtual keyboard/text input through UI automation.
+    the simulator text-control follow-up records
+    `safe-area-keyboard-rotation-text-input` coverage through
+    `DisplayServer.virtual_keyboard_show()`, an installed input-text callback,
+    and inserted text in both Godot text controls. The simulator still reported
+    zero keyboard height and no callback text event, so signed physical-device
+    evidence remains required before final production wording removal.
   - Remaining release risk: the simulator run uses a locally built
     JavaScriptCore simulator template because the published GodotJS 4.4 V8 iOS
     assets provide device `arm64` static libraries but no simulator slice. A

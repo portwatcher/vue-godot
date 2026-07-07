@@ -16,6 +16,7 @@ import {
   type DeviceCapabilityName,
   type DeviceCapabilityStatus,
 } from '@vue-godot/device'
+import { Callable, DisplayServer, LineEdit, Rect2, TextEdit } from 'godot'
 import { readNativeLifecycleEvidence } from './nativeLifecycleEvidence'
 
 export type ProductionProfileCheckState = 'pass' | 'fail' | 'info'
@@ -390,6 +391,89 @@ function checkLayoutPrimitives(): ProductionProfileCheckResult {
   )
 }
 
+function waitForProfileCheck(delayMs: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, delayMs)
+  })
+}
+
+async function checkVirtualKeyboardTextInput(): Promise<ProductionProfileCheckResult> {
+  let lineEdit: LineEdit | null = null
+  let textEdit: TextEdit | null = null
+
+  try {
+    if (
+      !DisplayServer.has_feature(
+        DisplayServer.Feature.FEATURE_VIRTUAL_KEYBOARD,
+      )
+    ) {
+      return info(
+        'virtual keyboard text input',
+        'DisplayServer virtual keyboard feature unavailable',
+      )
+    }
+
+    const enteredText: string[] = []
+    const lineEditText = 'release@example.test'
+    const textEditText = 'release notes\nkeyboard smoke'
+    lineEdit = new LineEdit()
+    lineEdit.placeholder_text = 'Email for receipt'
+    lineEdit.virtual_keyboard_enabled = true
+    lineEdit.virtual_keyboard_type =
+      DisplayServer.VirtualKeyboardType.KEYBOARD_TYPE_EMAIL_ADDRESS
+    lineEdit.max_length = 64
+    lineEdit.insert_text_at_caret(lineEditText)
+
+    textEdit = new TextEdit()
+    textEdit.placeholder_text = 'Release notes'
+    textEdit.virtual_keyboard_enabled = true
+    textEdit.insert_text_at_caret(textEditText)
+
+    if (lineEdit.text !== lineEditText || textEdit.text !== textEditText) {
+      return fail(
+        'virtual keyboard text input',
+        `LineEdit text=${lineEdit.text} TextEdit text=${textEdit.text}`,
+      )
+    }
+
+    const inputTextCallback = new Callable(
+      Callable.create((text: string) => {
+        enteredText.push(text)
+      }),
+    )
+    const emptyInputTextCallback = new Callable(
+      Callable.create((_text: string) => undefined),
+    )
+
+    DisplayServer.window_set_input_text_callback(inputTextCallback)
+    const beforeHeight = DisplayServer.virtual_keyboard_get_height()
+    DisplayServer.virtual_keyboard_show(
+      'release@example.test',
+      new Rect2(24, 360, 320, 44),
+      DisplayServer.VirtualKeyboardType.KEYBOARD_TYPE_EMAIL_ADDRESS,
+      64,
+      20,
+      20,
+    )
+    await waitForProfileCheck(350)
+    const shownHeight = DisplayServer.virtual_keyboard_get_height()
+    DisplayServer.virtual_keyboard_hide()
+    await waitForProfileCheck(100)
+    const hiddenHeight = DisplayServer.virtual_keyboard_get_height()
+    DisplayServer.window_set_input_text_callback(emptyInputTextCallback)
+
+    return pass(
+      'virtual keyboard text input',
+      `feature=true callback=installed LineEdit=inserted TextEdit=inserted beforeHeight=${beforeHeight} shownHeight=${shownHeight} hiddenHeight=${hiddenHeight} callbackEvents=${enteredText.length}`,
+    )
+  } catch (error) {
+    return fail('virtual keyboard text input', error)
+  } finally {
+    lineEdit?.queue_free()
+    textEdit?.queue_free()
+  }
+}
+
 function checkNativeLifecycle(): ProductionProfileCheckResult[] {
   const snapshot = readNativeLifecycleEvidence()
   const listenerResult = snapshot.listenerInstalled
@@ -439,6 +523,7 @@ export async function runProductionProfileChecks(): Promise<ProductionProfileChe
   results.push(checkVibration())
   results.push(checkSensors())
   results.push(checkLayoutPrimitives())
+  results.push(await checkVirtualKeyboardTextInput())
   results.push(...checkNativeLifecycle())
 
   return summarize(results)
