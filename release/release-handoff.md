@@ -2,27 +2,21 @@
 
 - Release candidate commit: `68f88b1254ba76795a848f14f8ed616ec489dfec`
 - Handoff format: 7
-- Handoff state: f9b6449393ef9fe3
-- Overall readiness: open (10 blocker(s))
-- Real-device evidence: waiting
-- Android evidence: waiting
-- iOS evidence: waiting
+- Handoff state: 24d751d022870b9b
+- Overall readiness: open (6 blocker(s))
+- Real-device evidence: ready
+- Android evidence: ready
+- iOS evidence: ready
 - Release Preflight evidence: waiting
 - Public warning removal: waiting
 
 ## Current Blockers
 
-- TODO.md:26 Android and iOS export smoke apps run on real, hosted, emulator, or simulator targets for the production profile.
 - TODO.md:34 The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied.
-- TODO.md:389 Android export with selected device APIs has been tested.
-- TODO.md:401 iOS export with selected device APIs has been tested.
 - TODO.md:422 CI passes on a clean commit.
 - TODO.md:423 Release preflight passes without warnings in the release environment.
 - TODO.md:425 All public READMEs match the final support claims.
 - TODO.md:426 The root README warning is removed in the same commit that marks this checklist complete.
-- real-device evidence missing at release/real-device-evidence.json
-  Create release/real-device-evidence.json after completing docs/real-device-release.md, then run npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 68f88b1254ba76795a848f14f8ed616ec489dfec.
-  Real device evidence file not found: release/real-device-evidence.json
 - release-readiness evidence missing at release/release-readiness-evidence.json
   Create it after the Release Preflight workflow passes without warnings.
   Release-readiness evidence file not found: release/release-readiness-evidence.json
@@ -153,11 +147,8 @@
 
 ## Final TODO Proofs
 
-- Ready: 2/10
-- TODO.md:26 Android and iOS export smoke apps run on real, hosted, emulator, or simulator targets for the production profile. (realDeviceEvidenceReady waiting)
+- Ready: 5/10
 - TODO.md:34 The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied. (warningWordingReady waiting)
-- TODO.md:389 Android export with selected device APIs has been tested. (androidRealDeviceEvidenceReady waiting)
-- TODO.md:401 iOS export with selected device APIs has been tested. (iosRealDeviceEvidenceReady waiting)
 - TODO.md:422 CI passes on a clean commit. (ciEvidenceReady waiting)
 - TODO.md:423 Release preflight passes without warnings in the release environment. (releaseReadinessEvidenceReady waiting)
 - TODO.md:425 All public READMEs match the final support claims. (publicReadmesReady waiting)
@@ -165,26 +156,7 @@
 
 ## Next Actions
 
-### Complete Android and iOS real-device export evidence
-
-Run the local check and selected API export checks on real, hosted, emulator, or simulator targets, record the evidence URL in the platform worksheet, then assemble and validate release/real-device-evidence.json for the tested release commit.
-The device prereq summary records local tooling availability and configured or partially configured hosted-provider environment variable names for handoff diagnostics only; final evidence still needs non-local device run URLs, artifact IDs, and device metadata.
-
-```bash
-npm run check
-npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing
-npm run release:preflight -- --local --skip-check --skip-godot --expected-commit 68f88b1254ba76795a848f14f8ed616ec489dfec --summary-output /tmp/vue-godot-local-preflight-summary.json
-npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit 68f88b1254ba76795a848f14f8ed616ec489dfec
-npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 68f88b1254ba76795a848f14f8ed616ec489dfec --real-device-output release/real-device-evidence.json
-npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 68f88b1254ba76795a848f14f8ed616ec489dfec
-git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json
-git commit -m "Add real-device release evidence"
-git push
-```
-
 ### Collect CI and warning-free Release Preflight evidence
-
-Blocked by: `real-device-evidence`
 
 Run the local check after the tested release candidate and real-device evidence are pushed, refresh Check and Godot Smoke from the release-candidate ref when CI evidence is still missing, then dispatch Release Preflight from the current evidence commit ref and write release-readiness evidence.
 
@@ -212,7 +184,7 @@ GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit 68f88b1254ba76795a848
 
 ### Remove public warning wording through the guarded finalizer
 
-Blocked by: `real-device-evidence`, `release-preflight-evidence`
+Blocked by: `release-preflight-evidence`
 
 Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks and removes public warning wording. The generated commands then run npm run check, stage those edits, commit them, push, and run the final strict readiness check.
 
