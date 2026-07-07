@@ -31,10 +31,119 @@ function readSources() {
   )
 }
 
-function readyFinalizationSummary() {
-  const todoItems = collectTodoItems(
-    fs.readFileSync(path.join(repoRoot, 'TODO.md'), 'utf-8'),
+function prefinalSources() {
+  const sources = readSources()
+
+  sources['TODO.md'] = sources['TODO.md']
+    .replace(
+      [
+        '- Release Preflight evidence, final public support-claim docs, and public',
+        '  warning wording removal are complete for the production readiness gate.',
+      ].join('\n'),
+      [
+        '- The project is not yet production ready because Release Preflight evidence,',
+        '  final public support-claim docs, and public warning wording removal are still',
+        '  incomplete.',
+      ].join('\n'),
+    )
+    .replace(
+      '- [x] The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied.',
+      '- [ ] The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied.',
+    )
+    .replace(
+      '- [x] CI passes on a clean commit.',
+      '- [ ] CI passes on a clean commit.',
+    )
+    .replace(
+      '- [x] Release preflight passes without warnings in the release environment.',
+      '- [ ] Release preflight passes without warnings in the release environment.',
+    )
+    .replace(
+      '- [x] All public READMEs match the final support claims.',
+      '- [ ] All public READMEs match the final support claims.',
+    )
+    .replace(
+      '- [x] The root README warning is removed in the same commit that marks this checklist complete.',
+      '- [ ] The root README warning is removed in the same commit that marks this checklist complete.',
+    )
+
+  sources['README.md'] = sources['README.md']
+    .replace(
+      'See the [compatibility checklist](./docs/compatibility.md)',
+      [
+        'This project is experimental and not production ready yet. Follow [@juryxiong](https://x.com/juryxiong) for updates.',
+        '',
+        'See the [compatibility checklist](./docs/compatibility.md)',
+      ].join('\n'),
+    )
+    .replace(
+      [
+        'Example app coverage is tracked by the',
+        '[example app criteria](./docs/example-apps.md).',
+      ].join('\n'),
+      [
+        'Production-readiness examples are tracked by the',
+        '[example app criteria](./docs/example-apps.md) before the project can remove',
+        'preview/experimental language.',
+      ].join('\n'),
+    )
+    .replace(
+      'before the final support claim is published.',
+      'before experimental/not-production-ready text is removed.',
+    )
+
+  sources['docs/compatibility.md'] = sources['docs/compatibility.md'].replace(
+    [
+      'This is the source of truth for Vue Godot API and component compatibility. A',
+      '`supported` entry means the listed subset is implemented and tested, not that',
+      'the full browser, DOM, or native platform spec is complete.',
+    ].join('\n'),
+    [
+      'This is the source of truth for Vue Godot API and component compatibility. The',
+      'project is still experimental; a `supported` entry means the listed subset is',
+      'implemented and tested, not that the full browser, DOM, or native platform spec',
+      'is complete.',
+    ].join('\n'),
   )
+
+  sources['docs/production.md'] = sources['docs/production.md']
+    .replace(
+      [
+        'Use this guide as the release checklist for apps built on the current packages',
+        'and for future package release candidates.',
+      ].join('\n'),
+      [
+        'Vue Godot is still experimental. Use this guide as the release checklist for',
+        'apps built on the current packages and for future package release candidates.',
+      ].join('\n'),
+    )
+    .replace(
+      'For production release candidates, keep these gates green:',
+      [
+        'Before removing experimental/not-production-ready language, the repository still',
+        'needs:',
+      ].join('\n'),
+    )
+    .replace(
+      'Keep release records explicit about the evidence used for each candidate.',
+      [
+        'Until those are complete, treat release builds as preview/alpha-quality and',
+        'document app-specific risk explicitly.',
+      ].join('\n'),
+    )
+
+  sources['docs/real-device-release.md'] = sources[
+    'docs/real-device-release.md'
+  ].replace(
+    'the release record remains incomplete for those device capabilities.',
+    'the repository remains preview-quality for those device capabilities.',
+  )
+
+  return sources
+}
+
+function readyFinalizationSummary(sources = prefinalSources()) {
+  const todoItems = collectTodoItems(sources['TODO.md'])
   const finalTodoRequirements = collectFinalTodoRequirementStatuses(todoItems, {
     androidRealDeviceEvidenceReady: true,
     checkCiEvidenceReady: true,
@@ -154,7 +263,7 @@ test('release readiness finalizer rejects unsafe summaries', () => {
 })
 
 test('release readiness finalizer checks final TODOs and removes warning markers', () => {
-  const sources = readSources()
+  const sources = prefinalSources()
   const result = applyReleaseReadinessFinalization(
     sources,
     readyFinalizationSummary(),
@@ -195,7 +304,7 @@ test('release readiness finalizer checks final TODOs and removes warning markers
 })
 
 test('release readiness finalizer rejects unexpected source text drift', () => {
-  const sources = readSources()
+  const sources = prefinalSources()
   sources['README.md'] = sources['README.md'].replace(
     [
       'Production-readiness examples are tracked by the',
@@ -217,7 +326,7 @@ test('release readiness finalizer rejects unexpected source text drift', () => {
 })
 
 test('release readiness finalizer rejects missing delete-only warning text', () => {
-  const sources = readSources()
+  const sources = prefinalSources()
   sources['README.md'] = sources['README.md'].replace(
     'This project is experimental and not production ready yet. Follow [@juryxiong](https://x.com/juryxiong) for updates.\n\n',
     '',

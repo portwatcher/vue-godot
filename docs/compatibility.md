@@ -1,9 +1,8 @@
 # Compatibility
 
-This is the source of truth for Vue Godot API and component compatibility. The
-project is still experimental; a `supported` entry means the listed subset is
-implemented and tested, not that the full browser, DOM, or native platform spec
-is complete.
+This is the source of truth for Vue Godot API and component compatibility. A
+`supported` entry means the listed subset is implemented and tested, not that
+the full browser, DOM, or native platform spec is complete.
 
 ## Status Legend
 

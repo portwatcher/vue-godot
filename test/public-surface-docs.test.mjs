@@ -33,6 +33,18 @@ function assertPatterns(relativePath, patterns) {
   }
 }
 
+function assertNoPatterns(relativePath, patterns) {
+  const source = readDoc(relativePath)
+
+  for (const pattern of patterns) {
+    assert.doesNotMatch(
+      source,
+      pattern,
+      `${relativePath} must not include ${pattern.toString()}`,
+    )
+  }
+}
+
 test('public surface audit passes for package READMEs, docs, templates, and demos', () => {
   assert.deepEqual(collectPublicSurfaceAuditErrors(), [])
 })
@@ -245,16 +257,22 @@ test('serious example READMEs document their SDK coverage and smoke commands', (
   }
 })
 
-test('experimental wording remains while final release gates are still open', () => {
+test('final warning wording is removed after release gates are complete', () => {
   assertPatterns('TODO.md', [
     /- \[x\] `npm run check` passes locally and in CI/,
     /- \[x\] Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate/,
     /- \[x\] Android and iOS export smoke apps run on real, hosted, emulator, or simulator targets for the production profile/,
-    /- \[ \] The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied/,
-    /Release Preflight evidence,\s+final public support-claim docs, and public warning wording removal are still\s+incomplete/,
+    /- \[x\] The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied/,
+    /Release Preflight evidence,\s+final public support-claim docs, and public\s+warning wording removal are complete for the production readiness gate/,
   ])
 
-  assertPatterns('README.md', [/experimental and not production ready yet/])
-  assertPatterns('docs/compatibility.md', [/project is still experimental/])
-  assertPatterns('docs/production.md', [/Vue Godot is still experimental/])
+  assertNoPatterns('README.md', [
+    /experimental and not production ready yet/,
+    /preview\/experimental/,
+  ])
+  assertNoPatterns('docs/compatibility.md', [/project is still experimental/])
+  assertNoPatterns('docs/production.md', [
+    /Vue Godot is still experimental/,
+    /preview\/alpha-quality/,
+  ])
 })

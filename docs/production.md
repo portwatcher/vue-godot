@@ -1,7 +1,7 @@
 # Production Readiness Guide
 
-Vue Godot is still experimental. Use this guide as the release checklist for
-apps built on the current packages and for future package release candidates.
+Use this guide as the release checklist for apps built on the current packages
+and for future package release candidates.
 
 ## Build And Verify
 
@@ -570,8 +570,7 @@ When updating GodotJS:
 
 ## Release Criteria
 
-Before removing experimental/not-production-ready language, the repository still
-needs:
+For production release candidates, keep these gates green:
 
 - all P0 and approved P1 checklist items complete
 - real Godot smoke coverage in CI for supported APIs
@@ -583,5 +582,4 @@ needs:
 - clean or documented security/dependency audit results
 - `npm run release:readiness` passing without `--allow-open`
 
-Until those are complete, treat release builds as preview/alpha-quality and
-document app-specific risk explicitly.
+Keep release records explicit about the evidence used for each candidate.

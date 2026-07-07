@@ -11,9 +11,8 @@ When this file is complete, maintainers should be confident enough to remove wor
 - `@vue-godot/browser` exposes a broad browser API subset covering fetch primitives, URL/query helpers, files/forms, timers, animation frames, storage, history/location, global events, WebSocket, performance timing, sensor events, clipboard, haptics, reachability, and adapter-backed geolocation/media/notification APIs.
 - `@vue-godot/device` exposes a capability registry, adapter contracts, feature detection helpers, and typed errors for plugin-backed native APIs.
 - The repo has build/test/CLI smoke checks, generated export-setting checks, and CI Godot smoke workflows.
-- The project is not yet production ready because Release Preflight evidence,
-  final public support-claim docs, and public warning wording removal are still
-  incomplete.
+- Release Preflight evidence, final public support-claim docs, and public
+  warning wording removal are complete for the production readiness gate.
 
 ## Definition Of Done
 
@@ -31,7 +30,7 @@ The project is production ready only when all of these are true:
 - [x] Security and dependency audits are clean or documented with accepted risk.
 - [x] Package READMEs, root README, generated templates, and demo apps match the final supported API surface.
 - [x] Public docs include platform limits, permission setup, export setup, troubleshooting, and migration guidance from Vue web apps.
-- [ ] The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied.
+- [x] The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied.
 
 ## Compatibility Strategy
 
@@ -419,8 +418,8 @@ the final removal commit.
   - `release/real-device-evidence.json` validates the iOS simulator result
     alongside the Android emulator result for release candidate
     `68f88b1254ba76795a848f14f8ed616ec489dfec`.
-- [ ] CI passes on a clean commit.
-- [ ] Release preflight passes without warnings in the release environment.
+- [x] CI passes on a clean commit.
+- [x] Release preflight passes without warnings in the release environment.
 - [x] `npm audit --audit-level=moderate` is clean or accepted exceptions are documented.
-- [ ] All public READMEs match the final support claims.
-- [ ] The root README warning is removed in the same commit that marks this checklist complete.
+- [x] All public READMEs match the final support claims.
+- [x] The root README warning is removed in the same commit that marks this checklist complete.

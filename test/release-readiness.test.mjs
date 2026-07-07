@@ -902,24 +902,32 @@ test('release readiness reports current blockers without failing when allowed op
     output,
     /check:platform-evidence[\s\S]*platform-evidence-checklist\.md[\s\S]*--allow-open/,
   )
-  assert.match(output, /release-readiness evidence missing/)
+  assert.doesNotMatch(output, /release-readiness evidence missing/)
   assert.match(output, /final TODO proof status/)
-  assert.match(output, /TODO\.md:24 checked; checkCiEvidenceReady ready/)
-  assert.match(output, /TODO\.md:25 checked; godotSmokeCiEvidenceReady ready/)
+  assert.match(output, /TODO\.md:\d+ checked; checkCiEvidenceReady ready/)
   assert.match(
     output,
-    /TODO\.md:26 checked; realDeviceEvidenceReady ready/,
+    /TODO\.md:\d+ checked; godotSmokeCiEvidenceReady ready/,
   )
   assert.match(
     output,
-    /TODO\.md:389 checked; androidRealDeviceEvidenceReady ready/,
+    /TODO\.md:\d+ checked; realDeviceEvidenceReady ready/,
   )
   assert.match(
     output,
-    /TODO\.md:402 checked; iosRealDeviceEvidenceReady ready/,
+    /TODO\.md:\d+ checked; androidRealDeviceEvidenceReady ready/,
   )
-  assert.match(output, /public warning markers still present/)
-  assert.match(output, /open gates remain/)
+  assert.match(
+    output,
+    /TODO\.md:\d+ checked; iosRealDeviceEvidenceReady ready/,
+  )
+  assert.match(
+    output,
+    /TODO\.md:\d+ checked; releaseReadinessEvidenceReady ready/,
+  )
+  assert.match(output, /TODO\.md:\d+ checked; publicReadmesReady ready/)
+  assert.match(output, /TODO\.md:\d+ checked; rootReadmeWarningReady ready/)
+  assert.doesNotMatch(output, /public warning markers still present/)
 })
 
 test('release readiness suggests expected commit for committed CI evidence', () => {
@@ -979,13 +987,16 @@ test('release readiness suggests expected commit for committed CI evidence', () 
   }
 })
 
-test('release readiness fails in strict mode while final gates are open', () => {
+test('release readiness suggests expected commit in strict mode for tested release evidence', () => {
+  const ciEvidence = readCommittedReleaseCiEvidence()
   const result = runReadiness()
   const output = `${result.stdout}\n${result.stderr}`
 
   assert.equal(result.status, 1)
   assert.match(output, /not ready/)
-  assert.match(output, /release-readiness evidence missing/)
+  assert.match(output, /must match expected release commit/)
+  assert.match(output, /tested release commit evidence found/)
+  assert.match(output, new RegExp(`--expected-commit ${ciEvidence.commit}`))
 })
 
 test('release readiness accepts checked-in evidence examples for schema coverage', () => {
@@ -1105,7 +1116,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.equal(summary.localGit.commitIsHead, false)
     assert.equal(summary.ready, false)
     assert.ok(summary.blockerCount > 0)
-    assert.equal(summary.warningMarkerCount, 8)
+    assert.equal(summary.warningMarkerCount, 0)
     assert.equal(summary.packageDescriptionWarningCount, 0)
     assert.deepEqual(summary.packageDescriptionWarnings, [])
     assert.equal(summary.releaseToolingBlockerCount, 0)
@@ -1256,44 +1267,11 @@ test('release readiness writes a machine-readable blocker summary', () => {
         `npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit ${exampleCommit} --real-device-path docs/real-device-evidence.example.json --readiness-path docs/release-readiness-evidence.example.json`,
       ),
     )
-    assert.ok(
-      summary.nextActions.some((action) => {
-        if (action.id !== 'final-warning-removal') {
-          return false
-        }
-
-        if ('blockedBy' in action) {
-          return false
-        }
-
-        const readinessSummaryIndex = action.commands.indexOf(
-          `npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --checklist-output /tmp/vue-godot-readiness.md --expected-commit ${exampleCommit} --real-device-path docs/real-device-evidence.example.json --readiness-path docs/release-readiness-evidence.example.json`,
-        )
-        const finalizerIndex = action.commands.indexOf(
-          'npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json',
-        )
-        const checkIndex = action.commands.indexOf('npm run check')
-        const gitAddIndex = action.commands.indexOf(
-          'git add TODO.md README.md docs/compatibility.md docs/production.md docs/real-device-release.md',
-        )
-        const gitCommitIndex = action.commands.indexOf(
-          'git commit -m "Finalize production readiness"',
-        )
-        const gitPushIndex = action.commands.indexOf('git push')
-        const finalReadinessIndex = action.commands.indexOf(
-          `npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit ${exampleCommit} --real-device-path docs/real-device-evidence.example.json --readiness-path docs/release-readiness-evidence.example.json`,
-        )
-
-        return (
-          readinessSummaryIndex >= 0 &&
-          finalizerIndex === readinessSummaryIndex + 1 &&
-          checkIndex === finalizerIndex + 1 &&
-          gitAddIndex === checkIndex + 1 &&
-          gitCommitIndex === gitAddIndex + 1 &&
-          gitPushIndex === gitCommitIndex + 1 &&
-          finalReadinessIndex === gitPushIndex + 1
-        )
-      }),
+    assert.equal(
+      summary.nextActions.some(
+        (action) => action.id === 'final-warning-removal',
+      ),
+      false,
     )
     assert.equal(summary.finalTodoRequirements.length, 10)
     assert.ok(
@@ -1333,29 +1311,8 @@ test('release readiness writes a machine-readable blocker summary', () => {
           typeof status.reason === 'string',
       ),
     )
-    assert.equal(summary.todo.unchecked, 5)
-    assert.equal(summary.todo.uncheckedItems.length, 5)
-    assert.ok(
-      summary.todo.uncheckedItems.every(
-        (item) =>
-          item.text !== '`npm run check` passes locally and in CI.' &&
-          item.text !==
-            'Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate.' &&
-          item.text !==
-            'Android and iOS export smoke apps run on real, hosted, emulator, or simulator targets for the production profile.' &&
-          item.text !==
-            'Android export with selected device APIs has been tested.' &&
-          item.text !== 'iOS export with selected device APIs has been tested.',
-      ),
-    )
-    assert.ok(
-      summary.todo.uncheckedItems.some(
-        (item) =>
-          item.file === 'TODO.md' &&
-          item.text ===
-            'Release preflight passes without warnings in the release environment.',
-      ),
-    )
+    assert.equal(summary.todo.unchecked, 0)
+    assert.deepEqual(summary.todo.uncheckedItems, [])
     assert.equal(summary.checks.androidRealDeviceEvidence, true)
     assert.equal(summary.checks.checkedFinalTodosBackedByEvidence, false)
     assert.equal(typeof summary.checks.cleanWorktree, 'boolean')
@@ -1369,7 +1326,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.equal(summary.checks.finalTodoStructure, true)
     assert.equal(summary.checks.iosRealDeviceEvidence, true)
     assert.equal(summary.checks.publicSurface, true)
-    assert.equal(summary.checks.publicWarningMarkersRemoved, false)
+    assert.equal(summary.checks.publicWarningMarkersRemoved, true)
     assert.equal(summary.checks.packageDescriptionWarningsRemoved, true)
     assert.equal(summary.checks.realDeviceEvidence, true)
     assert.equal(summary.checks.realDeviceEvidenceMetadata, true)
@@ -1377,23 +1334,14 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.equal(summary.checks.releaseWorkflows, true)
     assert.equal(summary.checks.releaseReadinessEvidence, true)
     assert.equal(summary.checks.platformEvidence, true)
-    assert.equal(summary.checks.rootReadmeWarningsRemoved, false)
+    assert.equal(summary.checks.rootReadmeWarningsRemoved, true)
     assert.equal(summary.checks.strictCiEvidence, false)
     assert.ok(
       summary.blockers.some((blocker) =>
         blocker.includes('`npm run check` passes locally and in CI'),
       ),
     )
-    assert.ok(
-      summary.warningMarkers.some((marker) =>
-        marker.includes('README.md: root README production warning'),
-      ),
-    )
-    assert.ok(
-      summary.warningMarkers.some((marker) =>
-        marker.includes('README.md: root README final-removal wording'),
-      ),
-    )
+    assert.deepEqual(summary.warningMarkers, [])
     assert.match(checklist, /# Release Readiness Checklist/)
     assert.match(checklist, /- Status: waiting/)
     assert.match(checklist, new RegExp(`- Expected commit: ${exampleCommit}`))
@@ -1428,9 +1376,9 @@ test('release readiness writes a machine-readable blocker summary', () => {
       /Hosted provider env partial: AWS Device Farm \(set: `AWS_ACCESS_KEY_ID`; missing: `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`\)/,
     )
     assert.match(checklist, /## Blocking Issues/)
-    assert.match(checklist, /root README production warning/)
+    assert.match(checklist, /Warning markers: none/)
     assert.match(checklist, /## Next Actions/)
-    assert.match(checklist, /release:finalize-readiness/)
+    assert.doesNotMatch(checklist, /release:finalize-readiness/)
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })
   }
@@ -1670,28 +1618,11 @@ test('release readiness summary includes missing evidence next actions', () => {
         `npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit ${summary.commit}`,
       ),
     )
-    const finalWarningAction = summary.nextActions.find(
-      (action) => action.id === 'final-warning-removal',
-    )
-    assert.ok(finalWarningAction)
-    assert.match(
-      finalWarningAction.detail,
-      /generated commands then run npm run check/,
-    )
-    assert.doesNotMatch(finalWarningAction.detail, /then stages and commits/)
-    assert.deepEqual(finalWarningAction.blockedBy, [
-      'real-device-evidence',
-      'release-preflight-evidence',
-    ])
-    assert.ok(
-      finalWarningAction.commands.includes(
-        `npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --checklist-output /tmp/vue-godot-readiness.md --expected-commit ${summary.commit} --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
+    assert.equal(
+      summary.nextActions.some(
+        (action) => action.id === 'final-warning-removal',
       ),
-    )
-    assert.ok(
-      finalWarningAction.commands.includes(
-        `npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit ${summary.commit} --ci-evidence ${shellQuote(ciCommandPath)} --platform-evidence ${shellQuote(platformCommandPath)} --real-device-path ${shellQuote(realDeviceCommandPath)} --readiness-path ${shellQuote(readinessCommandPath)}`,
-      ),
+      false,
     )
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })

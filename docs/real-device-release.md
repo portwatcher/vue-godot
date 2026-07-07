@@ -641,4 +641,4 @@ for each release candidate that claims iOS support.
 Android and iOS export validation is complete only when every applicable item
 above passes for the selected release profile, skipped items have an explicit
 reason, and the required evidence is linked from the release record. Until then,
-the repository remains preview-quality for those device capabilities.
+the release record remains incomplete for those device capabilities.
