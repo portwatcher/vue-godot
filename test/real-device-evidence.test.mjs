@@ -27,10 +27,6 @@ import {
   releasePackageConfigs,
   shellQuote,
 } from '../scripts/release-utils.mjs'
-import {
-  iosSimulatorPlatformPassCommand,
-  iosSimulatorPlatformPassRemainingCommand,
-} from './utils/ios-simulator-platform-commands.mjs'
 
 const repoRoot = process.cwd()
 const realDeviceCheckOutputs =
@@ -751,9 +747,11 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
     assert.equal(summary.ready, false)
     assert.equal(summary.evidencePresent, false)
     assert.equal(summary.errorCount, 1)
-    assert.equal(summary.platformEvidenceReady, false)
+    assert.equal(summary.platformEvidenceReady, true)
     assert.equal(summary.platformEvidence.evidencePresent, true)
-    assert.equal(summary.platformEvidence.ready, false)
+    assert.equal(summary.platformEvidence.ready, true)
+    assert.equal(summary.platformEvidence.errorCount, 0)
+    assert.deepEqual(summary.platformEvidence.errors, [])
     assert.equal(
       summary.platformEvidence.path,
       'release/platform-evidence.json',
@@ -763,43 +761,13 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
       summary.platformEvidence.platforms.android.remainingChecks,
       [],
     )
-    assert.ok(
+    assert.equal(summary.platformEvidence.platforms.ios.ready, true)
+    assert.deepEqual(summary.platformEvidence.platforms.ios.remainingChecks, [])
+    assert.equal(
       summary.nextActions.some(
-        (action) =>
-          action.id === 'complete-platform-evidence' &&
-          action.detail.includes('Android: ready') &&
-          action.detail.includes('final evidence assembly.\nAndroid: ready') &&
-          action.detail.includes(
-            'iOS: 0 metadata field(s) missing, 1/15 required check(s) unresolved, 1 must-pass check(s) missing',
-          ) &&
-          action.detail.includes(
-            'iOS must-pass remaining: safe-area-keyboard-rotation-text-input',
-          ) &&
-          action.commands.includes(
-            'npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
-          ) &&
-          action.commands
-            .filter((command) => command.includes('--platform android'))
-            .every((command) => command.includes('--list-checks')) &&
-          action.commands.includes(
-            'npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
-          ) &&
-          action.commands.includes(
-            iosSimulatorPlatformPassCommand({
-              expectedCommit: '<release-candidate-sha>',
-              platformEvidencePath: defaultPlatformEvidencePath,
-            }),
-          ) &&
-          action.commands.includes(
-            iosSimulatorPlatformPassRemainingCommand({
-              expectedCommit: '<release-candidate-sha>',
-              platformEvidencePath: defaultPlatformEvidencePath,
-            }),
-          ) &&
-          action.commands.includes(
-            'npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit <release-candidate-sha>',
-          ),
+        (action) => action.id === 'complete-platform-evidence',
       ),
+      false,
     )
     assert.ok(
       summary.nextActions.some(
@@ -828,8 +796,8 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
     assert.match(checklist, /\[ \] Evidence file exists/)
     assert.match(checklist, /## Platform Worksheet Progress/)
     assert.match(checklist, /Android\/iOS production checks/)
+    assert.doesNotMatch(checklist, /release:record-platform-evidence/)
     assert.match(checklist, /## Next Actions/)
-    assert.match(checklist, /release:record-platform-evidence/)
     assert.match(checklist, /release\/real-device-evidence-summary\.json/)
     assert.match(checklist, /release\/real-device-evidence-checklist\.md/)
   } finally {
@@ -866,44 +834,12 @@ test('check-real-device-evidence next actions honor expected commits', () => {
 
     assert.equal(result.status, 0)
     assert.equal(summary.platformEvidence.evidencePresent, true)
-    assert.equal(summary.platformEvidence.ready, false)
-    assert.ok(
+    assert.equal(summary.platformEvidence.ready, true)
+    assert.equal(
       summary.nextActions.some(
-        (action) =>
-          action.id === 'complete-platform-evidence' &&
-          action.detail.includes('Android: ready') &&
-          action.detail.includes('final evidence assembly.\nAndroid: ready') &&
-          action.detail.includes(
-            'iOS: 0 metadata field(s) missing, 1/15 required check(s) unresolved, 1 must-pass check(s) missing',
-          ) &&
-          action.detail.includes(
-            'iOS must-pass remaining: safe-area-keyboard-rotation-text-input',
-          ) &&
-          action.commands.includes(
-            `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit ${expectedCommit}`,
-          ) &&
-          action.commands
-            .filter((command) => command.includes('--platform android'))
-            .every((command) => command.includes('--list-checks')) &&
-          action.commands.includes(
-            `npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit ${expectedCommit}`,
-          ) &&
-          action.commands.includes(
-            iosSimulatorPlatformPassCommand({
-              expectedCommit,
-              platformEvidencePath: defaultPlatformEvidencePath,
-            }),
-          ) &&
-          action.commands.includes(
-            iosSimulatorPlatformPassRemainingCommand({
-              expectedCommit,
-              platformEvidencePath: defaultPlatformEvidencePath,
-            }),
-          ) &&
-          action.commands.includes(
-            `npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit ${expectedCommit}`,
-          ),
+        (action) => action.id === 'complete-platform-evidence',
       ),
+      false,
     )
     assert.ok(assembleAction)
     assert.ok(
@@ -1065,7 +1001,7 @@ test('check-real-device-evidence reuses committed initial CI evidence', () => {
 
     assert.equal(result.status, 0)
     assert.equal(summary.initialCiEvidenceReady, true)
-    assert.equal(summary.platformEvidenceReady, false)
+    assert.equal(summary.platformEvidenceReady, true)
     assert.equal(summary.platformEvidence.evidencePresent, true)
     assert.deepEqual(summary.initialCiEvidence, {
       commit: ciEvidence.commit,

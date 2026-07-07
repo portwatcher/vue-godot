@@ -902,7 +902,7 @@ test('release readiness reports current blockers without failing when allowed op
     output,
     /check:real-device-evidence[\s\S]*real-device-evidence-summary\.json[\s\S]*real-device-evidence-checklist\.md[\s\S]*--verify-runs/,
   )
-  assert.match(
+  assert.doesNotMatch(
     output,
     /check:platform-evidence[\s\S]*platform-evidence-checklist\.md[\s\S]*--allow-open/,
   )
@@ -1174,12 +1174,13 @@ test('release readiness writes a machine-readable blocker summary', () => {
       validationErrors: [],
     })
     assert.equal(summary.platformEvidence.evidencePresent, true)
-    assert.equal(summary.platformEvidence.ready, false)
+    assert.equal(summary.platformEvidence.ready, true)
     assert.equal(
       summary.platformEvidence.path,
       'release/platform-evidence.json',
     )
-    assert.ok(summary.platformEvidence.errorCount > 0)
+    assert.equal(summary.platformEvidence.errorCount, 0)
+    assert.deepEqual(summary.platformEvidence.errors, [])
     assert.ok(Array.isArray(summary.nextActions))
     const ciEvidenceAction = summary.nextActions.find(
       (action) => action.id === 'ci-evidence',
@@ -1355,7 +1356,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
     assert.equal(summary.checks.releaseTooling, true)
     assert.equal(summary.checks.releaseWorkflows, true)
     assert.equal(summary.checks.releaseReadinessEvidence, true)
-    assert.equal(summary.checks.platformEvidence, false)
+    assert.equal(summary.checks.platformEvidence, true)
     assert.equal(summary.checks.rootReadmeWarningsRemoved, false)
     assert.equal(summary.checks.strictCiEvidence, false)
     assert.ok(
@@ -1464,28 +1465,10 @@ test('release readiness summary includes missing evidence next actions', () => {
     assert.equal(summary.checks.initialCiEvidence, true)
     assert.equal(summary.initialCiEvidence.path, ciEvidencePath)
     assert.equal(summary.platformEvidence.evidencePresent, true)
-    assert.equal(summary.platformEvidence.ready, false)
+    assert.equal(summary.platformEvidence.ready, true)
     assert.equal(summary.platformEvidence.path, platformCommandPath)
-    assert.ok(
-      summary.platformEvidence.errors.some((error) =>
-        error.includes(
-          'ios.safe-area-keyboard-rotation-text-input must be recorded in passedChecks or skippedChecks',
-        ),
-      ),
-    )
-    assert.ok(
-      summary.platformEvidence.errors.some((error) =>
-        error.includes(
-          'ios.safe-area-keyboard-rotation-text-input must be in passedChecks because selectedApis includes SafeAreaView, KeyboardAvoidingView',
-        ),
-      ),
-    )
-    assert.ok(
-      summary.platformEvidence.errors.every(
-        (error) =>
-          !error.includes('android.artifact must be a non-empty string'),
-      ),
-    )
+    assert.equal(summary.platformEvidence.errorCount, 0)
+    assert.deepEqual(summary.platformEvidence.errors, [])
     assert.equal(summary.realDeviceEvidence.evidencePresent, false)
     assert.equal(summary.realDeviceEvidence.ready, false)
     assert.equal(summary.realDeviceEvidence.androidReady, false)
@@ -1508,44 +1491,12 @@ test('release readiness summary includes missing evidence next actions', () => {
       (action) => action.id === 'real-device-evidence',
     )
     assert.ok(realDeviceAction)
-    assert.match(
-      realDeviceAction.detail,
-      /Android: ready; iOS: 0 metadata field\(s\) missing, 1\/15 required check\(s\) unresolved, 1 must-pass check\(s\) missing/,
-    )
-    assert.match(
-      realDeviceAction.detail,
-      /tested release commit\.[\s\S]*Android: ready; iOS: 0 metadata field\(s\) missing, 1\/15 required check\(s\) unresolved, 1 must-pass check\(s\) missing/,
-    )
+    assert.doesNotMatch(realDeviceAction.detail, /iOS must-pass remaining/)
     assert.match(
       realDeviceAction.detail,
       /device prereq summary records local tooling availability and configured or partially configured hosted-provider environment variable names[\s\S]*final evidence still needs non-local device run URLs, artifact IDs, and device metadata/,
     )
-    assert.match(
-      realDeviceAction.detail,
-      /iOS must-pass remaining: safe-area-keyboard-rotation-text-input/,
-    )
-    assert.ok(
-      realDeviceAction.platformCheckDetails.every(
-        (detail) => detail.platform !== 'android',
-      ),
-    )
-    assert.ok(
-      realDeviceAction.platformCheckDetails.some(
-        (detail) =>
-          detail.platform === 'ios' &&
-          detail.check === 'safe-area-keyboard-rotation-text-input' &&
-          detail.mustPass === true &&
-          detail.selectedApis.includes('SafeAreaView') &&
-          detail.selectedApis.includes('KeyboardAvoidingView') &&
-          detail.description.includes('virtual keyboard'),
-      ),
-    )
-    assert.ok(
-      realDeviceAction.platformCheckDetails.every(
-        (detail) =>
-          detail.check !== 'deep-links-share-notifications-if-selected',
-      ),
-    )
+    assert.equal(realDeviceAction.platformCheckDetails, undefined)
     assert.equal(realDeviceAction.commands[0], 'npm run check')
     assert.equal(
       realDeviceAction.commands[1],
@@ -1558,42 +1509,6 @@ test('release readiness summary includes missing evidence next actions', () => {
     assert.ok(
       realDeviceAction.commands.every(
         (command) => !command.includes('npm run release:platform-evidence --'),
-      ),
-    )
-    assert.ok(
-      realDeviceAction.commands.includes(
-        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${shellQuote(platformCommandPath)} --list-checks --summary-output release/platform-evidence-summary.json --expected-commit ${summary.commit}`,
-      ),
-    )
-    assert.ok(
-      realDeviceAction.commands
-        .filter((command) => command.includes('--platform android'))
-        .every((command) => command.includes('--list-checks')),
-    )
-    assert.ok(
-      realDeviceAction.commands.includes(
-        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${shellQuote(platformCommandPath)} --list-checks --summary-output release/platform-evidence-summary.json --expected-commit ${summary.commit}`,
-      ),
-    )
-    assert.ok(
-      realDeviceAction.commands.includes(
-        iosSimulatorPlatformPassCommand({
-          expectedCommit: summary.commit,
-          platformEvidencePath: shellQuote(platformCommandPath),
-        }),
-      ),
-    )
-    assert.ok(
-      realDeviceAction.commands.includes(
-        iosSimulatorPlatformPassRemainingCommand({
-          expectedCommit: summary.commit,
-          platformEvidencePath: shellQuote(platformCommandPath),
-        }),
-      ),
-    )
-    assert.ok(
-      realDeviceAction.commands.includes(
-        `npm run check:platform-evidence -- --platform-evidence ${shellQuote(platformCommandPath)} --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit ${summary.commit}`,
       ),
     )
     assert.ok(
