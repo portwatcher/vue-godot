@@ -10,29 +10,17 @@
   },
   "nextActions": [
     {
-      "id": "complete-platform-evidence",
-      "title": "Finish Android and iOS worksheet evidence",
-      "detail": "Fill missing metadata and record every required check as passedChecks or skippedChecks.\npassOnlyChecks and selectedApiRequiredChecks must be in passedChecks.\nAndroid: ready; iOS: 0 metadata field(s) missing, 1/15 required check(s) unresolved, 1 must-pass check(s) missing\niOS must-pass remaining: safe-area-keyboard-rotation-text-input",
-      "platformCheckDetails": [
-        {
-          "check": "safe-area-keyboard-rotation-text-input",
-          "description": "Verify safe area, virtual keyboard, rotation, and text input behavior on the tested iPhone or iPad family.",
-          "mustPass": true,
-          "passOnly": false,
-          "platform": "ios",
-          "platformLabel": "iOS",
-          "selectedApis": [
-            "SafeAreaView",
-            "KeyboardAvoidingView"
-          ]
-        }
-      ],
+      "id": "assemble-real-device-evidence",
+      "title": "Assemble final real-device evidence",
+      "detail": "The worksheet is complete enough to normalize into release/real-device-evidence.json.",
       "commands": [
-        "npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit fe8474267042c3d3ec53ffc455425efca49d1f8a",
-        "npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit fe8474267042c3d3ec53ffc455425efca49d1f8a",
-        "npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact 'iOS simulator Debug app executable sha256:265e7178154d3b6cc9576491d8396c7aa7561c15ba27e080a10e7317331648f5 (GodotJS JavaScriptCore simulator slice)' --evidence-url https://github.com/portwatcher/vue-godot/blob/fe8474267042c3d3ec53ffc455425efca49d1f8a/apps/native-app-demo/docs/ios-simulator-smoke-2026-07-07.md --export-preset 'iOS Release' --device 'iPhone 17 simulator' --os 'iOS 26.5 (Xcode 26.6 simulator runtime)' --orientation 'landscape app orientation on portrait simulator screen' --locale 'default simulator locale' --test-target simulator --pass safe-area-keyboard-rotation-text-input --summary-output release/platform-evidence-summary.json --expected-commit fe8474267042c3d3ec53ffc455425efca49d1f8a",
-        "npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact 'iOS simulator Debug app executable sha256:265e7178154d3b6cc9576491d8396c7aa7561c15ba27e080a10e7317331648f5 (GodotJS JavaScriptCore simulator slice)' --evidence-url https://github.com/portwatcher/vue-godot/blob/fe8474267042c3d3ec53ffc455425efca49d1f8a/apps/native-app-demo/docs/ios-simulator-smoke-2026-07-07.md --export-preset 'iOS Release' --device 'iPhone 17 simulator' --os 'iOS 26.5 (Xcode 26.6 simulator runtime)' --orientation 'landscape app orientation on portrait simulator screen' --locale 'default simulator locale' --test-target simulator --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output release/platform-evidence-summary.json --expected-commit fe8474267042c3d3ec53ffc455425efca49d1f8a",
-        "npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit fe8474267042c3d3ec53ffc455425efca49d1f8a"
+        "npm run check",
+        "npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit 88743a15c59c4b73847c55dd75e9ecaebc38d622",
+        "npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 88743a15c59c4b73847c55dd75e9ecaebc38d622 --real-device-output release/real-device-evidence.json",
+        "npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 88743a15c59c4b73847c55dd75e9ecaebc38d622",
+        "git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json",
+        "git commit -m \"Add real-device release evidence\"",
+        "git push"
       ]
     }
   ],
@@ -146,8 +134,8 @@
     "passRemainingConfirmation": "Android emulator run recorded in apps/native-app-demo/docs/android-emulator-smoke-2026-07-07.md exercised all required production-profile checks; plugin-backed geolocation/media APIs were verified as accepted missing-plugin fallback states."
   },
   "ios": {
-    "artifact": "iOS simulator Debug app executable sha256:265e7178154d3b6cc9576491d8396c7aa7561c15ba27e080a10e7317331648f5 (GodotJS JavaScriptCore simulator slice)",
-    "evidenceUrl": "https://github.com/portwatcher/vue-godot/blob/fe8474267042c3d3ec53ffc455425efca49d1f8a/apps/native-app-demo/docs/ios-simulator-smoke-2026-07-07.md",
+    "artifact": "iOS simulator Debug app executable sha256:9913f81d05c2a89a0277e639cf4efe0930b28e682f59566a8b23437abf2820ef; app pack sha256:093b182310bf2fed10bfb4ab666a84b728433e20c35ff4fb7320262ec444e5a8 (GodotJS JavaScriptCore simulator slice)",
+    "evidenceUrl": "https://github.com/portwatcher/vue-godot/blob/88743a15c59c4b73847c55dd75e9ecaebc38d622/apps/native-app-demo/docs/ios-simulator-smoke-2026-07-07.md",
     "exportPreset": "iOS Release",
     "deviceModel": "iPhone 17 simulator",
     "osVersion": "iOS 26.5 (Xcode 26.6 simulator runtime)",
@@ -182,6 +170,7 @@
       "haptics-if-selected",
       "audio-input-if-selected",
       "sensors-if-selected",
+      "safe-area-keyboard-rotation-text-input",
       "background-foreground"
     ],
     "skippedChecks": {
