@@ -50,15 +50,15 @@ test('real device release checklist covers required Android and iOS gates', () =
     /diagnostic-only device prereq status/,
     /Device Prereq Diagnostics/,
     /--device-prereqs-summary <file>/,
-    /hosted-provider\s+environment variable sets/,
+    /hosted-provider\s+environment\s+variable sets/,
     hostedProviderNamesPattern,
     /partially configured missing-name hints/,
     /never (?:their\s+values|records environment values)/,
     /recognized\s+provider env-set\s+options/,
     /Android\s+SDK\/build-tools/,
     /selected Xcode\s+command-line\s+utilities/,
-    /pinned GodotJS Android export\s+templates/,
-    /does not publish an iOS\s+export-template asset/,
+    /GodotJS Android export\s+templates,\s+iOS library assets,\s+the\s+required iOS `ios\.zip` export package/,
+    /current exporter\s+also needs a compatible\s+`ios\.zip` package/,
     /toolchain, and\s+export-template details/,
     /devicePrereqs/,
     /Device Prereq\s+Diagnostics/,
@@ -362,8 +362,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /recognized\s+provider env-set\s+options/)
   assert.match(production, /Android\s+SDK\/build-tools/)
   assert.match(production, /selected Xcode\s+command-line\s+utilities/)
-  assert.match(production, /pinned GodotJS Android export\s+templates/)
-  assert.match(production, /does not publish an iOS\s+export-template asset/)
+  assert.match(
+    production,
+    /GodotJS Android export\s+templates and iOS library assets/,
+  )
+  assert.match(production, /required iOS `ios\.zip` export package/)
   assert.match(production, /toolchain, and\s+export-template details/)
   assert.match(production, /devicePrereqs/)
   assert.match(production, /Device Prereq\s+Diagnostics/)
@@ -689,8 +692,11 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /recognized\s+provider env-set\s+options/)
   assert.match(readme, /Android\s+SDK\/build-tools/)
   assert.match(readme, /selected Xcode\s+command-line\s+utilities/)
-  assert.match(readme, /pinned GodotJS Android export\s+templates/)
-  assert.match(readme, /does not publish an iOS\s+export-template asset/)
+  assert.match(
+    readme,
+    /GodotJS Android export\s+templates and iOS library assets/,
+  )
+  assert.match(readme, /required iOS `ios\.zip` export package/)
   assert.match(readme, /toolchain, and\s+export-template details/)
   assert.match(
     readme,
@@ -1487,6 +1493,7 @@ test('Godot smoke gate covers serious example apps', () => {
   for (const pattern of [
     /apps\/native-app-demo\/\*\*/,
     /apps\/game-ui-demo\/\*\*/,
+    /scripts\/setup-godotjs\.mjs/,
   ]) {
     assert.match(workflow, pattern)
   }

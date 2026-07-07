@@ -4,12 +4,24 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { repoRoot } from './release-utils.mjs'
 import {
+  defaultGodotJsReleaseRepo,
   defaultGodotExportTemplatesRoot,
   pinnedGodotJsRelease,
 } from './setup-godotjs.mjs'
 
 const platforms = ['android', 'ios']
 const androidExportTemplateAsset = 'prebuilt_android_v8'
+const iosExportTemplateRelease = 'v1.1.0-generate-typings'
+const iosExportTemplateReleaseRepo = 'godotjs/GodotJS'
+const iosExportTemplateAssets = Object.freeze([
+  'ios-template_debug-4.4-v8',
+  'ios-template_release-4.4-v8',
+])
+const iosExportPackageFile = 'ios.zip'
+const iosExportLibraryTemplateFiles = Object.freeze([
+  'libgodot.ios.template_debug.arm64.a',
+  'libgodot.ios.template_release.arm64.a',
+])
 export const requiredAndroidExportTemplateFiles = Object.freeze([
   'android_debug.apk',
   'android_release.apk',
@@ -18,9 +30,20 @@ export const requiredAndroidExportTemplateFiles = Object.freeze([
   'godot-lib.template_release.aar',
   'version.txt',
 ])
+export const requiredIosExportTemplateFiles = Object.freeze([
+  iosExportPackageFile,
+  ...iosExportLibraryTemplateFiles,
+  'version.txt',
+])
 
 const androidExportTemplateInstallCommand =
   'npm run setup:godotjs -- --asset prebuilt_android_v8 --asset-kind templates --install-templates --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir'
+const iosExportTemplateInstallCommand = iosExportTemplateAssets
+  .map(
+    (asset) =>
+      `npm run setup:godotjs -- --release ${iosExportTemplateRelease} --release-repo ${iosExportTemplateReleaseRepo} --asset ${asset} --asset-kind templates --install-templates --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir`,
+  )
+  .join(' && ')
 const androidSdkEnvNames = ['ANDROID_HOME', 'ANDROID_SDK_ROOT']
 const defaultAndroidSdkRootCandidates = [
   '/opt/homebrew/share/android-commandlinetools',
@@ -351,6 +374,28 @@ export function isAndroidEmulatorDevice(device) {
   )
 }
 
+function splitTrailingParentheticalMetadata(value) {
+  let name = String(value).trim()
+  const metadata = []
+
+  while (true) {
+    const match = name.match(/\s+\(([^()]+)\)$/)
+    if (!match) {
+      break
+    }
+    metadata.unshift(match[1])
+    name = name.slice(0, match.index).trimEnd()
+  }
+
+  return { metadata, name }
+}
+
+function isAppleDeviceIdentifier(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+    value,
+  )
+}
+
 export function parseXctraceDevices(output) {
   const devices = []
   let section = null
@@ -370,28 +415,44 @@ export function parseXctraceDevices(output) {
       continue
     }
 
-    const simulatorMatch =
-      section === 'Simulators'
-        ? trimmed.match(/^(.+?)\s+\(([^()]+)\)\s+\(([^()]+)\)$/)
-        : null
-    if (simulatorMatch) {
-      devices.push({
-        identifier: simulatorMatch[2],
-        name: simulatorMatch[1].trim(),
-        state: simulatorMatch[3],
+    const { metadata, name } = splitTrailingParentheticalMetadata(trimmed)
+    const identifierIndex = metadata.findIndex(isAppleDeviceIdentifier)
+    const identifier =
+      identifierIndex >= 0
+        ? metadata[identifierIndex]
+        : (metadata[metadata.length - 1] ?? null)
+    const osVersion =
+      identifierIndex > 0 && metadata[0] !== identifier ? metadata[0] : null
+
+    if (section === 'Simulators') {
+      const state =
+        identifierIndex >= 0
+          ? (metadata[identifierIndex + 1] ?? null)
+          : (metadata[1] ?? null)
+      const device = {
+        identifier,
+        name,
         targetType: 'simulator',
-      })
+      }
+      if (osVersion) {
+        device.osVersion = osVersion
+      }
+      if (state) {
+        device.state = state
+      }
+      devices.push(device)
       continue
     }
 
-    const identifierMatch = trimmed.match(/\(([^()]+)\)\s*$/)
-    devices.push({
-      identifier: identifierMatch?.[1] ?? null,
-      name: identifierMatch
-        ? trimmed.slice(0, identifierMatch.index).trim()
-        : trimmed,
-      targetType: section === 'Simulators' ? 'simulator' : 'device',
-    })
+    const device = {
+      identifier,
+      name,
+      targetType: 'device',
+    }
+    if (osVersion) {
+      device.osVersion = osVersion
+    }
+    devices.push(device)
   }
 
   return devices
@@ -840,7 +901,27 @@ function inspectAndroidExportTemplateDir(templatesDir) {
   }
 }
 
-function listAndroidExportTemplateCandidates(templatesRoot) {
+function inspectIosExportTemplateDir(templatesDir) {
+  const { installedFiles, missingFiles } = checkTemplateFileSet(
+    templatesDir,
+    requiredIosExportTemplateFiles,
+  )
+  const versionText = readTrimmedFile(path.join(templatesDir, 'version.txt'))
+  const inferredTemplateVersion =
+    versionText && versionText.length > 0
+      ? versionText
+      : path.basename(templatesDir)
+
+  return {
+    installedFiles,
+    missingFiles,
+    ready: missingFiles.length === 0,
+    templateVersion: inferredTemplateVersion,
+    templatesDir,
+  }
+}
+
+function listExportTemplateCandidates(templatesRoot, inspectTemplateDir) {
   let entries
   try {
     entries = fs.readdirSync(templatesRoot, { withFileTypes: true })
@@ -850,9 +931,7 @@ function listAndroidExportTemplateCandidates(templatesRoot) {
 
   return entries
     .filter((entry) => entry.isDirectory())
-    .map((entry) =>
-      inspectAndroidExportTemplateDir(path.join(templatesRoot, entry.name)),
-    )
+    .map((entry) => inspectTemplateDir(path.join(templatesRoot, entry.name)))
     .sort(
       (left, right) =>
         Number(right.ready) - Number(left.ready) ||
@@ -909,7 +988,10 @@ function collectAndroidExportTemplateStatus(options = {}) {
       path.join(templatesRoot, requestedTemplateVersion),
     )
   } else {
-    const candidates = listAndroidExportTemplateCandidates(templatesRoot)
+    const candidates = listExportTemplateCandidates(
+      templatesRoot,
+      inspectAndroidExportTemplateDir,
+    )
     candidateCount = candidates.length
     inspected = candidates[0] ?? null
   }
@@ -940,6 +1022,7 @@ function collectAndroidExportTemplateStatus(options = {}) {
       ...requiredAndroidExportTemplateFiles,
     ],
     pinnedRelease: pinnedGodotJsRelease,
+    releaseRepo: defaultGodotJsReleaseRepo,
     ready: blockers.length === 0,
     requiredFiles: [...requiredAndroidExportTemplateFiles],
     templateVersion: inspected?.templateVersion ?? requestedTemplateVersion,
@@ -949,22 +1032,107 @@ function collectAndroidExportTemplateStatus(options = {}) {
   }
 }
 
-function collectIosExportTemplateStatus() {
+function collectIosExportTemplateStatus(options = {}) {
+  const blockers = []
+  const warnings = []
+  const notes = [
+    `iOS library template assets are provided by ${iosExportTemplateReleaseRepo} ${iosExportTemplateRelease}; ${pinnedGodotJsRelease} remains the editor/runtime bundle used for local smoke checks.`,
+    `The current GodotJS iOS exporter still requires a compatible ${iosExportPackageFile} export package before local device or simulator export checks can run.`,
+  ]
+  let templatesRoot
+
+  try {
+    templatesRoot = resolveTemplatesRoot(options)
+  } catch (error) {
+    return {
+      asset: iosExportTemplateAssets.join(', '),
+      availableInPinnedRelease: true,
+      blockers: [
+        error instanceof Error
+          ? error.message
+          : `Unable to resolve Godot export templates root: ${String(error)}`,
+      ],
+      exportPackageFile: iosExportPackageFile,
+      installCommand: iosExportTemplateInstallCommand,
+      installedFiles: [],
+      missingFiles: [...requiredIosExportTemplateFiles],
+      notes,
+      pinnedRelease: iosExportTemplateRelease,
+      releaseRepo: iosExportTemplateReleaseRepo,
+      ready: false,
+      requiredFiles: [...requiredIosExportTemplateFiles],
+      templateVersion: options.templateVersion?.trim() || null,
+      templatesDir: null,
+      templatesRoot: null,
+      warnings,
+    }
+  }
+
+  const requestedTemplateVersion = options.templateVersion?.trim() || null
+  let inspected = null
+  let candidateCount = 0
+  if (requestedTemplateVersion) {
+    inspected = inspectIosExportTemplateDir(
+      path.join(templatesRoot, requestedTemplateVersion),
+    )
+  } else {
+    const candidates = listExportTemplateCandidates(
+      templatesRoot,
+      inspectIosExportTemplateDir,
+    )
+    candidateCount = candidates.length
+    inspected = candidates[0] ?? null
+  }
+
+  if (!inspected) {
+    blockers.push(
+      `No iOS GodotJS export template directory found under ${templatesRoot}.`,
+    )
+  } else if (!inspected.ready) {
+    blockers.push(
+      `iOS GodotJS export templates are incomplete in ${inspected.templatesDir}; missing ${inspected.missingFiles.join(', ')}.`,
+    )
+  }
+
+  const missingFiles = inspected?.missingFiles ?? [
+    ...requiredIosExportTemplateFiles,
+  ]
+  const missingLibraryFiles = missingFiles.filter((file) =>
+    iosExportLibraryTemplateFiles.includes(file),
+  )
+  const missingExportPackage = missingFiles.includes(iosExportPackageFile)
+
+  if (missingLibraryFiles.length > 0) {
+    warnings.push(
+      `Install the GodotJS iOS library templates with: ${iosExportTemplateInstallCommand}`,
+    )
+  }
+  if (missingExportPackage) {
+    warnings.push(
+      `Add a compatible ${iosExportPackageFile} iOS export package to the same Godot export-template directory before local iOS export checks.`,
+    )
+  }
+
   return {
-    asset: null,
-    availableInPinnedRelease: false,
-    blockers: [],
-    missingFiles: [],
-    notes: [
-      `Pinned GodotJS release ${pinnedGodotJsRelease} does not publish an iOS export-template asset; use hosted Apple-device, simulator, or custom iOS export evidence with a matching build pipeline or provide custom iOS templates.`,
+    asset: iosExportTemplateAssets.join(', '),
+    availableInPinnedRelease: true,
+    blockers,
+    candidateCount,
+    exportPackageFile: iosExportPackageFile,
+    installCommand: iosExportTemplateInstallCommand,
+    installedFiles: inspected?.installedFiles ?? [],
+    missingFiles: inspected?.missingFiles ?? [
+      ...requiredIosExportTemplateFiles,
     ],
-    pinnedRelease: pinnedGodotJsRelease,
-    ready: false,
-    requiredFiles: [],
-    templateVersion: null,
-    templatesDir: null,
-    templatesRoot: null,
-    warnings: [],
+    notes,
+    pinnedRelease: iosExportTemplateRelease,
+    releaseRepo: iosExportTemplateReleaseRepo,
+    ready: blockers.length === 0,
+    requiredFiles: [...requiredIosExportTemplateFiles],
+    templateVersion: inspected?.templateVersion ?? requestedTemplateVersion,
+    templatesDir: inspected?.templatesDir ?? null,
+    templatesRoot,
+    warnings,
   }
 }
 
@@ -976,7 +1144,7 @@ export function collectExportTemplateStatus(options = {}) {
       ? collectAndroidExportTemplateStatus(options)
       : null,
     ios: selectedPlatforms.includes('ios')
-      ? collectIosExportTemplateStatus()
+      ? collectIosExportTemplateStatus(options)
       : null,
   }
 }

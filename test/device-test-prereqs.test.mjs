@@ -14,6 +14,7 @@ import {
   parseAdbDevices,
   parseXctraceDevices,
   requiredAndroidExportTemplateFiles,
+  requiredIosExportTemplateFiles,
 } from '../scripts/check-device-test-prereqs.mjs'
 
 test('device prereq parser reads adb device states', () => {
@@ -50,6 +51,7 @@ Release iPhone (00008110-001C2D123456801E)
 QA iPad (00008101-000E12345678001E)
 == Simulators ==
 iPhone 16 Pro (11111111-2222-3333-4444-555555555555) (Shutdown)
+iPad Air 11-inch (M4) Simulator (26.5) (57CC59A4-F1F2-425F-8030-8BCAF8316559)
 `),
     [
       {
@@ -66,6 +68,12 @@ iPhone 16 Pro (11111111-2222-3333-4444-555555555555) (Shutdown)
         identifier: '11111111-2222-3333-4444-555555555555',
         name: 'iPhone 16 Pro',
         state: 'Shutdown',
+        targetType: 'simulator',
+      },
+      {
+        identifier: '57CC59A4-F1F2-425F-8030-8BCAF8316559',
+        name: 'iPad Air 11-inch (M4) Simulator',
+        osVersion: '26.5',
         targetType: 'simulator',
       },
     ],
@@ -450,18 +458,102 @@ test('export template diagnostics do not change local device readiness', () => {
   }
 })
 
-test('export template status records unavailable pinned iOS templates', () => {
+test('export template status reports installable missing iOS GodotJS templates', (t) => {
+  const tempDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'vue-godot-missing-ios-templates-'),
+  )
+  t.after(() => fs.rmSync(tempDir, { force: true, recursive: true }))
+
   const status = collectExportTemplateStatus({
     platform: 'ios',
+    templateVersion: '4.4.1.rc.custom_build.test',
+    templatesRoot: tempDir,
   })
 
   assert.equal(status.android, null)
   assert.equal(status.ios.ready, false)
-  assert.equal(status.ios.availableInPinnedRelease, false)
+  assert.equal(status.ios.availableInPinnedRelease, true)
+  assert.equal(status.ios.pinnedRelease, 'v1.1.0-generate-typings')
+  assert.equal(status.ios.releaseRepo, 'godotjs/GodotJS')
+  assert.deepEqual(status.ios.requiredFiles, [
+    ...requiredIosExportTemplateFiles,
+  ])
   assert.match(
-    status.ios.notes.join('\n'),
-    /does not publish an iOS export-template asset/,
+    status.ios.blockers.join('\n'),
+    /iOS GodotJS export templates are incomplete/,
   )
+  assert.match(status.ios.warnings.join('\n'), /ios-template_debug-4\.4-v8/)
+})
+
+test('export template status keeps iOS library-only installs waiting for ios.zip', (t) => {
+  const tempDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'vue-godot-ios-templates-'),
+  )
+  t.after(() => fs.rmSync(tempDir, { force: true, recursive: true }))
+
+  const templateVersion = '4.4.1.rc.custom_build.test'
+  const templatesDir = path.join(tempDir, templateVersion)
+  fs.mkdirSync(templatesDir, { recursive: true })
+  for (const file of requiredIosExportTemplateFiles.filter(
+    (requiredFile) => requiredFile !== 'ios.zip',
+  )) {
+    fs.writeFileSync(path.join(templatesDir, file), `${file}\n`)
+  }
+  fs.writeFileSync(
+    path.join(templatesDir, 'version.txt'),
+    `${templateVersion}\n`,
+  )
+
+  const status = collectExportTemplateStatus({
+    platform: 'ios',
+    templateVersion,
+    templatesRoot: tempDir,
+  })
+
+  assert.equal(status.android, null)
+  assert.equal(status.ios.ready, false)
+  assert.equal(status.ios.templateVersion, templateVersion)
+  assert.equal(status.ios.templatesDir, templatesDir)
+  assert.deepEqual(status.ios.missingFiles, ['ios.zip'])
+  assert.deepEqual(status.ios.installedFiles, [
+    ...requiredIosExportTemplateFiles.filter(
+      (requiredFile) => requiredFile !== 'ios.zip',
+    ),
+  ])
+  assert.match(status.ios.warnings.join('\n'), /compatible ios\.zip/)
+})
+
+test('export template status reports complete iOS GodotJS templates', (t) => {
+  const tempDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'vue-godot-ios-templates-complete-'),
+  )
+  t.after(() => fs.rmSync(tempDir, { force: true, recursive: true }))
+
+  const templateVersion = '4.4.1.rc.custom_build.test'
+  const templatesDir = path.join(tempDir, templateVersion)
+  fs.mkdirSync(templatesDir, { recursive: true })
+  for (const file of requiredIosExportTemplateFiles) {
+    fs.writeFileSync(path.join(templatesDir, file), `${file}\n`)
+  }
+  fs.writeFileSync(
+    path.join(templatesDir, 'version.txt'),
+    `${templateVersion}\n`,
+  )
+
+  const status = collectExportTemplateStatus({
+    platform: 'ios',
+    templateVersion,
+    templatesRoot: tempDir,
+  })
+
+  assert.equal(status.android, null)
+  assert.equal(status.ios.ready, true)
+  assert.equal(status.ios.templateVersion, templateVersion)
+  assert.equal(status.ios.templatesDir, templatesDir)
+  assert.deepEqual(status.ios.missingFiles, [])
+  assert.deepEqual(status.ios.installedFiles, [
+    ...requiredIosExportTemplateFiles,
+  ])
 })
 
 test('toolchain status reports Android SDK and build-tools readiness', (t) => {

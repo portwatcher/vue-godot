@@ -734,6 +734,7 @@ test('release readiness requires release workflow wiring', () => {
   assert.match(output, /\.github\/workflows\/godot-smoke\.yml/)
   assert.match(output, /npm run smoke:generated-godot/)
   assert.match(output, /npm run smoke:editor-reload/)
+  assert.match(output, /scripts\/setup-godotjs\.mjs/)
   assert.match(output, /\.github\/workflows\/release-preflight\.yml/)
   assert.match(output, /unable to read Release Preflight workflow/)
 })
@@ -766,6 +767,7 @@ test('release readiness requires Release Preflight expected commit wiring', () =
         'npm run smoke:godot',
         'npm run smoke:generated-godot',
         'npm run smoke:editor-reload',
+        'scripts/setup-godotjs.mjs',
         'xvfb-run',
       ].join('\n')
     }

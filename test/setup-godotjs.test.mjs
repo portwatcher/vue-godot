@@ -5,6 +5,7 @@ import path from 'node:path'
 import test from 'node:test'
 
 import {
+  defaultGodotJsReleaseRepo,
   defaultGodotExportTemplatesRoot,
   defaultGodotJsAssetForPlatform,
   godotJsReleaseAssetUrl,
@@ -49,6 +50,7 @@ test('GodotJS setup plan resolves pinned release, asset, cache paths, and URL', 
   })
 
   assert.equal(plan.release, pinnedGodotJsRelease)
+  assert.equal(plan.releaseRepo, defaultGodotJsReleaseRepo)
   assert.equal(plan.asset, 'prebuilt_macos_arm64_v8')
   assert.equal(plan.assetKind, 'editor')
   assert.equal(plan.cacheDir, path.join(repoRoot, '.tmp-godot-cache'))
@@ -70,6 +72,23 @@ test('GodotJS setup plan resolves pinned release, asset, cache paths, and URL', 
     'https://github.com/ialex32x/GodotJS-Build/releases/download/GodotJS_1.0.0-2/prebuilt_macos_arm64_v8.zip',
   )
   assert.equal(plan.url, godotJsReleaseAssetUrl(plan.release, plan.asset))
+})
+
+test('GodotJS setup plan supports alternate release repositories', () => {
+  const plan = resolveGodotJsSetupPlan({
+    asset: 'ios-template_debug-4.4-v8',
+    assetKind: 'templates',
+    cacheDir: '.tmp-godot-cache',
+    release: 'v1.1.0-generate-typings',
+    releaseRepo: 'godotjs/GodotJS',
+  })
+
+  assert.equal(plan.release, 'v1.1.0-generate-typings')
+  assert.equal(plan.releaseRepo, 'godotjs/GodotJS')
+  assert.equal(
+    plan.url,
+    'https://github.com/godotjs/GodotJS/releases/download/v1.1.0-generate-typings/ios-template_debug-4.4-v8.zip',
+  )
 })
 
 test('GodotJS setup plan supports export template assets', () => {
@@ -133,16 +152,14 @@ test('Godot export template root resolves platform user directories', () => {
       { APPDATA: 'C:\\Users\\dev\\AppData\\Roaming' },
       'C:\\Users\\dev',
     ),
-    path.join(
-      'C:\\Users\\dev\\AppData\\Roaming',
-      'Godot',
-      'export_templates',
-    ),
+    path.join('C:\\Users\\dev\\AppData\\Roaming', 'Godot', 'export_templates'),
   )
 })
 
 test('GodotJS template asset installation copies templates and version marker', () => {
-  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-templates-'))
+  const tempRoot = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'vue-godot-templates-'),
+  )
   try {
     const assetDir = path.join(tempRoot, 'asset')
     const templatesRoot = path.join(tempRoot, 'templates')
@@ -186,6 +203,49 @@ test('GodotJS template asset installation copies templates and version marker', 
   }
 })
 
+test('GodotJS template asset installation flattens single nested template directories', () => {
+  const tempRoot = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'vue-godot-templates-'),
+  )
+  try {
+    const assetDir = path.join(tempRoot, 'asset')
+    const nestedDir = path.join(assetDir, 'ios-template_debug-4.4-v8')
+    const templatesRoot = path.join(tempRoot, 'templates')
+    const archivePath = path.join(assetDir, 'ios-template_debug-4.4-v8.zip')
+    fs.mkdirSync(nestedDir, { recursive: true })
+    fs.writeFileSync(
+      path.join(nestedDir, 'libgodot.ios.template_debug.arm64.a'),
+      'debug',
+    )
+    fs.writeFileSync(archivePath, 'archive')
+
+    const install = installGodotJsTemplateAsset(
+      { assetDir, archivePath },
+      {
+        templateVersion: '4.4.1.rc.custom_build.daa4b058e',
+        templatesRoot,
+      },
+    )
+
+    assert.deepEqual(install.entries, ['libgodot.ios.template_debug.arm64.a'])
+    assert.equal(
+      fs.readFileSync(
+        path.join(install.templatesDir, 'libgodot.ios.template_debug.arm64.a'),
+        'utf-8',
+      ),
+      'debug',
+    )
+    assert.equal(
+      fs.existsSync(
+        path.join(install.templatesDir, 'ios-template_debug-4.4-v8'),
+      ),
+      false,
+    )
+  } finally {
+    fs.rmSync(tempRoot, { force: true, recursive: true })
+  }
+})
+
 test('GodotJS setup is exposed through npm and the shared CI action', () => {
   const packageJson = JSON.parse(readText('package.json'))
   const action = readText('.github/actions/setup-godotjs/action.yml')
@@ -207,7 +267,10 @@ test('GodotJS setup is exposed through npm and the shared CI action', () => {
   assert.match(script, /--install-templates/)
   assert.match(script, /GODOTJS_EXPORT_TEMPLATES_DIR/)
   assert.match(readme, /--asset prebuilt_android_v8 --asset-kind templates/)
-  assert.match(productionDocs, /--asset prebuilt_android_v8 --asset-kind templates/)
+  assert.match(
+    productionDocs,
+    /--asset prebuilt_android_v8 --asset-kind templates/,
+  )
   assert.doesNotMatch(action, /curl --fail/)
   assert.doesNotMatch(action, /find "\$GODOTJS_CACHE_DIR"/)
 })

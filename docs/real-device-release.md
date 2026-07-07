@@ -532,11 +532,12 @@ Run these before platform-specific device checks:
 3. Run `npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` to see whether local
    Android/iOS target tooling, attached Android devices or emulators, iOS device
    or simulator targets, Android SDK/build-tools, selected Xcode command-line
-   utilities, the pinned GodotJS Android export templates, and common
-   hosted-provider environment variable sets are available and to write a
-   gitignored JSON diagnostic. The same diagnostic records that
-   the pinned GodotJS release does not publish an iOS export-template asset, so
-   iOS evidence needs a hosted, simulator, or custom Apple-device build pipeline. The
+   utilities, the GodotJS Android export templates, iOS library assets, the
+   required iOS `ios.zip` export package, and common hosted-provider environment
+   variable sets are available and to write a gitignored JSON diagnostic. Install
+   the iOS 4.4 debug and release library assets from the `godotjs/GodotJS`
+   release channel before local simulator export checks; the current exporter
+   also needs a compatible `ios.zip` package and Apple signing/team settings. The
    hosted-provider diagnostic reports configured environment variable names and
    partially configured missing-name hints for BrowserStack, Sauce Labs,
    Firebase Test Lab, AWS Device Farm, LambdaTest, and Kobiton, but never their

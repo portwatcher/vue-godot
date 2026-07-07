@@ -85,6 +85,7 @@ function exportTemplatePlatformStatus(summary, platform) {
     candidateCount: Number.isInteger(status.candidateCount)
       ? status.candidateCount
       : null,
+    exportPackageFile: optionalString(status.exportPackageFile),
     installedFiles: stringList(status.installedFiles),
     installCommand: optionalString(status.installCommand),
     missingFiles,
@@ -92,6 +93,7 @@ function exportTemplatePlatformStatus(summary, platform) {
     notes,
     pinnedRelease: optionalString(status.pinnedRelease),
     ready: status.ready === true,
+    releaseRepo: optionalString(status.releaseRepo),
     requiredFiles: stringList(status.requiredFiles),
     templateVersion: optionalString(status.templateVersion),
     templatesDir: optionalString(status.templatesDir),
@@ -489,8 +491,14 @@ function formatExportTemplateDiagnosticLines(label, status, { formatPath }) {
   if (status.pinnedRelease) {
     lines.push(`  - Pinned release: \`${status.pinnedRelease}\``)
   }
+  if (status.releaseRepo) {
+    lines.push(`  - Release repo: \`${status.releaseRepo}\``)
+  }
   if (status.asset) {
     lines.push(`  - Asset: \`${status.asset}\``)
+  }
+  if (status.exportPackageFile) {
+    lines.push(`  - Export package: \`${status.exportPackageFile}\``)
   }
   const templatesRoot = portableLocalPath(status.templatesRoot)
   if (templatesRoot) {

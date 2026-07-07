@@ -10,6 +10,7 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(scriptDir, '..')
 
 export const pinnedGodotJsRelease = 'GodotJS_1.0.0-2'
+export const defaultGodotJsReleaseRepo = 'ialex32x/GodotJS-Build'
 export const defaultGodotJsCacheDir = '.cache/godotjs'
 
 const defaultAssetByPlatformArch = new Map([
@@ -26,6 +27,7 @@ and prints or exports the resolved path.
 
 Options:
   --release <tag>       GodotJS release tag. Default: ${pinnedGodotJsRelease}
+  --release-repo <repo> GitHub release repo. Default: ${defaultGodotJsReleaseRepo}
   --asset <name>        Release asset without .zip. Defaults by platform.
   --asset-kind <kind>   Asset kind: editor or templates. Default: editor.
   --cache-dir <path>    Cache directory. Default: ${defaultGodotJsCacheDir}
@@ -57,8 +59,12 @@ export function defaultGodotJsAssetForPlatform(
   return asset
 }
 
-export function godotJsReleaseAssetUrl(release, asset) {
-  return `https://github.com/ialex32x/GodotJS-Build/releases/download/${release}/${asset}.zip`
+export function godotJsReleaseAssetUrl(
+  release,
+  asset,
+  releaseRepo = defaultGodotJsReleaseRepo,
+) {
+  return `https://github.com/${releaseRepo}/releases/download/${release}/${asset}.zip`
 }
 
 export function defaultGodotExportTemplatesRoot(
@@ -109,6 +115,7 @@ function normalizeGodotJsAssetKind(assetKind = 'editor') {
 
 export function resolveGodotJsSetupPlan(options = {}) {
   const release = options.release ?? pinnedGodotJsRelease
+  const releaseRepo = options.releaseRepo ?? defaultGodotJsReleaseRepo
   const asset =
     options.asset ??
     defaultGodotJsAssetForPlatform(options.platform, options.arch)
@@ -122,18 +129,20 @@ export function resolveGodotJsSetupPlan(options = {}) {
 
   return {
     release,
+    releaseRepo,
     asset,
     assetKind,
     cacheDir,
     assetDir,
     archivePath,
-    url: godotJsReleaseAssetUrl(release, asset),
+    url: godotJsReleaseAssetUrl(release, asset, releaseRepo),
   }
 }
 
 function parseArgs(argv) {
   const valueOptions = [
     ['--release', 'release'],
+    ['--release-repo', 'releaseRepo'],
     ['--asset', 'asset'],
     ['--asset-kind', 'assetKind'],
     ['--cache-dir', 'cacheDir'],
@@ -285,6 +294,40 @@ function listTemplateAssetEntries(plan) {
     .sort()
 }
 
+function listTemplateInstallEntries(plan) {
+  const entries = listTemplateAssetEntries(plan)
+  if (entries.length !== 1) {
+    return {
+      entries,
+      sourceDir: plan.assetDir,
+    }
+  }
+
+  const onlyEntry = entries[0]
+  const nestedDir = path.join(plan.assetDir, onlyEntry)
+  let stat
+  try {
+    stat = fs.statSync(nestedDir)
+  } catch {
+    return {
+      entries,
+      sourceDir: plan.assetDir,
+    }
+  }
+
+  if (!stat.isDirectory()) {
+    return {
+      entries,
+      sourceDir: plan.assetDir,
+    }
+  }
+
+  return {
+    entries: fs.readdirSync(nestedDir).sort(),
+    sourceDir: nestedDir,
+  }
+}
+
 async function ensureAssetArchiveExtracted(plan, log, isReady) {
   if (!fs.existsSync(plan.archivePath) && !isReady()) {
     const tempArchivePath = `${plan.archivePath}.tmp`
@@ -294,7 +337,9 @@ async function ensureAssetArchiveExtracted(plan, log, isReady) {
   }
 
   if (!isReady()) {
-    log(`[setup-godotjs] extracting ${path.relative(repoRoot, plan.archivePath)}`)
+    log(
+      `[setup-godotjs] extracting ${path.relative(repoRoot, plan.archivePath)}`,
+    )
     assertCommandSucceeded(
       extractArchive(plan.archivePath, plan.assetDir),
       'GodotJS archive extraction',
@@ -334,7 +379,7 @@ export function installGodotJsTemplateAsset(plan, options = {}) {
       defaultGodotExportTemplatesRoot(process.platform, process.env),
   )
   const templatesDir = path.join(templatesRoot, templateVersion)
-  const entries = listTemplateAssetEntries(plan)
+  const { entries, sourceDir } = listTemplateInstallEntries(plan)
 
   if (entries.length === 0) {
     throw new Error(
@@ -344,12 +389,15 @@ export function installGodotJsTemplateAsset(plan, options = {}) {
 
   fs.mkdirSync(templatesDir, { recursive: true })
   for (const entry of entries) {
-    fs.cpSync(path.join(plan.assetDir, entry), path.join(templatesDir, entry), {
+    fs.cpSync(path.join(sourceDir, entry), path.join(templatesDir, entry), {
       force: true,
       recursive: true,
     })
   }
-  fs.writeFileSync(path.join(templatesDir, 'version.txt'), `${templateVersion}\n`)
+  fs.writeFileSync(
+    path.join(templatesDir, 'version.txt'),
+    `${templateVersion}\n`,
+  )
 
   return {
     entries,
@@ -485,6 +533,7 @@ export async function setupGodotJs(options = {}) {
     if (options.githubEnv) {
       appendGitHubEnv(options.githubEnv, {
         GODOTJS_RELEASE: plan.release,
+        GODOTJS_RELEASE_REPO: plan.releaseRepo,
         GODOTJS_ASSET: plan.asset,
         GODOTJS_ASSET_DIR: plan.assetDir,
         ...(installedTemplates
@@ -516,6 +565,7 @@ export async function setupGodotJs(options = {}) {
   if (options.githubEnv) {
     appendGitHubEnv(options.githubEnv, {
       GODOTJS_RELEASE: plan.release,
+      GODOTJS_RELEASE_REPO: plan.releaseRepo,
       GODOTJS_ASSET: plan.asset,
       GODOT_BIN: godotBin,
     })

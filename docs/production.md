@@ -118,8 +118,8 @@ Run `npm run check:device-prereqs -- --summary-output release/device-test-prereq
 sessions to report whether `adb`, Xcode device listing, attached Android devices
 or emulators, and iOS device or simulator targets are available, whether Android
 SDK/build-tools and selected Xcode command-line utilities are runnable, whether
-the pinned GodotJS Android export templates are installed, that the pinned
-GodotJS release does not publish an iOS export-template asset, and whether common
+the GodotJS Android export templates and iOS library assets are installed,
+whether the required iOS `ios.zip` export package is present, and whether common
 hosted-provider environment variable sets are configured, then leave a
 gitignored JSON diagnostic next to the other release helper summaries. The
 release-readiness summary and Markdown handoff
@@ -535,7 +535,13 @@ smokes or `release:preflight`. Template-only assets use the explicit
 `npm run setup:godotjs -- --asset prebuilt_android_v8 --asset-kind templates --install-templates --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir`
 downloads the pinned Android export-template bundle, copies it into the Godot
 export-template directory for the pinned editor version, and prints that
-installed directory. Use `--template-version <version>` instead of
+installed directory. GodotJS iOS 4.4 library assets come from the
+`godotjs/GodotJS` release channel; install both `ios-template_debug-4.4-v8` and
+`ios-template_release-4.4-v8` with
+`--release v1.1.0-generate-typings --release-repo godotjs/GodotJS`. Local iOS
+simulator export checks still require a compatible `ios.zip` export package in
+the same Godot export-template directory and Apple signing/team settings. Use
+`--template-version <version>` instead of
 `--godot-bin` when the release process already knows the exact Godot export
 template version string.
 

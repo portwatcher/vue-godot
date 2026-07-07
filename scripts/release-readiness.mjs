@@ -750,6 +750,7 @@ const releaseWorkflowRequirements = [
       'npm run smoke:godot',
       'npm run smoke:generated-godot',
       'npm run smoke:editor-reload',
+      'scripts/setup-godotjs.mjs',
       'xvfb-run',
     ],
   },
