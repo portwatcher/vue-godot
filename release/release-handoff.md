@@ -2,12 +2,12 @@
 
 - Release candidate commit: `68f88b1254ba76795a848f14f8ed616ec489dfec`
 - Handoff format: 7
-- Handoff state: 24d751d022870b9b
-- Overall readiness: open (6 blocker(s))
+- Handoff state: a29aa49a304c5e14
+- Overall readiness: open (5 blocker(s))
 - Real-device evidence: ready
 - Android evidence: ready
 - iOS evidence: ready
-- Release Preflight evidence: waiting
+- Release Preflight evidence: ready
 - Public warning removal: waiting
 
 ## Current Blockers
@@ -17,9 +17,6 @@
 - TODO.md:423 Release preflight passes without warnings in the release environment.
 - TODO.md:425 All public READMEs match the final support claims.
 - TODO.md:426 The root README warning is removed in the same commit that marks this checklist complete.
-- release-readiness evidence missing at release/release-readiness-evidence.json
-  Create it after the Release Preflight workflow passes without warnings.
-  Release-readiness evidence file not found: release/release-readiness-evidence.json
 
 ## CI Evidence
 
@@ -27,6 +24,7 @@
 - Path: `release/ci-runs.json`
 - Check: https://github.com/portwatcher/vue-godot/actions/runs/28878218086 (success)
 - Godot Smoke: https://github.com/portwatcher/vue-godot/actions/runs/28878218268 (success)
+- Release Preflight: https://github.com/portwatcher/vue-godot/actions/runs/28879322532 (success)
 
 ## Device Prereq Diagnostics
 
@@ -123,23 +121,23 @@
 
 ## Release Preflight Evidence
 
-- Status: waiting (1 blocker(s))
+- Status: ready (0 blocker(s))
 - Readiness evidence path: `release/release-readiness-evidence.json`
 - Summary JSON: `release/release-preflight-summary.json`
 - Summary checklist: `release/release-preflight-checklist.md`
-- Evidence present: no
-- Release commit: missing
-- Run URL: missing
-- Run commit: missing
-- Run conclusion: missing
-- Local-only: missing
-- Skipped Check: missing
-- Skipped Godot: missing
-- Skipped serious examples: missing
-- Failure count: missing
-- Warning count: missing
+- Evidence present: yes
+- Release commit: 68f88b1254ba76795a848f14f8ed616ec489dfec
+- Run URL: https://github.com/portwatcher/vue-godot/actions/runs/28879322532
+- Run commit: aa0651b3ea285a42b2f9b11ef7fdb5d5cbdd0890
+- Run conclusion: success
+- Local-only: false
+- Skipped Check: false
+- Skipped Godot: false
+- Skipped serious examples: false
+- Failure count: 0
+- Warning count: 0
 - Read errors:
-- Release-readiness evidence file not found: release/release-readiness-evidence.json
+- none
 - Validation errors:
 - none
 - Run verification errors:
@@ -147,10 +145,9 @@
 
 ## Final TODO Proofs
 
-- Ready: 5/10
+- Ready: 6/10
 - TODO.md:34 The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied. (warningWordingReady waiting)
 - TODO.md:422 CI passes on a clean commit. (ciEvidenceReady waiting)
-- TODO.md:423 Release preflight passes without warnings in the release environment. (releaseReadinessEvidenceReady waiting)
 - TODO.md:425 All public READMEs match the final support claims. (publicReadmesReady waiting)
 - TODO.md:426 The root README warning is removed in the same commit that marks this checklist complete. (rootReadmeWarningReady waiting)
 
@@ -183,8 +180,6 @@ GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit 68f88b1254ba76795a848
 ```
 
 ### Remove public warning wording through the guarded finalizer
-
-Blocked by: `release-preflight-evidence`
 
 Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks and removes public warning wording. The generated commands then run npm run check, stage those edits, commit them, push, and run the final strict readiness check.
 
