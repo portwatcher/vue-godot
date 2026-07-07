@@ -1,9 +1,9 @@
 # Release Handoff
 
-- Release candidate commit: `31a399e1281d41c024076f3113f9f4b438bb442d`
+- Release candidate commit: `a096282a8ecec18f0dfa43f45683a768f98b8237`
 - Handoff format: 7
-- Handoff state: 5c152229a64d4995
-- Overall readiness: open (10 blocker(s))
+- Handoff state: 7b98153c08923e65
+- Overall readiness: open (12 blocker(s))
 - Real-device evidence: waiting
 - Android evidence: waiting
 - iOS evidence: waiting
@@ -16,20 +16,22 @@
 - TODO.md:34 The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied.
 - TODO.md:389 Android export with selected device APIs has been tested.
 - TODO.md:401 iOS export with selected device APIs has been tested.
-- TODO.md:417 CI passes on a clean commit.
-- TODO.md:418 Release preflight passes without warnings in the release environment.
-- TODO.md:420 All public READMEs match the final support claims.
-- TODO.md:421 The root README warning is removed in the same commit that marks this checklist complete.
+- TODO.md:422 CI passes on a clean commit.
+- TODO.md:423 Release preflight passes without warnings in the release environment.
+- TODO.md:425 All public READMEs match the final support claims.
+- TODO.md:426 The root README warning is removed in the same commit that marks this checklist complete.
 - real-device evidence missing at release/real-device-evidence.json
-  Create release/real-device-evidence.json after completing docs/real-device-release.md, then run npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 31a399e1281d41c024076f3113f9f4b438bb442d.
+  Create release/real-device-evidence.json after completing docs/real-device-release.md, then run npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit a096282a8ecec18f0dfa43f45683a768f98b8237.
   Real device evidence file not found: release/real-device-evidence.json
 - release-readiness evidence missing at release/release-readiness-evidence.json
   Create it after the Release Preflight workflow passes without warnings.
   Release-readiness evidence file not found: release/release-readiness-evidence.json
+- TODO.md:24 `npm run check` passes locally and in CI. is checked, but committed release/ci-runs.json evidence must verify a successful Check workflow run.
+- TODO.md:25 Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate. is checked, but committed release/ci-runs.json evidence must verify a successful Godot Smoke workflow run.
 
 ## CI Evidence
 
-- Status: ready
+- Status: waiting
 - Path: `release/ci-runs.json`
 - Check: https://github.com/portwatcher/vue-godot/actions/runs/28875256827 (success)
 - Godot Smoke: https://github.com/portwatcher/vue-godot/actions/runs/28875256780 (success)
@@ -92,7 +94,7 @@
 
 ## Platform Evidence
 
-- Status: waiting (2 blocker(s))
+- Status: ready (0 blocker(s))
 - Path: `release/platform-evidence.json`
 
 ### Android
@@ -113,11 +115,11 @@
 
 ### iOS
 
-- Status: waiting (2 blocker(s))
-- Required checks complete: 14/15
+- Status: ready (0 blocker(s))
+- Required checks complete: 15/15
 - Batch confirmation: none
 - Metadata gaps: none
-- Must-pass remaining: `safe-area-keyboard-rotation-text-input`
+- Must-pass remaining: none
 - Skippable remaining: none
 - Duplicate passed checks: none
 - Invalid skipped reasons: none
@@ -126,8 +128,6 @@
 - Unknown skipped checks: none
 - Unknown selected APIs: none
 - Worksheet drift: none
-- Remaining check details:
-  - `safe-area-keyboard-rotation-text-input` (must pass; selected APIs: SafeAreaView, KeyboardAvoidingView): Verify safe area, virtual keyboard, rotation, and text input behavior on the tested iPhone or iPad family.
 
 ## Release Preflight Evidence
 
@@ -155,27 +155,52 @@
 
 ## Final TODO Proofs
 
-- Ready: 2/10
+- Ready: 0/10
+- TODO.md:24 `npm run check` passes locally and in CI. (checkCiEvidenceReady waiting)
+- TODO.md:25 Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate. (godotSmokeCiEvidenceReady waiting)
 - TODO.md:26 Android and iOS export smoke apps run on real, hosted, emulator, or simulator targets for the production profile. (realDeviceEvidenceReady waiting)
 - TODO.md:34 The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied. (warningWordingReady waiting)
 - TODO.md:389 Android export with selected device APIs has been tested. (androidRealDeviceEvidenceReady waiting)
 - TODO.md:401 iOS export with selected device APIs has been tested. (iosRealDeviceEvidenceReady waiting)
-- TODO.md:417 CI passes on a clean commit. (ciEvidenceReady waiting)
-- TODO.md:418 Release preflight passes without warnings in the release environment. (releaseReadinessEvidenceReady waiting)
-- TODO.md:420 All public READMEs match the final support claims. (publicReadmesReady waiting)
-- TODO.md:421 The root README warning is removed in the same commit that marks this checklist complete. (rootReadmeWarningReady waiting)
+- TODO.md:422 CI passes on a clean commit. (ciEvidenceReady waiting)
+- TODO.md:423 Release preflight passes without warnings in the release environment. (releaseReadinessEvidenceReady waiting)
+- TODO.md:425 All public READMEs match the final support claims. (publicReadmesReady waiting)
+- TODO.md:426 The root README warning is removed in the same commit that marks this checklist complete. (rootReadmeWarningReady waiting)
 
 ## Next Actions
+
+### Run readiness against the tested release commit
+
+The checked-in or supplied CI evidence is valid for an earlier release-candidate commit; pass --expected-commit when release evidence is committed after that candidate.
+
+```bash
+npm run release:readiness -- --allow-open --expected-commit 31a399e1281d41c024076f3113f9f4b438bb442d --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md
+```
+
+### Collect initial CI evidence for the tested release commit
+
+Run the local check, push the release-candidate commit, wait for Check and Godot Smoke, then write release/ci-runs.json for real-device evidence assembly. Release Preflight is collected later after real-device evidence is committed.
+
+Commands with `<...>` placeholders must be edited before running; unresolved placeholders are not valid release evidence or dispatch inputs.
+
+#### Ready To Run
+
+```bash
+npm run check
+git push
+npm run release:ci -- --commit a096282a8ecec18f0dfa43f45683a768f98b8237 --wait --output release/ci-runs.json
+```
+
+#### Replace Placeholders First
+
+```bash
+GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit a096282a8ecec18f0dfa43f45683a768f98b8237 --dispatch-missing --wait --ref <release-candidate-branch-or-tag> --output release/ci-runs.json
+```
 
 ### Complete Android and iOS real-device export evidence
 
 Run the local check and selected API export checks on real, hosted, emulator, or simulator targets, record the evidence URL in the platform worksheet, then assemble and validate release/real-device-evidence.json for the tested release commit.
 The device prereq summary records local tooling availability and configured or partially configured hosted-provider environment variable names for handoff diagnostics only; final evidence still needs non-local device run URLs, artifact IDs, and device metadata.
-Android: ready; iOS: 0 metadata field(s) missing, 1/15 required check(s) unresolved, 1 must-pass check(s) missing
-iOS must-pass remaining: safe-area-keyboard-rotation-text-input
-
-Remaining check details:
-- iOS `safe-area-keyboard-rotation-text-input` (must pass; selected APIs: SafeAreaView, KeyboardAvoidingView): Verify safe area, virtual keyboard, rotation, and text input behavior on the tested iPhone or iPad family.
 
 Commands with `<...>` placeholders must be edited before running; unresolved placeholders are not valid release evidence or dispatch inputs.
 
@@ -184,28 +209,20 @@ Commands with `<...>` placeholders must be edited before running; unresolved pla
 ```bash
 npm run check
 npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing
-npm run release:preflight -- --local --skip-check --skip-godot --expected-commit 31a399e1281d41c024076f3113f9f4b438bb442d --summary-output /tmp/vue-godot-local-preflight-summary.json
-npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit 31a399e1281d41c024076f3113f9f4b438bb442d
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit 31a399e1281d41c024076f3113f9f4b438bb442d
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact 'iOS simulator Debug app executable sha256:265e7178154d3b6cc9576491d8396c7aa7561c15ba27e080a10e7317331648f5 (GodotJS JavaScriptCore simulator slice)' --evidence-url https://github.com/portwatcher/vue-godot/blob/fe8474267042c3d3ec53ffc455425efca49d1f8a/apps/native-app-demo/docs/ios-simulator-smoke-2026-07-07.md --export-preset 'iOS Release' --device 'iPhone 17 simulator' --os 'iOS 26.5 (Xcode 26.6 simulator runtime)' --orientation 'landscape app orientation on portrait simulator screen' --locale 'default simulator locale' --test-target simulator --pass safe-area-keyboard-rotation-text-input --summary-output release/platform-evidence-summary.json --expected-commit 31a399e1281d41c024076f3113f9f4b438bb442d
-npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit 31a399e1281d41c024076f3113f9f4b438bb442d
+npm run release:preflight -- --local --skip-check --skip-godot --expected-commit a096282a8ecec18f0dfa43f45683a768f98b8237 --summary-output /tmp/vue-godot-local-preflight-summary.json
+npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit a096282a8ecec18f0dfa43f45683a768f98b8237
+npm run release:ci -- --commit a096282a8ecec18f0dfa43f45683a768f98b8237 --wait --output release/ci-runs.json
+npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit a096282a8ecec18f0dfa43f45683a768f98b8237 --real-device-output release/real-device-evidence.json
+npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit a096282a8ecec18f0dfa43f45683a768f98b8237
+git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json
+git commit -m "Add real-device release evidence"
+git push
 ```
 
 #### Replace Placeholders First
 
 ```bash
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact 'iOS simulator Debug app executable sha256:265e7178154d3b6cc9576491d8396c7aa7561c15ba27e080a10e7317331648f5 (GodotJS JavaScriptCore simulator slice)' --evidence-url https://github.com/portwatcher/vue-godot/blob/fe8474267042c3d3ec53ffc455425efca49d1f8a/apps/native-app-demo/docs/ios-simulator-smoke-2026-07-07.md --export-preset 'iOS Release' --device 'iPhone 17 simulator' --os 'iOS 26.5 (Xcode 26.6 simulator runtime)' --orientation 'landscape app orientation on portrait simulator screen' --locale 'default simulator locale' --test-target simulator --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output release/platform-evidence-summary.json --expected-commit 31a399e1281d41c024076f3113f9f4b438bb442d
-```
-
-#### Run After Device Evidence Is Recorded
-
-```bash
-npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit 31a399e1281d41c024076f3113f9f4b438bb442d
-npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 31a399e1281d41c024076f3113f9f4b438bb442d --real-device-output release/real-device-evidence.json
-npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 31a399e1281d41c024076f3113f9f4b438bb442d
-git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json
-git commit -m "Add real-device release evidence"
-git push
+GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit a096282a8ecec18f0dfa43f45683a768f98b8237 --dispatch-missing --wait --ref <release-candidate-branch-or-tag> --output release/ci-runs.json
 ```
 
 ### Collect CI and warning-free Release Preflight evidence
@@ -220,20 +237,22 @@ Commands with `<...>` placeholders must be edited before running; unresolved pla
 
 ```bash
 npm run check
-npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 31a399e1281d41c024076f3113f9f4b438bb442d
-npm run release:ci -- --commit 31a399e1281d41c024076f3113f9f4b438bb442d --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --wait --output release/ci-runs.json
-GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit 31a399e1281d41c024076f3113f9f4b438bb442d --output release/release-preflight-summary.json --checklist-output release/release-preflight-checklist.md
-npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 31a399e1281d41c024076f3113f9f4b438bb442d --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json
+npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit a096282a8ecec18f0dfa43f45683a768f98b8237
+npm run release:ci -- --commit a096282a8ecec18f0dfa43f45683a768f98b8237 --wait --output release/ci-runs.json
+npm run release:ci -- --commit a096282a8ecec18f0dfa43f45683a768f98b8237 --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --wait --output release/ci-runs.json
+GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit a096282a8ecec18f0dfa43f45683a768f98b8237 --output release/release-preflight-summary.json --checklist-output release/release-preflight-checklist.md
+npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit a096282a8ecec18f0dfa43f45683a768f98b8237 --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json
 git add release/ci-runs.json release/release-preflight-summary.json release/release-preflight-checklist.md release/real-device-evidence.json release/release-readiness-evidence.json
 git commit -m "Add release readiness evidence"
 git push
-npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit 31a399e1281d41c024076f3113f9f4b438bb442d
+npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit a096282a8ecec18f0dfa43f45683a768f98b8237
 ```
 
 #### Replace Placeholders First
 
 ```bash
-GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit 31a399e1281d41c024076f3113f9f4b438bb442d --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json
+GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit a096282a8ecec18f0dfa43f45683a768f98b8237 --dispatch-missing --wait --ref <release-candidate-branch-or-tag> --output release/ci-runs.json
+GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit a096282a8ecec18f0dfa43f45683a768f98b8237 --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json
 ```
 
 ### Remove public warning wording through the guarded finalizer
@@ -243,12 +262,12 @@ Blocked by: `real-device-evidence`, `release-preflight-evidence`
 Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks and removes public warning wording. The generated commands then run npm run check, stage those edits, commit them, push, and run the final strict readiness check.
 
 ```bash
-npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --checklist-output /tmp/vue-godot-readiness.md --expected-commit 31a399e1281d41c024076f3113f9f4b438bb442d
+npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --checklist-output /tmp/vue-godot-readiness.md --expected-commit a096282a8ecec18f0dfa43f45683a768f98b8237
 npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json
 npm run check
 git add TODO.md README.md docs/compatibility.md docs/production.md docs/real-device-release.md
 git commit -m "Finalize production readiness"
 git push
-npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit 31a399e1281d41c024076f3113f9f4b438bb442d
+npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit a096282a8ecec18f0dfa43f45683a768f98b8237
 ```
 
