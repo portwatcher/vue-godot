@@ -65,6 +65,7 @@ import {
   initialReleaseCiCommands,
   localReleasePreflightCommand,
   productionProfilePlatformEvidenceCommand,
+  recordPlatformEvidenceListChecksCommand,
   recordPlatformEvidenceCommands,
   releaseEvidenceCommand,
   releaseCommitLabel,
@@ -1408,33 +1409,31 @@ function collectReadinessNextActions(
         ),
       )
     } else if (!platformEvidence.ready) {
+      const recordCommandsForPlatform = (platform) => {
+        const status = platformEvidence.platforms?.[platform]
+        if (isRecord(status) && status.ready) {
+          return [
+            recordPlatformEvidenceListChecksCommand(platform, commit, {
+              platformEvidencePath,
+              summaryOutput: 'release/platform-evidence-summary.json',
+            }),
+          ]
+        }
+
+        return recordPlatformEvidenceCommands(platform, commit, {
+          ...collectPlatformEvidenceCommandMetadata(platformEvidence, platform),
+          checks: collectPlatformEvidencePassChecks(platformEvidence, platform),
+          platformEvidencePath,
+          skipChecks: collectPlatformEvidenceSkippableMissingChecks(
+            platformEvidence,
+            platform,
+          ),
+          summaryOutput: 'release/platform-evidence-summary.json',
+        })
+      }
       platformEvidenceCommands.push(
-        ...recordPlatformEvidenceCommands('android', commit, {
-          ...collectPlatformEvidenceCommandMetadata(
-            platformEvidence,
-            'android',
-          ),
-          checks: collectPlatformEvidencePassChecks(
-            platformEvidence,
-            'android',
-          ),
-          platformEvidencePath,
-          skipChecks: collectPlatformEvidenceSkippableMissingChecks(
-            platformEvidence,
-            'android',
-          ),
-          summaryOutput: 'release/platform-evidence-summary.json',
-        }),
-        ...recordPlatformEvidenceCommands('ios', commit, {
-          ...collectPlatformEvidenceCommandMetadata(platformEvidence, 'ios'),
-          checks: collectPlatformEvidencePassChecks(platformEvidence, 'ios'),
-          platformEvidencePath,
-          skipChecks: collectPlatformEvidenceSkippableMissingChecks(
-            platformEvidence,
-            'ios',
-          ),
-          summaryOutput: 'release/platform-evidence-summary.json',
-        }),
+        ...recordCommandsForPlatform('android'),
+        ...recordCommandsForPlatform('ios'),
       )
       platformEvidenceCommands.push(
         checkPlatformEvidenceCommand(commit, {

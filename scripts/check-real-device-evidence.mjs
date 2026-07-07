@@ -21,6 +21,7 @@ import {
   defaultReleaseCiEvidencePath,
   initialReleaseCiCommands,
   productionProfilePlatformEvidenceCommand,
+  recordPlatformEvidenceListChecksCommand,
   recordPlatformEvidenceCommands,
   releaseEvidenceCommand,
 } from './release-handoff-commands.mjs'
@@ -276,6 +277,41 @@ function collectNextActions(summary) {
       const remaining = formatPlatformEvidenceRemainingBlock(platformEvidence)
       const platformCheckDetails =
         collectPlatformEvidenceRemainingCheckDetails(platformEvidence)
+      const recordCommandsForPlatform = (platform) => {
+        const status = platformEvidence.platforms?.[platform]
+        const options = customPlatformEvidenceCommandOptions(summary, {
+          summaryOutput: 'release/platform-evidence-summary.json',
+        })
+        if (status && status.ready) {
+          return [
+            recordPlatformEvidenceListChecksCommand(
+              platform,
+              expectedCommit,
+              options,
+            ),
+          ]
+        }
+
+        return recordPlatformEvidenceCommands(
+          platform,
+          expectedCommit,
+          customPlatformEvidenceCommandOptions(summary, {
+            ...collectPlatformEvidenceCommandMetadata(
+              platformEvidence,
+              platform,
+            ),
+            checks: collectPlatformEvidencePassChecks(
+              platformEvidence,
+              platform,
+            ),
+            skipChecks: collectPlatformEvidenceSkippableMissingChecks(
+              platformEvidence,
+              platform,
+            ),
+            summaryOutput: 'release/platform-evidence-summary.json',
+          }),
+        )
+      }
       platformEvidenceCommands.push({
         id: 'complete-platform-evidence',
         title: 'Complete Android/iOS platform evidence worksheet',
@@ -285,44 +321,8 @@ function collectNextActions(summary) {
         ].join('\n'),
         ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
         commands: [
-          ...recordPlatformEvidenceCommands(
-            'android',
-            expectedCommit,
-            customPlatformEvidenceCommandOptions(summary, {
-              ...collectPlatformEvidenceCommandMetadata(
-                platformEvidence,
-                'android',
-              ),
-              checks: collectPlatformEvidencePassChecks(
-                platformEvidence,
-                'android',
-              ),
-              skipChecks: collectPlatformEvidenceSkippableMissingChecks(
-                platformEvidence,
-                'android',
-              ),
-              summaryOutput: 'release/platform-evidence-summary.json',
-            }),
-          ),
-          ...recordPlatformEvidenceCommands(
-            'ios',
-            expectedCommit,
-            customPlatformEvidenceCommandOptions(summary, {
-              ...collectPlatformEvidenceCommandMetadata(
-                platformEvidence,
-                'ios',
-              ),
-              checks: collectPlatformEvidencePassChecks(
-                platformEvidence,
-                'ios',
-              ),
-              skipChecks: collectPlatformEvidenceSkippableMissingChecks(
-                platformEvidence,
-                'ios',
-              ),
-              summaryOutput: 'release/platform-evidence-summary.json',
-            }),
-          ),
+          ...recordCommandsForPlatform('android'),
+          ...recordCommandsForPlatform('ios'),
           checkPlatformEvidenceCommand(expectedCommit, {
             allowOpen: true,
             ...customPlatformEvidenceCommandOptions(summary, {

@@ -387,14 +387,17 @@ the final removal commit.
 - [x] Serious native app demo is complete and passes build/smoke.
 - [x] Serious game UI demo is complete and passes build/smoke.
 - [ ] Android export with selected device APIs has been tested.
-  - Partial Android emulator export smoke recorded in
-    `apps/native-app-demo/docs/android-emulator-smoke-2026-07-07.md`; the full
-    production-profile Android worksheet remains open.
+  - Android emulator export smoke recorded in
+    `apps/native-app-demo/docs/android-emulator-smoke-2026-07-07.md`.
   - `apps/native-app-demo` now has a `Release checks` screen that exercises the
-    maintained production API set before final worksheet evidence is recorded.
+    maintained production API set.
   - The Android emulator smoke now covers restart storage, Android Back, and
-    background/foreground lifecycle evidence, but the formal production-profile
-    worksheet is still open.
+    background/foreground lifecycle evidence.
+  - `release/platform-evidence.json` records the Android worksheet as ready for
+    the production-profile selected APIs, with plugin-backed media/geolocation
+    APIs verified as accepted missing-plugin fallback states on the emulator.
+    The final checklist stays open until the assembled release evidence file can
+    validate the Android result alongside the remaining iOS evidence.
 - [ ] iOS export with selected device APIs has been tested.
 - [ ] CI passes on a clean commit.
 - [ ] Release preflight passes without warnings in the release environment.

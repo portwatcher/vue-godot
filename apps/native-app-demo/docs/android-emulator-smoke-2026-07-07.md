@@ -1,10 +1,10 @@
 # Android Emulator Smoke - 2026-07-07
 
-This records a partial native app Android export smoke run. It proves the
-`native-app-demo` Android export can build, install, cold-launch, render the
-Vue routes, report selected device adapter states, and run the release-check
-screen on an emulator. It does not complete the final release Android
-production-profile worksheet in `release/platform-evidence.json`.
+This records the native app Android export smoke run used for the Android side
+of the production-profile worksheet in `release/platform-evidence.json`. It
+proves the `native-app-demo` Android export can build, install, cold-launch,
+render the Vue routes, report selected device adapter states, and run the
+release-check screen on an emulator.
 
 ## Target
 
@@ -107,10 +107,10 @@ adb -e shell am start -n org.vuegodot.nativeappdemo/com.godot.game.GodotApp
 
 [Release check log excerpt](./evidence/android-emulator-release-checks-2026-07-07.log)
 
-## Remaining Release Work
+## Worksheet Status
 
-This is narrower than the maintained production profile. The final Android
-release gate still needs the full `release/platform-evidence.json` Android
-worksheet to pass, including complete evidence capture for every required row
-and the selected native adapter success or accepted fallback states required by
-the release checklist.
+The Android worksheet in `release/platform-evidence.json` records this run as
+ready for the production-profile selected APIs. Plugin-backed geolocation and
+media APIs were verified as accepted missing-plugin fallback states on the
+emulator. The overall release gate still needs the iOS worksheet and final
+release-readiness evidence.

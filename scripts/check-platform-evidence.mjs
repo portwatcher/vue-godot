@@ -25,6 +25,7 @@ import {
   defaultRealDeviceEvidencePath,
   defaultRealDeviceEvidenceSummaryPath,
   defaultReleaseCiEvidencePath,
+  recordPlatformEvidenceListChecksCommand,
   recordPlatformEvidenceCommands,
   releaseEvidenceCommand,
   productionProfilePlatformEvidenceCommand,
@@ -1000,6 +1001,30 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
     const remaining = formatPlatformEvidenceRemainingBlock(summary)
     const platformCheckDetails =
       collectPlatformEvidenceRemainingCheckDetails(summary)
+    const recordCommandsForPlatform = (platform) => {
+      const status = summary.platforms?.[platform]
+      if (isRecord(status) && status.ready) {
+        return [
+          recordPlatformEvidenceListChecksCommand(platform, commit, {
+            platformEvidencePath,
+            summaryOutput:
+              options.summaryOutput ?? 'release/platform-evidence-summary.json',
+          }),
+        ]
+      }
+
+      return recordPlatformEvidenceCommands(platform, commit, {
+        ...collectPlatformEvidenceCommandMetadata(summary, platform),
+        checks: collectPlatformEvidencePassChecks(summary, platform),
+        platformEvidencePath,
+        skipChecks: collectPlatformEvidenceSkippableMissingChecks(
+          summary,
+          platform,
+        ),
+        summaryOutput:
+          options.summaryOutput ?? 'release/platform-evidence-summary.json',
+      })
+    }
     actions.push({
       id: 'complete-platform-evidence',
       title: 'Finish Android and iOS worksheet evidence',
@@ -1010,28 +1035,8 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
       ].join('\n'),
       ...(platformCheckDetails.length > 0 ? { platformCheckDetails } : {}),
       commands: [
-        ...recordPlatformEvidenceCommands('android', commit, {
-          ...collectPlatformEvidenceCommandMetadata(summary, 'android'),
-          checks: collectPlatformEvidencePassChecks(summary, 'android'),
-          platformEvidencePath,
-          skipChecks: collectPlatformEvidenceSkippableMissingChecks(
-            summary,
-            'android',
-          ),
-          summaryOutput:
-            options.summaryOutput ?? 'release/platform-evidence-summary.json',
-        }),
-        ...recordPlatformEvidenceCommands('ios', commit, {
-          ...collectPlatformEvidenceCommandMetadata(summary, 'ios'),
-          checks: collectPlatformEvidencePassChecks(summary, 'ios'),
-          platformEvidencePath,
-          skipChecks: collectPlatformEvidenceSkippableMissingChecks(
-            summary,
-            'ios',
-          ),
-          summaryOutput:
-            options.summaryOutput ?? 'release/platform-evidence-summary.json',
-        }),
+        ...recordCommandsForPlatform('android'),
+        ...recordCommandsForPlatform('ios'),
         checkPlatformEvidenceCommand(commit, {
           allowOpen: true,
           checklistOutput,

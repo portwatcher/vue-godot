@@ -1462,7 +1462,13 @@ test('release readiness summary includes missing evidence next actions', () => {
     assert.equal(summary.platformEvidence.path, platformCommandPath)
     assert.ok(
       summary.platformEvidence.errors.some((error) =>
-        error.includes('android.artifact must be a non-empty string'),
+        error.includes('ios.artifact must be a non-empty string'),
+      ),
+    )
+    assert.ok(
+      summary.platformEvidence.errors.every(
+        (error) =>
+          !error.includes('android.artifact must be a non-empty string'),
       ),
     )
     assert.equal(summary.realDeviceEvidence.evidencePresent, false)
@@ -1489,11 +1495,11 @@ test('release readiness summary includes missing evidence next actions', () => {
     assert.ok(realDeviceAction)
     assert.match(
       realDeviceAction.detail,
-      /Android: 6 metadata field\(s\) missing/,
+      /Android: ready; iOS: 6 metadata field\(s\) missing/,
     )
     assert.match(
       realDeviceAction.detail,
-      /tested release commit\.[\s\S]*Android: 6 metadata field\(s\) missing/,
+      /tested release commit\.[\s\S]*Android: ready; iOS: 6 metadata field\(s\) missing/,
     )
     assert.match(
       realDeviceAction.detail,
@@ -1501,11 +1507,8 @@ test('release readiness summary includes missing evidence next actions', () => {
     )
     assert.match(realDeviceAction.detail, /iOS: 6 metadata field\(s\) missing/)
     assert.ok(
-      realDeviceAction.platformCheckDetails.some(
-        (detail) =>
-          detail.platform === 'android' &&
-          detail.check === 'cold-launch' &&
-          detail.description.includes('Install the exported build'),
+      realDeviceAction.platformCheckDetails.every(
+        (detail) => detail.platform !== 'android',
       ),
     )
     assert.ok(
@@ -1546,14 +1549,9 @@ test('release readiness summary includes missing evidence next actions', () => {
       ),
     )
     assert.ok(
-      realDeviceAction.commands.includes(
-        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${shellQuote(platformCommandPath)} --artifact <android-apk-aab-or-hosted-build-id> --evidence-url <android-non-local-device-evidence-url> --export-preset 'Android Release' --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit ${summary.commit}`,
-      ),
-    )
-    assert.ok(
-      realDeviceAction.commands.includes(
-        `npm run release:record-platform-evidence -- --platform android --platform-evidence ${shellQuote(platformCommandPath)} --artifact <android-apk-aab-or-hosted-build-id> --evidence-url <android-non-local-device-evidence-url> --export-preset 'Android Release' --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output release/platform-evidence-summary.json --expected-commit ${summary.commit}`,
-      ),
+      realDeviceAction.commands
+        .filter((command) => command.includes('--platform android'))
+        .every((command) => command.includes('--list-checks')),
     )
     assert.ok(
       realDeviceAction.commands.includes(

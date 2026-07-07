@@ -389,6 +389,47 @@ test('platform evidence audit next actions reuse valid metadata', () => {
   assert.match(iosPassCommand, /--orientation portrait --locale en-US/)
 })
 
+test('platform evidence audit next actions omit ready platform record templates', () => {
+  const template = buildPlatformEvidenceTemplate({
+    androidArtifact: 'android-release.aab',
+    androidDevice: 'Pixel 8 Pro',
+    androidEvidenceUrl: 'https://device-lab.example.com/android/runs/77',
+    androidOs: 'Android 15',
+    locale: 'en-US',
+    orientation: 'landscape',
+    productionProfile: true,
+  })
+  template.android.passRemainingConfirmation =
+    'All Android must-pass checks passed on the emulator run.'
+  template.android.passedChecks = [...requiredRealDeviceChecks.android]
+
+  const summary = auditPlatformEvidence(template)
+  const actions = collectPlatformEvidenceNextActions(summary, {
+    expectedCommit: commit,
+    platformEvidencePath: 'release/platform-evidence.json',
+    summaryOutput: 'release/platform-evidence-summary.json',
+  })
+  const completeAction = actions.find(
+    (action) => action.id === 'complete-platform-evidence',
+  )
+
+  assert.ok(completeAction)
+  assert.match(completeAction.detail, /Android: ready/)
+  const androidCommands = completeAction.commands.filter((command) =>
+    command.includes('--platform android'),
+  )
+  assert.deepEqual(androidCommands, [
+    `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit ${commit}`,
+  ])
+  assert.ok(
+    completeAction.commands.some(
+      (command) =>
+        command.includes('--platform ios') &&
+        command.includes('--pass cold-launch'),
+    ),
+  )
+})
+
 test('platform evidence audit accepts non-production profile when allowed', () => {
   const template = buildPlatformEvidenceTemplate({
     androidArtifact: 'vue-godot-android-release.aab',
@@ -483,6 +524,12 @@ test('record-platform-evidence CLI records one platform result batch', () => {
     assert.equal(
       updated.android.skippedChecks['network-if-selected'],
       'Network APIs were not selected for this hosted pass',
+    )
+    assert.equal(updated.nextActions[0].id, 'complete-platform-evidence')
+    assert.match(updated.nextActions[0].detail, /iOS missing metadata/)
+    assert.doesNotMatch(
+      updated.nextActions[0].detail,
+      /Android: 6 metadata field\(s\) missing/,
     )
 
     const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))

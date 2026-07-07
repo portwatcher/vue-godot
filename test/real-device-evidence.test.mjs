@@ -80,11 +80,9 @@ function realDeviceEvidenceCommitCommands(
   evidencePath = 'release/real-device-evidence.json',
 ) {
   return [
-    `git add ${[
-      platformEvidencePath,
-      ciEvidencePath,
-      evidencePath,
-    ].map((file) => shellQuote(file)).join(' ')}`,
+    `git add ${[platformEvidencePath, ciEvidencePath, evidencePath]
+      .map((file) => shellQuote(file))
+      .join(' ')}`,
     'git commit -m "Add real-device release evidence"',
     'git push',
   ]
@@ -165,10 +163,7 @@ test('real device evidence rejects local-only evidence URLs', () => {
   evidence.ios.evidenceUrl = 'https://127.0.0.1/ios-device-run'
 
   const errors = validateRealDeviceEvidence(evidence).join('\n')
-  assert.match(
-    errors,
-    /android\.evidenceUrl must be a non-local http\(s\) URL/,
-  )
+  assert.match(errors, /android\.evidenceUrl must be a non-local http\(s\) URL/)
   assert.match(errors, /ios\.evidenceUrl must be a non-local http\(s\) URL/)
 })
 
@@ -353,8 +348,14 @@ test('real device evidence rejects worksheet-only platform fields', () => {
     errors,
     /evidence\.nextActions is platform-evidence worksheet scaffolding/,
   )
-  assert.match(errors, /android\.requiredChecks is a platform-evidence worksheet field/)
-  assert.match(errors, /android\.passOnlyChecks is a platform-evidence worksheet field/)
+  assert.match(
+    errors,
+    /android\.requiredChecks is a platform-evidence worksheet field/,
+  )
+  assert.match(
+    errors,
+    /android\.passOnlyChecks is a platform-evidence worksheet field/,
+  )
   assert.match(
     errors,
     /android\.selectedApiRequiredChecks is a platform-evidence worksheet field/,
@@ -430,10 +431,10 @@ test('selected API release checks cover public conditional release gates', () =>
     selectedApiRequiredRealDeviceChecks['navigator.permissions.query'].all,
     ['permission-prompts-if-selected'],
   )
-  assert.deepEqual(
-    selectedApiRequiredRealDeviceChecks.PermissionAdapter.all,
-    ['permission-prompts-if-selected', 'adapter-states-if-selected'],
-  )
+  assert.deepEqual(selectedApiRequiredRealDeviceChecks.PermissionAdapter.all, [
+    'permission-prompts-if-selected',
+    'adapter-states-if-selected',
+  ])
   assert.deepEqual(
     selectedApiRequiredRealDeviceChecks['navigator.vibrate'].all,
     ['haptics-if-selected'],
@@ -447,9 +448,8 @@ test('selected API release checks cover public conditional release gates', () =>
     ['permission-prompts-if-selected', 'audio-input-if-selected'],
   )
   assert.deepEqual(
-    selectedApiRequiredRealDeviceChecks[
-      'navigator.mediaDevices.getUserMedia'
-    ].all,
+    selectedApiRequiredRealDeviceChecks['navigator.mediaDevices.getUserMedia']
+      .all,
     [
       'permission-prompts-if-selected',
       'adapter-states-if-selected',
@@ -749,30 +749,28 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
     assert.equal(summary.platformEvidenceReady, false)
     assert.equal(summary.platformEvidence.evidencePresent, true)
     assert.equal(summary.platformEvidence.ready, false)
-    assert.equal(summary.platformEvidence.path, 'release/platform-evidence.json')
-    assert.ok(
-      summary.platformEvidence.platforms.android.remainingChecks.includes(
-        'cold-launch',
-      ),
+    assert.equal(
+      summary.platformEvidence.path,
+      'release/platform-evidence.json',
+    )
+    assert.equal(summary.platformEvidence.platforms.android.ready, true)
+    assert.deepEqual(
+      summary.platformEvidence.platforms.android.remainingChecks,
+      [],
     )
     assert.ok(
       summary.nextActions.some(
         (action) =>
           action.id === 'complete-platform-evidence' &&
-          action.detail.includes('Android: 6 metadata field(s) missing') &&
-          action.detail.includes(
-            'final evidence assembly.\nAndroid: 6 metadata field(s) missing',
-          ) &&
+          action.detail.includes('Android: ready') &&
+          action.detail.includes('final evidence assembly.\nAndroid: ready') &&
           action.detail.includes('iOS: 6 metadata field(s) missing') &&
           action.commands.includes(
             'npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
           ) &&
-          action.commands.includes(
-            "npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --evidence-url <android-non-local-device-evidence-url> --export-preset 'Android Release' --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>",
-          ) &&
-          action.commands.includes(
-            "npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --evidence-url <android-non-local-device-evidence-url> --export-preset 'Android Release' --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>",
-          ) &&
+          action.commands
+            .filter((command) => command.includes('--platform android'))
+            .every((command) => command.includes('--list-checks')) &&
           action.commands.includes(
             'npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
           ) &&
@@ -857,20 +855,15 @@ test('check-real-device-evidence next actions honor expected commits', () => {
       summary.nextActions.some(
         (action) =>
           action.id === 'complete-platform-evidence' &&
-          action.detail.includes('Android: 6 metadata field(s) missing') &&
-          action.detail.includes(
-            'final evidence assembly.\nAndroid: 6 metadata field(s) missing',
-          ) &&
+          action.detail.includes('Android: ready') &&
+          action.detail.includes('final evidence assembly.\nAndroid: ready') &&
           action.detail.includes('iOS: 6 metadata field(s) missing') &&
           action.commands.includes(
             `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit ${expectedCommit}`,
           ) &&
-          action.commands.includes(
-            `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --evidence-url <android-non-local-device-evidence-url> --export-preset 'Android Release' --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit ${expectedCommit}`,
-          ) &&
-          action.commands.includes(
-            `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --artifact <android-apk-aab-or-hosted-build-id> --evidence-url <android-non-local-device-evidence-url> --export-preset 'Android Release' --device <android-device-model> --os <android-os-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --summary-output release/platform-evidence-summary.json --expected-commit ${expectedCommit}`,
-          ) &&
+          action.commands
+            .filter((command) => command.includes('--platform android'))
+            .every((command) => command.includes('--list-checks')) &&
           action.commands.includes(
             `npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit ${expectedCommit}`,
           ) &&
@@ -1137,7 +1130,10 @@ test('check-real-device-evidence next actions honor custom completed input paths
       (action) => action.id === 'assemble-real-device-evidence',
     )
     const platformCommandPath = platformEvidencePath
-    const realDeviceCommandPath = path.relative(repoRoot, realDeviceEvidencePath)
+    const realDeviceCommandPath = path.relative(
+      repoRoot,
+      realDeviceEvidencePath,
+    )
 
     assert.equal(result.status, 0, result.stderr || result.stdout)
     assert.equal(summary.initialCiEvidenceReady, true)

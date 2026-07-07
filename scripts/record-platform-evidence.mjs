@@ -563,8 +563,8 @@ function main() {
     return
   }
 
-  const updated = recordPlatformEvidence(evidence, options)
-  const summary = auditPlatformEvidence(updated)
+  const recorded = recordPlatformEvidence(evidence, options)
+  const summary = auditPlatformEvidence(recorded)
   summary.path = path.relative(
     repoRoot,
     path.resolve(repoRoot, options.platformEvidencePath),
@@ -581,6 +581,10 @@ function main() {
     platformEvidencePath: options.platformEvidencePath,
     summaryOutput: options.summaryOutput,
   })
+  const updated = {
+    ...recorded,
+    nextActions: summary.nextActions,
+  }
 
   if (!options.dryRun) {
     writeJson(options.platformEvidencePath, updated)
