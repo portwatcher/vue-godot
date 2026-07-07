@@ -99,7 +99,7 @@ CI evidence contains a valid consistent commit.
 The initial CI, real-device, and Release Preflight evidence actions begin
 with `npm run check` before collecting CI or assembling evidence. The
 real-device evidence action also runs
-`npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` before local or hosted device
+`npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` before local, hosted, emulator, or simulator
 handoff commands so missing local tooling and hosted-provider environment
 variable names, plus Android SDK/Xcode toolchain diagnostics and GodotJS
 export-template diagnostics, are recorded without pretending they are evidence, then
@@ -247,14 +247,15 @@ they include final evidence assembly, validation, commit, and push commands.
 Before assembling final evidence, run the same command without `--allow-open`;
 it must pass.
 
-After each real or hosted device pass, record the observed metadata and outcomes
-without hand-editing JSON:
+After each hosted, real-device, emulator, or simulator pass, record the observed
+metadata and outcomes without hand-editing JSON:
 
 ```bash
 npm run release:record-platform-evidence -- \
   --platform android \
   --artifact <apk-aab-or-hosted-build-id> \
   --evidence-url <device-test-run-or-lab-url> \
+  --test-target <real-device|hosted-device|emulator|simulator> \
   --export-preset <android-export-preset> \
   --device <device-model> \
   --os <os-version> \
@@ -529,12 +530,13 @@ Run these before platform-specific device checks:
 1. Start from a clean commit.
 2. Run `npm run check`.
 3. Run `npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` to see whether local
-   Android/iOS device tooling, attached devices, Android SDK/build-tools,
-   selected Xcode command-line utilities, the pinned GodotJS Android export
-   templates, and common hosted-provider environment variable sets are available
-   and to write a gitignored JSON diagnostic. The same diagnostic records that
+   Android/iOS target tooling, attached Android devices or emulators, iOS device
+   or simulator targets, Android SDK/build-tools, selected Xcode command-line
+   utilities, the pinned GodotJS Android export templates, and common
+   hosted-provider environment variable sets are available and to write a
+   gitignored JSON diagnostic. The same diagnostic records that
    the pinned GodotJS release does not publish an iOS export-template asset, so
-   iOS evidence needs a hosted or custom Apple-device build pipeline. The
+   iOS evidence needs a hosted, simulator, or custom Apple-device build pipeline. The
    hosted-provider diagnostic reports configured environment variable names and
    partially configured missing-name hints for BrowserStack, Sauce Labs,
    Firebase Test Lab, AWS Device Farm, LambdaTest, and Kobiton, but never their
@@ -543,17 +545,18 @@ Run these before platform-specific device checks:
    read the diagnostic as a `devicePrereqs` / Device Prereq Diagnostics section;
    use `--device-prereqs-summary <file>` with readiness when the diagnostic
    lives outside the default path.
-   Android emulators are reported separately and do not satisfy the local
-   release-device prerequisite. iOS local device sessions require full Xcode,
-   not only Command Line Tools; if `xcrun xctrace list devices` cannot find
-   `xctrace`, install Xcode.app and select it with
+   Android emulators and iOS simulators satisfy the local SDK-test prerequisite
+   when the final evidence records `testTarget` as `emulator` or `simulator`.
+   iOS local device or simulator sessions require full Xcode, not only Command
+   Line Tools; if `xcrun xctrace list devices` cannot find `xctrace`, install
+   Xcode.app and select it with
    `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`, or use
-   hosted real Apple-device evidence. If the App Store CLI is used, Xcode is app
-   id `497799835` and paused downloads still need to be resumed in App
-   Store.app; the Apple Developer download path requires an Apple ID. Missing
-   local tooling or provider environment variables do not satisfy or fail final
-   evidence by themselves; use a hosted real-device lab when the final evidence
-   can link to the lab run.
+   hosted Apple-device evidence. If the App Store CLI is used, Xcode is app id
+   `497799835` and paused downloads still need to be resumed in App Store.app;
+   the Apple Developer download path requires an Apple ID. Missing local tooling
+   or provider environment variables do not satisfy or fail final evidence by
+   themselves; use a hosted, emulator, or simulator run when the final evidence
+   can link to the run or committed log.
 4. Run `npm run check:serious-examples`.
 5. Run `npm audit --audit-level=moderate`.
 6. Optionally run `npm run release:preflight -- --local` as a local dry run;
@@ -575,8 +578,8 @@ warning-free summary is later imported into
 
 ## Android Release Smoke
 
-Run on at least one real Android device or representative hosted Android device
-for each release candidate that claims Android support:
+Run on at least one Android real device, representative hosted device, or
+emulator for each release candidate that claims Android support:
 
 1. Install the APK/AAB produced by the production Android export preset.
 2. Cold launch into the main scene and confirm there are no GodotJS
@@ -591,7 +594,7 @@ for each release candidate that claims Android support:
    unsupported platform, missing plugin, export misconfiguration,
    permission denied, and successful native operation where applicable.
 7. Verify camera/geolocation/media device adapters, haptics, audio input,
-   clipboard, and sensors on hardware when selected.
+   clipboard, and sensors on the tested target when selected.
 8. Verify `<SafeAreaView>` and `<KeyboardAvoidingView>` on the tested device.
 9. Verify Android back handling from nested screens, modal/dialog states, and
    the app root.
@@ -602,9 +605,8 @@ for each release candidate that claims Android support:
 
 ## iOS Release Smoke
 
-Run on at least one real iPhone or iPad, or a hosted real Apple device, for each
-release candidate that claims iOS support. Use simulator checks only as an
-extra layout pass, not as the final capability sign-off.
+Run on at least one real iPhone or iPad, hosted Apple device, or iOS simulator
+for each release candidate that claims iOS support.
 
 1. Install the archive/TestFlight build produced by the production iOS export
    preset.

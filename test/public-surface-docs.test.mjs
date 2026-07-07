@@ -226,7 +226,10 @@ test('generated project docs and Vite template preserve export-ready defaults', 
 })
 
 test('serious example READMEs document their SDK coverage and smoke commands', () => {
-  const examples = ['apps/native-app-demo/README.md', 'apps/game-ui-demo/README.md']
+  const examples = [
+    'apps/native-app-demo/README.md',
+    'apps/game-ui-demo/README.md',
+  ]
 
   for (const relativePath of examples) {
     assertPatterns(relativePath, [
@@ -246,7 +249,7 @@ test('experimental wording remains while final release gates are still open', ()
   assertPatterns('TODO.md', [
     /- \[x\] `npm run check` passes locally and in CI/,
     /- \[x\] Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate/,
-    /- \[ \] Android and iOS export smoke apps run on real or hosted devices for the production profile/,
+    /- \[ \] Android and iOS export smoke apps run on real, hosted, emulator, or simulator targets for the production profile/,
     /- \[ \] The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied/,
     /Android\/iOS release device\s+evidence, Release Preflight evidence, and final public wording removal are\s+still incomplete/,
   ])

@@ -2,7 +2,7 @@
 
 - Release candidate commit: `1087588e2a2f7989a51df1c428eb647d17ea3ab8`
 - Handoff format: 7
-- Handoff state: db311620e11b11f0
+- Handoff state: b835e9ec89bfda79
 - Overall readiness: open (10 blocker(s))
 - Real-device evidence: waiting
 - Android evidence: waiting
@@ -12,7 +12,7 @@
 
 ## Current Blockers
 
-- TODO.md:26 Android and iOS export smoke apps run on real or hosted devices for the production profile.
+- TODO.md:26 Android and iOS export smoke apps run on real, hosted, emulator, or simulator targets for the production profile.
 - TODO.md:34 The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied.
 - TODO.md:389 Android export with selected device APIs has been tested.
 - TODO.md:390 iOS export with selected device APIs has been tested.
@@ -44,11 +44,11 @@
 - Android: waiting (1 blocker(s), 0 warning(s), 0 device(s))
   - Command: `adb devices -l`
   - Blockers:
-    - No authorized physical Android devices reported by adb; connect and authorize a real device or use hosted real-device evidence.
+    - No authorized Android device or emulator reported by adb; connect and authorize a device, start an emulator, or use hosted device evidence.
 - iOS: waiting (1 blocker(s), 0 warning(s), 0 device(s))
   - Command: `xcrun xctrace list devices`
   - Blockers:
-    - No physical iPhone, iPad, or iPod devices reported by xcrun xctrace; connect a trusted device or use hosted real Apple-device evidence.
+    - No iPhone, iPad, iPod, or simulator targets reported by xcrun xctrace; connect a trusted device, create a simulator, or use hosted Apple-device evidence.
 - Android toolchain: ready (0 blocker(s), 1 warning(s), 3 command(s))
   - SDK root: `/opt/homebrew/share/android-commandlinetools`
   - SDK root source: `discovered`
@@ -78,7 +78,7 @@
 - iOS export templates: unavailable (0 blocker(s), 0 warning(s), 0 missing file(s))
   - Pinned release: `GodotJS_1.0.0-2`
   - Notes:
-    - Pinned GodotJS release GodotJS_1.0.0-2 does not publish an iOS export-template asset; use hosted real Apple-device evidence with a matching build pipeline or provide custom iOS templates.
+    - Pinned GodotJS release GodotJS_1.0.0-2 does not publish an iOS export-template asset; use hosted Apple-device, simulator, or custom iOS export evidence with a matching build pipeline or provide custom iOS templates.
 - Hosted provider env configured: none
 - Hosted provider env partial: none
 - Read errors: none
@@ -111,7 +111,7 @@
   - `clipboard-if-selected` (must pass; selected APIs: navigator.clipboard): Verify selected clipboard read/write APIs and denied or unsupported states on the exported device build.
   - `permission-prompts-if-selected` (must pass; selected APIs: navigator.permissions.query, navigator.geolocation, navigator.mediaDevices.getUserMedia, navigator.vibrate): Verify permission prompts, granted states, denied states, and plugin-managed permission fallbacks for selected capabilities.
   - `adapter-states-if-selected` (must pass; selected APIs: navigator.geolocation, navigator.mediaDevices.getUserMedia): Verify unsupported platform, missing plugin, export misconfiguration, permission denied, and success states for selected adapters.
-  - `hardware-adapters-if-selected` (must pass; selected APIs: navigator.geolocation, navigator.mediaDevices.getUserMedia): Verify selected camera, geolocation, media device, or other hardware-backed adapters on real or hosted hardware.
+  - `hardware-adapters-if-selected` (must pass; selected APIs: navigator.geolocation, navigator.mediaDevices.getUserMedia): Verify selected camera, geolocation, media device, or other hardware-backed adapters on the tested real, hosted, emulator, or simulator target.
   - `haptics-if-selected` (must pass; selected APIs: navigator.vibrate): Verify handheld or controller vibration APIs report support accurately and run successfully when selected.
   - `audio-input-if-selected` (must pass; selected APIs: navigator.mediaDevices.getUserMedia): Verify microphone/audio input permissions, stream setup, and captured audio frames or adapter success states when selected.
   - `sensors-if-selected` (must pass; selected APIs: readDeviceMotion): Verify accelerometer, gyroscope, magnetometer, gravity, or device motion/orientation values when selected.
@@ -143,7 +143,7 @@
   - `clipboard-if-selected` (must pass; selected APIs: navigator.clipboard): Verify selected clipboard read/write APIs and denied or unsupported states on the exported device build.
   - `permission-prompts-if-selected` (must pass; selected APIs: navigator.permissions.query, navigator.geolocation, navigator.mediaDevices.getUserMedia): Verify permission prompts, granted states, denied states, and plugin-managed permission fallbacks for selected capabilities.
   - `adapter-states-if-selected` (must pass; selected APIs: navigator.geolocation, navigator.mediaDevices.getUserMedia): Verify unsupported platform, missing plugin, export misconfiguration, permission denied, and success states for selected adapters.
-  - `hardware-adapters-if-selected` (must pass; selected APIs: navigator.geolocation, navigator.mediaDevices.getUserMedia): Verify selected camera, geolocation, media device, or other hardware-backed adapters on real or hosted hardware.
+  - `hardware-adapters-if-selected` (must pass; selected APIs: navigator.geolocation, navigator.mediaDevices.getUserMedia): Verify selected camera, geolocation, media device, or other hardware-backed adapters on the tested real, hosted, emulator, or simulator target.
   - `haptics-if-selected` (must pass; selected APIs: navigator.vibrate): Verify handheld or controller vibration APIs report support accurately and run successfully when selected.
   - `audio-input-if-selected` (must pass; selected APIs: navigator.mediaDevices.getUserMedia): Verify microphone/audio input permissions, stream setup, and captured audio frames or adapter success states when selected.
   - `sensors-if-selected` (must pass; selected APIs: readDeviceMotion): Verify accelerometer, gyroscope, magnetometer, gravity, or device motion/orientation values when selected.
@@ -178,7 +178,7 @@
 ## Final TODO Proofs
 
 - Ready: 2/10
-- TODO.md:26 Android and iOS export smoke apps run on real or hosted devices for the production profile. (realDeviceEvidenceReady waiting)
+- TODO.md:26 Android and iOS export smoke apps run on real, hosted, emulator, or simulator targets for the production profile. (realDeviceEvidenceReady waiting)
 - TODO.md:34 The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied. (warningWordingReady waiting)
 - TODO.md:389 Android export with selected device APIs has been tested. (androidRealDeviceEvidenceReady waiting)
 - TODO.md:390 iOS export with selected device APIs has been tested. (iosRealDeviceEvidenceReady waiting)
@@ -191,7 +191,7 @@
 
 ### Complete Android and iOS real-device export evidence
 
-Run the local check and selected API export checks on real or hosted devices, record the evidence URL in the platform worksheet, then assemble and validate release/real-device-evidence.json for the tested release commit.
+Run the local check and selected API export checks on real, hosted, emulator, or simulator targets, record the evidence URL in the platform worksheet, then assemble and validate release/real-device-evidence.json for the tested release commit.
 The device prereq summary records local tooling availability and configured or partially configured hosted-provider environment variable names for handoff diagnostics only; final evidence still needs non-local device run URLs, artifact IDs, and device metadata.
 Android: 6 metadata field(s) missing, 14/14 required check(s) unresolved, 14 must-pass check(s) missing; iOS: 6 metadata field(s) missing, 15/15 required check(s) unresolved, 14 must-pass check(s) missing
 Android missing metadata: artifact, evidenceUrl, deviceModel, osVersion, orientation, locale
@@ -208,7 +208,7 @@ Remaining check details:
 - Android `clipboard-if-selected` (must pass; selected APIs: navigator.clipboard): Verify selected clipboard read/write APIs and denied or unsupported states on the exported device build.
 - Android `permission-prompts-if-selected` (must pass; selected APIs: navigator.permissions.query, navigator.geolocation, navigator.mediaDevices.getUserMedia, navigator.vibrate): Verify permission prompts, granted states, denied states, and plugin-managed permission fallbacks for selected capabilities.
 - Android `adapter-states-if-selected` (must pass; selected APIs: navigator.geolocation, navigator.mediaDevices.getUserMedia): Verify unsupported platform, missing plugin, export misconfiguration, permission denied, and success states for selected adapters.
-- Android `hardware-adapters-if-selected` (must pass; selected APIs: navigator.geolocation, navigator.mediaDevices.getUserMedia): Verify selected camera, geolocation, media device, or other hardware-backed adapters on real or hosted hardware.
+- Android `hardware-adapters-if-selected` (must pass; selected APIs: navigator.geolocation, navigator.mediaDevices.getUserMedia): Verify selected camera, geolocation, media device, or other hardware-backed adapters on the tested real, hosted, emulator, or simulator target.
 - Android `haptics-if-selected` (must pass; selected APIs: navigator.vibrate): Verify handheld or controller vibration APIs report support accurately and run successfully when selected.
 - Android `audio-input-if-selected` (must pass; selected APIs: navigator.mediaDevices.getUserMedia): Verify microphone/audio input permissions, stream setup, and captured audio frames or adapter success states when selected.
 - Android `sensors-if-selected` (must pass; selected APIs: readDeviceMotion): Verify accelerometer, gyroscope, magnetometer, gravity, or device motion/orientation values when selected.
@@ -223,7 +223,7 @@ Remaining check details:
 - iOS `clipboard-if-selected` (must pass; selected APIs: navigator.clipboard): Verify selected clipboard read/write APIs and denied or unsupported states on the exported device build.
 - iOS `permission-prompts-if-selected` (must pass; selected APIs: navigator.permissions.query, navigator.geolocation, navigator.mediaDevices.getUserMedia): Verify permission prompts, granted states, denied states, and plugin-managed permission fallbacks for selected capabilities.
 - iOS `adapter-states-if-selected` (must pass; selected APIs: navigator.geolocation, navigator.mediaDevices.getUserMedia): Verify unsupported platform, missing plugin, export misconfiguration, permission denied, and success states for selected adapters.
-- iOS `hardware-adapters-if-selected` (must pass; selected APIs: navigator.geolocation, navigator.mediaDevices.getUserMedia): Verify selected camera, geolocation, media device, or other hardware-backed adapters on real or hosted hardware.
+- iOS `hardware-adapters-if-selected` (must pass; selected APIs: navigator.geolocation, navigator.mediaDevices.getUserMedia): Verify selected camera, geolocation, media device, or other hardware-backed adapters on the tested real, hosted, emulator, or simulator target.
 - iOS `haptics-if-selected` (must pass; selected APIs: navigator.vibrate): Verify handheld or controller vibration APIs report support accurately and run successfully when selected.
 - iOS `audio-input-if-selected` (must pass; selected APIs: navigator.mediaDevices.getUserMedia): Verify microphone/audio input permissions, stream setup, and captured audio frames or adapter success states when selected.
 - iOS `sensors-if-selected` (must pass; selected APIs: readDeviceMotion): Verify accelerometer, gyroscope, magnetometer, gravity, or device motion/orientation values when selected.

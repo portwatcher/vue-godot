@@ -4,10 +4,13 @@ import { pathToFileURL } from 'node:url'
 import {
   missingProductionProfileSelectedApis,
   passOnlyRealDeviceChecks,
+  realDeviceOptionalPlatformMetadataFields,
   realDevicePlatformMetadataFields,
+  realDeviceTestTargets,
   realDeviceWorksheetFields,
   requiredRealDeviceChecks,
   describeRealDeviceCheck,
+  isValidRealDeviceTestTarget,
   isReleaseEvidencePlaceholder,
   selectedApiRequiredCheckMap,
   unknownRealDeviceSelectedApis,
@@ -34,6 +37,11 @@ import {
   repoRoot,
   uniqueStrings,
 } from './release-utils.mjs'
+
+const platformMetadataFields = [
+  ...realDevicePlatformMetadataFields,
+  ...realDeviceOptionalPlatformMetadataFields,
+]
 
 function usage() {
   console.log(`Usage: node scripts/check-platform-evidence.mjs [options]
@@ -197,7 +205,7 @@ function checkRequiredHttpUrl(record, key, label, errors) {
 function collectValidMetadata(record) {
   const metadata = {}
 
-  for (const key of realDevicePlatformMetadataFields) {
+  for (const key of platformMetadataFields) {
     const value = record[key]
     if (
       typeof value !== 'string' ||
@@ -216,6 +224,27 @@ function collectValidMetadata(record) {
   }
 
   return metadata
+}
+
+function checkOptionalTestTarget(record, platform, errors) {
+  if (!('testTarget' in record)) {
+    return
+  }
+
+  const value = record.testTarget
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    errors.push(`${platform}.testTarget must be a non-empty string`)
+    return
+  }
+  if (isReleaseEvidencePlaceholder(value)) {
+    errors.push(`${platform}.testTarget must replace placeholder ${value}`)
+    return
+  }
+  if (!isValidRealDeviceTestTarget(value)) {
+    errors.push(
+      `${platform}.testTarget must be one of ${realDeviceTestTargets.join(', ')}`,
+    )
+  }
 }
 
 function missingExpectedValues(actual, expected) {
@@ -245,7 +274,12 @@ function selectedApiRequiredChecksObject(selectedApis, platform) {
   return Object.fromEntries(selectedApiRequiredCheckMap(selectedApis, platform))
 }
 
-function checkSelectedApiRequiredChecks(record, selectedApis, platform, errors) {
+function checkSelectedApiRequiredChecks(
+  record,
+  selectedApis,
+  platform,
+  errors,
+) {
   const label = `${platform}.selectedApiRequiredChecks`
   const expected = selectedApiRequiredChecksObject(selectedApis, platform)
   const actual = record.selectedApiRequiredChecks
@@ -378,6 +412,7 @@ function auditPlatformWorksheet(record, platform, options = {}) {
       status.missingFields.push(missingField)
     }
   }
+  checkOptionalTestTarget(record, platform, errors)
   if ('passRemainingConfirmation' in record) {
     if (
       typeof record.passRemainingConfirmation !== 'string' ||
@@ -397,20 +432,27 @@ function auditPlatformWorksheet(record, platform, options = {}) {
       status.passRemainingConfirmationIssue = message
       errors.push(message)
     } else {
-      status.passRemainingConfirmation =
-        record.passRemainingConfirmation.trim()
+      status.passRemainingConfirmation = record.passRemainingConfirmation.trim()
     }
   }
 
-  status.selectedApis = checkStringArray(record, 'selectedApis', platform, errors)
-  status.unknownSelectedApis = unknownRealDeviceSelectedApis(status.selectedApis)
+  status.selectedApis = checkStringArray(
+    record,
+    'selectedApis',
+    platform,
+    errors,
+  )
+  status.unknownSelectedApis = unknownRealDeviceSelectedApis(
+    status.selectedApis,
+  )
   for (const apiName of status.unknownSelectedApis) {
     errors.push(`${platform}.selectedApis contains unknown API ${apiName}`)
   }
 
   if (!options.allowNonProductionProfile) {
-    status.missingProductionProfileApis =
-      missingProductionProfileSelectedApis(status.selectedApis)
+    status.missingProductionProfileApis = missingProductionProfileSelectedApis(
+      status.selectedApis,
+    )
     if (status.missingProductionProfileApis.length > 0) {
       errors.push(
         `${platform}.selectedApis must include production profile API(s): ${status.missingProductionProfileApis.join(', ')}`,
@@ -443,7 +485,12 @@ function auditPlatformWorksheet(record, platform, options = {}) {
   status.worksheetErrors = worksheetErrors
   errors.push(...worksheetErrors)
 
-  status.passedChecks = checkStringArray(record, 'passedChecks', platform, errors)
+  status.passedChecks = checkStringArray(
+    record,
+    'passedChecks',
+    platform,
+    errors,
+  )
   status.duplicatePassedChecks = duplicateStrings(record.passedChecks ?? [])
   for (const check of status.duplicatePassedChecks) {
     errors.push(`${platform}.passedChecks contains duplicate ${check}`)
@@ -476,9 +523,13 @@ function auditPlatformWorksheet(record, platform, options = {}) {
     status.skippedCheckNames,
   )
   for (const check of status.passedSkippedChecks) {
-    errors.push(`${platform}.${check} cannot be both passedChecks and skippedChecks`)
+    errors.push(
+      `${platform}.${check} cannot be both passedChecks and skippedChecks`,
+    )
   }
-  const selectedApiMustPassChecks = Object.keys(status.selectedApiRequiredChecks)
+  const selectedApiMustPassChecks = Object.keys(
+    status.selectedApiRequiredChecks,
+  )
   status.mustPassChecks = uniqueStrings([
     ...passOnlyChecks,
     ...selectedApiMustPassChecks,
@@ -754,7 +805,7 @@ export function collectPlatformEvidenceCommandMetadata(summary, platform) {
   }
 
   return Object.fromEntries(
-    realDevicePlatformMetadataFields
+    platformMetadataFields
       .filter((field) => typeof metadata[field] === 'string')
       .map((field) => [field, metadata[field]]),
   )
@@ -801,7 +852,9 @@ export function formatPlatformEvidenceProgress(summary) {
   }
 
   return ['android', 'ios']
-    .map((platform) => formatProgressPart(platform, summary.platforms[platform]))
+    .map((platform) =>
+      formatProgressPart(platform, summary.platforms[platform]),
+    )
     .join('; ')
 }
 
@@ -965,7 +1018,8 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
             summary,
             'android',
           ),
-          summaryOutput: options.summaryOutput ?? 'release/platform-evidence-summary.json',
+          summaryOutput:
+            options.summaryOutput ?? 'release/platform-evidence-summary.json',
         }),
         ...recordPlatformEvidenceCommands('ios', commit, {
           ...collectPlatformEvidenceCommandMetadata(summary, 'ios'),
@@ -975,13 +1029,15 @@ export function collectPlatformEvidenceNextActions(summary, options = {}) {
             summary,
             'ios',
           ),
-          summaryOutput: options.summaryOutput ?? 'release/platform-evidence-summary.json',
+          summaryOutput:
+            options.summaryOutput ?? 'release/platform-evidence-summary.json',
         }),
         checkPlatformEvidenceCommand(commit, {
           allowOpen: true,
           checklistOutput,
           platformEvidencePath,
-          summaryOutput: options.summaryOutput ?? 'release/platform-evidence-summary.json',
+          summaryOutput:
+            options.summaryOutput ?? 'release/platform-evidence-summary.json',
         }),
       ],
     })
@@ -1107,22 +1163,13 @@ function commandLines(summary) {
     return []
   }
 
-  const readyCommands = commands.filter(
-    (command) => !/<[^>\n]+>/.test(command),
-  )
+  const readyCommands = commands.filter((command) => !/<[^>\n]+>/.test(command))
   const placeholderCommands = commands.filter((command) =>
     /<[^>\n]+>/.test(command),
   )
   const sectionLines = (title, values) =>
     values.length > 0
-      ? [
-          `### ${title}`,
-          '',
-          '```bash',
-          ...values,
-          '```',
-          '',
-        ]
+      ? [`### ${title}`, '', '```bash', ...values, '```', '']
       : []
 
   return [

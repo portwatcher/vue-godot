@@ -105,22 +105,24 @@ The worksheet reads `release/ci-runs.json` by default, or
 duplicate Check/Godot Smoke collection commands when that file already validates
 initial CI for the tested commit.
 Use `npm run release:record-platform-evidence -- --platform android` or
-`--platform ios` after each hosted or real-device pass to record
-artifact/evidence URL/export-preset/device metadata, `--pass` check names, and
-`--skip check=reason` outcomes without hand-editing JSON. Evidence URL values
-must be non-local `http` or `https` links to the device test run, lab session,
-or signed evidence artifact; `localhost` and loopback links are rejected. Add
-`--list-checks` first when testers need the valid check names, descriptions,
-current worksheet outcomes, and selected-API must-pass context without
-modifying the worksheet.
+`--platform ios` after each hosted, real-device, emulator, or simulator pass to
+record artifact/evidence URL/export-preset/device metadata, optional
+`--test-target real-device|hosted-device|emulator|simulator`, `--pass` check
+names, and `--skip check=reason` outcomes without hand-editing JSON. Evidence
+URL values must be non-local `http` or `https` links to the device test run, lab
+session, committed simulator/emulator log, or signed evidence artifact;
+`localhost` and loopback links are rejected. Add `--list-checks` first when
+testers need the valid check names, descriptions, current worksheet outcomes,
+and selected-API must-pass context without modifying the worksheet.
 Run `npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` before local device
-sessions to report whether `adb`, Xcode device listing, and attached Android or
-iOS devices are available, whether Android SDK/build-tools and selected Xcode
-command-line utilities are runnable, whether the pinned GodotJS Android export
-templates are installed, that the pinned GodotJS release does not publish an iOS
-export-template asset, and whether common hosted-provider environment variable
-sets are configured, then leave a gitignored JSON diagnostic next to the other
-release helper summaries. The release-readiness summary and Markdown handoff
+sessions to report whether `adb`, Xcode device listing, attached Android devices
+or emulators, and iOS device or simulator targets are available, whether Android
+SDK/build-tools and selected Xcode command-line utilities are runnable, whether
+the pinned GodotJS Android export templates are installed, that the pinned
+GodotJS release does not publish an iOS export-template asset, and whether common
+hosted-provider environment variable sets are configured, then leave a
+gitignored JSON diagnostic next to the other release helper summaries. The
+release-readiness summary and Markdown handoff
 read that file into a diagnostic-only `devicePrereqs` / Device Prereq
 Diagnostics section with per-platform command, blocker, warning, toolchain, and
 export-template details; pass `--device-prereqs-summary <file>` to readiness
@@ -129,17 +131,18 @@ configured or partially configured environment variable names for BrowserStack,
 Sauce Labs, Firebase Test Lab, AWS Device Farm, LambdaTest, and Kobiton, but
 never their values; when none are fully configured, the text output lists the
 recognized provider env-set options.
-Android emulators are reported separately and do not satisfy the local
-release-device prerequisite. iOS local device sessions require full Xcode, not
-only Command Line Tools; if `xcrun xctrace list devices` cannot find `xctrace`,
-install Xcode.app and select it with
-`sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`, or use
-hosted real Apple-device evidence. If the App Store CLI is used, Xcode is app id
-`497799835` and paused downloads still need to be resumed in App Store.app; the
-Apple Developer download path requires an Apple ID. Missing local tooling or
-provider environment variables are only diagnostics; hosted real-device runs
+Android emulators and iOS simulators satisfy the local SDK-test prerequisite
+when the final evidence records `testTarget` as `emulator` or `simulator`.
+iOS local device or simulator sessions require full Xcode, not only Command Line
+Tools; if `xcrun xctrace list devices` cannot find `xctrace`, install Xcode.app
+and select it with
+`sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`, or use hosted
+Apple-device evidence. If the App Store CLI is used, Xcode is app id `497799835`
+and paused downloads still need to be resumed in App Store.app; the Apple
+Developer download path requires an Apple ID. Missing local tooling or provider
+environment variables are only diagnostics; hosted, emulator, and simulator runs
 still satisfy the release gate when the final evidence records artifact IDs,
-device metadata, and non-local http(s) evidence URLs.
+device metadata, `testTarget`, and non-local http(s) evidence URLs.
 After every unresolved
 must-pass check has actually passed, add `--pass-remaining` to record the
 remaining must-pass checks in one batch, and include
@@ -268,14 +271,14 @@ rewriting it. When `--expected-commit` is omitted and no readiness summary is
 supplied, the handoff infers the tested release commit from
 `release/ci-runs.json`, or the file passed with `--ci-evidence <file>`, when the
 CI evidence contains a valid consistent commit.
-The initial CI, real-device, and
-Release Preflight evidence actions begin with `npm run check` before collecting
-CI or assembling evidence. The real-device evidence action also runs
-`npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` before local or hosted device
+The initial CI, real-device, and Release Preflight evidence actions begin with
+`npm run check` before collecting CI or assembling evidence. The real-device
+evidence action also runs
+`npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing` before local, hosted, emulator, or simulator
 handoff commands so missing local tooling and hosted-provider environment
 variable names, plus Android SDK/Xcode toolchain diagnostics and GodotJS
-export-template diagnostics, are recorded without pretending they are evidence, then
-readiness exposes that snapshot as diagnostic-only `devicePrereqs` with
+export-template diagnostics, are recorded without pretending they are evidence,
+then readiness exposes that snapshot as diagnostic-only `devicePrereqs` with
 per-platform command, blocker, warning, toolchain, and export-template details. The Release
 Preflight evidence action also reruns
 `npm run check:real-device-evidence -- --verify-runs` before CI/preflight
@@ -457,8 +460,8 @@ For each app:
    or `npx vue-godot doctor --exports-only` from projects using the CLI.
 3. Open the project in the GodotJS editor and run the main scene.
 4. Test an exported binary for each target platform, not only editor play mode.
-5. Test adapter-backed capabilities on real devices or representative hosted
-   devices.
+5. Test adapter-backed capabilities on real devices, representative hosted
+   devices, emulators, or simulators.
 
 Generated apps load `dist/app.js`, so rebuild before exporting. Keep generated
 type directories and Vue source ignored by Godot resource scans; the generated
@@ -483,12 +486,12 @@ Follow the dedicated permission and adapter docs before shipping:
 
 Minimum platform checks:
 
-| Platform | Required validation |
-| --- | --- |
-| Desktop | Exported Windows, macOS, or Linux binary launches and loads `dist/app.js`; storage, networking, and media assets resolve. |
-| Android | Export preset includes required permissions; runtime permission prompts and adapter status mapping work on-device. |
-| iOS / Apple platforms | Usage descriptions, entitlements, and plugin setup are present; native prompts and adapter errors are tested. |
-| Web export | Networking, file access, audio/video, and GodotJS runtime support are tested in the exported browser sandbox. |
+| Platform              | Required validation                                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Desktop               | Exported Windows, macOS, or Linux binary launches and loads `dist/app.js`; storage, networking, and media assets resolve. |
+| Android               | Export preset includes required permissions; runtime permission prompts and adapter status mapping work on-device.        |
+| iOS / Apple platforms | Usage descriptions, entitlements, and plugin setup are present; native prompts and adapter errors are tested.             |
+| Web export            | Networking, file access, audio/video, and GodotJS runtime support are tested in the exported browser sandbox.             |
 
 ## Browser And Device APIs
 
@@ -518,10 +521,10 @@ actually correct.
 CI installs GodotJS through the shared
 [setup action](../.github/actions/setup-godotjs/action.yml). The action pins:
 
-| Input | Current value | Purpose |
-| --- | --- | --- |
-| `release` | `GodotJS_1.0.0-2` | Release tag from `ialex32x/GodotJS-Build`. |
-| `asset` | `prebuilt_linux_x64_v8` | Linux x64 V8 editor bundle used by CI smoke tests. |
+| Input     | Current value           | Purpose                                            |
+| --------- | ----------------------- | -------------------------------------------------- |
+| `release` | `GodotJS_1.0.0-2`       | Release tag from `ialex32x/GodotJS-Build`.         |
+| `asset`   | `prebuilt_linux_x64_v8` | Linux x64 V8 editor bundle used by CI smoke tests. |
 
 Both CI and local runs use `scripts/setup-godotjs.mjs` to resolve, download,
 cache, and probe the editor executable. Run

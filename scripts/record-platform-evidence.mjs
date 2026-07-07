@@ -11,26 +11,33 @@ import { isRecord, isReleaseEvidenceUrl } from './release-evidence-utils.mjs'
 import { defaultPlatformEvidencePath } from './release-handoff-commands.mjs'
 import {
   describeRealDeviceCheck,
+  isValidRealDeviceTestTarget,
   isReleaseEvidencePlaceholder,
   passOnlyRealDeviceChecks,
+  realDeviceTestTargets,
   requiredRealDeviceChecks,
   selectedApiRequiredCheckMap,
   unknownRealDeviceSelectedApis,
 } from './real-device-evidence.mjs'
-import { normalizeCommitSha, repoRoot, uniqueStrings } from './release-utils.mjs'
+import {
+  normalizeCommitSha,
+  repoRoot,
+  uniqueStrings,
+} from './release-utils.mjs'
 
 const platforms = ['android', 'ios']
 
 function usage() {
   console.log(`Usage: node scripts/record-platform-evidence.mjs [options]
 
-Records one Android or iOS real-device test result batch into the platform
+Records one Android or iOS release-target test result batch into the platform
 evidence worksheet. This is an incremental helper; it does not make evidence
 release-ready unless every required field and check has actually been recorded.
 
 Options:
   --platform <android|ios>         Platform to update. Required.
   --platform-evidence <file>       Worksheet path. Default: ${defaultPlatformEvidencePath}
+  --test-target <target>           Optional target class: ${realDeviceTestTargets.join(', ')}.
   --artifact <name>                APK/AAB, archive, TestFlight, or hosted build id.
   --evidence-url <url>             Non-local device test run, lab session, or signed evidence URL.
   --export-preset <name>           Godot export preset tested.
@@ -117,6 +124,7 @@ function parseArgs(argv) {
     ['--platform-evidence', 'platformEvidencePath'],
     ['--summary-output', 'summaryOutput'],
     ['--expected-commit', 'expectedCommit'],
+    ['--test-target', 'testTarget'],
     ['--artifact', 'artifact'],
     ['--evidence-url', 'evidenceUrl'],
     ['--export-preset', 'exportPreset'],
@@ -424,10 +432,19 @@ export function recordPlatformEvidence(evidence, options) {
       throw new Error(`${platform}.${key} requires a non-empty value`)
     }
     if (isReleaseEvidencePlaceholder(trimmed)) {
-      throw new Error(`${platform}.${key} requires a real value, not ${trimmed}`)
+      throw new Error(
+        `${platform}.${key} requires a real value, not ${trimmed}`,
+      )
     }
     if (key === 'evidenceUrl' && !isReleaseEvidenceUrl(trimmed)) {
-      throw new Error(`${platform}.evidenceUrl requires a non-local http(s) URL`)
+      throw new Error(
+        `${platform}.evidenceUrl requires a non-local http(s) URL`,
+      )
+    }
+    if (key === 'testTarget' && !isValidRealDeviceTestTarget(trimmed)) {
+      throw new Error(
+        `${platform}.testTarget must be one of ${realDeviceTestTargets.join(', ')}`,
+      )
     }
     platformEvidence[key] = trimmed
   }

@@ -49,7 +49,7 @@ function sampleReadinessSummary(ciEvidencePath = 'release/ci-runs.json') {
     ready: false,
     blockerCount: 3,
     blockers: [
-      'TODO.md:26 Android and iOS export smoke apps run on real or hosted devices for the production profile.',
+      'TODO.md:26 Android and iOS export smoke apps run on real, hosted, emulator, or simulator targets for the production profile.',
       'real-device evidence missing at release/real-device-evidence.json',
       [
         'release-readiness evidence missing at release/release-readiness-evidence.json',
@@ -276,7 +276,8 @@ function sampleReadinessSummary(ciEvidencePath = 'release/ci-runs.json') {
         blockedBy: ['real-device-evidence'],
         id: 'real-device-evidence',
         title: 'Complete Android and iOS real-device export evidence',
-        detail: 'Run the selected API export checks on real or hosted devices.',
+        detail:
+          'Run the selected API export checks on real, hosted, emulator, or simulator targets.',
         platformCheckDetails: [
           {
             check: 'network-if-selected',

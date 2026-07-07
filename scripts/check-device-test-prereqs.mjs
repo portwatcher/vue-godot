@@ -76,10 +76,11 @@ const hostedDeviceProviderEnvSets = [
 function usage() {
   console.log(`Usage: node scripts/check-device-test-prereqs.mjs [options]
 
-Checks whether the local machine has enough Android/iOS tooling and attached
-real devices to run the release smoke checks. Hosted real-device providers can
-still satisfy release evidence; this command diagnoses local prerequisites and
-common hosted-provider environment variables without treating them as evidence.
+Checks whether the local machine has enough Android/iOS tooling, attached
+devices, running Android emulators, or available iOS simulators to run the
+release smoke checks. Hosted device providers can still satisfy release
+evidence; this command diagnoses local prerequisites and common hosted-provider
+environment variables without treating them as evidence.
 
 Options:
   --platform <android|ios|all>  Platform to check. Default: all.
@@ -235,7 +236,7 @@ function collectXcodeSelectionBlockers(runCommand) {
   const selected = runCommand('xcode-select', ['-p'])
   if (commandMissing(selected)) {
     blockers.push(
-      'xcode-select not found; install full Xcode or use hosted real Apple-device evidence.',
+      'xcode-select not found; install full Xcode or use hosted Apple-device or simulator evidence.',
     )
     return blockers
   }
@@ -248,7 +249,7 @@ function collectXcodeSelectionBlockers(runCommand) {
   const developerDir = selected.stdout.trim()
   if (/CommandLineTools(?:\/|$)/.test(developerDir)) {
     blockers.push(
-      `Full Xcode is not selected; active developer directory is ${developerDir}. ${fullXcodeInstallGuidance} Then run sudo xcode-select -s /Applications/Xcode.app/Contents/Developer, or use hosted real Apple-device evidence.`,
+      `Full Xcode is not selected; active developer directory is ${developerDir}. ${fullXcodeInstallGuidance} Then run sudo xcode-select -s /Applications/Xcode.app/Contents/Developer, or use hosted Apple-device or simulator evidence.`,
     )
   }
 
@@ -320,10 +321,20 @@ export function parseAdbDevices(output) {
     if (!serial || !state) {
       continue
     }
+    const details = detailParts.join(' ')
+    const normalizedSerial = serial.toLowerCase()
+    const normalizedDetails = details.toLowerCase()
     devices.push({
-      details: detailParts.join(' '),
+      details,
       serial,
       state,
+      targetType:
+        normalizedSerial.startsWith('emulator-') ||
+        /\bdevice:emu/.test(normalizedDetails) ||
+        /\bmodel:sdk/.test(normalizedDetails) ||
+        /\bproduct:sdk/.test(normalizedDetails)
+          ? 'emulator'
+          : 'device',
     })
   }
   return devices
@@ -352,10 +363,24 @@ export function parseXctraceDevices(output) {
       continue
     }
 
-    if (section !== 'Devices' || !trimmed) {
+    if (!['Devices', 'Simulators'].includes(section) || !trimmed) {
       continue
     }
     if (!/\b(iPhone|iPad|iPod)\b/i.test(trimmed)) {
+      continue
+    }
+
+    const simulatorMatch =
+      section === 'Simulators'
+        ? trimmed.match(/^(.+?)\s+\(([^()]+)\)\s+\(([^()]+)\)$/)
+        : null
+    if (simulatorMatch) {
+      devices.push({
+        identifier: simulatorMatch[2],
+        name: simulatorMatch[1].trim(),
+        state: simulatorMatch[3],
+        targetType: 'simulator',
+      })
       continue
     }
 
@@ -365,6 +390,7 @@ export function parseXctraceDevices(output) {
       name: identifierMatch
         ? trimmed.slice(0, identifierMatch.index).trim()
         : trimmed,
+      targetType: section === 'Simulators' ? 'simulator' : 'device',
     })
   }
 
@@ -385,9 +411,7 @@ function checkAndroid(runCommand) {
     blockers.push(formatCommandFailure('adb devices -l', result))
   } else {
     devices = parseAdbDevices(result.stdout)
-    const readyDevices = devices.filter(
-      (device) => device.state === 'device' && !isAndroidEmulatorDevice(device),
-    )
+    const readyDevices = devices.filter((device) => device.state === 'device')
     const unavailableDevices = devices.filter(
       (device) => device.state !== 'device',
     )
@@ -396,7 +420,7 @@ function checkAndroid(runCommand) {
     )
     if (readyDevices.length === 0) {
       blockers.push(
-        'No authorized physical Android devices reported by adb; connect and authorize a real device or use hosted real-device evidence.',
+        'No authorized Android device or emulator reported by adb; connect and authorize a device, start an emulator, or use hosted device evidence.',
       )
     }
     for (const device of unavailableDevices) {
@@ -404,7 +428,7 @@ function checkAndroid(runCommand) {
     }
     for (const device of emulatorDevices) {
       warnings.push(
-        `Android device ${device.serial} appears to be an emulator; release smoke requires a real or hosted Android device.`,
+        `Android device ${device.serial} appears to be an emulator; emulator evidence is accepted for SDK release testing when the final evidence records testTarget=emulator.`,
       )
     }
   }
@@ -425,7 +449,7 @@ function checkIos(runCommand) {
 
   if (commandMissing(result)) {
     blockers.push(
-      'xcrun not found; install Xcode command line tools or use hosted real Apple-device evidence.',
+      'xcrun not found; install Xcode command line tools or use hosted Apple-device or simulator evidence.',
     )
   } else if (result.status !== 0) {
     blockers.push(formatCommandFailure('xcrun xctrace list devices', result))
@@ -436,7 +460,7 @@ function checkIos(runCommand) {
     devices = parseXctraceDevices(result.stdout)
     if (devices.length === 0) {
       blockers.push(
-        'No physical iPhone, iPad, or iPod devices reported by xcrun xctrace; connect a trusted device or use hosted real Apple-device evidence.',
+        'No iPhone, iPad, iPod, or simulator targets reported by xcrun xctrace; connect a trusted device, create a simulator, or use hosted Apple-device evidence.',
       )
     }
   }
@@ -932,7 +956,7 @@ function collectIosExportTemplateStatus() {
     blockers: [],
     missingFiles: [],
     notes: [
-      `Pinned GodotJS release ${pinnedGodotJsRelease} does not publish an iOS export-template asset; use hosted real Apple-device evidence with a matching build pipeline or provide custom iOS templates.`,
+      `Pinned GodotJS release ${pinnedGodotJsRelease} does not publish an iOS export-template asset; use hosted Apple-device, simulator, or custom iOS export evidence with a matching build pipeline or provide custom iOS templates.`,
     ],
     pinnedRelease: pinnedGodotJsRelease,
     ready: false,
@@ -986,9 +1010,10 @@ export function collectDeviceTestPrereqStatus(options = {}) {
   )
   summary.ready = summary.blockers.length === 0
   summary.hostedDeviceEvidenceAccepted = true
+  summary.localSimulatorEvidenceAccepted = true
   summary.hostedProviders = collectHostedDeviceProviderStatus(env)
   summary.note =
-    'Hosted real-device runs satisfy the release gate when the final evidence records artifact ids, device metadata, and non-local http(s) evidence URLs.'
+    'Hosted device, Android emulator, and iOS simulator runs satisfy the SDK release gate when the final evidence records artifact ids, device metadata, testTarget, and non-local http(s) evidence URLs.'
   summary.exportTemplates = collectExportTemplateStatus({
     env,
     homeDir: options.homeDir,

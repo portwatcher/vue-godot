@@ -28,18 +28,20 @@ R58M123 unauthorized usb:336592896X transport_id:2
       details: 'product:sdk model:Pixel_8 device:emu64a transport_id:1',
       serial: 'emulator-5554',
       state: 'device',
+      targetType: 'emulator',
     },
     {
       details: 'usb:336592896X transport_id:2',
       serial: 'R58M123',
       state: 'unauthorized',
+      targetType: 'device',
     },
   ])
   assert.equal(isAndroidEmulatorDevice(devices[0]), true)
   assert.equal(isAndroidEmulatorDevice(devices[1]), false)
 })
 
-test('device prereq parser ignores simulators in xctrace output', () => {
+test('device prereq parser reads iOS devices and simulators in xctrace output', () => {
   assert.deepEqual(
     parseXctraceDevices(`
 == Devices ==
@@ -53,10 +55,18 @@ iPhone 16 Pro (11111111-2222-3333-4444-555555555555) (Shutdown)
       {
         identifier: '00008110-001C2D123456801E',
         name: 'Release iPhone',
+        targetType: 'device',
       },
       {
         identifier: '00008101-000E12345678001E',
         name: 'QA iPad',
+        targetType: 'device',
+      },
+      {
+        identifier: '11111111-2222-3333-4444-555555555555',
+        name: 'iPhone 16 Pro',
+        state: 'Shutdown',
+        targetType: 'simulator',
       },
     ],
   )
@@ -100,7 +110,7 @@ test('device prereq status reports ready local Android and iOS devices', () => {
   assert.deepEqual(summary.blockers, [])
 })
 
-test('device prereq status rejects Android emulators as release devices', () => {
+test('device prereq status accepts Android emulators as SDK test targets', () => {
   const summary = collectDeviceTestPrereqStatus({
     includeToolchains: false,
     platform: 'android',
@@ -119,10 +129,10 @@ test('device prereq status rejects Android emulators as release devices', () => 
     },
   })
 
-  assert.equal(summary.ready, false)
-  assert.equal(summary.android.ready, false)
-  assert.match(summary.android.blockers[0], /physical Android devices/)
-  assert.match(summary.android.warnings[0], /appears to be an emulator/)
+  assert.equal(summary.ready, true)
+  assert.equal(summary.android.ready, true)
+  assert.deepEqual(summary.android.blockers, [])
+  assert.match(summary.android.warnings[0], /testTarget=emulator/)
 })
 
 test('device prereq status permits physical Android devices with emulator warnings', () => {

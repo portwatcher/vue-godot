@@ -33,8 +33,7 @@ function completedTemplate() {
     androidOs: 'Android 15',
     commit,
     iosArtifact: 'TestFlight build 1',
-    iosEvidenceUrl:
-      'https://github.com/portwatcher/vue-godot/actions/runs/222',
+    iosEvidenceUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/222',
     iosDevice: 'iPhone hosted device',
     iosOs: 'iOS 18',
     locale: 'en-US',
@@ -61,12 +60,8 @@ test('platform evidence audit reports incomplete worksheet gaps', () => {
     summary.platforms.android.selectedApis,
     productionProfileSelectedApis,
   )
-  assert.ok(
-    summary.platforms.android.missingFields.includes('artifact'),
-  )
-  assert.ok(
-    summary.platforms.android.remainingChecks.includes('cold-launch'),
-  )
+  assert.ok(summary.platforms.android.missingFields.includes('artifact'))
+  assert.ok(summary.platforms.android.remainingChecks.includes('cold-launch'))
   assert.ok(
     summary.platforms.android.mustPassMissingChecks.includes('cold-launch'),
   )
@@ -232,8 +227,7 @@ test('platform evidence audit reports malformed worksheet fields without throwin
     androidDevice: 'Pixel hosted device',
     androidOs: 'Android 15',
     iosArtifact: 'TestFlight build 1',
-    iosEvidenceUrl:
-      'https://github.com/portwatcher/vue-godot/actions/runs/222',
+    iosEvidenceUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/222',
     iosDevice: 'iPhone hosted device',
     iosOs: 'iOS 18',
     locale: 'en-US',
@@ -259,8 +253,7 @@ test('platform evidence audit rejects placeholder metadata and skip reasons', ()
     androidDevice: 'Pixel hosted device',
     androidOs: 'Android 15',
     iosArtifact: 'TestFlight build 1',
-    iosEvidenceUrl:
-      'https://github.com/portwatcher/vue-godot/actions/runs/222',
+    iosEvidenceUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/222',
     iosDevice: 'iPhone hosted device',
     iosOs: 'iOS 18',
     locale: 'en-US',
@@ -338,11 +331,21 @@ test('platform evidence audit rejects local-only evidence URLs', () => {
   const errors = summary.errors.join('\n')
 
   assert.equal(summary.ready, false)
-  assert.match(
-    errors,
-    /android\.evidenceUrl must be a non-local http\(s\) URL/,
-  )
+  assert.match(errors, /android\.evidenceUrl must be a non-local http\(s\) URL/)
   assert.match(errors, /ios\.evidenceUrl must be a non-local http\(s\) URL/)
+})
+
+test('platform evidence audit rejects invalid simulator target metadata', () => {
+  const template = completedTemplate()
+  template.android.testTarget = 'android-virtual-device'
+
+  const summary = auditPlatformEvidence(template)
+
+  assert.equal(summary.ready, false)
+  assert.match(
+    summary.errors.join('\n'),
+    /android\.testTarget must be one of real-device, hosted-device, emulator, simulator/,
+  )
 })
 
 test('platform evidence audit next actions reuse valid metadata', () => {
@@ -394,8 +397,7 @@ test('platform evidence audit accepts non-production profile when allowed', () =
     androidDevice: 'Pixel hosted device',
     androidOs: 'Android 15',
     iosArtifact: 'TestFlight build 1',
-    iosEvidenceUrl:
-      'https://github.com/portwatcher/vue-godot/actions/runs/222',
+    iosEvidenceUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/222',
     iosDevice: 'iPhone hosted device',
     iosOs: 'iOS 18',
     locale: 'en-US',
@@ -437,6 +439,8 @@ test('record-platform-evidence CLI records one platform result batch', () => {
         '  vue-godot-android-release.aab  ',
         '--evidence-url',
         '  https://github.com/portwatcher/vue-godot/actions/runs/111  ',
+        '--test-target',
+        '  emulator  ',
         '--device',
         '  Pixel hosted device  ',
         '--os',
@@ -468,6 +472,7 @@ test('record-platform-evidence CLI records one platform result batch', () => {
       'https://github.com/portwatcher/vue-godot/actions/runs/111',
     )
     assert.equal(updated.android.deviceModel, 'Pixel hosted device')
+    assert.equal(updated.android.testTarget, 'emulator')
     assert.equal(updated.android.osVersion, 'Android 15')
     assert.equal(updated.android.orientation, 'portrait and landscape')
     assert.equal(updated.android.locale, 'en-US')
@@ -483,6 +488,7 @@ test('record-platform-evidence CLI records one platform result batch', () => {
     const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'))
     assert.equal(summary.updatedPlatform, 'android')
     assert.equal(summary.expectedCommit, commit)
+    assert.equal(summary.platforms.android.metadata.testTarget, 'emulator')
     assert.equal(summary.progress.android.completedCheckCount, 3)
     assert.equal(summary.nextActions[0].id, 'complete-platform-evidence')
     assert.match(result.stdout, /iOS missing metadata: artifact/)
@@ -1176,7 +1182,11 @@ test('check-platform-evidence CLI fails incomplete worksheet in strict mode', ()
     )
     const result = spawnSync(
       process.execPath,
-      ['scripts/check-platform-evidence.mjs', '--platform-evidence', evidencePath],
+      [
+        'scripts/check-platform-evidence.mjs',
+        '--platform-evidence',
+        evidencePath,
+      ],
       {
         cwd: repoRoot,
         encoding: 'utf-8',

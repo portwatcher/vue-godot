@@ -106,7 +106,7 @@ const commonRealDeviceCheckDescriptions = {
   'adapter-states-if-selected':
     'Verify unsupported platform, missing plugin, export misconfiguration, permission denied, and success states for selected adapters.',
   'hardware-adapters-if-selected':
-    'Verify selected camera, geolocation, media device, or other hardware-backed adapters on real or hosted hardware.',
+    'Verify selected camera, geolocation, media device, or other hardware-backed adapters on the tested real, hosted, emulator, or simulator target.',
   'haptics-if-selected':
     'Verify handheld or controller vibration APIs report support accurately and run successfully when selected.',
   'audio-input-if-selected':
@@ -154,6 +154,15 @@ export const realDevicePlatformMetadataFields = [
   'osVersion',
   'orientation',
   'locale',
+]
+
+export const realDeviceOptionalPlatformMetadataFields = ['testTarget']
+
+export const realDeviceTestTargets = [
+  'real-device',
+  'hosted-device',
+  'emulator',
+  'simulator',
 ]
 
 export const realDeviceTopLevelWorksheetFields = [
@@ -513,6 +522,12 @@ export function unknownRealDeviceSelectedApis(selectedApis) {
   ]
 }
 
+export function isValidRealDeviceTestTarget(value) {
+  return (
+    typeof value === 'string' && realDeviceTestTargets.includes(value.trim())
+  )
+}
+
 export function missingProductionProfileSelectedApis(selectedApis) {
   const selectedApiNames = new Set(
     selectedApis
@@ -566,7 +581,9 @@ function validateSkippedChecks(platformEvidence, platform, errors) {
     return {}
   }
 
-  for (const [check, reason] of Object.entries(platformEvidence.skippedChecks)) {
+  for (const [check, reason] of Object.entries(
+    platformEvidence.skippedChecks,
+  )) {
     if (typeof reason !== 'string' || reason.trim().length === 0) {
       errors.push(
         `${platform}.skippedChecks.${check} must be a non-empty release-specific reason`,
@@ -598,8 +615,25 @@ function validatePlatformEvidence(evidence, platform, errors, options = {}) {
     }
     assertNoPlaceholderString(platformEvidence, key, errors, platform)
   }
+  if ('testTarget' in platformEvidence) {
+    assertString(platformEvidence, 'testTarget', errors, platform)
+    assertNoPlaceholderString(platformEvidence, 'testTarget', errors, platform)
+    if (
+      hasNonEmptyString(platformEvidence, 'testTarget') &&
+      !isValidRealDeviceTestTarget(platformEvidence.testTarget)
+    ) {
+      errors.push(
+        `${platform}.testTarget must be one of ${realDeviceTestTargets.join(', ')}`,
+      )
+    }
+  }
   if ('passRemainingConfirmation' in platformEvidence) {
-    assertString(platformEvidence, 'passRemainingConfirmation', errors, platform)
+    assertString(
+      platformEvidence,
+      'passRemainingConfirmation',
+      errors,
+      platform,
+    )
     assertNoPlaceholderString(
       platformEvidence,
       'passRemainingConfirmation',
@@ -651,14 +685,20 @@ function validatePlatformEvidence(evidence, platform, errors, options = {}) {
   }
 
   const passedChecks = validatePassedChecks(platformEvidence, platform, errors)
-  const skippedChecks = validateSkippedChecks(platformEvidence, platform, errors)
+  const skippedChecks = validateSkippedChecks(
+    platformEvidence,
+    platform,
+    errors,
+  )
 
   validateCheckNames(platform, passedChecks, skippedChecks, errors)
   for (const check of intersectStrings(
     [...passedChecks],
     Object.keys(skippedChecks),
   )) {
-    errors.push(`${platform}.${check} cannot be both passedChecks and skippedChecks`)
+    errors.push(
+      `${platform}.${check} cannot be both passedChecks and skippedChecks`,
+    )
   }
 
   for (const check of requiredRealDeviceChecks[platform]) {

@@ -55,20 +55,20 @@ test('real device release checklist covers required Android and iOS gates', () =
     /partially configured missing-name hints/,
     /never (?:their\s+values|records environment values)/,
     /recognized\s+provider env-set\s+options/,
-    /Android SDK\/build-tools/,
-    /selected Xcode\s+command-line utilities/,
+    /Android\s+SDK\/build-tools/,
+    /selected Xcode\s+command-line\s+utilities/,
     /pinned GodotJS Android export\s+templates/,
     /does not publish an iOS\s+export-template asset/,
     /toolchain, and\s+export-template details/,
     /devicePrereqs/,
     /Device Prereq\s+Diagnostics/,
     /--device-prereqs-summary <file>/,
-    /iOS local device sessions require full Xcode/,
+    /iOS local device or simulator sessions require full Xcode/,
     /xcrun xctrace list devices/,
     /sudo xcode-select -s \/Applications\/Xcode\.app\/Contents\/Developer/,
-    /app\s+id `497799835`/,
+    /app\s+id\s+`497799835`/,
     /paused downloads still need to be resumed in App\s+Store\.app/,
-    /Apple Developer download path requires an Apple ID/,
+    /Apple\s+Developer download path requires an Apple ID/,
     /npm run check:serious-examples/,
     /npm run release:preflight[\s\S]*validates real-device evidence/,
     /npm audit --audit-level=moderate/,
@@ -333,8 +333,12 @@ test('release preflight enforces real device evidence', () => {
   assert.match(production, /device prereq diagnostics/)
   assert.match(production, /--device-prereqs-summary <file>/)
   assert.match(production, /diagnostic-only `devicePrereqs`/)
-  assert.match(production, /Android emulators are reported separately/)
-  assert.match(production, /iOS local device sessions require full Xcode/)
+  assert.match(production, /Android emulators and iOS simulators satisfy/)
+  assert.match(production, /testTarget/)
+  assert.match(
+    production,
+    /iOS local device or simulator sessions require full Xcode/,
+  )
   assert.match(production, /xcrun xctrace list devices/)
   assert.match(
     production,
@@ -345,7 +349,10 @@ test('release preflight enforces real device evidence', () => {
     production,
     /paused downloads still need to be resumed in App\s+Store\.app/,
   )
-  assert.match(production, /Apple Developer download path requires an Apple ID/)
+  assert.match(
+    production,
+    /Apple\s+Developer download path requires an Apple ID/,
+  )
   assert.match(production, hostedProviderNamesPattern)
   assert.match(
     production,
@@ -353,8 +360,8 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(production, /never their values/)
   assert.match(production, /recognized\s+provider env-set\s+options/)
-  assert.match(production, /Android SDK\/build-tools/)
-  assert.match(production, /selected Xcode\s+command-line utilities/)
+  assert.match(production, /Android\s+SDK\/build-tools/)
+  assert.match(production, /selected Xcode\s+command-line\s+utilities/)
   assert.match(production, /pinned GodotJS Android export\s+templates/)
   assert.match(production, /does not publish an iOS\s+export-template asset/)
   assert.match(production, /toolchain, and\s+export-template details/)
@@ -368,7 +375,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
-    /hosted\s+real-device runs\s+still\s+satisfy the\s+release\s+gate/,
+    /hosted,\s+emulator,\s+and simulator runs\s+still\s+satisfy the\s+release\s+gate/,
   )
   assert.match(production, /platform-evidence-summary\.json/)
   assert.match(production, /platform-evidence-checklist\.md/)
@@ -555,7 +562,7 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(
     production,
-    /initial CI, real-device, and\s+Release Preflight evidence\s+actions begin with `npm run check`/,
+    /initial CI, real-device, and\s+Release Preflight evidence\s+actions begin with\s+`npm run check`/,
   )
   assert.match(
     production,
@@ -656,8 +663,12 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /Device Prereq\s+Diagnostics/)
   assert.match(readme, /--device-prereqs-summary <file>/)
   assert.match(readme, /diagnostic-only `devicePrereqs`/)
-  assert.match(readme, /Android emulators are reported separately/)
-  assert.match(readme, /iOS local device sessions require full Xcode/)
+  assert.match(readme, /Android emulators and iOS simulators satisfy/)
+  assert.match(readme, /testTarget/)
+  assert.match(
+    readme,
+    /iOS local device or simulator sessions require full Xcode/,
+  )
   assert.match(readme, /xcrun xctrace list devices/)
   assert.match(
     readme,
@@ -668,7 +679,7 @@ test('release preflight enforces real device evidence', () => {
     readme,
     /paused downloads still need to be resumed in App\s+Store\.app/,
   )
-  assert.match(readme, /Apple Developer download path requires an Apple ID/)
+  assert.match(readme, /Apple\s+Developer download path requires an Apple ID/)
   assert.match(readme, hostedProviderNamesPattern)
   assert.match(
     readme,
@@ -676,8 +687,8 @@ test('release preflight enforces real device evidence', () => {
   )
   assert.match(readme, /never their values/)
   assert.match(readme, /recognized\s+provider env-set\s+options/)
-  assert.match(readme, /Android SDK\/build-tools/)
-  assert.match(readme, /selected Xcode\s+command-line utilities/)
+  assert.match(readme, /Android\s+SDK\/build-tools/)
+  assert.match(readme, /selected Xcode\s+command-line\s+utilities/)
   assert.match(readme, /pinned GodotJS Android export\s+templates/)
   assert.match(readme, /does not publish an iOS\s+export-template asset/)
   assert.match(readme, /toolchain, and\s+export-template details/)
@@ -769,7 +780,7 @@ test('release preflight enforces real device evidence', () => {
   assert.match(readme, /local `npm run check`/)
   assert.match(
     readme,
-    /initial CI, real-device, and\s+Release Preflight evidence actions begin with `npm run check`/,
+    /initial CI, real-device, and\s+Release Preflight evidence actions begin with\s+`npm run check`/,
   )
   assert.match(
     readme,

@@ -14,6 +14,8 @@ import {
   passOnlyRealDeviceChecks,
   productionProfileSelectedApis,
   requiredRealDeviceChecks,
+  isValidRealDeviceTestTarget,
+  realDeviceTestTargets,
   selectedApiRequiredCheckMap,
   unknownRealDeviceSelectedApis,
 } from './real-device-evidence.mjs'
@@ -30,22 +32,26 @@ import {
 } from './release-handoff-commands.mjs'
 import { isReleaseEvidenceUrl } from './release-evidence-utils.mjs'
 import { readInitialCiEvidenceStatus } from './release-ci-evidence.mjs'
-import { normalizeCommitSha, repoRoot, uniqueStrings } from './release-utils.mjs'
+import {
+  normalizeCommitSha,
+  repoRoot,
+  uniqueStrings,
+} from './release-utils.mjs'
 
 const defaultOutput = 'release/platform-evidence.json'
 
 function usage() {
   console.log(`Usage: node scripts/create-platform-evidence.mjs [options]
 
-Creates a starter Android/iOS platform evidence JSON file for real-device
-release testing. The generated file is intentionally not release-ready: fill
+Creates a starter Android/iOS platform evidence JSON file for release target
+testing. The generated file is intentionally not release-ready: fill
 artifact/evidence URL/export-preset/device details and move each requiredChecks
 entry into passedChecks or skippedChecks with a release-specific reason after
-testing.
+real-device, hosted-device, emulator, or simulator testing.
 Checks listed in passOnlyChecks and selectedApiRequiredChecks must be recorded
 in passedChecks.
 The top-level nextActions array records the follow-up commands for recording
-device results, auditing worksheet progress, and assembling final real-device
+target results, auditing worksheet progress, and assembling final real-device
 evidence after the worksheet is complete. It also includes audited progress and
 exact remaining metadata, must-pass, and skippable check names.
 
@@ -64,6 +70,8 @@ Options:
   --ios-artifact <name>            iOS archive, TestFlight, or hosted build identifier.
   --android-evidence-url <url>     Android non-local device test run, lab session, or signed evidence URL.
   --ios-evidence-url <url>         iOS non-local device test run, lab session, or signed evidence URL.
+  --android-test-target <target>   Android target class: ${realDeviceTestTargets.join(', ')}.
+  --ios-test-target <target>       iOS target class: ${realDeviceTestTargets.join(', ')}.
   --android-export-preset <name>   Android export preset. Default: Android Release.
   --ios-export-preset <name>       iOS export preset. Default: iOS Release.
   --android-device <model>         Tested Android device model.
@@ -96,6 +104,8 @@ function parseArgs(argv) {
     iosArtifact: '',
     androidEvidenceUrl: '',
     iosEvidenceUrl: '',
+    androidTestTarget: '',
+    iosTestTarget: '',
     androidExportPreset: 'Android Release',
     iosExportPreset: 'iOS Release',
     androidDevice: '',
@@ -112,6 +122,8 @@ function parseArgs(argv) {
     ['--ios-artifact', 'iosArtifact'],
     ['--android-evidence-url', 'androidEvidenceUrl'],
     ['--ios-evidence-url', 'iosEvidenceUrl'],
+    ['--android-test-target', 'androidTestTarget'],
+    ['--ios-test-target', 'iosTestTarget'],
     ['--android-export-preset', 'androidExportPreset'],
     ['--ios-export-preset', 'iosExportPreset'],
     ['--commit', 'commit'],
@@ -198,10 +210,21 @@ function assertOptionalEvidenceUrl(value, label) {
   }
 }
 
+function assertOptionalTestTarget(value, label) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return
+  }
+  if (!isValidRealDeviceTestTarget(value)) {
+    throw new Error(
+      `${label} must be one of ${realDeviceTestTargets.join(', ')}`,
+    )
+  }
+}
+
 function buildPlatformTemplate(platform, options) {
   const isAndroid = platform === 'android'
   const selectedApis = options.selectedApis
-  return {
+  const template = {
     artifact: isAndroid ? options.androidArtifact : options.iosArtifact,
     evidenceUrl: isAndroid
       ? options.androidEvidenceUrl
@@ -223,6 +246,13 @@ function buildPlatformTemplate(platform, options) {
       platform,
     ),
   }
+  const testTarget = isAndroid
+    ? options.androidTestTarget
+    : options.iosTestTarget
+  if (typeof testTarget === 'string' && testTarget.trim().length > 0) {
+    template.testTarget = testTarget.trim()
+  }
+  return template
 }
 
 function buildNextActions(platformEvidencePath, commit, options = {}) {
@@ -258,7 +288,7 @@ function buildNextActions(platformEvidencePath, commit, options = {}) {
       id: 'complete-platform-evidence',
       title: 'Fill Android and iOS device evidence fields',
       detail: [
-        'Record artifact IDs, evidence URLs, export presets, device models, OS versions, orientation, locale, selected APIs, and real test outcomes before assembling final evidence.',
+        'Record artifact IDs, evidence URLs, export presets, device models, OS versions, orientation, locale, selected APIs, and target test outcomes before assembling final evidence.',
         platformAuditDetail,
       ]
         .filter(Boolean)
@@ -349,6 +379,8 @@ export function buildPlatformEvidenceTemplate(options = {}) {
     iosArtifact: options.iosArtifact ?? '',
     androidEvidenceUrl: options.androidEvidenceUrl ?? '',
     iosEvidenceUrl: options.iosEvidenceUrl ?? '',
+    androidTestTarget: options.androidTestTarget ?? '',
+    iosTestTarget: options.iosTestTarget ?? '',
     androidExportPreset: options.androidExportPreset ?? 'Android Release',
     iosExportPreset: options.iosExportPreset ?? 'iOS Release',
     androidDevice: options.androidDevice ?? '',
@@ -363,8 +395,13 @@ export function buildPlatformEvidenceTemplate(options = {}) {
     productionProfile: Boolean(options.productionProfile),
     selectedApis,
   }
-  assertOptionalEvidenceUrl(normalized.androidEvidenceUrl, 'android.evidenceUrl')
+  assertOptionalEvidenceUrl(
+    normalized.androidEvidenceUrl,
+    'android.evidenceUrl',
+  )
   assertOptionalEvidenceUrl(normalized.iosEvidenceUrl, 'ios.evidenceUrl')
+  assertOptionalTestTarget(normalized.androidTestTarget, 'android.testTarget')
+  assertOptionalTestTarget(normalized.iosTestTarget, 'ios.testTarget')
 
   const initialCiEvidence = readInitialCiEvidenceStatus(
     normalized.ciEvidencePath,

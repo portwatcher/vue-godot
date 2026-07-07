@@ -107,7 +107,10 @@ test('platform evidence template lists required checks without passing them', ()
     (action) => action.id === 'complete-platform-evidence',
   )
   assert.ok(completeAction)
-  assert.match(completeAction.detail, /Android must-pass remaining: cold-launch/)
+  assert.match(
+    completeAction.detail,
+    /Android must-pass remaining: cold-launch/,
+  )
   assert.match(
     completeAction.detail,
     /assembling final evidence\.\nAndroid: 4 metadata/,
@@ -327,6 +330,46 @@ test('platform evidence template reuses prefilled metadata in record commands', 
   )
 })
 
+test('platform evidence template records optional emulator and simulator targets', () => {
+  const template = buildPlatformEvidenceTemplate({
+    androidArtifact: 'vue-godot-android-release.aab',
+    androidDevice: 'Pixel 8 emulator',
+    androidEvidenceUrl: 'https://device-lab.example.com/android/emulator/42',
+    androidOs: 'Android 15',
+    androidTestTarget: ' emulator ',
+    commit,
+    iosArtifact: 'TestFlight simulator build',
+    iosDevice: 'iPhone 16 Pro simulator',
+    iosEvidenceUrl: 'https://device-lab.example.com/ios/simulator/42',
+    iosOs: 'iOS 18',
+    iosTestTarget: 'simulator',
+    locale: 'en-US',
+    orientation: 'portrait and landscape',
+    selectedApis: ['fetch'],
+  })
+  const completeAction = template.nextActions.find(
+    (action) => action.id === 'complete-platform-evidence',
+  )
+
+  assert.equal(template.android.testTarget, 'emulator')
+  assert.equal(template.ios.testTarget, 'simulator')
+  assert.ok(completeAction)
+  assert.ok(
+    completeAction.commands.some(
+      (command) =>
+        command.includes('--platform android') &&
+        command.includes('--test-target emulator'),
+    ),
+  )
+  assert.ok(
+    completeAction.commands.some(
+      (command) =>
+        command.includes('--platform ios') &&
+        command.includes('--test-target simulator'),
+    ),
+  )
+})
+
 test('platform evidence template reuses ready initial CI evidence', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-ci-'))
   const ciEvidencePath = path.join(tempDir, 'ci-runs.json')
@@ -542,6 +585,23 @@ test('platform evidence template rejects invalid evidence URLs', () => {
   )
 })
 
+test('platform evidence template rejects invalid test targets', () => {
+  assert.throws(
+    () =>
+      buildPlatformEvidenceTemplate({
+        androidTestTarget: 'desktop',
+      }),
+    /android\.testTarget must be one of real-device, hosted-device, emulator, simulator/,
+  )
+  assert.throws(
+    () =>
+      buildPlatformEvidenceTemplate({
+        iosTestTarget: '<ios-test-target>',
+      }),
+    /ios\.testTarget must be one of real-device, hosted-device, emulator, simulator/,
+  )
+})
+
 test('completed platform template validates after required checks are recorded', () => {
   const template = buildPlatformEvidenceTemplate({
     selectedApis: ['fetch', 'WebSocket', 'SafeAreaView'],
@@ -549,8 +609,7 @@ test('completed platform template validates after required checks are recorded',
     androidEvidenceUrl:
       'https://github.com/portwatcher/vue-godot/actions/runs/111',
     iosArtifact: 'TestFlight build 1',
-    iosEvidenceUrl:
-      'https://github.com/portwatcher/vue-godot/actions/runs/222',
+    iosEvidenceUrl: 'https://github.com/portwatcher/vue-godot/actions/runs/222',
     androidDevice: 'Pixel hosted device',
     iosDevice: 'iPhone hosted device',
     androidOs: 'Android 15',

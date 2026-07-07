@@ -263,7 +263,7 @@ test('release readiness requires the final TODO evidence checklist shape', () =>
       '- [ ] `npm run check` passes locally and in CI.',
       '- [ ] `npm run check` passes locally and in CI.',
       '- [ ] Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate.',
-      '- [ ] Android and iOS export smoke apps run on real or hosted devices for the production profile.',
+      '- [ ] Android and iOS export smoke apps run on real, hosted, emulator, or simulator targets for the production profile.',
       '- [ ] The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied.',
       '- [ ] Android export with selected device APIs has been tested.',
       '- [ ] iOS export with selected device APIs has been tested.',

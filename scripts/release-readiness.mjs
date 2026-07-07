@@ -85,8 +85,7 @@ import {
   shellQuote,
 } from './release-utils.mjs'
 
-const releaseReadinessEvidenceEnvVar =
-  'VUE_GODOT_RELEASE_READINESS_EVIDENCE'
+const releaseReadinessEvidenceEnvVar = 'VUE_GODOT_RELEASE_READINESS_EVIDENCE'
 
 export const releaseWarningMarkers = [
   {
@@ -362,10 +361,9 @@ function checkCleanWorktree(blockers) {
   const status = result.stdout.trim()
   if (status.length > 0) {
     blockers.push(
-      [
-        'working tree must be clean for final release readiness',
-        status,
-      ].join('\n'),
+      ['working tree must be clean for final release readiness', status].join(
+        '\n',
+      ),
     )
     return false
   }
@@ -374,22 +372,20 @@ function checkCleanWorktree(blockers) {
 }
 
 export function collectTodoItems(source, file = 'TODO.md') {
-  return source
-    .split(/\r?\n/)
-    .flatMap((line, index) => {
-      const match = line.match(/^\s*- \[([ xX])\] (.+)$/)
-      if (!match) {
-        return []
-      }
-      return [
-        {
-          checked: match[1].toLowerCase() === 'x',
-          file,
-          line: index + 1,
-          text: match[2],
-        },
-      ]
-    })
+  return source.split(/\r?\n/).flatMap((line, index) => {
+    const match = line.match(/^\s*- \[([ xX])\] (.+)$/)
+    if (!match) {
+      return []
+    }
+    return [
+      {
+        checked: match[1].toLowerCase() === 'x',
+        file,
+        line: index + 1,
+        text: match[2],
+      },
+    ]
+  })
 }
 
 function readTodoItems() {
@@ -533,7 +529,7 @@ export const finalTodoEvidenceRequirements = [
       'committed release/ci-runs.json evidence must verify a successful Godot Smoke workflow run',
   },
   {
-    text: 'Android and iOS export smoke apps run on real or hosted devices for the production profile.',
+    text: 'Android and iOS export smoke apps run on real, hosted, emulator, or simulator targets for the production profile.',
     proof: 'realDeviceEvidenceReady',
     reason: 'real-device evidence must validate for both Android and iOS',
   },
@@ -628,10 +624,10 @@ export function formatFinalTodoRequirementStatus(status) {
 
   const todoState =
     status.itemCount === 1
-        ? status.checked
-          ? 'checked'
-          : 'unchecked'
-        : `${status.itemCount} matching TODO items`
+      ? status.checked
+        ? 'checked'
+        : 'unchecked'
+      : `${status.itemCount} matching TODO items`
 
   return `${location} ${todoState}; ${status.proof} ${proofState}: ${status.reason}`
 }
@@ -640,7 +636,9 @@ export function collectCheckedTodoEvidenceBlockers(todoItems, proofs) {
   const proofByName = finalTodoProofsByName(proofs)
 
   return finalTodoEvidenceRequirements.flatMap((requirement) => {
-    const item = todoItems.find((candidate) => candidate.text === requirement.text)
+    const item = todoItems.find(
+      (candidate) => candidate.text === requirement.text,
+    )
     if (!item?.checked || proofByName[requirement.proof]) {
       return []
     }
@@ -690,10 +688,7 @@ const releaseToolingScriptRequirements = [
     'release:preflight-summary',
     'node scripts/download-release-preflight-summary.mjs',
   ],
-  [
-    'release:finalize-readiness',
-    'node scripts/finalize-release-readiness.mjs',
-  ],
+  ['release:finalize-readiness', 'node scripts/finalize-release-readiness.mjs'],
   ['release:handoff', 'node scripts/release-handoff-report.mjs'],
   ['release:readiness', 'node scripts/release-readiness.mjs'],
   ['release:preflight', 'node scripts/release-preflight.mjs'],
@@ -703,7 +698,10 @@ export function collectReleaseToolingBlockers(packageJson) {
   const blockers = []
   const scripts = isRecord(packageJson?.scripts) ? packageJson.scripts : {}
 
-  for (const [scriptName, expectedCommand] of releaseToolingScriptRequirements) {
+  for (const [
+    scriptName,
+    expectedCommand,
+  ] of releaseToolingScriptRequirements) {
     if (scripts[scriptName] !== expectedCommand) {
       blockers.push(
         `package.json must expose ${scriptName} as ${expectedCommand}`,
@@ -866,9 +864,13 @@ async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
     expectedCommit,
     expectedPackageVersions: currentReleasePackageVersions(),
   })
-  const androidErrors = validateRealDevicePlatformEvidence(evidence, 'android', {
-    requireProductionProfile: true,
-  })
+  const androidErrors = validateRealDevicePlatformEvidence(
+    evidence,
+    'android',
+    {
+      requireProductionProfile: true,
+    },
+  )
   const iosErrors = validateRealDevicePlatformEvidence(evidence, 'ios', {
     requireProductionProfile: true,
   })
@@ -883,7 +885,10 @@ async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
   if (errors.length > 0) {
     status.errorCount = errors.length
     blockers.push(
-      [`real-device evidence is incomplete: ${relative(evidencePath)}`, ...errors]
+      [
+        `real-device evidence is incomplete: ${relative(evidencePath)}`,
+        ...errors,
+      ]
         .filter(Boolean)
         .join('\n'),
     )
@@ -914,7 +919,11 @@ async function checkRealDeviceEvidence(blockers, options, expectedCommit) {
   return status
 }
 
-async function checkReleaseReadinessEvidence(blockers, options, expectedCommit) {
+async function checkReleaseReadinessEvidence(
+  blockers,
+  options,
+  expectedCommit,
+) {
   const evidencePath = resolveReadinessEvidencePath(options)
   const { evidence, errors: readErrors } = readJsonEvidence(evidencePath)
   const status = {
@@ -1405,7 +1414,10 @@ function collectReadinessNextActions(
             platformEvidence,
             'android',
           ),
-          checks: collectPlatformEvidencePassChecks(platformEvidence, 'android'),
+          checks: collectPlatformEvidencePassChecks(
+            platformEvidence,
+            'android',
+          ),
           platformEvidencePath,
           skipChecks: collectPlatformEvidenceSkippableMissingChecks(
             platformEvidence,
@@ -1461,7 +1473,7 @@ function collectReadinessNextActions(
       id: 'real-device-evidence',
       title: 'Complete Android and iOS real-device export evidence',
       detail: [
-        'Run the local check and selected API export checks on real or hosted devices, record the evidence URL in the platform worksheet, then assemble and validate release/real-device-evidence.json for the tested release commit.',
+        'Run the local check and selected API export checks on real, hosted, emulator, or simulator targets, record the evidence URL in the platform worksheet, then assemble and validate release/real-device-evidence.json for the tested release commit.',
         'The device prereq summary records local tooling availability and configured or partially configured hosted-provider environment variable names for handoff diagnostics only; final evidence still needs non-local device run URLs, artifact IDs, and device metadata.',
         platformEvidenceRemaining,
       ]
@@ -1654,11 +1666,15 @@ function printExpectedCommitHint(
     `- ${initialCiEvidence.path} validates ${initialCiEvidence.validForCommit}, not ${expectedCommit}.`,
   )
   console.log(
-    `- ${releaseReadinessCommand(initialCiEvidence.validForCommit, pathOptions, {
-      allowOpen: true,
-      checklistOutput: defaultReleaseReadinessChecklistPath,
-      summaryOutput: defaultReleaseReadinessSummaryPath,
-    })}`,
+    `- ${releaseReadinessCommand(
+      initialCiEvidence.validForCommit,
+      pathOptions,
+      {
+        allowOpen: true,
+        checklistOutput: defaultReleaseReadinessChecklistPath,
+        summaryOutput: defaultReleaseReadinessSummaryPath,
+      },
+    )}`,
   )
 }
 
@@ -1837,7 +1853,10 @@ export function formatReleaseReadinessChecklist(summary) {
       'Package description warnings',
       summary.packageDescriptionWarnings,
     ),
-    ...formatIssueLines('Release tooling blockers', summary.releaseToolingBlockers),
+    ...formatIssueLines(
+      'Release tooling blockers',
+      summary.releaseToolingBlockers,
+    ),
     ...formatIssueLines(
       'Release workflow blockers',
       summary.releaseWorkflowBlockers,
@@ -1986,10 +2005,8 @@ async function main() {
     options.platformEvidencePath ?? defaultPlatformEvidencePath,
   )
   const realDeviceEvidenceReady = realDeviceEvidenceStatus.ready
-  const realDeviceEvidenceMetadataReady =
-    realDeviceEvidenceStatus.metadataReady
-  const androidRealDeviceEvidenceReady =
-    realDeviceEvidenceStatus.androidReady
+  const realDeviceEvidenceMetadataReady = realDeviceEvidenceStatus.metadataReady
+  const androidRealDeviceEvidenceReady = realDeviceEvidenceStatus.androidReady
   const iosRealDeviceEvidenceReady = realDeviceEvidenceStatus.iosReady
   const releaseReadinessEvidenceStatus = await checkReleaseReadinessEvidence(
     blockers,
@@ -2072,8 +2089,7 @@ async function main() {
     initialCiEvidence: initialCiEvidenceReady,
     publicSurface: publicSurfaceReady,
     publicWarningMarkersRemoved: warningMarkers.length === 0,
-    packageDescriptionWarningsRemoved:
-      packageDescriptionWarnings.length === 0,
+    packageDescriptionWarningsRemoved: packageDescriptionWarnings.length === 0,
     realDeviceEvidence: realDeviceEvidenceReady,
     realDeviceEvidenceMetadata: realDeviceEvidenceMetadataReady,
     releaseTooling: releaseToolingBlockers.length === 0,

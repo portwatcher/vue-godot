@@ -65,7 +65,8 @@ export function releaseHandoffReportStateHash(summary) {
       ? summary.finalTodoRequirements
       : [],
     initialCiEvidence:
-      summary?.initialCiEvidence && typeof summary.initialCiEvidence === 'object'
+      summary?.initialCiEvidence &&
+      typeof summary.initialCiEvidence === 'object'
         ? summary.initialCiEvidence
         : {},
     platformEvidence:
@@ -169,8 +170,9 @@ export function formatReleaseCommandBlock(commands, options = {}) {
   }
 
   const placeholderCommands = commands.filter(commandHasPlaceholder)
-  const shouldSplitDownstreamCommands =
-    placeholderCommands.some(commandIsEvidenceTemplate)
+  const shouldSplitDownstreamCommands = placeholderCommands.some(
+    commandIsEvidenceTemplate,
+  )
   const readyCommands = commands.filter(
     (command) =>
       !commandHasPlaceholder(command) &&
@@ -305,7 +307,9 @@ function platformEvidencePlaceholders(platform) {
         ? '<ios-non-local-device-evidence-url>'
         : '<android-non-local-device-evidence-url>',
     exportPreset:
-      platformName === 'ios' ? '<ios-export-preset>' : '<android-export-preset>',
+      platformName === 'ios'
+        ? '<ios-export-preset>'
+        : '<android-export-preset>',
     observedCheck: `<observed-${platformName}-check-name>`,
     os: platformName === 'ios' ? '<ios-version>' : '<android-os-version>',
     platformName,
@@ -320,8 +324,7 @@ function commandValue(value, fallback) {
 
 function recordPlatformEvidenceBaseArgs(platform, options = {}) {
   const placeholders = platformEvidencePlaceholders(platform)
-
-  return [
+  const args = [
     'npm',
     'run',
     'release:record-platform-evidence',
@@ -345,6 +348,12 @@ function recordPlatformEvidenceBaseArgs(platform, options = {}) {
     '--locale',
     commandValue(options.locale, '<tested-locale>'),
   ]
+
+  if (typeof options.testTarget === 'string' && options.testTarget.trim()) {
+    args.push('--test-target', options.testTarget.trim())
+  }
+
+  return args
 }
 
 function appendPlatformEvidenceSummaryArgs(args, commit, options = {}) {
@@ -457,7 +466,10 @@ export function releaseCiCommand(commit, options = {}) {
     options.releasePreflightRunCommit !== releaseCommitLabel(commit) &&
     options.includeReleasePreflight
   ) {
-    args.push('--release-preflight-run-commit', options.releasePreflightRunCommit)
+    args.push(
+      '--release-preflight-run-commit',
+      options.releasePreflightRunCommit,
+    )
   }
   if (options.dispatchMissing) {
     args.push('--dispatch-missing')
@@ -616,12 +628,7 @@ export function releaseEvidenceCommand(commit, options = {}) {
 }
 
 export function checkRealDeviceEvidenceCommand(commit, options = {}) {
-  const args = [
-    'npm',
-    'run',
-    'check:real-device-evidence',
-    '--',
-  ]
+  const args = ['npm', 'run', 'check:real-device-evidence', '--']
 
   if (options.realDeviceEvidencePath) {
     args.push('--path', options.realDeviceEvidencePath)
@@ -642,10 +649,7 @@ export function checkRealDeviceEvidenceCommand(commit, options = {}) {
     args.push('--verify-runs')
   }
 
-  args.push(
-    '--expected-commit',
-    releaseCommitLabel(commit),
-  )
+  args.push('--expected-commit', releaseCommitLabel(commit))
 
   return formatHandoffCommand(args)
 }
@@ -682,10 +686,7 @@ export function repoLocalEvidencePath(filePath, defaultPath) {
 export function copyOutsideRepoEvidenceCommands(files) {
   return files
     .filter(([source]) => !isRepoLocalPath(source))
-    .map(
-      ([source, target]) =>
-        `cp ${shellQuote(source)} ${shellQuote(target)}`,
-    )
+    .map(([source, target]) => `cp ${shellQuote(source)} ${shellQuote(target)}`)
 }
 
 export function commitEvidenceFileCommands(files, message, options = {}) {

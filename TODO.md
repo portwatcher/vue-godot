@@ -23,7 +23,7 @@ The project is production ready only when all of these are true:
 - [x] All P0 and P1 checklist items in this file are complete.
 - [x] `npm run check` passes locally and in CI.
 - [x] Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate.
-- [ ] Android and iOS export smoke apps run on real or hosted devices for the production profile.
+- [ ] Android and iOS export smoke apps run on real, hosted, emulator, or simulator targets for the production profile.
 - [x] At least two serious example apps exist:
   - [x] A native app style demo using routing, forms, network, storage, camera or geolocation, permissions, and offline/reachability handling.
   - [x] A game UI demo using Godot scenes plus Vue UI, controller/touch/keyboard navigation, animation, audio/video/image assets, and pause/settings/inventory style workflows.
@@ -329,50 +329,50 @@ The project is production ready only when all of these are true:
 
 Use this backlog to seed `docs/compatibility.md`.
 
-| API or Component | Package | Target Status | Backend |
-| --- | --- | --- | --- |
-| `fetch` | browser | supported | `HTTPClient` |
-| `Request` / `Response` / `Headers` | browser | supported | JS + Godot HTTP interop |
-| `Blob` / object URLs | browser | supported | JS memory registry |
-| `URL` / `URLSearchParams` | browser | supported | JS parser |
-| `TextEncoder` / `TextDecoder` | browser | supported | JS/V8 fast path |
-| `AbortController` | browser | supported | JS event target |
-| `history` / `location` | browser | supported | in-memory history |
-| `navigator.onLine` | browser/device | partial | reachability probe |
-| `online` / `offline` events | browser/device | partial | reachability probe |
-| `WebSocket` | browser | supported | `WebSocketPeer` |
-| `localStorage` | browser | supported | `FileAccess` / `user://` |
-| `sessionStorage` | browser | supported | memory or `user://` |
-| `navigator.clipboard` | browser/device | partial | `DisplayServer` clipboard |
-| `navigator.permissions` | browser/device | partial | `PermissionAdapter` + `OS.get_granted_permissions` + capability checks |
-| `navigator.vibrate` | browser/device | partial | `Input.vibrate_handheld` |
-| Device motion/orientation | browser/device | partial | `Input` sensors |
-| `navigator.geolocation` | browser/device | requires-plugin | `@vue-godot/device` `GeolocationAdapter` |
-| `navigator.mediaDevices.getUserMedia` | browser/device | requires-plugin | `@vue-godot/device` `MediaDevicesAdapter` |
-| `<CameraView>` | html/device | partial | `CameraServer` / `CameraTexture` |
-| Camera snapshot helpers | html/device | partial | `CameraTexture` / `Texture2D.get_image()` |
-| App/system helpers | device | partial | `OS` / `DisplayServer` / adapter registry |
-| Deep links / URL open events | device | requires-plugin | `@vue-godot/device` `DeepLinkAdapter` |
-| Notifications | browser/device | requires-plugin | `@vue-godot/device` `NotificationAdapter` |
-| Share sheet | device | requires-plugin | `@vue-godot/device` `ShareAdapter` |
-| DOM `document` | browser | skipped | no DOM in Godot |
-| Service workers | browser | skipped | no browser worker/service worker runtime |
-| IndexedDB | browser | planned or skipped | storage engine required |
-| `<ScrollView>` | html | supported | `ScrollContainer` |
-| `<VirtualList>` | html | supported | virtualized Godot controls |
-| `<Pressable>` | html | supported | `Control` input/focus signals |
-| `<Modal>` / `<Dialog>` / `<Overlay>` | html | supported | Godot popup/window/control stack |
-| `<SafeAreaView>` | html/device | partial | platform/display metrics |
-| `<KeyboardAvoidingView>` | html/device | partial | virtual keyboard metrics |
-| `<ActivityIndicator>` | html | supported | `ProgressBar` indeterminate mode |
-| `<Progress>` | html | supported | `ProgressBar` |
-| `<Switch>` | html | supported | `CheckButton` |
-| `<Input type="radio">` | html | supported | `CheckBox` + `ButtonGroup` |
-| `<Form>` | html | supported | `PanelContainer` |
-| `<Label>` | html | supported | `Label` / `<Div>` wrapper |
-| `<Screen>` | html | supported | `Control` / `PanelContainer` |
-| `<ScreenStack>` | html | supported | `<Screen>` + named slots |
-| `<Canvas>` 2D context | html | partial | `CanvasItem` draw adapter |
+| API or Component                      | Package        | Target Status      | Backend                                                                |
+| ------------------------------------- | -------------- | ------------------ | ---------------------------------------------------------------------- |
+| `fetch`                               | browser        | supported          | `HTTPClient`                                                           |
+| `Request` / `Response` / `Headers`    | browser        | supported          | JS + Godot HTTP interop                                                |
+| `Blob` / object URLs                  | browser        | supported          | JS memory registry                                                     |
+| `URL` / `URLSearchParams`             | browser        | supported          | JS parser                                                              |
+| `TextEncoder` / `TextDecoder`         | browser        | supported          | JS/V8 fast path                                                        |
+| `AbortController`                     | browser        | supported          | JS event target                                                        |
+| `history` / `location`                | browser        | supported          | in-memory history                                                      |
+| `navigator.onLine`                    | browser/device | partial            | reachability probe                                                     |
+| `online` / `offline` events           | browser/device | partial            | reachability probe                                                     |
+| `WebSocket`                           | browser        | supported          | `WebSocketPeer`                                                        |
+| `localStorage`                        | browser        | supported          | `FileAccess` / `user://`                                               |
+| `sessionStorage`                      | browser        | supported          | memory or `user://`                                                    |
+| `navigator.clipboard`                 | browser/device | partial            | `DisplayServer` clipboard                                              |
+| `navigator.permissions`               | browser/device | partial            | `PermissionAdapter` + `OS.get_granted_permissions` + capability checks |
+| `navigator.vibrate`                   | browser/device | partial            | `Input.vibrate_handheld`                                               |
+| Device motion/orientation             | browser/device | partial            | `Input` sensors                                                        |
+| `navigator.geolocation`               | browser/device | requires-plugin    | `@vue-godot/device` `GeolocationAdapter`                               |
+| `navigator.mediaDevices.getUserMedia` | browser/device | requires-plugin    | `@vue-godot/device` `MediaDevicesAdapter`                              |
+| `<CameraView>`                        | html/device    | partial            | `CameraServer` / `CameraTexture`                                       |
+| Camera snapshot helpers               | html/device    | partial            | `CameraTexture` / `Texture2D.get_image()`                              |
+| App/system helpers                    | device         | partial            | `OS` / `DisplayServer` / adapter registry                              |
+| Deep links / URL open events          | device         | requires-plugin    | `@vue-godot/device` `DeepLinkAdapter`                                  |
+| Notifications                         | browser/device | requires-plugin    | `@vue-godot/device` `NotificationAdapter`                              |
+| Share sheet                           | device         | requires-plugin    | `@vue-godot/device` `ShareAdapter`                                     |
+| DOM `document`                        | browser        | skipped            | no DOM in Godot                                                        |
+| Service workers                       | browser        | skipped            | no browser worker/service worker runtime                               |
+| IndexedDB                             | browser        | planned or skipped | storage engine required                                                |
+| `<ScrollView>`                        | html           | supported          | `ScrollContainer`                                                      |
+| `<VirtualList>`                       | html           | supported          | virtualized Godot controls                                             |
+| `<Pressable>`                         | html           | supported          | `Control` input/focus signals                                          |
+| `<Modal>` / `<Dialog>` / `<Overlay>`  | html           | supported          | Godot popup/window/control stack                                       |
+| `<SafeAreaView>`                      | html/device    | partial            | platform/display metrics                                               |
+| `<KeyboardAvoidingView>`              | html/device    | partial            | virtual keyboard metrics                                               |
+| `<ActivityIndicator>`                 | html           | supported          | `ProgressBar` indeterminate mode                                       |
+| `<Progress>`                          | html           | supported          | `ProgressBar`                                                          |
+| `<Switch>`                            | html           | supported          | `CheckButton`                                                          |
+| `<Input type="radio">`                | html           | supported          | `CheckBox` + `ButtonGroup`                                             |
+| `<Form>`                              | html           | supported          | `PanelContainer`                                                       |
+| `<Label>`                             | html           | supported          | `Label` / `<Div>` wrapper                                              |
+| `<Screen>`                            | html           | supported          | `Control` / `PanelContainer`                                           |
+| `<ScreenStack>`                       | html           | supported          | `<Screen>` + named slots                                               |
+| `<Canvas>` 2D context                 | html           | partial            | `CanvasItem` draw adapter                                              |
 
 ## Final Removal Checklist
 

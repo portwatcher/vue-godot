@@ -262,7 +262,7 @@ function collectNextActions(summary) {
         id: 'create-platform-evidence',
         title: 'Create and fill Android/iOS platform evidence',
         detail:
-          'Start from the platform evidence worksheet, run the selected API export checks on real or hosted devices, and record pass/skip outcomes.',
+          'Start from the platform evidence worksheet, run the selected API export checks on real, hosted, emulator, or simulator targets, and record pass/skip outcomes.',
         commands: [
           productionProfilePlatformEvidenceCommand(
             expectedCommit,
@@ -572,7 +572,9 @@ export async function buildRealDeviceEvidenceSummary(
   summary.initialCiEvidence = initialCiEvidence
   summary.initialCiEvidencePath = initialCiEvidence.path
   summary.initialCiEvidenceReady = initialCiEvidence.ready
-  summary.platformEvidence = readPlatformEvidenceAudit(options.platformEvidencePath)
+  summary.platformEvidence = readPlatformEvidenceAudit(
+    options.platformEvidencePath,
+  )
   summary.platformEvidenceReady = summary.platformEvidence.ready
 
   if (!evidence) {

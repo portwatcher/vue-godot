@@ -12,7 +12,7 @@
     {
       "id": "complete-platform-evidence",
       "title": "Fill Android and iOS device evidence fields",
-      "detail": "Record artifact IDs, evidence URLs, export presets, device models, OS versions, orientation, locale, selected APIs, and real test outcomes before assembling final evidence.\nAndroid: 6 metadata field(s) missing, 14/14 required check(s) unresolved, 14 must-pass check(s) missing; iOS: 6 metadata field(s) missing, 15/15 required check(s) unresolved, 14 must-pass check(s) missing\nAndroid missing metadata: artifact, evidenceUrl, deviceModel, osVersion, orientation, locale\nAndroid must-pass remaining: cold-launch, no-godotjs-load-diagnostics, storage-restart, network-if-selected, clipboard-if-selected, permission-prompts-if-selected, adapter-states-if-selected, hardware-adapters-if-selected, haptics-if-selected, audio-input-if-selected, sensors-if-selected, safe-area-keyboard, android-back-handling, background-foreground\niOS missing metadata: artifact, evidenceUrl, deviceModel, osVersion, orientation, locale\niOS must-pass remaining: cold-launch, no-godotjs-load-diagnostics, plist-entitlements, storage-restart, network-if-selected, clipboard-if-selected, permission-prompts-if-selected, adapter-states-if-selected, hardware-adapters-if-selected, haptics-if-selected, audio-input-if-selected, sensors-if-selected, safe-area-keyboard-rotation-text-input, background-foreground\niOS skippable remaining: deep-links-share-notifications-if-selected",
+      "detail": "Record artifact IDs, evidence URLs, export presets, device models, OS versions, orientation, locale, selected APIs, and target test outcomes before assembling final evidence.\nAndroid: 6 metadata field(s) missing, 14/14 required check(s) unresolved, 14 must-pass check(s) missing; iOS: 6 metadata field(s) missing, 15/15 required check(s) unresolved, 14 must-pass check(s) missing\nAndroid missing metadata: artifact, evidenceUrl, deviceModel, osVersion, orientation, locale\nAndroid must-pass remaining: cold-launch, no-godotjs-load-diagnostics, storage-restart, network-if-selected, clipboard-if-selected, permission-prompts-if-selected, adapter-states-if-selected, hardware-adapters-if-selected, haptics-if-selected, audio-input-if-selected, sensors-if-selected, safe-area-keyboard, android-back-handling, background-foreground\niOS missing metadata: artifact, evidenceUrl, deviceModel, osVersion, orientation, locale\niOS must-pass remaining: cold-launch, no-godotjs-load-diagnostics, plist-entitlements, storage-restart, network-if-selected, clipboard-if-selected, permission-prompts-if-selected, adapter-states-if-selected, hardware-adapters-if-selected, haptics-if-selected, audio-input-if-selected, sensors-if-selected, safe-area-keyboard-rotation-text-input, background-foreground\niOS skippable remaining: deep-links-share-notifications-if-selected",
       "platformCheckDetails": [
         {
           "check": "cold-launch",
@@ -97,7 +97,7 @@
         },
         {
           "check": "hardware-adapters-if-selected",
-          "description": "Verify selected camera, geolocation, media device, or other hardware-backed adapters on real or hosted hardware.",
+          "description": "Verify selected camera, geolocation, media device, or other hardware-backed adapters on the tested real, hosted, emulator, or simulator target.",
           "mustPass": true,
           "passOnly": false,
           "platform": "android",
@@ -261,7 +261,7 @@
         },
         {
           "check": "hardware-adapters-if-selected",
-          "description": "Verify selected camera, geolocation, media device, or other hardware-backed adapters on real or hosted hardware.",
+          "description": "Verify selected camera, geolocation, media device, or other hardware-backed adapters on the tested real, hosted, emulator, or simulator target.",
           "mustPass": true,
           "passOnly": false,
           "platform": "ios",
