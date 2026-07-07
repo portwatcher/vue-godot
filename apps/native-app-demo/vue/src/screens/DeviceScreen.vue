@@ -46,7 +46,7 @@ import {
   type DeviceCapabilityStatus,
 } from '@vue-godot/device'
 import type { HtmlStyle } from '@vue-godot/html'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -55,21 +55,23 @@ const capabilityNames: DeviceCapabilityName[] = [
   'media-devices',
   'geolocation',
 ]
-const capabilityStatuses = ref(readCapabilityStatuses())
+const capabilityStatuses = ref<DeviceCapabilityStatus[]>([])
 const permissionMessage = ref('No permission queried yet.')
 const nativeCallMessage = ref('No native call attempted yet.')
 const capabilitySummary = computed(() =>
-  capabilityStatuses.value
-    .map((status) => `${status.name}: ${status.state}`)
-    .join(' | '),
+  capabilityStatuses.value.length > 0
+    ? capabilityStatuses.value
+        .map((status) => `${status.capability}: ${status.state}`)
+        .join(' | ')
+    : 'No adapter status loaded yet.',
 )
 
-function readCapabilityStatuses(): DeviceCapabilityStatus[] {
-  return capabilityNames.map((name) => getCapabilityStatus(name))
+async function readCapabilityStatuses(): Promise<DeviceCapabilityStatus[]> {
+  return Promise.all(capabilityNames.map((name) => getCapabilityStatus(name)))
 }
 
-function refreshCapabilities(): void {
-  capabilityStatuses.value = readCapabilityStatuses()
+async function refreshCapabilities(): Promise<void> {
+  capabilityStatuses.value = await readCapabilityStatuses()
 }
 
 async function queryPermission(name: GodotPermissionName): Promise<void> {
@@ -82,6 +84,12 @@ async function queryPermission(name: GodotPermissionName): Promise<void> {
 }
 
 async function requestCamera(): Promise<void> {
+  const status = await getCapabilityStatus('media-devices')
+  if (status.state !== 'supported') {
+    nativeCallMessage.value = `media-devices adapter: ${status.state}`
+    return
+  }
+
   try {
     const stream = await mediaDevices.getUserMedia({ video: true })
     const tracks = stream.getTracks()
@@ -123,7 +131,12 @@ function goHome(): void {
   void router.push('/')
 }
 
+onMounted(() => {
+  void refreshCapabilities()
+})
+
 const screenStyle: HtmlStyle = {
+  flexDirection: 'column',
   gap: 12,
   padding: 8,
 }
@@ -152,6 +165,7 @@ const panelStyle: HtmlStyle = {
 }
 const buttonRowStyle: HtmlStyle = {
   flexDirection: 'row',
+  flexWrap: 'wrap',
   gap: 8,
 }
 const sectionTitleStyle: HtmlStyle = {

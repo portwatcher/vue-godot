@@ -18,10 +18,16 @@ export default class Root extends VBoxContainer {
   private app: ReturnType<typeof createApp> | null = null
 
   _ready() {
+    void this.mountApp()
+  }
+
+  private async mountApp(): Promise<void> {
     this.app?.unmount()
     const app = createApp(App)
     app.use(htmlPlugin)
     app.use(router)
+    await router.replace('/')
+    await router.isReady()
     app.mount(this)
     this.app = app
 

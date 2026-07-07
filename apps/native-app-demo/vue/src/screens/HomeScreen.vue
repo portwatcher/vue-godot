@@ -217,6 +217,7 @@ onUnmounted(() => {
 })
 
 const screenStyle: HtmlStyle = {
+  flexDirection: 'column',
   gap: 12,
   padding: 8,
 }
@@ -237,6 +238,7 @@ const titleStyle: HtmlStyle = {
 }
 const statusGridStyle: HtmlStyle = {
   flexDirection: 'row',
+  flexWrap: 'wrap',
   gap: 10,
 }
 const statusCardStyle: HtmlStyle = {

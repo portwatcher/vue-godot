@@ -387,6 +387,9 @@ the final removal commit.
 - [x] Serious native app demo is complete and passes build/smoke.
 - [x] Serious game UI demo is complete and passes build/smoke.
 - [ ] Android export with selected device APIs has been tested.
+  - Partial Android emulator export smoke recorded in
+    `apps/native-app-demo/docs/android-emulator-smoke-2026-07-07.md`; the full
+    production-profile Android worksheet remains open.
 - [ ] iOS export with selected device APIs has been tested.
 - [ ] CI passes on a clean commit.
 - [ ] Release preflight passes without warnings in the release environment.

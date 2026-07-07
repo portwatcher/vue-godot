@@ -14,7 +14,7 @@ This app exists to keep SDK-level native application flows exercised:
 | network loading       | Runs `checkNetworkReachability()` with loading state.                                 |
 | reachability          | Uses `navigator.onLine` plus `setNavigatorOnline()` transitions.                      |
 | persistent storage    | Saves profile state with `localStorage` and `sessionStorage`.                         |
-| camera or geolocation | Calls `mediaDevices.getUserMedia()` and `navigator.geolocation.getCurrentPosition()`. |
+| camera or geolocation | Checks media/geolocation adapters, then calls the native APIs when available. |
 | permission            | Queries `navigator.permissions.query()` for camera and geolocation.                   |
 | SafeAreaView          | Wraps routed content in `<SafeAreaView>`.                                             |
 | KeyboardAvoidingView  | Wraps form input in `<KeyboardAvoidingView>`.                                         |
@@ -22,6 +22,8 @@ This app exists to keep SDK-level native application flows exercised:
 | npm run build         | Builds the SDK dependencies and Vite bundle.                                          |
 
 You can also open `project.godot` in GodotJS and press F5 after building.
+The Android emulator smoke record lives in
+[`docs/android-emulator-smoke-2026-07-07.md`](docs/android-emulator-smoke-2026-07-07.md).
 
 ## Commands
 
