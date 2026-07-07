@@ -26,29 +26,35 @@ Godot loads `dist/app.js`, so build before exporting. Keep `vue/`, `gen/`, and
 Create an Android export preset and enable the permissions required by the APIs
 your app actually uses:
 
-| App capability | Android permission / export setting |
-| --- | --- |
-| Network requests, WebSocket, reachability probes | `android.permission.INTERNET` |
-| Camera capture or `getUserMedia({ video: ... })` | `android.permission.CAMERA` |
-| Microphone capture or `getUserMedia({ audio: ... })` | `android.permission.RECORD_AUDIO` |
-| Handheld vibration | `android.permission.VIBRATE` |
-| Notifications on Android 13+ | `android.permission.POST_NOTIFICATIONS` |
-| Geolocation | `android.permission.ACCESS_FINE_LOCATION` and/or `android.permission.ACCESS_COARSE_LOCATION` |
+| App capability                                       | Android permission / export setting                                                          |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Network requests, WebSocket, reachability probes     | `android.permission.INTERNET`                                                                |
+| Camera capture or `getUserMedia({ video: ... })`     | `android.permission.CAMERA`                                                                  |
+| Microphone capture or `getUserMedia({ audio: ... })` | `android.permission.RECORD_AUDIO`                                                            |
+| Handheld vibration                                   | `android.permission.VIBRATE`                                                                 |
+| Notifications on Android 13+                         | `android.permission.POST_NOTIFICATIONS`                                                      |
+| Geolocation                                          | `android.permission.ACCESS_FINE_LOCATION` and/or `android.permission.ACCESS_COARSE_LOCATION` |
 
 Native plugin-backed capabilities may also require Gradle build settings, plugin
 repositories, AAR files, or custom manifest entries. Keep those requirements in
 the app repository next to the adapter registration code.
 
+Before recording Android evidence, open the `Release checks` screen in the app
+and run the production-profile check batch. It exercises the maintained release
+API set, including fetch, WebSocket constructor support, reachability,
+`navigator.onLine`, storage, permissions, clipboard, geolocation/media adapter
+states, vibration, sensors, `SafeAreaView`, and `KeyboardAvoidingView`.
+
 ## iOS Exports
 
 Create an iOS export preset and add plist usage descriptions for selected APIs:
 
-| App capability | iOS plist key |
-| --- | --- |
-| Camera capture | `NSCameraUsageDescription` |
-| Microphone capture | `NSMicrophoneUsageDescription` |
-| Geolocation | `NSLocationWhenInUseUsageDescription` |
-| Photo/media access | `NSPhotoLibraryUsageDescription` |
+| App capability     | iOS plist key                         |
+| ------------------ | ------------------------------------- |
+| Camera capture     | `NSCameraUsageDescription`            |
+| Microphone capture | `NSMicrophoneUsageDescription`        |
+| Geolocation        | `NSLocationWhenInUseUsageDescription` |
+| Photo/media access | `NSPhotoLibraryUsageDescription`      |
 
 Native notification and share-sheet plugins may require additional entitlements,
 capabilities, or plugin-specific setup.

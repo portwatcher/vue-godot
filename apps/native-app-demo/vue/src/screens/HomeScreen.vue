@@ -5,7 +5,10 @@
         <Span :style="eyebrowStyle">native app demo</Span>
         <Span :style="titleStyle">Production app flow</Span>
       </Div>
-      <Button @click="goToDevice">Device APIs</Button>
+      <Div :style="buttonRowStyle">
+        <Button @click="goToReleaseChecks">Release checks</Button>
+        <Button @click="goToDevice">Device APIs</Button>
+      </Div>
     </Div>
 
     <Div :style="statusGridStyle">
@@ -203,6 +206,10 @@ function syncReachability(): void {
 
 function goToDevice(): void {
   void router.push('/device')
+}
+
+function goToReleaseChecks(): void {
+  void router.push('/release-checks')
 }
 
 onMounted(() => {

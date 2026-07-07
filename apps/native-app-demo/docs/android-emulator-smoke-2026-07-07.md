@@ -2,9 +2,9 @@
 
 This records a partial native app Android export smoke run. It proves the
 `native-app-demo` Android export can build, install, cold-launch, render the
-Vue route, and report selected device adapter states on an emulator. It does
-not complete the final release Android production-profile worksheet in
-`release/platform-evidence.json`.
+Vue routes, report selected device adapter states, and run the release-check
+screen on an emulator. It does not complete the final release Android
+production-profile worksheet in `release/platform-evidence.json`.
 
 ## Target
 
@@ -21,7 +21,7 @@ not complete the final release Android production-profile worksheet in
 ## Artifact
 
 - APK: `apps/native-app-demo/build/android/native-app-demo-debug.apk`
-- SHA-256: `9421e4b9c09f7af3cf49f11af3ebaf03c7534b73bedcf7fa2d3d238370d4afd4`
+- SHA-256: `c254ac154365277527be9546bac51247d0eec810c484453a392e66e78e762a05`
 - Package: `org.vuegodot.nativeappdemo`
 - Version: `1.0.0`
 - compileSdk: `34`
@@ -65,8 +65,8 @@ adb -e shell am start -n org.vuegodot.nativeappdemo/com.godot.game.GodotApp
 - Android export succeeded.
 - APK installed successfully on the emulator.
 - Cold launch reached `org.vuegodot.nativeappdemo/com.godot.game.GodotApp`.
-- The app process stayed alive and owned emulator focus after launch and after
-  device API taps.
+- The app process stayed alive and owned emulator focus after launch, device API
+  taps, and the release-check batch.
 - GodotJS startup log included `jsb.inject loaded successfully`,
   `OnGodotSetupCompleted`, and `OnGodotMainLoopStarted`.
 - Filtered logcat after the guarded camera/geolocation taps had no
@@ -80,6 +80,13 @@ adb -e shell am start -n org.vuegodot.nativeappdemo/com.godot.game.GodotApp
 - The camera action reported `media-devices adapter: missing-plugin` without
   invoking `getUserMedia()` on an unregistered adapter.
 - The geolocation action reported `geolocation adapter is not registered`.
+- The release-check screen completed with `15 passed`, `5 informational`, and
+  `0 failed`.
+- The release-check batch covered WebSocket constructor constants,
+  `navigator.onLine` events, local/session storage, `fetch`, network
+  reachability, permission query states, clipboard support, native adapter
+  states, guarded media/geolocation calls, vibration, sensors, and layout
+  primitives.
 
 ## Screenshots
 
@@ -89,11 +96,13 @@ adb -e shell am start -n org.vuegodot.nativeappdemo/com.godot.game.GodotApp
 
 ![Device API geolocation state](./evidence/android-emulator-device-geolocation-2026-07-07.png)
 
+![Release checks](./evidence/android-emulator-release-checks-2026-07-07.png)
+
 ## Remaining Release Work
 
 This is narrower than the maintained production profile. The final Android
 release gate still needs the full `release/platform-evidence.json` Android
-worksheet to pass, including storage restart, network, clipboard, haptics,
-sensors, safe-area/keyboard, Android back handling, background/foreground, and
-the selected adapter success or accepted fallback states required by the
+worksheet to pass, including storage restart, Android back handling,
+background/foreground, complete evidence capture for every required row, and the
+selected native adapter success or accepted fallback states required by the
 release checklist.
