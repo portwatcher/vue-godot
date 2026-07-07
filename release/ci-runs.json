@@ -2,29 +2,32 @@
   "ready": true,
   "commit": "68f88b1254ba76795a848f14f8ed616ec489dfec",
   "commitFound": true,
-  "releasePreflightRunCommit": null,
+  "releasePreflightRunCommit": "aa0651b3ea285a42b2f9b11ef7fdb5d5cbdd0890",
   "localGit": {
     "currentBranch": "develop",
-    "currentHead": "68f88b1254ba76795a848f14f8ed616ec489dfec",
-    "commitIsHead": true,
+    "currentHead": "aa0651b3ea285a42b2f9b11ef7fdb5d5cbdd0890",
+    "commitIsHead": false,
     "upstreamRef": "origin/develop",
-    "upstreamCommit": "68f88b1254ba76795a848f14f8ed616ec489dfec",
-    "upstreamMatchesCommit": true,
+    "upstreamCommit": "aa0651b3ea285a42b2f9b11ef7fdb5d5cbdd0890",
+    "upstreamMatchesCommit": false,
     "dirtyWorktree": false
   },
   "requiredWorkflowNames": [
     "Check",
-    "Godot Smoke"
+    "Godot Smoke",
+    "Release Preflight"
   ],
   "passedWorkflowNames": [
     "Check",
-    "Godot Smoke"
+    "Godot Smoke",
+    "Release Preflight"
   ],
   "missingWorkflowNames": [],
   "checks": {
     "checkWorkflow": true,
     "commitFound": true,
-    "godotSmokeWorkflow": true
+    "godotSmokeWorkflow": true,
+    "releasePreflightWorkflow": true
   },
   "evidence": {
     "commit": "68f88b1254ba76795a848f14f8ed616ec489dfec",
@@ -45,6 +48,15 @@
         "runNumber": 97,
         "runAttempt": 1,
         "runCommit": "68f88b1254ba76795a848f14f8ed616ec489dfec",
+        "runConclusion": "success"
+      },
+      "Release Preflight": {
+        "workflowName": "Release Preflight",
+        "runUrl": "https://github.com/portwatcher/vue-godot/actions/runs/28879322532",
+        "runId": 28879322532,
+        "runNumber": 1,
+        "runAttempt": 1,
+        "runCommit": "aa0651b3ea285a42b2f9b11ef7fdb5d5cbdd0890",
         "runConclusion": "success"
       }
     }

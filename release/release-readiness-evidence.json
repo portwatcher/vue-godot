@@ -1,0 +1,13 @@
+{
+  "commit": "68f88b1254ba76795a848f14f8ed616ec489dfec",
+  "releasePreflightRunUrl": "https://github.com/portwatcher/vue-godot/actions/runs/28879322532",
+  "releasePreflightRunWorkflowName": "Release Preflight",
+  "releasePreflightRunCommit": "aa0651b3ea285a42b2f9b11ef7fdb5d5cbdd0890",
+  "releasePreflightRunConclusion": "success",
+  "releasePreflightLocalOnly": false,
+  "releasePreflightSkipCheck": false,
+  "releasePreflightSkipGodot": false,
+  "releasePreflightSkipSeriousExamples": false,
+  "releasePreflightFailureCount": 0,
+  "releasePreflightWarningCount": 0
+}
