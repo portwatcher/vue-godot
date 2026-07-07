@@ -536,8 +536,11 @@ Run these before platform-specific device checks:
    required iOS `ios.zip` export package, and common hosted-provider environment
    variable sets are available and to write a gitignored JSON diagnostic. Install
    the iOS 4.4 debug and release library assets from the `godotjs/GodotJS`
-   release channel before local simulator export checks; the current exporter
-   also needs a compatible `ios.zip` package and Apple signing/team settings. The
+   release channel before local export checks, and add
+   `--assemble-ios-package` to the release asset install command after the debug
+   asset is present. The assembled `ios.zip` supports Godot's project-only Xcode
+   export path; local simulator execution still needs upstream-compatible
+   GodotJS simulator template slices and Apple signing/team settings. The
    hosted-provider diagnostic reports configured environment variable names and
    partially configured missing-name hints for BrowserStack, Sauce Labs,
    Firebase Test Lab, AWS Device Farm, LambdaTest, and Kobiton, but never their

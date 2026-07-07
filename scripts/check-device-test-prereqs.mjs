@@ -41,7 +41,7 @@ const androidExportTemplateInstallCommand =
 const iosExportTemplateInstallCommand = iosExportTemplateAssets
   .map(
     (asset) =>
-      `npm run setup:godotjs -- --release ${iosExportTemplateRelease} --release-repo ${iosExportTemplateReleaseRepo} --asset ${asset} --asset-kind templates --install-templates --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir`,
+      `npm run setup:godotjs -- --release ${iosExportTemplateRelease} --release-repo ${iosExportTemplateReleaseRepo} --asset ${asset} --asset-kind templates --install-templates${asset.includes('release') ? ' --assemble-ios-package' : ''} --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir`,
   )
   .join(' && ')
 const androidSdkEnvNames = ['ANDROID_HOME', 'ANDROID_SDK_ROOT']
@@ -1037,7 +1037,7 @@ function collectIosExportTemplateStatus(options = {}) {
   const warnings = []
   const notes = [
     `iOS library template assets are provided by ${iosExportTemplateReleaseRepo} ${iosExportTemplateRelease}; ${pinnedGodotJsRelease} remains the editor/runtime bundle used for local smoke checks.`,
-    `The current GodotJS iOS exporter still requires a compatible ${iosExportPackageFile} export package before local device or simulator export checks can run.`,
+    `Install the release iOS asset with --assemble-ios-package to build ${iosExportPackageFile} for Godot's project-only Xcode export path; simulator execution still needs upstream-compatible GodotJS simulator slices and Apple signing/team setup.`,
   ]
   let templatesRoot
 
@@ -1109,7 +1109,7 @@ function collectIosExportTemplateStatus(options = {}) {
   }
   if (missingExportPackage) {
     warnings.push(
-      `Add a compatible ${iosExportPackageFile} iOS export package to the same Godot export-template directory before local iOS export checks.`,
+      `Assemble ${iosExportPackageFile} with the GodotJS iOS release template install command before local iOS project export checks.`,
     )
   }
 

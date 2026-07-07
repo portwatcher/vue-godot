@@ -51,7 +51,9 @@ background/foreground the app, and run the screen one final time.
 
 ## iOS Exports
 
-Create an iOS export preset and add plist usage descriptions for selected APIs:
+The checked-in `iOS Release` preset exports an Xcode project
+(`application/export_project_only=true`) and includes plist usage descriptions
+for the selected production-profile APIs:
 
 | App capability     | iOS plist key                         |
 | ------------------ | ------------------------------------- |
@@ -60,6 +62,18 @@ Create an iOS export preset and add plist usage descriptions for selected APIs:
 | Geolocation        | `NSLocationWhenInUseUsageDescription` |
 | Photo/media access | `NSPhotoLibraryUsageDescription`      |
 
+Install both GodotJS iOS library assets, then assemble the local project-export
+package before running the Godot export:
+
+```bash
+npm run setup:godotjs -- --release v1.1.0-generate-typings --release-repo godotjs/GodotJS --asset ios-template_debug-4.4-v8 --asset-kind templates --install-templates --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir
+npm run setup:godotjs -- --release v1.1.0-generate-typings --release-repo godotjs/GodotJS --asset ios-template_release-4.4-v8 --asset-kind templates --install-templates --assemble-ios-package --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir
+```
+
+The assembled `ios.zip` supports Godot's project-only Xcode export path. Local
+iOS simulator execution still requires upstream-compatible GodotJS simulator
+template slices plus real Apple signing/team configuration; the published
+GodotJS 4.4 V8 iOS assets currently provide device `arm64` static libraries.
 Native notification and share-sheet plugins may require additional entitlements,
 capabilities, or plugin-specific setup.
 

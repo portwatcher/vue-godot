@@ -58,7 +58,7 @@ test('real device release checklist covers required Android and iOS gates', () =
     /Android\s+SDK\/build-tools/,
     /selected Xcode\s+command-line\s+utilities/,
     /GodotJS Android export\s+templates,\s+iOS library assets,\s+the\s+required iOS `ios\.zip` export package/,
-    /current exporter\s+also needs a compatible\s+`ios\.zip` package/,
+    /`--assemble-ios-package`[\s\S]*assembled `ios\.zip` supports Godot's project-only Xcode\s+export path/,
     /toolchain, and\s+export-template details/,
     /devicePrereqs/,
     /Device Prereq\s+Diagnostics/,

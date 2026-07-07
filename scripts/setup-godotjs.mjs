@@ -12,6 +12,9 @@ const repoRoot = path.resolve(scriptDir, '..')
 export const pinnedGodotJsRelease = 'GodotJS_1.0.0-2'
 export const defaultGodotJsReleaseRepo = 'ialex32x/GodotJS-Build'
 export const defaultGodotJsCacheDir = '.cache/godotjs'
+export const defaultGodotIosPackageSourceRepo =
+  'https://github.com/godotengine/godot.git'
+export const defaultGodotIosPackageSourceRef = '4.4'
 
 const defaultAssetByPlatformArch = new Map([
   ['darwin:arm64', 'prebuilt_macos_arm64_v8'],
@@ -36,6 +39,16 @@ Options:
   --template-version <v> Export template version dir to install into.
   --templates-root <p>  Export templates root. Defaults to the Godot user dir.
   --godot-bin <path>    Godot executable used to infer --template-version.
+  --assemble-ios-package
+                        Assemble ios.zip for iOS Xcode project export from
+                        installed GodotJS iOS debug/release static libraries.
+  --ios-package-source <p>
+                        Existing Godot checkout or misc/dist/ios_xcode scaffold.
+  --ios-package-repo <r>
+                        Godot source repo for sparse iOS scaffold clone.
+                        Default: ${defaultGodotIosPackageSourceRepo}
+  --ios-package-ref <r> Godot source ref for sparse iOS scaffold clone.
+                        Default: ${defaultGodotIosPackageSourceRef}
   --print-bin           Print only the resolved Godot executable path.
   --print-dir           Print only the template asset or install directory.
   --dry-run             Print the resolved setup plan as JSON without I/O.
@@ -150,6 +163,9 @@ function parseArgs(argv) {
     ['--template-version', 'templateVersion'],
     ['--templates-root', 'templatesRoot'],
     ['--godot-bin', 'godotBin'],
+    ['--ios-package-source', 'iosPackageSource'],
+    ['--ios-package-repo', 'iosPackageRepo'],
+    ['--ios-package-ref', 'iosPackageRef'],
     ['--platform', 'platform'],
     ['--arch', 'arch'],
   ]
@@ -162,7 +178,11 @@ function parseArgs(argv) {
     templateVersion: undefined,
     templatesRoot: undefined,
     godotBin: undefined,
+    iosPackageSource: undefined,
+    iosPackageRepo: undefined,
+    iosPackageRef: undefined,
     installTemplates: false,
+    assembleIosPackage: false,
     printBin: false,
     printDir: false,
     dryRun: false,
@@ -195,6 +215,11 @@ function parseArgs(argv) {
 
     if (arg === '--install-templates') {
       options.installTemplates = true
+      continue
+    }
+
+    if (arg === '--assemble-ios-package') {
+      options.assembleIosPackage = true
       continue
     }
 
@@ -240,6 +265,14 @@ function parseArgs(argv) {
 
   if (options.installTemplates && options.assetKind !== 'templates') {
     throw new Error('--install-templates requires --asset-kind templates')
+  }
+
+  if (options.assembleIosPackage && options.assetKind !== 'templates') {
+    throw new Error('--assemble-ios-package requires --asset-kind templates')
+  }
+
+  if (options.assembleIosPackage && !options.installTemplates) {
+    throw new Error('--assemble-ios-package requires --install-templates')
   }
 
   return options
@@ -407,6 +440,186 @@ export function installGodotJsTemplateAsset(plan, options = {}) {
   }
 }
 
+function sanitizePathSegment(value) {
+  return value.replace(/[^A-Za-z0-9._-]+/g, '-')
+}
+
+function hasGodotIosScaffold(scaffoldDir) {
+  return (
+    fs.existsSync(path.join(scaffoldDir, 'godot_ios.xcodeproj')) &&
+    fs.existsSync(path.join(scaffoldDir, 'godot_ios', 'godot_ios-Info.plist'))
+  )
+}
+
+function resolveGodotIosScaffoldDir(sourceDir) {
+  const candidates = [
+    sourceDir,
+    path.join(sourceDir, 'misc', 'dist', 'ios_xcode'),
+  ]
+
+  return candidates.find((candidate) => hasGodotIosScaffold(candidate)) ?? null
+}
+
+function runCommand(command, args, options, label) {
+  const result = spawnSync(command, args, {
+    encoding: 'utf-8',
+    ...options,
+  })
+  assertCommandSucceeded(result, label)
+  return result
+}
+
+function ensureGodotIosScaffoldDir(sourceDir, options, log) {
+  const existingScaffold = resolveGodotIosScaffoldDir(sourceDir)
+  if (existingScaffold) {
+    return existingScaffold
+  }
+
+  if (options.iosPackageSource) {
+    throw new Error(
+      `Unable to locate Godot iOS Xcode scaffold in ${sourceDir}; expected misc/dist/ios_xcode or the scaffold directory itself.`,
+    )
+  }
+
+  const sourceParent = path.dirname(sourceDir)
+  fs.mkdirSync(sourceParent, { recursive: true })
+
+  if (fs.existsSync(sourceDir) && fs.readdirSync(sourceDir).length > 0) {
+    throw new Error(
+      `Unable to clone Godot iOS scaffold into non-empty directory without scaffold: ${sourceDir}`,
+    )
+  }
+
+  const repo = options.iosPackageRepo ?? defaultGodotIosPackageSourceRepo
+  const ref = options.iosPackageRef ?? defaultGodotIosPackageSourceRef
+  const commandRunner = options.commandRunner ?? runCommand
+
+  log(`[setup-godotjs] cloning Godot iOS Xcode scaffold ${repo}#${ref}`)
+  commandRunner(
+    'git',
+    [
+      'clone',
+      '--depth',
+      '1',
+      '--filter=blob:none',
+      '--sparse',
+      '--branch',
+      ref,
+      repo,
+      sourceDir,
+    ],
+    {},
+    'Godot iOS scaffold clone',
+  )
+  commandRunner(
+    'git',
+    ['-C', sourceDir, 'sparse-checkout', 'set', 'misc/dist/ios_xcode'],
+    {},
+    'Godot iOS scaffold sparse checkout',
+  )
+
+  const clonedScaffold = resolveGodotIosScaffoldDir(sourceDir)
+  if (!clonedScaffold) {
+    throw new Error(
+      `Godot iOS scaffold clone did not produce misc/dist/ios_xcode in ${sourceDir}`,
+    )
+  }
+  return clonedScaffold
+}
+
+function requireFile(filePath, label) {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`${label} is missing: ${filePath}`)
+  }
+}
+
+export function assembleGodotIosExportPackage(templatesDir, options = {}) {
+  const debugLibrary = path.join(
+    templatesDir,
+    'libgodot.ios.template_debug.arm64.a',
+  )
+  const releaseLibrary = path.join(
+    templatesDir,
+    'libgodot.ios.template_release.arm64.a',
+  )
+  requireFile(debugLibrary, 'GodotJS iOS debug library')
+  requireFile(releaseLibrary, 'GodotJS iOS release library')
+
+  const ref = options.iosPackageRef ?? defaultGodotIosPackageSourceRef
+  const sourceDir = path.resolve(
+    repoRoot,
+    options.iosPackageSource ??
+      path.join(
+        options.cacheDir ?? defaultGodotJsCacheDir,
+        '_godot-ios-package-source',
+        sanitizePathSegment(ref),
+      ),
+  )
+  const log = options.log ?? (() => {})
+  const commandRunner = options.commandRunner ?? runCommand
+  const scaffoldDir = ensureGodotIosScaffoldDir(sourceDir, options, log)
+  const outputPath = path.join(templatesDir, 'ios.zip')
+  const tempOutputPath = `${outputPath}.tmp`
+  const workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-ios-zip-'))
+
+  try {
+    fs.cpSync(scaffoldDir, workDir, { recursive: true })
+
+    const debugFramework = path.join(workDir, 'libgodot.ios.debug.xcframework')
+    const releaseFramework = path.join(
+      workDir,
+      'libgodot.ios.release.xcframework',
+    )
+    fs.rmSync(debugFramework, { force: true, recursive: true })
+    fs.rmSync(releaseFramework, { force: true, recursive: true })
+
+    commandRunner(
+      'xcodebuild',
+      [
+        '-create-xcframework',
+        '-library',
+        debugLibrary,
+        '-output',
+        debugFramework,
+      ],
+      {},
+      'GodotJS iOS debug xcframework creation',
+    )
+    commandRunner(
+      'xcodebuild',
+      [
+        '-create-xcframework',
+        '-library',
+        releaseLibrary,
+        '-output',
+        releaseFramework,
+      ],
+      {},
+      'GodotJS iOS release xcframework creation',
+    )
+
+    fs.rmSync(tempOutputPath, { force: true })
+    commandRunner(
+      'zip',
+      ['-q', '-r', tempOutputPath, '.'],
+      { cwd: workDir },
+      'GodotJS iOS export package zip',
+    )
+    fs.renameSync(tempOutputPath, outputPath)
+
+    return {
+      debugLibrary,
+      releaseLibrary,
+      outputPath,
+      scaffoldDir,
+      templatesDir,
+    }
+  } finally {
+    fs.rmSync(tempOutputPath, { force: true })
+    fs.rmSync(workDir, { force: true, recursive: true })
+  }
+}
+
 function downloadFileOnce(url, destination, log) {
   return new Promise((resolve, reject) => {
     const request = https.get(url, (response) => {
@@ -523,10 +736,25 @@ export async function setupGodotJs(options = {}) {
     )
 
     let installedTemplates = null
+    let assembledIosPackage = null
     if (options.installTemplates) {
       installedTemplates = installGodotJsTemplateAsset(plan, options)
       log(
         `[setup-godotjs] installed ${installedTemplates.entries.length} template file(s) to ${installedTemplates.templatesDir}`,
+      )
+    }
+
+    if (options.assembleIosPackage) {
+      assembledIosPackage = assembleGodotIosExportPackage(
+        installedTemplates.templatesDir,
+        {
+          ...options,
+          cacheDir: plan.cacheDir,
+          log,
+        },
+      )
+      log(
+        `[setup-godotjs] assembled iOS export package at ${assembledIosPackage.outputPath}`,
       )
     }
 
@@ -541,6 +769,11 @@ export async function setupGodotJs(options = {}) {
               GODOTJS_EXPORT_TEMPLATES_DIR: installedTemplates.templatesDir,
               GODOTJS_EXPORT_TEMPLATE_VERSION:
                 installedTemplates.templateVersion,
+            }
+          : {}),
+        ...(assembledIosPackage
+          ? {
+              GODOTJS_IOS_PACKAGE: assembledIosPackage.outputPath,
             }
           : {}),
       })

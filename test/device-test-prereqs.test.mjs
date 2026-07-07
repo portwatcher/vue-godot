@@ -520,7 +520,7 @@ test('export template status keeps iOS library-only installs waiting for ios.zip
       (requiredFile) => requiredFile !== 'ios.zip',
     ),
   ])
-  assert.match(status.ios.warnings.join('\n'), /compatible ios\.zip/)
+  assert.match(status.ios.warnings.join('\n'), /Assemble ios\.zip/)
 })
 
 test('export template status reports complete iOS GodotJS templates', (t) => {

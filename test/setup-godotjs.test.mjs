@@ -5,9 +5,12 @@ import path from 'node:path'
 import test from 'node:test'
 
 import {
+  assembleGodotIosExportPackage,
   defaultGodotJsReleaseRepo,
   defaultGodotExportTemplatesRoot,
   defaultGodotJsAssetForPlatform,
+  defaultGodotIosPackageSourceRef,
+  defaultGodotIosPackageSourceRepo,
   godotJsReleaseAssetUrl,
   installGodotJsTemplateAsset,
   pinnedGodotJsRelease,
@@ -246,6 +249,100 @@ test('GodotJS template asset installation flattens single nested template direct
   }
 })
 
+test('GodotJS setup assembles an iOS project export package from installed libraries', () => {
+  const tempRoot = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'vue-godot-ios-package-'),
+  )
+  try {
+    const templatesDir = path.join(tempRoot, 'templates')
+    const sourceRoot = path.join(tempRoot, 'godot-source')
+    const scaffoldDir = path.join(sourceRoot, 'misc', 'dist', 'ios_xcode')
+    fs.mkdirSync(templatesDir, { recursive: true })
+    fs.mkdirSync(path.join(scaffoldDir, 'godot_ios.xcodeproj'), {
+      recursive: true,
+    })
+    fs.mkdirSync(path.join(scaffoldDir, 'godot_ios'), { recursive: true })
+    fs.writeFileSync(
+      path.join(templatesDir, 'libgodot.ios.template_debug.arm64.a'),
+      'debug',
+    )
+    fs.writeFileSync(
+      path.join(templatesDir, 'libgodot.ios.template_release.arm64.a'),
+      'release',
+    )
+    fs.writeFileSync(
+      path.join(scaffoldDir, 'godot_ios.xcodeproj', 'project.pbxproj'),
+      'project',
+    )
+    fs.writeFileSync(
+      path.join(scaffoldDir, 'godot_ios', 'godot_ios-Info.plist'),
+      'plist',
+    )
+    fs.writeFileSync(path.join(scaffoldDir, 'data.pck'), 'pck')
+
+    const calls = []
+    const commandRunner = (command, args, options, label) => {
+      calls.push({ command, args, cwd: options.cwd, label })
+      if (command === 'xcodebuild') {
+        const outputIndex = args.indexOf('-output')
+        fs.mkdirSync(args[outputIndex + 1], { recursive: true })
+        fs.writeFileSync(path.join(args[outputIndex + 1], 'Info.plist'), label)
+      }
+      if (command === 'zip') {
+        fs.writeFileSync(args[2], 'zip')
+      }
+      return { status: 0, stdout: '', stderr: '' }
+    }
+
+    const result = assembleGodotIosExportPackage(templatesDir, {
+      commandRunner,
+      iosPackageSource: sourceRoot,
+      log: () => {},
+    })
+
+    assert.equal(result.outputPath, path.join(templatesDir, 'ios.zip'))
+    assert.equal(fs.readFileSync(result.outputPath, 'utf-8'), 'zip')
+    assert.equal(result.scaffoldDir, scaffoldDir)
+    assert.deepEqual(
+      calls.map((call) => [call.command, call.label]),
+      [
+        ['xcodebuild', 'GodotJS iOS debug xcframework creation'],
+        ['xcodebuild', 'GodotJS iOS release xcframework creation'],
+        ['zip', 'GodotJS iOS export package zip'],
+      ],
+    )
+    assert.match(calls[0].args.join(' '), /template_debug\.arm64\.a/)
+    assert.match(calls[1].args.join(' '), /template_release\.arm64\.a/)
+    assert.equal(
+      path.basename(calls[2].cwd).startsWith('vue-godot-ios-zip-'),
+      true,
+    )
+  } finally {
+    fs.rmSync(tempRoot, { force: true, recursive: true })
+  }
+})
+
+test('GodotJS iOS package assembly requires installed debug and release libraries', () => {
+  const tempRoot = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'vue-godot-ios-package-'),
+  )
+  try {
+    const templatesDir = path.join(tempRoot, 'templates')
+    fs.mkdirSync(templatesDir)
+
+    assert.throws(
+      () =>
+        assembleGodotIosExportPackage(templatesDir, {
+          iosPackageSource: tempRoot,
+          log: () => {},
+        }),
+      /GodotJS iOS debug library is missing/,
+    )
+  } finally {
+    fs.rmSync(tempRoot, { force: true, recursive: true })
+  }
+})
+
 test('GodotJS setup is exposed through npm and the shared CI action', () => {
   const packageJson = JSON.parse(readText('package.json'))
   const action = readText('.github/actions/setup-godotjs/action.yml')
@@ -257,6 +354,11 @@ test('GodotJS setup is exposed through npm and the shared CI action', () => {
     packageJson.scripts['setup:godotjs'],
     'node scripts/setup-godotjs.mjs',
   )
+  assert.equal(
+    defaultGodotIosPackageSourceRepo,
+    'https://github.com/godotengine/godot.git',
+  )
+  assert.equal(defaultGodotIosPackageSourceRef, '4.4')
   assert.match(action, /default: GodotJS_1\.0\.0-2/)
   assert.match(action, /default: prebuilt_linux_x64_v8/)
   assert.match(action, /actions\/cache@v5/)
@@ -265,8 +367,12 @@ test('GodotJS setup is exposed through npm and the shared CI action', () => {
   assert.match(script, /--asset-kind <kind>/)
   assert.match(script, /GODOTJS_ASSET_DIR/)
   assert.match(script, /--install-templates/)
+  assert.match(script, /--assemble-ios-package/)
+  assert.match(script, /--ios-package-source <p>/)
   assert.match(script, /GODOTJS_EXPORT_TEMPLATES_DIR/)
+  assert.match(script, /GODOTJS_IOS_PACKAGE/)
   assert.match(readme, /--asset prebuilt_android_v8 --asset-kind templates/)
+  assert.match(readme, /--assemble-ios-package/)
   assert.match(
     productionDocs,
     /--asset prebuilt_android_v8 --asset-kind templates/,

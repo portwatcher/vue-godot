@@ -131,6 +131,15 @@ configured or partially configured environment variable names for BrowserStack,
 Sauce Labs, Firebase Test Lab, AWS Device Farm, LambdaTest, and Kobiton, but
 never their values; when none are fully configured, the text output lists the
 recognized provider env-set options.
+Install iOS library template assets with the `godotjs/GodotJS`
+`v1.1.0-generate-typings` `ios-template_debug-4.4-v8` and
+`ios-template_release-4.4-v8` assets. Add `--assemble-ios-package` to the
+release asset install command after the debug asset is present to build the
+local project-export `ios.zip` package from Godot's sparse 4.4 iOS Xcode
+scaffold. That package supports Godot's `application/export_project_only=true`
+iOS Xcode project export path; simulator execution still needs
+upstream-compatible GodotJS iOS simulator template slices and Apple signing/team
+configuration.
 Android emulators and iOS simulators satisfy the local SDK-test prerequisite
 when the final evidence records `testTarget` as `emulator` or `simulator`.
 iOS local device or simulator sessions require full Xcode, not only Command Line
@@ -538,9 +547,12 @@ export-template directory for the pinned editor version, and prints that
 installed directory. GodotJS iOS 4.4 library assets come from the
 `godotjs/GodotJS` release channel; install both `ios-template_debug-4.4-v8` and
 `ios-template_release-4.4-v8` with
-`--release v1.1.0-generate-typings --release-repo godotjs/GodotJS`. Local iOS
-simulator export checks still require a compatible `ios.zip` export package in
-the same Godot export-template directory and Apple signing/team settings. Use
+`--release v1.1.0-generate-typings --release-repo godotjs/GodotJS`, adding
+`--assemble-ios-package` to the release asset install command after the debug
+asset is present. The assembled `ios.zip` package supports Godot's
+project-only Xcode export path. Local iOS simulator execution still requires
+upstream-compatible GodotJS simulator template slices and Apple signing/team
+settings. Use
 `--template-version <version>` instead of
 `--godot-bin` when the release process already knows the exact Godot export
 template version string.
