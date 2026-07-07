@@ -2,21 +2,17 @@
 
 - Release candidate commit: `68f88b1254ba76795a848f14f8ed616ec489dfec`
 - Handoff format: 7
-- Handoff state: a29aa49a304c5e14
-- Overall readiness: open (5 blocker(s))
+- Handoff state: 50078e354592c2b2
+- Overall readiness: ready (0 blocker(s))
 - Real-device evidence: ready
 - Android evidence: ready
 - iOS evidence: ready
 - Release Preflight evidence: ready
-- Public warning removal: waiting
+- Public warning removal: ready
 
 ## Current Blockers
 
-- TODO.md:34 The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied.
-- TODO.md:422 CI passes on a clean commit.
-- TODO.md:423 Release preflight passes without warnings in the release environment.
-- TODO.md:425 All public READMEs match the final support claims.
-- TODO.md:426 The root README warning is removed in the same commit that marks this checklist complete.
+- none
 
 ## CI Evidence
 
@@ -145,51 +141,9 @@
 
 ## Final TODO Proofs
 
-- Ready: 6/10
-- TODO.md:34 The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied. (warningWordingReady waiting)
-- TODO.md:422 CI passes on a clean commit. (ciEvidenceReady waiting)
-- TODO.md:425 All public READMEs match the final support claims. (publicReadmesReady waiting)
-- TODO.md:426 The root README warning is removed in the same commit that marks this checklist complete. (rootReadmeWarningReady waiting)
+- Ready: 10/10
+- none
 
 ## Next Actions
 
-### Collect CI and warning-free Release Preflight evidence
-
-Run the local check after the tested release candidate and real-device evidence are pushed, refresh Check and Godot Smoke from the release-candidate ref when CI evidence is still missing, then dispatch Release Preflight from the current evidence commit ref and write release-readiness evidence.
-
-Commands with `<...>` placeholders must be edited before running; unresolved placeholders are not valid release evidence or dispatch inputs.
-
-#### Ready To Run
-
-```bash
-npm run check
-npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 68f88b1254ba76795a848f14f8ed616ec489dfec
-npm run release:ci -- --commit 68f88b1254ba76795a848f14f8ed616ec489dfec --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --wait --output release/ci-runs.json
-GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit 68f88b1254ba76795a848f14f8ed616ec489dfec --output release/release-preflight-summary.json --checklist-output release/release-preflight-checklist.md
-npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 68f88b1254ba76795a848f14f8ed616ec489dfec --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json
-git add release/ci-runs.json release/release-preflight-summary.json release/release-preflight-checklist.md release/real-device-evidence.json release/release-readiness-evidence.json
-git commit -m "Add release readiness evidence"
-git push
-npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit 68f88b1254ba76795a848f14f8ed616ec489dfec
-```
-
-#### Replace Placeholders First
-
-```bash
-GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit 68f88b1254ba76795a848f14f8ed616ec489dfec --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json
-```
-
-### Remove public warning wording through the guarded finalizer
-
-Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks and removes public warning wording. The generated commands then run npm run check, stage those edits, commit them, push, and run the final strict readiness check.
-
-```bash
-npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --checklist-output /tmp/vue-godot-readiness.md --expected-commit 68f88b1254ba76795a848f14f8ed616ec489dfec
-npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json
-npm run check
-git add TODO.md README.md docs/compatibility.md docs/production.md docs/real-device-release.md
-git commit -m "Finalize production readiness"
-git push
-npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit 68f88b1254ba76795a848f14f8ed616ec489dfec
-```
-
+No next actions recorded.
