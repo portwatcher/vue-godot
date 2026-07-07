@@ -1,8 +1,8 @@
 # Release Handoff
 
-- Release candidate commit: `a45d99df61be945e811755490331305e0a25ce79`
+- Release candidate commit: `02e79ebd8571f218ea3ba364c8090ddb11b316c5`
 - Handoff format: 7
-- Handoff state: 80179de142b01bbf
+- Handoff state: 4b909cc8c031ac8e
 - Overall readiness: open (10 blocker(s))
 - Real-device evidence: waiting
 - Android evidence: waiting
@@ -21,7 +21,7 @@
 - TODO.md:405 All public READMEs match the final support claims.
 - TODO.md:406 The root README warning is removed in the same commit that marks this checklist complete.
 - real-device evidence missing at release/real-device-evidence.json
-  Create release/real-device-evidence.json after completing docs/real-device-release.md, then run npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit a45d99df61be945e811755490331305e0a25ce79.
+  Create release/real-device-evidence.json after completing docs/real-device-release.md, then run npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5.
   Real device evidence file not found: release/real-device-evidence.json
 - release-readiness evidence missing at release/release-readiness-evidence.json
   Create it after the Release Preflight workflow passes without warnings.
@@ -31,8 +31,8 @@
 
 - Status: ready
 - Path: `release/ci-runs.json`
-- Check: https://github.com/portwatcher/vue-godot/actions/runs/28868808334 (success)
-- Godot Smoke: https://github.com/portwatcher/vue-godot/actions/runs/28868808332 (success)
+- Check: https://github.com/portwatcher/vue-godot/actions/runs/28872476964 (success)
+- Godot Smoke: https://github.com/portwatcher/vue-godot/actions/runs/28872477130 (success)
 
 ## Device Prereq Diagnostics
 
@@ -74,7 +74,7 @@
   - Templates dir: `~/Library/Application Support/Godot/export_templates/4.4.1.rc.custom_build.daa4b058e`
   - Template version: `4.4.1.rc.custom_build.daa4b058e`
   - Install command: `npm run setup:godotjs -- --asset prebuilt_android_v8 --asset-kind templates --install-templates --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir`
-- iOS export templates: waiting (1 blocker(s), 1 warning(s), 1 missing file(s))
+- iOS export templates: ready (0 blocker(s), 0 warning(s), 0 missing file(s))
   - Pinned release: `v1.1.0-generate-typings`
   - Release repo: `godotjs/GodotJS`
   - Asset: `ios-template_debug-4.4-v8, ios-template_release-4.4-v8`
@@ -82,15 +82,10 @@
   - Templates root: `~/Library/Application Support/Godot/export_templates`
   - Templates dir: `~/Library/Application Support/Godot/export_templates/4.4.1.rc.custom_build.daa4b058e`
   - Template version: `4.4.1.rc.custom_build.daa4b058e`
-  - Missing files: `ios.zip`
-  - Install command: `npm run setup:godotjs -- --release v1.1.0-generate-typings --release-repo godotjs/GodotJS --asset ios-template_debug-4.4-v8 --asset-kind templates --install-templates --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir && npm run setup:godotjs -- --release v1.1.0-generate-typings --release-repo godotjs/GodotJS --asset ios-template_release-4.4-v8 --asset-kind templates --install-templates --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir`
+  - Install command: `npm run setup:godotjs -- --release v1.1.0-generate-typings --release-repo godotjs/GodotJS --asset ios-template_debug-4.4-v8 --asset-kind templates --install-templates --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir && npm run setup:godotjs -- --release v1.1.0-generate-typings --release-repo godotjs/GodotJS --asset ios-template_release-4.4-v8 --asset-kind templates --install-templates --assemble-ios-package --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir`
   - Notes:
     - iOS library template assets are provided by godotjs/GodotJS v1.1.0-generate-typings; GodotJS_1.0.0-2 remains the editor/runtime bundle used for local smoke checks.
-    - The current GodotJS iOS exporter still requires a compatible ios.zip export package before local device or simulator export checks can run.
-  - Blockers:
-    - iOS GodotJS export templates are incomplete in /Users/jury/Library/Application Support/Godot/export_templates/4.4.1.rc.custom_build.daa4b058e; missing ios.zip.
-  - Warnings:
-    - Add a compatible ios.zip iOS export package to the same Godot export-template directory before local iOS export checks.
+    - Install the release iOS asset with --assemble-ios-package to build ios.zip for Godot's project-only Xcode export path; simulator execution still needs upstream-compatible GodotJS simulator slices and Apple signing/team setup.
 - Hosted provider env configured: none
 - Hosted provider env partial: none
 - Read errors: none
@@ -219,39 +214,39 @@ Commands with `<...>` placeholders must be edited before running; unresolved pla
 ```bash
 npm run check
 npm run check:device-prereqs -- --summary-output release/device-test-prereqs-summary.json --allow-missing
-npm run release:preflight -- --local --skip-check --skip-godot --expected-commit a45d99df61be945e811755490331305e0a25ce79 --summary-output /tmp/vue-godot-local-preflight-summary.json
-npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit a45d99df61be945e811755490331305e0a25ce79
+npm run release:preflight -- --local --skip-check --skip-godot --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5 --summary-output /tmp/vue-godot-local-preflight-summary.json
+npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
 ```
 
 #### Replace Placeholders First
 
 ```bash
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass no-godotjs-load-diagnostics --summary-output release/platform-evidence-summary.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass plist-entitlements --summary-output release/platform-evidence-summary.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass storage-restart --summary-output release/platform-evidence-summary.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass network-if-selected --summary-output release/platform-evidence-summary.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass clipboard-if-selected --summary-output release/platform-evidence-summary.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass permission-prompts-if-selected --summary-output release/platform-evidence-summary.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass adapter-states-if-selected --summary-output release/platform-evidence-summary.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass hardware-adapters-if-selected --summary-output release/platform-evidence-summary.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass haptics-if-selected --summary-output release/platform-evidence-summary.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass audio-input-if-selected --summary-output release/platform-evidence-summary.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass sensors-if-selected --summary-output release/platform-evidence-summary.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass safe-area-keyboard-rotation-text-input --summary-output release/platform-evidence-summary.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass background-foreground --summary-output release/platform-evidence-summary.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass deep-links-share-notifications-if-selected --summary-output release/platform-evidence-summary.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output release/platform-evidence-summary.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass no-godotjs-load-diagnostics --summary-output release/platform-evidence-summary.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass plist-entitlements --summary-output release/platform-evidence-summary.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass storage-restart --summary-output release/platform-evidence-summary.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass network-if-selected --summary-output release/platform-evidence-summary.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass clipboard-if-selected --summary-output release/platform-evidence-summary.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass permission-prompts-if-selected --summary-output release/platform-evidence-summary.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass adapter-states-if-selected --summary-output release/platform-evidence-summary.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass hardware-adapters-if-selected --summary-output release/platform-evidence-summary.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass haptics-if-selected --summary-output release/platform-evidence-summary.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass audio-input-if-selected --summary-output release/platform-evidence-summary.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass sensors-if-selected --summary-output release/platform-evidence-summary.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass safe-area-keyboard-rotation-text-input --summary-output release/platform-evidence-summary.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass background-foreground --summary-output release/platform-evidence-summary.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass deep-links-share-notifications-if-selected --summary-output release/platform-evidence-summary.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output release/platform-evidence-summary.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
 ```
 
 #### Run After Device Evidence Is Recorded
 
 ```bash
-npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit a45d99df61be945e811755490331305e0a25ce79 --real-device-output release/real-device-evidence.json
-npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit a45d99df61be945e811755490331305e0a25ce79
+npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5 --real-device-output release/real-device-evidence.json
+npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
 git add release/platform-evidence.json release/ci-runs.json release/real-device-evidence.json
 git commit -m "Add real-device release evidence"
 git push
@@ -269,20 +264,20 @@ Commands with `<...>` placeholders must be edited before running; unresolved pla
 
 ```bash
 npm run check
-npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit a45d99df61be945e811755490331305e0a25ce79
-npm run release:ci -- --commit a45d99df61be945e811755490331305e0a25ce79 --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --wait --output release/ci-runs.json
-GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit a45d99df61be945e811755490331305e0a25ce79 --output release/release-preflight-summary.json --checklist-output release/release-preflight-checklist.md
-npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit a45d99df61be945e811755490331305e0a25ce79 --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json
+npm run check:real-device-evidence -- --summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md --verify-runs --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
+npm run release:ci -- --commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5 --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --wait --output release/ci-runs.json
+GH_TOKEN="$(gh auth token)" npm run release:preflight-summary -- --ci-evidence release/ci-runs.json --commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5 --output release/release-preflight-summary.json --checklist-output release/release-preflight-checklist.md
+npm run release:evidence -- --platform-evidence release/platform-evidence.json --ci-evidence release/ci-runs.json --commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5 --real-device-output release/real-device-evidence.json --release-preflight-summary release/release-preflight-summary.json --readiness-output release/release-readiness-evidence.json
 git add release/ci-runs.json release/release-preflight-summary.json release/release-preflight-checklist.md release/real-device-evidence.json release/release-readiness-evidence.json
 git commit -m "Add release readiness evidence"
 git push
-npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit a45d99df61be945e811755490331305e0a25ce79
+npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
 ```
 
 #### Replace Placeholders First
 
 ```bash
-GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit a45d99df61be945e811755490331305e0a25ce79 --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json
+GH_TOKEN="$(gh auth token)" npm run release:ci -- --commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5 --include-release-preflight --release-preflight-run-commit "$(git rev-parse HEAD)" --dispatch-missing --wait --ref <evidence-branch-or-tag> --real-device-evidence-path release/real-device-evidence.json --output release/ci-runs.json
 ```
 
 ### Remove public warning wording through the guarded finalizer
@@ -292,12 +287,12 @@ Blocked by: `real-device-evidence`, `release-preflight-evidence`
 Only run the finalizer after strict release readiness evidence is complete; it applies the final TODO checks and removes public warning wording. The generated commands then run npm run check, stage those edits, commit them, push, and run the final strict readiness check.
 
 ```bash
-npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --checklist-output /tmp/vue-godot-readiness.md --expected-commit a45d99df61be945e811755490331305e0a25ce79
+npm run release:readiness -- --summary-output /tmp/vue-godot-readiness.json --checklist-output /tmp/vue-godot-readiness.md --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
 npm run release:finalize-readiness -- --summary /tmp/vue-godot-readiness.json
 npm run check
 git add TODO.md README.md docs/compatibility.md docs/production.md docs/real-device-release.md
 git commit -m "Finalize production readiness"
 git push
-npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit a45d99df61be945e811755490331305e0a25ce79
+npm run release:readiness -- --summary-output release/release-readiness-summary.json --checklist-output release/release-readiness-checklist.md --expected-commit 02e79ebd8571f218ea3ba364c8090ddb11b316c5
 ```
 
