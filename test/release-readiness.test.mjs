@@ -26,6 +26,10 @@ import {
   releaseHandoffReportFormatVersion,
 } from '../scripts/release-handoff-commands.mjs'
 import { shellQuote } from '../scripts/release-utils.mjs'
+import {
+  iosSimulatorPlatformPassCommand,
+  iosSimulatorPlatformPassRemainingCommand,
+} from './utils/ios-simulator-platform-commands.mjs'
 
 function runReadiness(args = []) {
   return spawnSync(
@@ -1464,7 +1468,16 @@ test('release readiness summary includes missing evidence next actions', () => {
     assert.equal(summary.platformEvidence.path, platformCommandPath)
     assert.ok(
       summary.platformEvidence.errors.some((error) =>
-        error.includes('ios.artifact must be a non-empty string'),
+        error.includes(
+          'ios.safe-area-keyboard-rotation-text-input must be recorded in passedChecks or skippedChecks',
+        ),
+      ),
+    )
+    assert.ok(
+      summary.platformEvidence.errors.some((error) =>
+        error.includes(
+          'ios.safe-area-keyboard-rotation-text-input must be in passedChecks because selectedApis includes SafeAreaView, KeyboardAvoidingView',
+        ),
       ),
     )
     assert.ok(
@@ -1497,17 +1510,20 @@ test('release readiness summary includes missing evidence next actions', () => {
     assert.ok(realDeviceAction)
     assert.match(
       realDeviceAction.detail,
-      /Android: ready; iOS: 6 metadata field\(s\) missing/,
+      /Android: ready; iOS: 0 metadata field\(s\) missing, 1\/15 required check\(s\) unresolved, 1 must-pass check\(s\) missing/,
     )
     assert.match(
       realDeviceAction.detail,
-      /tested release commit\.[\s\S]*Android: ready; iOS: 6 metadata field\(s\) missing/,
+      /tested release commit\.[\s\S]*Android: ready; iOS: 0 metadata field\(s\) missing, 1\/15 required check\(s\) unresolved, 1 must-pass check\(s\) missing/,
     )
     assert.match(
       realDeviceAction.detail,
       /device prereq summary records local tooling availability and configured or partially configured hosted-provider environment variable names[\s\S]*final evidence still needs non-local device run URLs, artifact IDs, and device metadata/,
     )
-    assert.match(realDeviceAction.detail, /iOS: 6 metadata field\(s\) missing/)
+    assert.match(
+      realDeviceAction.detail,
+      /iOS must-pass remaining: safe-area-keyboard-rotation-text-input/,
+    )
     assert.ok(
       realDeviceAction.platformCheckDetails.every(
         (detail) => detail.platform !== 'android',
@@ -1516,19 +1532,18 @@ test('release readiness summary includes missing evidence next actions', () => {
     assert.ok(
       realDeviceAction.platformCheckDetails.some(
         (detail) =>
-          detail.check === 'network-if-selected' &&
+          detail.platform === 'ios' &&
+          detail.check === 'safe-area-keyboard-rotation-text-input' &&
           detail.mustPass === true &&
-          detail.selectedApis.includes('fetch') &&
-          detail.selectedApis.includes('WebSocket'),
+          detail.selectedApis.includes('SafeAreaView') &&
+          detail.selectedApis.includes('KeyboardAvoidingView') &&
+          detail.description.includes('virtual keyboard'),
       ),
     )
     assert.ok(
-      realDeviceAction.platformCheckDetails.some(
+      realDeviceAction.platformCheckDetails.every(
         (detail) =>
-          detail.platform === 'ios' &&
-          detail.check === 'deep-links-share-notifications-if-selected' &&
-          detail.mustPass === false &&
-          detail.description.includes('Verify cold-start'),
+          detail.check !== 'deep-links-share-notifications-if-selected',
       ),
     )
     assert.equal(realDeviceAction.commands[0], 'npm run check')
@@ -1562,12 +1577,18 @@ test('release readiness summary includes missing evidence next actions', () => {
     )
     assert.ok(
       realDeviceAction.commands.includes(
-        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${shellQuote(platformCommandPath)} --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit ${summary.commit}`,
+        iosSimulatorPlatformPassCommand({
+          expectedCommit: summary.commit,
+          platformEvidencePath: shellQuote(platformCommandPath),
+        }),
       ),
     )
     assert.ok(
       realDeviceAction.commands.includes(
-        `npm run release:record-platform-evidence -- --platform ios --platform-evidence ${shellQuote(platformCommandPath)} --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output release/platform-evidence-summary.json --expected-commit ${summary.commit}`,
+        iosSimulatorPlatformPassRemainingCommand({
+          expectedCommit: summary.commit,
+          platformEvidencePath: shellQuote(platformCommandPath),
+        }),
       ),
     )
     assert.ok(

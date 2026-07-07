@@ -27,10 +27,15 @@ import {
   releasePackageConfigs,
   shellQuote,
 } from '../scripts/release-utils.mjs'
+import {
+  iosSimulatorPlatformPassCommand,
+  iosSimulatorPlatformPassRemainingCommand,
+} from './utils/ios-simulator-platform-commands.mjs'
 
 const repoRoot = process.cwd()
 const realDeviceCheckOutputs =
   '--summary-output release/real-device-evidence-summary.json --checklist-output release/real-device-evidence-checklist.md'
+const defaultPlatformEvidencePath = 'release/platform-evidence.json'
 
 function platformEvidence(platform) {
   return {
@@ -764,7 +769,12 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
           action.id === 'complete-platform-evidence' &&
           action.detail.includes('Android: ready') &&
           action.detail.includes('final evidence assembly.\nAndroid: ready') &&
-          action.detail.includes('iOS: 6 metadata field(s) missing') &&
+          action.detail.includes(
+            'iOS: 0 metadata field(s) missing, 1/15 required check(s) unresolved, 1 must-pass check(s) missing',
+          ) &&
+          action.detail.includes(
+            'iOS must-pass remaining: safe-area-keyboard-rotation-text-input',
+          ) &&
           action.commands.includes(
             'npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
           ) &&
@@ -775,10 +785,16 @@ test('check-real-device-evidence writes a missing-evidence summary when optional
             'npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>',
           ) &&
           action.commands.includes(
-            "npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>",
+            iosSimulatorPlatformPassCommand({
+              expectedCommit: '<release-candidate-sha>',
+              platformEvidencePath: defaultPlatformEvidencePath,
+            }),
           ) &&
           action.commands.includes(
-            "npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output release/platform-evidence-summary.json --expected-commit <release-candidate-sha>",
+            iosSimulatorPlatformPassRemainingCommand({
+              expectedCommit: '<release-candidate-sha>',
+              platformEvidencePath: defaultPlatformEvidencePath,
+            }),
           ) &&
           action.commands.includes(
             'npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit <release-candidate-sha>',
@@ -857,7 +873,12 @@ test('check-real-device-evidence next actions honor expected commits', () => {
           action.id === 'complete-platform-evidence' &&
           action.detail.includes('Android: ready') &&
           action.detail.includes('final evidence assembly.\nAndroid: ready') &&
-          action.detail.includes('iOS: 6 metadata field(s) missing') &&
+          action.detail.includes(
+            'iOS: 0 metadata field(s) missing, 1/15 required check(s) unresolved, 1 must-pass check(s) missing',
+          ) &&
+          action.detail.includes(
+            'iOS must-pass remaining: safe-area-keyboard-rotation-text-input',
+          ) &&
           action.commands.includes(
             `npm run release:record-platform-evidence -- --platform android --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit ${expectedCommit}`,
           ) &&
@@ -868,10 +889,16 @@ test('check-real-device-evidence next actions honor expected commits', () => {
             `npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --list-checks --summary-output release/platform-evidence-summary.json --expected-commit ${expectedCommit}`,
           ) &&
           action.commands.includes(
-            `npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass cold-launch --summary-output release/platform-evidence-summary.json --expected-commit ${expectedCommit}`,
+            iosSimulatorPlatformPassCommand({
+              expectedCommit,
+              platformEvidencePath: defaultPlatformEvidencePath,
+            }),
           ) &&
           action.commands.includes(
-            `npm run release:record-platform-evidence -- --platform ios --platform-evidence release/platform-evidence.json --artifact <ios-archive-testflight-or-hosted-build-id> --evidence-url <ios-non-local-device-evidence-url> --export-preset 'iOS Release' --device <ios-device-model> --os <ios-version> --orientation <tested-orientations> --locale <tested-locale> --pass-remaining --pass-remaining-confirmation <confirm-all-remaining-must-pass-checks-after-testing> --skip 'deep-links-share-notifications-if-selected=<skip-reason-if-not-selected>' --summary-output release/platform-evidence-summary.json --expected-commit ${expectedCommit}`,
+            iosSimulatorPlatformPassRemainingCommand({
+              expectedCommit,
+              platformEvidencePath: defaultPlatformEvidencePath,
+            }),
           ) &&
           action.commands.includes(
             `npm run check:platform-evidence -- --platform-evidence release/platform-evidence.json --summary-output release/platform-evidence-summary.json --checklist-output release/platform-evidence-checklist.md --allow-open --expected-commit ${expectedCommit}`,

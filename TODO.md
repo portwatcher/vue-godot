@@ -405,6 +405,10 @@ the final removal commit.
     rendered app UI, storage restart, network/reachability, clipboard,
     permissions, missing-plugin geolocation/media adapter states, haptics,
     sensors, safe-area layout, and background/foreground lifecycle evidence.
+  - `release/platform-evidence.json` records the covered iOS simulator checks;
+    the remaining iOS worksheet blocker is
+    `safe-area-keyboard-rotation-text-input`, because the simulator run did not
+    exercise virtual keyboard/text input through UI automation.
   - Remaining release risk: the simulator run uses a locally built
     JavaScriptCore simulator template because the published GodotJS 4.4 V8 iOS
     assets provide device `arm64` static libraries but no simulator slice. A
