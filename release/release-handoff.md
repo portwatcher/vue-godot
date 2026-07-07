@@ -2,7 +2,7 @@
 
 - Release candidate commit: `a45d99df61be945e811755490331305e0a25ce79`
 - Handoff format: 7
-- Handoff state: 4d83fba25a21356b
+- Handoff state: 80179de142b01bbf
 - Overall readiness: open (10 blocker(s))
 - Real-device evidence: waiting
 - Android evidence: waiting
@@ -68,15 +68,29 @@
     - devicectl: ready (`xcrun --find devicectl`) - /Applications/Xcode.app/Contents/Developer/usr/bin/devicectl
 - Android export templates: ready (0 blocker(s), 0 warning(s), 0 missing file(s))
   - Pinned release: `GodotJS_1.0.0-2`
+  - Release repo: `ialex32x/GodotJS-Build`
   - Asset: `prebuilt_android_v8`
   - Templates root: `~/Library/Application Support/Godot/export_templates`
   - Templates dir: `~/Library/Application Support/Godot/export_templates/4.4.1.rc.custom_build.daa4b058e`
   - Template version: `4.4.1.rc.custom_build.daa4b058e`
   - Install command: `npm run setup:godotjs -- --asset prebuilt_android_v8 --asset-kind templates --install-templates --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir`
-- iOS export templates: unavailable (0 blocker(s), 0 warning(s), 0 missing file(s))
-  - Pinned release: `GodotJS_1.0.0-2`
+- iOS export templates: waiting (1 blocker(s), 1 warning(s), 1 missing file(s))
+  - Pinned release: `v1.1.0-generate-typings`
+  - Release repo: `godotjs/GodotJS`
+  - Asset: `ios-template_debug-4.4-v8, ios-template_release-4.4-v8`
+  - Export package: `ios.zip`
+  - Templates root: `~/Library/Application Support/Godot/export_templates`
+  - Templates dir: `~/Library/Application Support/Godot/export_templates/4.4.1.rc.custom_build.daa4b058e`
+  - Template version: `4.4.1.rc.custom_build.daa4b058e`
+  - Missing files: `ios.zip`
+  - Install command: `npm run setup:godotjs -- --release v1.1.0-generate-typings --release-repo godotjs/GodotJS --asset ios-template_debug-4.4-v8 --asset-kind templates --install-templates --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir && npm run setup:godotjs -- --release v1.1.0-generate-typings --release-repo godotjs/GodotJS --asset ios-template_release-4.4-v8 --asset-kind templates --install-templates --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir`
   - Notes:
-    - Pinned GodotJS release GodotJS_1.0.0-2 does not publish an iOS export-template asset; use hosted Apple-device, simulator, or custom iOS export evidence with a matching build pipeline or provide custom iOS templates.
+    - iOS library template assets are provided by godotjs/GodotJS v1.1.0-generate-typings; GodotJS_1.0.0-2 remains the editor/runtime bundle used for local smoke checks.
+    - The current GodotJS iOS exporter still requires a compatible ios.zip export package before local device or simulator export checks can run.
+  - Blockers:
+    - iOS GodotJS export templates are incomplete in /Users/jury/Library/Application Support/Godot/export_templates/4.4.1.rc.custom_build.daa4b058e; missing ios.zip.
+  - Warnings:
+    - Add a compatible ios.zip iOS export package to the same Godot export-template directory before local iOS export checks.
 - Hosted provider env configured: none
 - Hosted provider env partial: none
 - Read errors: none
