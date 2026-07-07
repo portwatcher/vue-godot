@@ -1,25 +1,19 @@
 {
   "ready": true,
-  "commit": "1087588e2a2f7989a51df1c428eb647d17ea3ab8",
+  "commit": "a45d99df61be945e811755490331305e0a25ce79",
   "commitFound": true,
   "releasePreflightRunCommit": null,
   "localGit": {
     "currentBranch": "develop",
-    "currentHead": "1087588e2a2f7989a51df1c428eb647d17ea3ab8",
+    "currentHead": "a45d99df61be945e811755490331305e0a25ce79",
     "commitIsHead": true,
     "upstreamRef": "origin/develop",
-    "upstreamCommit": "1087588e2a2f7989a51df1c428eb647d17ea3ab8",
+    "upstreamCommit": "a45d99df61be945e811755490331305e0a25ce79",
     "upstreamMatchesCommit": true,
     "dirtyWorktree": false
   },
-  "requiredWorkflowNames": [
-    "Check",
-    "Godot Smoke"
-  ],
-  "passedWorkflowNames": [
-    "Check",
-    "Godot Smoke"
-  ],
+  "requiredWorkflowNames": ["Check", "Godot Smoke"],
+  "passedWorkflowNames": ["Check", "Godot Smoke"],
   "missingWorkflowNames": [],
   "checks": {
     "checkWorkflow": true,
@@ -27,24 +21,24 @@
     "godotSmokeWorkflow": true
   },
   "evidence": {
-    "commit": "1087588e2a2f7989a51df1c428eb647d17ea3ab8",
+    "commit": "a45d99df61be945e811755490331305e0a25ce79",
     "workflows": {
       "Check": {
         "workflowName": "Check",
-        "runUrl": "https://github.com/portwatcher/vue-godot/actions/runs/28806417523",
-        "runId": 28806417523,
-        "runNumber": 180,
+        "runUrl": "https://github.com/portwatcher/vue-godot/actions/runs/28868808334",
+        "runId": 28868808334,
+        "runNumber": 198,
         "runAttempt": 1,
-        "runCommit": "1087588e2a2f7989a51df1c428eb647d17ea3ab8",
+        "runCommit": "a45d99df61be945e811755490331305e0a25ce79",
         "runConclusion": "success"
       },
       "Godot Smoke": {
         "workflowName": "Godot Smoke",
-        "runUrl": "https://github.com/portwatcher/vue-godot/actions/runs/28806425013",
-        "runId": 28806425013,
-        "runNumber": 88,
+        "runUrl": "https://github.com/portwatcher/vue-godot/actions/runs/28868808332",
+        "runId": 28868808332,
+        "runNumber": 93,
         "runAttempt": 1,
-        "runCommit": "1087588e2a2f7989a51df1c428eb647d17ea3ab8",
+        "runCommit": "a45d99df61be945e811755490331305e0a25ce79",
         "runConclusion": "success"
       }
     }
