@@ -267,8 +267,9 @@ present, `Run After Device Evidence Is Recorded` so placeholder recording
 templates stay separate from downstream evidence assembly or commit commands.
 Run
 `npm run release:handoff -- --expected-commit <release-candidate-sha> --output release/release-handoff.md`
-to render the same allow-open audit as a Markdown handoff for Android/iOS
-testers; while real-device evidence is open, the release-readiness
+to render the strict readiness audit as a Markdown handoff for Android/iOS
+testers, using the written strict summary even when open gates make
+`release:readiness` exit nonzero; while real-device evidence is open, the release-readiness
 `nextActions` include handoff write and check commands before the device-evidence action
 only when `release/release-handoff.md` is missing or stale for the expected
 commit and evidence paths. The handoff lists per-platform metadata/check gaps,

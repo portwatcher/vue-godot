@@ -1461,7 +1461,7 @@ function collectReadinessNextActions(
         id: 'release-handoff-report',
         title: 'Write Android/iOS tester handoff',
         detail:
-          'Render the current allow-open readiness audit as Markdown so device testers can see the exact platform gaps, dependencies, and commands for this release candidate.',
+          'Render the current strict readiness audit as Markdown so device testers can see the exact platform gaps, dependencies, and commands for this release candidate.',
         commands: [
           releaseHandoffCommand(commit, pathOptions),
           releaseHandoffCommand(commit, pathOptions, { check: true }),

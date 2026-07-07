@@ -267,7 +267,7 @@ function sampleReadinessSummary(ciEvidencePath = 'release/ci-runs.json') {
       {
         id: 'release-handoff-report',
         title: 'Write Android/iOS tester handoff',
-        detail: 'Render the current allow-open readiness audit as Markdown.',
+        detail: 'Render the current strict readiness audit as Markdown.',
         commands: [
           `npm run release:handoff -- --expected-commit ${commit} --output release/release-handoff.md`,
         ],

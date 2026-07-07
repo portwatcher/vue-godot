@@ -41,7 +41,7 @@ Options:
                                   writing it. Defaults to ${defaultReleaseHandoffReportPath}
                                   when --output is omitted.
   --readiness-summary <file>       Render an existing release-readiness summary
-                                  instead of running the allow-open audit.
+                                  instead of running the strict audit.
   --ci-evidence <file>             CI evidence path passed to readiness.
                                   Default: ${defaultReleaseCiEvidencePath}
   --platform-evidence <file>       Platform worksheet path passed to readiness.
@@ -188,7 +188,6 @@ function runReadinessSummary(options) {
   const summaryPath = path.join(tempDir, 'release-readiness-summary.json')
   const args = [
     'scripts/release-readiness.mjs',
-    '--allow-open',
     '--summary-output',
     summaryPath,
   ]
@@ -213,7 +212,7 @@ function runReadinessSummary(options) {
     cwd: repoRoot,
     encoding: 'utf-8',
   })
-  if (result.status !== 0) {
+  if (result.status !== 0 && !fs.existsSync(summaryPath)) {
     throw new Error(formatCommandFailure(process.execPath, args, result))
   }
 
