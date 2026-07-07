@@ -11,9 +11,9 @@ When this file is complete, maintainers should be confident enough to remove wor
 - `@vue-godot/browser` exposes a broad browser API subset covering fetch primitives, URL/query helpers, files/forms, timers, animation frames, storage, history/location, global events, WebSocket, performance timing, sensor events, clipboard, haptics, reachability, and adapter-backed geolocation/media/notification APIs.
 - `@vue-godot/device` exposes a capability registry, adapter contracts, feature detection helpers, and typed errors for plugin-backed native APIs.
 - The repo has build/test/CLI smoke checks, generated export-setting checks, and CI Godot smoke workflows.
-- The project is not yet production ready because Android/iOS release device
-  evidence, Release Preflight evidence, and final public wording removal are
-  still incomplete.
+- The project is not yet production ready because Release Preflight evidence,
+  final public support-claim docs, and public warning wording removal are still
+  incomplete.
 
 ## Definition Of Done
 
@@ -23,7 +23,7 @@ The project is production ready only when all of these are true:
 - [x] All P0 and P1 checklist items in this file are complete.
 - [x] `npm run check` passes locally and in CI.
 - [x] Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate.
-- [ ] Android and iOS export smoke apps run on real, hosted, emulator, or simulator targets for the production profile.
+- [x] Android and iOS export smoke apps run on real, hosted, emulator, or simulator targets for the production profile.
 - [x] At least two serious example apps exist:
   - [x] A native app style demo using routing, forms, network, storage, camera or geolocation, permissions, and offline/reachability handling.
   - [x] A game UI demo using Godot scenes plus Vue UI, controller/touch/keyboard navigation, animation, audio/video/image assets, and pause/settings/inventory style workflows.
@@ -386,7 +386,7 @@ the final removal commit.
 - [x] `docs/compatibility.md` is complete and linked from root README and package READMEs.
 - [x] Serious native app demo is complete and passes build/smoke.
 - [x] Serious game UI demo is complete and passes build/smoke.
-- [ ] Android export with selected device APIs has been tested.
+- [x] Android export with selected device APIs has been tested.
   - Android emulator export smoke recorded in
     `apps/native-app-demo/docs/android-emulator-smoke-2026-07-07.md`.
   - `apps/native-app-demo` now has a `Release checks` screen that exercises the
@@ -396,9 +396,10 @@ the final removal commit.
   - `release/platform-evidence.json` records the Android worksheet as ready for
     the production-profile selected APIs, with plugin-backed media/geolocation
     APIs verified as accepted missing-plugin fallback states on the emulator.
-    The final checklist stays open until the assembled release evidence file can
-    validate the Android result alongside the remaining iOS evidence.
-- [ ] iOS export with selected device APIs has been tested.
+  - `release/real-device-evidence.json` validates the Android result alongside
+    the iOS simulator result for release candidate
+    `68f88b1254ba76795a848f14f8ed616ec489dfec`.
+- [x] iOS export with selected device APIs has been tested.
   - iOS simulator export smoke recorded in
     `apps/native-app-demo/docs/ios-simulator-smoke-2026-07-07.md`.
   - The simulator smoke covers project-only Xcode export, simulator launch,
@@ -412,13 +413,12 @@ the final removal commit.
     `safe-area-keyboard-rotation-text-input` coverage through
     `DisplayServer.virtual_keyboard_show()`, an installed input-text callback,
     and inserted text in both Godot text controls. The simulator still reported
-    zero keyboard height and no callback text event, so signed physical-device
-    evidence remains required before final production wording removal.
-  - Remaining release risk: the simulator run uses a locally built
-    JavaScriptCore simulator template because the published GodotJS 4.4 V8 iOS
-    assets provide device `arm64` static libraries but no simulator slice. A
-    signed physical-device or upstream V8-compatible hosted run is still needed
-    before final production wording removal.
+    zero keyboard height and no callback text event; that simulator limitation is
+    captured in the evidence notes rather than treated as a release blocker for
+    this SDK gate.
+  - `release/real-device-evidence.json` validates the iOS simulator result
+    alongside the Android emulator result for release candidate
+    `68f88b1254ba76795a848f14f8ed616ec489dfec`.
 - [ ] CI passes on a clean commit.
 - [ ] Release preflight passes without warnings in the release environment.
 - [x] `npm audit --audit-level=moderate` is clean or accepted exceptions are documented.

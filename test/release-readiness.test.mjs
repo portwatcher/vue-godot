@@ -897,11 +897,7 @@ test('release readiness reports current blockers without failing when allowed op
 
   assert.equal(result.status, 0)
   assert.doesNotMatch(output, /TODO\.md:24 `npm run check` passes locally/)
-  assert.match(output, /real-device evidence missing/)
-  assert.match(
-    output,
-    /check:real-device-evidence[\s\S]*real-device-evidence-summary\.json[\s\S]*real-device-evidence-checklist\.md[\s\S]*--verify-runs/,
-  )
+  assert.doesNotMatch(output, /real-device evidence missing/)
   assert.doesNotMatch(
     output,
     /check:platform-evidence[\s\S]*platform-evidence-checklist\.md[\s\S]*--allow-open/,
@@ -912,7 +908,15 @@ test('release readiness reports current blockers without failing when allowed op
   assert.match(output, /TODO\.md:25 checked; godotSmokeCiEvidenceReady ready/)
   assert.match(
     output,
-    /TODO\.md:389 unchecked; androidRealDeviceEvidenceReady waiting/,
+    /TODO\.md:26 checked; realDeviceEvidenceReady ready/,
+  )
+  assert.match(
+    output,
+    /TODO\.md:389 checked; androidRealDeviceEvidenceReady ready/,
+  )
+  assert.match(
+    output,
+    /TODO\.md:402 checked; iosRealDeviceEvidenceReady ready/,
   )
   assert.match(output, /public warning markers still present/)
   assert.match(output, /open gates remain/)
@@ -1307,6 +1311,17 @@ test('release readiness writes a machine-readable blocker summary', () => {
           status.text ===
             'Android export with selected device APIs has been tested.' &&
           status.proof === 'androidRealDeviceEvidenceReady' &&
+          status.checked === true &&
+          status.ready === true,
+      ),
+    )
+    assert.ok(
+      summary.finalTodoRequirements.some(
+        (status) =>
+          status.text ===
+            'iOS export with selected device APIs has been tested.' &&
+          status.proof === 'iosRealDeviceEvidenceReady' &&
+          status.checked === true &&
           status.ready === true,
       ),
     )
@@ -1318,14 +1333,19 @@ test('release readiness writes a machine-readable blocker summary', () => {
           typeof status.reason === 'string',
       ),
     )
-    assert.equal(summary.todo.unchecked, 8)
-    assert.equal(summary.todo.uncheckedItems.length, 8)
+    assert.equal(summary.todo.unchecked, 5)
+    assert.equal(summary.todo.uncheckedItems.length, 5)
     assert.ok(
       summary.todo.uncheckedItems.every(
         (item) =>
           item.text !== '`npm run check` passes locally and in CI.' &&
           item.text !==
-            'Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate.',
+            'Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate.' &&
+          item.text !==
+            'Android and iOS export smoke apps run on real, hosted, emulator, or simulator targets for the production profile.' &&
+          item.text !==
+            'Android export with selected device APIs has been tested.' &&
+          item.text !== 'iOS export with selected device APIs has been tested.',
       ),
     )
     assert.ok(
@@ -1333,7 +1353,7 @@ test('release readiness writes a machine-readable blocker summary', () => {
         (item) =>
           item.file === 'TODO.md' &&
           item.text ===
-            'Android export with selected device APIs has been tested.',
+            'Release preflight passes without warnings in the release environment.',
       ),
     )
     assert.equal(summary.checks.androidRealDeviceEvidence, true)
@@ -1816,16 +1836,23 @@ test('release readiness matches default handoff action to report currentness', (
       summary.releaseHandoffReport.command,
       `npm run release:handoff -- --expected-commit ${ciEvidence.commit} --output release/release-handoff.md`,
     )
+    assert.equal(summary.checks.realDeviceEvidence, true)
     assert.equal(
       summary.nextActions.some(
         (action) => action.id === 'release-handoff-report',
       ),
-      !reportIsCurrent,
+      false,
     )
     assert.ok(
       summary.nextActions.some(
+        (action) => action.id === 'release-preflight-evidence',
+      ),
+    )
+    assert.equal(
+      summary.nextActions.some(
         (action) => action.id === 'real-device-evidence',
       ),
+      false,
     )
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true })

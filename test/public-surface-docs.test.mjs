@@ -249,9 +249,9 @@ test('experimental wording remains while final release gates are still open', ()
   assertPatterns('TODO.md', [
     /- \[x\] `npm run check` passes locally and in CI/,
     /- \[x\] Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate/,
-    /- \[ \] Android and iOS export smoke apps run on real, hosted, emulator, or simulator targets for the production profile/,
+    /- \[x\] Android and iOS export smoke apps run on real, hosted, emulator, or simulator targets for the production profile/,
     /- \[ \] The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied/,
-    /Android\/iOS release device\s+evidence, Release Preflight evidence, and final public wording removal are\s+still incomplete/,
+    /Release Preflight evidence,\s+final public support-claim docs, and public warning wording removal are still\s+incomplete/,
   ])
 
   assertPatterns('README.md', [/experimental and not production ready yet/])
