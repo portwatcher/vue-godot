@@ -1,6 +1,7 @@
 # CSS-like Theme Layer for Vue Godot
 
-Status: Phase 1-6 implemented; Phase 7+ planned
+Status: implementation roadmap phases 1-6 complete; scoped SFC styles and
+utility presets remain deferred future work
 
 Audience: future implementers of `@vue-godot/html`, `@vue-godot/cli`, and
 example apps.
