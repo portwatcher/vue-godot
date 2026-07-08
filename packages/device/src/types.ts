@@ -11,6 +11,7 @@ export type CoreDeviceCapabilityName =
   | 'clipboard'
   | 'haptics'
   | 'sensors'
+  | 'secure-storage'
   | 'network'
   | 'share'
 

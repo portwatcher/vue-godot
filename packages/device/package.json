@@ -47,6 +47,11 @@
       "import": "./dist/permissions.js",
       "default": "./dist/permissions.js"
     },
+    "./secure-storage": {
+      "types": "./dist/secureStorage.d.ts",
+      "import": "./dist/secureStorage.js",
+      "default": "./dist/secureStorage.js"
+    },
     "./sensors": {
       "types": "./dist/sensors.d.ts",
       "import": "./dist/sensors.js",

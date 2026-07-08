@@ -67,6 +67,7 @@ unregister()
 | `@vue-godot/device/media-devices` | Backend-neutral bridge for Android/iOS/native camera and microphone plugins that implement the `MediaDevicesAdapter` contract. |
 | `@vue-godot/device/microphone` | Godot-backed microphone and audio-bus capture helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/permissions` | Godot-backed permission helpers for Android runtime requests, permission result events, and granted-permission lists. Imported from a subpath so the root package stays backend-neutral outside Godot. |
+| `@vue-godot/device/secure-storage` | Backend-neutral bridge for Android/iOS/native keychain or encrypted preference plugins that implement the `SecureStorageAdapter` contract. |
 | `@vue-godot/device/sensors` | Godot-backed accelerometer, gravity, gyroscope, magnetometer, motion, and orientation snapshot helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 | `@vue-godot/device/system` | Godot-backed platform, feature, URL open, window lifecycle, deep-link, share, and native-notification helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
 
@@ -206,6 +207,49 @@ installBrowserAPIs()
 permission, and missing export settings to typed capability states, and
 implements the `MediaDevicesAdapter` contract consumed by
 `navigator.mediaDevices.getUserMedia()`.
+
+## Native Secure Storage Plugin Bridge
+
+Import the secure-storage bridge from the `secure-storage` subpath when an
+Android, iOS, or desktop plugin exposes encrypted storage, Keychain, Keystore,
+or credential-vault operations:
+
+```ts
+import { registerDeviceCapability } from '@vue-godot/device'
+import {
+  getSecureItem,
+  removeSecureItem,
+  setSecureItem,
+} from '@vue-godot/device/secure-storage'
+
+const unregister = registerDeviceCapability({
+  capability: 'secure-storage',
+  pluginName: 'com.example.secure-storage',
+  isSupported() {
+    return secureStoragePlugin.is_available()
+  },
+  async getItem(key) {
+    return secureStoragePlugin.get_item(key)
+  },
+  async setItem(key, value) {
+    secureStoragePlugin.set_item(key, value)
+  },
+  async removeItem(key) {
+    secureStoragePlugin.remove_item(key)
+  },
+})
+
+await setSecureItem('session', 'secret-token')
+const token = await getSecureItem('session')
+await removeSecureItem('session')
+unregister()
+```
+
+The helper functions require the `secure-storage` capability before delegating
+to the adapter, so missing plugins, denied platform access, or export
+misconfiguration surface through the same `DeviceCapabilityError` path as other
+native capabilities. This package does not provide fallback plaintext storage;
+apps should choose their own development fallback explicitly if they need one.
 
 ## Godot System Helpers
 

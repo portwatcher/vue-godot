@@ -1,6 +1,7 @@
 import type {
   DeepLinkAdapter,
   NotificationAdapter,
+  SecureStorageAdapter,
   ShareAdapter,
 } from './adapters.js'
 
@@ -32,5 +33,17 @@ export function isShareAdapter(value: unknown): value is ShareAdapter {
     isObject(value) &&
     value.capability === 'share' &&
     typeof value.share === 'function'
+  )
+}
+
+export function isSecureStorageAdapter(
+  value: unknown,
+): value is SecureStorageAdapter {
+  return (
+    isObject(value) &&
+    value.capability === 'secure-storage' &&
+    typeof value.getItem === 'function' &&
+    typeof value.setItem === 'function' &&
+    typeof value.removeItem === 'function'
   )
 }

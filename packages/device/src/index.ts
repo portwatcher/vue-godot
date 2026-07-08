@@ -20,6 +20,7 @@ export {
 export {
   isDeepLinkAdapter,
   isNotificationAdapter,
+  isSecureStorageAdapter,
   isShareAdapter,
 } from './adapterGuards.js'
 export {
@@ -39,6 +40,12 @@ export {
   normalizeMediaDeviceTrack,
   normalizeMediaDevicesPluginError,
 } from './mediaDevices.js'
+export {
+  getRegisteredSecureStorageAdapter,
+  getSecureItem,
+  removeSecureItem,
+  setSecureItem,
+} from './secureStorage.js'
 export type {
   NativeMediaDeviceStream,
   NativeMediaDeviceTrack,
@@ -75,5 +82,6 @@ export type {
   NativeShareData,
   NotificationAdapter,
   PermissionAdapter,
+  SecureStorageAdapter,
   ShareAdapter,
 } from './adapters.js'

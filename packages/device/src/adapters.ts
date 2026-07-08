@@ -98,6 +98,13 @@ export interface ShareAdapter extends PluginBackedDeviceAdapter<'share'> {
   share: (data: NativeShareData) => Promise<void>
 }
 
+export interface SecureStorageAdapter
+  extends PluginBackedDeviceAdapter<'secure-storage'> {
+  getItem: (key: string) => string | null | Promise<string | null>
+  removeItem: (key: string) => void | Promise<void>
+  setItem: (key: string, value: string) => void | Promise<void>
+}
+
 export interface NativeOpenUrlEvent {
   source?: string
   url: string
@@ -123,4 +130,5 @@ export type DeviceAdapter =
   | MediaDevicesAdapter
   | NotificationAdapter
   | PermissionAdapter
+  | SecureStorageAdapter
   | ShareAdapter
