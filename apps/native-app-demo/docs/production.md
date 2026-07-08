@@ -39,13 +39,13 @@ Native plugin-backed capabilities may also require Gradle build settings, plugin
 repositories, AAR files, or custom manifest entries. Keep those requirements in
 the app repository next to the adapter registration code.
 
-Before recording Android evidence, open the `Release checks` screen in the app
-and run the production-profile check batch. It exercises the maintained release
-API set, including fetch, WebSocket constructor support, reachability,
+Before testing Android exports, open the SDK checks screen in the app and run
+the production-profile check batch. It exercises the maintained SDK API set,
+including fetch, WebSocket constructor support, reachability,
 `navigator.onLine`, storage, permissions, clipboard, geolocation/media adapter
 states, vibration, sensors, `SafeAreaView`, and `KeyboardAvoidingView`.
 The screen also logs every result with a `[native-release-checks]` prefix for
-logcat evidence. For the restart and lifecycle rows, run the screen once, force
+logcat filtering. For the restart and lifecycle rows, run the screen once, force
 stop and restart the app, run it again, press Android Back from a nested screen,
 background/foreground the app, and run the screen one final time.
 

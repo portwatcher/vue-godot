@@ -169,10 +169,8 @@ export function collectPublicSurfaceAuditErrors() {
 
   recordMissingPatterns(errors, 'README.md', [
     /docs\/compatibility\.md/,
-    /docs\/production\.md/,
     /docs\/permissions\.md/,
     /docs\/plugins\.md/,
-    /docs\/real-device-release\.md/,
     /docs\/routing\.md/,
     /docs\/runtime\.md/,
     /docs\/migration\.md/,
@@ -280,7 +278,7 @@ export function collectPublicSurfaceAuditErrors() {
     'apps/game-ui-demo/README.md',
   ]) {
     recordMissingPatterns(errors, relativePath, [
-      /^## Production Readiness Coverage/m,
+      /^## SDK Coverage/m,
       /npm run build/,
       /npm run dev/,
       /npm run gen:types/,

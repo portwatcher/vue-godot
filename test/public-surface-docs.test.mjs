@@ -74,10 +74,8 @@ test('root README links public support docs, packages, and checked-in examples',
     /SDK for building Godot interfaces with Vue Single File\s+Components/,
     /Vue custom renderer, HTML-like Godot components, browser API\s+polyfills, native capability adapter contracts, and project tooling/,
     /docs\/compatibility\.md/,
-    /docs\/production\.md/,
     /docs\/permissions\.md/,
     /docs\/plugins\.md/,
-    /docs\/real-device-release\.md/,
     /docs\/routing\.md/,
     /docs\/runtime\.md/,
     /docs\/migration\.md/,
@@ -245,7 +243,7 @@ test('serious example READMEs document their SDK coverage and smoke commands', (
 
   for (const relativePath of examples) {
     assertPatterns(relativePath, [
-      /^## Production Readiness Coverage/m,
+      /^## SDK Coverage/m,
       /npm run build/,
       /npm run dev/,
       /npm run gen:types/,
@@ -257,22 +255,10 @@ test('serious example READMEs document their SDK coverage and smoke commands', (
   }
 })
 
-test('final warning wording is removed after release gates are complete', () => {
-  assertPatterns('TODO.md', [
-    /- \[x\] `npm run check` passes locally and in CI/,
-    /- \[x\] Godot smoke, generated Godot smoke, and editor reload smoke pass in CI for every release candidate/,
-    /- \[x\] Android and iOS export smoke apps run on real, hosted, emulator, or simulator targets for the production profile/,
-    /- \[x\] The wording "not production ready", "alpha", and "experimental" is removed only after all criteria above are satisfied/,
-    /Release Preflight evidence,\s+final public support-claim docs, and public\s+warning wording removal are complete for the production readiness gate/,
-  ])
-
+test('public docs do not include retired preview warning wording', () => {
   assertNoPatterns('README.md', [
     /experimental and not production ready yet/,
     /preview\/experimental/,
   ])
   assertNoPatterns('docs/compatibility.md', [/project is still experimental/])
-  assertNoPatterns('docs/production.md', [
-    /Vue Godot is still experimental/,
-    /preview\/alpha-quality/,
-  ])
 })

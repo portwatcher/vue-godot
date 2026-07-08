@@ -89,7 +89,7 @@ function createCompleteFixtureRoot(root) {
       '@vue-godot/runtime-tscn',
     ],
     [
-      'Production Readiness Coverage',
+      'SDK Coverage',
       'multi-screen routing',
       'form input',
       'network loading',
@@ -97,7 +97,7 @@ function createCompleteFixtureRoot(root) {
       'persistent storage',
       'camera or geolocation',
       'permission',
-      'production-profile checks',
+      'SDK profile checks',
       'SafeAreaView',
       'KeyboardAvoidingView',
       'Godot smoke',
@@ -109,7 +109,7 @@ function createCompleteFixtureRoot(root) {
     'game-ui-demo',
     ['@vue-godot/browser', '@vue-godot/html', '@vue-godot/runtime-tscn'],
     [
-      'Production Readiness Coverage',
+      'SDK Coverage',
       'Godot scene',
       'Vue-rendered HUD',
       'controller',

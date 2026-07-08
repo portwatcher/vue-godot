@@ -2,7 +2,7 @@
 
 Reference game UI app built with Vue Godot and `@vue-godot/html`.
 
-## Production Readiness Coverage
+## SDK Coverage
 
 This app exists to keep SDK-level HUD and game menu flows exercised:
 

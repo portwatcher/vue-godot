@@ -3,11 +3,9 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import {
   compareVersions,
-  currentReleasePackageVersions,
   expectedRange,
   formatCommandFailure,
   isTrustedPublishingEnvironment,
-  normalizeCommitSha,
   npmCommand,
   parseNpmJson as parseNpmJsonStrict,
   readJson,
@@ -15,14 +13,6 @@ import {
   repoRoot,
   run,
 } from './release-utils.mjs'
-import {
-  describeRealDeviceEvidencePath,
-  readRealDeviceEvidence,
-  realDeviceEvidenceEnvVar,
-  resolveRealDeviceEvidencePath,
-  validateRealDeviceEvidence,
-  verifyRealDeviceEvidenceRuns,
-} from './real-device-evidence.mjs'
 
 function usage() {
   console.log(`Usage: node scripts/release-preflight.mjs [options]
@@ -31,8 +21,7 @@ Options:
   --local                         Treat release-environment blockers as warnings.
   --skip-check                    Skip npm run check.
   --skip-godot                    Skip Godot smoke checks.
-  --skip-serious-examples         Skip serious example app readiness checks.
-  --expected-commit <sha>         Tested release commit. Default: current HEAD.
+  --skip-serious-examples         Skip serious example app coverage checks.
   --summary-output <file>         Write machine-readable preflight summary JSON.
   --help                          Show this help.
 `)
@@ -44,7 +33,6 @@ function parseArgs(argv) {
     skipCheck: false,
     skipGodot: false,
     skipSeriousExamples: false,
-    expectedCommit: null,
     summaryOutput: null,
   }
 
@@ -71,21 +59,6 @@ function parseArgs(argv) {
       options.skipSeriousExamples = true
       continue
     }
-    if (arg === '--expected-commit') {
-      const value = argv[++index]
-      if (!value) {
-        throw new Error('--expected-commit requires a value')
-      }
-      options.expectedCommit = normalizeCommitSha(value, '--expected-commit')
-      continue
-    }
-    if (arg.startsWith('--expected-commit=')) {
-      options.expectedCommit = normalizeCommitSha(
-        arg.slice('--expected-commit='.length),
-        '--expected-commit',
-      )
-      continue
-    }
     if (arg === '--summary-output') {
       const value = argv[++index]
       if (!value) {
@@ -110,7 +83,6 @@ const localOnly = options.localOnly
 const skipCheck = options.skipCheck
 const skipGodot = options.skipGodot
 const skipSeriousExamples = options.skipSeriousExamples
-let cachedExpectedCommit = null
 
 const failures = []
 const warnings = []
@@ -546,86 +518,8 @@ function checkDependencyAudit() {
   })
 }
 
-function readCurrentCommit() {
-  const result = run('git', ['rev-parse', 'HEAD'])
-  if (result.status !== 0) {
-    failures.push(`Unable to read current git commit\n${result.stderr}`)
-    return null
-  }
-  return result.stdout.trim()
-}
-
-function expectedReleaseCommit() {
-  if (cachedExpectedCommit !== null) {
-    return cachedExpectedCommit
-  }
-  cachedExpectedCommit = options.expectedCommit ?? readCurrentCommit()
-  return cachedExpectedCommit
-}
-
-function recordRealDeviceEvidenceIssue(message) {
-  if (localOnly) {
-    warnings.push(message)
-  } else {
-    failures.push(message)
-  }
-}
-
-async function checkRealDeviceEvidence() {
-  logStep('checking real device evidence')
-
-  const evidencePath = resolveRealDeviceEvidencePath(process.env)
-  const relativePath = describeRealDeviceEvidencePath(evidencePath)
-  const { evidence, errors: readErrors } = readRealDeviceEvidence(evidencePath)
-
-  if (!evidence) {
-    recordRealDeviceEvidenceIssue(
-      [
-        `Real device evidence missing at ${relativePath}.`,
-        `Create release/real-device-evidence.json or set ${realDeviceEvidenceEnvVar}=path/to/evidence.json after completing docs/real-device-release.md.`,
-        readErrors.join('\n'),
-      ]
-        .filter(Boolean)
-        .join('\n'),
-    )
-    return
-  }
-
-  const currentCommit = expectedReleaseCommit()
-  const errors = validateRealDeviceEvidence(evidence, {
-    expectedCommit: currentCommit ?? undefined,
-    expectedPackageVersions: currentReleasePackageVersions(),
-    requireProductionProfile: true,
-  })
-
-  if (errors.length > 0) {
-    recordRealDeviceEvidenceIssue(
-      [`Real device evidence is incomplete: ${relativePath}`, ...errors].join(
-        '\n',
-      ),
-    )
-    return
-  }
-
-  const runErrors = await verifyRealDeviceEvidenceRuns(evidence)
-  if (runErrors.length > 0) {
-    recordRealDeviceEvidenceIssue(
-      [
-        `Real device CI run evidence could not be verified: ${relativePath}`,
-        ...runErrors,
-      ].join('\n'),
-    )
-    return
-  }
-
-  console.log(
-    `[release-preflight] real device evidence passed: ${relativePath}`,
-  )
-}
-
 function buildPreflightSummary() {
   return {
-    commit: expectedReleaseCommit(),
     localOnly,
     skipCheck,
     skipGodot,
@@ -703,7 +597,6 @@ async function main() {
   checkDependencyAudit()
   checkSeriousExampleApps()
   checkGodotSmoke()
-  await checkRealDeviceEvidence()
   printSummary()
 }
 

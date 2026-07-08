@@ -1,9 +1,8 @@
 # Serious Example App Criteria
 
-The final production-readiness pass requires two checked-in example apps that
-show Vue Godot handling realistic product work, not only isolated component
-fixtures. These criteria define what those apps must prove before the TODO
-entries can be checked.
+The SDK quality gate keeps two checked-in example apps that show Vue Godot
+handling realistic product work, not only isolated component fixtures. These
+criteria define what those apps must keep proving as the public surface changes.
 
 ## Design Scope
 
@@ -42,7 +41,7 @@ the fixture app coverage. It must demonstrate:
 
 ## Verification
 
-Before checking off the serious demo TODO items:
+Before changing the serious demo coverage:
 
 - add both apps to the root README examples table
 - keep each app's package scripts compatible with the fixture app build contract

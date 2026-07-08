@@ -16,7 +16,7 @@ const expectedApps = [
       '@vue-godot/runtime-tscn',
     ],
     readmeMarkers: [
-      'Production Readiness Coverage',
+      'SDK Coverage',
       'multi-screen routing',
       'form input',
       'network loading',
@@ -24,7 +24,7 @@ const expectedApps = [
       'persistent storage',
       'camera or geolocation',
       'permission',
-      'production-profile checks',
+      'SDK profile checks',
       'SafeAreaView',
       'KeyboardAvoidingView',
       'Godot smoke',
@@ -40,7 +40,7 @@ const expectedApps = [
       '@vue-godot/runtime-tscn',
     ],
     readmeMarkers: [
-      'Production Readiness Coverage',
+      'SDK Coverage',
       'Godot scene',
       'Vue-rendered HUD',
       'controller',
@@ -65,7 +65,7 @@ function usage() {
 
 Options:
   --root <path>        Repository root to check. Defaults to the current repo.
-  --allow-incomplete  Print failures but exit 0. Useful while TODO.md is open.
+  --allow-incomplete  Print failures but exit 0. Useful during staged example updates.
   --help              Show this help.
 `)
 }

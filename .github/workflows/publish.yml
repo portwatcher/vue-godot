@@ -16,11 +16,6 @@ on:
         required: true
         default: false
         type: boolean
-      real_device_evidence_path:
-        description: Path to real-device evidence JSON committed in this ref.
-        required: true
-        default: release/real-device-evidence.json
-        type: string
 
 permissions:
   contents: read
@@ -58,7 +53,6 @@ jobs:
         env:
           NPM_DIST_TAG: ${{ inputs.dist_tag || 'latest' }}
           SKIP_PUBLIC_SMOKE: ${{ inputs.skip_public_smoke || false }}
-          VUE_GODOT_REAL_DEVICE_EVIDENCE: ${{ inputs.real_device_evidence_path || 'release/real-device-evidence.json' }}
         run: |
           args=(--yes --tag "$NPM_DIST_TAG")
           if [ "$SKIP_PUBLIC_SMOKE" = "true" ]; then

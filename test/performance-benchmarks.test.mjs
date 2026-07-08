@@ -8,7 +8,7 @@ import {
   validateBenchmarkCoverage,
 } from '../scripts/performance-benchmarks.mjs'
 
-test('performance benchmark registry covers every production TODO category', () => {
+test('performance benchmark registry covers every SDK quality category', () => {
   validateBenchmarkCoverage()
 
   const ids = benchmarkDefinitions.map((definition) => definition.id)

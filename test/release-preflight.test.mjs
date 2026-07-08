@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import test from 'node:test'
 
-test('release preflight rejects non-SHA expected commits before running checks', () => {
+test('release preflight rejects removed expected-commit option', () => {
   const result = spawnSync(
     process.execPath,
     [
@@ -20,6 +20,6 @@ test('release preflight rejects non-SHA expected commits before running checks',
   assert.notEqual(result.status, 0)
   assert.match(
     `${result.stdout}\n${result.stderr}`,
-    /--expected-commit must be a full 40-character git commit SHA/,
+    /Unknown option: --expected-commit/,
   )
 })

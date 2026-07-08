@@ -6,7 +6,7 @@
         <Span :style="titleStyle">Production app flow</Span>
       </Div>
       <Div :style="buttonRowStyle">
-        <Button @click="goToReleaseChecks">Release checks</Button>
+        <Button @click="goToReleaseChecks">SDK checks</Button>
         <Button @click="goToDevice">Device APIs</Button>
       </Div>
     </Div>

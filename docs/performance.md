@@ -20,7 +20,7 @@ numbers matter.
 | Hot reload edit to rebuilt `dist/app.js` | <= 1s starter, <= 3s serious app | app-owned budget | Keep stable chunk names to avoid Godot editor dependency churn. |
 | Large list rendering | 60 fps target while scrolling | no sustained frame over 33ms | Use `<VirtualList>` for large fixed-height lists. |
 | Asset loading for first screen | critical local assets <= 250ms after mount | remote assets async and non-blocking | Import or preload critical `res://` resources where possible. |
-| Repeated mount/unmount | 200 cycles <= 1s with no stale rendered children or unfreed descendants | no unbounded memory growth in exported release evidence | `npm run bench:performance` enforces the deterministic cleanup budget; app teams should add heap snapshots when hardware-specific memory growth matters. |
+| Repeated mount/unmount | 200 cycles <= 1s with no stale rendered children or unfreed descendants | no unbounded memory growth in exported builds | `npm run bench:performance` enforces the deterministic cleanup budget; app teams should add heap snapshots when hardware-specific memory growth matters. |
 | Fetch/WebSocket responsiveness | app-owned timeout budget | app-owned timeout budget | Use abort/timeouts and avoid blocking first render on non-critical network calls. |
 
 If an app needs different numbers, commit the app-specific budget in its docs or
@@ -167,7 +167,7 @@ npm run bench:performance
 - Repeated mount/unmount: 200 mount/unmount cycles with no stale rendered
   children and no unfreed descendants.
 - Editor reload stability: repeated unmount/remount cycles with stale node
-  release checks.
+  checks.
 
 These checks are intentionally deterministic and broad enough for CI. They are
 not a substitute for release-candidate measurements in exported desktop/mobile
