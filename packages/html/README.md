@@ -318,7 +318,8 @@ Stylesheet declarations use the same documented `HtmlStyle` property subset as
 inline styles. CSS variables are global theme tokens only: `:root` custom
 properties and structured theme tokens can be used through `var(--token,
 fallback)`. Browser CSSOM, computed style reads, per-node custom-property
-inheritance, scoped SFC styles, and Vite CSS collection are not implemented.
+inheritance, and scoped SFC styles are not implemented. Global `.css` imports
+are supported through `@vue-godot/html/vite`.
 Supported media queries are limited to `min-width`, `max-width`, `min-height`,
 `max-height`, and `orientation`; call `refreshHtmlStyleContextViewport()` from
 a Godot resize signal when an app needs responsive class rules to re-resolve
@@ -554,7 +555,9 @@ With this setup, existing SPAs using `<div>`, `<img>`, `<span>`, etc. work witho
 ### Migrating an existing Vue SPA (lowercase tags, no renaming)
 
 For broader migration strategy, routing, browser API, and Godot UI guidance,
-see the repository [migration guide](../../docs/migration.md).
+see the repository [migration guide](../../docs/migration.md). Run
+`vue-godot doctor --migration` on candidate Vue apps to triage unsupported CSS,
+DOM assumptions, and browser tag replacements.
 
 ```ts
 // vite.config.ts

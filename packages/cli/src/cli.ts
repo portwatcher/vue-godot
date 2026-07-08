@@ -18,7 +18,7 @@ Commands:
   create      Create a new Godot project with vue-godot set up and ready to go
   integrate   Scaffold a vue/ folder with Vite + Vue configs for an existing Godot project
   gen-types   Generate Vue GlobalComponents type augmentation from Godot typings
-  doctor      Check local project setup, packages, exports, and plugin-backed APIs
+  doctor      Check setup, packages, exports, migration risks, and plugin APIs
 
 Run \`vue-godot <command> --help\` for command-specific options.
 `,
@@ -292,13 +292,14 @@ function doctorUsage(): never {
     `Usage: vue-godot doctor [dir] [options]
 
 Check local project setup, package versions, GodotJS typings, export settings,
-permissions, and plugin-backed API setup.
+permissions, migration risks, and plugin-backed API setup.
 
 Arguments:
   dir             Target directory (defaults to the current directory)
 
 Options:
   --exports-only  Only scan source files and export_presets.cfg for permission/plist warnings
+  --migration     Scan CSS/Vue source for web-to-Godot migration risks
 `,
   )
   process.exit(1)
@@ -307,11 +308,15 @@ Options:
 function parseDoctorArgs(argv: string[]) {
   let targetDir: string | undefined
   let exportsOnly = false
+  let migration = false
 
   for (let i = 0; i < argv.length; i++) {
     switch (argv[i]) {
       case '--exports-only':
         exportsOnly = true
+        break
+      case '--migration':
+        migration = true
         break
       case '--help':
       case '-h':
@@ -330,7 +335,7 @@ function parseDoctorArgs(argv: string[]) {
     }
   }
 
-  return { targetDir: targetDir ?? '.', exportsOnly }
+  return { targetDir: targetDir ?? '.', exportsOnly, migration }
 }
 
 if (!command || command === '--help' || command === '-h') {
@@ -396,6 +401,7 @@ switch (command) {
     const report = runDoctor({
       targetDir: parsed.targetDir,
       exportsOnly: parsed.exportsOnly,
+      migration: parsed.migration,
     })
     printDoctorReport(report)
     if (report.errorCount > 0) {

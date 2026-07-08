@@ -1,6 +1,6 @@
 # CSS-like Theme Layer for Vue Godot
 
-Status: Phase 1-5 implemented; Phase 6+ planned
+Status: Phase 1-6 implemented; Phase 7+ planned
 
 Audience: future implementers of `@vue-godot/html`, `@vue-godot/cli`, and
 example apps.
@@ -11,7 +11,7 @@ runtime maps those rules to Godot `Theme`, Godot `Control` properties,
 `StyleBoxFlat`, existing `@vue-godot/html` style helpers, and component-specific
 state handling.
 
-Implementation note: `@vue-godot/html` now ships the first four phases:
+Implementation note: `@vue-godot/html` now ships the first five phases:
 structured themes via `defineHtmlTheme()`, opt-in `defaultStyles` presets,
 explicit global stylesheet registration through `createHtmlStyleSheet()`,
 class/type/group selector matching, root token resolution, shared component
@@ -19,8 +19,9 @@ style resolution, and state pseudo-class styling for the documented component
 states. It also supports the limited responsive media query subset documented
 below through viewport buckets refreshed from Godot window metrics. Vite global
 CSS collection is available through `@vue-godot/html/vite`, with generated
-HTML-mode projects importing `vue/src/app.css` directly. Scoped SFC styles and
-migration audit tooling remain future phases.
+HTML-mode projects importing `vue/src/app.css` directly. `@vue-godot/cli`
+ships the Phase 6 static migration audit through
+`vue-godot doctor --migration`. Scoped SFC styles remain a future phase.
 
 This is not a proposal to make Godot a browser. It is a proposal to improve
 the migration path for compatible Vue apps and to make native-feeling mobile
@@ -1216,7 +1217,8 @@ Acceptance criteria:
 
 ### Phase 6: Migration Tooling
 
-Add audit tooling for Vue web app migration.
+Implemented: CLI audit tooling for Vue web app migration through
+`vue-godot doctor --migration`.
 
 Scope:
 
@@ -1230,9 +1232,21 @@ Acceptance criteria:
 - Running the tool on a candidate Vue app produces a concrete migration report.
 - The report distinguishes small-change, medium, and rewrite areas.
 
-## Public Documentation Updates Needed When Implemented
+Implementation notes:
 
-When implementation starts, update:
+- CSS files under `vue/` and `src/` are scanned for unsupported properties,
+  selectors, and at-rules.
+- Vue/TypeScript source files under `vue/` and `src/` are scanned for DOM
+  assumptions such as `document.querySelector`, `HTMLElement`, CSSOM reads,
+  browser window layout APIs, and browser canvas contexts.
+- Vue SFC browser tags such as `<div>`, `<button>`, `<input>`, and `<img>` are
+  reported with suggested `@vue-godot/html` component replacements.
+- The strongest finding determines the overall report tier:
+  `small-change`, `medium`, or `rewrite`.
+
+## Public Documentation Updates
+
+Implemented documentation coverage includes:
 
 - `packages/html/README.md`
   - Add theme and CSS-like stylesheet API.
@@ -1243,6 +1257,8 @@ When implementation starts, update:
   - Mark selector/property support accurately.
 - `docs/migration.md`
   - Add the migration profile and CSS audit flow.
+- `packages/cli/README.md`
+  - Add `vue-godot doctor --migration`.
 - `README.md`
   - Link to the CSS/theming guide after the feature is real.
 - `apps/html-demo`

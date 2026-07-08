@@ -55,10 +55,33 @@ npx vue-godot integrate --html
    Godot-backed style subset, explicit `createHtmlStyleSheet()` registration,
    Vite-collected global CSS imports, structured `defineHtmlTheme()` defaults,
    limited media query buckets where useful, and Godot container layout.
-7. Run `npm run build`, `npm run check:exports`, and test in the GodotJS editor.
+7. Run `npx vue-godot doctor --migration` to triage unsupported CSS, DOM
+   assumptions, and browser tags before deeper porting work.
+8. Run `npm run build`, `npm run check:exports`, and test in the GodotJS editor.
 
 See the `@vue-godot/html` README's lowercase tag migration section for the
 exact `isNativeTag`, `isCustomElement`, `htmlPlugin`, and Volar setup.
+
+### Migration Audit
+
+`vue-godot doctor --migration` adds a static migration report to the usual
+project diagnostics. The audit scans CSS files under `vue/` and `src/` for
+unsupported properties, selectors, and at-rules, and scans Vue/TypeScript files
+for browser DOM assumptions such as `document.querySelector`, `HTMLElement`,
+`getComputedStyle()`, `window.matchMedia`, and browser canvas contexts.
+
+Findings are grouped into three tiers:
+
+| Tier | Meaning |
+| --- | --- |
+| `small-change` | Usually a component rename, supported style replacement, or visual approximation. |
+| `medium` | Requires layout or state reshaping, often around selectors, positioning, or CSSOM reads. |
+| `rewrite` | Relies on browser DOM construction, observers, float layout, keyframes outside the supported API, or browser canvas drawing. |
+
+The report also suggests equivalent `@vue-godot/html` components for browser
+tags such as `<div>`, `<button>`, `<input>`, and `<img>`. It is a triage tool,
+not a runtime guarantee; validate the migrated app in the Godot editor and on
+target devices.
 
 ### What Usually Ports Cleanly
 
@@ -182,6 +205,8 @@ Keep the boundary explicit:
 - [ ] Register `htmlPlugin` for HTML-mode apps.
 - [ ] Install browser APIs before creating router/store/app code that reads
       browser-like globals.
+- [ ] Run `npx vue-godot doctor --migration` and address `medium`/`rewrite`
+      findings deliberately.
 - [ ] Replace DOM refs and selectors with Vue/Godot refs.
 - [ ] Replace unsupported CSS with the documented style subset or Godot
       containers.

@@ -12,6 +12,7 @@ export interface DoctorCheck {
 export interface DoctorOptions {
   targetDir: string
   exportsOnly?: boolean
+  migration?: boolean
   nodeVersion?: string
 }
 
@@ -45,6 +46,17 @@ interface PackageRequirement {
   reason: string
 }
 
+type MigrationTier = 'small-change' | 'medium' | 'rewrite'
+
+interface MigrationFinding {
+  tier: MigrationTier
+  area: 'css' | 'dom' | 'component'
+  file: string
+  line: number
+  message: string
+  suggestion: string
+}
+
 const MIN_NODE_MAJOR = 18
 
 const TEXT_EXTENSIONS = new Set([
@@ -55,6 +67,104 @@ const TEXT_EXTENSIONS = new Set([
   '.ts',
   '.tsx',
   '.vue',
+])
+
+const CSS_EXTENSIONS = new Set(['.css'])
+
+// Keep this audit allow-list aligned with packages/html/src/utils/styleMapping.ts.
+// The CLI must run in plain Node without importing Godot-backed HTML modules.
+const SUPPORTED_CSS_PROPERTIES = new Set([
+  'display',
+  'flex-direction',
+  'flex-wrap',
+  'justify-content',
+  'align-items',
+  'align-self',
+  'flex',
+  'gap',
+  'columns',
+  'padding',
+  'padding-top',
+  'padding-right',
+  'padding-bottom',
+  'padding-left',
+  'margin',
+  'margin-top',
+  'margin-right',
+  'margin-bottom',
+  'margin-left',
+  'width',
+  'height',
+  'min-width',
+  'min-height',
+  'max-width',
+  'max-height',
+  'object-fit',
+  'background',
+  'background-color',
+  'background-image',
+  'border',
+  'border-color',
+  'border-style',
+  'border-width',
+  'border-top-width',
+  'border-right-width',
+  'border-bottom-width',
+  'border-left-width',
+  'border-radius',
+  'border-top-left-radius',
+  'border-top-right-radius',
+  'border-bottom-right-radius',
+  'border-bottom-left-radius',
+  'color',
+  'font-size',
+  'font-family',
+  'font-weight',
+  'text-transform',
+  'text-align',
+  'transform',
+  'transition',
+  'transition-property',
+  'transition-duration',
+  'transition-delay',
+  'transition-timing-function',
+  'animation-name',
+  'animation-duration',
+  'animation-delay',
+  'animation-timing-function',
+  'animation-iteration-count',
+  'animation-direction',
+  'overflow-wrap',
+  'overflow',
+  'opacity',
+])
+
+const HTML_COMPONENT_SUGGESTIONS = new Map([
+  ['div', 'Div'],
+  ['span', 'Span'],
+  ['button', 'Button'],
+  ['input', 'Input'],
+  ['textarea', 'Textarea'],
+  ['select', 'Select'],
+  ['option', 'Option'],
+  ['form', 'Form'],
+  ['img', 'Img'],
+  ['a', 'A'],
+  ['canvas', 'Canvas'],
+  ['video', 'Video'],
+  ['audio', 'Audio'],
+])
+
+const SUPPORTED_SELECTOR_PSEUDO_CLASSES = new Set([
+  'hover',
+  'active',
+  'pressed',
+  'focus',
+  'focus-visible',
+  'disabled',
+  'checked',
+  'read-only',
+  'selected',
 ])
 
 const EXPORT_FEATURE_RULES: FeatureRule[] = [
@@ -290,7 +400,7 @@ function installedPackageVersion(
   return typeof version === 'string' ? version : null
 }
 
-function walkTextFiles(root: string): string[] {
+function walkFiles(root: string, extensions: ReadonlySet<string>): string[] {
   if (!fs.existsSync(root)) {
     return []
   }
@@ -304,16 +414,24 @@ function walkTextFiles(root: string): string[] {
       if (entry.name === 'node_modules' || entry.name === 'dist') {
         continue
       }
-      files.push(...walkTextFiles(absolutePath))
+      files.push(...walkFiles(absolutePath, extensions))
       continue
     }
 
-    if (entry.isFile() && TEXT_EXTENSIONS.has(path.extname(entry.name))) {
+    if (entry.isFile() && extensions.has(path.extname(entry.name))) {
       files.push(absolutePath)
     }
   }
 
   return files
+}
+
+function walkTextFiles(root: string): string[] {
+  return walkFiles(root, TEXT_EXTENSIONS)
+}
+
+function walkCssFiles(root: string): string[] {
+  return walkFiles(root, CSS_EXTENSIONS)
 }
 
 function readSourceCorpus(targetDir: string): string {
@@ -327,10 +445,321 @@ function readSourceCorpus(targetDir: string): string {
   return chunks.join('\n')
 }
 
+function lineNumberAt(text: string, index: number): number {
+  let line = 1
+  for (let cursor = 0; cursor < index; cursor++) {
+    if (text[cursor] === '\n') {
+      line += 1
+    }
+  }
+  return line
+}
+
+function relativeProjectPath(targetDir: string, filePath: string): string {
+  return path.relative(targetDir, filePath).split(path.sep).join('/')
+}
+
+function migrationTierWeight(tier: MigrationTier): number {
+  switch (tier) {
+    case 'small-change':
+      return 1
+    case 'medium':
+      return 2
+    case 'rewrite':
+      return 3
+  }
+}
+
+function strongestMigrationTier(findings: readonly MigrationFinding[]): MigrationTier {
+  let tier: MigrationTier = 'small-change'
+  for (const finding of findings) {
+    if (migrationTierWeight(finding.tier) > migrationTierWeight(tier)) {
+      tier = finding.tier
+    }
+  }
+  return tier
+}
+
+function addMigrationFinding(
+  findings: MigrationFinding[],
+  tier: MigrationTier,
+  area: MigrationFinding['area'],
+  file: string,
+  line: number,
+  message: string,
+  suggestion: string,
+): void {
+  findings.push({ tier, area, file, line, message, suggestion })
+}
+
 function detectFeatures(source: string): FeatureRule[] {
   return EXPORT_FEATURE_RULES.filter((rule) =>
     rule.patterns.some((pattern) => pattern.test(source)),
   )
+}
+
+function isSupportedMigrationSelector(selector: string): boolean {
+  if (selector === ':root') {
+    return true
+  }
+
+  if (
+    selector.includes(' ') ||
+    selector.includes('>') ||
+    selector.includes('+') ||
+    selector.includes('~') ||
+    selector.includes('[') ||
+    selector.includes('#') ||
+    selector.includes('*') ||
+    selector.includes('::') ||
+    selector.includes('(') ||
+    selector.includes(')')
+  ) {
+    return false
+  }
+
+  const pseudoMatches = [...selector.matchAll(/:([a-z-]+)/g)]
+  for (const match of pseudoMatches) {
+    if (!SUPPORTED_SELECTOR_PSEUDO_CLASSES.has(match[1])) {
+      return false
+    }
+  }
+
+  const baseSelector = selector.replace(/:[a-z-]+/g, '')
+  if (!baseSelector) {
+    return false
+  }
+
+  const identifier = '[A-Za-z_][A-Za-z0-9_-]*'
+  const typeSelector = '[A-Za-z][A-Za-z0-9_-]*'
+  return new RegExp(`^(?:${typeSelector})?(?:\\.${identifier})*$`).test(
+    baseSelector,
+  )
+}
+
+function classifyUnsupportedCssProperty(property: string): {
+  tier: MigrationTier
+  suggestion: string
+} {
+  switch (property) {
+    case 'position':
+    case 'top':
+    case 'right':
+    case 'bottom':
+    case 'left':
+    case 'z-index':
+      return {
+        tier: 'medium',
+        suggestion:
+          'Replace browser positioning with Godot containers, Screen/Overlay, or explicit Control sizing.',
+      }
+    case 'float':
+    case 'clear':
+      return {
+        tier: 'rewrite',
+        suggestion:
+          'Rewrite float layout as Div row/column containers or Godot layout nodes.',
+      }
+    case 'grid-template-areas':
+    case 'grid-area':
+    case 'grid-template-columns':
+    case 'grid-template-rows':
+      return {
+        tier: 'medium',
+        suggestion:
+          'Use the supported Div grid columns subset or explicit nested containers.',
+      }
+    case 'box-shadow':
+    case 'filter':
+    case 'backdrop-filter':
+      return {
+        tier: 'small-change',
+        suggestion:
+          'Approximate the visual treatment with supported borders/backgrounds or a Godot-native asset.',
+      }
+    default:
+      return {
+        tier: 'small-change',
+        suggestion:
+          'Replace with a documented HtmlStyle property or a component-specific prop.',
+      }
+  }
+}
+
+function scanCssForMigration(
+  findings: MigrationFinding[],
+  targetDir: string,
+): void {
+  for (const rootName of ['vue', 'src']) {
+    const root = path.join(targetDir, rootName)
+    for (const filePath of walkCssFiles(root)) {
+      const source = fs.readFileSync(filePath, 'utf-8')
+      const relativePath = relativeProjectPath(targetDir, filePath)
+
+      for (const match of source.matchAll(/@([a-z-]+)\b[^;{]*(?:;|\{)/gi)) {
+        const ruleName = match[1].toLowerCase()
+        if (ruleName === 'media') {
+          continue
+        }
+
+        const atRule = match[0].replace(/[;{]\s*$/, '').trim()
+        addMigrationFinding(
+          findings,
+          ruleName === 'keyframes' ? 'rewrite' : 'medium',
+          'css',
+          relativePath,
+          lineNumberAt(source, match.index ?? 0),
+          `Unsupported CSS at-rule "${atRule}".`,
+          'Move animations to registerStyleKeyframes() or replace the at-rule with supported class rules.',
+        )
+      }
+
+      for (const match of source.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+        const selectorText = match[1].trim()
+        const body = match[2]
+        const line = lineNumberAt(source, match.index ?? 0)
+
+        if (selectorText.startsWith('@')) {
+          continue
+        }
+
+        for (const selector of selectorText.split(',').map((part) => part.trim())) {
+          if (selector && !isSupportedMigrationSelector(selector)) {
+            addMigrationFinding(
+              findings,
+              'medium',
+              'css',
+              relativePath,
+              line,
+              `Selector "${selector}" is outside the Vue Godot stylesheet subset.`,
+              'Use type selectors, class selectors, type.class, groups, or supported state pseudo-classes.',
+            )
+          }
+        }
+
+        for (const declaration of body.split(';')) {
+          const [propertyName] = declaration.split(':')
+          const property = propertyName?.trim().toLowerCase()
+          if (
+            !property ||
+            property.startsWith('--') ||
+            SUPPORTED_CSS_PROPERTIES.has(property)
+          ) {
+            continue
+          }
+
+          const classification = classifyUnsupportedCssProperty(property)
+          addMigrationFinding(
+            findings,
+            classification.tier,
+            'css',
+            relativePath,
+            line,
+            `CSS property "${property}" is not in the Godot-backed style subset.`,
+            classification.suggestion,
+          )
+        }
+      }
+    }
+  }
+}
+
+const DOM_MIGRATION_PATTERNS: {
+  pattern: RegExp
+  tier: MigrationTier
+  message: string
+  suggestion: string
+}[] = [
+  {
+    pattern:
+      /\bdocument\.(querySelector|getElementById|getElementsByClassName|getElementsByTagName)\b/g,
+    tier: 'medium',
+    message: 'Direct DOM querying is used.',
+    suggestion: 'Use Vue refs to HTML-like components or Godot node refs.',
+  },
+  {
+    pattern: /\bdocument\.createElement\b|\bDOMParser\b|\binnerHTML\b/g,
+    tier: 'rewrite',
+    message: 'Runtime DOM construction or HTML parsing is used.',
+    suggestion:
+      'Rewrite this area as Vue component state/rendering or explicit Godot nodes.',
+  },
+  {
+    pattern:
+      /\b(HTMLElement|Element|NodeList|MutationObserver|ResizeObserver|IntersectionObserver)\b/g,
+    tier: 'rewrite',
+    message: 'Browser DOM types or observers are referenced.',
+    suggestion:
+      'Replace DOM measurement/observer logic with Vue state, Godot signals, or component props.',
+  },
+  {
+    pattern: /\bgetComputedStyle\s*\(/g,
+    tier: 'medium',
+    message: 'Computed CSS reads are used.',
+    suggestion:
+      'Keep style state in Vue data or use explicit Godot node properties instead of CSSOM reads.',
+  },
+  {
+    pattern:
+      /\bwindow\.(innerWidth|innerHeight|matchMedia|requestAnimationFrame)\b/g,
+    tier: 'medium',
+    message: 'Browser window layout/timing APIs are used.',
+    suggestion:
+      'Use Godot viewport metrics, responsive stylesheet buckets, or Godot process/tween APIs.',
+  },
+  {
+    pattern: /\bcanvas\.getContext\s*\(/g,
+    tier: 'rewrite',
+    message: 'Browser canvas drawing context is used.',
+    suggestion:
+      'Use the Control-backed Canvas ref with Godot drawing or a custom Godot Control.',
+  },
+]
+
+function scanVueSourcesForMigration(
+  findings: MigrationFinding[],
+  targetDir: string,
+): void {
+  for (const rootName of ['vue', 'src']) {
+    const root = path.join(targetDir, rootName)
+    for (const filePath of walkTextFiles(root)) {
+      const source = fs.readFileSync(filePath, 'utf-8')
+      const relativePath = relativeProjectPath(targetDir, filePath)
+
+      for (const rule of DOM_MIGRATION_PATTERNS) {
+        for (const match of source.matchAll(rule.pattern)) {
+          addMigrationFinding(
+            findings,
+            rule.tier,
+            'dom',
+            relativePath,
+            lineNumberAt(source, match.index ?? 0),
+            rule.message,
+            rule.suggestion,
+          )
+        }
+      }
+
+      if (path.extname(filePath) !== '.vue') {
+        continue
+      }
+
+      for (const [tag, component] of HTML_COMPONENT_SUGGESTIONS) {
+        const tagPattern = new RegExp(`<${tag}(\\s|>|/)`, 'gi')
+        for (const match of source.matchAll(tagPattern)) {
+          addMigrationFinding(
+            findings,
+            'small-change',
+            'component',
+            relativePath,
+            lineNumberAt(source, match.index ?? 0),
+            `Browser tag <${tag}> can map to <${component}>.`,
+            `Use <${component}></${component}> from @vue-godot/html and keep tags explicitly closed.`,
+          )
+        }
+      }
+    }
+  }
 }
 
 function findMissingRequirements(
@@ -718,6 +1147,54 @@ function diagnosePluginBackedApis(
   }
 }
 
+function diagnoseMigrationReadiness(
+  checks: DoctorCheck[],
+  targetDir: string,
+): void {
+  const findings: MigrationFinding[] = []
+  scanCssForMigration(findings, targetDir)
+  scanVueSourcesForMigration(findings, targetDir)
+
+  if (findings.length === 0) {
+    addCheck(checks, 'ok', 'Migration audit: small-change', [
+      'No unsupported CSS selectors/properties or direct DOM assumptions were detected.',
+      'Validate behavior in the Godot editor and on target devices.',
+    ])
+    return
+  }
+
+  const overallTier = strongestMigrationTier(findings)
+  const counts = new Map<MigrationTier, number>([
+    ['small-change', 0],
+    ['medium', 0],
+    ['rewrite', 0],
+  ])
+
+  for (const finding of findings) {
+    counts.set(finding.tier, (counts.get(finding.tier) ?? 0) + 1)
+  }
+
+  const displayedFindings = findings.slice(0, 20)
+  const details = [
+    `Overall migration tier: ${overallTier}.`,
+    `Small-change areas: ${counts.get('small-change') ?? 0}.`,
+    `Medium areas: ${counts.get('medium') ?? 0}.`,
+    `Rewrite areas: ${counts.get('rewrite') ?? 0}.`,
+    ...displayedFindings.map(
+      (finding) =>
+        `[${finding.tier}/${finding.area}] ${finding.file}:${finding.line} ${finding.message} ${finding.suggestion}`,
+    ),
+  ]
+
+  if (findings.length > displayedFindings.length) {
+    details.push(
+      `${findings.length - displayedFindings.length} additional finding(s) omitted.`,
+    )
+  }
+
+  addCheck(checks, 'warning', `Migration audit: ${overallTier}`, details)
+}
+
 export function diagnoseProject(options: DoctorOptions): DoctorReport {
   const targetDir = path.resolve(options.targetDir)
   const checks: DoctorCheck[] = []
@@ -738,6 +1215,10 @@ export function diagnoseProject(options: DoctorOptions): DoctorReport {
 
   if (!options.exportsOnly) {
     diagnosePluginBackedApis(checks, source, selectedFeatures)
+  }
+
+  if (options.migration) {
+    diagnoseMigrationReadiness(checks, targetDir)
   }
 
   const errorCount = checks.filter((check) => check.status === 'error').length

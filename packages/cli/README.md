@@ -1,6 +1,6 @@
 # @vue-godot/cli
 
-CLI tool for vue-godot projects — scaffolds new projects, integrates Vue into existing Godot projects, and generates type declarations.
+CLI tool for vue-godot projects — scaffolds new projects, integrates Vue into existing Godot projects, generates type declarations, and audits local setup.
 
 See the repository [compatibility checklist](../../docs/compatibility.md) for current template, runtime, browser API, and component support status.
 
@@ -175,7 +175,8 @@ Re-run whenever Godot typings are regenerated (e.g. after a Godot version upgrad
 ### `doctor`
 
 Check local project setup, package specs and installed versions, GodotJS
-typings, Vite/Volar configuration, export settings, and plugin-backed API hints.
+typings, Vite/Volar configuration, export settings, migration risks, and
+plugin-backed API hints.
 
 ```bash
 vue-godot doctor [dir] [options]
@@ -188,10 +189,18 @@ vue-godot doctor [dir] [options]
 | Option           | Description                                                                 |
 | ---------------- | --------------------------------------------------------------------------- |
 | `--exports-only` | Only scan `vue/`, `src/`, and `export_presets.cfg` for permission warnings |
+| `--migration`    | Scan CSS/Vue source for web-to-Godot migration risks                       |
 
 `doctor` exits with a non-zero status only for errors. Missing export presets,
 missing `node_modules`, and adapter-backed API setup are warnings because they
 depend on the local release workflow or target devices.
+
+`vue-godot doctor --migration` adds a static migration report. It scans CSS for
+unsupported selectors, properties, and at-rules; scans Vue/TypeScript source for
+DOM assumptions such as `document.querySelector`, `HTMLElement`, and
+`getComputedStyle()`; and suggests `@vue-godot/html` component replacements for
+browser tags. The report groups findings into `small-change`, `medium`, and
+`rewrite` tiers so candidate Vue apps can be triaged before deeper porting work.
 
 ## Development (monorepo)
 

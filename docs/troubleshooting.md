@@ -195,7 +195,9 @@ component/property pair; unsupported stylesheet selectors, at-rules, media
 features, variables, and properties warn with `[vue-godot/html/css]` during
 Vite builds and runtime style resolution. Check
 [packages/html/README.md](../packages/html/README.md) for the supported style
-and media-query subset before copying browser CSS into a Godot UI.
+and media-query subset before copying browser CSS into a Godot UI. Run
+`npx vue-godot doctor --migration` to get a source-level report of unsupported
+selectors, properties, at-rules, and DOM assumptions.
 
 ### Camera, Microphone, Geolocation, Notifications, Or Share Fail
 
