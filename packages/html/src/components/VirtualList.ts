@@ -22,6 +22,7 @@ import {
   type HtmlStyle,
 } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import { createDefaultSlot } from '../utils/slots.js'
 import {
   nonNegativeFinite,
@@ -226,7 +227,8 @@ export const VirtualList = defineComponent({
     ...accessibilityPropOptions,
   },
   emits: ['scroll', 'scrollStarted', 'scrollEnded', 'update:scrollOffset'],
-  setup(props, { emit, slots }) {
+  setup(props, { attrs, emit, slots }) {
+    const resolveStyle = useHtmlComponentStyleResolver('VirtualList', attrs)
     let scrollNode: unknown = null
     let verticalScrollbarSignal: GodotSignalLike | null = null
     const internalScrollOffset = ref(0)
@@ -295,7 +297,7 @@ export const VirtualList = defineComponent({
 
     return () => {
       const itemHeight = positiveFinite(props.itemHeight, 32)
-      const style = normalizeHtmlStyle(props.style)
+      const style = resolveStyle(props.style).style
       const contentStyle = normalizeHtmlStyle(props.contentStyle)
       const itemStyle = normalizeHtmlStyle(props.itemStyle)
       const viewportHeight = resolveViewportHeight(

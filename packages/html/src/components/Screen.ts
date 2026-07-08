@@ -10,8 +10,9 @@ import {
 } from '../utils/backgroundStyle.js'
 import { useBackgroundTexture } from '../utils/backgroundTexture.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
-import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
+import { normalizeHtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import { asDefaultSlot } from '../utils/slots.js'
 import { Div } from './Div.js'
 
@@ -42,11 +43,15 @@ export const Screen = defineComponent({
     style: htmlStyleProp,
     contentStyle: htmlStyleProp,
   },
-  setup(props, { slots }) {
-    const backgroundTexture = useBackgroundTexture(() => props.style, 'Screen')
+  setup(props, { attrs, slots }) {
+    const resolveStyle = useHtmlComponentStyleResolver('Screen', attrs)
+    const backgroundTexture = useBackgroundTexture(
+      () => resolveStyle(props.style).style,
+      'Screen',
+    )
 
     return () => {
-      const style = normalizeHtmlStyle(props.style)
+      const style = resolveStyle(props.style).style
       const contentStyle = normalizeHtmlStyle(props.contentStyle)
       const nodeProps: Record<string, unknown> = {
         visible: props.visible !== false && style?.display !== 'none',

@@ -32,6 +32,12 @@ import type {
 } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
 import {
+  resolveHtmlComponentStyle,
+  useHtmlComponentStyleResolver,
+  useHtmlStyleContext,
+  type HtmlStyleContext,
+} from '../utils/styleResolver.js'
+import {
   ControlSizeFlags,
   normalizeHtmlStyle,
   resolveContainerTag,
@@ -78,6 +84,38 @@ function axisPropName(
   axis: LayoutAxis,
 ): 'size_flags_horizontal' | 'size_flags_vertical' {
   return axis === 'horizontal' ? 'size_flags_horizontal' : 'size_flags_vertical'
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function resolveVNodeHtmlComponentName(child: VNode): string | null {
+  return isRecord(child.type) && typeof child.type['name'] === 'string'
+    ? child.type['name']
+    : null
+}
+
+function resolveChildStyleForLayout(
+  child: VNode,
+  existingProps: Record<string, unknown> | null,
+  styleContext: HtmlStyleContext,
+): HtmlStyle | undefined {
+  if (!existingProps) {
+    return undefined
+  }
+
+  const componentName = resolveVNodeHtmlComponentName(child)
+  if (!componentName) {
+    return normalizeHtmlStyle(existingProps.style as HtmlStyleInput)
+  }
+
+  return resolveHtmlComponentStyle(styleContext, {
+    componentName,
+    class: existingProps['class'],
+    className: existingProps['className'],
+    inlineStyle: existingProps.style as HtmlStyleInput,
+  }).style
 }
 
 function resolveChildLayoutProps(
@@ -134,10 +172,16 @@ function mapChildForContainerLayout(
   child: VNodeChild,
   containerTag: GodotContainerTag,
   defaultAlignSelf: HtmlStyle['alignSelf'] | undefined,
+  styleContext: HtmlStyleContext,
 ): VNodeArrayChildren {
   if (Array.isArray(child)) {
     return child.flatMap((entry) =>
-      mapChildForContainerLayout(entry, containerTag, defaultAlignSelf),
+      mapChildForContainerLayout(
+        entry,
+        containerTag,
+        defaultAlignSelf,
+        styleContext,
+      ),
     )
   }
 
@@ -150,6 +194,7 @@ function mapChildForContainerLayout(
       toChildArray(child.children),
       containerTag,
       defaultAlignSelf,
+      styleContext,
     )
     const fragmentProps =
       child.key != null
@@ -160,9 +205,11 @@ function mapChildForContainerLayout(
   }
 
   const existingProps = (child.props ?? null) as Record<string, unknown> | null
-  const childStyle = existingProps
-    ? normalizeHtmlStyle(existingProps.style as HtmlStyleInput)
-    : undefined
+  const childStyle = resolveChildStyleForLayout(
+    child,
+    existingProps,
+    styleContext,
+  )
   const layoutProps = resolveChildLayoutProps(
     childStyle,
     containerTag,
@@ -181,9 +228,15 @@ function mapChildrenForContainerLayout(
   children: VNodeArrayChildren | undefined,
   containerTag: GodotContainerTag,
   defaultAlignSelf: HtmlStyle['alignSelf'] | undefined,
+  styleContext: HtmlStyleContext,
 ): VNodeArrayChildren | undefined {
   return children?.flatMap((child) =>
-    mapChildForContainerLayout(child, containerTag, defaultAlignSelf),
+    mapChildForContainerLayout(
+      child,
+      containerTag,
+      defaultAlignSelf,
+      styleContext,
+    ),
   )
 }
 
@@ -229,11 +282,16 @@ export const Div = defineComponent({
     ...accessibilityPropOptions,
     style: htmlStyleProp,
   },
-  setup(props, { slots }) {
-    const backgroundTexture = useBackgroundTexture(() => props.style, 'Div')
+  setup(props, { attrs, slots }) {
+    const styleContext = useHtmlStyleContext()
+    const resolveStyle = useHtmlComponentStyleResolver('Div', attrs)
+    const backgroundTexture = useBackgroundTexture(
+      () => resolveStyle(props.style).style,
+      'Div',
+    )
 
     return () => {
-      const style = normalizeHtmlStyle(props.style) ?? {}
+      const style = resolveStyle(props.style).style ?? {}
       warnUnsupportedStyleProps(style, 'Div')
       const {
         tag,
@@ -249,6 +307,7 @@ export const Div = defineComponent({
         slotChildren,
         tag,
         style.alignItems,
+        styleContext,
       )
       let content = h(
         tag,

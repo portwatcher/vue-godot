@@ -1,4 +1,4 @@
-import { defineComponent, h, type VNode } from '@vue/runtime-core'
+import { defineComponent, h, ref, type VNode } from '@vue/runtime-core'
 import {
   accessibilityPropOptions,
   applyAccessibilityProps,
@@ -9,6 +9,8 @@ import {
   applyFontStyleProps,
   applyTransformStyleProps,
   applyMotionStyleProps,
+  applyControlStateStyleBoxProps,
+  applyControlStyleBoxProps,
 } from '../utils/controlStyle.js'
 import {
   applyAutoFocusProp,
@@ -17,11 +19,10 @@ import {
 } from '../utils/focus.js'
 import { extractTextFromVNode } from '../utils/slotText.js'
 import {
-  normalizeHtmlStyle,
   warnUnsupportedStyleProps,
-  type HtmlStyle,
 } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import {
   applyMinTouchTargetProps,
   touchTargetPropOptions,
@@ -180,7 +181,10 @@ export const Select = defineComponent({
     style: htmlStyleProp,
   },
   emits: ['update:modelValue', 'change'],
-  setup(props, { slots, emit }) {
+  setup(props, { attrs, slots, emit }) {
+    const resolveStyle = useHtmlComponentStyleResolver('Select', attrs)
+    const focused = ref(false)
+
     /**
      * Imperatively sync the OptionButton's items with the extracted
      * option list using clear() + add_item(). This avoids relying on
@@ -209,7 +213,13 @@ export const Select = defineComponent({
     }
 
     return () => {
-      const style = normalizeHtmlStyle(props.style)
+      const styleResult = resolveStyle(props.style, {
+        focus: focused.value,
+        focusVisible: focused.value,
+        disabled: props.disabled === true,
+        selected: props.modelValue !== undefined,
+      })
+      const style = styleResult.style
       warnUnsupportedStyleProps(style, 'Select')
       const nodeProps: Record<string, unknown> = {}
 
@@ -234,9 +244,19 @@ export const Select = defineComponent({
       if (props.disabled) {
         nodeProps['disabled'] = true
       }
+      nodeProps['onFocusEntered'] = () => {
+        if (props.disabled !== true) {
+          focused.value = true
+        }
+      }
+      nodeProps['onFocusExited'] = () => {
+        focused.value = false
+      }
 
       applyControlSizeProps(nodeProps, style)
       applyFontStyleProps(nodeProps, style)
+      applyControlStyleBoxProps(nodeProps, style)
+      applyControlStateStyleBoxProps(nodeProps, styleResult.stateStyles)
       applyMinTouchTargetProps(nodeProps, props)
       applyDisplayAndOpacityProps(nodeProps, style)
       applyTransformStyleProps(nodeProps, style)

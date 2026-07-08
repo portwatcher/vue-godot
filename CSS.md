@@ -1,6 +1,6 @@
 # CSS-like Theme Layer for Vue Godot
 
-Status: proposal
+Status: Phase 1-3 implemented; Phase 4+ planned
 
 Audience: future implementers of `@vue-godot/html`, `@vue-godot/cli`, and
 example apps.
@@ -10,6 +10,14 @@ The goal is to let developers author familiar web-style visual rules while the
 runtime maps those rules to Godot `Theme`, Godot `Control` properties,
 `StyleBoxFlat`, existing `@vue-godot/html` style helpers, and component-specific
 state handling.
+
+Implementation note: `@vue-godot/html` now ships the first three phases:
+structured themes via `defineHtmlTheme()`, opt-in `defaultStyles` presets,
+explicit global stylesheet registration through `createHtmlStyleSheet()`,
+class/type/group selector matching, root token resolution, shared component
+style resolution, and state pseudo-class styling for the documented component
+states. Responsive media queries, Vite CSS collection, scoped SFC styles, and
+migration audit tooling remain future phases.
 
 This is not a proposal to make Godot a browser. It is a proposal to improve
 the migration path for compatible Vue apps and to make native-feeling mobile

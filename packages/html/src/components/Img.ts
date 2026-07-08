@@ -9,12 +9,9 @@ import {
   applyTransformStyleProps,
   applyMotionStyleProps,
 } from '../utils/controlStyle.js'
-import {
-  normalizeHtmlStyle,
-  warnUnsupportedStyleProps,
-  type HtmlStyle,
-} from '../utils/styleMapping.js'
+import { warnUnsupportedStyleProps } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import { applyTextureRectObjectFitProps } from '../utils/textureRectFit.js'
 import { classifySource, loadTexture } from '../utils/textureLoader.js'
 
@@ -54,7 +51,8 @@ export const Img = defineComponent({
     },
     ...accessibilityPropOptions,
   },
-  setup(props) {
+  setup(props, context) {
+    const resolveStyle = useHtmlComponentStyleResolver('Img', context?.attrs)
     const texture = shallowRef<Texture2D | null>(null)
     const loading = ref(false)
 
@@ -86,7 +84,7 @@ export const Img = defineComponent({
     )
 
     return () => {
-      const style = normalizeHtmlStyle(props.style)
+      const style = resolveStyle(props.style).style
       warnUnsupportedStyleProps(style, 'Img')
       const nodeProps: Record<string, unknown> = {}
 

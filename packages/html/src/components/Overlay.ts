@@ -14,8 +14,9 @@ import {
   createFocusContainmentController,
   focusContainmentPropOptions,
 } from '../utils/focus.js'
-import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
+import { normalizeHtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import { asDefaultSlot } from '../utils/slots.js'
 import { Div } from './Div.js'
 
@@ -48,12 +49,16 @@ export const Overlay = defineComponent({
     contentStyle: htmlStyleProp,
   },
   emits: ['update:modelValue', 'click', 'backdropClick'],
-  setup(props, { slots, emit }) {
-    const backgroundTexture = useBackgroundTexture(() => props.style, 'Overlay')
+  setup(props, { attrs, slots, emit }) {
+    const resolveStyle = useHtmlComponentStyleResolver('Overlay', attrs)
+    const backgroundTexture = useBackgroundTexture(
+      () => resolveStyle(props.style).style,
+      'Overlay',
+    )
     const focusContainment = createFocusContainmentController()
 
     return () => {
-      const style = normalizeHtmlStyle(props.style)
+      const style = resolveStyle(props.style).style
       const contentStyle = normalizeHtmlStyle(props.contentStyle)
       const visible =
         props.modelValue !== false && style?.display !== 'none'

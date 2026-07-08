@@ -7,8 +7,9 @@ import {
   type GodotPropBag,
 } from '../utils/controlStyle.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
-import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
+import { normalizeHtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import { createDefaultSlot } from '../utils/slots.js'
 import {
   applyLabelTextStyleProps,
@@ -38,7 +39,9 @@ export const Label = defineComponent({
     style: htmlStyleProp,
     contentStyle: htmlStyleProp,
   },
-  setup(props, { slots }) {
+  setup(props, { attrs, slots }) {
+    const resolveStyle = useHtmlComponentStyleResolver('Label', attrs)
+
     return () => {
       const contentStyle = normalizeHtmlStyle(props.contentStyle)
       const slotChildren = slots.default?.()
@@ -51,7 +54,7 @@ export const Label = defineComponent({
         ),
       }
 
-      applyLabelTextStyleProps(nodeProps, props.style, 'Label')
+      applyLabelTextStyleProps(nodeProps, resolveStyle(props.style).style, 'Label')
       applyAccessibilityProps(nodeProps, props)
 
       const labelNode = h('Label', nodeProps)

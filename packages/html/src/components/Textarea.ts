@@ -1,4 +1,4 @@
-import { defineComponent, h, type VNode } from '@vue/runtime-core'
+import { defineComponent, h, ref, type VNode } from '@vue/runtime-core'
 import {
   accessibilityPropOptions,
   applyAccessibilityProps,
@@ -9,6 +9,8 @@ import {
   applyFontStyleProps,
   applyTransformStyleProps,
   applyMotionStyleProps,
+  applyControlStateStyleBoxProps,
+  applyControlStyleBoxProps,
 } from '../utils/controlStyle.js'
 import {
   applyAutoFocusProp,
@@ -16,11 +18,10 @@ import {
   focusPropOptions,
 } from '../utils/focus.js'
 import {
-  normalizeHtmlStyle,
   warnUnsupportedStyleProps,
-  type HtmlStyle,
 } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import {
   applyMinTouchTargetProps,
   touchTargetPropOptions,
@@ -93,11 +94,19 @@ export const Textarea = defineComponent({
     style: htmlStyleProp,
   },
   emits: ['update:modelValue'],
-  setup(props, { emit }) {
+  setup(props, { attrs, emit }) {
+    const resolveStyle = useHtmlComponentStyleResolver('Textarea', attrs)
+    const focused = ref(false)
     let textEditNode: unknown = null
 
     return () => {
-      const style = normalizeHtmlStyle(props.style)
+      const resolvedStyle = resolveStyle(props.style, {
+        focus: focused.value,
+        focusVisible: focused.value,
+        disabled: props.disabled === true,
+        readOnly: props.readonly === true,
+      })
+      const style = resolvedStyle.style
       warnUnsupportedStyleProps(style, 'Textarea')
       const nodeProps: Record<string, unknown> = {}
 
@@ -124,6 +133,14 @@ export const Textarea = defineComponent({
       if (props.disabled || props.readonly) {
         nodeProps['editable'] = false
       }
+      nodeProps['onFocusEntered'] = () => {
+        if (props.disabled !== true) {
+          focused.value = true
+        }
+      }
+      nodeProps['onFocusExited'] = () => {
+        focused.value = false
+      }
 
       // rows → custom_minimum_size:y
       const lineHeight =
@@ -145,6 +162,8 @@ export const Textarea = defineComponent({
 
       applyControlSizeProps(nodeProps, style)
       applyFontStyleProps(nodeProps, style)
+      applyControlStyleBoxProps(nodeProps, style)
+      applyControlStateStyleBoxProps(nodeProps, resolvedStyle.stateStyles)
       applyMinTouchTargetProps(nodeProps, props)
       applyDisplayAndOpacityProps(nodeProps, style)
       applyTransformStyleProps(nodeProps, style)

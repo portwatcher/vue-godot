@@ -18,8 +18,9 @@ import {
   type SafeAreaEdge,
   type SafeAreaInsets,
 } from '../utils/safeArea.js'
-import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
+import { normalizeHtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import { asDefaultSlot } from '../utils/slots.js'
 import { Div } from './Div.js'
 
@@ -41,14 +42,15 @@ export const SafeAreaView = defineComponent({
     style: htmlStyleProp,
     contentStyle: htmlStyleProp,
   },
-  setup(props, { slots }) {
+  setup(props, { attrs, slots }) {
+    const resolveStyle = useHtmlComponentStyleResolver('SafeAreaView', attrs)
     const backgroundTexture = useBackgroundTexture(
-      () => props.style,
+      () => resolveStyle(props.style).style,
       'SafeAreaView',
     )
 
     return () => {
-      const style = normalizeHtmlStyle(props.style)
+      const style = resolveStyle(props.style).style
       const contentStyle = normalizeHtmlStyle(props.contentStyle)
       const safeAreaInsets = readDisplayServerSafeAreaInsets(
         props.fallbackInsets,

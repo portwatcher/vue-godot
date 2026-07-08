@@ -12,11 +12,10 @@ import {
 import { createOpacityModulate } from '../utils/godotColor.js'
 import { classifySource, loadStream } from '../utils/streamLoader.js'
 import {
-  normalizeHtmlStyle,
   warnUnsupportedStyleProps,
-  type HtmlStyle,
 } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 
 /**
  * Converts a linear volume (0–1) to decibels for Godot's `volume_db`.
@@ -90,7 +89,12 @@ export const Video = defineComponent({
     style: htmlStyleProp,
   },
   emits: ['ended'],
-  setup(props, { emit }) {
+  setup(props, context) {
+    const resolveStyle = useHtmlComponentStyleResolver(
+      'Video',
+      context?.attrs,
+    )
+    const emit = context?.emit ?? (() => undefined)
     const stream = shallowRef<VideoStream | null>(null)
     const loading = ref(false)
 
@@ -122,7 +126,7 @@ export const Video = defineComponent({
     )
 
     return () => {
-      const style = normalizeHtmlStyle(props.style)
+      const style = resolveStyle(props.style).style
       warnUnsupportedStyleProps(style, 'Video')
       const nodeProps: Record<string, unknown> = {}
 

@@ -1,6 +1,6 @@
 import { defineComponent, h, ref } from '@vue/runtime-core'
-import type { HtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import { createDefaultSlot } from '../utils/slots.js'
 import {
   findScreenRoute,
@@ -42,7 +42,8 @@ export const ScreenStack = defineComponent({
     contentStyle: htmlStyleProp,
   },
   emits: ['update:modelValue', 'navigate', 'back'],
-  setup(props, { slots, emit }) {
+  setup(props, { attrs, slots, emit }) {
+    const resolveStyle = useHtmlComponentStyleResolver('ScreenStack', attrs)
     const currentRouteName = ref<string | undefined>(undefined)
     const routeHistory = ref<string[]>([])
 
@@ -118,7 +119,7 @@ export const ScreenStack = defineComponent({
         {
           visible: props.visible,
           fullRect: props.fullRect,
-          style: props.style,
+          style: resolveStyle(props.style).style,
           contentStyle: props.contentStyle,
         },
         screenSlots,

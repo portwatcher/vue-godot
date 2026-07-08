@@ -3,8 +3,8 @@ import {
   createFocusContainmentController,
   focusContainmentPropOptions,
 } from '../utils/focus.js'
-import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import {
   applyWindowBaseProps,
   emitWindowClose,
@@ -61,11 +61,12 @@ export const Dialog = defineComponent({
     style: htmlStyleProp,
   },
   emits: ['update:modelValue', 'confirm', 'cancel', 'close'],
-  setup(props, { slots, emit }) {
+  setup(props, { attrs, slots, emit }) {
+    const resolveStyle = useHtmlComponentStyleResolver('Dialog', attrs)
     const focusContainment = createFocusContainmentController()
 
     return () => {
-      const style = normalizeHtmlStyle(props.style)
+      const style = resolveStyle(props.style).style
       const visible =
         isWindowOpen(props.modelValue) && style?.display !== 'none'
       const nodeProps: Record<string, unknown> = {
@@ -95,7 +96,7 @@ export const Dialog = defineComponent({
         nodeProps['ok_button_text'] = props.confirmText
       }
 
-      applyWindowBaseProps(nodeProps, props, 'Dialog')
+      applyWindowBaseProps(nodeProps, { ...props, style }, 'Dialog')
       focusContainment.apply(nodeProps, props, { open: visible })
 
       return h('AcceptDialog', nodeProps, slots.default?.())

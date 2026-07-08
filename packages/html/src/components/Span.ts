@@ -7,8 +7,8 @@ import {
   type GodotPropBag,
 } from '../utils/controlStyle.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
-import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import { applyLabelTextStyleProps } from '../utils/textLabel.js'
 
 /**
@@ -40,9 +40,11 @@ export const Span = defineComponent({
     ...accessibilityPropOptions,
     style: htmlStyleProp,
   },
-  setup(props, { slots }) {
+  setup(props, { attrs, slots }) {
+    const resolveStyle = useHtmlComponentStyleResolver('Span', attrs)
+
     return () => {
-      const style = normalizeHtmlStyle(props.style)
+      const style = resolveStyle(props.style).style
       const nodeProps: GodotPropBag = {}
 
       nodeProps['text'] = extractTextFromSlot(slots.default)

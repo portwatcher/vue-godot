@@ -95,6 +95,35 @@ export type {
   HtmlStyleInput,
 } from './utils/styleMapping.js'
 export {
+  clearHtmlCssWarningsForTests,
+  createHtmlStyleContext,
+  createHtmlStyleSheet,
+  createHtmlTheme,
+  defineHtmlTheme,
+  normalizeHtmlClassList,
+  resolveHtmlComponentStyle,
+  useHtmlStyleContext,
+} from './utils/styleResolver.js'
+export type {
+  HtmlColorScheme,
+  HtmlComponentState,
+  HtmlComponentStateName,
+  HtmlComponentStateStyles,
+  HtmlComponentTheme,
+  HtmlComponentThemeDefinition,
+  HtmlDefaultStylePreset,
+  HtmlPluginOptions,
+  HtmlStyleContext,
+  HtmlStyleSheet,
+  HtmlStyleSheetOptions,
+  HtmlTheme,
+  HtmlThemeDefinition,
+  HtmlThemeTokenPrimitive,
+  HtmlThemeTokens,
+  ResolvedHtmlComponentStyle,
+  ResolveHtmlComponentStyleOptions,
+} from './utils/styleResolver.js'
+export {
   createTextureFromBuffer,
   fetchRemoteTexture,
   loadTexture,

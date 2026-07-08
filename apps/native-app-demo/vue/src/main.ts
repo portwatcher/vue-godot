@@ -69,7 +69,7 @@ export default class Root extends VBoxContainer {
   private async mountApp(): Promise<void> {
     this.app?.unmount()
     const app = createApp(App)
-    app.use(htmlPlugin)
+    app.use(htmlPlugin, { defaultStyles: 'native-app' })
     app.use(router)
     await router.replace('/')
     await router.isReady()

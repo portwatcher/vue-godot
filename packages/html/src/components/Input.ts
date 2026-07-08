@@ -1,4 +1,4 @@
-import { defineComponent, h } from '@vue/runtime-core'
+import { defineComponent, h, ref } from '@vue/runtime-core'
 import {
   accessibilityPropOptions,
   applyAccessibilityProps,
@@ -9,6 +9,8 @@ import {
   applyFontStyleProps,
   applyTransformStyleProps,
   applyMotionStyleProps,
+  applyControlStateStyleBoxProps,
+  applyControlStyleBoxProps,
 } from '../utils/controlStyle.js'
 import {
   applyAutoFocusProp,
@@ -17,11 +19,10 @@ import {
 } from '../utils/focus.js'
 import { getRadioButtonGroup } from '../utils/radioGroups.js'
 import {
-  normalizeHtmlStyle,
   warnUnsupportedStyleProps,
-  type HtmlStyle,
 } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import {
   applyMinTouchTargetProps,
   touchTargetPropOptions,
@@ -178,14 +179,28 @@ export const Input = defineComponent({
     style: htmlStyleProp,
   },
   emits: ['update:modelValue'],
-  setup(props, { emit }) {
+  setup(props, { attrs, emit }) {
+    const resolveStyle = useHtmlComponentStyleResolver('Input', attrs)
+    const focused = ref(false)
+
     return () => {
-      const style = normalizeHtmlStyle(props.style)
-      warnUnsupportedStyleProps(style, 'Input')
       const inputType = resolveInputType(props.type)
       const mapping = INPUT_TYPE_MAP[inputType]
       const readonlyLineEdit =
         props.readonly && (inputType === 'text' || inputType === 'password')
+      const checked =
+        mapping.valueType === 'radio'
+          ? props.modelValue === (props.value ?? 'on')
+          : inputType === 'checkbox' && props.modelValue === true
+      const resolvedStyle = resolveStyle(props.style, {
+        focus: focused.value,
+        focusVisible: focused.value,
+        disabled: props.disabled === true,
+        readOnly: readonlyLineEdit,
+        checked,
+      })
+      const style = resolvedStyle.style
+      warnUnsupportedStyleProps(style, 'Input')
       const nodeProps: Record<string, unknown> = {}
 
       // Current value → Godot property
@@ -276,11 +291,21 @@ export const Input = defineComponent({
           nodeProps['disabled'] = true
         }
       }
+      nodeProps['onFocusEntered'] = () => {
+        if (props.disabled !== true) {
+          focused.value = true
+        }
+      }
+      nodeProps['onFocusExited'] = () => {
+        focused.value = false
+      }
 
       applyControlSizeProps(nodeProps, style)
       if (mapping.tag === 'LineEdit') {
         applyFontStyleProps(nodeProps, style)
       }
+      applyControlStyleBoxProps(nodeProps, style)
+      applyControlStateStyleBoxProps(nodeProps, resolvedStyle.stateStyles)
       applyMinTouchTargetProps(nodeProps, props)
       applyDisplayAndOpacityProps(nodeProps, style)
       applyTransformStyleProps(nodeProps, style)

@@ -4,8 +4,8 @@ import {
   applyAccessibilityProps,
 } from '../utils/accessibility.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import {
   applyProgressBarProps,
   type ProgressFillMode,
@@ -38,7 +38,12 @@ export const ActivityIndicator = defineComponent({
     ...accessibilityPropOptions,
     style: htmlStyleProp,
   },
-  setup(props) {
+  setup(props, context) {
+    const resolveStyle = useHtmlComponentStyleResolver(
+      'ActivityIndicator',
+      context?.attrs,
+    )
+
     return () => {
       const active = props.active !== false
       const nodeProps: Record<string, unknown> = {}
@@ -60,7 +65,11 @@ export const ActivityIndicator = defineComponent({
         nodeProps['custom_minimum_size:y'] = props.size
       }
 
-      applyCommonControlStyleProps(nodeProps, props.style, 'ActivityIndicator')
+      applyCommonControlStyleProps(
+        nodeProps,
+        resolveStyle(props.style).style,
+        'ActivityIndicator',
+      )
       applyAccessibilityProps(nodeProps, props)
 
       return h('ProgressBar', nodeProps)

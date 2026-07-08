@@ -612,6 +612,33 @@
     }}
   </Span>
 
+  <!-- ===== Section: CSS Theme Stylesheet ===== -->
+  <Span>--- CSS theme stylesheet ---</Span>
+  <Div class="css-theme-card">
+    <Span class="css-theme-title">
+      Token stylesheet card
+    </Span>
+    <Span class="css-theme-copy">
+      Class rules, root variables, and state styles
+    </Span>
+    <Div :style="{ flexDirection: 'row', gap: 8, alignItems: 'center' }">
+      <Input
+        v-model="cssThemeSample"
+        class="css-theme-input css-theme-grow"
+        placeholder="Focus border"
+      ></Input>
+      <Button class="css-theme-action" @click="toggleCssThemeSample">
+        Toggle
+      </Button>
+      <Button class="css-theme-action" :disabled="true">
+        Disabled
+      </Button>
+    </Div>
+    <Span class="css-theme-copy">
+      {{ `stylesheet value=${cssThemeSample}` }}
+    </Span>
+  </Div>
+
   <!-- ===== Section: Browser APIs ===== -->
   <Span>--- Browser API smoke tests ---</Span>
   <Button @click="runBrowserTests">Run browser API tests</Button>
@@ -634,6 +661,7 @@ const wrap = ref<'nowrap' | 'wrap'>('nowrap')
 const justify = ref<'flex-start' | 'center' | 'flex-end'>('flex-start')
 const align = ref<'flex-start' | 'center' | 'flex-end' | 'stretch'>('stretch')
 const keyboardSample = ref('')
+const cssThemeSample = ref('class styled')
 const virtualRows = Array.from({ length: 200 }, (_, index) => ({
   id: `row-${index}`,
   title: `Virtual row ${index + 1}`,
@@ -670,6 +698,11 @@ function scrollVirtualList(delta: number) {
     maxOffset,
     Math.max(0, virtualScrollOffset.value + delta),
   )
+}
+
+function toggleCssThemeSample() {
+  cssThemeSample.value =
+    cssThemeSample.value === 'class styled' ? 'token styled' : 'class styled'
 }
 
 // --- Progress ---

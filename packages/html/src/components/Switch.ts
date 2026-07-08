@@ -1,17 +1,21 @@
-import { defineComponent, h } from '@vue/runtime-core'
+import { defineComponent, h, ref } from '@vue/runtime-core'
 import {
   accessibilityPropOptions,
   applyAccessibilityProps,
 } from '../utils/accessibility.js'
-import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
+import {
+  applyCommonControlStyleProps,
+  applyControlStateStyleBoxProps,
+  applyControlStyleBoxProps,
+} from '../utils/controlStyle.js'
 import {
   applyAutoFocusProp,
   applyFocusTraversalProps,
   focusPropOptions,
 } from '../utils/focus.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import {
   applyMinTouchTargetProps,
   touchTargetPropOptions,
@@ -41,8 +45,17 @@ export const Switch = defineComponent({
     style: htmlStyleProp,
   },
   emits: ['update:modelValue', 'change'],
-  setup(props, { slots, emit }) {
+  setup(props, { attrs, slots, emit }) {
+    const resolveStyle = useHtmlComponentStyleResolver('Switch', attrs)
+    const focused = ref(false)
+
     return () => {
+      const resolvedStyle = resolveStyle(props.style, {
+        focus: focused.value,
+        focusVisible: focused.value,
+        disabled: props.disabled === true,
+        checked: props.modelValue === true,
+      })
       const nodeProps: Record<string, unknown> = {
         toggle_mode: true,
         button_pressed: props.modelValue === true,
@@ -59,8 +72,18 @@ export const Switch = defineComponent({
       if (props.disabled) {
         nodeProps['disabled'] = true
       }
+      nodeProps['onFocusEntered'] = () => {
+        if (props.disabled !== true) {
+          focused.value = true
+        }
+      }
+      nodeProps['onFocusExited'] = () => {
+        focused.value = false
+      }
 
-      applyCommonControlStyleProps(nodeProps, props.style, 'Switch')
+      applyCommonControlStyleProps(nodeProps, resolvedStyle.style, 'Switch')
+      applyControlStyleBoxProps(nodeProps, resolvedStyle.style)
+      applyControlStateStyleBoxProps(nodeProps, resolvedStyle.stateStyles)
       applyMinTouchTargetProps(nodeProps, props)
       applyAccessibilityProps(nodeProps, props)
       applyFocusTraversalProps(nodeProps, props)

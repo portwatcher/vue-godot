@@ -8,7 +8,7 @@ polyfills, native capability adapter contracts, and project tooling for apps
 that need Vue ergonomics without giving up Godot's runtime, nodes, resources,
 and editor workflow.
 
-See the [compatibility checklist](./docs/compatibility.md) for the current support status, platform caveats, and intentionally skipped browser APIs. See [permissions and export setup](./docs/permissions.md), the [plugin adapter guide](./docs/plugins.md), the [routing and navigation guide](./docs/routing.md) for app architecture patterns, [runtime renderer support](./docs/runtime.md) for supported Vue features and unsupported browser/DOM assumptions, and the [migration guide](./docs/migration.md) for porting existing Vue, React Native, or Godot UI code.
+See the [compatibility checklist](./docs/compatibility.md) for the current support status, platform caveats, and intentionally skipped browser APIs. See [permissions and export setup](./docs/permissions.md), the [plugin adapter guide](./docs/plugins.md), the [routing and navigation guide](./docs/routing.md) for app architecture patterns, [runtime renderer support](./docs/runtime.md) for supported Vue features and unsupported browser/DOM assumptions, the [`@vue-godot/html` CSS/theming docs](./packages/html/README.md#css-like-themes-and-stylesheets), and the [migration guide](./docs/migration.md) for porting existing Vue, React Native, or Godot UI code.
 
 For build, editor, export, and runtime debugging, see [troubleshooting](./docs/troubleshooting.md). For long-term ecosystem decisions, see [roadmap decisions](./docs/roadmap.md).
 

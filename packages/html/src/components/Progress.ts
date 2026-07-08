@@ -4,8 +4,8 @@ import {
   applyAccessibilityProps,
 } from '../utils/accessibility.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import {
   applyProgressBarProps,
   type ProgressFillMode,
@@ -53,7 +53,12 @@ export const Progress = defineComponent({
     ...accessibilityPropOptions,
     style: htmlStyleProp,
   },
-  setup(props) {
+  setup(props, context) {
+    const resolveStyle = useHtmlComponentStyleResolver(
+      'Progress',
+      context?.attrs,
+    )
+
     return () => {
       const nodeProps: Record<string, unknown> = {}
 
@@ -66,7 +71,11 @@ export const Progress = defineComponent({
         showPercentage: props.showPercentage,
         fill: props.fill,
       })
-      applyCommonControlStyleProps(nodeProps, props.style, 'Progress')
+      applyCommonControlStyleProps(
+        nodeProps,
+        resolveStyle(props.style).style,
+        'Progress',
+      )
       applyAccessibilityProps(nodeProps, props)
 
       return h('ProgressBar', nodeProps)

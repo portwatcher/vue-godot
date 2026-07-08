@@ -1,5 +1,5 @@
 import { installBrowserAPIs } from '@vue-godot/browser'
-import { htmlPlugin } from '@vue-godot/html'
+import { createHtmlStyleSheet, htmlPlugin } from '@vue-godot/html'
 import { createApp } from '@vue-godot/runtime-tscn'
 import { Node, OS, VBoxContainer } from 'godot'
 import App from './App.vue'
@@ -10,6 +10,69 @@ import {
 } from './browserSmoke'
 
 installBrowserAPIs()
+
+const htmlDemoStyleSheet = createHtmlStyleSheet(
+  `
+    :root {
+      --demo-css-surface: #102a43;
+      --demo-css-border: #38bdf8;
+      --demo-css-text: #e0f2fe;
+      --demo-css-muted: #bae6fd;
+      --demo-css-action: #0ea5e9;
+      --demo-css-action-pressed: #0369a1;
+      --demo-css-radius: 8px;
+      --demo-css-space: 10px;
+    }
+
+    .css-theme-card {
+      background-color: var(--demo-css-surface);
+      border: 1px solid var(--demo-css-border);
+      border-radius: var(--demo-css-radius);
+      padding: var(--demo-css-space);
+      gap: 8px;
+      width: 420px;
+    }
+
+    .css-theme-title {
+      color: var(--demo-css-text);
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .css-theme-copy {
+      color: var(--demo-css-muted);
+      font-size: 14px;
+    }
+
+    Button.css-theme-action {
+      background-color: var(--demo-css-action);
+      border: 1px solid var(--demo-css-border);
+      border-radius: 6px;
+      color: #ffffff;
+      padding: 8px 12px;
+    }
+
+    Button.css-theme-action:hover,
+    Button.css-theme-action:pressed {
+      background-color: var(--demo-css-action-pressed);
+    }
+
+    Button.css-theme-action:disabled {
+      opacity: 0.45;
+    }
+
+    Input.css-theme-input:focus,
+    Input.css-theme-input:focus-visible {
+      border-color: #facc15;
+      border-width: 2px;
+    }
+
+    .css-theme-grow {
+      flex: 1;
+    }
+  `,
+  { source: 'html-demo.css' },
+)
 
 const SMOKE_ENV = 'VUE_GODOT_SMOKE'
 const SMOKE_RELOADS_ENV = 'VUE_GODOT_SMOKE_RELOADS'
@@ -87,7 +150,10 @@ export default class Root extends VBoxContainer {
   private mountApp() {
     this.unmountApp()
     const app = createApp(App)
-    app.use(htmlPlugin)
+    app.use(htmlPlugin, {
+      defaultStyles: 'browser',
+      stylesheets: [htmlDemoStyleSheet],
+    })
     app.mount(this)
     this.app = app
     this.smokeMounts++

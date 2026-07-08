@@ -27,6 +27,11 @@ import { Switch } from './components/Switch.js'
 import { Textarea } from './components/Textarea.js'
 import { Video } from './components/Video.js'
 import { VirtualList } from './components/VirtualList.js'
+import {
+  createHtmlStyleContext,
+  htmlStyleContextKey,
+  type HtmlPluginOptions,
+} from './utils/styleResolver.js'
 
 const components: Record<string, Component> = {
   A,
@@ -97,7 +102,11 @@ export const htmlTags: string[] = Object.keys(components).map((k) =>
  *   app.mount(this)
  */
 export const htmlPlugin = {
-  install(app: App) {
+  install(app: App, options?: HtmlPluginOptions) {
+    if (typeof app.provide === 'function') {
+      app.provide(htmlStyleContextKey, createHtmlStyleContext(options))
+    }
+
     for (const [name, component] of Object.entries(components)) {
       app.component(name, component)
       app.component(name.toLowerCase(), component)

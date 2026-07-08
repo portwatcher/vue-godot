@@ -19,8 +19,9 @@ import {
   resolveKeyboardAvoidingInsets,
   type KeyboardAvoidingBehavior,
 } from '../utils/keyboardAvoiding.js'
-import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
+import { normalizeHtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import { asDefaultSlot } from '../utils/slots.js'
 import { Div } from './Div.js'
 
@@ -50,14 +51,18 @@ export const KeyboardAvoidingView = defineComponent({
     style: htmlStyleProp,
     contentStyle: htmlStyleProp,
   },
-  setup(props, { slots }) {
+  setup(props, { attrs, slots }) {
+    const resolveStyle = useHtmlComponentStyleResolver(
+      'KeyboardAvoidingView',
+      attrs,
+    )
     const backgroundTexture = useBackgroundTexture(
-      () => props.style,
+      () => resolveStyle(props.style).style,
       'KeyboardAvoidingView',
     )
 
     return () => {
-      const style = normalizeHtmlStyle(props.style)
+      const style = resolveStyle(props.style).style
       const contentStyle = normalizeHtmlStyle(props.contentStyle)
       const behavior = normalizeKeyboardAvoidingBehavior(props.behavior)
       const keyboardHeight = readVirtualKeyboardHeight(

@@ -1,4 +1,5 @@
 import { createFontStyleOverride } from './fontLoader.js'
+import { createBackgroundPanelStyle } from './backgroundStyle.js'
 import { createOpacityModulate, parseGodotColor } from './godotColor.js'
 import {
   applyStyleSizeProps,
@@ -112,6 +113,67 @@ export function applyCommonControlStyleProps(
   applyDisplayAndOpacityProps(nodeProps, normalizedStyle)
   applyTransformStyleProps(nodeProps, normalizedStyle)
   applyMotionStyleProps(nodeProps, normalizedStyle)
+}
+
+export function applyControlStyleBoxProps(
+  nodeProps: GodotPropBag,
+  style: HtmlStyleInput,
+  styleName = 'normal',
+): void {
+  const styleBox = createBackgroundPanelStyle(normalizeHtmlStyle(style))
+  if (styleBox) {
+    nodeProps[`theme_override_styles/${styleName}`] = styleBox
+  }
+}
+
+export function applyControlStateStyleBoxProps(
+  nodeProps: GodotPropBag,
+  stateStyles: Partial<
+    Record<
+      | 'hover'
+      | 'pressed'
+      | 'focus'
+      | 'focusVisible'
+      | 'disabled'
+      | 'checked'
+      | 'readOnly'
+      | 'selected',
+      HtmlStyleInput
+    >
+  >,
+  names: Partial<
+    Record<
+      | 'hover'
+      | 'pressed'
+      | 'focus'
+      | 'focusVisible'
+      | 'disabled'
+      | 'checked'
+      | 'readOnly'
+      | 'selected',
+      string
+    >
+  > = {
+    hover: 'hover',
+    pressed: 'pressed',
+    focus: 'focus',
+    focusVisible: 'focus',
+    disabled: 'disabled',
+    checked: 'pressed',
+    readOnly: 'read_only',
+    selected: 'pressed',
+  },
+): void {
+  for (const [stateName, styleName] of Object.entries(names)) {
+    if (!styleName) {
+      continue
+    }
+    applyControlStyleBoxProps(
+      nodeProps,
+      stateStyles[stateName as keyof typeof stateStyles],
+      styleName,
+    )
+  }
 }
 
 export {

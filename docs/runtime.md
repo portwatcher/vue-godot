@@ -41,7 +41,7 @@ not emulate a real DOM.
 | Assumption | Status | What to use instead |
 | --- | --- | --- |
 | `document`, `HTMLElement`, `Element`, and real DOM nodes | Unsupported | Use Godot node refs or `@vue-godot/html` components. |
-| Browser layout, CSSOM, computed styles, and stylesheet cascade | Unsupported in runtime | Use Godot containers and explicit node props. `@vue-godot/html` provides a documented inline style subset with object, CSS declaration-string, and array inputs. |
+| Browser layout, CSSOM, computed styles, and full stylesheet cascade | Unsupported in runtime | Use Godot containers and explicit node props. `@vue-godot/html` provides a documented style subset through inline object/string/array inputs plus opt-in theme defaults and explicit CSS-like stylesheet registration. |
 | DOM event propagation, capture/bubble phases, and `Event` objects | Unsupported in runtime | Use Godot signals through Vue event props. |
 | `querySelector` / selector-based mounting or teleports | Unsupported | Mount to an explicit Godot node instance and pass node refs directly. |
 | Scoped CSS host scope IDs | Unsupported | `setScopeId` warns; styling should map to Godot props or HTML package style helpers. |

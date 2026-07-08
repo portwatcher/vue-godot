@@ -12,11 +12,11 @@ import {
 } from '../utils/controlStyle.js'
 import { resolveAssetPath } from '../utils/assetResolver.js'
 import {
-  normalizeHtmlStyle,
   warnUnsupportedStyleProps,
   type HtmlStyle,
 } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import { classifySource, loadSvgTextureFromFile } from '../utils/textureLoader.js'
 
 /**
@@ -188,7 +188,8 @@ export const Svg = defineComponent({
     },
     ...accessibilityPropOptions,
   },
-  setup(props) {
+  setup(props, context) {
+    const resolveStyle = useHtmlComponentStyleResolver('Svg', context?.attrs)
     const texture = shallowRef<Texture2D | null>(null)
     const loading = ref(false)
 
@@ -261,7 +262,7 @@ export const Svg = defineComponent({
     )
 
     return () => {
-      const style = normalizeHtmlStyle(props.style)
+      const style = resolveStyle(props.style).style
       warnUnsupportedStyleProps(style, 'Svg')
       const nodeProps: Record<string, unknown> = {}
 

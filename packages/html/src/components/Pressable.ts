@@ -16,8 +16,8 @@ import {
   applyFocusTraversalProps,
   focusPropOptions,
 } from '../utils/focus.js'
-import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import {
   applyMinTouchTargetProps,
   touchTargetPropOptions,
@@ -74,14 +74,22 @@ export const Pressable = defineComponent({
     'blur',
     'stateChange',
   ],
-  setup(props, { slots, emit }) {
-    const backgroundTexture = useBackgroundTexture(
-      () => props.style,
-      'Pressable',
-    )
+  setup(props, { attrs, slots, emit }) {
+    const resolveStyle = useHtmlComponentStyleResolver('Pressable', attrs)
     const hovered = ref(false)
     const pressed = ref(false)
     const focused = ref(false)
+    const backgroundTexture = useBackgroundTexture(
+      () =>
+        resolveStyle(props.style, {
+          hover: hovered.value,
+          pressed: pressed.value,
+          focus: focused.value,
+          focusVisible: focused.value,
+          disabled: props.disabled === true,
+      }).style,
+      'Pressable',
+    )
     let longPressTimer: ReturnType<typeof setTimeout> | null = null
     let longPressFired = false
 
@@ -191,7 +199,13 @@ export const Pressable = defineComponent({
         },
       }
 
-      const style = normalizeHtmlStyle(props.style)
+      const style = resolveStyle(props.style, {
+        hover: hovered.value,
+        pressed: pressed.value,
+        focus: focused.value,
+        focusVisible: focused.value,
+        disabled: props.disabled === true,
+      }).style
 
       applyCommonControlStyleProps(nodeProps, style, 'Pressable')
       applyMinTouchTargetProps(nodeProps, props)

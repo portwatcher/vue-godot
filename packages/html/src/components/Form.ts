@@ -16,8 +16,9 @@ import {
   applyFocusTraversalProps,
   focusPropOptions,
 } from '../utils/focus.js'
-import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
+import { normalizeHtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import { asDefaultSlot } from '../utils/slots.js'
 import {
   applyMinTouchTargetProps,
@@ -50,11 +51,20 @@ export const Form = defineComponent({
     contentStyle: htmlStyleProp,
   },
   emits: ['submit', 'reset'],
-  setup(props, { slots, emit }) {
-    const backgroundTexture = useBackgroundTexture(() => props.style, 'Form')
+  setup(props, { attrs, slots, emit }) {
+    const resolveStyle = useHtmlComponentStyleResolver('Form', attrs)
+    const backgroundTexture = useBackgroundTexture(
+      () =>
+        resolveStyle(props.style, {
+          disabled: props.disabled === true,
+        }).style,
+      'Form',
+    )
 
     return () => {
-      const style = normalizeHtmlStyle(props.style)
+      const style = resolveStyle(props.style, {
+        disabled: props.disabled === true,
+      }).style
       const contentStyle = normalizeHtmlStyle(props.contentStyle)
       const nodeProps: Record<string, unknown> = {
         focus_mode: props.disabled === true ? FocusMode.NONE : FocusMode.ALL,

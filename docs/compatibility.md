@@ -152,7 +152,11 @@ documented Godot-backed subset; unsupported style keys emit a
 `[vue-godot/html]` warning once per component/property pair. Basic
 transitions for opacity, transform, width, and height run through bound Godot
 `Tween`s, and registered keyframe-style animations support the same property
-subset.
+subset. The CSS-like theme layer supports opt-in browser/native-app presets,
+structured component defaults, explicit registered stylesheets, global `:root`
+tokens, type/class/compound/group selectors, and the documented state
+pseudo-class subset. Media queries, scoped SFC style collection, CSSOM, computed
+style reads, and full browser cascade/layout behavior remain unsupported.
 
 | Component/API | Owner | Status | Godot backend | Platforms | Permissions/export | Tests | Caveats |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -187,6 +191,7 @@ subset.
 | `<Canvas>` | `html` | `partial` | `Control` | All Godot UI targets | None | Unit, html-demo | Control-backed drawing surface with `width`, `height`, style sizing, clipping, opacity, and template-ref access. No browser `getContext('2d')`; use Godot drawing through refs or custom `Control` subclasses. |
 | `htmlPlugin` | `html` | `supported` | Vue plugin registration | All Vue Godot apps | None | Unit, CLI smoke | Registers PascalCase and lowercase aliases. |
 | `htmlTags` | `html` | `supported` | Static tag list | Build tooling | Must be kept in Vite config generation | Unit, CLI smoke | Used by Vue compiler custom-element rules. |
+| CSS-like theme/style APIs (`defineHtmlTheme`, `createHtmlStyleSheet`, `defaultStyles`) | `html` | `partial` | Shared style resolver plus existing Godot style helpers and per-control theme overrides | All HTML-like component apps | None | Unit, html-demo, native-app-demo | Supports opt-in presets, structured component defaults, root tokens, type/class/group selectors, and state pseudo-classes for HTML-like components. No media queries, scoped SFC CSS, Vite CSS collection, DOM CSSOM, or computed styles. |
 | Volar plugin and HTML component globals | `html` | `supported` | Volar language service plugin plus `@vue/runtime-core` `GlobalComponents` augmentation | Editor tooling | VS Code/Volar setup | Type compile test, CLI smoke | PascalCase and lowercase HTML-like tags resolve to the same component prop types, including `HtmlStyle` style props. |
 
 ## Runtime And CLI

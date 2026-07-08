@@ -209,6 +209,90 @@ registerFontFamily('Inter', './fonts/Inter.ttf', [
 
 Percent `width` and `height` values map to Godot `Control` anchors from the top-left corner, for example `width: '50%'` sets `anchor_left = 0`, `anchor_right = 0.5`, and zero horizontal offsets. Godot `Container` nodes may still override child anchors during layout; use flex and size flags for proportional container layouts.
 
+### CSS-like themes and stylesheets
+
+`htmlPlugin` accepts an opt-in CSS-like style context. Existing
+`app.use(htmlPlugin)` behavior remains the default; no preset or stylesheet is
+registered unless you pass options.
+
+```ts
+import {
+  createHtmlStyleSheet,
+  defineHtmlTheme,
+  htmlPlugin,
+} from '@vue-godot/html'
+
+const appTheme = defineHtmlTheme({
+  tokens: {
+    color: {
+      primary: '#2563eb',
+    },
+  },
+  components: {
+    Button: {
+      base: {
+        minHeight: 44,
+        padding: '10px 14px',
+        borderRadius: 8,
+      },
+      states: {
+        disabled: {
+          opacity: 0.5,
+        },
+      },
+    },
+  },
+})
+
+const appStyles = createHtmlStyleSheet(`
+  :root {
+    --card-bg: #ffffff;
+    --card-space: 16px;
+  }
+
+  .profile-card {
+    background-color: var(--card-bg);
+    padding: var(--card-space);
+    border-radius: 8px;
+  }
+
+  Button.primary:hover {
+    opacity: 0.9;
+  }
+`)
+
+app.use(htmlPlugin, {
+  defaultStyles: 'native-app',
+  theme: appTheme,
+  stylesheets: [appStyles],
+})
+```
+
+The resolver merges styles from weakest to strongest: built-in preset,
+structured theme component defaults, registered stylesheet rules, active state
+rules, then inline `style`. Explicit component props such as `disabled`, `src`,
+and `modelValue` remain outside the CSS layer and keep their component
+semantics.
+
+Supported selectors are intentionally small: `:root`, type selectors
+(`Button` / `button`), class selectors (`.primary`), type plus class
+(`Button.primary`), comma groups, and state pseudo-classes `:hover`,
+`:active`, `:pressed`, `:focus`, `:focus-visible`, `:disabled`, `:checked`,
+`:read-only`, and `:selected`. Unsupported selectors and at-rules emit
+deduplicated `[vue-godot/html/css]` warnings.
+
+Stylesheet declarations use the same documented `HtmlStyle` property subset as
+inline styles. CSS variables are global theme tokens only: `:root` custom
+properties and structured theme tokens can be used through `var(--token,
+fallback)`. Browser CSSOM, computed style reads, per-node custom-property
+inheritance, media queries, scoped SFC styles, and Vite CSS collection are not
+implemented.
+
+`defaultStyles` can be `'none'`, `'browser'`, or `'native-app'`. The browser
+preset provides conservative web-like defaults for migration demos. The
+native-app preset provides app-friendly touch target, typography, surface, and
+button defaults. Both presets are opt-in.
+
 ### CameraView camera feed scope
 
 `<CameraView>` previews a Godot camera feed by creating a `CameraTexture` and rendering it in a `TextureRect`. It selects the first feed by default, or you can choose a feed with `feedIndex` or `feedId`. The `active` prop maps to `camera_is_active`, and `whichFeed` maps to Godot's split-feed image selection.
@@ -368,13 +452,20 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
 | `registerFontFamily`, `unregisterFontFamily`, `parseFontFamilyList`                                                                     | Registers CSS `fontFamily` names to local Godot font resources and parses CSS fallback lists              |
 | `parseHtmlStyle`, `normalizeHtmlStyle`                                                                                                  | Parses CSS declaration strings and normalizes object/string/array style inputs to `HtmlStyle`             |
+| `defineHtmlTheme`, `createHtmlTheme`                                                                                                    | Defines structured theme tokens, component defaults, and state styles for `htmlPlugin`                    |
+| `createHtmlStyleSheet`                                                                                                                  | Parses explicit CSS-like stylesheet text with root tokens, type/class selectors, and state pseudo-classes |
+| `createHtmlStyleContext`, `resolveHtmlComponentStyle`, `normalizeHtmlClassList`                                                          | Shared resolver utilities for tests, advanced integrations, and class/style diagnostics                   |
+| `clearHtmlCssWarningsForTests`                                                                                                          | Clears deduplicated CSS warning state for unit tests                                                      |
 | `registerStyleKeyframes`, `unregisterStyleKeyframes`                                                                                    | Registers Tween-backed style keyframes for `animationName` on `opacity`, `transform`, `width`, and `height` |
 | `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |
 
 Package types augment `@vue/runtime-core` `GlobalComponents`. PascalCase tags
 such as `<Div>` and lowercase tags such as `<div>` share the same component
 prop types, including `style: HtmlStyleInput` for object, string, and array
-style inputs in the documented Godot-backed subset.
+style inputs in the documented Godot-backed subset. `class` and `className`
+attrs are consumed by the CSS-like stylesheet resolver for HTML-like
+components; direct Godot node tags do not participate in this selector matching
+by default.
 
 ### Lowercase tag compatibility (migrating existing SPAs)
 

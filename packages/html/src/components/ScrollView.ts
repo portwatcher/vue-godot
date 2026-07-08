@@ -11,6 +11,7 @@ import {
 } from '../utils/scrollContainer.js'
 import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import { asDefaultSlot } from '../utils/slots.js'
 import { Div } from './Div.js'
 
@@ -79,7 +80,9 @@ export const ScrollView = defineComponent({
     },
     ...accessibilityPropOptions,
   },
-  setup(props, { slots }) {
+  setup(props, { attrs, slots }) {
+    const resolveStyle = useHtmlComponentStyleResolver('ScrollView', attrs)
+
     return () => {
       const horizontal = props.horizontal === true
       const vertical = props.vertical !== false
@@ -98,7 +101,11 @@ export const ScrollView = defineComponent({
         ),
       }
 
-      applyScrollContainerStyleProps(nodeProps, props.style, 'ScrollView')
+      applyScrollContainerStyleProps(
+        nodeProps,
+        resolveStyle(props.style).style,
+        'ScrollView',
+      )
       applyAccessibilityProps(nodeProps, props)
       applyFiniteNumberProp(
         nodeProps,

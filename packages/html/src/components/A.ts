@@ -13,12 +13,12 @@ import {
   focusPropOptions,
 } from '../utils/focus.js'
 import { extractTextFromSlot } from '../utils/slotText.js'
-import type { HtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
 import {
   applyMinTouchTargetProps,
   touchTargetPropOptions,
 } from '../utils/touchTarget.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 
 /**
  * <A> — link component.
@@ -47,7 +47,9 @@ export const A = defineComponent({
     style: htmlStyleProp,
   },
   emits: ['click'],
-  setup(props, { slots, emit }) {
+  setup(props, { attrs, slots, emit }) {
+    const resolveStyle = useHtmlComponentStyleResolver('A', attrs)
+
     return () => {
       const nodeProps: GodotPropBag = {
         text: extractTextFromSlot(slots.default),
@@ -63,7 +65,13 @@ export const A = defineComponent({
         nodeProps['disabled'] = true
       }
 
-      applyCommonControlStyleProps(nodeProps, props.style, 'A')
+      applyCommonControlStyleProps(
+        nodeProps,
+        resolveStyle(props.style, {
+          disabled: props.disabled === true,
+        }).style,
+        'A',
+      )
       applyMinTouchTargetProps(nodeProps, props)
       applyAccessibilityProps(nodeProps, props, {
         hint: props.disabled ? undefined : props.href,

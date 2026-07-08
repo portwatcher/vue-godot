@@ -3,8 +3,8 @@ import {
   createFocusContainmentController,
   focusContainmentPropOptions,
 } from '../utils/focus.js'
-import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
+import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import {
   applyWindowBaseProps,
   emitWindowClose,
@@ -61,11 +61,12 @@ export const Modal = defineComponent({
     style: htmlStyleProp,
   },
   emits: ['update:modelValue', 'close'],
-  setup(props, { slots, emit }) {
+  setup(props, { attrs, slots, emit }) {
+    const resolveStyle = useHtmlComponentStyleResolver('Modal', attrs)
     const focusContainment = createFocusContainmentController()
 
     return () => {
-      const style = normalizeHtmlStyle(props.style)
+      const style = resolveStyle(props.style).style
       const visible =
         isWindowOpen(props.modelValue) && style?.display !== 'none'
       const nodeProps: Record<string, unknown> = {
@@ -79,7 +80,7 @@ export const Modal = defineComponent({
         },
       }
 
-      applyWindowBaseProps(nodeProps, props, 'Modal')
+      applyWindowBaseProps(nodeProps, { ...props, style }, 'Modal')
       focusContainment.apply(nodeProps, props, { open: visible })
 
       return h('Window', nodeProps, slots.default?.())
