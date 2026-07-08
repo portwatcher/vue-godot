@@ -621,7 +621,7 @@
     <Span class="css-theme-copy">
       Class rules, root variables, and state styles
     </Span>
-    <Div :style="{ flexDirection: 'row', gap: 8, alignItems: 'center' }">
+    <Div class="css-theme-row">
       <Input
         v-model="cssThemeSample"
         class="css-theme-input css-theme-grow"

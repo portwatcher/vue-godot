@@ -1,8 +1,11 @@
 import {
   hasInjectionContext,
   inject,
+  ref,
   type InjectionKey,
+  type Ref,
 } from '@vue/runtime-core'
+import { DisplayServer } from 'godot'
 import {
   splitCssDeclaration,
   splitCssDeclarations,
@@ -18,6 +21,7 @@ import {
 
 export type HtmlDefaultStylePreset = 'none' | 'browser' | 'native-app'
 export type HtmlColorScheme = 'light' | 'dark'
+export type HtmlViewportOrientation = 'portrait' | 'landscape'
 export type HtmlComponentStateName =
   | 'hover'
   | 'pressed'
@@ -68,6 +72,25 @@ export interface HtmlTheme {
   components: Record<string, HtmlComponentTheme>
 }
 
+export interface HtmlViewportSize {
+  width: number
+  height: number
+}
+
+export interface HtmlStyleViewport extends HtmlViewportSize {
+  orientation: HtmlViewportOrientation
+  bucket: string
+}
+
+export interface HtmlStyleMediaCondition {
+  minWidth?: number
+  maxWidth?: number
+  minHeight?: number
+  maxHeight?: number
+  orientation?: HtmlViewportOrientation
+  key: string
+}
+
 interface CssDeclaration {
   property: string
   value: string
@@ -83,6 +106,7 @@ interface HtmlStyleRule {
   selector: HtmlStyleSelector
   selectorText: string
   declarations: readonly CssDeclaration[]
+  media?: HtmlStyleMediaCondition
   specificity: number
   order: number
   line: number
@@ -109,6 +133,8 @@ export interface HtmlPluginOptions {
   defaultStyles?: HtmlDefaultStylePreset
   theme?: HtmlTheme | HtmlThemeDefinition
   stylesheets?: readonly (HtmlStyleSheet | string)[]
+  styleContext?: HtmlStyleContext
+  viewport?: HtmlViewportSize
   warnUnsupportedCss?: boolean
 }
 
@@ -116,6 +142,8 @@ export interface HtmlStyleContext {
   defaultStyles: HtmlDefaultStylePreset
   theme?: HtmlTheme
   stylesheets: readonly HtmlStyleSheet[]
+  viewport: Ref<HtmlStyleViewport>
+  mediaConditions: readonly HtmlStyleMediaCondition[]
   warnUnsupportedCss: boolean
 }
 
@@ -150,6 +178,13 @@ const htmlComponentStateNames: readonly HtmlComponentStateName[] = [
 const emptyHtmlStyleContext: HtmlStyleContext = {
   defaultStyles: 'none',
   stylesheets: [],
+  viewport: ref({
+    width: 0,
+    height: 0,
+    orientation: 'landscape',
+    bucket: 'static',
+  }),
+  mediaConditions: [],
   warnUnsupportedCss: true,
 }
 
@@ -460,28 +495,223 @@ function splitSelectorGroup(selectorText: string): string[] {
     .filter(Boolean)
 }
 
-export function createHtmlStyleSheet(
-  cssText: string,
-  options: HtmlStyleSheetOptions = {},
-): HtmlStyleSheet {
-  const text = stripCssComments(cssText)
-  const tokens: CssDeclaration[] = []
-  const rules: HtmlStyleRule[] = []
-  const diagnostics: HtmlCssDiagnostic[] = []
-  let index = 0
-  let order = 0
+function parseMediaLength(value: string): number | null {
+  const match = value.trim().match(/^(\d+(?:\.\d+)?)(?:px)?$/i)
+  if (!match) {
+    return null
+  }
 
-  while (index < text.length) {
+  const parsed = Number.parseFloat(match[1])
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+function mediaConditionKey(
+  condition: Omit<HtmlStyleMediaCondition, 'key'>,
+): string {
+  return [
+    condition.minWidth == null ? '' : `min-width:${condition.minWidth}`,
+    condition.maxWidth == null ? '' : `max-width:${condition.maxWidth}`,
+    condition.minHeight == null ? '' : `min-height:${condition.minHeight}`,
+    condition.maxHeight == null ? '' : `max-height:${condition.maxHeight}`,
+    condition.orientation == null ? '' : `orientation:${condition.orientation}`,
+  ]
+    .filter(Boolean)
+    .join(';')
+}
+
+function parseMediaCondition(
+  atRule: string,
+  source: string | undefined,
+  line: number,
+): {
+  condition?: HtmlStyleMediaCondition
+  diagnostic?: HtmlCssDiagnostic
+} {
+  const query = atRule.replace(/^@media\s*/i, '').trim()
+  if (!/^@media\b/i.test(atRule) || query === '' || query.includes(',')) {
+    return {
+      diagnostic: createCssDiagnostic(
+        source,
+        line,
+        `Unsupported at-rule "${atRule}"`,
+      ),
+    }
+  }
+
+  const featureMatches = [...query.matchAll(/\(([^()]+)\)/g)]
+  const outsideFeatures = query.replace(/\([^()]+\)/g, ' ')
+  if (
+    featureMatches.length === 0 ||
+    outsideFeatures.replace(/\b(?:all|screen|and)\b/gi, '').trim() !== ''
+  ) {
+    return {
+      diagnostic: createCssDiagnostic(
+        source,
+        line,
+        `Unsupported media query "${query}"`,
+      ),
+    }
+  }
+
+  const condition: Omit<HtmlStyleMediaCondition, 'key'> = {}
+  for (const match of featureMatches) {
+    const [featureName, featureValue] = match[1]
+      .split(':')
+      .map((part) => part.trim())
+
+    if (!featureName || !featureValue) {
+      return {
+        diagnostic: createCssDiagnostic(
+          source,
+          line,
+          `Unsupported media feature "${match[1]}"`,
+        ),
+      }
+    }
+
+    switch (featureName.toLowerCase()) {
+      case 'min-width': {
+        const value = parseMediaLength(featureValue)
+        if (value == null) {
+          return {
+            diagnostic: createCssDiagnostic(
+              source,
+              line,
+              `Unsupported media value "${featureValue}" in "${match[1]}"`,
+            ),
+          }
+        }
+        condition.minWidth = value
+        break
+      }
+      case 'max-width': {
+        const value = parseMediaLength(featureValue)
+        if (value == null) {
+          return {
+            diagnostic: createCssDiagnostic(
+              source,
+              line,
+              `Unsupported media value "${featureValue}" in "${match[1]}"`,
+            ),
+          }
+        }
+        condition.maxWidth = value
+        break
+      }
+      case 'min-height': {
+        const value = parseMediaLength(featureValue)
+        if (value == null) {
+          return {
+            diagnostic: createCssDiagnostic(
+              source,
+              line,
+              `Unsupported media value "${featureValue}" in "${match[1]}"`,
+            ),
+          }
+        }
+        condition.minHeight = value
+        break
+      }
+      case 'max-height': {
+        const value = parseMediaLength(featureValue)
+        if (value == null) {
+          return {
+            diagnostic: createCssDiagnostic(
+              source,
+              line,
+              `Unsupported media value "${featureValue}" in "${match[1]}"`,
+            ),
+          }
+        }
+        condition.maxHeight = value
+        break
+      }
+      case 'orientation': {
+        const normalized = featureValue.toLowerCase()
+        if (normalized !== 'portrait' && normalized !== 'landscape') {
+          return {
+            diagnostic: createCssDiagnostic(
+              source,
+              line,
+              `Unsupported media orientation "${featureValue}"`,
+            ),
+          }
+        }
+        condition.orientation = normalized
+        break
+      }
+      default:
+        return {
+          diagnostic: createCssDiagnostic(
+            source,
+            line,
+            `Unsupported media feature "${featureName}"`,
+          ),
+        }
+    }
+  }
+
+  const key = mediaConditionKey(condition)
+  if (key === '') {
+    return {
+      diagnostic: createCssDiagnostic(
+        source,
+        line,
+        `Unsupported media query "${query}"`,
+      ),
+    }
+  }
+
+  return {
+    condition: {
+      ...condition,
+      key,
+    },
+  }
+}
+
+function firstNonWhitespaceIndex(
+  text: string,
+  start: number,
+  end: number,
+): number {
+  for (let index = start; index < end; index++) {
+    if (!/\s/.test(text[index])) {
+      return index
+    }
+  }
+  return start
+}
+
+interface CssParseTarget {
+  tokens: CssDeclaration[]
+  rules: HtmlStyleRule[]
+  diagnostics: HtmlCssDiagnostic[]
+  order: number
+}
+
+function appendStyleRules(
+  text: string,
+  options: HtmlStyleSheetOptions,
+  target: CssParseTarget,
+  start: number,
+  end: number,
+  media: HtmlStyleMediaCondition | undefined,
+): void {
+  let index = start
+
+  while (index < end) {
     const openIndex = text.indexOf('{', index)
-    if (openIndex < 0) {
+    if (openIndex < 0 || openIndex >= end) {
       break
     }
 
+    const selectorStart = firstNonWhitespaceIndex(text, index, openIndex)
     const selectorText = text.slice(index, openIndex).trim()
-    const line = lineNumberAt(text, index)
+    const line = lineNumberAt(text, selectorStart)
     const closeIndex = findMatchingBrace(text, openIndex)
-    if (closeIndex < 0) {
-      diagnostics.push(
+    if (closeIndex < 0 || closeIndex > end) {
+      target.diagnostics.push(
         createCssDiagnostic(
           options.source,
           line,
@@ -495,13 +725,21 @@ export function createHtmlStyleSheet(
     index = closeIndex + 1
 
     if (selectorText.startsWith('@')) {
-      diagnostics.push(
-        createCssDiagnostic(
-          options.source,
-          line,
-          `Unsupported at-rule "${selectorText}"`,
-        ),
-      )
+      const parsedMedia = parseMediaCondition(selectorText, options.source, line)
+      if (parsedMedia.diagnostic) {
+        target.diagnostics.push(parsedMedia.diagnostic)
+        continue
+      }
+      if (parsedMedia.condition) {
+        appendStyleRules(
+          text,
+          options,
+          target,
+          openIndex + 1,
+          closeIndex,
+          parsedMedia.condition,
+        )
+      }
       continue
     }
 
@@ -509,7 +747,7 @@ export function createHtmlStyleSheet(
     for (const selectorPart of splitSelectorGroup(selectorText)) {
       const parsed = parseSelector(selectorPart, options.source, line)
       if (parsed.diagnostic) {
-        diagnostics.push(parsed.diagnostic)
+        target.diagnostics.push(parsed.diagnostic)
         continue
       }
       if (!parsed.selector) {
@@ -517,7 +755,18 @@ export function createHtmlStyleSheet(
       }
 
       if (selectorPart === ':root') {
-        tokens.push(
+        if (media) {
+          target.diagnostics.push(
+            createCssDiagnostic(
+              options.source,
+              line,
+              `Responsive :root variables are unsupported in "${selectorText}"`,
+            ),
+          )
+          continue
+        }
+
+        target.tokens.push(
           ...declarations.filter((declaration) =>
             declaration.property.startsWith('--'),
           ),
@@ -525,23 +774,39 @@ export function createHtmlStyleSheet(
         continue
       }
 
-      rules.push({
+      target.rules.push({
         selector: parsed.selector,
         selectorText: selectorPart,
         declarations,
+        media,
         specificity: selectorSpecificity(parsed.selector),
-        order: order++,
+        order: target.order++,
         line,
       })
     }
   }
+}
+
+export function createHtmlStyleSheet(
+  cssText: string,
+  options: HtmlStyleSheetOptions = {},
+): HtmlStyleSheet {
+  const text = stripCssComments(cssText)
+  const target: CssParseTarget = {
+    tokens: [],
+    rules: [],
+    diagnostics: [],
+    order: 0,
+  }
+
+  appendStyleRules(text, options, target, 0, text.length, undefined)
 
   return {
     kind: 'html-style-sheet',
     source: options.source,
-    tokens,
-    rules,
-    diagnostics,
+    tokens: target.tokens,
+    rules: target.rules,
+    diagnostics: target.diagnostics,
   }
 }
 
@@ -564,15 +829,163 @@ function normalizeStyleSheets(
   )
 }
 
+function uniqueMediaConditions(
+  stylesheets: readonly HtmlStyleSheet[],
+): HtmlStyleMediaCondition[] {
+  const conditions = new Map<string, HtmlStyleMediaCondition>()
+  for (const stylesheet of stylesheets) {
+    for (const rule of stylesheet.rules) {
+      if (rule.media) {
+        conditions.set(rule.media.key, rule.media)
+      }
+    }
+  }
+  return [...conditions.values()]
+}
+
+function readVector2Size(value: unknown): HtmlViewportSize | null {
+  if (!isRecord(value)) {
+    return null
+  }
+
+  const x = value['x']
+  const y = value['y']
+  if (
+    typeof x !== 'number' ||
+    typeof y !== 'number' ||
+    !Number.isFinite(x) ||
+    !Number.isFinite(y)
+  ) {
+    return null
+  }
+
+  return {
+    width: Math.max(0, x),
+    height: Math.max(0, y),
+  }
+}
+
+function normalizeViewportSize(size: HtmlViewportSize): HtmlViewportSize {
+  return {
+    width: Number.isFinite(size.width) ? Math.max(0, size.width) : 0,
+    height: Number.isFinite(size.height) ? Math.max(0, size.height) : 0,
+  }
+}
+
+function resolveOrientation(
+  size: HtmlViewportSize,
+): HtmlViewportOrientation {
+  return size.height > size.width ? 'portrait' : 'landscape'
+}
+
+function mediaConditionMatches(
+  condition: HtmlStyleMediaCondition,
+  viewport: HtmlStyleViewport,
+): boolean {
+  if (condition.minWidth != null && viewport.width < condition.minWidth) {
+    return false
+  }
+  if (condition.maxWidth != null && viewport.width > condition.maxWidth) {
+    return false
+  }
+  if (condition.minHeight != null && viewport.height < condition.minHeight) {
+    return false
+  }
+  if (condition.maxHeight != null && viewport.height > condition.maxHeight) {
+    return false
+  }
+  if (condition.orientation && viewport.orientation !== condition.orientation) {
+    return false
+  }
+  return true
+}
+
+function createViewportBucket(
+  size: HtmlViewportSize,
+  conditions: readonly HtmlStyleMediaCondition[],
+): HtmlStyleViewport {
+  const normalized = normalizeViewportSize(size)
+  const viewportWithoutBucket = {
+    ...normalized,
+    orientation: resolveOrientation(normalized),
+  }
+  const viewport: HtmlStyleViewport = {
+    ...viewportWithoutBucket,
+    bucket: 'static',
+  }
+
+  if (conditions.length === 0) {
+    return viewport
+  }
+
+  viewport.bucket = conditions
+    .map((condition) =>
+      mediaConditionMatches(condition, viewport) ? `${condition.key}:1` : '',
+    )
+    .filter(Boolean)
+    .join('|')
+
+  if (viewport.bucket === '') {
+    viewport.bucket = 'default'
+  }
+
+  return viewport
+}
+
+export function readHtmlViewportSize(): HtmlViewportSize {
+  try {
+    const windowSize = readVector2Size(DisplayServer.window_get_size())
+    if (windowSize) {
+      return windowSize
+    }
+
+    const screenSize = readVector2Size(DisplayServer.screen_get_size())
+    if (screenSize) {
+      return screenSize
+    }
+  } catch {
+    // Godot window metrics are unavailable in non-Godot test harnesses.
+  }
+
+  return {
+    width: 0,
+    height: 0,
+  }
+}
+
 export function createHtmlStyleContext(
   options: HtmlPluginOptions = {},
 ): HtmlStyleContext {
+  if (options.styleContext) {
+    return options.styleContext
+  }
+
+  const stylesheets = normalizeStyleSheets(options.stylesheets)
+  const mediaConditions = uniqueMediaConditions(stylesheets)
   return {
     defaultStyles: options.defaultStyles ?? 'none',
     theme: normalizeTheme(options.theme),
-    stylesheets: normalizeStyleSheets(options.stylesheets),
+    stylesheets,
+    viewport: ref(
+      createViewportBucket(
+        options.viewport ?? readHtmlViewportSize(),
+        mediaConditions,
+      ),
+    ),
+    mediaConditions,
     warnUnsupportedCss: options.warnUnsupportedCss !== false,
   }
+}
+
+export function refreshHtmlStyleContextViewport(
+  context: HtmlStyleContext,
+  viewport: HtmlViewportSize = readHtmlViewportSize(),
+): HtmlStyleViewport {
+  const nextViewport = createViewportBucket(viewport, context.mediaConditions)
+  if (nextViewport.bucket !== context.viewport.value.bucket) {
+    context.viewport.value = nextViewport
+  }
+  return context.viewport.value
 }
 
 function warnCss(context: HtmlStyleContext, diagnostic: HtmlCssDiagnostic): void {
@@ -788,9 +1201,18 @@ function sortedMatchingRules(
   stateName?: HtmlComponentStateName,
 ): HtmlStyleRule[] {
   const rules: HtmlStyleRule[] = []
+  const viewport =
+    context.mediaConditions.length > 0 ? context.viewport.value : undefined
+
   for (const stylesheet of context.stylesheets) {
     for (const rule of stylesheet.rules) {
       if (rule.selector.state !== stateName) {
+        continue
+      }
+      if (
+        rule.media &&
+        (!viewport || !mediaConditionMatches(rule.media, viewport))
+      ) {
         continue
       }
       if (selectorMatches(rule.selector, componentName, classes)) {

@@ -53,8 +53,8 @@ npx vue-godot integrate --html
    helpers, or explicit device adapters.
 6. Replace full browser CSS/cascade assumptions with the documented
    Godot-backed style subset, explicit `createHtmlStyleSheet()` registration,
-   structured `defineHtmlTheme()` defaults where useful, and Godot container
-   layout.
+   structured `defineHtmlTheme()` defaults, limited media query buckets where
+   useful, and Godot container layout.
 7. Run `npm run build`, `npm run check:exports`, and test in the GodotJS editor.
 
 See the `@vue-godot/html` README's lowercase tag migration section for the
@@ -76,7 +76,7 @@ exact `isNativeTag`, `isCustomElement`, `htmlPlugin`, and Volar setup.
 | Browser assumption | Replacement |
 | --- | --- |
 | `document.querySelector`, DOM refs, `HTMLElement` methods | Vue refs to components or Godot node instances. |
-| CSS cascade, stylesheets, computed styles | Explicit `createHtmlStyleSheet()` registration, structured `defineHtmlTheme()` defaults, inline style overrides, Godot containers, and explicit component props. No CSSOM or computed style reads. |
+| CSS cascade, stylesheets, computed styles | Explicit `createHtmlStyleSheet()` registration, structured `defineHtmlTheme()` defaults, inline style overrides, limited viewport media buckets, Godot containers, and explicit component props. No CSSOM or computed style reads. |
 | DOM event bubbling/capture | Vue component events and Godot signals. |
 | Browser focus and ARIA tree | Godot focus traversal props, tooltips/labels/hints, and documented accessibility limits. |
 | Service workers, IndexedDB, Web Workers | Treat as unsupported unless a real project-specific backend is added. |

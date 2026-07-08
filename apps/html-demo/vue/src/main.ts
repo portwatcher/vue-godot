@@ -44,6 +44,12 @@ const htmlDemoStyleSheet = createHtmlStyleSheet(
       font-size: 14px;
     }
 
+    .css-theme-row {
+      flex-direction: row;
+      gap: 8px;
+      align-items: center;
+    }
+
     Button.css-theme-action {
       background-color: var(--demo-css-action);
       border: 1px solid var(--demo-css-border);
@@ -69,6 +75,18 @@ const htmlDemoStyleSheet = createHtmlStyleSheet(
 
     .css-theme-grow {
       flex: 1;
+    }
+
+    @media (max-width: 520px) {
+      .css-theme-card {
+        width: 100%;
+        padding: 8px;
+      }
+
+      .css-theme-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
     }
   `,
   { source: 'html-demo.css' },

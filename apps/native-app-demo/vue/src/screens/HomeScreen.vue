@@ -1,6 +1,6 @@
 <template>
-  <Div :style="screenStyle">
-    <Div :style="headerStyle">
+  <Div class="native-home-screen">
+    <Div class="native-home-header">
       <Div>
         <Span :style="eyebrowStyle">native app demo</Span>
         <Span :style="titleStyle">Production app flow</Span>
@@ -11,7 +11,7 @@
       </Div>
     </Div>
 
-    <Div :style="statusGridStyle">
+    <Div class="native-status-grid">
       <Div :style="statusCardStyle">
         <Span :style="labelStyle">reachability</Span>
         <Span>{{ reachabilitySummary }}</Span>
@@ -223,17 +223,6 @@ onUnmounted(() => {
   removeEventListener('offline', syncReachability)
 })
 
-const screenStyle: HtmlStyle = {
-  flexDirection: 'column',
-  gap: 12,
-  padding: 8,
-}
-const headerStyle: HtmlStyle = {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  gap: 12,
-}
 const eyebrowStyle: HtmlStyle = {
   color: '#93c5fd',
   fontSize: 14,
@@ -242,11 +231,6 @@ const titleStyle: HtmlStyle = {
   color: '#f9fafb',
   fontSize: 24,
   fontWeight: 'bold',
-}
-const statusGridStyle: HtmlStyle = {
-  flexDirection: 'row',
-  flexWrap: 'wrap',
-  gap: 10,
 }
 const statusCardStyle: HtmlStyle = {
   flex: 1,

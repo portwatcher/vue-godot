@@ -217,9 +217,11 @@ registered unless you pass options.
 
 ```ts
 import {
+  createHtmlStyleContext,
   createHtmlStyleSheet,
   defineHtmlTheme,
   htmlPlugin,
+  refreshHtmlStyleContextViewport,
 } from '@vue-godot/html'
 
 const appTheme = defineHtmlTheme({
@@ -259,13 +261,22 @@ const appStyles = createHtmlStyleSheet(`
   Button.primary:hover {
     opacity: 0.9;
   }
+
+  @media (max-width: 520px) {
+    .profile-card {
+      padding: 12px;
+    }
+  }
 `)
 
-app.use(htmlPlugin, {
+const styleContext = createHtmlStyleContext({
   defaultStyles: 'native-app',
   theme: appTheme,
   stylesheets: [appStyles],
 })
+
+app.use(htmlPlugin, { styleContext })
+refreshHtmlStyleContextViewport(styleContext)
 ```
 
 The resolver merges styles from weakest to strongest: built-in preset,
@@ -285,8 +296,11 @@ Stylesheet declarations use the same documented `HtmlStyle` property subset as
 inline styles. CSS variables are global theme tokens only: `:root` custom
 properties and structured theme tokens can be used through `var(--token,
 fallback)`. Browser CSSOM, computed style reads, per-node custom-property
-inheritance, media queries, scoped SFC styles, and Vite CSS collection are not
-implemented.
+inheritance, scoped SFC styles, and Vite CSS collection are not implemented.
+Supported media queries are limited to `min-width`, `max-width`, `min-height`,
+`max-height`, and `orientation`; call `refreshHtmlStyleContextViewport()` from
+a Godot resize signal when an app needs responsive class rules to re-resolve
+after the window crosses a viewport bucket.
 
 `defaultStyles` can be `'none'`, `'browser'`, or `'native-app'`. The browser
 preset provides conservative web-like defaults for migration demos. The
@@ -453,8 +467,9 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 | `registerFontFamily`, `unregisterFontFamily`, `parseFontFamilyList`                                                                     | Registers CSS `fontFamily` names to local Godot font resources and parses CSS fallback lists              |
 | `parseHtmlStyle`, `normalizeHtmlStyle`                                                                                                  | Parses CSS declaration strings and normalizes object/string/array style inputs to `HtmlStyle`             |
 | `defineHtmlTheme`, `createHtmlTheme`                                                                                                    | Defines structured theme tokens, component defaults, and state styles for `htmlPlugin`                    |
-| `createHtmlStyleSheet`                                                                                                                  | Parses explicit CSS-like stylesheet text with root tokens, type/class selectors, and state pseudo-classes |
+| `createHtmlStyleSheet`                                                                                                                  | Parses explicit CSS-like stylesheet text with root tokens, type/class selectors, state pseudo-classes, and limited media queries |
 | `createHtmlStyleContext`, `resolveHtmlComponentStyle`, `normalizeHtmlClassList`                                                          | Shared resolver utilities for tests, advanced integrations, and class/style diagnostics                   |
+| `readHtmlViewportSize`, `refreshHtmlStyleContextViewport`                                                                                | Reads Godot window metrics and refreshes responsive stylesheet viewport buckets                           |
 | `clearHtmlCssWarningsForTests`                                                                                                          | Clears deduplicated CSS warning state for unit tests                                                      |
 | `registerStyleKeyframes`, `unregisterStyleKeyframes`                                                                                    | Registers Tween-backed style keyframes for `animationName` on `opacity`, `transform`, `width`, and `height` |
 | `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |

@@ -1,6 +1,6 @@
 # CSS-like Theme Layer for Vue Godot
 
-Status: Phase 1-3 implemented; Phase 4+ planned
+Status: Phase 1-4 implemented; Phase 5+ planned
 
 Audience: future implementers of `@vue-godot/html`, `@vue-godot/cli`, and
 example apps.
@@ -11,13 +11,14 @@ runtime maps those rules to Godot `Theme`, Godot `Control` properties,
 `StyleBoxFlat`, existing `@vue-godot/html` style helpers, and component-specific
 state handling.
 
-Implementation note: `@vue-godot/html` now ships the first three phases:
+Implementation note: `@vue-godot/html` now ships the first four phases:
 structured themes via `defineHtmlTheme()`, opt-in `defaultStyles` presets,
 explicit global stylesheet registration through `createHtmlStyleSheet()`,
 class/type/group selector matching, root token resolution, shared component
 style resolution, and state pseudo-class styling for the documented component
-states. Responsive media queries, Vite CSS collection, scoped SFC styles, and
-migration audit tooling remain future phases.
+states. It also supports the limited responsive media query subset documented
+below through viewport buckets refreshed from Godot window metrics. Vite CSS
+collection, scoped SFC styles, and migration audit tooling remain future phases.
 
 This is not a proposal to make Godot a browser. It is a proposal to improve
 the migration path for compatible Vue apps and to make native-feeling mobile
@@ -250,6 +251,8 @@ Suggested option meanings:
 | `defaultStyles` | `'none'`, `'browser'`, or `'native-app'`. Defaults should remain backward compatible until a major version can change them. |
 | `theme` | Structured theme object created by `defineHtmlTheme()` or `createHtmlTheme()`. |
 | `stylesheets` | Parsed or raw CSS-like stylesheets registered globally. |
+| `styleContext` | Pre-created style context for apps that need to refresh viewport buckets from Godot resize signals. |
+| `viewport` | Initial viewport size used for responsive media query buckets. |
 | `warnUnsupportedCss` | Development warning mode for unsupported selectors, properties, values, and at-rules. |
 
 ### Theme Definition
@@ -1177,7 +1180,7 @@ Acceptance criteria:
 
 ### Phase 4: Responsive Rules
 
-Add limited media query support.
+Implemented: limited media query support.
 
 Scope:
 

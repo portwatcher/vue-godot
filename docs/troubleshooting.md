@@ -191,9 +191,10 @@ right fallback.
 objects, CSS declaration strings, arrays, structured theme defaults, and
 explicit `createHtmlStyleSheet()` registration. Unsupported inline style props
 warn once per component/property pair; unsupported stylesheet selectors,
-at-rules, variables, and properties warn with `[vue-godot/html/css]`. Check
+at-rules, media features, variables, and properties warn with
+`[vue-godot/html/css]`. Check
 [packages/html/README.md](../packages/html/README.md) for the supported style
-table before copying browser CSS into a Godot UI.
+and media-query subset before copying browser CSS into a Godot UI.
 
 ### Camera, Microphone, Geolocation, Notifications, Or Share Fail
 
