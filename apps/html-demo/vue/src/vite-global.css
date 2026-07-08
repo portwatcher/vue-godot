@@ -1,0 +1,10 @@
+.vite-css-note {
+  color: #fef3c7;
+  font-size: 13px;
+}
+
+@media (max-width: 520px) {
+  .vite-css-note {
+    color: #bbf7d0;
+  }
+}

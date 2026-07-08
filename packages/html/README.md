@@ -279,6 +279,28 @@ app.use(htmlPlugin, { styleContext })
 refreshHtmlStyleContextViewport(styleContext)
 ```
 
+Apps built with Vite can also install the CSS collector and import global CSS
+directly:
+
+```ts
+// vue/vite.config.ts
+import { vueGodotHtmlCss } from '@vue-godot/html/vite'
+
+export default defineConfig({
+  plugins: [vueGodotHtmlCss(), vue()],
+})
+```
+
+```ts
+// vue/src/main.ts
+import './app.css'
+```
+
+The Vite plugin rewrites `.css` imports into stylesheet registration modules
+and emits build-time `[vue-godot/html/css]` warnings with source file and line
+information. `.module.css` imports return a simple class-name map while still
+registering the stylesheet.
+
 The resolver merges styles from weakest to strongest: built-in preset,
 structured theme component defaults, registered stylesheet rules, active state
 rules, then inline `style`. Explicit component props such as `disabled`, `src`,
@@ -468,10 +490,12 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 | `parseHtmlStyle`, `normalizeHtmlStyle`                                                                                                  | Parses CSS declaration strings and normalizes object/string/array style inputs to `HtmlStyle`             |
 | `defineHtmlTheme`, `createHtmlTheme`                                                                                                    | Defines structured theme tokens, component defaults, and state styles for `htmlPlugin`                    |
 | `createHtmlStyleSheet`                                                                                                                  | Parses explicit CSS-like stylesheet text with root tokens, type/class selectors, state pseudo-classes, and limited media queries |
+| `registerHtmlStyleSheet`, `clearRegisteredHtmlStyleSheetsForTests`                                                                       | Registers globally collected stylesheets before `htmlPlugin` creates a style context                      |
 | `createHtmlStyleContext`, `resolveHtmlComponentStyle`, `normalizeHtmlClassList`                                                          | Shared resolver utilities for tests, advanced integrations, and class/style diagnostics                   |
 | `readHtmlViewportSize`, `refreshHtmlStyleContextViewport`                                                                                | Reads Godot window metrics and refreshes responsive stylesheet viewport buckets                           |
 | `clearHtmlCssWarningsForTests`                                                                                                          | Clears deduplicated CSS warning state for unit tests                                                      |
 | `registerStyleKeyframes`, `unregisterStyleKeyframes`                                                                                    | Registers Tween-backed style keyframes for `animationName` on `opacity`, `transform`, `width`, and `height` |
+| `@vue-godot/html/vite`                                                                                                                   | Vite plugin subpath exposing `vueGodotHtmlCss()` for global CSS collection                                |
 | `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |
 
 Package types augment `@vue/runtime-core` `GlobalComponents`. PascalCase tags

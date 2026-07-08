@@ -1,4 +1,5 @@
 import vue from '@vitejs/plugin-vue'
+import { vueGodotHtmlCss } from '@vue-godot/html/vite'
 import { defineConfig } from 'vite'
 
 // Tags provided by @vue-godot/html — kept in sync with htmlTags from the package.
@@ -37,6 +38,7 @@ const htmlTags = [
 
 export default defineConfig({
   plugins: [
+    vueGodotHtmlCss(),
     vue({
       template: {
         compilerOptions: {

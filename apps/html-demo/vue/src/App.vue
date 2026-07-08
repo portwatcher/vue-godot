@@ -637,6 +637,9 @@
     <Span class="css-theme-copy">
       {{ `stylesheet value=${cssThemeSample}` }}
     </Span>
+    <Span class="vite-css-note">
+      Vite CSS import registered as a stylesheet
+    </Span>
   </Div>
 
   <!-- ===== Section: Browser APIs ===== -->

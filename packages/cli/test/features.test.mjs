@@ -142,9 +142,17 @@ test('integrate writes router and helper starter files', async () => {
     const pkg = readJson(path.join(tempDir, 'package.json'))
     const mainTs = fs.readFileSync(path.join(tempDir, 'vue/src/main.ts'), 'utf-8')
     const appVue = fs.readFileSync(path.join(tempDir, 'vue/src/App.vue'), 'utf-8')
+    const appCss = fs.readFileSync(path.join(tempDir, 'vue/src/app.css'), 'utf-8')
+    const viteConfig = fs.readFileSync(
+      path.join(tempDir, 'vue/vite.config.ts'),
+      'utf-8',
+    )
 
     assert.equal(pkg.dependencies['vue-router'], '~4.5.1')
+    assert.match(viteConfig, /vueGodotHtmlCss\(\)/)
+    assert.match(mainTs, /import '\.\/app\.css'/)
     assert.match(mainTs, /app\.use\(router\)/)
+    assert.match(appCss, /\.starter-card/)
     assert.ok(appVue.includes('<router-view></router-view>'))
     assert.ok(fs.existsSync(path.join(tempDir, 'vue/src/app/router.ts')))
     assert.ok(fs.existsSync(path.join(tempDir, 'vue/src/app/storage.ts')))

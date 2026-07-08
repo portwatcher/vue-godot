@@ -6,10 +6,12 @@ register(new URL('./godot-browser-loader.mjs', import.meta.url).href)
 
 const {
   clearHtmlCssWarningsForTests,
+  clearRegisteredHtmlStyleSheetsForTests,
   createHtmlStyleContext,
   createHtmlStyleSheet,
   defineHtmlTheme,
   normalizeHtmlClassList,
+  registerHtmlStyleSheet,
   refreshHtmlStyleContextViewport,
   resolveHtmlComponentStyle,
 } = await import('../dist/index.js')
@@ -110,6 +112,38 @@ test('default style presets are opt-in and inline style remains strongest', () =
   assert.equal(native.style.minHeight, 44)
   assert.equal(native.style.backgroundColor, '#000000')
   assert.equal(native.style.borderRadius, 8)
+})
+
+test('registered stylesheets participate in new style contexts by default', () => {
+  clearRegisteredHtmlStyleSheetsForTests()
+
+  try {
+    registerHtmlStyleSheet(
+      `
+        .registered-card {
+          padding: 18px;
+        }
+      `,
+      { source: 'registered.css' },
+    )
+
+    const included = resolveHtmlComponentStyle(createHtmlStyleContext(), {
+      componentName: 'Div',
+      class: 'registered-card',
+    })
+    const excluded = resolveHtmlComponentStyle(
+      createHtmlStyleContext({ includeRegisteredStylesheets: false }),
+      {
+        componentName: 'Div',
+        class: 'registered-card',
+      },
+    )
+
+    assert.equal(included.style.padding, 18)
+    assert.equal(excluded.style, undefined)
+  } finally {
+    clearRegisteredHtmlStyleSheetsForTests()
+  }
 })
 
 test('resolves supported media query rules from viewport buckets', () => {

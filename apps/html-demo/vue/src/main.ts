@@ -8,6 +8,7 @@ import {
   formatBrowserSmokeResults,
   runBrowserSmokeTests,
 } from './browserSmoke'
+import './vite-global.css'
 
 installBrowserAPIs()
 

@@ -326,6 +326,7 @@ export function newPackageJson(
 
 export function generateHtmlViteConfig(): string {
   return `import vue from '@vitejs/plugin-vue'
+import { vueGodotHtmlCss } from '@vue-godot/html/vite'
 import { defineConfig } from 'vite'
 
 // Tags provided by @vue-godot/html — kept in sync with htmlTags from the package.
@@ -341,6 +342,7 @@ const htmlTags = [
 
 export default defineConfig({
   plugins: [
+    vueGodotHtmlCss(),
     vue({
       template: {
         compilerOptions: {
@@ -410,6 +412,7 @@ import { createApp } from '@vue-godot/runtime-tscn'
 import { htmlPlugin } from '@vue-godot/html'
 import { VBoxContainer } from 'godot'
 import App from './App.vue'
+import './app.css'
 ${features.router ? "import { router } from './app/router'\n" : ''}
 
 installBrowserAPIs()
@@ -433,15 +436,38 @@ ${features.router ? '    app.use(router)\n' : ''}    app.mount(this)
 `
 }
 
+export function generateHtmlCss(): string {
+  return `:root {
+  --starter-surface: #1f2937;
+  --starter-text: #f8fafc;
+  --starter-muted: #cbd5e1;
+  --starter-accent: #93c5fd;
+  --starter-space: 16px;
+}
+
+.starter-card {
+  background-color: var(--starter-surface);
+  color: var(--starter-text);
+  padding: var(--starter-space);
+  border-radius: 8px;
+}
+
+@media (max-width: 520px) {
+  .starter-card {
+    padding: 12px;
+  }
+}
+`
+}
+
 function generateDefaultHtmlAppVue(): string {
   return `<template>
   <Div
+    class="starter-card"
     :style="{
       flexDirection: 'column',
       gap: 12,
-      padding: 16,
       width: 520,
-      backgroundColor: '#1f2937',
     }"
   >
     <Span :style="{ fontSize: 24, color: '#f8fafc' }">
@@ -1054,6 +1080,12 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     )
     console.log(
       `  updated ${path.relative(process.cwd(), mainTsPath)} (html mode)`,
+    )
+
+    const appCssPath = path.join(vueDir, 'src', 'app.css')
+    fs.writeFileSync(appCssPath, generateHtmlCss())
+    console.log(
+      `  updated ${path.relative(process.cwd(), appCssPath)} (html mode)`,
     )
 
     const appVuePath = path.join(vueDir, 'src', 'App.vue')

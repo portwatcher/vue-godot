@@ -189,10 +189,11 @@ right fallback.
 
 `@vue-godot/html` supports a documented Godot-backed style subset as inline
 objects, CSS declaration strings, arrays, structured theme defaults, and
-explicit `createHtmlStyleSheet()` registration. Unsupported inline style props
-warn once per component/property pair; unsupported stylesheet selectors,
-at-rules, media features, variables, and properties warn with
-`[vue-godot/html/css]`. Check
+explicit `createHtmlStyleSheet()` registration or global CSS imports through
+`@vue-godot/html/vite`. Unsupported inline style props warn once per
+component/property pair; unsupported stylesheet selectors, at-rules, media
+features, variables, and properties warn with `[vue-godot/html/css]` during
+Vite builds and runtime style resolution. Check
 [packages/html/README.md](../packages/html/README.md) for the supported style
 and media-query subset before copying browser CSS into a Godot UI.
 

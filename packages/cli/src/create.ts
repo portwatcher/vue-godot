@@ -6,6 +6,7 @@ import {
   copyProductionSupportFiles,
   copyTemplateDir,
   generateHtmlAppVue,
+  generateHtmlCss,
   generateHtmlMainTs,
   generateHtmlViteConfig,
   getTemplatesDir,
@@ -202,6 +203,12 @@ export async function create(options: CreateOptions): Promise<void> {
     )
     console.log(
       `  updated ${path.relative(process.cwd(), mainTsPath)} (html mode)`,
+    )
+
+    const appCssPath = path.join(vueDir, 'src', 'app.css')
+    fs.writeFileSync(appCssPath, generateHtmlCss())
+    console.log(
+      `  updated ${path.relative(process.cwd(), appCssPath)} (html mode)`,
     )
 
     const appVuePath = path.join(vueDir, 'src', 'App.vue')

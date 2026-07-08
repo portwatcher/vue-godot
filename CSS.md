@@ -1,6 +1,6 @@
 # CSS-like Theme Layer for Vue Godot
 
-Status: Phase 1-4 implemented; Phase 5+ planned
+Status: Phase 1-5 implemented; Phase 6+ planned
 
 Audience: future implementers of `@vue-godot/html`, `@vue-godot/cli`, and
 example apps.
@@ -17,8 +17,10 @@ explicit global stylesheet registration through `createHtmlStyleSheet()`,
 class/type/group selector matching, root token resolution, shared component
 style resolution, and state pseudo-class styling for the documented component
 states. It also supports the limited responsive media query subset documented
-below through viewport buckets refreshed from Godot window metrics. Vite CSS
-collection, scoped SFC styles, and migration audit tooling remain future phases.
+below through viewport buckets refreshed from Godot window metrics. Vite global
+CSS collection is available through `@vue-godot/html/vite`, with generated
+HTML-mode projects importing `vue/src/app.css` directly. Scoped SFC styles and
+migration audit tooling remain future phases.
 
 This is not a proposal to make Godot a browser. It is a proposal to improve
 the migration path for compatible Vue apps and to make native-feeling mobile
@@ -1198,7 +1200,7 @@ Acceptance criteria:
 
 ### Phase 5: Build Tooling
 
-Add Vite integration for CSS files and possibly SFC styles.
+Implemented: Vite integration for global CSS files.
 
 Scope:
 
