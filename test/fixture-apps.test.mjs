@@ -39,7 +39,7 @@ const fixtureApps = [
     sources: {
       'vue/src/main.ts': [
         'installBrowserAPIs()',
-        'app.use(htmlPlugin)',
+        'app.use(htmlPlugin',
         'runBrowserSmokeTests',
         'assertSignalConnectionCount',
       ],
@@ -84,7 +84,7 @@ const fixtureApps = [
     sources: {
       'vue/src/main.ts': [
         'installBrowserAPIs()',
-        'app.use(htmlPlugin)',
+        'app.use(htmlPlugin',
         'app.use(router)',
         'SMOKE_PASS_MARKER',
         'this.get_tree().quit(0)',
@@ -120,7 +120,7 @@ const fixtureApps = [
     sources: {
       'vue/src/main.ts': [
         'installBrowserAPIs()',
-        'app.use(htmlPlugin)',
+        'app.use(htmlPlugin',
         'SMOKE_PASS_MARKER',
         'this.get_tree().quit(0)',
       ],
