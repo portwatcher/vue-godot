@@ -30,6 +30,11 @@ export const releasePackageConfigs = [
     ],
   },
   {
+    name: 'vue-godot',
+    dir: 'packages/vue-godot',
+    expectedFiles: ['dist/index.js', 'dist/index.d.ts', 'dist/cli.js'],
+  },
+  {
     name: '@vue-godot/browser',
     dir: 'packages/browser',
     expectedFiles: [
@@ -59,6 +64,7 @@ const publishOrder = [
   '@vue-godot/browser',
   '@vue-godot/html',
   '@vue-godot/cli',
+  'vue-godot',
 ]
 
 export function releasePackageConfigsInPublishOrder() {

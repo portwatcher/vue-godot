@@ -5,7 +5,7 @@ import path from 'node:path'
 
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 const npxCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx'
-const cliSpec = process.env.VUE_GODOT_PUBLIC_CLI_SPEC ?? '@vue-godot/cli@latest'
+const cliSpec = process.env.VUE_GODOT_PUBLIC_CLI_SPEC ?? 'vue-godot@latest'
 
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
@@ -54,8 +54,8 @@ try {
   console.error(
     [
       '[smoke-public-cli] failed.',
-      'Expected causes before release: the published CLI is stale, or @vue-godot/browser / @vue-godot/html is not published.',
-      'Set VUE_GODOT_PUBLIC_CLI_SPEC=@vue-godot/cli@<version> to test a specific CLI version.',
+      'Expected causes before release: the published CLI alias is stale, @vue-godot/cli is stale, or @vue-godot/browser / @vue-godot/html is not published.',
+      'Set VUE_GODOT_PUBLIC_CLI_SPEC=vue-godot@<version> to test a specific CLI alias version.',
     ].join('\n'),
   )
   process.exit(1)

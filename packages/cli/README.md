@@ -13,8 +13,19 @@ npm install -D @vue-godot/cli
 Or run directly with `npx`:
 
 ```bash
-npx @vue-godot/cli <command> [options]
+npx vue-godot <command> [options]
 ```
+
+The unscoped [`vue-godot`](../vue-godot/README.md) npm package is a thin
+`npx` alias for this package. Use `@vue-godot/cli` directly when importing CLI
+helpers from scripts.
+
+## Exported Modules
+
+| Module                | Description                                      |
+| --------------------- | ------------------------------------------------ |
+| `@vue-godot/cli`      | Importable helpers such as `runDoctor()`         |
+| `@vue-godot/cli/cli`  | Executable CLI entry used by the `vue-godot` bin |
 
 ## Commands
 
@@ -82,10 +93,10 @@ profiles:
 **Example:**
 
 ```bash
-npx @vue-godot/cli create my-game --html
-npx @vue-godot/cli create app my-native-app
-npx @vue-godot/cli create game-ui my-hud
-npx @vue-godot/cli create app my-routed-app --router --storage --network --device-api
+npx vue-godot create my-game --html
+npx vue-godot create app my-native-app
+npx vue-godot create game-ui my-hud
+npx vue-godot create app my-routed-app --router --storage --network --device-api
 cd my-game
 npm run dev
 ```
@@ -139,7 +150,7 @@ The copied `vue/` template and root `gen/` ignore marker keep Godot's asset scan
 
 ```bash
 cd my-existing-godot-project
-npx @vue-godot/cli integrate
+npx vue-godot integrate
 npm install
 npm run gen:types
 npm run dev
@@ -167,7 +178,7 @@ vue-godot gen-types [options]
 
 ```bash
 cd apps/v-model
-npx @vue-godot/cli gen-types
+npx vue-godot gen-types
 ```
 
 Re-run whenever Godot typings are regenerated (e.g. after a Godot version upgrade).

@@ -215,7 +215,7 @@ function runPublicSmoke(cliVersion) {
   runRequired(npmCommand, ['run', 'smoke:public-cli'], {
     env: {
       ...process.env,
-      VUE_GODOT_PUBLIC_CLI_SPEC: `@vue-godot/cli@${cliVersion}`,
+      VUE_GODOT_PUBLIC_CLI_SPEC: `vue-godot@${cliVersion}`,
     },
     stdio: 'inherit',
   })
@@ -253,8 +253,8 @@ function main() {
   }
 
   if (!options.skipPublicSmoke) {
-    const cli = readJson('packages/cli/package.json')
-    runPublicSmoke(cli.version)
+    const cliAlias = readJson('packages/vue-godot/package.json')
+    runPublicSmoke(cliAlias.version)
   }
 
   console.log('[release-publish] publish flow complete')
