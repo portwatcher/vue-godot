@@ -146,7 +146,7 @@ Inline style inputs are intentionally limited to the Godot-backed subset below. 
 | `borderWidth`, `borderTopWidth`, `borderRightWidth`, `borderBottomWidth`, `borderLeftWidth` | Maps to `StyleBoxFlat` border widths. |
 | `borderRadius`, `borderTopLeftRadius`, `borderTopRightRadius`, `borderBottomRightRadius`, `borderBottomLeftRadius` | Maps to `StyleBoxFlat` corner radii. |
 | `color` | Maps text-capable controls to `theme_override_colors/font_color`. |
-| `fontSize` | Maps text-capable controls to `theme_override_font_sizes/font_size`. |
+| `fontSize` | Maps text-capable controls to `theme_override_font_sizes/font_size`, multiplied by the process-wide HTML font scale. |
 | `fontFamily` | Supports registered family names from `registerFontFamily()` and direct local font paths in CSS fallback-list order. |
 | `fontWeight` | Supports `'bold'` via a Godot `FontVariation` embolden override. |
 | `textTransform` | Supports `'uppercase'` on `<Span>` and `<Label>`. |
@@ -205,6 +205,17 @@ registerFontFamily('Inter', './fonts/Inter.ttf', [
 
 ```vue
 <Span :style="{ fontFamily: 'Inter, sans-serif', fontSize: 18 }">Hello</Span>
+```
+
+Native applications can apply the operating system's preferred text scale before
+mounting Vue with `setHtmlFontScale()`. The scale is process-wide, is clamped to
+`0.5` through `2`, and affects explicit numeric `fontSize` values on subsequent
+renders. `getHtmlFontScale()` returns the active value.
+
+```ts
+import { setHtmlFontScale } from '@vue-godot/html'
+
+setHtmlFontScale(androidFontScale)
 ```
 
 Percent `width` and `height` values map to Godot `Control` anchors from the top-left corner, for example `width: '50%'` sets `anchor_left = 0`, `anchor_right = 0.5`, and zero horizontal offsets. Godot `Container` nodes may still override child anchors during layout; use flex and size flags for proportional container layouts.
@@ -488,6 +499,7 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 | `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
 | `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
 | `registerFontFamily`, `unregisterFontFamily`, `parseFontFamilyList`                                                                     | Registers CSS `fontFamily` names to local Godot font resources and parses CSS fallback lists              |
+| `setHtmlFontScale`, `getHtmlFontScale`                                                                                                  | Sets or reads the process-wide multiplier applied to explicit numeric `fontSize` values                    |
 | `parseHtmlStyle`, `normalizeHtmlStyle`                                                                                                  | Parses CSS declaration strings and normalizes object/string/array style inputs to `HtmlStyle`             |
 | `defineHtmlTheme`, `createHtmlTheme`                                                                                                    | Defines structured theme tokens, component defaults, and state styles for `htmlPlugin`                    |
 | `createHtmlStyleSheet`                                                                                                                  | Parses explicit CSS-like stylesheet text with root tokens, type/class selectors, state pseudo-classes, and limited media queries |
@@ -679,6 +691,8 @@ const volume = ref(50)
 ```
 
 The component supports `horizontal`, `vertical`, `scrollbarMode`, `horizontalScrollbar`, `verticalScrollbar`, `scrollHorizontal`, `scrollVertical`, `scrollStep`, `horizontalStep`, `verticalStep`, `followFocus`, `style`, and `contentStyle`. Scrollbar modes are `'auto'`, `'always'`, `'never'`, and `'disabled'`.
+The inner content container expands to fill the viewport on both axes while
+still growing with its children along enabled scroll axes.
 
 ### VirtualList large-list scope
 
@@ -842,7 +856,7 @@ It supports `disabled`, `longPressDelay`, `minTouchTarget`, `style`, and default
 
 ### SafeAreaView layout scope
 
-`<SafeAreaView>` reads `DisplayServer.get_display_safe_area()` and pads content away from display cutouts or unsafe edges. It uses `DisplayServer.window_get_size()` to calculate right and bottom insets, falling back to `screen_get_size()` when needed:
+`<SafeAreaView>` reads `DisplayServer.get_display_safe_area()` and pads content away from display cutouts or unsafe edges. It uses `DisplayServer.window_get_size()` to calculate right and bottom insets, falling back to `screen_get_size()` when needed. Because Godot reports those values in physical window pixels, the component scales them into the configured project viewport before applying layout padding:
 
 ```vue
 <SafeAreaView
