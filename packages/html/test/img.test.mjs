@@ -35,11 +35,9 @@ test('does not set texture when src is undefined', async () => {
   assert.equal(vnode.props.texture, undefined)
 })
 
-test('maps sizing, object-fit, display, and alt metadata', async () => {
+test('maps sizing, object-fit, and display', async () => {
   const vnode = await renderImg({
     src: './image.png',
-    alt: 'Status chart',
-    accessibilityHint: 'Updated every frame',
     style: {
       width: 160,
       height: 90,
@@ -53,7 +51,6 @@ test('maps sizing, object-fit, display, and alt metadata', async () => {
   assert.equal(vnode.props.expand_mode, 1)
   assert.equal(vnode.props.stretch_mode, 6)
   assert.equal(vnode.props.visible, false)
-  assert.equal(vnode.props.tooltip_text, 'Status chart\nUpdated every frame')
 })
 
 test('maps percent style sizes to anchors', async () => {

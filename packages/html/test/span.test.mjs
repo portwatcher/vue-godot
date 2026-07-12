@@ -69,12 +69,3 @@ test('maps text style, sizing, visibility, and opacity props', () => {
   assert.equal(modulate.__kind, 'color')
   assert.equal(modulate.a, 0.4)
 })
-
-test('maps accessibility labels and hints to tooltip text', () => {
-  const vnode = renderSpan({
-    'aria-label': 'Status',
-    accessibilityHint: 'Updated automatically',
-  })
-
-  assert.equal(vnode.props.tooltip_text, 'Status\nUpdated automatically')
-})

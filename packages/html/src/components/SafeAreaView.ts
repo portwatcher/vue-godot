@@ -1,9 +1,5 @@
 import { defineComponent, h } from '@vue/runtime-core'
 import {
-  accessibilityPropOptions,
-  applyAccessibilityProps,
-} from '../utils/accessibility.js'
-import {
   createBackgroundPanelStyle,
   createBackgroundTexturePanelProps,
   createBackgroundTexturePanelStyle,
@@ -38,7 +34,6 @@ export const SafeAreaView = defineComponent({
       type: Object as () => Partial<SafeAreaInsets>,
       default: undefined,
     },
-    ...accessibilityPropOptions,
     style: htmlStyleProp,
     contentStyle: htmlStyleProp,
   },
@@ -62,7 +57,6 @@ export const SafeAreaView = defineComponent({
       )
       const nodeProps: Record<string, unknown> = {}
       applyCommonControlStyleProps(nodeProps, style, 'SafeAreaView')
-      applyAccessibilityProps(nodeProps, props)
 
       const content = h(
         Div,

@@ -222,7 +222,7 @@ test('html README documents every registered component', () => {
   }
 })
 
-test('html accessibility docs match the checked-in Godot role support', () => {
+test('html accessibility docs match the checked-in GodotJS bindings', () => {
   const typingsDir = path.join(repoRoot, 'packages/runtime-tscn/typings')
   const typingFiles = fs
     .readdirSync(typingsDir)
@@ -236,10 +236,13 @@ test('html accessibility docs match the checked-in Godot role support', () => {
   assert.doesNotMatch(
     generatedTypings,
     /\b(?:get|set)\s+(?:accessibility_|accessible_|aria_)?role\b|\b(?:get|set)\s+accessibility_/i,
-    'If Godot exposes portable accessibility role bindings, map role props instead of documenting them as unavailable.',
+    'If GodotJS exposes portable accessibility bindings, revisit the documented unsupported status.',
   )
-  assert.match(compatibility, /Native ARIA role mapping is not implemented/)
-  assert.match(htmlReadme, /Native ARIA role mapping is not implemented/)
+  assert.match(
+    compatibility,
+    /accessibility-tree integration are not exposed on the\s+current GodotJS baseline/,
+  )
+  assert.match(htmlReadme, /does not expose ARIA-style labels/)
 })
 
 test('device compatibility rows cover core registry, adapters, and submodules', () => {

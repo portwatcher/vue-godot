@@ -1,9 +1,5 @@
 import { defineComponent, h, ref, type VNode } from '@vue/runtime-core'
 import {
-  accessibilityPropOptions,
-  applyAccessibilityProps,
-} from '../utils/accessibility.js'
-import {
   applyControlSizeProps,
   applyDisplayAndOpacityProps,
   applyFontStyleProps,
@@ -175,7 +171,6 @@ export const Select = defineComponent({
       type: Boolean,
       default: false,
     },
-    ...accessibilityPropOptions,
     ...focusPropOptions,
     ...touchTargetPropOptions,
     style: htmlStyleProp,
@@ -260,7 +255,6 @@ export const Select = defineComponent({
       applyMinTouchTargetProps(nodeProps, props)
       applyDisplayAndOpacityProps(nodeProps, style)
       applyTransformStyleProps(nodeProps, style)
-      applyAccessibilityProps(nodeProps, props)
 
       // Sync items imperatively after the vnode is mounted/patched
       nodeProps['onVnodeMounted'] = (vnode: VNode) =>

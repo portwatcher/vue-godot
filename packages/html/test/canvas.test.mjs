@@ -46,9 +46,8 @@ test('Canvas maps percent style sizes to anchors without default pixel size', ()
   assert.equal(vnode.props.clip_contents, true)
 })
 
-test('Canvas maps style visibility, opacity, and accessibility metadata', () => {
+test('Canvas maps style visibility and opacity', () => {
   const vnode = renderCanvas({
-    title: 'Draw target',
     style: {
       display: 'none',
       opacity: 0.5,
@@ -60,8 +59,6 @@ test('Canvas maps style visibility, opacity, and accessibility metadata', () => 
   assert.equal(vnode.props['custom_minimum_size:x'], 240)
   assert.equal(vnode.props['custom_minimum_size:y'], 120)
   assert.equal(vnode.props.visible, false)
-  assert.equal(vnode.props.tooltip_text, 'Draw target')
-
   const modulate = vnode.props.modulate
   assert.equal(modulate.__mock, true)
   assert.equal(modulate.__kind, 'color')

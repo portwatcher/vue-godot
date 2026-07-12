@@ -369,36 +369,24 @@ export default class Root extends VBoxContainer {
     await this.nextFrame()
 
     const textureRects = findNodesByClass(this, 'TextureRect')
-    const image = findNodeByStringProperty(
-      textureRects,
-      'tooltip_text',
-      'Godot icon',
-    )
-    const svg = findNodeByStringProperty(
-      textureRects,
-      'tooltip_text',
-      'SVG icon',
-    )
-
-    if (!image || !svg) {
+    if (textureRects.length < 2) {
       throw new Error('expected Img and Svg TextureRect nodes')
     }
 
-    for (const node of [image, svg]) {
-      let texture: unknown = null
+    let loadedTextureCount = 0
+    for (const node of textureRects) {
       for (let attempt = 0; attempt < 5; attempt++) {
-        texture = node.get('texture')
+        const texture = node.get('texture')
         if (texture != null) {
+          loadedTextureCount += 1
           break
         }
         await this.nextFrame()
       }
+    }
 
-      if (texture == null) {
-        const tooltip =
-          getStringProperty(node, 'tooltip_text') ?? node.get_class()
-        throw new Error(`expected loaded texture for ${tooltip}`)
-      }
+    if (loadedTextureCount < 2) {
+      throw new Error('expected loaded textures for Img and Svg')
     }
 
     console.log('[vue-godot-smoke] assets=ok')

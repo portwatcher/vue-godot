@@ -37,7 +37,6 @@ test('renders a Godot LinkButton with text and href uri', () => {
   assert.equal(vnode.type, 'LinkButton')
   assert.equal(vnode.props.text, 'Example')
   assert.equal(vnode.props.uri, 'https://example.com')
-  assert.equal(vnode.props.tooltip_text, 'https://example.com')
 })
 
 test('does not set uri when disabled', () => {

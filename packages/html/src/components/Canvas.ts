@@ -1,9 +1,5 @@
 import { defineComponent, h } from '@vue/runtime-core'
 import {
-  accessibilityPropOptions,
-  applyAccessibilityProps,
-} from '../utils/accessibility.js'
-import {
   applyTransformStyleProps,
   applyMotionStyleProps,
 } from '../utils/controlStyle.js'
@@ -65,7 +61,6 @@ export const Canvas = defineComponent({
       type: Number,
       default: DEFAULT_HEIGHT,
     },
-    ...accessibilityPropOptions,
     style: htmlStyleProp,
   },
   setup(props, context) {
@@ -109,7 +104,6 @@ export const Canvas = defineComponent({
         nodeProps['modulate'] = createOpacityModulate(style.opacity)
       }
       applyTransformStyleProps(nodeProps, style)
-      applyAccessibilityProps(nodeProps, props)
       applyMotionStyleProps(nodeProps, style)
 
       return h('Control', nodeProps)

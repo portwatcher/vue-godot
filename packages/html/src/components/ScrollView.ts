@@ -1,9 +1,5 @@
 import { defineComponent, h } from '@vue/runtime-core'
 import {
-  accessibilityPropOptions,
-  applyAccessibilityProps,
-} from '../utils/accessibility.js'
-import {
   applyFiniteNumberProp,
   applyScrollContainerStyleProps,
   toScrollMode,
@@ -85,7 +81,6 @@ export const ScrollView = defineComponent({
       type: Boolean,
       default: false,
     },
-    ...accessibilityPropOptions,
   },
   setup(props, { attrs, slots }) {
     const resolveStyle = useHtmlComponentStyleResolver('ScrollView', attrs)
@@ -113,7 +108,6 @@ export const ScrollView = defineComponent({
         resolveStyle(props.style).style,
         'ScrollView',
       )
-      applyAccessibilityProps(nodeProps, props)
       applyFiniteNumberProp(
         nodeProps,
         'scroll_horizontal',

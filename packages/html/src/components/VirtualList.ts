@@ -7,10 +7,6 @@ import {
 } from '@vue/runtime-core'
 import { Callable } from 'godot'
 import {
-  accessibilityPropOptions,
-  applyAccessibilityProps,
-} from '../utils/accessibility.js'
-import {
   applyFiniteNumberProp,
   applyScrollContainerStyleProps,
   toScrollMode,
@@ -224,7 +220,6 @@ export const VirtualList = defineComponent({
     style: htmlStyleProp,
     contentStyle: htmlStyleProp,
     itemStyle: htmlStyleProp,
-    ...accessibilityPropOptions,
   },
   emits: ['scroll', 'scrollStarted', 'scrollEnded', 'update:scrollOffset'],
   setup(props, { attrs, emit, slots }) {
@@ -337,7 +332,6 @@ export const VirtualList = defineComponent({
       }
 
       applyScrollContainerStyleProps(nodeProps, style, 'VirtualList')
-      applyAccessibilityProps(nodeProps, props)
       applyFiniteNumberProp(nodeProps, 'scroll_vertical', scrollOffset)
       applyFiniteNumberProp(
         nodeProps,

@@ -136,32 +136,6 @@ test('defaults to EXPAND_IGNORE_SIZE + KEEP_ASPECT_CENTERED when size set withou
 })
 
 // -----------------------------------------------------------------------
-// Alt / tooltip
-// -----------------------------------------------------------------------
-
-test('maps alt prop to tooltip_text', async () => {
-  const vnode = await renderSvg({
-    src: './icon.svg',
-    alt: 'Application icon',
-  })
-  assert.equal(vnode.props.tooltip_text, 'Application icon')
-})
-
-test('combines alt fallback label with accessibility hints', async () => {
-  const vnode = await renderSvg({
-    src: './icon.svg',
-    alt: 'Application icon',
-    accessibilityHint: 'Vector asset',
-  })
-  assert.equal(vnode.props.tooltip_text, 'Application icon\nVector asset')
-})
-
-test('does not set tooltip_text when alt is absent', async () => {
-  const vnode = await renderSvg({ src: './icon.svg' })
-  assert.equal(vnode.props.tooltip_text, undefined)
-})
-
-// -----------------------------------------------------------------------
 // Data-URI source
 // -----------------------------------------------------------------------
 

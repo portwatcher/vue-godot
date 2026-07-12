@@ -2,10 +2,6 @@ import { defineComponent, h, ref, shallowRef, watch } from '@vue/runtime-core'
 import type { Texture2D } from 'godot'
 import { Image, ImageTexture, ResourceLoader } from 'godot'
 import {
-  accessibilityPropOptions,
-  applyAccessibilityProps,
-} from '../utils/accessibility.js'
-import {
   applyControlSizeProps,
   applyTransformStyleProps,
   applyMotionStyleProps,
@@ -182,11 +178,6 @@ export const Svg = defineComponent({
       type: Number,
       default: 1,
     },
-    alt: {
-      type: String,
-      default: undefined,
-    },
-    ...accessibilityPropOptions,
   },
   setup(props, context) {
     const resolveStyle = useHtmlComponentStyleResolver('Svg', context?.attrs)
@@ -289,14 +280,6 @@ export const Svg = defineComponent({
         nodeProps['expand_mode'] = ExpandMode.EXPAND_IGNORE_SIZE
         nodeProps['stretch_mode'] = StretchMode.STRETCH_KEEP_ASPECT_CENTERED
       }
-
-      // Alt → tooltip_text (accessibility hint)
-      if (props.alt) {
-        nodeProps['tooltip_text'] = props.alt
-      }
-      applyAccessibilityProps(nodeProps, props, {
-        label: props.alt,
-      })
 
       // display: none
       if (style?.display === 'none') {

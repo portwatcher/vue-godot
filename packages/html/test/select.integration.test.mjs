@@ -244,10 +244,9 @@ test('suppresses selection events when Select is disabled', () => {
   assert.deepEqual(emitted, [])
 })
 
-test('maps style, touch target, and accessibility props', () => {
+test('maps style and touch target props', () => {
   const vnode = renderSelect({
     minTouchTarget: 72,
-    title: 'Fruit selector',
     style: `
       width: 120px;
       height: 32px;
@@ -261,8 +260,6 @@ test('maps style, touch target, and accessibility props', () => {
   assert.equal(vnode.props['custom_minimum_size:x'], 120)
   assert.equal(vnode.props['custom_minimum_size:y'], 72)
   assert.equal(vnode.props.visible, false)
-  assert.equal(vnode.props.tooltip_text, 'Fruit selector')
-
   const fontColor = vnode.props['theme_override_colors/font_color']
   assert.equal(fontColor.__mock, true)
   assert.equal(fontColor.__kind, 'color')

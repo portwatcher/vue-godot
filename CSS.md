@@ -522,7 +522,6 @@ globally enough.
 | `display`, `flex-direction`, `flex-wrap`, `columns` | Component layout mapping | Belongs in `Div` and content wrappers, not global Godot Theme. |
 | `overflow` | Component prop mapping | Depends on backing control support. |
 | `transition` and `animation*` | Component motion helper | Existing Tween-backed subset should be reused. |
-| `accessibilityLabel` defaults | Component props only | Not CSS. Do not theme accessibility metadata through CSS. |
 
 ### Bucket C: Wrapper-backed
 

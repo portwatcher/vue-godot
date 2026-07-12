@@ -1,9 +1,5 @@
 import { defineComponent, h } from '@vue/runtime-core'
 import {
-  accessibilityPropOptions,
-  applyAccessibilityProps,
-} from '../utils/accessibility.js'
-import {
   createBackgroundPanelStyle,
   createBackgroundTexturePanelProps,
   createBackgroundTexturePanelStyle,
@@ -44,7 +40,6 @@ export const Form = defineComponent({
       type: Boolean,
       default: false,
     },
-    ...accessibilityPropOptions,
     ...focusPropOptions,
     ...touchTargetPropOptions,
     style: htmlStyleProp,
@@ -90,7 +85,6 @@ export const Form = defineComponent({
 
       applyCommonControlStyleProps(nodeProps, style, 'Form')
       applyMinTouchTargetProps(nodeProps, props)
-      applyAccessibilityProps(nodeProps, props)
       applyFocusTraversalProps(nodeProps, props)
       if (props.disabled !== true) {
         applyAutoFocusProp(nodeProps, props)

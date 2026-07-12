@@ -141,7 +141,6 @@ test('CameraView renders a selected CameraTexture in a TextureRect', () => {
   const vnode = renderCameraView({
     feedIndex: 1,
     active: true,
-    alt: 'Camera preview',
     style: { width: 320, height: 180, objectFit: 'cover' },
   })
 
@@ -154,7 +153,6 @@ test('CameraView renders a selected CameraTexture in a TextureRect', () => {
   assert.equal(vnode.props['custom_minimum_size:y'], 180)
   assert.equal(vnode.props.expand_mode, 1)
   assert.equal(vnode.props.stretch_mode, 6)
-  assert.equal(vnode.props.tooltip_text, 'Camera preview')
 })
 
 test('CameraView renders without a texture when no feed is available', () => {

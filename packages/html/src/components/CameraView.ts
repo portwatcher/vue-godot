@@ -1,10 +1,6 @@
 import { defineComponent, h, shallowRef, watch } from '@vue/runtime-core'
 import type { Texture2D } from 'godot'
 import {
-  accessibilityPropOptions,
-  applyAccessibilityProps,
-} from '../utils/accessibility.js'
-import {
   applyControlSizeProps,
   applyTransformStyleProps,
   applyMotionStyleProps,
@@ -39,11 +35,6 @@ export const CameraView = defineComponent({
       type: Boolean,
       default: true,
     },
-    alt: {
-      type: String,
-      default: undefined,
-    },
-    ...accessibilityPropOptions,
     style: htmlStyleProp,
   },
   setup(props, context) {
@@ -89,9 +80,6 @@ export const CameraView = defineComponent({
       }
 
       applyTransformStyleProps(nodeProps, style)
-      applyAccessibilityProps(nodeProps, props, {
-        label: props.alt,
-      })
       applyMotionStyleProps(nodeProps, style)
 
       return h('TextureRect', nodeProps)

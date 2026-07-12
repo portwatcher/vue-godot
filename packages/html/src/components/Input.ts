@@ -1,9 +1,5 @@
 import { defineComponent, h, ref } from '@vue/runtime-core'
 import {
-  accessibilityPropOptions,
-  applyAccessibilityProps,
-} from '../utils/accessibility.js'
-import {
   applyControlSizeProps,
   applyDisplayAndOpacityProps,
   applyFontStyleProps,
@@ -173,7 +169,6 @@ export const Input = defineComponent({
       type: Number,
       default: undefined,
     },
-    ...accessibilityPropOptions,
     ...focusPropOptions,
     ...touchTargetPropOptions,
     style: htmlStyleProp,
@@ -309,7 +304,6 @@ export const Input = defineComponent({
       applyMinTouchTargetProps(nodeProps, props)
       applyDisplayAndOpacityProps(nodeProps, style)
       applyTransformStyleProps(nodeProps, style)
-      applyAccessibilityProps(nodeProps, props)
       applyFocusTraversalProps(nodeProps, props)
       if (props.disabled !== true) {
         applyAutoFocusProp(nodeProps, props)

@@ -1,10 +1,6 @@
 import { defineComponent, h, ref, shallowRef, watch } from '@vue/runtime-core'
 import type { Texture2D } from 'godot'
 import {
-  accessibilityPropOptions,
-  applyAccessibilityProps,
-} from '../utils/accessibility.js'
-import {
   applyControlSizeProps,
   applyTransformStyleProps,
   applyMotionStyleProps,
@@ -45,11 +41,6 @@ export const Img = defineComponent({
       default: undefined,
     },
     style: htmlStyleProp,
-    alt: {
-      type: String,
-      default: undefined,
-    },
-    ...accessibilityPropOptions,
   },
   setup(props, context) {
     const resolveStyle = useHtmlComponentStyleResolver('Img', context?.attrs)
@@ -103,14 +94,6 @@ export const Img = defineComponent({
 
       // Flip — not supported; use CSS transform: scaleX(-1)/scaleY(-1)
       // in a future style update if needed.
-
-      // Alt → tooltip_text (accessibility hint)
-      if (props.alt) {
-        nodeProps['tooltip_text'] = props.alt
-      }
-      applyAccessibilityProps(nodeProps, props, {
-        label: props.alt,
-      })
 
       // display: none
       if (style?.display === 'none') {

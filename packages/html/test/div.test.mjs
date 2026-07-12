@@ -323,9 +323,8 @@ test('maps transform style to root container props', () => {
   assert.equal(vnode.props.rotation, Math.PI / 2)
 })
 
-test('maps accessibility and transform props to the final wrapped root', () => {
+test('maps transform props to the final wrapped root', () => {
   const vnode = renderDivWithProps({
-    title: 'Wrapped panel',
     style: {
       margin: 6,
       padding: 8,
@@ -335,7 +334,6 @@ test('maps accessibility and transform props to the final wrapped root', () => {
   })
 
   assert.equal(vnode.type, 'MarginContainer')
-  assert.equal(vnode.props.tooltip_text, 'Wrapped panel')
   assert.equal(vnode.props['position:x'], 3)
   assert.equal(vnode.props['position:y'], 4)
   assert.equal(vnode.props['scale:x'], 2)
@@ -343,7 +341,6 @@ test('maps accessibility and transform props to the final wrapped root', () => {
 
   const panel = vnode.children[0]
   assert.equal(panel.type, 'PanelContainer')
-  assert.equal('tooltip_text' in panel.props, false)
   assert.equal('position:x' in panel.props, false)
 })
 

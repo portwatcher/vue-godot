@@ -1,9 +1,5 @@
 import { defineComponent, h, ref, type VNode } from '@vue/runtime-core'
 import {
-  accessibilityPropOptions,
-  applyAccessibilityProps,
-} from '../utils/accessibility.js'
-import {
   applyControlSizeProps,
   applyDisplayAndOpacityProps,
   applyFontStyleProps,
@@ -88,7 +84,6 @@ export const Textarea = defineComponent({
       type: Number,
       default: undefined,
     },
-    ...accessibilityPropOptions,
     ...focusPropOptions,
     ...touchTargetPropOptions,
     style: htmlStyleProp,
@@ -167,7 +162,6 @@ export const Textarea = defineComponent({
       applyMinTouchTargetProps(nodeProps, props)
       applyDisplayAndOpacityProps(nodeProps, style)
       applyTransformStyleProps(nodeProps, style)
-      applyAccessibilityProps(nodeProps, props)
 
       nodeProps['onVnodeMounted'] = (vnode: VNode) => {
         textEditNode = vnode.el

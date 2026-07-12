@@ -1,9 +1,5 @@
 import { defineComponent, h } from '@vue/runtime-core'
 import {
-  accessibilityPropOptions,
-  applyAccessibilityProps,
-} from '../utils/accessibility.js'
-import {
   createBackgroundPanelStyle,
   createBackgroundTexturePanelProps,
   createBackgroundTexturePanelStyle,
@@ -44,7 +40,6 @@ export const Overlay = defineComponent({
       default: true,
     },
     ...focusContainmentPropOptions,
-    ...accessibilityPropOptions,
     style: htmlStyleProp,
     contentStyle: htmlStyleProp,
   },
@@ -82,7 +77,6 @@ export const Overlay = defineComponent({
       }
 
       applyCommonControlStyleProps(nodeProps, style, 'Overlay')
-      applyAccessibilityProps(nodeProps, props)
       focusContainment.apply(nodeProps, props, {
         open: visible,
         selfLoopTraversal: true,

@@ -101,7 +101,7 @@ target devices.
 | `document.querySelector`, DOM refs, `HTMLElement` methods | Vue refs to components or Godot node instances. |
 | CSS cascade, stylesheets, computed styles | Explicit `createHtmlStyleSheet()` registration or global CSS imports through `@vue-godot/html/vite`, structured `defineHtmlTheme()` defaults, inline style overrides, limited viewport media buckets, Godot containers, and explicit component props. No CSSOM or computed style reads. |
 | DOM event bubbling/capture | Vue component events and Godot signals. |
-| Browser focus and ARIA tree | Godot focus traversal props, tooltips/labels/hints, and documented accessibility limits. |
+| Browser focus and ARIA tree | Godot focus traversal props cover keyboard/controller navigation; screen-reader semantics are unsupported until the GodotJS baseline exposes Godot's native accessibility API. |
 | Service workers, IndexedDB, Web Workers | Treat as unsupported unless a real project-specific backend is added. |
 | Full-page navigation and reloads | In-memory routing, app state restoration, and Godot scene/app lifecycle. |
 

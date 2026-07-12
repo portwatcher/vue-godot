@@ -1,9 +1,5 @@
 import { defineComponent, h, ref } from '@vue/runtime-core'
 import {
-  accessibilityPropOptions,
-  applyAccessibilityProps,
-} from '../utils/accessibility.js'
-import {
   createBackgroundPanelStyle,
   createBackgroundTexturePanelProps,
   createBackgroundTexturePanelStyle,
@@ -57,7 +53,6 @@ export const Pressable = defineComponent({
       type: Number,
       default: DEFAULT_LONG_PRESS_DELAY,
     },
-    ...accessibilityPropOptions,
     ...focusPropOptions,
     ...touchTargetPropOptions,
     style: htmlStyleProp,
@@ -209,7 +204,6 @@ export const Pressable = defineComponent({
 
       applyCommonControlStyleProps(nodeProps, style, 'Pressable')
       applyMinTouchTargetProps(nodeProps, props)
-      applyAccessibilityProps(nodeProps, props)
       applyFocusTraversalProps(nodeProps, props)
       if (props.disabled !== true) {
         applyAutoFocusProp(nodeProps, props)

@@ -12,10 +12,6 @@ import type {
   VNodeNormalizedChildren,
 } from '@vue/runtime-core'
 import {
-  accessibilityPropOptions,
-  applyAccessibilityProps,
-} from '../utils/accessibility.js'
-import {
   createBackgroundPanelStyle,
   createBackgroundTexturePanelProps,
   createBackgroundTexturePanelStyle,
@@ -279,7 +275,6 @@ function withRootProps(
 export const Div = defineComponent({
   name: 'Div',
   props: {
-    ...accessibilityPropOptions,
     style: htmlStyleProp,
   },
   setup(props, { attrs, slots }) {
@@ -299,7 +294,6 @@ export const Div = defineComponent({
         props: godotProps,
       } = resolveContainerTag(style)
       const rootProps: Record<string, unknown> = {}
-      applyAccessibilityProps(rootProps, props)
       applyTransformStyleProps(rootProps, style)
       applyMotionStyleProps(rootProps, style)
       const slotChildren = slots.default?.()

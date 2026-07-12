@@ -1,9 +1,5 @@
 import { defineComponent, h } from '@vue/runtime-core'
 import {
-  accessibilityPropOptions,
-  applyAccessibilityProps,
-} from '../utils/accessibility.js'
-import {
   applyCommonControlStyleProps,
   type GodotPropBag,
 } from '../utils/controlStyle.js'
@@ -41,7 +37,6 @@ export const A = defineComponent({
       type: Boolean,
       default: false,
     },
-    ...accessibilityPropOptions,
     ...focusPropOptions,
     ...touchTargetPropOptions,
     style: htmlStyleProp,
@@ -58,7 +53,6 @@ export const A = defineComponent({
 
       if (props.href && !props.disabled) {
         nodeProps['uri'] = props.href
-        nodeProps['tooltip_text'] = props.href
       }
 
       if (props.disabled) {
@@ -73,9 +67,6 @@ export const A = defineComponent({
         'A',
       )
       applyMinTouchTargetProps(nodeProps, props)
-      applyAccessibilityProps(nodeProps, props, {
-        hint: props.disabled ? undefined : props.href,
-      })
       applyFocusTraversalProps(nodeProps, props)
       if (props.disabled !== true) {
         applyAutoFocusProp(nodeProps, props)

@@ -1,8 +1,4 @@
 import { defineComponent, h } from '@vue/runtime-core'
-import {
-  accessibilityPropOptions,
-  applyAccessibilityProps,
-} from '../utils/accessibility.js'
 import { applyCommonControlStyleProps } from '../utils/controlStyle.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
 import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
@@ -35,7 +31,6 @@ export const ActivityIndicator = defineComponent({
       type: String as () => ProgressFillMode,
       default: 'begin-to-end',
     },
-    ...accessibilityPropOptions,
     style: htmlStyleProp,
   },
   setup(props, context) {
@@ -70,7 +65,6 @@ export const ActivityIndicator = defineComponent({
         resolveStyle(props.style).style,
         'ActivityIndicator',
       )
-      applyAccessibilityProps(nodeProps, props)
 
       return h('ProgressBar', nodeProps)
     }

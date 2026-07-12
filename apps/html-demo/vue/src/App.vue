@@ -2,7 +2,6 @@
   <!-- ===== Section: Div layout ===== -->
   <Span>--- Div layout ---</Span>
   <Div
-    title="Responsive Div layout demo"
     :style="{
       flexDirection: direction,
       flexWrap: wrap,
@@ -259,8 +258,6 @@
   <Span>--- Button ---</Span>
   <Div :style="{ flexDirection: 'row', gap: 8 }">
     <Button
-      aria-label="Increment button demo counter"
-      accessibility-hint="Adds one to the visible click count"
       :min-touch-target="44"
       :style="{ fontWeight: 'bold' }"
       @click="onButtonClick"
@@ -274,8 +271,6 @@
   <!-- ===== Section: Pressable ===== -->
   <Span>--- Pressable ---</Span>
   <Pressable
-    accessibility-label="Pressable demo surface"
-    accessibility-hint="Activates on pointer, keyboard, or controller accept"
     :disabled="pressableDisabled"
     :long-press-delay="400"
     :min-touch-target="48"
@@ -327,7 +322,6 @@
   <A
     href="https://godotengine.org"
     target="_blank"
-    title="Godot website"
     :min-touch-target="44"
     :style="{ fontSize: 18, color: '#44aaff' }"
     @click="onLinkClick"
@@ -354,8 +348,6 @@
       <Input
         v-model="formName"
         placeholder="Ada"
-        accessibility-label="Display name"
-        accessibility-hint="Required field"
       ></Input>
     </Label>
     <Div :style="{ flexDirection: 'row', gap: 8 }">
@@ -417,7 +409,6 @@
     v-model="textValue"
     placeholder="Type something..."
     :max-length="40"
-    title="Text input demo"
     :min-touch-target="48"
     auto-focus
     focus-next="."
@@ -429,7 +420,6 @@
   <Input
     v-model="readonlyValue"
     readonly
-    title="Readonly input demo"
     :style="{ width: 220 }"
   ></Input>
   <Span>{{ `Readonly input: ${readonlyValue}` }}</Span>
@@ -498,7 +488,6 @@
     placeholder="Multi-line text..."
     :rows="3"
     :cols="40"
-    title="Multiline text demo"
     :min-touch-target="72"
     :style="{ fontSize: 14 }"
   ></Textarea>
@@ -508,7 +497,6 @@
   <Span>--- Select ---</Span>
   <Select
     v-model="selectedFruit"
-    title="Fruit selector"
     :min-touch-target="48"
     :style="{ width: 180, fontSize: 14 }"
   >
@@ -522,14 +510,12 @@
   <Span>--- Img ---</Span>
   <Img
     :src="demoSvgDataUri"
-    alt="Godot icon"
     :style="{ width: 64, height: 64 }"
   ></Img>
 
   <!-- ===== Section: CameraView ===== -->
   <Span>--- CameraView ---</Span>
   <CameraView
-    alt="Camera preview"
     :style="{ width: 320, height: 180, objectFit: 'cover' }"
   ></CameraView>
 
@@ -537,7 +523,6 @@
   <Span>--- Svg ---</Span>
   <Svg
     :src="demoSvgDataUri"
-    alt="SVG icon"
     :scale="2"
     :style="{ width: 64, height: 64 }"
   ></Svg>
@@ -548,7 +533,6 @@
     ref="canvasRef"
     :width="200"
     :height="80"
-    title="Canvas draw target"
     :style="{ opacity: 0.95 }"
   ></Canvas>
 
@@ -590,7 +574,6 @@
     :loop="videoLoop"
     :muted="videoMuted"
     :volume="videoVolume"
-    title="Demo video"
     :style="{ width: 160, height: 120, opacity: videoMuted ? 0.85 : 1 }"
     @ended="onVideoEnded"
   ></Video>

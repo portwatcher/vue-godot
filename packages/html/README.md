@@ -360,7 +360,6 @@ const snapshot = captureCameraImage({ feedIndex: 0 })
 <CameraView
   :feed-index="0"
   :active="true"
-  alt="Camera preview"
   :style="{ width: 320, height: 180, objectFit: 'cover' }"
 ></CameraView>
 ```
@@ -379,21 +378,18 @@ pipeline; it only uses `CameraServer` feeds that Godot already reports.
 
 Use `navigator.mediaDevices.getUserMedia({ audio: true })` through a registered `@vue-godot/device` `MediaDevicesAdapter` when an app needs microphone input. Native plugins or app-specific adapters still own permission prompts, capture format, recording/encoding, storage, and platform resource cleanup. See `docs/permissions.md` and `docs/plugins.md` for the adapter and export setup.
 
-### Accessibility Metadata
+### Screen-reader accessibility is unsupported
 
-Most Control-backed components accept `accessibilityLabel`, `ariaLabel`, `aria-label`, `accessibilityHint`, and `title`. These map to Godot `Control.tooltip_text`, the stable metadata surface exposed by the supported Godot bindings:
+`@vue-godot/html` does not expose ARIA-style labels, descriptions, roles, live
+regions, or an accessibility tree. Tooltip text is not a screen-reader semantic,
+so earlier tooltip-backed compatibility props were removed rather than presenting
+them as accessibility support.
 
-```vue
-<Button
-  aria-label="Save changes"
-  accessibility-hint="Writes settings to storage"
-  @click="save"
->
-  Save
-</Button>
-```
-
-When both a label and hint are provided, the tooltip text is joined on separate lines. `<Img>`, `<CameraView>`, and `<Svg>` use `alt` as a fallback label, while `<A>` keeps `href` as a fallback hint. Native ARIA role mapping is not implemented because the checked-in Godot bindings do not expose a portable `Control` role property yet.
+Adding real screen-reader metadata requires upgrading the GodotJS baseline and
+generated bindings to a Godot version that exposes the native accessibility API.
+Platform support must then be implemented and validated separately. Godot focus
+navigation below remains available, but it does not make controls discoverable to
+TalkBack, VoiceOver, or desktop screen readers by itself.
 
 ### Focus Management
 
@@ -446,9 +442,9 @@ For controller fallback behavior, set `autoFocus` on the first interactive contr
 
 ### Platform Limits
 
-HTML-like components are Godot nodes, not browser DOM elements. The current accessibility and input surface is intentionally limited to stable Godot-backed behavior:
+HTML-like components are Godot nodes, not browser DOM elements. The current input surface is intentionally limited to stable Godot-backed behavior:
 
-- Accessibility labels, hints, and titles map to `Control.tooltip_text`; native ARIA role mapping is not available in the checked-in Godot bindings.
+- Screen-reader labels, descriptions, roles, live regions, and accessibility-tree integration are unsupported on the current GodotJS baseline.
 - Focus management supports mount-time focus, explicit Godot focus graph props, and Godot-native focus containment/restoration for `<Overlay>`, `<Modal>`, and `<Dialog>`; browser DOM tab-order emulation is not implemented.
 - Keyboard, controller, and back behavior use Godot input actions such as `ui_accept` and `ui_cancel`; DOM keyboard events and document-level shortcut bubbling are not emulated.
 - `minTouchTarget` changes the Control minimum size; it does not create invisible hit slop outside the Godot Control rect.
@@ -460,11 +456,11 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 | ------------------- | ---------------------------------------------------------------------- | --------------------- |
 | `<ActivityIndicator>` | `ProgressBar`                                                        | `active`, `size`, `fill`, `style` |
 | `<Dialog>`          | `AcceptDialog`                                                         | `v-model`, `title`, `message`, `confirmText`, `trapFocus`, `restoreFocus` |
-| `<Div>`             | `HBoxContainer` / `VBoxContainer` / `*FlowContainer` / `GridContainer` plus style wrappers | `style` (layout/background/border/motion), accessibility props |
+| `<Div>`             | `HBoxContainer` / `VBoxContainer` / `*FlowContainer` / `GridContainer` plus style wrappers | `style` (layout/background/border/motion) |
 | `<Form>`            | `PanelContainer` plus inner `<Div>`                                    | `disabled`, `submitOnAccept`, `resetOnCancel`, `contentStyle` |
 | `<CameraView>`      | `TextureRect` with `CameraTexture`                                     | `feedId`, `feedIndex`, `active`, `whichFeed`, `style` |
 | `<Canvas>`          | `Control`                                                              | `width`, `height`, `style`, template ref |
-| `<Img>`             | `TextureRect`                                                          | `src`, `alt`, `style` (`width`, `height`, `objectFit`, `display`) |
+| `<Img>`             | `TextureRect`                                                          | `src`, `style` (`width`, `height`, `objectFit`, `display`) |
 | `<KeyboardAvoidingView>` | `MarginContainer` / `PanelContainer`                              | `behavior`, `keyboardVerticalOffset`, `fallbackKeyboardHeight`, `contentStyle` |
 | `<Label>`           | `Label` / inner `<Div>` wrapper                                        | `text`, `required`, `requiredIndicator`, `contentStyle` |
 | `<Modal>`           | `Window`                                                               | `v-model`, `title`, `width`, `height`, `trapFocus`, `restoreFocus` |
@@ -476,15 +472,15 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 | `<ScreenStack>`     | `<Screen>` plus active named slot                                      | `v-model`, `routes`, `initialRouteName`, `contentStyle` |
 | `<ScrollView>`      | `ScrollContainer`                                                      | `horizontal`, `vertical`, `scrollbarMode`, `contentStyle` |
 | `<VirtualList>`     | `ScrollContainer` plus spacer `Control` nodes                          | `items`, `itemHeight`, `height`, `overscan`, slot props |
-| `<Span>`            | `Label`                                                                | text content, `style`, accessibility props |
+| `<Span>`            | `Label`                                                                | text content, `style` |
 | `<Switch>`          | `CheckButton`                                                          | `v-model`, `label`, `disabled`, `style` |
-| `<Button>`          | `Button`                                                               | `@click`, `disabled`, `style`, shared focus/touch/accessibility props |
+| `<Button>`          | `Button`                                                               | `@click`, `disabled`, `style`, shared focus/touch props |
 | `<Input>`           | `LineEdit` / `CheckBox` / `HSlider`                                    | `type`, `v-model`, `placeholder`, `readonly`, `disabled`, `label`, `name`, `value`, `min`/`max`/`step`, `style` |
 | `<Textarea>`        | `TextEdit`                                                             | `v-model`, `placeholder`, `disabled`, `readonly`, `rows`, `cols`, `style` |
-| `<Select>`          | `OptionButton`                                                         | `v-model`, `<Option value disabled selected>`, `style`, shared focus/touch/accessibility props |
+| `<Select>`          | `OptionButton`                                                         | `v-model`, `<Option value disabled selected>`, `style`, shared focus/touch props |
 | `<Video>`           | `VideoStreamPlayer`                                                    | `src`, `autoplay`, `loop`, `muted`, `volume`, `style`, `@ended` |
 | `<Audio>`           | `AudioStreamPlayer`                                                    | `src`, `autoplay`, `loop`, `muted`, `volume`, `@ended` |
-| `<Svg>`             | `TextureRect` (SVG resource)                                           | `src`, `scale`, `alt`, `style` |
+| `<Svg>`             | `TextureRect` (SVG resource)                                           | `src`, `scale`, `style` |
 | `<A>`               | `LinkButton`                                                           | `href`, `target` (accepted but ignored), `disabled`, `style`, `@click` |
 
 ## Provided APIs
@@ -492,7 +488,6 @@ HTML-like components are Godot nodes, not browser DOM elements. The current acce
 | API                                                                                                                                    | Description                                                                                              |
 | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `CameraView`, `Canvas`, `Dialog`, `Div`, `Form`, `Img`, `Input`, `KeyboardAvoidingView`, `Label`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `SafeAreaView`, `Screen`, `ScreenStack`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`, `VirtualList`) | Vue components backed by Godot nodes                                                                     |
-| Shared accessibility props (`accessibilityLabel`, `ariaLabel`, `aria-label`, `accessibilityHint`, `title`)                              | Tooltip-backed labels and hints for Control-backed components                                            |
 | Shared focus props (`autoFocus`, `autofocus`, `focusNext`, `focusPrevious`, `focusNeighbor*`)                                            | Mount-time focus and explicit Godot focus graph traversal for focusable controls                         |
 | Shared touch target prop (`minTouchTarget`)                                                                                            | Minimum Godot Control hit size for focusable controls                                                    |
 | `listCameraFeeds`, `resolveCameraFeedId`, `createCameraTexture`                                                                         | Camera feed discovery and `CameraTexture` creation helpers for Godot `CameraServer`                      |
@@ -993,13 +988,12 @@ This package is in early development. Currently scaffolded:
 - [x] `<Video>` — video playback (`VideoStreamPlayer`, `src`, `autoplay`, `loop`, `muted`, `volume`, `@ended`)
 - [x] `<Audio>` — audio playback (`AudioStreamPlayer`, `src`, `autoplay`, `loop`, `muted`, `volume`, `@ended`)
 - [x] Microphone capture UI is a non-goal for the current beta; use adapter-backed `navigator.mediaDevices.getUserMedia({ audio: true })` instead.
-- [x] `<Svg>` — SVG display (`TextureRect`, `src`, `scale` for rasterisation quality, `alt`)
+- [x] `<Svg>` — SVG display (`TextureRect`, `src`, `scale` for rasterisation quality)
 - [x] `<A>` — link/anchor (`LinkButton`, `href`, `@click`)
 - [x] Theme override application (gap, padding)
 - [x] Theme override application (colors via `backgroundColor` and text `color`, bold text via `FontVariation`)
 - [x] Registered/local font family loading with fallback fonts
 - [x] Percent width/height mapping to Control anchors
-- [x] Tooltip-backed accessibility labels and hints on Control components
 - [x] Mount-time `autoFocus` / `autofocus` on focusable controls
 - [x] Explicit focus traversal NodePath props on focusable controls
 - [x] Opt-in minimum touch target sizing on focusable controls

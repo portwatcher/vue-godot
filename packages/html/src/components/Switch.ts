@@ -1,9 +1,5 @@
 import { defineComponent, h, ref } from '@vue/runtime-core'
 import {
-  accessibilityPropOptions,
-  applyAccessibilityProps,
-} from '../utils/accessibility.js'
-import {
   applyCommonControlStyleProps,
   applyControlStateStyleBoxProps,
   applyControlStyleBoxProps,
@@ -39,7 +35,6 @@ export const Switch = defineComponent({
       type: Boolean,
       default: false,
     },
-    ...accessibilityPropOptions,
     ...focusPropOptions,
     ...touchTargetPropOptions,
     style: htmlStyleProp,
@@ -85,7 +80,6 @@ export const Switch = defineComponent({
       applyControlStyleBoxProps(nodeProps, resolvedStyle.style)
       applyControlStateStyleBoxProps(nodeProps, resolvedStyle.stateStyles)
       applyMinTouchTargetProps(nodeProps, props)
-      applyAccessibilityProps(nodeProps, props)
       applyFocusTraversalProps(nodeProps, props)
       if (props.disabled !== true) {
         applyAutoFocusProp(nodeProps, props)

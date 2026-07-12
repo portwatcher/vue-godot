@@ -53,12 +53,11 @@ test('suppresses model updates when disabled or readonly', () => {
   assert.deepEqual(readonly.emitted, [])
 })
 
-test('maps rows, cols, style, touch target, and accessibility props', () => {
+test('maps rows, cols, style, and touch target props', () => {
   const { vnode } = renderTextarea({
     rows: 3,
     cols: 20,
     minTouchTarget: 96,
-    title: 'Profile notes',
     style: {
       fontSize: 16,
       color: '#00ff00',
@@ -70,8 +69,6 @@ test('maps rows, cols, style, touch target, and accessibility props', () => {
   assert.equal(vnode.props['custom_minimum_size:x'], 192)
   assert.equal(vnode.props['custom_minimum_size:y'], 96)
   assert.equal(vnode.props.visible, false)
-  assert.equal(vnode.props.tooltip_text, 'Profile notes')
-
   const fontColor = vnode.props['theme_override_colors/font_color']
   assert.equal(fontColor.__mock, true)
   assert.equal(fontColor.__kind, 'color')

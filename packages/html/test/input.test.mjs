@@ -25,7 +25,6 @@ test('Input text maps value, placeholder, max length, style, and updates', () =>
       placeholder: 'Your name',
       maxLength: 32,
       minTouchTarget: 64,
-      title: 'Name input',
       style: `
         width: 120px;
         height: 24px;
@@ -44,8 +43,6 @@ test('Input text maps value, placeholder, max length, style, and updates', () =>
   assert.equal(vnode.props['custom_minimum_size:x'], 120)
   assert.equal(vnode.props['custom_minimum_size:y'], 64)
   assert.equal(vnode.props.visible, false)
-  assert.equal(vnode.props.tooltip_text, 'Name input')
-
   const fontColor = vnode.props['theme_override_colors/font_color']
   assert.equal(fontColor.__mock, true)
   assert.equal(fontColor.__kind, 'color')
