@@ -1,6 +1,7 @@
 import { createFontStyleOverride } from './fontLoader.js'
 import { createBackgroundPanelStyle } from './backgroundStyle.js'
 import { createOpacityModulate, parseGodotColor } from './godotColor.js'
+import { scaleHtmlFontSize } from './fontScale.js'
 import {
   applyStyleSizeProps,
   normalizeHtmlStyle,
@@ -29,7 +30,9 @@ export function applyFontStyleProps(
     typeof normalizedStyle?.fontSize === 'number' &&
     Number.isFinite(normalizedStyle.fontSize)
   ) {
-    nodeProps['theme_override_font_sizes/font_size'] = normalizedStyle.fontSize
+    nodeProps['theme_override_font_sizes/font_size'] = scaleHtmlFontSize(
+      normalizedStyle.fontSize,
+    )
   }
 
   const fontOverride = createFontStyleOverride(
@@ -183,7 +186,4 @@ export {
   registerStyleKeyframes,
   unregisterStyleKeyframes,
 } from './styleTransition.js'
-export type {
-  StyleKeyframe,
-  StyleKeyframeStyle,
-} from './styleTransition.js'
+export type { StyleKeyframe, StyleKeyframeStyle } from './styleTransition.js'

@@ -9,7 +9,11 @@ import {
   toScrollMode,
   type ScrollViewScrollbarMode,
 } from '../utils/scrollContainer.js'
-import { normalizeHtmlStyle, type HtmlStyle } from '../utils/styleMapping.js'
+import {
+  ControlSizeFlags,
+  normalizeHtmlStyle,
+  type HtmlStyle,
+} from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
 import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import { asDefaultSlot } from '../utils/slots.js'
@@ -17,7 +21,10 @@ import { Div } from './Div.js'
 
 export type { ScrollViewScrollbarMode } from '../utils/scrollContainer.js'
 
-function defaultContentStyle(horizontal: boolean, vertical: boolean): HtmlStyle {
+function defaultContentStyle(
+  horizontal: boolean,
+  vertical: boolean,
+): HtmlStyle {
   return {
     flexDirection: horizontal && !vertical ? 'row' : 'column',
   }
@@ -130,7 +137,15 @@ export const ScrollView = defineComponent({
       }
 
       return h('ScrollContainer', nodeProps, [
-        h(Div, { style: contentStyle }, asDefaultSlot(slots.default)),
+        h(
+          Div,
+          {
+            size_flags_horizontal: ControlSizeFlags.EXPAND_FILL,
+            size_flags_vertical: ControlSizeFlags.EXPAND_FILL,
+            style: contentStyle,
+          },
+          asDefaultSlot(slots.default),
+        ),
       ])
     }
   },

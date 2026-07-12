@@ -23,10 +23,7 @@ export type { PressableState } from './components/Pressable.js'
 export { Progress } from './components/Progress.js'
 export type { ProgressFillMode } from './components/Progress.js'
 export { SafeAreaView } from './components/SafeAreaView.js'
-export type {
-  SafeAreaEdge,
-  SafeAreaInsets,
-} from './utils/safeArea.js'
+export type { SafeAreaEdge, SafeAreaInsets } from './utils/safeArea.js'
 export { Screen } from './components/Screen.js'
 export { ScreenStack } from './components/ScreenStack.js'
 export type {
@@ -68,6 +65,7 @@ export type {
 export { parseHexColor } from './utils/colorParser.js'
 export { parseDataUri } from './utils/dataUri.js'
 export type { DataUriParts } from './utils/dataUri.js'
+export { getHtmlFontScale, setHtmlFontScale } from './utils/fontScale.js'
 export {
   parseFontFamilyList,
   registerFontFamily,
@@ -86,14 +84,8 @@ export {
   fetchRemoteStream,
   loadStream,
 } from './utils/streamLoader.js'
-export {
-  normalizeHtmlStyle,
-  parseHtmlStyle,
-} from './utils/styleMapping.js'
-export type {
-  HtmlStyle,
-  HtmlStyleInput,
-} from './utils/styleMapping.js'
+export { normalizeHtmlStyle, parseHtmlStyle } from './utils/styleMapping.js'
+export type { HtmlStyle, HtmlStyleInput } from './utils/styleMapping.js'
 export {
   clearHtmlCssWarningsForTests,
   createHtmlStyleContext,

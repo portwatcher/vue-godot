@@ -29,6 +29,8 @@ test('ScrollView renders a ScrollContainer with vertical scrolling by default', 
   assert.ok(Array.isArray(vnode.children))
   assert.equal(vnode.children.length, 1)
   assert.equal(vnode.children[0].type, Div)
+  assert.equal(vnode.children[0].props.size_flags_horizontal, 3)
+  assert.equal(vnode.children[0].props.size_flags_vertical, 3)
   assert.deepEqual(vnode.children[0].props.style, { flexDirection: 'column' })
 })
 

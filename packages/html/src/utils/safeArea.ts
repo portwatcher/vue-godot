@@ -1,4 +1,4 @@
-import { DisplayServer } from 'godot'
+import { DisplayServer, ProjectSettings } from 'godot'
 import { zeroEdgeInsets } from './edgeInsets.js'
 import {
   normalizeHtmlStyle,
@@ -26,6 +26,9 @@ interface Rect2D {
   width: number
   height: number
 }
+
+const VIEWPORT_WIDTH_SETTING = 'display/window/size/viewport_width'
+const VIEWPORT_HEIGHT_SETTING = 'display/window/size/viewport_height'
 
 export const allSafeAreaEdges: SafeAreaEdge[] = [
   'top',
@@ -100,6 +103,7 @@ export function computeSafeAreaInsets(
   safeAreaValue: unknown,
   viewportSizeValue: unknown,
   fallbackInsets?: Partial<SafeAreaInsets>,
+  targetViewportSizeValue?: unknown,
 ): SafeAreaInsets {
   const safeArea = readRect(safeAreaValue)
   const viewportSize = readVector2(viewportSizeValue)
@@ -107,12 +111,37 @@ export function computeSafeAreaInsets(
     return normalizeSafeAreaInsets(fallbackInsets)
   }
 
-  return {
+  const physicalInsets = {
     top: nonNegative(safeArea.y),
     left: nonNegative(safeArea.x),
     right: nonNegative(viewportSize.x - (safeArea.x + safeArea.width)),
     bottom: nonNegative(viewportSize.y - (safeArea.y + safeArea.height)),
   }
+  const targetViewportSize = readVector2(targetViewportSizeValue)
+  if (!targetViewportSize || viewportSize.x <= 0 || viewportSize.y <= 0) {
+    return physicalInsets
+  }
+
+  const scaleX = targetViewportSize.x / viewportSize.x
+  const scaleY = targetViewportSize.y / viewportSize.y
+  return {
+    top: physicalInsets.top * scaleY,
+    right: physicalInsets.right * scaleX,
+    bottom: physicalInsets.bottom * scaleY,
+    left: physicalInsets.left * scaleX,
+  }
+}
+
+function readProjectViewportSize(): Size2D | null {
+  const width = finiteNumber(
+    ProjectSettings.get_setting(VIEWPORT_WIDTH_SETTING),
+  )
+  const height = finiteNumber(
+    ProjectSettings.get_setting(VIEWPORT_HEIGHT_SETTING),
+  )
+  return width != null && width > 0 && height != null && height > 0
+    ? { x: width, y: height }
+    : null
 }
 
 export function readDisplayServerSafeAreaInsets(
@@ -124,7 +153,12 @@ export function readDisplayServerSafeAreaInsets(
     if (!readVector2(viewportSize)) {
       viewportSize = DisplayServer.screen_get_size()
     }
-    return computeSafeAreaInsets(safeArea, viewportSize, fallbackInsets)
+    return computeSafeAreaInsets(
+      safeArea,
+      viewportSize,
+      fallbackInsets,
+      readProjectViewportSize(),
+    )
   } catch (_error) {
     return normalizeSafeAreaInsets(fallbackInsets)
   }

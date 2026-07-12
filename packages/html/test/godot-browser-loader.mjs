@@ -246,6 +246,12 @@ export function load(url, context, nextLoad) {
           }
         }
 
+        export class ProjectSettings {
+          static get_setting(name) {
+            return globalThis.__vueGodotHtmlMockProjectSettings?.[name] ?? 1000
+          }
+        }
+
         export const ResourceLoader = {
           load(path) {
             if (!path) return null

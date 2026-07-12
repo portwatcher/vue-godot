@@ -6,9 +6,7 @@ import { h } from '@vue/runtime-core'
 register(new URL('./godot-browser-loader.mjs', import.meta.url).href)
 
 const { SafeAreaView, Div } = await import('../dist/index.js')
-const {
-  computeSafeAreaInsets,
-} = await import('../dist/utils/safeArea.js')
+const { computeSafeAreaInsets } = await import('../dist/utils/safeArea.js')
 
 function defaultSlotChildren(vnode) {
   return typeof vnode.children?.default === 'function'
@@ -25,6 +23,13 @@ function setDisplayServerState(state) {
     windowSize: { x: 1000, y: 1000 },
     screenSize: { x: 1000, y: 1000 },
     ...state,
+  }
+}
+
+function setProjectViewportSize(width, height) {
+  globalThis.__vueGodotHtmlMockProjectSettings = {
+    'display/window/size/viewport_width': width,
+    'display/window/size/viewport_height': height,
   }
 }
 
@@ -56,7 +61,28 @@ test('computes insets from Godot safe area and viewport size', () => {
   )
 })
 
+test('scales physical safe area insets into the project viewport', () => {
+  assert.deepEqual(
+    computeSafeAreaInsets(
+      {
+        position: { x: 0, y: 96 },
+        size: { x: 1080, y: 2148 },
+      },
+      { x: 1080, y: 2340 },
+      undefined,
+      { x: 390, y: 844 },
+    ),
+    {
+      top: 844 * (96 / 2340),
+      right: 0,
+      bottom: 844 * (96 / 2340),
+      left: 0,
+    },
+  )
+})
+
 test('SafeAreaView applies safe area plus style padding inside background', () => {
+  setProjectViewportSize(390, 780)
   setDisplayServerState({
     safeArea: {
       position: { x: 12, y: 24 },
@@ -103,6 +129,7 @@ test('SafeAreaView applies safe area plus style padding inside background', () =
 })
 
 test('SafeAreaView can limit safe area edges and use fallback insets', () => {
+  setProjectViewportSize(1000, 1000)
   setDisplayServerState({
     safeArea: null,
   })
