@@ -347,7 +347,6 @@ test('GodotJS setup is exposed through npm and the shared CI action', () => {
   const packageJson = JSON.parse(readText('package.json'))
   const action = readText('.github/actions/setup-godotjs/action.yml')
   const script = readText('scripts/setup-godotjs.mjs')
-  const readme = readText('README.md')
 
   assert.equal(
     packageJson.scripts['setup:godotjs'],
@@ -370,8 +369,6 @@ test('GodotJS setup is exposed through npm and the shared CI action', () => {
   assert.match(script, /--ios-package-source <p>/)
   assert.match(script, /GODOTJS_EXPORT_TEMPLATES_DIR/)
   assert.match(script, /GODOTJS_IOS_PACKAGE/)
-  assert.match(readme, /--asset prebuilt_android_v8 --asset-kind templates/)
-  assert.match(readme, /--assemble-ios-package/)
   assert.doesNotMatch(action, /curl --fail/)
   assert.doesNotMatch(action, /find "\$GODOTJS_CACHE_DIR"/)
 })

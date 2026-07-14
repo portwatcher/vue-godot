@@ -71,8 +71,8 @@ test('public surface audit detects stale htmlTags mirrors', () => {
 
 test('root README links public support docs, packages, and checked-in examples', () => {
   assertPatterns('README.md', [
-    /SDK for building Godot interfaces with Vue Single File\s+Components/,
-    /Vue custom renderer, HTML-like Godot components, browser API\s+polyfills, native capability adapter contracts, and project tooling/,
+    /Write native apps and Godot game UI using Vue\.js\./,
+    /renders Vue Single File Components into Godot's native scene tree/,
     /docs\/compatibility\.md/,
     /docs\/permissions\.md/,
     /docs\/plugins\.md/,
