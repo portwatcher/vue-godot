@@ -6,6 +6,7 @@ import test from 'node:test'
 
 import {
   assertNoGodotScriptLoadErrors,
+  directoryContainsText,
   relevantGodotDiagnosticLines,
   resolveGodotBin,
   resolveGodotCommand,
@@ -19,6 +20,30 @@ function writeExecutable(filePath) {
   fs.writeFileSync(filePath, '#!/bin/sh\nexit 0\n')
   fs.chmodSync(filePath, 0o755)
 }
+
+test('directoryContainsText tolerates files removed during traversal', () => {
+  const tempDir = createTempDir()
+  const outputPath = path.join(tempDir, 'app.css')
+  const originalReadFileSync = fs.readFileSync
+  let removedOutput = false
+
+  try {
+    fs.writeFileSync(outputPath, 'generated rebuilt marker')
+    fs.readFileSync = (filePath, options) => {
+      if (filePath === outputPath) {
+        fs.rmSync(outputPath)
+        removedOutput = true
+      }
+      return originalReadFileSync(filePath, options)
+    }
+
+    assert.equal(directoryContainsText(tempDir, 'rebuilt marker'), false)
+    assert.equal(removedOutput, true)
+  } finally {
+    fs.readFileSync = originalReadFileSync
+    fs.rmSync(tempDir, { recursive: true, force: true })
+  }
+})
 
 test('resolveGodotBin accepts an executable file path', () => {
   const tempDir = createTempDir()

@@ -147,22 +147,40 @@ export function startNpmDevWatch(projectDir, env = process.env) {
   }
 }
 
+function isMissingPathError(error) {
+  return (
+    error !== null &&
+    typeof error === 'object' &&
+    'code' in error &&
+    error.code === 'ENOENT'
+  )
+}
+
 export function directoryContainsText(dir, text) {
-  const entries = fs.readdirSync(dir, { withFileTypes: true })
-  for (const entry of entries) {
-    const absolutePath = path.join(dir, entry.name)
-    if (entry.isDirectory()) {
-      if (directoryContainsText(absolutePath, text)) {
+  try {
+    const entries = fs.readdirSync(dir, { withFileTypes: true })
+    for (const entry of entries) {
+      const absolutePath = path.join(dir, entry.name)
+      if (entry.isDirectory()) {
+        if (directoryContainsText(absolutePath, text)) {
+          return true
+        }
+        continue
+      }
+      if (
+        entry.isFile() &&
+        fs.readFileSync(absolutePath, 'utf-8').includes(text)
+      ) {
         return true
       }
-      continue
     }
-    if (
-      entry.isFile() &&
-      fs.readFileSync(absolutePath, 'utf-8').includes(text)
-    ) {
-      return true
+  } catch (error) {
+    // Vite can remove an output path between listing and reading it while
+    // emptying dist for a watch rebuild. Let waitFor retry the next snapshot.
+    if (isMissingPathError(error)) {
+      return false
     }
+    throw error
   }
   return false
 }
