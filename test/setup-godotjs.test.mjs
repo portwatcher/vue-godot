@@ -15,6 +15,7 @@ import {
   installGodotJsTemplateAsset,
   pinnedGodotJsRelease,
   resolveGodotJsSetupPlan,
+  setupGodotJs,
 } from '../scripts/setup-godotjs.mjs'
 
 const repoRoot = process.cwd()
@@ -125,6 +126,40 @@ test('GodotJS setup plan rejects unknown asset kinds', () => {
     /Unsupported GodotJS asset kind: runtime/,
   )
 })
+
+test(
+  'GodotJS setup makes a downloaded 0644 editor executable before probing it',
+  { skip: process.platform === 'win32' },
+  async () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vue-godot-editor-'))
+    try {
+      const release = 'fixture-release'
+      const asset = 'fixture-linux-editor'
+      const assetDir = path.join(tempRoot, release, asset)
+      const godot = path.join(assetDir, 'godot.linuxbsd.editor.dev.x86_64')
+      fs.mkdirSync(assetDir, { recursive: true })
+      fs.writeFileSync(
+        godot,
+        [
+          '#!/bin/sh',
+          'test "$1" = "--version"',
+          "printf '%s\\n' '4.4.1.fixture'",
+          '',
+        ].join('\n'),
+      )
+      fs.chmodSync(godot, 0o644)
+
+      assert.equal(fs.statSync(godot).mode & 0o777, 0o644)
+      assert.equal(
+        await setupGodotJs({ asset, cacheDir: tempRoot, release }),
+        godot,
+      )
+      assert.equal(fs.statSync(godot).mode & 0o777, 0o755)
+    } finally {
+      fs.rmSync(tempRoot, { force: true, recursive: true })
+    }
+  },
+)
 
 test('Godot export template root resolves platform user directories', () => {
   assert.equal(

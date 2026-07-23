@@ -69,6 +69,30 @@ test('resolveGodotBin accepts a directory containing a Godot executable', () => 
   }
 })
 
+test(
+  'resolveGodotBin can discover a non-executable Godot candidate when requested',
+  { skip: process.platform === 'win32' },
+  () => {
+    const tempDir = createTempDir()
+    try {
+      const godot = path.join(tempDir, 'godot.linuxbsd.editor.dev.x86_64')
+      fs.writeFileSync(godot, 'downloaded editor')
+      fs.chmodSync(godot, 0o644)
+
+      assert.throws(
+        () => resolveGodotBin(tempDir),
+        /does not contain an executable named like godot\*/,
+      )
+      assert.equal(
+        resolveGodotBin(tempDir, { requireExecutable: false }),
+        godot,
+      )
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true })
+    }
+  },
+)
+
 test('resolveGodotBin searches nested Godot app-style directories', () => {
   const tempDir = createTempDir()
   try {

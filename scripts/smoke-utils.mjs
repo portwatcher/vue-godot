@@ -337,7 +337,7 @@ function godotCandidateRank(filePath) {
   return 3
 }
 
-function findGodotExecutableInDirectory(directory) {
+function findGodotCandidateInDirectory(directory, requireExecutable) {
   const queue = [{ directory, depth: 0 }]
 
   while (queue.length > 0) {
@@ -353,7 +353,7 @@ function findGodotExecutableInDirectory(directory) {
       if (entry.isFile() || entry.isSymbolicLink()) {
         if (
           godotExecutableNamePattern.test(entry.name) &&
-          isExecutableFile(entryPath)
+          (!requireExecutable || isExecutableFile(entryPath))
         ) {
           candidates.push(entryPath)
         }
@@ -377,11 +377,12 @@ function findGodotExecutableInDirectory(directory) {
   return null
 }
 
-export function resolveGodotBin(godotBin) {
+export function resolveGodotBin(godotBin, options = {}) {
   if (!godotBin) {
     return null
   }
 
+  const requireExecutable = options.requireExecutable ?? true
   const absoluteGodotBin = path.resolve(godotBin)
 
   if (!fs.existsSync(absoluteGodotBin)) {
@@ -390,7 +391,7 @@ export function resolveGodotBin(godotBin) {
 
   const stat = fs.statSync(absoluteGodotBin)
   if (stat.isFile()) {
-    if (!isExecutableFile(absoluteGodotBin)) {
+    if (requireExecutable && !isExecutableFile(absoluteGodotBin)) {
       throw new Error(`GODOT_BIN is not executable: ${godotBin}`)
     }
     return absoluteGodotBin
@@ -400,14 +401,19 @@ export function resolveGodotBin(godotBin) {
     throw new Error(`GODOT_BIN must be a file or directory: ${godotBin}`)
   }
 
-  const executable = findGodotExecutableInDirectory(absoluteGodotBin)
-  if (!executable) {
+  const candidate = findGodotCandidateInDirectory(
+    absoluteGodotBin,
+    requireExecutable,
+  )
+  if (!candidate) {
     throw new Error(
-      `GODOT_BIN directory does not contain an executable named like godot*: ${godotBin}`,
+      requireExecutable
+        ? `GODOT_BIN directory does not contain an executable named like godot*: ${godotBin}`
+        : `GODOT_BIN directory does not contain a file named like godot*: ${godotBin}`,
     )
   }
 
-  return executable
+  return candidate
 }
 
 export function resolveGodotCommand(options = {}) {
