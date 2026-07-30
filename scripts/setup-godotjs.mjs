@@ -288,9 +288,9 @@ function createLogger(options) {
   }
 }
 
-function findGodotBin(assetDir) {
+function findGodotBinCandidate(assetDir) {
   try {
-    return resolveGodotBin(assetDir)
+    return resolveGodotBin(assetDir, { requireExecutable: false })
   } catch {
     return null
   }
@@ -783,17 +783,18 @@ export async function setupGodotJs(options = {}) {
   }
 
   await ensureAssetArchiveExtracted(plan, log, () =>
-    Boolean(findGodotBin(plan.assetDir)),
+    Boolean(findGodotBinCandidate(plan.assetDir)),
   )
 
-  const godotBin = findGodotBin(plan.assetDir)
-  if (!godotBin) {
+  const godotBinCandidate = findGodotBinCandidate(plan.assetDir)
+  if (!godotBinCandidate) {
     throw new Error(
       `Unable to locate a Godot executable in ${path.relative(repoRoot, plan.assetDir)}`,
     )
   }
 
-  fs.chmodSync(godotBin, 0o755)
+  fs.chmodSync(godotBinCandidate, 0o755)
+  const godotBin = resolveGodotBin(godotBinCandidate)
 
   if (options.githubEnv) {
     appendGitHubEnv(options.githubEnv, {
