@@ -21,6 +21,12 @@ Create game UI:
 npx vue-godot create game-ui my-hud
 ```
 
+Both profiles scaffold the same Vue + Godot foundation: `app` starts with
+application-oriented UI that demonstrates storage, network state, and native
+capability adapters, while `game-ui` starts with a HUD-oriented screen of
+health, actions, and session controls. Choose either as a starting point—the
+difference is the starter content, not a runtime limitation.
+
 Then start the Vue build:
 
 ```bash
