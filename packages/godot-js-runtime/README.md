@@ -90,10 +90,16 @@ The build pins `godot-cpp`, QuickJS-ng, and SCons in
 extracting it into the ignored `native/third_party` directory.
 `native/godot-cpp-profile.json` compiles only the public C++ wrappers used by
 the runtime host; the complete pinned extension API remains available for the
-generated JavaScript binding surface.
+generated JavaScript binding surface. The deterministic generator currently
+emits metadata for all 952 Godot 4.4.1 classes, 38 Variant built-ins, 37
+singletons, 114 utility functions, and their methods, properties, signals,
+enums, constants, and module exports. Generated files record the source API
+fingerprint and pinned `godot-cpp` commit.
 
 ```bash
 npm run bootstrap:native --workspace=godot-js-runtime
+npm run generate:bindings --workspace=godot-js-runtime
+npm run check:bindings --workspace=godot-js-runtime
 npm run build:native --workspace=godot-js-runtime
 npm run test:native --workspace=godot-js-runtime
 ```
@@ -112,7 +118,9 @@ and repeated teardown. The stock fixture also runs repeated resource reloads and
 three editor play/stop cycles while asserting that the live QuickJS count
 returns to zero. This is not yet the final scene-script integration: Godot
 classes, Variant conversion, editor tooling, platform export support,
-installation commands, and binding generation are later migration gates.
+installation commands, and the live generated binding bridge are later
+migration gates. The pinned binding metadata and deterministic regeneration
+gate are present, but metadata alone is not a usable `godot` module.
 
 ## Security model
 

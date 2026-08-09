@@ -26,6 +26,7 @@
     "native/deps.lock.json",
     "native/godot-cpp-profile.json",
     "native/godot_js_runtime.gdextension.in",
+    "native/generated",
     "native/include",
     "native/src/**/*.cpp",
     "native/tests/**/*.cpp",
@@ -44,6 +45,8 @@
     "bootstrap:native": "node scripts/bootstrap-deps.mjs",
     "build:native": "node scripts/build-native.mjs",
     "test:native": "node scripts/build-native.mjs --run-tests",
+    "generate:bindings": "node scripts/generate-bindings.mjs",
+    "check:bindings": "node scripts/generate-bindings.mjs --check",
     "generate:manifest": "node scripts/generate-extension-manifest.mjs",
     "smoke:native": "node scripts/smoke-stock-godot.mjs"
   },

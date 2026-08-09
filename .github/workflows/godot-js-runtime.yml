@@ -69,6 +69,9 @@ jobs:
           --arch x86_64
           --target template_debug
 
+      - name: Verify generated Godot bindings
+        run: npm run check:bindings --workspace=godot-js-runtime
+
       - name: Test native QuickJS host
         run: >-
           npm run test:native --workspace=godot-js-runtime --

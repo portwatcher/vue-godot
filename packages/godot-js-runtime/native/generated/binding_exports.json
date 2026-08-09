@@ -1,0 +1,4499 @@
+{
+  "schemaVersion": 1,
+  "godotVersion": "4.4.1",
+  "godotCppCommit": "e4b7c25e721ce3435a029087e3917a30aa73f06b",
+  "extensionApiSha256": "1136ad8c676034a0d9ac15ec55f1f4c79f300fd645f45a08a129c0254ca95d51",
+  "counts": {
+    "classes": 952,
+    "builtins": 38,
+    "singletons": 37,
+    "utilities": 114,
+    "globalEnums": 22,
+    "methods": 16324,
+    "properties": 3843,
+    "signals": 466,
+    "exports": 1120
+  },
+  "exports": [
+    {
+      "name": "AABB",
+      "kind": "builtin"
+    },
+    {
+      "name": "AESContext",
+      "kind": "class"
+    },
+    {
+      "name": "AStar2D",
+      "kind": "class"
+    },
+    {
+      "name": "AStar3D",
+      "kind": "class"
+    },
+    {
+      "name": "AStarGrid2D",
+      "kind": "class"
+    },
+    {
+      "name": "AcceptDialog",
+      "kind": "class"
+    },
+    {
+      "name": "AnimatableBody2D",
+      "kind": "class"
+    },
+    {
+      "name": "AnimatableBody3D",
+      "kind": "class"
+    },
+    {
+      "name": "AnimatedSprite2D",
+      "kind": "class"
+    },
+    {
+      "name": "AnimatedSprite3D",
+      "kind": "class"
+    },
+    {
+      "name": "AnimatedTexture",
+      "kind": "class"
+    },
+    {
+      "name": "Animation",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationLibrary",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationMixer",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNode",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeAdd2",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeAdd3",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeAnimation",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeBlend2",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeBlend3",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeBlendSpace1D",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeBlendSpace2D",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeBlendTree",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeExtension",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeOneShot",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeOutput",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeStateMachine",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeStateMachinePlayback",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeStateMachineTransition",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeSub2",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeSync",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeTimeScale",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeTimeSeek",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationNodeTransition",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationPlayer",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationRootNode",
+      "kind": "class"
+    },
+    {
+      "name": "AnimationTree",
+      "kind": "class"
+    },
+    {
+      "name": "Area2D",
+      "kind": "class"
+    },
+    {
+      "name": "Area3D",
+      "kind": "class"
+    },
+    {
+      "name": "Array",
+      "kind": "builtin"
+    },
+    {
+      "name": "ArrayMesh",
+      "kind": "class"
+    },
+    {
+      "name": "ArrayOccluder3D",
+      "kind": "class"
+    },
+    {
+      "name": "AspectRatioContainer",
+      "kind": "class"
+    },
+    {
+      "name": "AtlasTexture",
+      "kind": "class"
+    },
+    {
+      "name": "AudioBusLayout",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffect",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectAmplify",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectBandLimitFilter",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectBandPassFilter",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectCapture",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectChorus",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectCompressor",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectDelay",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectDistortion",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectEQ",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectEQ10",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectEQ21",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectEQ6",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectFilter",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectHardLimiter",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectHighPassFilter",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectHighShelfFilter",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectInstance",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectLimiter",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectLowPassFilter",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectLowShelfFilter",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectNotchFilter",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectPanner",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectPhaser",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectPitchShift",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectRecord",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectReverb",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectSpectrumAnalyzer",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectSpectrumAnalyzerInstance",
+      "kind": "class"
+    },
+    {
+      "name": "AudioEffectStereoEnhance",
+      "kind": "class"
+    },
+    {
+      "name": "AudioListener2D",
+      "kind": "class"
+    },
+    {
+      "name": "AudioListener3D",
+      "kind": "class"
+    },
+    {
+      "name": "AudioSample",
+      "kind": "class"
+    },
+    {
+      "name": "AudioSamplePlayback",
+      "kind": "class"
+    },
+    {
+      "name": "AudioServer",
+      "kind": "singleton"
+    },
+    {
+      "name": "AudioStream",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamGenerator",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamGeneratorPlayback",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamInteractive",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamMP3",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamMicrophone",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamOggVorbis",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamPlayback",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamPlaybackInteractive",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamPlaybackOggVorbis",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamPlaybackPlaylist",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamPlaybackPolyphonic",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamPlaybackResampled",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamPlaybackSynchronized",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamPlayer",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamPlayer2D",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamPlayer3D",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamPlaylist",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamPolyphonic",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamRandomizer",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamSynchronized",
+      "kind": "class"
+    },
+    {
+      "name": "AudioStreamWAV",
+      "kind": "class"
+    },
+    {
+      "name": "BackBufferCopy",
+      "kind": "class"
+    },
+    {
+      "name": "BaseButton",
+      "kind": "class"
+    },
+    {
+      "name": "BaseMaterial3D",
+      "kind": "class"
+    },
+    {
+      "name": "Basis",
+      "kind": "builtin"
+    },
+    {
+      "name": "BitMap",
+      "kind": "class"
+    },
+    {
+      "name": "Bone2D",
+      "kind": "class"
+    },
+    {
+      "name": "BoneAttachment3D",
+      "kind": "class"
+    },
+    {
+      "name": "BoneMap",
+      "kind": "class"
+    },
+    {
+      "name": "BoxContainer",
+      "kind": "class"
+    },
+    {
+      "name": "BoxMesh",
+      "kind": "class"
+    },
+    {
+      "name": "BoxOccluder3D",
+      "kind": "class"
+    },
+    {
+      "name": "BoxShape3D",
+      "kind": "class"
+    },
+    {
+      "name": "Button",
+      "kind": "class"
+    },
+    {
+      "name": "ButtonGroup",
+      "kind": "class"
+    },
+    {
+      "name": "CPUParticles2D",
+      "kind": "class"
+    },
+    {
+      "name": "CPUParticles3D",
+      "kind": "class"
+    },
+    {
+      "name": "CSGBox3D",
+      "kind": "class"
+    },
+    {
+      "name": "CSGCombiner3D",
+      "kind": "class"
+    },
+    {
+      "name": "CSGCylinder3D",
+      "kind": "class"
+    },
+    {
+      "name": "CSGMesh3D",
+      "kind": "class"
+    },
+    {
+      "name": "CSGPolygon3D",
+      "kind": "class"
+    },
+    {
+      "name": "CSGPrimitive3D",
+      "kind": "class"
+    },
+    {
+      "name": "CSGShape3D",
+      "kind": "class"
+    },
+    {
+      "name": "CSGSphere3D",
+      "kind": "class"
+    },
+    {
+      "name": "CSGTorus3D",
+      "kind": "class"
+    },
+    {
+      "name": "Callable",
+      "kind": "builtin"
+    },
+    {
+      "name": "CallbackTweener",
+      "kind": "class"
+    },
+    {
+      "name": "Camera2D",
+      "kind": "class"
+    },
+    {
+      "name": "Camera3D",
+      "kind": "class"
+    },
+    {
+      "name": "CameraAttributes",
+      "kind": "class"
+    },
+    {
+      "name": "CameraAttributesPhysical",
+      "kind": "class"
+    },
+    {
+      "name": "CameraAttributesPractical",
+      "kind": "class"
+    },
+    {
+      "name": "CameraFeed",
+      "kind": "class"
+    },
+    {
+      "name": "CameraServer",
+      "kind": "singleton"
+    },
+    {
+      "name": "CameraTexture",
+      "kind": "class"
+    },
+    {
+      "name": "CanvasGroup",
+      "kind": "class"
+    },
+    {
+      "name": "CanvasItem",
+      "kind": "class"
+    },
+    {
+      "name": "CanvasItemMaterial",
+      "kind": "class"
+    },
+    {
+      "name": "CanvasLayer",
+      "kind": "class"
+    },
+    {
+      "name": "CanvasModulate",
+      "kind": "class"
+    },
+    {
+      "name": "CanvasTexture",
+      "kind": "class"
+    },
+    {
+      "name": "CapsuleMesh",
+      "kind": "class"
+    },
+    {
+      "name": "CapsuleShape2D",
+      "kind": "class"
+    },
+    {
+      "name": "CapsuleShape3D",
+      "kind": "class"
+    },
+    {
+      "name": "CenterContainer",
+      "kind": "class"
+    },
+    {
+      "name": "CharFXTransform",
+      "kind": "class"
+    },
+    {
+      "name": "CharacterBody2D",
+      "kind": "class"
+    },
+    {
+      "name": "CharacterBody3D",
+      "kind": "class"
+    },
+    {
+      "name": "CheckBox",
+      "kind": "class"
+    },
+    {
+      "name": "CheckButton",
+      "kind": "class"
+    },
+    {
+      "name": "CircleShape2D",
+      "kind": "class"
+    },
+    {
+      "name": "ClassDB",
+      "kind": "singleton"
+    },
+    {
+      "name": "ClockDirection",
+      "kind": "global-enum"
+    },
+    {
+      "name": "CodeEdit",
+      "kind": "class"
+    },
+    {
+      "name": "CodeHighlighter",
+      "kind": "class"
+    },
+    {
+      "name": "CollisionObject2D",
+      "kind": "class"
+    },
+    {
+      "name": "CollisionObject3D",
+      "kind": "class"
+    },
+    {
+      "name": "CollisionPolygon2D",
+      "kind": "class"
+    },
+    {
+      "name": "CollisionPolygon3D",
+      "kind": "class"
+    },
+    {
+      "name": "CollisionShape2D",
+      "kind": "class"
+    },
+    {
+      "name": "CollisionShape3D",
+      "kind": "class"
+    },
+    {
+      "name": "Color",
+      "kind": "builtin"
+    },
+    {
+      "name": "ColorPalette",
+      "kind": "class"
+    },
+    {
+      "name": "ColorPicker",
+      "kind": "class"
+    },
+    {
+      "name": "ColorPickerButton",
+      "kind": "class"
+    },
+    {
+      "name": "ColorRect",
+      "kind": "class"
+    },
+    {
+      "name": "Compositor",
+      "kind": "class"
+    },
+    {
+      "name": "CompositorEffect",
+      "kind": "class"
+    },
+    {
+      "name": "CompressedCubemap",
+      "kind": "class"
+    },
+    {
+      "name": "CompressedCubemapArray",
+      "kind": "class"
+    },
+    {
+      "name": "CompressedTexture2D",
+      "kind": "class"
+    },
+    {
+      "name": "CompressedTexture2DArray",
+      "kind": "class"
+    },
+    {
+      "name": "CompressedTexture3D",
+      "kind": "class"
+    },
+    {
+      "name": "CompressedTextureLayered",
+      "kind": "class"
+    },
+    {
+      "name": "ConcavePolygonShape2D",
+      "kind": "class"
+    },
+    {
+      "name": "ConcavePolygonShape3D",
+      "kind": "class"
+    },
+    {
+      "name": "ConeTwistJoint3D",
+      "kind": "class"
+    },
+    {
+      "name": "ConfigFile",
+      "kind": "class"
+    },
+    {
+      "name": "ConfirmationDialog",
+      "kind": "class"
+    },
+    {
+      "name": "Container",
+      "kind": "class"
+    },
+    {
+      "name": "Control",
+      "kind": "class"
+    },
+    {
+      "name": "ConvexPolygonShape2D",
+      "kind": "class"
+    },
+    {
+      "name": "ConvexPolygonShape3D",
+      "kind": "class"
+    },
+    {
+      "name": "Corner",
+      "kind": "global-enum"
+    },
+    {
+      "name": "Crypto",
+      "kind": "class"
+    },
+    {
+      "name": "CryptoKey",
+      "kind": "class"
+    },
+    {
+      "name": "Cubemap",
+      "kind": "class"
+    },
+    {
+      "name": "CubemapArray",
+      "kind": "class"
+    },
+    {
+      "name": "Curve",
+      "kind": "class"
+    },
+    {
+      "name": "Curve2D",
+      "kind": "class"
+    },
+    {
+      "name": "Curve3D",
+      "kind": "class"
+    },
+    {
+      "name": "CurveTexture",
+      "kind": "class"
+    },
+    {
+      "name": "CurveXYZTexture",
+      "kind": "class"
+    },
+    {
+      "name": "CylinderMesh",
+      "kind": "class"
+    },
+    {
+      "name": "CylinderShape3D",
+      "kind": "class"
+    },
+    {
+      "name": "DTLSServer",
+      "kind": "class"
+    },
+    {
+      "name": "DampedSpringJoint2D",
+      "kind": "class"
+    },
+    {
+      "name": "Decal",
+      "kind": "class"
+    },
+    {
+      "name": "Dictionary",
+      "kind": "builtin"
+    },
+    {
+      "name": "DirAccess",
+      "kind": "class"
+    },
+    {
+      "name": "DirectionalLight2D",
+      "kind": "class"
+    },
+    {
+      "name": "DirectionalLight3D",
+      "kind": "class"
+    },
+    {
+      "name": "DisplayServer",
+      "kind": "singleton"
+    },
+    {
+      "name": "ENetConnection",
+      "kind": "class"
+    },
+    {
+      "name": "ENetMultiplayerPeer",
+      "kind": "class"
+    },
+    {
+      "name": "ENetPacketPeer",
+      "kind": "class"
+    },
+    {
+      "name": "EditorCommandPalette",
+      "kind": "class"
+    },
+    {
+      "name": "EditorContextMenuPlugin",
+      "kind": "class"
+    },
+    {
+      "name": "EditorDebuggerPlugin",
+      "kind": "class"
+    },
+    {
+      "name": "EditorDebuggerSession",
+      "kind": "class"
+    },
+    {
+      "name": "EditorExportPlatform",
+      "kind": "class"
+    },
+    {
+      "name": "EditorExportPlatformAndroid",
+      "kind": "class"
+    },
+    {
+      "name": "EditorExportPlatformExtension",
+      "kind": "class"
+    },
+    {
+      "name": "EditorExportPlatformIOS",
+      "kind": "class"
+    },
+    {
+      "name": "EditorExportPlatformLinuxBSD",
+      "kind": "class"
+    },
+    {
+      "name": "EditorExportPlatformMacOS",
+      "kind": "class"
+    },
+    {
+      "name": "EditorExportPlatformPC",
+      "kind": "class"
+    },
+    {
+      "name": "EditorExportPlatformWeb",
+      "kind": "class"
+    },
+    {
+      "name": "EditorExportPlatformWindows",
+      "kind": "class"
+    },
+    {
+      "name": "EditorExportPlugin",
+      "kind": "class"
+    },
+    {
+      "name": "EditorExportPreset",
+      "kind": "class"
+    },
+    {
+      "name": "EditorFeatureProfile",
+      "kind": "class"
+    },
+    {
+      "name": "EditorFileDialog",
+      "kind": "class"
+    },
+    {
+      "name": "EditorFileSystem",
+      "kind": "class"
+    },
+    {
+      "name": "EditorFileSystemDirectory",
+      "kind": "class"
+    },
+    {
+      "name": "EditorFileSystemImportFormatSupportQuery",
+      "kind": "class"
+    },
+    {
+      "name": "EditorImportPlugin",
+      "kind": "class"
+    },
+    {
+      "name": "EditorInspector",
+      "kind": "class"
+    },
+    {
+      "name": "EditorInspectorPlugin",
+      "kind": "class"
+    },
+    {
+      "name": "EditorInterface",
+      "kind": "singleton"
+    },
+    {
+      "name": "EditorNode3DGizmo",
+      "kind": "class"
+    },
+    {
+      "name": "EditorNode3DGizmoPlugin",
+      "kind": "class"
+    },
+    {
+      "name": "EditorPaths",
+      "kind": "class"
+    },
+    {
+      "name": "EditorPlugin",
+      "kind": "class"
+    },
+    {
+      "name": "EditorProperty",
+      "kind": "class"
+    },
+    {
+      "name": "EditorResourceConversionPlugin",
+      "kind": "class"
+    },
+    {
+      "name": "EditorResourcePicker",
+      "kind": "class"
+    },
+    {
+      "name": "EditorResourcePreview",
+      "kind": "class"
+    },
+    {
+      "name": "EditorResourcePreviewGenerator",
+      "kind": "class"
+    },
+    {
+      "name": "EditorResourceTooltipPlugin",
+      "kind": "class"
+    },
+    {
+      "name": "EditorSceneFormatImporter",
+      "kind": "class"
+    },
+    {
+      "name": "EditorSceneFormatImporterBlend",
+      "kind": "class"
+    },
+    {
+      "name": "EditorSceneFormatImporterFBX2GLTF",
+      "kind": "class"
+    },
+    {
+      "name": "EditorSceneFormatImporterGLTF",
+      "kind": "class"
+    },
+    {
+      "name": "EditorSceneFormatImporterUFBX",
+      "kind": "class"
+    },
+    {
+      "name": "EditorScenePostImport",
+      "kind": "class"
+    },
+    {
+      "name": "EditorScenePostImportPlugin",
+      "kind": "class"
+    },
+    {
+      "name": "EditorScript",
+      "kind": "class"
+    },
+    {
+      "name": "EditorScriptPicker",
+      "kind": "class"
+    },
+    {
+      "name": "EditorSelection",
+      "kind": "class"
+    },
+    {
+      "name": "EditorSettings",
+      "kind": "class"
+    },
+    {
+      "name": "EditorSpinSlider",
+      "kind": "class"
+    },
+    {
+      "name": "EditorSyntaxHighlighter",
+      "kind": "class"
+    },
+    {
+      "name": "EditorToaster",
+      "kind": "class"
+    },
+    {
+      "name": "EditorTranslationParserPlugin",
+      "kind": "class"
+    },
+    {
+      "name": "EditorUndoRedoManager",
+      "kind": "class"
+    },
+    {
+      "name": "EditorVCSInterface",
+      "kind": "class"
+    },
+    {
+      "name": "EncodedObjectAsID",
+      "kind": "class"
+    },
+    {
+      "name": "Engine",
+      "kind": "singleton"
+    },
+    {
+      "name": "EngineDebugger",
+      "kind": "singleton"
+    },
+    {
+      "name": "EngineProfiler",
+      "kind": "class"
+    },
+    {
+      "name": "Environment",
+      "kind": "class"
+    },
+    {
+      "name": "Error",
+      "kind": "global-enum"
+    },
+    {
+      "name": "EulerOrder",
+      "kind": "global-enum"
+    },
+    {
+      "name": "Expression",
+      "kind": "class"
+    },
+    {
+      "name": "ExternalTexture",
+      "kind": "class"
+    },
+    {
+      "name": "FBXDocument",
+      "kind": "class"
+    },
+    {
+      "name": "FBXState",
+      "kind": "class"
+    },
+    {
+      "name": "FastNoiseLite",
+      "kind": "class"
+    },
+    {
+      "name": "FileAccess",
+      "kind": "class"
+    },
+    {
+      "name": "FileDialog",
+      "kind": "class"
+    },
+    {
+      "name": "FileSystemDock",
+      "kind": "class"
+    },
+    {
+      "name": "FlowContainer",
+      "kind": "class"
+    },
+    {
+      "name": "FogMaterial",
+      "kind": "class"
+    },
+    {
+      "name": "FogVolume",
+      "kind": "class"
+    },
+    {
+      "name": "Font",
+      "kind": "class"
+    },
+    {
+      "name": "FontFile",
+      "kind": "class"
+    },
+    {
+      "name": "FontVariation",
+      "kind": "class"
+    },
+    {
+      "name": "FramebufferCacheRD",
+      "kind": "class"
+    },
+    {
+      "name": "GDExtension",
+      "kind": "class"
+    },
+    {
+      "name": "GDExtensionManager",
+      "kind": "singleton"
+    },
+    {
+      "name": "GDScript",
+      "kind": "class"
+    },
+    {
+      "name": "GDScriptSyntaxHighlighter",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFAccessor",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFAnimation",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFBufferView",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFCamera",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFDocument",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFDocumentExtension",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFDocumentExtensionConvertImporterMesh",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFLight",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFMesh",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFNode",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFObjectModelProperty",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFPhysicsBody",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFPhysicsShape",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFSkeleton",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFSkin",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFSpecGloss",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFState",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFTexture",
+      "kind": "class"
+    },
+    {
+      "name": "GLTFTextureSampler",
+      "kind": "class"
+    },
+    {
+      "name": "GPUParticles2D",
+      "kind": "class"
+    },
+    {
+      "name": "GPUParticles3D",
+      "kind": "class"
+    },
+    {
+      "name": "GPUParticlesAttractor3D",
+      "kind": "class"
+    },
+    {
+      "name": "GPUParticlesAttractorBox3D",
+      "kind": "class"
+    },
+    {
+      "name": "GPUParticlesAttractorSphere3D",
+      "kind": "class"
+    },
+    {
+      "name": "GPUParticlesAttractorVectorField3D",
+      "kind": "class"
+    },
+    {
+      "name": "GPUParticlesCollision3D",
+      "kind": "class"
+    },
+    {
+      "name": "GPUParticlesCollisionBox3D",
+      "kind": "class"
+    },
+    {
+      "name": "GPUParticlesCollisionHeightField3D",
+      "kind": "class"
+    },
+    {
+      "name": "GPUParticlesCollisionSDF3D",
+      "kind": "class"
+    },
+    {
+      "name": "GPUParticlesCollisionSphere3D",
+      "kind": "class"
+    },
+    {
+      "name": "Generic6DOFJoint3D",
+      "kind": "class"
+    },
+    {
+      "name": "Geometry2D",
+      "kind": "singleton"
+    },
+    {
+      "name": "Geometry3D",
+      "kind": "singleton"
+    },
+    {
+      "name": "GeometryInstance3D",
+      "kind": "class"
+    },
+    {
+      "name": "Gradient",
+      "kind": "class"
+    },
+    {
+      "name": "GradientTexture1D",
+      "kind": "class"
+    },
+    {
+      "name": "GradientTexture2D",
+      "kind": "class"
+    },
+    {
+      "name": "GraphEdit",
+      "kind": "class"
+    },
+    {
+      "name": "GraphElement",
+      "kind": "class"
+    },
+    {
+      "name": "GraphFrame",
+      "kind": "class"
+    },
+    {
+      "name": "GraphNode",
+      "kind": "class"
+    },
+    {
+      "name": "GridContainer",
+      "kind": "class"
+    },
+    {
+      "name": "GridMap",
+      "kind": "class"
+    },
+    {
+      "name": "GridMapEditorPlugin",
+      "kind": "class"
+    },
+    {
+      "name": "GrooveJoint2D",
+      "kind": "class"
+    },
+    {
+      "name": "HBoxContainer",
+      "kind": "class"
+    },
+    {
+      "name": "HFlowContainer",
+      "kind": "class"
+    },
+    {
+      "name": "HMACContext",
+      "kind": "class"
+    },
+    {
+      "name": "HScrollBar",
+      "kind": "class"
+    },
+    {
+      "name": "HSeparator",
+      "kind": "class"
+    },
+    {
+      "name": "HSlider",
+      "kind": "class"
+    },
+    {
+      "name": "HSplitContainer",
+      "kind": "class"
+    },
+    {
+      "name": "HTTPClient",
+      "kind": "class"
+    },
+    {
+      "name": "HTTPRequest",
+      "kind": "class"
+    },
+    {
+      "name": "HashingContext",
+      "kind": "class"
+    },
+    {
+      "name": "HeightMapShape3D",
+      "kind": "class"
+    },
+    {
+      "name": "HingeJoint3D",
+      "kind": "class"
+    },
+    {
+      "name": "HorizontalAlignment",
+      "kind": "global-enum"
+    },
+    {
+      "name": "IP",
+      "kind": "singleton"
+    },
+    {
+      "name": "Image",
+      "kind": "class"
+    },
+    {
+      "name": "ImageFormatLoader",
+      "kind": "class"
+    },
+    {
+      "name": "ImageFormatLoaderExtension",
+      "kind": "class"
+    },
+    {
+      "name": "ImageTexture",
+      "kind": "class"
+    },
+    {
+      "name": "ImageTexture3D",
+      "kind": "class"
+    },
+    {
+      "name": "ImageTextureLayered",
+      "kind": "class"
+    },
+    {
+      "name": "ImmediateMesh",
+      "kind": "class"
+    },
+    {
+      "name": "ImporterMesh",
+      "kind": "class"
+    },
+    {
+      "name": "ImporterMeshInstance3D",
+      "kind": "class"
+    },
+    {
+      "name": "InlineAlignment",
+      "kind": "global-enum"
+    },
+    {
+      "name": "Input",
+      "kind": "singleton"
+    },
+    {
+      "name": "InputEvent",
+      "kind": "class"
+    },
+    {
+      "name": "InputEventAction",
+      "kind": "class"
+    },
+    {
+      "name": "InputEventFromWindow",
+      "kind": "class"
+    },
+    {
+      "name": "InputEventGesture",
+      "kind": "class"
+    },
+    {
+      "name": "InputEventJoypadButton",
+      "kind": "class"
+    },
+    {
+      "name": "InputEventJoypadMotion",
+      "kind": "class"
+    },
+    {
+      "name": "InputEventKey",
+      "kind": "class"
+    },
+    {
+      "name": "InputEventMIDI",
+      "kind": "class"
+    },
+    {
+      "name": "InputEventMagnifyGesture",
+      "kind": "class"
+    },
+    {
+      "name": "InputEventMouse",
+      "kind": "class"
+    },
+    {
+      "name": "InputEventMouseButton",
+      "kind": "class"
+    },
+    {
+      "name": "InputEventMouseMotion",
+      "kind": "class"
+    },
+    {
+      "name": "InputEventPanGesture",
+      "kind": "class"
+    },
+    {
+      "name": "InputEventScreenDrag",
+      "kind": "class"
+    },
+    {
+      "name": "InputEventScreenTouch",
+      "kind": "class"
+    },
+    {
+      "name": "InputEventShortcut",
+      "kind": "class"
+    },
+    {
+      "name": "InputEventWithModifiers",
+      "kind": "class"
+    },
+    {
+      "name": "InputMap",
+      "kind": "singleton"
+    },
+    {
+      "name": "InstancePlaceholder",
+      "kind": "class"
+    },
+    {
+      "name": "IntervalTweener",
+      "kind": "class"
+    },
+    {
+      "name": "ItemList",
+      "kind": "class"
+    },
+    {
+      "name": "JNISingleton",
+      "kind": "class"
+    },
+    {
+      "name": "JSON",
+      "kind": "class"
+    },
+    {
+      "name": "JSONRPC",
+      "kind": "class"
+    },
+    {
+      "name": "JavaClass",
+      "kind": "class"
+    },
+    {
+      "name": "JavaClassWrapper",
+      "kind": "singleton"
+    },
+    {
+      "name": "JavaObject",
+      "kind": "class"
+    },
+    {
+      "name": "JavaScriptBridge",
+      "kind": "singleton"
+    },
+    {
+      "name": "JavaScriptObject",
+      "kind": "class"
+    },
+    {
+      "name": "Joint2D",
+      "kind": "class"
+    },
+    {
+      "name": "Joint3D",
+      "kind": "class"
+    },
+    {
+      "name": "JoyAxis",
+      "kind": "global-enum"
+    },
+    {
+      "name": "JoyButton",
+      "kind": "global-enum"
+    },
+    {
+      "name": "Key",
+      "kind": "global-enum"
+    },
+    {
+      "name": "KeyLocation",
+      "kind": "global-enum"
+    },
+    {
+      "name": "KeyModifierMask",
+      "kind": "global-enum"
+    },
+    {
+      "name": "KinematicCollision2D",
+      "kind": "class"
+    },
+    {
+      "name": "KinematicCollision3D",
+      "kind": "class"
+    },
+    {
+      "name": "Label",
+      "kind": "class"
+    },
+    {
+      "name": "Label3D",
+      "kind": "class"
+    },
+    {
+      "name": "LabelSettings",
+      "kind": "class"
+    },
+    {
+      "name": "Light2D",
+      "kind": "class"
+    },
+    {
+      "name": "Light3D",
+      "kind": "class"
+    },
+    {
+      "name": "LightOccluder2D",
+      "kind": "class"
+    },
+    {
+      "name": "LightmapGI",
+      "kind": "class"
+    },
+    {
+      "name": "LightmapGIData",
+      "kind": "class"
+    },
+    {
+      "name": "LightmapProbe",
+      "kind": "class"
+    },
+    {
+      "name": "Lightmapper",
+      "kind": "class"
+    },
+    {
+      "name": "LightmapperRD",
+      "kind": "class"
+    },
+    {
+      "name": "Line2D",
+      "kind": "class"
+    },
+    {
+      "name": "LineEdit",
+      "kind": "class"
+    },
+    {
+      "name": "LinkButton",
+      "kind": "class"
+    },
+    {
+      "name": "LookAtModifier3D",
+      "kind": "class"
+    },
+    {
+      "name": "MIDIMessage",
+      "kind": "global-enum"
+    },
+    {
+      "name": "MainLoop",
+      "kind": "class"
+    },
+    {
+      "name": "MarginContainer",
+      "kind": "class"
+    },
+    {
+      "name": "Marker2D",
+      "kind": "class"
+    },
+    {
+      "name": "Marker3D",
+      "kind": "class"
+    },
+    {
+      "name": "Marshalls",
+      "kind": "singleton"
+    },
+    {
+      "name": "Material",
+      "kind": "class"
+    },
+    {
+      "name": "MenuBar",
+      "kind": "class"
+    },
+    {
+      "name": "MenuButton",
+      "kind": "class"
+    },
+    {
+      "name": "Mesh",
+      "kind": "class"
+    },
+    {
+      "name": "MeshConvexDecompositionSettings",
+      "kind": "class"
+    },
+    {
+      "name": "MeshDataTool",
+      "kind": "class"
+    },
+    {
+      "name": "MeshInstance2D",
+      "kind": "class"
+    },
+    {
+      "name": "MeshInstance3D",
+      "kind": "class"
+    },
+    {
+      "name": "MeshLibrary",
+      "kind": "class"
+    },
+    {
+      "name": "MeshTexture",
+      "kind": "class"
+    },
+    {
+      "name": "MethodFlags",
+      "kind": "global-enum"
+    },
+    {
+      "name": "MethodTweener",
+      "kind": "class"
+    },
+    {
+      "name": "MissingNode",
+      "kind": "class"
+    },
+    {
+      "name": "MissingResource",
+      "kind": "class"
+    },
+    {
+      "name": "MobileVRInterface",
+      "kind": "class"
+    },
+    {
+      "name": "MouseButton",
+      "kind": "global-enum"
+    },
+    {
+      "name": "MouseButtonMask",
+      "kind": "global-enum"
+    },
+    {
+      "name": "MovieWriter",
+      "kind": "class"
+    },
+    {
+      "name": "MultiMesh",
+      "kind": "class"
+    },
+    {
+      "name": "MultiMeshInstance2D",
+      "kind": "class"
+    },
+    {
+      "name": "MultiMeshInstance3D",
+      "kind": "class"
+    },
+    {
+      "name": "MultiplayerAPI",
+      "kind": "class"
+    },
+    {
+      "name": "MultiplayerAPIExtension",
+      "kind": "class"
+    },
+    {
+      "name": "MultiplayerPeer",
+      "kind": "class"
+    },
+    {
+      "name": "MultiplayerPeerExtension",
+      "kind": "class"
+    },
+    {
+      "name": "MultiplayerSpawner",
+      "kind": "class"
+    },
+    {
+      "name": "MultiplayerSynchronizer",
+      "kind": "class"
+    },
+    {
+      "name": "Mutex",
+      "kind": "class"
+    },
+    {
+      "name": "NativeMenu",
+      "kind": "singleton"
+    },
+    {
+      "name": "NavigationAgent2D",
+      "kind": "class"
+    },
+    {
+      "name": "NavigationAgent3D",
+      "kind": "class"
+    },
+    {
+      "name": "NavigationLink2D",
+      "kind": "class"
+    },
+    {
+      "name": "NavigationLink3D",
+      "kind": "class"
+    },
+    {
+      "name": "NavigationMesh",
+      "kind": "class"
+    },
+    {
+      "name": "NavigationMeshGenerator",
+      "kind": "singleton"
+    },
+    {
+      "name": "NavigationMeshSourceGeometryData2D",
+      "kind": "class"
+    },
+    {
+      "name": "NavigationMeshSourceGeometryData3D",
+      "kind": "class"
+    },
+    {
+      "name": "NavigationObstacle2D",
+      "kind": "class"
+    },
+    {
+      "name": "NavigationObstacle3D",
+      "kind": "class"
+    },
+    {
+      "name": "NavigationPathQueryParameters2D",
+      "kind": "class"
+    },
+    {
+      "name": "NavigationPathQueryParameters3D",
+      "kind": "class"
+    },
+    {
+      "name": "NavigationPathQueryResult2D",
+      "kind": "class"
+    },
+    {
+      "name": "NavigationPathQueryResult3D",
+      "kind": "class"
+    },
+    {
+      "name": "NavigationPolygon",
+      "kind": "class"
+    },
+    {
+      "name": "NavigationRegion2D",
+      "kind": "class"
+    },
+    {
+      "name": "NavigationRegion3D",
+      "kind": "class"
+    },
+    {
+      "name": "NavigationServer2D",
+      "kind": "singleton"
+    },
+    {
+      "name": "NavigationServer3D",
+      "kind": "singleton"
+    },
+    {
+      "name": "NinePatchRect",
+      "kind": "class"
+    },
+    {
+      "name": "Node",
+      "kind": "class"
+    },
+    {
+      "name": "Node2D",
+      "kind": "class"
+    },
+    {
+      "name": "Node3D",
+      "kind": "class"
+    },
+    {
+      "name": "Node3DGizmo",
+      "kind": "class"
+    },
+    {
+      "name": "NodePath",
+      "kind": "builtin"
+    },
+    {
+      "name": "Noise",
+      "kind": "class"
+    },
+    {
+      "name": "NoiseTexture2D",
+      "kind": "class"
+    },
+    {
+      "name": "NoiseTexture3D",
+      "kind": "class"
+    },
+    {
+      "name": "ORMMaterial3D",
+      "kind": "class"
+    },
+    {
+      "name": "OS",
+      "kind": "singleton"
+    },
+    {
+      "name": "Object",
+      "kind": "class"
+    },
+    {
+      "name": "Occluder3D",
+      "kind": "class"
+    },
+    {
+      "name": "OccluderInstance3D",
+      "kind": "class"
+    },
+    {
+      "name": "OccluderPolygon2D",
+      "kind": "class"
+    },
+    {
+      "name": "OfflineMultiplayerPeer",
+      "kind": "class"
+    },
+    {
+      "name": "OggPacketSequence",
+      "kind": "class"
+    },
+    {
+      "name": "OggPacketSequencePlayback",
+      "kind": "class"
+    },
+    {
+      "name": "OmniLight3D",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRAPIExtension",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRAction",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRActionBindingModifier",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRActionMap",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRActionSet",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRAnalogThresholdModifier",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRBindingModifier",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRBindingModifierEditor",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRCompositionLayer",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRCompositionLayerCylinder",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRCompositionLayerEquirect",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRCompositionLayerQuad",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRDpadBindingModifier",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRExtensionWrapperExtension",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRHand",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRHapticBase",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRHapticVibration",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRIPBinding",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRIPBindingModifier",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRInteractionProfile",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRInteractionProfileEditor",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRInteractionProfileEditorBase",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRInteractionProfileMetadata",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRInterface",
+      "kind": "class"
+    },
+    {
+      "name": "OpenXRVisibilityMask",
+      "kind": "class"
+    },
+    {
+      "name": "OptimizedTranslation",
+      "kind": "class"
+    },
+    {
+      "name": "OptionButton",
+      "kind": "class"
+    },
+    {
+      "name": "Orientation",
+      "kind": "global-enum"
+    },
+    {
+      "name": "PCKPacker",
+      "kind": "class"
+    },
+    {
+      "name": "PackedByteArray",
+      "kind": "builtin"
+    },
+    {
+      "name": "PackedColorArray",
+      "kind": "builtin"
+    },
+    {
+      "name": "PackedDataContainer",
+      "kind": "class"
+    },
+    {
+      "name": "PackedDataContainerRef",
+      "kind": "class"
+    },
+    {
+      "name": "PackedFloat32Array",
+      "kind": "builtin"
+    },
+    {
+      "name": "PackedFloat64Array",
+      "kind": "builtin"
+    },
+    {
+      "name": "PackedInt32Array",
+      "kind": "builtin"
+    },
+    {
+      "name": "PackedInt64Array",
+      "kind": "builtin"
+    },
+    {
+      "name": "PackedScene",
+      "kind": "class"
+    },
+    {
+      "name": "PackedStringArray",
+      "kind": "builtin"
+    },
+    {
+      "name": "PackedVector2Array",
+      "kind": "builtin"
+    },
+    {
+      "name": "PackedVector3Array",
+      "kind": "builtin"
+    },
+    {
+      "name": "PackedVector4Array",
+      "kind": "builtin"
+    },
+    {
+      "name": "PacketPeer",
+      "kind": "class"
+    },
+    {
+      "name": "PacketPeerDTLS",
+      "kind": "class"
+    },
+    {
+      "name": "PacketPeerExtension",
+      "kind": "class"
+    },
+    {
+      "name": "PacketPeerStream",
+      "kind": "class"
+    },
+    {
+      "name": "PacketPeerUDP",
+      "kind": "class"
+    },
+    {
+      "name": "Panel",
+      "kind": "class"
+    },
+    {
+      "name": "PanelContainer",
+      "kind": "class"
+    },
+    {
+      "name": "PanoramaSkyMaterial",
+      "kind": "class"
+    },
+    {
+      "name": "Parallax2D",
+      "kind": "class"
+    },
+    {
+      "name": "ParallaxBackground",
+      "kind": "class"
+    },
+    {
+      "name": "ParallaxLayer",
+      "kind": "class"
+    },
+    {
+      "name": "ParticleProcessMaterial",
+      "kind": "class"
+    },
+    {
+      "name": "Path2D",
+      "kind": "class"
+    },
+    {
+      "name": "Path3D",
+      "kind": "class"
+    },
+    {
+      "name": "PathFollow2D",
+      "kind": "class"
+    },
+    {
+      "name": "PathFollow3D",
+      "kind": "class"
+    },
+    {
+      "name": "Performance",
+      "kind": "singleton"
+    },
+    {
+      "name": "PhysicalBone2D",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicalBone3D",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicalBoneSimulator3D",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicalSkyMaterial",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsBody2D",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsBody3D",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsDirectBodyState2D",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsDirectBodyState2DExtension",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsDirectBodyState3D",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsDirectBodyState3DExtension",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsDirectSpaceState2D",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsDirectSpaceState2DExtension",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsDirectSpaceState3D",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsDirectSpaceState3DExtension",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsMaterial",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsPointQueryParameters2D",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsPointQueryParameters3D",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsRayQueryParameters2D",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsRayQueryParameters3D",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsServer2D",
+      "kind": "singleton"
+    },
+    {
+      "name": "PhysicsServer2DExtension",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsServer2DManager",
+      "kind": "singleton"
+    },
+    {
+      "name": "PhysicsServer3D",
+      "kind": "singleton"
+    },
+    {
+      "name": "PhysicsServer3DExtension",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsServer3DManager",
+      "kind": "singleton"
+    },
+    {
+      "name": "PhysicsServer3DRenderingServerHandler",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsShapeQueryParameters2D",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsShapeQueryParameters3D",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsTestMotionParameters2D",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsTestMotionParameters3D",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsTestMotionResult2D",
+      "kind": "class"
+    },
+    {
+      "name": "PhysicsTestMotionResult3D",
+      "kind": "class"
+    },
+    {
+      "name": "PinJoint2D",
+      "kind": "class"
+    },
+    {
+      "name": "PinJoint3D",
+      "kind": "class"
+    },
+    {
+      "name": "PlaceholderCubemap",
+      "kind": "class"
+    },
+    {
+      "name": "PlaceholderCubemapArray",
+      "kind": "class"
+    },
+    {
+      "name": "PlaceholderMaterial",
+      "kind": "class"
+    },
+    {
+      "name": "PlaceholderMesh",
+      "kind": "class"
+    },
+    {
+      "name": "PlaceholderTexture2D",
+      "kind": "class"
+    },
+    {
+      "name": "PlaceholderTexture2DArray",
+      "kind": "class"
+    },
+    {
+      "name": "PlaceholderTexture3D",
+      "kind": "class"
+    },
+    {
+      "name": "PlaceholderTextureLayered",
+      "kind": "class"
+    },
+    {
+      "name": "Plane",
+      "kind": "builtin"
+    },
+    {
+      "name": "PlaneMesh",
+      "kind": "class"
+    },
+    {
+      "name": "PointLight2D",
+      "kind": "class"
+    },
+    {
+      "name": "PointMesh",
+      "kind": "class"
+    },
+    {
+      "name": "Polygon2D",
+      "kind": "class"
+    },
+    {
+      "name": "PolygonOccluder3D",
+      "kind": "class"
+    },
+    {
+      "name": "PolygonPathFinder",
+      "kind": "class"
+    },
+    {
+      "name": "Popup",
+      "kind": "class"
+    },
+    {
+      "name": "PopupMenu",
+      "kind": "class"
+    },
+    {
+      "name": "PopupPanel",
+      "kind": "class"
+    },
+    {
+      "name": "PortableCompressedTexture2D",
+      "kind": "class"
+    },
+    {
+      "name": "PrimitiveMesh",
+      "kind": "class"
+    },
+    {
+      "name": "PrismMesh",
+      "kind": "class"
+    },
+    {
+      "name": "ProceduralSkyMaterial",
+      "kind": "class"
+    },
+    {
+      "name": "ProgressBar",
+      "kind": "class"
+    },
+    {
+      "name": "ProjectSettings",
+      "kind": "singleton"
+    },
+    {
+      "name": "Projection",
+      "kind": "builtin"
+    },
+    {
+      "name": "PropertyHint",
+      "kind": "global-enum"
+    },
+    {
+      "name": "PropertyTweener",
+      "kind": "class"
+    },
+    {
+      "name": "PropertyUsageFlags",
+      "kind": "global-enum"
+    },
+    {
+      "name": "QuadMesh",
+      "kind": "class"
+    },
+    {
+      "name": "QuadOccluder3D",
+      "kind": "class"
+    },
+    {
+      "name": "Quaternion",
+      "kind": "builtin"
+    },
+    {
+      "name": "RDAttachmentFormat",
+      "kind": "class"
+    },
+    {
+      "name": "RDFramebufferPass",
+      "kind": "class"
+    },
+    {
+      "name": "RDPipelineColorBlendState",
+      "kind": "class"
+    },
+    {
+      "name": "RDPipelineColorBlendStateAttachment",
+      "kind": "class"
+    },
+    {
+      "name": "RDPipelineDepthStencilState",
+      "kind": "class"
+    },
+    {
+      "name": "RDPipelineMultisampleState",
+      "kind": "class"
+    },
+    {
+      "name": "RDPipelineRasterizationState",
+      "kind": "class"
+    },
+    {
+      "name": "RDPipelineSpecializationConstant",
+      "kind": "class"
+    },
+    {
+      "name": "RDSamplerState",
+      "kind": "class"
+    },
+    {
+      "name": "RDShaderFile",
+      "kind": "class"
+    },
+    {
+      "name": "RDShaderSPIRV",
+      "kind": "class"
+    },
+    {
+      "name": "RDShaderSource",
+      "kind": "class"
+    },
+    {
+      "name": "RDTextureFormat",
+      "kind": "class"
+    },
+    {
+      "name": "RDTextureView",
+      "kind": "class"
+    },
+    {
+      "name": "RDUniform",
+      "kind": "class"
+    },
+    {
+      "name": "RDVertexAttribute",
+      "kind": "class"
+    },
+    {
+      "name": "RID",
+      "kind": "builtin"
+    },
+    {
+      "name": "RandomNumberGenerator",
+      "kind": "class"
+    },
+    {
+      "name": "Range",
+      "kind": "class"
+    },
+    {
+      "name": "RayCast2D",
+      "kind": "class"
+    },
+    {
+      "name": "RayCast3D",
+      "kind": "class"
+    },
+    {
+      "name": "Rect2",
+      "kind": "builtin"
+    },
+    {
+      "name": "Rect2i",
+      "kind": "builtin"
+    },
+    {
+      "name": "RectangleShape2D",
+      "kind": "class"
+    },
+    {
+      "name": "RefCounted",
+      "kind": "class"
+    },
+    {
+      "name": "ReferenceRect",
+      "kind": "class"
+    },
+    {
+      "name": "ReflectionProbe",
+      "kind": "class"
+    },
+    {
+      "name": "RegEx",
+      "kind": "class"
+    },
+    {
+      "name": "RegExMatch",
+      "kind": "class"
+    },
+    {
+      "name": "RemoteTransform2D",
+      "kind": "class"
+    },
+    {
+      "name": "RemoteTransform3D",
+      "kind": "class"
+    },
+    {
+      "name": "RenderData",
+      "kind": "class"
+    },
+    {
+      "name": "RenderDataExtension",
+      "kind": "class"
+    },
+    {
+      "name": "RenderDataRD",
+      "kind": "class"
+    },
+    {
+      "name": "RenderSceneBuffers",
+      "kind": "class"
+    },
+    {
+      "name": "RenderSceneBuffersConfiguration",
+      "kind": "class"
+    },
+    {
+      "name": "RenderSceneBuffersExtension",
+      "kind": "class"
+    },
+    {
+      "name": "RenderSceneBuffersRD",
+      "kind": "class"
+    },
+    {
+      "name": "RenderSceneData",
+      "kind": "class"
+    },
+    {
+      "name": "RenderSceneDataExtension",
+      "kind": "class"
+    },
+    {
+      "name": "RenderSceneDataRD",
+      "kind": "class"
+    },
+    {
+      "name": "RenderingDevice",
+      "kind": "class"
+    },
+    {
+      "name": "RenderingServer",
+      "kind": "singleton"
+    },
+    {
+      "name": "Resource",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceFormatLoader",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceFormatSaver",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceImporter",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceImporterBMFont",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceImporterBitMap",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceImporterCSVTranslation",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceImporterDynamicFont",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceImporterImage",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceImporterImageFont",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceImporterLayeredTexture",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceImporterMP3",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceImporterOBJ",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceImporterOggVorbis",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceImporterScene",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceImporterShaderFile",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceImporterTexture",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceImporterTextureAtlas",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceImporterWAV",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceLoader",
+      "kind": "singleton"
+    },
+    {
+      "name": "ResourcePreloader",
+      "kind": "class"
+    },
+    {
+      "name": "ResourceSaver",
+      "kind": "singleton"
+    },
+    {
+      "name": "ResourceUID",
+      "kind": "singleton"
+    },
+    {
+      "name": "RetargetModifier3D",
+      "kind": "class"
+    },
+    {
+      "name": "RibbonTrailMesh",
+      "kind": "class"
+    },
+    {
+      "name": "RichTextEffect",
+      "kind": "class"
+    },
+    {
+      "name": "RichTextLabel",
+      "kind": "class"
+    },
+    {
+      "name": "RigidBody2D",
+      "kind": "class"
+    },
+    {
+      "name": "RigidBody3D",
+      "kind": "class"
+    },
+    {
+      "name": "RootMotionView",
+      "kind": "class"
+    },
+    {
+      "name": "SceneMultiplayer",
+      "kind": "class"
+    },
+    {
+      "name": "SceneReplicationConfig",
+      "kind": "class"
+    },
+    {
+      "name": "SceneState",
+      "kind": "class"
+    },
+    {
+      "name": "SceneTree",
+      "kind": "class"
+    },
+    {
+      "name": "SceneTreeTimer",
+      "kind": "class"
+    },
+    {
+      "name": "Script",
+      "kind": "class"
+    },
+    {
+      "name": "ScriptCreateDialog",
+      "kind": "class"
+    },
+    {
+      "name": "ScriptEditor",
+      "kind": "class"
+    },
+    {
+      "name": "ScriptEditorBase",
+      "kind": "class"
+    },
+    {
+      "name": "ScriptExtension",
+      "kind": "class"
+    },
+    {
+      "name": "ScriptLanguage",
+      "kind": "class"
+    },
+    {
+      "name": "ScriptLanguageExtension",
+      "kind": "class"
+    },
+    {
+      "name": "ScrollBar",
+      "kind": "class"
+    },
+    {
+      "name": "ScrollContainer",
+      "kind": "class"
+    },
+    {
+      "name": "SegmentShape2D",
+      "kind": "class"
+    },
+    {
+      "name": "Semaphore",
+      "kind": "class"
+    },
+    {
+      "name": "SeparationRayShape2D",
+      "kind": "class"
+    },
+    {
+      "name": "SeparationRayShape3D",
+      "kind": "class"
+    },
+    {
+      "name": "Separator",
+      "kind": "class"
+    },
+    {
+      "name": "Shader",
+      "kind": "class"
+    },
+    {
+      "name": "ShaderGlobalsOverride",
+      "kind": "class"
+    },
+    {
+      "name": "ShaderInclude",
+      "kind": "class"
+    },
+    {
+      "name": "ShaderIncludeDB",
+      "kind": "class"
+    },
+    {
+      "name": "ShaderMaterial",
+      "kind": "class"
+    },
+    {
+      "name": "Shape2D",
+      "kind": "class"
+    },
+    {
+      "name": "Shape3D",
+      "kind": "class"
+    },
+    {
+      "name": "ShapeCast2D",
+      "kind": "class"
+    },
+    {
+      "name": "ShapeCast3D",
+      "kind": "class"
+    },
+    {
+      "name": "Shortcut",
+      "kind": "class"
+    },
+    {
+      "name": "Side",
+      "kind": "global-enum"
+    },
+    {
+      "name": "Signal",
+      "kind": "builtin"
+    },
+    {
+      "name": "Skeleton2D",
+      "kind": "class"
+    },
+    {
+      "name": "Skeleton3D",
+      "kind": "class"
+    },
+    {
+      "name": "SkeletonIK3D",
+      "kind": "class"
+    },
+    {
+      "name": "SkeletonModification2D",
+      "kind": "class"
+    },
+    {
+      "name": "SkeletonModification2DCCDIK",
+      "kind": "class"
+    },
+    {
+      "name": "SkeletonModification2DFABRIK",
+      "kind": "class"
+    },
+    {
+      "name": "SkeletonModification2DJiggle",
+      "kind": "class"
+    },
+    {
+      "name": "SkeletonModification2DLookAt",
+      "kind": "class"
+    },
+    {
+      "name": "SkeletonModification2DPhysicalBones",
+      "kind": "class"
+    },
+    {
+      "name": "SkeletonModification2DStackHolder",
+      "kind": "class"
+    },
+    {
+      "name": "SkeletonModification2DTwoBoneIK",
+      "kind": "class"
+    },
+    {
+      "name": "SkeletonModificationStack2D",
+      "kind": "class"
+    },
+    {
+      "name": "SkeletonModifier3D",
+      "kind": "class"
+    },
+    {
+      "name": "SkeletonProfile",
+      "kind": "class"
+    },
+    {
+      "name": "SkeletonProfileHumanoid",
+      "kind": "class"
+    },
+    {
+      "name": "Skin",
+      "kind": "class"
+    },
+    {
+      "name": "SkinReference",
+      "kind": "class"
+    },
+    {
+      "name": "Sky",
+      "kind": "class"
+    },
+    {
+      "name": "Slider",
+      "kind": "class"
+    },
+    {
+      "name": "SliderJoint3D",
+      "kind": "class"
+    },
+    {
+      "name": "SoftBody3D",
+      "kind": "class"
+    },
+    {
+      "name": "SphereMesh",
+      "kind": "class"
+    },
+    {
+      "name": "SphereOccluder3D",
+      "kind": "class"
+    },
+    {
+      "name": "SphereShape3D",
+      "kind": "class"
+    },
+    {
+      "name": "SpinBox",
+      "kind": "class"
+    },
+    {
+      "name": "SplitContainer",
+      "kind": "class"
+    },
+    {
+      "name": "SpotLight3D",
+      "kind": "class"
+    },
+    {
+      "name": "SpringArm3D",
+      "kind": "class"
+    },
+    {
+      "name": "SpringBoneCollision3D",
+      "kind": "class"
+    },
+    {
+      "name": "SpringBoneCollisionCapsule3D",
+      "kind": "class"
+    },
+    {
+      "name": "SpringBoneCollisionPlane3D",
+      "kind": "class"
+    },
+    {
+      "name": "SpringBoneCollisionSphere3D",
+      "kind": "class"
+    },
+    {
+      "name": "SpringBoneSimulator3D",
+      "kind": "class"
+    },
+    {
+      "name": "Sprite2D",
+      "kind": "class"
+    },
+    {
+      "name": "Sprite3D",
+      "kind": "class"
+    },
+    {
+      "name": "SpriteBase3D",
+      "kind": "class"
+    },
+    {
+      "name": "SpriteFrames",
+      "kind": "class"
+    },
+    {
+      "name": "StandardMaterial3D",
+      "kind": "class"
+    },
+    {
+      "name": "StaticBody2D",
+      "kind": "class"
+    },
+    {
+      "name": "StaticBody3D",
+      "kind": "class"
+    },
+    {
+      "name": "StatusIndicator",
+      "kind": "class"
+    },
+    {
+      "name": "StreamPeer",
+      "kind": "class"
+    },
+    {
+      "name": "StreamPeerBuffer",
+      "kind": "class"
+    },
+    {
+      "name": "StreamPeerExtension",
+      "kind": "class"
+    },
+    {
+      "name": "StreamPeerGZIP",
+      "kind": "class"
+    },
+    {
+      "name": "StreamPeerTCP",
+      "kind": "class"
+    },
+    {
+      "name": "StreamPeerTLS",
+      "kind": "class"
+    },
+    {
+      "name": "StringName",
+      "kind": "builtin"
+    },
+    {
+      "name": "StyleBox",
+      "kind": "class"
+    },
+    {
+      "name": "StyleBoxEmpty",
+      "kind": "class"
+    },
+    {
+      "name": "StyleBoxFlat",
+      "kind": "class"
+    },
+    {
+      "name": "StyleBoxLine",
+      "kind": "class"
+    },
+    {
+      "name": "StyleBoxTexture",
+      "kind": "class"
+    },
+    {
+      "name": "SubViewport",
+      "kind": "class"
+    },
+    {
+      "name": "SubViewportContainer",
+      "kind": "class"
+    },
+    {
+      "name": "SubtweenTweener",
+      "kind": "class"
+    },
+    {
+      "name": "SurfaceTool",
+      "kind": "class"
+    },
+    {
+      "name": "SyntaxHighlighter",
+      "kind": "class"
+    },
+    {
+      "name": "SystemFont",
+      "kind": "class"
+    },
+    {
+      "name": "TCPServer",
+      "kind": "class"
+    },
+    {
+      "name": "TLSOptions",
+      "kind": "class"
+    },
+    {
+      "name": "TabBar",
+      "kind": "class"
+    },
+    {
+      "name": "TabContainer",
+      "kind": "class"
+    },
+    {
+      "name": "TextEdit",
+      "kind": "class"
+    },
+    {
+      "name": "TextLine",
+      "kind": "class"
+    },
+    {
+      "name": "TextMesh",
+      "kind": "class"
+    },
+    {
+      "name": "TextParagraph",
+      "kind": "class"
+    },
+    {
+      "name": "TextServer",
+      "kind": "class"
+    },
+    {
+      "name": "TextServerAdvanced",
+      "kind": "class"
+    },
+    {
+      "name": "TextServerDummy",
+      "kind": "class"
+    },
+    {
+      "name": "TextServerExtension",
+      "kind": "class"
+    },
+    {
+      "name": "TextServerManager",
+      "kind": "singleton"
+    },
+    {
+      "name": "Texture",
+      "kind": "class"
+    },
+    {
+      "name": "Texture2D",
+      "kind": "class"
+    },
+    {
+      "name": "Texture2DArray",
+      "kind": "class"
+    },
+    {
+      "name": "Texture2DArrayRD",
+      "kind": "class"
+    },
+    {
+      "name": "Texture2DRD",
+      "kind": "class"
+    },
+    {
+      "name": "Texture3D",
+      "kind": "class"
+    },
+    {
+      "name": "Texture3DRD",
+      "kind": "class"
+    },
+    {
+      "name": "TextureButton",
+      "kind": "class"
+    },
+    {
+      "name": "TextureCubemapArrayRD",
+      "kind": "class"
+    },
+    {
+      "name": "TextureCubemapRD",
+      "kind": "class"
+    },
+    {
+      "name": "TextureLayered",
+      "kind": "class"
+    },
+    {
+      "name": "TextureLayeredRD",
+      "kind": "class"
+    },
+    {
+      "name": "TextureProgressBar",
+      "kind": "class"
+    },
+    {
+      "name": "TextureRect",
+      "kind": "class"
+    },
+    {
+      "name": "Theme",
+      "kind": "class"
+    },
+    {
+      "name": "ThemeDB",
+      "kind": "singleton"
+    },
+    {
+      "name": "Thread",
+      "kind": "class"
+    },
+    {
+      "name": "TileData",
+      "kind": "class"
+    },
+    {
+      "name": "TileMap",
+      "kind": "class"
+    },
+    {
+      "name": "TileMapLayer",
+      "kind": "class"
+    },
+    {
+      "name": "TileMapPattern",
+      "kind": "class"
+    },
+    {
+      "name": "TileSet",
+      "kind": "class"
+    },
+    {
+      "name": "TileSetAtlasSource",
+      "kind": "class"
+    },
+    {
+      "name": "TileSetScenesCollectionSource",
+      "kind": "class"
+    },
+    {
+      "name": "TileSetSource",
+      "kind": "class"
+    },
+    {
+      "name": "Time",
+      "kind": "singleton"
+    },
+    {
+      "name": "Timer",
+      "kind": "class"
+    },
+    {
+      "name": "TorusMesh",
+      "kind": "class"
+    },
+    {
+      "name": "TouchScreenButton",
+      "kind": "class"
+    },
+    {
+      "name": "Transform2D",
+      "kind": "builtin"
+    },
+    {
+      "name": "Transform3D",
+      "kind": "builtin"
+    },
+    {
+      "name": "Translation",
+      "kind": "class"
+    },
+    {
+      "name": "TranslationDomain",
+      "kind": "class"
+    },
+    {
+      "name": "TranslationServer",
+      "kind": "singleton"
+    },
+    {
+      "name": "Tree",
+      "kind": "class"
+    },
+    {
+      "name": "TreeItem",
+      "kind": "class"
+    },
+    {
+      "name": "TriangleMesh",
+      "kind": "class"
+    },
+    {
+      "name": "TubeTrailMesh",
+      "kind": "class"
+    },
+    {
+      "name": "Tween",
+      "kind": "class"
+    },
+    {
+      "name": "Tweener",
+      "kind": "class"
+    },
+    {
+      "name": "UDPServer",
+      "kind": "class"
+    },
+    {
+      "name": "UPNP",
+      "kind": "class"
+    },
+    {
+      "name": "UPNPDevice",
+      "kind": "class"
+    },
+    {
+      "name": "UndoRedo",
+      "kind": "class"
+    },
+    {
+      "name": "UniformSetCacheRD",
+      "kind": "class"
+    },
+    {
+      "name": "VBoxContainer",
+      "kind": "class"
+    },
+    {
+      "name": "VFlowContainer",
+      "kind": "class"
+    },
+    {
+      "name": "VScrollBar",
+      "kind": "class"
+    },
+    {
+      "name": "VSeparator",
+      "kind": "class"
+    },
+    {
+      "name": "VSlider",
+      "kind": "class"
+    },
+    {
+      "name": "VSplitContainer",
+      "kind": "class"
+    },
+    {
+      "name": "Variant",
+      "kind": "enum-namespace"
+    },
+    {
+      "name": "Vector2",
+      "kind": "builtin"
+    },
+    {
+      "name": "Vector2i",
+      "kind": "builtin"
+    },
+    {
+      "name": "Vector3",
+      "kind": "builtin"
+    },
+    {
+      "name": "Vector3i",
+      "kind": "builtin"
+    },
+    {
+      "name": "Vector4",
+      "kind": "builtin"
+    },
+    {
+      "name": "Vector4i",
+      "kind": "builtin"
+    },
+    {
+      "name": "VehicleBody3D",
+      "kind": "class"
+    },
+    {
+      "name": "VehicleWheel3D",
+      "kind": "class"
+    },
+    {
+      "name": "VerticalAlignment",
+      "kind": "global-enum"
+    },
+    {
+      "name": "VideoStream",
+      "kind": "class"
+    },
+    {
+      "name": "VideoStreamPlayback",
+      "kind": "class"
+    },
+    {
+      "name": "VideoStreamPlayer",
+      "kind": "class"
+    },
+    {
+      "name": "VideoStreamTheora",
+      "kind": "class"
+    },
+    {
+      "name": "Viewport",
+      "kind": "class"
+    },
+    {
+      "name": "ViewportTexture",
+      "kind": "class"
+    },
+    {
+      "name": "VisibleOnScreenEnabler2D",
+      "kind": "class"
+    },
+    {
+      "name": "VisibleOnScreenEnabler3D",
+      "kind": "class"
+    },
+    {
+      "name": "VisibleOnScreenNotifier2D",
+      "kind": "class"
+    },
+    {
+      "name": "VisibleOnScreenNotifier3D",
+      "kind": "class"
+    },
+    {
+      "name": "VisualInstance3D",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShader",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNode",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeBillboard",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeBooleanConstant",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeBooleanParameter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeClamp",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeColorConstant",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeColorFunc",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeColorOp",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeColorParameter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeComment",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeCompare",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeConstant",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeCubemap",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeCubemapParameter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeCurveTexture",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeCurveXYZTexture",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeCustom",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeDerivativeFunc",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeDeterminant",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeDistanceFade",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeDotProduct",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeExpression",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeFaceForward",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeFloatConstant",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeFloatFunc",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeFloatOp",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeFloatParameter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeFrame",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeFresnel",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeGlobalExpression",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeGroupBase",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeIf",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeInput",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeIntConstant",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeIntFunc",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeIntOp",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeIntParameter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeIs",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeLinearSceneDepth",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeMix",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeMultiplyAdd",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeOuterProduct",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeOutput",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeParameter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeParameterRef",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeParticleAccelerator",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeParticleBoxEmitter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeParticleConeVelocity",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeParticleEmit",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeParticleEmitter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeParticleMeshEmitter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeParticleMultiplyByAxisAngle",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeParticleOutput",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeParticleRandomness",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeParticleRingEmitter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeParticleSphereEmitter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeProximityFade",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeRandomRange",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeRemap",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeReroute",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeResizableBase",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeRotationByAxis",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeSDFRaymarch",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeSDFToScreenUV",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeSample3D",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeScreenNormalWorldSpace",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeScreenUVToSDF",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeSmoothStep",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeStep",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeSwitch",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeTexture",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeTexture2DArray",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeTexture2DArrayParameter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeTexture2DParameter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeTexture3D",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeTexture3DParameter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeTextureParameter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeTextureParameterTriplanar",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeTextureSDF",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeTextureSDFNormal",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeTransformCompose",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeTransformConstant",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeTransformDecompose",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeTransformFunc",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeTransformOp",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeTransformParameter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeTransformVecMult",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeUIntConstant",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeUIntFunc",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeUIntOp",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeUIntParameter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeUVFunc",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeUVPolarCoord",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeVarying",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeVaryingGetter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeVaryingSetter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeVec2Constant",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeVec2Parameter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeVec3Constant",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeVec3Parameter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeVec4Constant",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeVec4Parameter",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeVectorBase",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeVectorCompose",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeVectorDecompose",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeVectorDistance",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeVectorFunc",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeVectorLen",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeVectorOp",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeVectorRefract",
+      "kind": "class"
+    },
+    {
+      "name": "VisualShaderNodeWorldPositionFromDepth",
+      "kind": "class"
+    },
+    {
+      "name": "VoxelGI",
+      "kind": "class"
+    },
+    {
+      "name": "VoxelGIData",
+      "kind": "class"
+    },
+    {
+      "name": "WeakRef",
+      "kind": "class"
+    },
+    {
+      "name": "WebRTCDataChannel",
+      "kind": "class"
+    },
+    {
+      "name": "WebRTCDataChannelExtension",
+      "kind": "class"
+    },
+    {
+      "name": "WebRTCMultiplayerPeer",
+      "kind": "class"
+    },
+    {
+      "name": "WebRTCPeerConnection",
+      "kind": "class"
+    },
+    {
+      "name": "WebRTCPeerConnectionExtension",
+      "kind": "class"
+    },
+    {
+      "name": "WebSocketMultiplayerPeer",
+      "kind": "class"
+    },
+    {
+      "name": "WebSocketPeer",
+      "kind": "class"
+    },
+    {
+      "name": "WebXRInterface",
+      "kind": "class"
+    },
+    {
+      "name": "Window",
+      "kind": "class"
+    },
+    {
+      "name": "WorkerThreadPool",
+      "kind": "singleton"
+    },
+    {
+      "name": "World2D",
+      "kind": "class"
+    },
+    {
+      "name": "World3D",
+      "kind": "class"
+    },
+    {
+      "name": "WorldBoundaryShape2D",
+      "kind": "class"
+    },
+    {
+      "name": "WorldBoundaryShape3D",
+      "kind": "class"
+    },
+    {
+      "name": "WorldEnvironment",
+      "kind": "class"
+    },
+    {
+      "name": "X509Certificate",
+      "kind": "class"
+    },
+    {
+      "name": "XMLParser",
+      "kind": "class"
+    },
+    {
+      "name": "XRAnchor3D",
+      "kind": "class"
+    },
+    {
+      "name": "XRBodyModifier3D",
+      "kind": "class"
+    },
+    {
+      "name": "XRBodyTracker",
+      "kind": "class"
+    },
+    {
+      "name": "XRCamera3D",
+      "kind": "class"
+    },
+    {
+      "name": "XRController3D",
+      "kind": "class"
+    },
+    {
+      "name": "XRControllerTracker",
+      "kind": "class"
+    },
+    {
+      "name": "XRFaceModifier3D",
+      "kind": "class"
+    },
+    {
+      "name": "XRFaceTracker",
+      "kind": "class"
+    },
+    {
+      "name": "XRHandModifier3D",
+      "kind": "class"
+    },
+    {
+      "name": "XRHandTracker",
+      "kind": "class"
+    },
+    {
+      "name": "XRInterface",
+      "kind": "class"
+    },
+    {
+      "name": "XRInterfaceExtension",
+      "kind": "class"
+    },
+    {
+      "name": "XRNode3D",
+      "kind": "class"
+    },
+    {
+      "name": "XROrigin3D",
+      "kind": "class"
+    },
+    {
+      "name": "XRPose",
+      "kind": "class"
+    },
+    {
+      "name": "XRPositionalTracker",
+      "kind": "class"
+    },
+    {
+      "name": "XRServer",
+      "kind": "singleton"
+    },
+    {
+      "name": "XRTracker",
+      "kind": "class"
+    },
+    {
+      "name": "XRVRS",
+      "kind": "class"
+    },
+    {
+      "name": "ZIPPacker",
+      "kind": "class"
+    },
+    {
+      "name": "ZIPReader",
+      "kind": "class"
+    },
+    {
+      "name": "abs",
+      "kind": "utility"
+    },
+    {
+      "name": "absf",
+      "kind": "utility"
+    },
+    {
+      "name": "absi",
+      "kind": "utility"
+    },
+    {
+      "name": "acos",
+      "kind": "utility"
+    },
+    {
+      "name": "acosh",
+      "kind": "utility"
+    },
+    {
+      "name": "angle_difference",
+      "kind": "utility"
+    },
+    {
+      "name": "asin",
+      "kind": "utility"
+    },
+    {
+      "name": "asinh",
+      "kind": "utility"
+    },
+    {
+      "name": "atan",
+      "kind": "utility"
+    },
+    {
+      "name": "atan2",
+      "kind": "utility"
+    },
+    {
+      "name": "atanh",
+      "kind": "utility"
+    },
+    {
+      "name": "bezier_derivative",
+      "kind": "utility"
+    },
+    {
+      "name": "bezier_interpolate",
+      "kind": "utility"
+    },
+    {
+      "name": "bytes_to_var",
+      "kind": "utility"
+    },
+    {
+      "name": "bytes_to_var_with_objects",
+      "kind": "utility"
+    },
+    {
+      "name": "ceil",
+      "kind": "utility"
+    },
+    {
+      "name": "ceilf",
+      "kind": "utility"
+    },
+    {
+      "name": "ceili",
+      "kind": "utility"
+    },
+    {
+      "name": "clamp",
+      "kind": "utility"
+    },
+    {
+      "name": "clampf",
+      "kind": "utility"
+    },
+    {
+      "name": "clampi",
+      "kind": "utility"
+    },
+    {
+      "name": "cos",
+      "kind": "utility"
+    },
+    {
+      "name": "cosh",
+      "kind": "utility"
+    },
+    {
+      "name": "cubic_interpolate",
+      "kind": "utility"
+    },
+    {
+      "name": "cubic_interpolate_angle",
+      "kind": "utility"
+    },
+    {
+      "name": "cubic_interpolate_angle_in_time",
+      "kind": "utility"
+    },
+    {
+      "name": "cubic_interpolate_in_time",
+      "kind": "utility"
+    },
+    {
+      "name": "db_to_linear",
+      "kind": "utility"
+    },
+    {
+      "name": "deg_to_rad",
+      "kind": "utility"
+    },
+    {
+      "name": "ease",
+      "kind": "utility"
+    },
+    {
+      "name": "error_string",
+      "kind": "utility"
+    },
+    {
+      "name": "exp",
+      "kind": "utility"
+    },
+    {
+      "name": "floor",
+      "kind": "utility"
+    },
+    {
+      "name": "floorf",
+      "kind": "utility"
+    },
+    {
+      "name": "floori",
+      "kind": "utility"
+    },
+    {
+      "name": "fmod",
+      "kind": "utility"
+    },
+    {
+      "name": "fposmod",
+      "kind": "utility"
+    },
+    {
+      "name": "hash",
+      "kind": "utility"
+    },
+    {
+      "name": "instance_from_id",
+      "kind": "utility"
+    },
+    {
+      "name": "inverse_lerp",
+      "kind": "utility"
+    },
+    {
+      "name": "is_equal_approx",
+      "kind": "utility"
+    },
+    {
+      "name": "is_finite",
+      "kind": "utility"
+    },
+    {
+      "name": "is_inf",
+      "kind": "utility"
+    },
+    {
+      "name": "is_instance_id_valid",
+      "kind": "utility"
+    },
+    {
+      "name": "is_instance_valid",
+      "kind": "utility"
+    },
+    {
+      "name": "is_nan",
+      "kind": "utility"
+    },
+    {
+      "name": "is_same",
+      "kind": "utility"
+    },
+    {
+      "name": "is_zero_approx",
+      "kind": "utility"
+    },
+    {
+      "name": "lerp",
+      "kind": "utility"
+    },
+    {
+      "name": "lerp_angle",
+      "kind": "utility"
+    },
+    {
+      "name": "lerpf",
+      "kind": "utility"
+    },
+    {
+      "name": "linear_to_db",
+      "kind": "utility"
+    },
+    {
+      "name": "log",
+      "kind": "utility"
+    },
+    {
+      "name": "max",
+      "kind": "utility"
+    },
+    {
+      "name": "maxf",
+      "kind": "utility"
+    },
+    {
+      "name": "maxi",
+      "kind": "utility"
+    },
+    {
+      "name": "min",
+      "kind": "utility"
+    },
+    {
+      "name": "minf",
+      "kind": "utility"
+    },
+    {
+      "name": "mini",
+      "kind": "utility"
+    },
+    {
+      "name": "move_toward",
+      "kind": "utility"
+    },
+    {
+      "name": "nearest_po2",
+      "kind": "utility"
+    },
+    {
+      "name": "pingpong",
+      "kind": "utility"
+    },
+    {
+      "name": "posmod",
+      "kind": "utility"
+    },
+    {
+      "name": "pow",
+      "kind": "utility"
+    },
+    {
+      "name": "print",
+      "kind": "utility"
+    },
+    {
+      "name": "print_rich",
+      "kind": "utility"
+    },
+    {
+      "name": "print_verbose",
+      "kind": "utility"
+    },
+    {
+      "name": "printerr",
+      "kind": "utility"
+    },
+    {
+      "name": "printraw",
+      "kind": "utility"
+    },
+    {
+      "name": "prints",
+      "kind": "utility"
+    },
+    {
+      "name": "printt",
+      "kind": "utility"
+    },
+    {
+      "name": "push_error",
+      "kind": "utility"
+    },
+    {
+      "name": "push_warning",
+      "kind": "utility"
+    },
+    {
+      "name": "rad_to_deg",
+      "kind": "utility"
+    },
+    {
+      "name": "rand_from_seed",
+      "kind": "utility"
+    },
+    {
+      "name": "randf",
+      "kind": "utility"
+    },
+    {
+      "name": "randf_range",
+      "kind": "utility"
+    },
+    {
+      "name": "randfn",
+      "kind": "utility"
+    },
+    {
+      "name": "randi",
+      "kind": "utility"
+    },
+    {
+      "name": "randi_range",
+      "kind": "utility"
+    },
+    {
+      "name": "randomize",
+      "kind": "utility"
+    },
+    {
+      "name": "remap",
+      "kind": "utility"
+    },
+    {
+      "name": "rid_allocate_id",
+      "kind": "utility"
+    },
+    {
+      "name": "rid_from_int64",
+      "kind": "utility"
+    },
+    {
+      "name": "rotate_toward",
+      "kind": "utility"
+    },
+    {
+      "name": "round",
+      "kind": "utility"
+    },
+    {
+      "name": "roundf",
+      "kind": "utility"
+    },
+    {
+      "name": "roundi",
+      "kind": "utility"
+    },
+    {
+      "name": "seed",
+      "kind": "utility"
+    },
+    {
+      "name": "sign",
+      "kind": "utility"
+    },
+    {
+      "name": "signf",
+      "kind": "utility"
+    },
+    {
+      "name": "signi",
+      "kind": "utility"
+    },
+    {
+      "name": "sin",
+      "kind": "utility"
+    },
+    {
+      "name": "sinh",
+      "kind": "utility"
+    },
+    {
+      "name": "smoothstep",
+      "kind": "utility"
+    },
+    {
+      "name": "snapped",
+      "kind": "utility"
+    },
+    {
+      "name": "snappedf",
+      "kind": "utility"
+    },
+    {
+      "name": "snappedi",
+      "kind": "utility"
+    },
+    {
+      "name": "sqrt",
+      "kind": "utility"
+    },
+    {
+      "name": "step_decimals",
+      "kind": "utility"
+    },
+    {
+      "name": "str",
+      "kind": "utility"
+    },
+    {
+      "name": "str_to_var",
+      "kind": "utility"
+    },
+    {
+      "name": "tan",
+      "kind": "utility"
+    },
+    {
+      "name": "tanh",
+      "kind": "utility"
+    },
+    {
+      "name": "type_convert",
+      "kind": "utility"
+    },
+    {
+      "name": "type_string",
+      "kind": "utility"
+    },
+    {
+      "name": "typeof",
+      "kind": "utility"
+    },
+    {
+      "name": "var_to_bytes",
+      "kind": "utility"
+    },
+    {
+      "name": "var_to_bytes_with_objects",
+      "kind": "utility"
+    },
+    {
+      "name": "var_to_str",
+      "kind": "utility"
+    },
+    {
+      "name": "weakref",
+      "kind": "utility"
+    },
+    {
+      "name": "wrap",
+      "kind": "utility"
+    },
+    {
+      "name": "wrapf",
+      "kind": "utility"
+    },
+    {
+      "name": "wrapi",
+      "kind": "utility"
+    }
+  ]
+}
