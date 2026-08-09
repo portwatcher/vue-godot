@@ -166,7 +166,7 @@ only for a demonstrated external blocker; otherwise keep working.
 
 | Phase                                             | Status      | Commit(s) | Verification notes |
 | ------------------------------------------------- | ----------- | --------- | ------------------ |
-| 0. Baseline and contract fixtures                 | Not started | —         | —                  |
+| 0. Baseline and contract fixtures                 | Complete    | `107aec5` | Baseline `origin/develop` at `90ac585`; root build, tests, CLI, serious examples, performance, and legacy smoke pass. The focused non-Vue contract passes on the legacy editor and fails on stock 4.4.1 only for the expected missing script loader. |
 | 1. Native package and stock-Godot extension shell | Not started | —         | —                  |
 | 2. QuickJS-ng host and module system              | Not started | —         | —                  |
 | 3. Godot binding and Variant bridge               | Not started | —         | —                  |
