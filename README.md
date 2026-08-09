@@ -137,6 +137,7 @@ and node ordering under [`apps`](./apps). See the
   [Android](./docs/platforms/android.md), and [iOS](./docs/platforms/ios.md)
 - [Troubleshooting](./docs/troubleshooting.md)
 - [Roadmap](./docs/roadmap.md)
+- [Standalone Godot JavaScript GDExtension implementation plan](./docs/godot-js-gdextension-plan.md)
 
 ## Development
 
