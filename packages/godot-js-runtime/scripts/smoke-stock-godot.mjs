@@ -65,12 +65,16 @@ function runGodot(executable, args, description) {
 }
 
 function assertCount(output, marker, expected, description) {
-  const count = output.split(marker).length - 1
+  const count = countOccurrences(output, marker)
   if (count !== expected) {
     throw new Error(
       `${description} expected ${String(expected)} occurrence(s) of ${marker}, received ${String(count)}\n${output}`,
     )
   }
+}
+
+function countOccurrences(output, marker) {
+  return output.split(marker).length - 1
 }
 
 function prepareFixture() {
@@ -106,15 +110,31 @@ function prepareFixture() {
   }
 }
 
-function verifyLifecycle(output, description) {
-  assertCount(output, '[godot-js-runtime] INITIALIZED', 1, description)
-  assertCount(output, '[godot-js-runtime] TERMINATED', 1, description)
+function verifyCleanOutput(output, description) {
   if (
     output.includes('SCRIPT ERROR') ||
+    output.includes('ERROR:') ||
     output.includes('GDExtension library not found')
   ) {
     throw new Error(`${description} reported a runtime error\n${output}`)
   }
+}
+
+function verifyLifecycle(output, description) {
+  assertCount(output, '[godot-js-runtime] INITIALIZED', 1, description)
+  assertCount(output, '[godot-js-runtime] TERMINATED', 1, description)
+  verifyCleanOutput(output, description)
+}
+
+function verifyEditorLifecycle(output, description) {
+  const initialized = countOccurrences(output, '[godot-js-runtime] INITIALIZED')
+  const terminated = countOccurrences(output, '[godot-js-runtime] TERMINATED')
+  if (initialized < 1 || terminated < 1 || terminated > initialized) {
+    throw new Error(
+      `${description} expected at least one parent extension lifecycle, received ${String(initialized)} initialization(s) and ${String(terminated)} forwarded termination(s)\n${output}`,
+    )
+  }
+  verifyCleanOutput(output, description)
 }
 
 export async function smokeStockGodot(options) {
@@ -148,6 +168,51 @@ export async function smokeStockGodot(options) {
   )
   verifyLifecycle(shellOutput, 'headless editor load/unload probe')
 
+  const editorPlayOutput = runGodot(
+    options.godot,
+    ['--headless', '--path', sceneStagingRoot, '--editor'],
+    'headless editor play/stop loop',
+  )
+  verifyEditorLifecycle(editorPlayOutput, 'headless editor play/stop loop')
+  assertCount(
+    editorPlayOutput,
+    '[godot-js-runtime] PHASE2_EDITOR_PLAY_LOOP PASS',
+    1,
+    'headless editor play/stop loop',
+  )
+  const editorPlayStarts = countOccurrences(
+    editorPlayOutput,
+    '[godot-js-runtime] EDITOR_PLAY_START',
+  )
+  const editorPlayStops = countOccurrences(
+    editorPlayOutput,
+    '[godot-js-runtime] EDITOR_PLAY_STOP',
+  )
+  if (editorPlayStarts < 3 || editorPlayStarts !== editorPlayStops) {
+    throw new Error(
+      `headless editor play/stop loop expected at least three balanced cycles, received ${String(editorPlayStarts)} start(s) and ${String(editorPlayStops)} stop(s)\n${editorPlayOutput}`,
+    )
+  }
+  assertCount(
+    editorPlayOutput,
+    '[godot-js-runtime] EDITOR_SCENE_READY',
+    editorPlayStarts,
+    'headless editor play/stop loop',
+  )
+  const editorRuntimeStarts = countOccurrences(
+    editorPlayOutput,
+    '[godot-js-runtime] RUNTIME_STARTED live=1',
+  )
+  const editorRuntimeStops = countOccurrences(
+    editorPlayOutput,
+    '[godot-js-runtime] RUNTIME_STOPPED live=0',
+  )
+  if (editorRuntimeStarts < 1 || editorRuntimeStarts !== editorRuntimeStops) {
+    throw new Error(
+      `headless editor play/stop loop left unbalanced QuickJS instances: ${String(editorRuntimeStarts)} start(s), ${String(editorRuntimeStops)} stop(s)\n${editorPlayOutput}`,
+    )
+  }
+
   const runScene = (runNumber) => {
     const description = `main-scene initialization probe ${String(runNumber)}`
     const output = runGodot(
@@ -158,13 +223,50 @@ export async function smokeStockGodot(options) {
     verifyLifecycle(output, description)
     assertCount(
       output,
-      '[godot-js-runtime] phase-one loader resolved res://main.js',
+      '[godot-js-runtime] phase-two loader evaluated res://main.mjs',
+      1,
+      description,
+    )
+    const runtimeStarts = countOccurrences(
+      output,
+      '[godot-js-runtime] RUNTIME_STARTED live=1',
+    )
+    const runtimeStops = countOccurrences(
+      output,
+      '[godot-js-runtime] RUNTIME_STOPPED live=0',
+    )
+    if (runtimeStarts < 3 || runtimeStarts !== runtimeStops) {
+      throw new Error(
+        `${description} expected at least three balanced QuickJS start/stop cycles, received ${String(runtimeStarts)} start(s) and ${String(runtimeStops)} stop(s)\n${output}`,
+      )
+    }
+    assertCount(
+      output,
+      '[godot-js-runtime] PHASE2_MODULE_PROMISE PASS relative-esm resource-json',
       1,
       description,
     )
     assertCount(
       output,
-      '[godot-js-runtime] PHASE1_SCRIPT_READY PASS',
+      '[godot-js-runtime] PROMISE_JOBS_DRAINED count=1',
+      runtimeStarts,
+      description,
+    )
+    assertCount(
+      output,
+      '[godot-js-runtime] PHASE2_LOOP_PROMISE PASS',
+      runtimeStarts - 1,
+      description,
+    )
+    assertCount(
+      output,
+      '[godot-js-runtime] PHASE2_RELOAD_LOOP PASS',
+      1,
+      description,
+    )
+    assertCount(
+      output,
+      '[godot-js-runtime] PHASE2_SCRIPT_READY PASS',
       1,
       description,
     )
@@ -175,13 +277,28 @@ export async function smokeStockGodot(options) {
   const secondRun = runScene(2)
   if (options.verbose) {
     process.stdout.write(shellOutput)
+    process.stdout.write(editorPlayOutput)
     process.stdout.write(firstRun)
     process.stdout.write(secondRun)
   }
   console.log(`[stock-smoke] PASS ${version}`)
-  console.log('[stock-smoke] extension init/unload: 3 clean cycles')
+  const allOutput = `${shellOutput}${editorPlayOutput}${firstRun}${secondRun}`
+  const extensionCycles = countOccurrences(
+    allOutput,
+    '[godot-js-runtime] TERMINATED',
+  )
   console.log(
-    '[stock-smoke] pre-main-scene .js resource loader: 2 clean cycles',
+    `[stock-smoke] extension unloads observed: ${String(extensionCycles)} clean cycles`,
+  )
+  const runtimeCycles = countOccurrences(
+    allOutput,
+    '[godot-js-runtime] RUNTIME_STOPPED live=0',
+  )
+  console.log(
+    `[stock-smoke] resource ESM, JSON, and Promise jobs: ${String(runtimeCycles)} balanced runtime cycles`,
+  )
+  console.log(
+    `[stock-smoke] editor play/stop: ${String(editorPlayStarts)} balanced cycles`,
   )
 }
 

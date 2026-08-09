@@ -28,6 +28,7 @@
     "native/godot_js_runtime.gdextension.in",
     "native/include",
     "native/src/**/*.cpp",
+    "native/tests/**/*.cpp",
     "native/tests/fixtures",
     "scripts",
     "LICENSE",
@@ -42,6 +43,7 @@
     "test": "npm run build && node --test test/*.test.mjs",
     "bootstrap:native": "node scripts/bootstrap-deps.mjs",
     "build:native": "node scripts/build-native.mjs",
+    "test:native": "node scripts/build-native.mjs --run-tests",
     "generate:manifest": "node scripts/generate-extension-manifest.mjs",
     "smoke:native": "node scripts/smoke-stock-godot.mjs"
   },

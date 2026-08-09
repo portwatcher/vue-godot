@@ -1,6 +1,5 @@
 #include <gdextension_interface.h>
 
-#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/godot.hpp>
@@ -26,17 +25,12 @@ void initialize_runtime(godot::ModuleInitializationLevel level) {
 
 	GDREGISTER_CLASS(GodotJavaScriptRuntimeInfo);
 
-	if (!godot::Engine::get_singleton()->is_editor_hint()) {
-		GDREGISTER_INTERNAL_CLASS(JavaScriptResourceFormatLoader);
-		javascript_loader.instantiate();
-		godot::ResourceLoader::get_singleton()->add_resource_format_loader(
-				javascript_loader,
-				true);
-		javascript_loader_registered = true;
-	} else {
-		godot::UtilityFunctions::print(
-				"[godot-js-runtime] phase-one script loader deferred in editor mode");
-	}
+	GDREGISTER_INTERNAL_CLASS(JavaScriptResourceFormatLoader);
+	javascript_loader.instantiate();
+	godot::ResourceLoader::get_singleton()->add_resource_format_loader(
+			javascript_loader,
+			true);
+	javascript_loader_registered = true;
 	GodotJavaScriptRuntimeInfo::set_initialized(true);
 	godot::UtilityFunctions::print(
 			"[godot-js-runtime] INITIALIZED ", VERSION,
@@ -79,5 +73,4 @@ GDExtensionBool GDE_EXPORT godot_js_runtime_library_init(
 			godot::MODULE_INITIALIZATION_LEVEL_SCENE);
 	return init.init();
 }
-
 }

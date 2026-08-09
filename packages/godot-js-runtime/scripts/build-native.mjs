@@ -65,11 +65,18 @@ function parseArgs(argv) {
     jobs: Math.max(1, Math.min(os.cpus().length, 8)),
     clean: false,
     print: false,
+    tests: false,
+    runTests: false,
   }
   for (let index = 0; index < argv.length; index++) {
     const argument = argv[index]
     if (argument === '--clean') {
       options.clean = true
+    } else if (argument === '--tests') {
+      options.tests = true
+    } else if (argument === '--run-tests') {
+      options.tests = true
+      options.runTests = true
     } else if (argument === '--print') {
       options.print = true
     } else if (
@@ -178,21 +185,33 @@ export function resolveNativeBuildPlan(options) {
   const arch = options.arch ?? defaultArchitecture(platform)
   const target = options.target ?? 'template_debug'
   const jobs = options.jobs ?? Math.max(1, Math.min(os.cpus().length, 8))
+  const buildTests = options.tests === true || options.runTests === true
+  const testArtifact = path.join(
+    nativeRoot,
+    'bin',
+    platform === 'windows'
+      ? 'godot_js_runtime_tests.exe'
+      : 'godot_js_runtime_tests',
+  )
+  const sconsArguments = [
+    '-C',
+    nativeRoot,
+    `-j${jobs}`,
+    'build_profile=godot-cpp-profile.json',
+    `platform=${platform}`,
+    `target=${target}`,
+    `arch=${arch}`,
+  ]
   return {
     platform,
     arch,
     target,
     jobs,
     nativeRoot,
-    sconsArguments: [
-      '-C',
-      nativeRoot,
-      `-j${jobs}`,
-      'build_profile=godot-cpp-profile.json',
-      `platform=${platform}`,
-      `target=${target}`,
-      `arch=${arch}`,
-    ],
+    buildTests,
+    runTests: options.runTests === true,
+    testArtifact,
+    sconsArguments,
   }
 }
 
@@ -214,7 +233,25 @@ export async function buildNative(options) {
   if (options.clean) {
     args.push('--clean')
   }
-  run(scons, args)
+  run(scons, args, {
+    env: plan.buildTests
+      ? { ...process.env, GODOT_JS_RUNTIME_BUILD_TESTS: '1' }
+      : process.env,
+  })
+  if (plan.runTests) {
+    const hostPlatform = defaultPlatform()
+    const hostArchitecture = defaultArchitecture(hostPlatform)
+    if (
+      plan.platform !== hostPlatform ||
+      (plan.arch !== hostArchitecture &&
+        !(plan.platform === 'macos' && plan.arch === 'universal'))
+    ) {
+      throw new Error(
+        `Cannot run ${plan.platform}/${plan.arch} native tests on ${hostPlatform}/${hostArchitecture}`,
+      )
+    }
+    run(plan.testArtifact, [], { cwd: nativeRoot })
+  }
   const manifest = generateExtensionManifest()
   return { ...plan, scons, manifest }
 }

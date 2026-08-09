@@ -10,6 +10,14 @@ config/features=PackedStringArray("4.4")
 
 paths=["res://addons/godot-js-runtime/godot_js_runtime.gdextension"]
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/editor-play-loop/plugin.cfg")
+
+[editor]
+
+run/main_run_args="--headless"
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

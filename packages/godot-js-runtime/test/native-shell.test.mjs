@@ -59,11 +59,55 @@ test('native build plan is deterministic and targets the pinned source tree', ()
     resolveNativeBuildPlan(options),
   )
   const plan = resolveNativeBuildPlan(options)
+  assert.equal(plan.buildTests, false)
+  assert.equal(plan.runTests, false)
   assert.deepEqual(plan.sconsArguments.slice(-3), [
     'platform=linux',
     'target=template_debug',
     'arch=x86_64',
   ])
+
+  const testPlan = resolveNativeBuildPlan({ ...options, runTests: true })
+  assert.equal(testPlan.buildTests, true)
+  assert.equal(testPlan.runTests, true)
+  assert.ok(testPlan.testArtifact.endsWith('native/bin/godot_js_runtime_tests'))
+  assert.ok(!testPlan.sconsArguments.includes('build_tests=yes'))
+})
+
+test('native build embeds pinned QuickJS-ng and exposes host tests', () => {
+  const sconstruct = fs.readFileSync(
+    path.join(packageRoot, 'native/SConstruct'),
+    'utf-8',
+  )
+  for (const source of ['dtoa.c', 'libregexp.c', 'libunicode.c', 'quickjs.c']) {
+    assert.ok(sconstruct.includes(`quickjs_dir.File("${source}")`))
+  }
+  assert.match(sconstruct, /GODOT_JS_RUNTIME_BUILD_TESTS/)
+  assert.match(sconstruct, /tests\/runtime_host_tests\.cpp/)
+})
+
+test('stock fixture enforces module, teardown, and editor play gates', () => {
+  const fixtureRoot = path.join(
+    packageRoot,
+    'native/tests/fixtures/stock-shell',
+  )
+  const project = fs.readFileSync(
+    path.join(fixtureRoot, 'project.godot'),
+    'utf-8',
+  )
+  const editorPlugin = fs.readFileSync(
+    path.join(fixtureRoot, 'addons/editor-play-loop/plugin.gd'),
+    'utf-8',
+  )
+  const smoke = fs.readFileSync(
+    path.join(packageRoot, 'scripts/smoke-stock-godot.mjs'),
+    'utf-8',
+  )
+  assert.match(project, /run\/main_run_args="--headless"/)
+  assert.match(editorPlugin, /PHASE2_EDITOR_PLAY_LOOP PASS/)
+  assert.match(editorPlugin, /get_live_runtime_count\(\) != 0/)
+  assert.match(smoke, /balanced QuickJS start\/stop cycles/)
+  assert.match(smoke, /EDITOR_PLAY_START/)
 })
 
 test('native version constants match the npm package', () => {
@@ -97,9 +141,9 @@ test('runtime native source uses only public GDExtension and godot-cpp headers',
       )
       assert.ok(
         includePath === 'gdextension_interface.h' ||
+          !includePath.includes('/') ||
           includePath.startsWith('godot_cpp/') ||
-          includePath.startsWith('godot_js_runtime/') ||
-          ['atomic', 'cstdint'].includes(includePath),
+          includePath.startsWith('godot_js_runtime/'),
         `${path.relative(packageRoot, filePath)} has an unexpected include ${includePath}`,
       )
     }

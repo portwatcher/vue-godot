@@ -7,11 +7,29 @@ EnsureSConsVersion(4, 0)
 
 env = SConscript("third_party/godot-cpp/SConstruct")
 
-env.AppendUnique(CPPPATH=[env.Dir("include")])
+quickjs_dir = env.Dir("third_party/quickjs-ng")
+env.AppendUnique(
+    CPPPATH=[env.Dir("include"), quickjs_dir],
+    CPPDEFINES=["QUICKJS_NG_BUILD", "_GNU_SOURCE"],
+)
+if env["platform"] == "windows":
+    env.AppendUnique(CPPDEFINES=["WIN32_LEAN_AND_MEAN", "_WIN32_WINNT=0x0601"])
+elif env["platform"] == "linux":
+    env.AppendUnique(LIBS=["m", "dl", "pthread"])
+elif env["platform"] in ["macos", "ios"]:
+    env.AppendUnique(LIBS=["m"])
 
 sources = []
 for source_dir in ["src", "src/runtime", "src/scripting"]:
     sources.extend(Glob(source_dir + "/*.cpp"))
+
+quickjs_sources = [
+    quickjs_dir.File("dtoa.c"),
+    quickjs_dir.File("libregexp.c"),
+    quickjs_dir.File("libunicode.c"),
+    quickjs_dir.File("quickjs.c"),
+]
+sources.extend(quickjs_sources)
 
 addon_bin_dir = env.Dir("../addon/godot-js-runtime/bin").abspath
 library_base = "libgodot_js_runtime" + env["suffix"]
@@ -41,4 +59,21 @@ else:
         source=sources,
     )
 
-Default(library)
+default_targets = [library]
+
+if os.environ.get("GODOT_JS_RUNTIME_BUILD_TESTS") == "1":
+    test_env = env.Clone()
+    test_sources = [
+        "tests/runtime_host_tests.cpp",
+        "src/runtime/module_resolver.cpp",
+        "src/runtime/runtime_host.cpp",
+        "src/runtime/source_map.cpp",
+    ]
+    test_sources.extend(quickjs_sources)
+    test_binary = test_env.Program(
+        os.path.join("bin", "godot_js_runtime_tests" + test_env["PROGSUFFIX"]),
+        source=test_sources,
+    )
+    default_targets.append(test_binary)
+
+Default(default_targets)

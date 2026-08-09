@@ -2,6 +2,7 @@
 #define GODOT_JS_RUNTIME_RUNTIME_INFO_HPP
 
 #include <atomic>
+#include <cstdint>
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/string.hpp>
@@ -24,6 +25,7 @@ public:
 	godot::String get_package_name() const;
 	godot::String get_runtime_version() const;
 	godot::String get_minimum_godot_version() const;
+	int64_t get_live_runtime_count() const;
 	bool is_initialized() const;
 };
 

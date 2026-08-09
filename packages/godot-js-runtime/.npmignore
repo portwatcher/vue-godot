@@ -1,6 +1,7 @@
 native/third_party/
 native/.sconsign.dblite
 native/compile_commands.json
+native/bin/
 native/**/*.o
 native/**/*.obj
 native/**/*.os

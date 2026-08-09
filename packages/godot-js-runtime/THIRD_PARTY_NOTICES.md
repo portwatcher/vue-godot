@@ -18,7 +18,7 @@ tree and must be included in source and binary release archives.
 - Project: https://github.com/quickjs-ng/quickjs
 - Revision: `433941b99fb3c5e7f98b7ebd78727972bcf467ee` (`v0.15.0`)
 - License: MIT
-- Use: embedded JavaScript engine source; compilation begins in Phase 2
+- Use: embedded JavaScript engine compiled into the native runtime
 
 The upstream copyright and MIT license are retained in the bootstrapped source
 tree and must be included in source and binary release archives.

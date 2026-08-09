@@ -4,9 +4,9 @@ Godot JavaScript Runtime is a standalone JavaScript and ahead-of-time
 TypeScript runtime for official Godot. It is not a Vue package and its native
 extension does not import, link, or bundle Vue.
 
-The repository is currently implementing the native extension shell. The
-checked-in helper API and reproducible dependency bootstrap are usable for
-development, but JavaScript execution and script attachment are not yet a
+The repository now contains the resource-backed QuickJS-ng host and module
+system. The full Godot object binding and JavaScript `ScriptLanguage` adapter
+are still under construction, so JavaScript scene attachment is not yet a
 supported release surface.
 
 ## Plain JavaScript goal
@@ -36,14 +36,14 @@ runtime:
 npm install godot-js-runtime
 ```
 
-| API | Description |
-| --- | --- |
+| API                                   | Description                                                                                                  |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `defineScript(ScriptClass, metadata)` | Attaches canonical inspector, signal, tool, and RPC metadata to a script class without requiring decorators. |
-| `getScriptMetadata(value)` | Reads metadata previously attached by `defineScript()`. |
-| `runtimeName` | Canonical product name: `Godot JavaScript Runtime`. |
-| `runtimePackageName` | Canonical npm and workspace name: `godot-js-runtime`. |
-| `minimumGodotVersion` | Minimum supported Godot ABI, currently `4.4`. |
-| Manifest types and guards | Typed representation and runtime validation for native artifact manifests. |
+| `getScriptMetadata(value)`            | Reads metadata previously attached by `defineScript()`.                                                      |
+| `runtimeName`                         | Canonical product name: `Godot JavaScript Runtime`.                                                          |
+| `runtimePackageName`                  | Canonical npm and workspace name: `godot-js-runtime`.                                                        |
+| `minimumGodotVersion`                 | Minimum supported Godot ABI, currently `4.4`.                                                                |
+| Manifest types and guards             | Typed representation and runtime validation for native artifact manifests.                                   |
 
 ```ts
 import { defineScript } from 'godot-js-runtime'
@@ -59,6 +59,30 @@ export default defineScript(Player, {
 })
 ```
 
+## Embedded `godot-js` module
+
+Resource-backed ES modules can import `godot-js`, and CommonJS bundles can
+`require('godot-js')`. This bootstrap-only module reports runtime capabilities
+before the full `godot` engine binding is installed:
+
+| Function            | Description                                              |
+| ------------------- | -------------------------------------------------------- |
+| `runtimeVersion()`  | Returns the `godot-js-runtime` package/runtime version.  |
+| `quickJSVersion()`  | Returns the embedded QuickJS-ng version.                 |
+| `runtimeFeatures()` | Returns the deterministic list of enabled host features. |
+| `hasFeature(name)`  | Tests one host feature without version-string parsing.   |
+
+The host currently supports resource-backed ESM, CommonJS, JSON modules,
+relative extension and index resolution, circular dependencies, module caches,
+Promise job draining, bounded memory/stack/execution, Godot-routed console
+levels, and external version-3 source maps. Node.js built-ins and arbitrary
+filesystem access are intentionally unavailable.
+
+The extension also registers `GodotJavaScriptRuntimeInfo` for stock-Godot
+diagnostics. It reports the product/package/runtime/minimum-Godot versions,
+initialization state, and `get_live_runtime_count()` so smoke and editor loops
+can prove that QuickJS instances were torn down.
+
 ## Native development
 
 The build pins `godot-cpp`, QuickJS-ng, and SCons in
@@ -71,6 +95,7 @@ generated JavaScript binding surface.
 ```bash
 npm run bootstrap:native --workspace=godot-js-runtime
 npm run build:native --workspace=godot-js-runtime
+npm run test:native --workspace=godot-js-runtime
 ```
 
 Set `PYTHON_BIN` or `SCONS_BIN` when the default tool discovery is unsuitable.
@@ -78,18 +103,23 @@ The build tooling also supports print-only operation for CI inspection.
 
 ## Current verification boundary
 
-At this phase, the extension shell is required to load and unload cleanly in
-official Godot 4.4.1 and the current stable editor. It registers runtime version
-information and an early resource-loader spike. It does not yet evaluate
-JavaScript. Platform export support, installation commands, binding generation,
-and the final public package are added by later migration phases and must not be
-inferred from the shell smoke test.
+At this phase, the extension loads and unloads cleanly in official Godot 4.4.1
+and the current stable editor. Its temporary resource-loader probe evaluates a
+real resource ESM graph, JSON import, `godot-js` feature calls, and Promise jobs
+before returning a placeholder Godot script. Native tests separately cover ESM
+and CommonJS cycles, Vite-style chunks, limits, exceptions, source maps, caches,
+and repeated teardown. The stock fixture also runs repeated resource reloads and
+three editor play/stop cycles while asserting that the live QuickJS count
+returns to zero. This is not yet the final scene-script integration: Godot
+classes, Variant conversion, editor tooling, platform export support,
+installation commands, and binding generation are later migration gates.
 
 ## Security model
 
-Project JavaScript is trusted application code, not a sandbox. The completed
-runtime will bound engine memory and stack usage, but it will not claim to make
-untrusted scripts safe. Node.js built-ins are outside the version-one scope.
+Project JavaScript is trusted application code, not a sandbox. The host bounds
+QuickJS memory, stack, execution time, and Promise job pumping, but those limits
+do not make untrusted scripts safe. Node.js built-ins are outside the
+version-one scope.
 
 ## Requirements
 

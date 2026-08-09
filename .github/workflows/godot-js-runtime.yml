@@ -69,6 +69,13 @@ jobs:
           --arch x86_64
           --target template_debug
 
+      - name: Test native QuickJS host
+        run: >-
+          npm run test:native --workspace=godot-js-runtime --
+          --platform linux
+          --arch x86_64
+          --target template_debug
+
       - name: Smoke on official stock Godot
         run: >-
           npm run smoke:native --workspace=godot-js-runtime --

@@ -2,7 +2,6 @@
   "enabled_classes": [
     "CanvasItem",
     "DisplayServer",
-    "Engine",
     "GDScript",
     "MainLoop",
     "Material",
