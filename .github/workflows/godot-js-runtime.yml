@@ -83,3 +83,62 @@ jobs:
         run: >-
           npm run smoke:native --workspace=godot-js-runtime --
           --skip-build
+
+      - name: Test native host with AddressSanitizer and UndefinedBehaviorSanitizer
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: >-
+          npm run test:native --workspace=godot-js-runtime --
+          --platform linux
+          --arch x86_64
+          --target template_debug
+          --sanitizers address,undefined
+
+      - name: Build binding with UndefinedBehaviorSanitizer
+        run: >-
+          npm run build:native --workspace=godot-js-runtime --
+          --platform linux
+          --arch x86_64
+          --target template_debug
+          --sanitizers undefined
+
+      - name: Smoke instrumented binding on official stock Godot
+        env:
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: >-
+          npm run smoke:native --workspace=godot-js-runtime --
+          --skip-build
+
+  macos-native-sanitizers:
+    runs-on: macos-14
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install
+        run: npm ci
+
+      - name: Test native host with AddressSanitizer and UndefinedBehaviorSanitizer
+        env:
+          ASAN_OPTIONS: detect_leaks=0:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: >-
+          npm run test:native --workspace=godot-js-runtime --
+          --platform macos
+          --arch universal
+          --target template_debug
+          --sanitizers address,undefined

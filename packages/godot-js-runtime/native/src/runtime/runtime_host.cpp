@@ -9,6 +9,8 @@
 #include <utility>
 
 #include "godot_js_runtime/runtime/module_resolver.hpp"
+#include "godot_js_runtime/runtime/runtime_module_provider.hpp"
+#include "godot_js_runtime/runtime/scoped_js_value.hpp"
 #include "godot_js_runtime/runtime/source_map.hpp"
 #include "godot_js_runtime/version.hpp"
 #include "quickjs.h"
@@ -43,35 +45,7 @@ std::optional<StackLocation> first_stack_location(const std::string &stack) {
 	};
 }
 
-class ScopedValue {
-public:
-	ScopedValue(JSContext *context, JSValue value) : context(context), value(value) {
-	}
-
-	~ScopedValue() {
-		if (context != nullptr) {
-			JS_FreeValue(context, value);
-		}
-	}
-
-	ScopedValue(const ScopedValue &) = delete;
-	ScopedValue &operator=(const ScopedValue &) = delete;
-
-	JSValue get() const {
-		return value;
-	}
-
-	JSValue release() {
-		JSValue released = value;
-		value = JS_UNDEFINED;
-		context = nullptr;
-		return released;
-	}
-
-private:
-	JSContext *context;
-	JSValue value;
-};
+using ScopedValue = ScopedJSValue;
 
 } // namespace
 
@@ -111,6 +85,8 @@ struct RuntimeHost::Impl {
 	ResourceProvider &resource_provider;
 	ConsoleSink &console_sink;
 	RuntimeOptions options;
+	RuntimeModuleProvider *module_provider;
+	std::vector<std::string> enabled_features;
 	JSRuntime *runtime = nullptr;
 	JSContext *context = nullptr;
 	std::string runtime_info;
@@ -125,11 +101,23 @@ struct RuntimeHost::Impl {
 	Impl(
 			ResourceProvider &resource_provider,
 			ConsoleSink &console_sink,
-			RuntimeOptions options) :
+			RuntimeOptions options,
+			RuntimeModuleProvider *module_provider) :
 			resource_provider(resource_provider),
 			console_sink(console_sink),
 			options(options),
+			module_provider(module_provider),
+			enabled_features(runtime_feature_names()),
 			runtime_info(std::string(PRODUCT_NAME) + " " + VERSION) {
+		if (module_provider != nullptr) {
+			for (const std::string &feature : module_provider->feature_names()) {
+				if (std::find(enabled_features.begin(), enabled_features.end(), feature) ==
+						enabled_features.end()) {
+					enabled_features.push_back(feature);
+				}
+			}
+			std::sort(enabled_features.begin(), enabled_features.end());
+		}
 		if (options.memory_limit_bytes == 0 || options.stack_limit_bytes == 0) {
 			startup_error = "Runtime memory and stack limits must be greater than zero";
 			return;
@@ -174,6 +162,18 @@ struct RuntimeHost::Impl {
 			const JavaScriptException exception = capture_exception(context);
 			startup_error = "Could not install JavaScript console: " + format_exception(exception);
 			shutdown();
+			return;
+		}
+		if (module_provider != nullptr) {
+			std::string provider_error;
+			if (!module_provider->install(context, provider_error)) {
+				if (provider_error.empty()) {
+					const JavaScriptException exception = capture_exception(context);
+					provider_error = format_exception(exception);
+				}
+				startup_error = "Could not install runtime module provider: " + provider_error;
+				shutdown();
+			}
 		}
 	}
 
@@ -247,6 +247,19 @@ struct RuntimeHost::Impl {
 			JS_ThrowInternalError(context, "JavaScript runtime host is unavailable");
 			return nullptr;
 		}
+		const std::string requested = module_name == nullptr
+				? std::string()
+				: std::string(module_name);
+		if (requested == "godot-js" ||
+				(host->module_provider != nullptr &&
+						host->module_provider->supports_module(requested))) {
+			char *normalized = static_cast<char *>(js_malloc(context, requested.size() + 1));
+			if (normalized == nullptr) {
+				return nullptr;
+			}
+			std::memcpy(normalized, requested.c_str(), requested.size() + 1);
+			return normalized;
+		}
 		const ModuleResolution resolution = resolve_module(
 				base_name == nullptr ? std::string() : std::string(base_name),
 				module_name == nullptr ? std::string() : std::string(module_name),
@@ -278,6 +291,10 @@ struct RuntimeHost::Impl {
 		const std::string path(module_name);
 		if (path == "godot-js") {
 			return create_runtime_module(context, path);
+		}
+		if (host->module_provider != nullptr &&
+				host->module_provider->supports_module(path)) {
+			return host->module_provider->load_es_module(context, path);
 		}
 		return host->load_es_module(context, path);
 	}
@@ -312,7 +329,10 @@ struct RuntimeHost::Impl {
 		if (JS_IsException(features)) {
 			return features;
 		}
-		const std::vector<std::string> &names = runtime_feature_names();
+		Impl *host = static_cast<Impl *>(JS_GetContextOpaque(context));
+		const std::vector<std::string> &names = host == nullptr
+				? runtime_feature_names()
+				: host->enabled_features;
 		for (std::size_t index = 0; index < names.size(); ++index) {
 			if (JS_SetPropertyUint32(
 						context,
@@ -338,10 +358,29 @@ struct RuntimeHost::Impl {
 		if (feature == nullptr) {
 			return JS_EXCEPTION;
 		}
-		const std::vector<std::string> &features = runtime_feature_names();
+		Impl *host = static_cast<Impl *>(JS_GetContextOpaque(context));
+		const std::vector<std::string> &features = host == nullptr
+				? runtime_feature_names()
+				: host->enabled_features;
 		const bool present = std::find(features.begin(), features.end(), feature) != features.end();
 		JS_FreeCString(context, feature);
 		return JS_NewBool(context, present);
+	}
+
+	static JSValue js_collect_garbage(
+			JSContext *context,
+			JSValueConst,
+			int,
+			JSValueConst *) {
+		Impl *host = static_cast<Impl *>(JS_GetContextOpaque(context));
+		if (host == nullptr || host->runtime == nullptr) {
+			return JS_ThrowInternalError(context, "JavaScript runtime host is unavailable");
+		}
+		JS_RunGC(host->runtime);
+		if (host->module_provider != nullptr) {
+			host->module_provider->after_garbage_collection(context);
+		}
+		return JS_UNDEFINED;
 	}
 
 	static int runtime_module_init(JSContext *context, JSModuleDef *module) {
@@ -366,6 +405,13 @@ struct RuntimeHost::Impl {
 					JS_NewCFunction(context, js_runtime_features, "runtimeFeatures", 0)) < 0) {
 			return -1;
 		}
+		if (JS_SetModuleExport(
+					context,
+					module,
+					"collectGarbage",
+					JS_NewCFunction(context, js_collect_garbage, "collectGarbage", 0)) < 0) {
+			return -1;
+		}
 		return JS_SetModuleExport(
 				context,
 				module,
@@ -384,6 +430,7 @@ struct RuntimeHost::Impl {
 					 "runtimeVersion",
 					 "quickJSVersion",
 					 "runtimeFeatures",
+					 "collectGarbage",
 					 "hasFeature",
 			 }) {
 			if (JS_AddModuleExport(context, module, name) < 0) {
@@ -406,6 +453,7 @@ struct RuntimeHost::Impl {
 			{ "runtimeVersion", js_runtime_version, 0 },
 			{ "quickJSVersion", js_quickjs_version, 0 },
 			{ "runtimeFeatures", js_runtime_features, 0 },
+			{ "collectGarbage", js_collect_garbage, 0 },
 			{ "hasFeature", js_has_feature, 1 },
 		};
 		for (const auto &function : functions) {
@@ -747,6 +795,12 @@ struct RuntimeHost::Impl {
 			JSContext *require_context,
 			const std::string &base_path,
 			const std::string &specifier) {
+		if (specifier == "godot-js") {
+			return runtime_module_object(require_context);
+		}
+		if (module_provider != nullptr && module_provider->supports_module(specifier)) {
+			return module_provider->load_commonjs_module(require_context, specifier);
+		}
 		const ModuleResolution resolution = resolve_module(
 				base_path,
 				specifier,
@@ -1018,6 +1072,9 @@ struct RuntimeHost::Impl {
 			return;
 		}
 		if (context != nullptr) {
+			if (module_provider != nullptr) {
+				module_provider->shutdown(context);
+			}
 			for (auto &entry : commonjs_cache) {
 				JS_FreeValue(context, entry.second);
 			}
@@ -1059,8 +1116,13 @@ std::string format_exception(const JavaScriptException &exception) {
 RuntimeHost::RuntimeHost(
 		ResourceProvider &resource_provider,
 		ConsoleSink &console_sink,
-		RuntimeOptions options) :
-		impl(std::make_unique<Impl>(resource_provider, console_sink, options)) {
+		RuntimeOptions options,
+		RuntimeModuleProvider *module_provider) :
+		impl(std::make_unique<Impl>(
+				resource_provider,
+				console_sink,
+				options,
+				module_provider)) {
 }
 
 RuntimeHost::~RuntimeHost() = default;
@@ -1122,6 +1184,9 @@ void RuntimeHost::request_interrupt() {
 void RuntimeHost::collect_garbage() {
 	if (impl != nullptr && impl->runtime != nullptr) {
 		JS_RunGC(impl->runtime);
+		if (impl->module_provider != nullptr && impl->context != nullptr) {
+			impl->module_provider->after_garbage_collection(impl->context);
+		}
 	}
 }
 

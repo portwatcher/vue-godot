@@ -20,6 +20,14 @@ const sourcePath = path.join(
   packageRoot,
   'native/src/generated/binding_metadata.gen.cpp',
 )
+const utilityHeaderPath = path.join(
+  packageRoot,
+  'native/include/godot_js_runtime/generated/utility_dispatch.gen.hpp',
+)
+const utilitySourcePath = path.join(
+  packageRoot,
+  'native/src/generated/utility_dispatch.gen.cpp',
+)
 const exportsPath = path.join(
   packageRoot,
   'native/generated/binding_exports.json',
@@ -70,6 +78,55 @@ function compareNames(left, right) {
 function sortByName(values) {
   return [...(values ?? [])].sort(compareNames)
 }
+
+// extension_api.json omits Object from builtin_classes even though Object is a
+// real Variant::Type entry between RID and Callable. Never infer Variant type
+// numbers from the builtin array index: doing so shifts every container and
+// callable type by one and gives wrappers the wrong prototype.
+const variantTypeNames = [
+  'Nil',
+  'bool',
+  'int',
+  'float',
+  'String',
+  'Vector2',
+  'Vector2i',
+  'Rect2',
+  'Rect2i',
+  'Vector3',
+  'Vector3i',
+  'Transform2D',
+  'Vector4',
+  'Vector4i',
+  'Plane',
+  'Quaternion',
+  'AABB',
+  'Basis',
+  'Transform3D',
+  'Projection',
+  'Color',
+  'StringName',
+  'NodePath',
+  'RID',
+  'Object',
+  'Callable',
+  'Signal',
+  'Dictionary',
+  'Array',
+  'PackedByteArray',
+  'PackedInt32Array',
+  'PackedInt64Array',
+  'PackedFloat32Array',
+  'PackedFloat64Array',
+  'PackedStringArray',
+  'PackedVector2Array',
+  'PackedVector3Array',
+  'PackedColorArray',
+  'PackedVector4Array',
+]
+const variantTypeByName = new Map(
+  variantTypeNames.map((name, index) => [name, index]),
+)
 
 function methodFlags(method) {
   return (
@@ -135,6 +192,50 @@ function appendConstructor(ownerIndex, value, constructors, argumentsTable) {
 function renderArray(type, name, rows, renderRow) {
   const renderedRows = rows.map((row) => `\t${renderRow(row)},`).join('\n')
   return `const ${type} ${name}[] = {\n${renderedRows}\n};\nconst std::size_t ${name}_COUNT = sizeof(${name}) / sizeof(${name}[0]);`
+}
+
+function utilityArgument(type, index) {
+  const value = `arguments[${index}]`
+  const casts = {
+    Variant: value,
+    bool: `static_cast<bool>(${value})`,
+    int: `static_cast<std::int64_t>(${value})`,
+    float: `static_cast<double>(${value})`,
+    String: `static_cast<godot::String>(${value})`,
+    PackedByteArray: `static_cast<godot::PackedByteArray>(${value})`,
+    PackedInt64Array: `static_cast<godot::PackedInt64Array>(${value})`,
+    RID: `static_cast<godot::RID>(${value})`,
+  }
+  const converted = casts[type]
+  if (!converted) fail(`unsupported utility argument type ${type}`)
+  return converted
+}
+
+function utilityResult(returnType, expression) {
+  if (!returnType) {
+    return `${expression};\n\t\t\treturn { true, godot::Variant(), {} };`
+  }
+  return `return { true, godot::Variant(${expression}), {} };`
+}
+
+function renderUtilityCase(value, index) {
+  const argumentsList = value.arguments ?? []
+  if (value.is_vararg) {
+    return `\t\tcase ${index}U: {\n\t\t\tgodot::StringName name(${cppString(value.name)});\n\t\t\tGDExtensionPtrUtilityFunction function = godot::internal::gdextension_interface_variant_get_ptr_utility_function(name._native_ptr(), ${value.hash}U);\n\t\t\tif (function == nullptr) {\n\t\t\t\treturn { false, godot::Variant(), "Godot utility function is unavailable: ${value.name}" };\n\t\t\t}\n\t\t\tstd::vector<const godot::Variant *> pointers;\n\t\t\tpointers.reserve(arguments.size());\n\t\t\tfor (const godot::Variant &argument : arguments) pointers.push_back(&argument);\n\t\t\tgodot::Variant result;\n\t\t\tfunction(result._native_ptr(), reinterpret_cast<const GDExtensionConstTypePtr *>(pointers.data()), static_cast<GDExtensionInt>(pointers.size()));\n\t\t\treturn { true, result, {} };\n\t\t}`
+  }
+  const callArguments = argumentsList
+    .map((argument, argumentIndex) =>
+      utilityArgument(argument.type, argumentIndex),
+    )
+    .join(', ')
+  const utilityCppName = value.name === 'typeof' ? 'type_of' : value.name
+  const expression =
+    value.name === 'is_instance_valid'
+      ? '(arguments[0].get_type() == godot::Variant::OBJECT && godot::internal::gdextension_interface_object_get_instance_from_id(godot::internal::gdextension_interface_variant_get_object_instance_id(arguments[0]._native_ptr())) != nullptr)'
+      : value.name === 'instance_from_id'
+        ? 'object_variant(godot::internal::gdextension_interface_object_get_instance_from_id(static_cast<std::int64_t>(arguments[0])))'
+        : `godot::UtilityFunctions::${utilityCppName}(${callArguments})`
+  return `\t\tcase ${index}U: {\n\t\t\tif (arguments.size() != ${argumentsList.length}U) {\n\t\t\t\treturn { false, godot::Variant(), "${value.name} expects ${argumentsList.length} argument(s)" };\n\t\t\t}\n\t\t\t${utilityResult(value.return_type, expression)}\n\t\t}`
 }
 
 const apiSource = requiredFile(
@@ -229,6 +330,10 @@ const classes = sortByName(api.classes).map((value, classIndex) => {
 })
 
 const builtins = api.builtin_classes.map((value, builtinIndex) => {
+  const variantType = variantTypeByName.get(value.name)
+  if (variantType === undefined) {
+    fail(`Unknown Variant type for builtin ${value.name}`)
+  }
   const methodsOffset = methods.length
   for (const method of sortByName(value.methods)) {
     appendMethod(1, builtinIndex, method, methods, argumentsTable)
@@ -257,7 +362,7 @@ const builtins = api.builtin_classes.map((value, builtinIndex) => {
   }
   return {
     name: value.name,
-    variantType: builtinIndex,
+    variantType,
     indexingReturnType: value.indexing_return_type ?? '',
     keyed: Boolean(value.is_keyed),
     hasDestructor: Boolean(value.has_destructor),
@@ -280,16 +385,15 @@ for (const enumValue of sortByName(api.global_enums)) {
 }
 
 const utilityMethodsOffset = methods.length
-const utilities = sortByName(api.utility_functions).map(
-  (value, utilityIndex) => {
-    appendMethod(2, utilityIndex, value, methods, argumentsTable)
-    return {
-      name: value.name,
-      methodIndex: methods.length - 1,
-      category: value.category,
-    }
-  },
-)
+const sortedUtilityFunctions = sortByName(api.utility_functions)
+const utilities = sortedUtilityFunctions.map((value, utilityIndex) => {
+  appendMethod(2, utilityIndex, value, methods, argumentsTable)
+  return {
+    name: value.name,
+    methodIndex: methods.length - 1,
+    category: value.category,
+  }
+})
 
 const classIndexByName = new Map(
   classes.map((value, index) => [value.name, index]),
@@ -550,6 +654,75 @@ ${sourceSections.join('\n\n')}
 // clang-format on
 `
 
+const utilityHeader = `${generatedBanner}
+#ifndef GODOT_JS_RUNTIME_GENERATED_UTILITY_DISPATCH_GEN_HPP
+#define GODOT_JS_RUNTIME_GENERATED_UTILITY_DISPATCH_GEN_HPP
+
+#include <cstdint>
+#include <string>
+#include <vector>
+
+#include <godot_cpp/variant/variant.hpp>
+
+namespace godot_js_runtime::generated {
+
+struct UtilityCallResult {
+\tbool ok;
+\tgodot::Variant value;
+\tstd::string error;
+};
+
+UtilityCallResult call_utility(
+\t\tstd::uint32_t utility_index,
+\t\tconst std::vector<godot::Variant> &arguments);
+
+} // namespace godot_js_runtime::generated
+
+// clang-format on
+#endif // GODOT_JS_RUNTIME_GENERATED_UTILITY_DISPATCH_GEN_HPP
+`
+
+const utilitySource = `${generatedBanner}
+#include "godot_js_runtime/generated/utility_dispatch.gen.hpp"
+
+#include <cstddef>
+
+#include <godot_cpp/godot.hpp>
+#include <godot_cpp/variant/string_name.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
+
+namespace godot_js_runtime::generated {
+
+namespace {
+
+godot::Variant object_variant(GDExtensionObjectPtr object) {
+	if (object == nullptr) return godot::Variant();
+	alignas(godot::Variant) std::byte storage[sizeof(godot::Variant)]{};
+	GDExtensionVariantFromTypeConstructorFunc constructor =
+			godot::internal::gdextension_interface_get_variant_from_type_constructor(
+					GDEXTENSION_VARIANT_TYPE_OBJECT);
+	constructor(storage, &object);
+	godot::Variant result(reinterpret_cast<GDExtensionConstVariantPtr>(storage));
+	godot::internal::gdextension_interface_variant_destroy(storage);
+	return result;
+}
+
+} // namespace
+
+UtilityCallResult call_utility(
+\t\tstd::uint32_t utility_index,
+\t\tconst std::vector<godot::Variant> &arguments) {
+\tswitch (utility_index) {
+${sortedUtilityFunctions.map(renderUtilityCase).join('\n')}
+\t\tdefault:
+\t\t\treturn { false, godot::Variant(), "Unknown generated utility function index" };
+\t}
+}
+
+} // namespace godot_js_runtime::generated
+// clang-format on
+`
+
 const exportsManifest = `${JSON.stringify(
   {
     schemaVersion: 1,
@@ -575,6 +748,8 @@ const exportsManifest = `${JSON.stringify(
 
 writeOrCheck(headerPath, header)
 writeOrCheck(sourcePath, source)
+writeOrCheck(utilityHeaderPath, utilityHeader)
+writeOrCheck(utilitySourcePath, utilitySource)
 writeOrCheck(exportsPath, exportsManifest)
 
 console.log(

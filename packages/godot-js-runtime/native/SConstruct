@@ -7,6 +7,28 @@ EnsureSConsVersion(4, 0)
 
 env = SConscript("third_party/godot-cpp/SConstruct")
 
+sanitizers = [
+    sanitizer.strip()
+    for sanitizer in os.environ.get("GODOT_JS_RUNTIME_SANITIZERS", "").split(",")
+    if sanitizer.strip()
+]
+unsupported_sanitizers = sorted(set(sanitizers) - {"address", "undefined"})
+if unsupported_sanitizers:
+    print(
+        "Unsupported Godot JavaScript Runtime sanitizer(s): "
+        + ", ".join(unsupported_sanitizers)
+    )
+    Exit(2)
+if sanitizers:
+    if env["platform"] not in ["linux", "macos"]:
+        print("Sanitizer builds are supported only on Linux and macOS")
+        Exit(2)
+    sanitizer_flag = "-fsanitize=" + ",".join(sanitizers)
+    env.AppendUnique(
+        CCFLAGS=[sanitizer_flag, "-fno-omit-frame-pointer"],
+        LINKFLAGS=[sanitizer_flag],
+    )
+
 quickjs_dir = env.Dir("third_party/quickjs-ng")
 env.AppendUnique(
     CPPPATH=[env.Dir("include"), quickjs_dir],
@@ -20,7 +42,14 @@ elif env["platform"] in ["macos", "ios"]:
     env.AppendUnique(LIBS=["m"])
 
 sources = []
-for source_dir in ["src", "src/generated", "src/runtime", "src/scripting"]:
+for source_dir in [
+    "src",
+    "src/bridge",
+    "src/generated",
+    "src/modules",
+    "src/runtime",
+    "src/scripting",
+]:
     sources.extend(Glob(source_dir + "/*.cpp"))
 
 quickjs_sources = [

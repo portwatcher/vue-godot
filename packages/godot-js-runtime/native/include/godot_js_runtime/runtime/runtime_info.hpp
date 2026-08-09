@@ -26,6 +26,8 @@ public:
 	godot::String get_runtime_version() const;
 	godot::String get_minimum_godot_version() const;
 	int64_t get_live_runtime_count() const;
+	int64_t get_live_wrapper_count() const;
+	int64_t get_live_callback_root_count() const;
 	bool is_initialized() const;
 };
 

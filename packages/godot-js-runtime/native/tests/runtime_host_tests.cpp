@@ -242,7 +242,7 @@ void test_esm_json_cycles_cache_and_bad_paths() {
 	RecordingConsole console;
 	resources.files = {
 		{ "res://main.mjs", R"JS(
-import { runtimeVersion, quickJSVersion, runtimeFeatures, hasFeature } from 'godot-js'
+import { collectGarbage, runtimeVersion, quickJSVersion, runtimeFeatures, hasFeature } from 'godot-js'
 import { value } from './value'
 import settings from './settings.json'
 import { cycleValue } from './cycle/a.mjs'
@@ -256,6 +256,7 @@ globalThis.esmResult = JSON.stringify({
   quickjs: quickJSVersion(),
   features: runtimeFeatures().length,
   supported: hasFeature('source-maps'),
+  gc: collectGarbage() === undefined,
   loads: globalThis.esmLoads,
 })
 Promise.resolve().then(() => { globalThis.esmPromise = 'drained' })
@@ -287,6 +288,7 @@ export function readA() { return nameA + '-cycle' }
 			"godot-js runtime version failed");
 	expect(result.value.find("\"quickjs\":\"0.15.0\"") != std::string::npos, "godot-js QuickJS version failed");
 	expect(result.value.find("\"supported\":true") != std::string::npos, "godot-js feature probe failed");
+	expect(result.value.find("\"gc\":true") != std::string::npos, "godot-js garbage collection hook failed");
 
 	const EvaluationResult jobs = runtime.pump_jobs();
 	expect_ok(jobs, "ESM Promise drain");
@@ -318,6 +320,7 @@ globalThis.cjsResult = JSON.stringify({
   loads: globalThis.cjsLoads,
   version: runtime.quickJSVersion(),
   supported: runtime.hasFeature('commonjs'),
+  gc: runtime.collectGarbage() === undefined,
 })
 Promise.resolve().then(() => require('./chunks/chunk.js')).then((chunk) => {
   globalThis.cjsChunk = chunk.asyncContractMarker
@@ -353,6 +356,7 @@ module.exports = { marker: 'once' }
 	expect(result.value.find("\"same\":true") != std::string::npos, "CommonJS cache identity failed");
 	expect(result.value.find("\"loads\":1") != std::string::npos, "CommonJS module executed twice");
 	expect(result.value.find("\"version\":\"0.15.0\"") != std::string::npos, "godot-js CommonJS API failed");
+	expect(result.value.find("\"gc\":true") != std::string::npos, "godot-js CommonJS garbage collection hook failed");
 
 	const EvaluationResult jobs = runtime.pump_jobs();
 	expect_ok(jobs, "Vite-style CommonJS chunk Promise drain");

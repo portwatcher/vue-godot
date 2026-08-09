@@ -14,6 +14,7 @@ const stagingRoot = path.join(
 )
 const editorStagingRoot = path.join(stagingRoot, 'editor')
 const sceneStagingRoot = path.join(stagingRoot, 'scene')
+const expectedCallbackException = 'PHASE3_EXPECTED_CALLBACK_EXCEPTION'
 
 function parseArgs(argv) {
   const options = {
@@ -77,6 +78,32 @@ function countOccurrences(output, marker) {
   return output.split(marker).length - 1
 }
 
+function assertParentOrForwardedChildCount(output, marker, description) {
+  const count = countOccurrences(output, marker)
+  const playCycles = countOccurrences(
+    output,
+    '[godot-js-runtime] EDITOR_PLAY_START',
+  )
+  if (count !== 1 && count !== playCycles + 1) {
+    throw new Error(
+      `${description} expected one parent occurrence of ${marker}, or the parent plus all ${String(playCycles)} forwarded child runs; received ${String(count)}\n${output}`,
+    )
+  }
+}
+
+function assertNoneOrForwardedChildCount(output, marker, description) {
+  const count = countOccurrences(output, marker)
+  const playCycles = countOccurrences(
+    output,
+    '[godot-js-runtime] EDITOR_PLAY_START',
+  )
+  if (count !== 0 && count !== playCycles) {
+    throw new Error(
+      `${description} expected no forwarded child occurrence of ${marker}, or one from each of the ${String(playCycles)} child runs; received ${String(count)}\n${output}`,
+    )
+  }
+}
+
 function prepareFixture() {
   const smokeParent = path.dirname(stagingRoot)
   const relative = path.relative(smokeParent, stagingRoot)
@@ -111,10 +138,14 @@ function prepareFixture() {
 }
 
 function verifyCleanOutput(output, description) {
+  const unexpectedOutput = output
+    .split('\n')
+    .filter((line) => !line.includes(expectedCallbackException))
+    .join('\n')
   if (
-    output.includes('SCRIPT ERROR') ||
-    output.includes('ERROR:') ||
-    output.includes('GDExtension library not found')
+    unexpectedOutput.includes('SCRIPT ERROR') ||
+    unexpectedOutput.includes('ERROR:') ||
+    unexpectedOutput.includes('GDExtension library not found')
   ) {
     throw new Error(`${description} reported a runtime error\n${output}`)
   }
@@ -178,6 +209,26 @@ export async function smokeStockGodot(options) {
     editorPlayOutput,
     '[godot-js-runtime] PHASE2_EDITOR_PLAY_LOOP PASS',
     1,
+    'headless editor play/stop loop',
+  )
+  assertParentOrForwardedChildCount(
+    editorPlayOutput,
+    '[godot-js-runtime] PHASE3_BINDING PASS',
+    'headless editor play/stop loop',
+  )
+  assertParentOrForwardedChildCount(
+    editorPlayOutput,
+    '[godot-js-runtime] PHASE3_VARIANT_MATRIX PASS 39 types',
+    'headless editor play/stop loop',
+  )
+  assertNoneOrForwardedChildCount(
+    editorPlayOutput,
+    '[godot-js-runtime] PHASE3_COMMONJS_BINDING PASS',
+    'headless editor play/stop loop',
+  )
+  assertParentOrForwardedChildCount(
+    editorPlayOutput,
+    expectedCallbackException,
     'headless editor play/stop loop',
   )
   const editorPlayStarts = countOccurrences(
@@ -248,14 +299,39 @@ export async function smokeStockGodot(options) {
     )
     assertCount(
       output,
+      '[godot-js-runtime] PHASE3_BINDING PASS',
+      1,
+      description,
+    )
+    assertCount(
+      output,
+      '[godot-js-runtime] PHASE3_VARIANT_MATRIX PASS 39 types',
+      1,
+      description,
+    )
+    assertCount(
+      output,
+      '[godot-js-runtime] PHASE3_COMMONJS_BINDING PASS',
+      1,
+      description,
+    )
+    assertCount(output, expectedCallbackException, 1, description)
+    assertCount(
+      output,
       '[godot-js-runtime] PROMISE_JOBS_DRAINED count=1',
-      runtimeStarts,
+      runtimeStarts - 1,
+      description,
+    )
+    assertCount(
+      output,
+      '[godot-js-runtime] PROMISE_JOBS_DRAINED count=0',
+      1,
       description,
     )
     assertCount(
       output,
       '[godot-js-runtime] PHASE2_LOOP_PROMISE PASS',
-      runtimeStarts - 1,
+      runtimeStarts - 2,
       description,
     )
     assertCount(

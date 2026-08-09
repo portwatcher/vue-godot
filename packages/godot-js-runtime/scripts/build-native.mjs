@@ -67,6 +67,7 @@ function parseArgs(argv) {
     print: false,
     tests: false,
     runTests: false,
+    sanitizers: [],
   }
   for (let index = 0; index < argv.length; index++) {
     const argument = argv[index]
@@ -83,14 +84,20 @@ function parseArgs(argv) {
       argument === '--platform' ||
       argument === '--arch' ||
       argument === '--target' ||
-      argument === '--jobs'
+      argument === '--jobs' ||
+      argument === '--sanitizers'
     ) {
       const value = argv[++index]
       if (!value) {
         throw new Error(`${argument} requires a value`)
       }
       const name = argument.slice(2)
-      options[name] = name === 'jobs' ? Number(value) : value
+      options[name] =
+        name === 'jobs'
+          ? Number(value)
+          : name === 'sanitizers'
+            ? value.split(',').filter(Boolean)
+            : value
     } else {
       throw new Error(`Unknown option: ${argument}`)
     }
@@ -105,6 +112,14 @@ function parseArgs(argv) {
   }
   if (!Number.isSafeInteger(options.jobs) || options.jobs < 1) {
     throw new Error('--jobs must be a positive integer')
+  }
+  const unsupportedSanitizers = options.sanitizers.filter(
+    (sanitizer) => !['address', 'undefined'].includes(sanitizer),
+  )
+  if (unsupportedSanitizers.length > 0) {
+    throw new Error(
+      `Unsupported sanitizer(s): ${unsupportedSanitizers.join(', ')}`,
+    )
   }
   return options
 }
@@ -186,6 +201,7 @@ export function resolveNativeBuildPlan(options) {
   const target = options.target ?? 'template_debug'
   const jobs = options.jobs ?? Math.max(1, Math.min(os.cpus().length, 8))
   const buildTests = options.tests === true || options.runTests === true
+  const sanitizers = [...(options.sanitizers ?? [])]
   const testArtifact = path.join(
     nativeRoot,
     'bin',
@@ -210,6 +226,7 @@ export function resolveNativeBuildPlan(options) {
     nativeRoot,
     buildTests,
     runTests: options.runTests === true,
+    sanitizers,
     testArtifact,
     sconsArguments,
   }
@@ -234,9 +251,13 @@ export async function buildNative(options) {
     args.push('--clean')
   }
   run(scons, args, {
-    env: plan.buildTests
-      ? { ...process.env, GODOT_JS_RUNTIME_BUILD_TESTS: '1' }
-      : process.env,
+    env: {
+      ...process.env,
+      ...(plan.buildTests ? { GODOT_JS_RUNTIME_BUILD_TESTS: '1' } : {}),
+      ...(plan.sanitizers.length > 0
+        ? { GODOT_JS_RUNTIME_SANITIZERS: plan.sanitizers.join(',') }
+        : {}),
+    },
   })
   if (plan.runTests) {
     const hostPlatform = defaultPlatform()

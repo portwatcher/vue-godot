@@ -5,6 +5,7 @@
 #include <godot_cpp/classes/gd_script.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "godot_js_runtime/modules/godot_binding.hpp"
 #include "godot_js_runtime/runtime/godot_environment.hpp"
 #include "godot_js_runtime/runtime/runtime_host.hpp"
 
@@ -16,6 +17,22 @@ constexpr char PHASE_TWO_SCRIPT[] = R"GDSCRIPT(extends Node
 
 const RUNTIME_RELOAD_CYCLES := 8
 const EDITOR_PLAY_MARKER := "user://godot-js-runtime-editor-play.log"
+
+func _assert_no_runtime_leaks(runtime_info, context: String) -> bool:
+	if runtime_info.get_live_runtime_count() != 0:
+		push_error("QuickJS runtime leaked %s" % context)
+		return false
+	if runtime_info.get_live_wrapper_count() != 0:
+		push_error("Godot JavaScript wrapper leaked %s" % context)
+		return false
+	if runtime_info.get_live_callback_root_count() != 0:
+		push_error("JavaScript callback root leaked %s" % context)
+		return false
+	for connection in ProjectSettings.get_signal_connection_list("settings_changed"):
+		if str(connection.get("callable", "")).contains("JavaScriptCallable#"):
+			push_error("JavaScript singleton signal connection leaked %s" % context)
+			return false
+	return true
 
 func _ready() -> void:
 	var runtime_info = GodotJavaScriptRuntimeInfo.new()
@@ -35,8 +52,20 @@ func _ready() -> void:
 		push_error("Runtime did not report initialized state")
 		get_tree().quit(1)
 		return
-	if runtime_info.get_live_runtime_count() != 0:
-		push_error("QuickJS runtime instance leaked after module evaluation")
+	if not _assert_no_runtime_leaks(runtime_info, "after module evaluation"):
+		get_tree().quit(1)
+		return
+	var commonjs_script = ResourceLoader.load(
+		"res://binding.cjs",
+		"Script",
+		ResourceLoader.CACHE_MODE_IGNORE,
+	)
+	if commonjs_script == null:
+		push_error("Runtime could not load the CommonJS Godot binding probe")
+		get_tree().quit(1)
+		return
+	commonjs_script = null
+	if not _assert_no_runtime_leaks(runtime_info, "after CommonJS binding probe"):
 		get_tree().quit(1)
 		return
 	for iteration in range(RUNTIME_RELOAD_CYCLES):
@@ -50,8 +79,10 @@ func _ready() -> void:
 			get_tree().quit(1)
 			return
 		loop_script = null
-		if runtime_info.get_live_runtime_count() != 0:
-			push_error("QuickJS runtime leaked during reload iteration %d" % iteration)
+		if not _assert_no_runtime_leaks(
+			runtime_info,
+			"during reload iteration %d" % iteration,
+		):
 			get_tree().quit(1)
 			return
 	var marker_file = FileAccess.open(EDITOR_PLAY_MARKER, FileAccess.READ_WRITE)
@@ -136,7 +167,8 @@ godot::Variant JavaScriptResourceFormatLoader::_load(
 	GodotResourceProvider resources;
 	GodotConsoleSink console;
 	{
-		RuntimeHost runtime(resources, console);
+		GodotBinding binding(console);
+		RuntimeHost runtime(resources, console, {}, &binding);
 		if (!runtime.is_running()) {
 			godot::UtilityFunctions::push_error(
 					"Godot JavaScript Runtime could not start QuickJS-ng for ",

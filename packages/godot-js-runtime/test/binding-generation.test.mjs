@@ -18,10 +18,14 @@ const exportsManifest = JSON.parse(
 )
 
 function repositoryFiles() {
-  const result = spawnSync('git', ['ls-files', '-z'], {
-    cwd: repositoryRoot,
-    encoding: 'buffer',
-  })
+  const result = spawnSync(
+    'git',
+    ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
+    {
+      cwd: repositoryRoot,
+      encoding: 'buffer',
+    },
+  )
   assert.equal(result.status, 0, result.stderr.toString('utf-8'))
   return result.stdout.toString('utf-8').split('\0').filter(Boolean)
 }
@@ -29,7 +33,7 @@ function repositoryFiles() {
 function runtimeGodotImports() {
   const sourceFile = /\.(?:[cm]?[jt]s|tsx|vue)$/
   const sourceRoot =
-    /^(?:apps\/[^/]+\/vue\/src|packages\/[^/]+\/src|scripts|test\/fixtures)\//
+    /^(?:apps\/[^/]+\/vue\/src|packages\/[^/]+\/(?:src|native\/tests\/fixtures)|scripts|test\/fixtures)\//
   const imports = new Set()
   for (const filePath of repositoryFiles()) {
     if (!sourceRoot.test(filePath) || !sourceFile.test(filePath)) continue

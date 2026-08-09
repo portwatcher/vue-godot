@@ -61,6 +61,7 @@ test('native build plan is deterministic and targets the pinned source tree', ()
   const plan = resolveNativeBuildPlan(options)
   assert.equal(plan.buildTests, false)
   assert.equal(plan.runTests, false)
+  assert.deepEqual(plan.sanitizers, [])
   assert.deepEqual(plan.sconsArguments.slice(-3), [
     'platform=linux',
     'target=template_debug',
@@ -72,6 +73,13 @@ test('native build plan is deterministic and targets the pinned source tree', ()
   assert.equal(testPlan.runTests, true)
   assert.ok(testPlan.testArtifact.endsWith('native/bin/godot_js_runtime_tests'))
   assert.ok(!testPlan.sconsArguments.includes('build_tests=yes'))
+
+  const sanitizerPlan = resolveNativeBuildPlan({
+    ...options,
+    runTests: true,
+    sanitizers: ['address', 'undefined'],
+  })
+  assert.deepEqual(sanitizerPlan.sanitizers, ['address', 'undefined'])
 })
 
 test('native build embeds pinned QuickJS-ng and exposes host tests', () => {
@@ -84,6 +92,8 @@ test('native build embeds pinned QuickJS-ng and exposes host tests', () => {
   }
   assert.match(sconstruct, /GODOT_JS_RUNTIME_BUILD_TESTS/)
   assert.match(sconstruct, /tests\/runtime_host_tests\.cpp/)
+  assert.match(sconstruct, /GODOT_JS_RUNTIME_SANITIZERS/)
+  assert.match(sconstruct, /-fno-omit-frame-pointer/)
 })
 
 test('stock fixture enforces module, teardown, and editor play gates', () => {
@@ -103,11 +113,38 @@ test('stock fixture enforces module, teardown, and editor play gates', () => {
     path.join(packageRoot, 'scripts/smoke-stock-godot.mjs'),
     'utf-8',
   )
+  const bindingFixture = fs.readFileSync(
+    path.join(fixtureRoot, 'main.mjs'),
+    'utf-8',
+  )
+  const variantFixture = fs.readFileSync(
+    path.join(fixtureRoot, 'variant-roundtrip.mjs'),
+    'utf-8',
+  )
+  const commonJsFixture = fs.readFileSync(
+    path.join(fixtureRoot, 'binding.cjs'),
+    'utf-8',
+  )
   assert.match(project, /run\/main_run_args="--headless"/)
   assert.match(editorPlugin, /PHASE2_EDITOR_PLAY_LOOP PASS/)
   assert.match(editorPlugin, /get_live_runtime_count\(\) != 0/)
+  assert.match(editorPlugin, /get_live_wrapper_count\(\) != 0/)
+  assert.match(editorPlugin, /get_live_callback_root_count\(\) != 0/)
   assert.match(smoke, /balanced QuickJS start\/stop cycles/)
   assert.match(smoke, /EDITOR_PLAY_START/)
+  assert.match(smoke, /PHASE3_VARIANT_MATRIX PASS 39 types/)
+  assert.match(smoke, /PHASE3_COMMONJS_BINDING PASS/)
+  assert.match(bindingFixture, /index < 2048/)
+  assert.match(bindingFixture, /collectGarbage\(\)/)
+  assert.match(bindingFixture, /stress signal disconnect/)
+  assert.match(bindingFixture, /ProjectSettings\.settings_changed\.connect/)
+  assert.match(bindingFixture, /PHASE3_EXPECTED_CALLBACK_EXCEPTION/)
+  assert.match(
+    variantFixture,
+    /observedTypes\.size === Variant\.Type\.TYPE_MAX/,
+  )
+  assert.match(variantFixture, /depth < 32/)
+  assert.match(commonJsFixture, /require\('godot'\)/)
 })
 
 test('native version constants match the npm package', () => {

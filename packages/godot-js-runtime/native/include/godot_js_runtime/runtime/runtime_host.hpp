@@ -12,6 +12,8 @@
 
 namespace godot_js_runtime {
 
+class RuntimeModuleProvider;
+
 struct RuntimeOptions {
 	std::size_t memory_limit_bytes = 64 * 1024 * 1024;
 	std::size_t stack_limit_bytes = 1024 * 1024;
@@ -44,7 +46,8 @@ public:
 	RuntimeHost(
 			ResourceProvider &resource_provider,
 			ConsoleSink &console_sink,
-			RuntimeOptions options = {});
+			RuntimeOptions options = {},
+			RuntimeModuleProvider *module_provider = nullptr);
 	~RuntimeHost();
 
 	RuntimeHost(const RuntimeHost &) = delete;

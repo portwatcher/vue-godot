@@ -50,6 +50,14 @@ func _run_play_loop() -> void:
 			push_error("QuickJS runtime leaked after editor play cycle %d" % cycle)
 			get_tree().quit(1)
 			return
+		if runtime_info.get_live_wrapper_count() != 0:
+			push_error("Godot wrapper leaked after editor play cycle %d" % cycle)
+			get_tree().quit(1)
+			return
+		if runtime_info.get_live_callback_root_count() != 0:
+			push_error("Callback root leaked after editor play cycle %d" % cycle)
+			get_tree().quit(1)
+			return
 		var marker_file := FileAccess.open(PLAY_MARKER, FileAccess.READ)
 		if marker_file == null:
 			push_error("Editor play cycle %d did not write its completion marker" % cycle)
