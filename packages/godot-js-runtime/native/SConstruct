@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+
+import os
+
+
+EnsureSConsVersion(4, 0)
+
+env = SConscript("third_party/godot-cpp/SConstruct")
+
+env.AppendUnique(CPPPATH=[env.Dir("include")])
+
+sources = []
+for source_dir in ["src", "src/runtime", "src/scripting"]:
+    sources.extend(Glob(source_dir + "/*.cpp"))
+
+addon_bin_dir = env.Dir("../addon/godot-js-runtime/bin").abspath
+library_base = "libgodot_js_runtime" + env["suffix"]
+
+if env["platform"] == "macos":
+    framework_dir = os.path.join(addon_bin_dir, library_base + ".framework")
+    env.AppendUnique(
+        LINKFLAGS=[
+            "-Wl,-install_name,@rpath/"
+            + library_base
+            + ".framework/"
+            + library_base
+        ]
+    )
+    library = env.SharedLibrary(
+        os.path.join(framework_dir, library_base),
+        source=sources,
+    )
+elif env["platform"] == "ios":
+    library = env.StaticLibrary(
+        os.path.join(addon_bin_dir, library_base + env["LIBSUFFIX"]),
+        source=sources,
+    )
+else:
+    library = env.SharedLibrary(
+        os.path.join(addon_bin_dir, library_base + env["SHLIBSUFFIX"]),
+        source=sources,
+    )
+
+Default(library)

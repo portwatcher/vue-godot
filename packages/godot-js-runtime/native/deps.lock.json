@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-08-10",
+  "dependencies": {
+    "godotCpp": {
+      "kind": "source-archive",
+      "name": "godot-cpp",
+      "repository": "https://github.com/godotengine/godot-cpp",
+      "ref": "godot-4.4.1-stable",
+      "commit": "e4b7c25e721ce3435a029087e3917a30aa73f06b",
+      "url": "https://codeload.github.com/godotengine/godot-cpp/tar.gz/e4b7c25e721ce3435a029087e3917a30aa73f06b",
+      "archiveName": "godot-cpp-e4b7c25e721ce3435a029087e3917a30aa73f06b.tar.gz",
+      "sha256": "7cd6104fb04013f88763555ed44974bc997f2f3c2829ba34569dba9268065102",
+      "license": "MIT",
+      "licenseFile": "LICENSE.md",
+      "destination": "godot-cpp",
+      "requiredFiles": [
+        "SConstruct",
+        "gdextension/extension_api.json",
+        "include/godot_cpp/godot.hpp",
+        "LICENSE.md"
+      ]
+    },
+    "quickjsNg": {
+      "kind": "source-archive",
+      "name": "QuickJS-ng",
+      "repository": "https://github.com/quickjs-ng/quickjs",
+      "ref": "v0.15.0",
+      "commit": "433941b99fb3c5e7f98b7ebd78727972bcf467ee",
+      "url": "https://codeload.github.com/quickjs-ng/quickjs/tar.gz/433941b99fb3c5e7f98b7ebd78727972bcf467ee",
+      "archiveName": "quickjs-ng-433941b99fb3c5e7f98b7ebd78727972bcf467ee.tar.gz",
+      "sha256": "ecfb5211b82c1f3bf30e07f20f906f13f857e3f795cb220933009c82e5574db2",
+      "license": "MIT",
+      "licenseFile": "LICENSE",
+      "destination": "quickjs-ng",
+      "requiredFiles": ["CMakeLists.txt", "quickjs.c", "quickjs.h", "LICENSE"]
+    },
+    "scons": {
+      "kind": "python-wheel",
+      "name": "SCons",
+      "version": "4.8.1",
+      "repository": "https://github.com/SCons/scons",
+      "url": "https://files.pythonhosted.org/packages/b8/a7/823091100c88d7d992c8c608d82a88ed59e227d13f8ccb33ea7a96d43d51/SCons-4.8.1-py3-none-any.whl",
+      "archiveName": "SCons-4.8.1-py3-none-any.whl",
+      "sha256": "a4c3b434330e2d7d975002fd6783284ba348bf394db94c8f83fdc5bf69cdb8d7",
+      "license": "MIT"
+    }
+  }
+}

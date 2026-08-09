@@ -1,0 +1,64 @@
+{
+  "name": "godot-js-runtime",
+  "version": "0.0.0-development",
+  "description": "Standalone JavaScript and TypeScript runtime for official Godot",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/portwatcher/vue-godot.git",
+    "directory": "packages/godot-js-runtime"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "addon/godot-js-runtime/godot_js_runtime.gdextension",
+    "addon/godot-js-runtime/runtime-manifest.json",
+    "dist",
+    "native/SConstruct",
+    "native/deps.lock.json",
+    "native/godot-cpp-profile.json",
+    "native/godot_js_runtime.gdextension.in",
+    "native/include",
+    "native/src/**/*.cpp",
+    "native/tests/fixtures",
+    "scripts",
+    "LICENSE",
+    "README.md",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "npx tsc -p .",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "bootstrap:native": "node scripts/bootstrap-deps.mjs",
+    "build:native": "node scripts/build-native.mjs",
+    "generate:manifest": "node scripts/generate-extension-manifest.mjs",
+    "smoke:native": "node scripts/smoke-stock-godot.mjs"
+  },
+  "keywords": [
+    "godot",
+    "javascript",
+    "typescript",
+    "gdextension",
+    "quickjs"
+  ],
+  "author": "Portwatcher",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  }
+}

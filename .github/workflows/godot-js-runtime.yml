@@ -1,0 +1,75 @@
+name: Godot JavaScript Runtime
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/godot-js-runtime.yml'
+      - 'package*.json'
+      - 'packages/godot-js-runtime/**'
+  push:
+    branches:
+      - develop
+      - main
+    paths:
+      - '.github/workflows/godot-js-runtime.yml'
+      - 'package*.json'
+      - 'packages/godot-js-runtime/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux-debug-stock-4-4:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+
+    env:
+      GODOT_VERSION: 4.4.1-stable
+      GODOT_ARCHIVE_SHA256: d6e382fb531019f85630c1f485a561a0d20c4a2344b6c3847735cfee7da812aa
+      GODOT_BIN: ${{ github.workspace }}/.cache/godot/Godot_v4.4.1-stable_linux.x86_64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install
+        run: npm ci
+
+      - name: Test package tooling
+        run: npm run test:godot-js-runtime
+
+      - name: Download official Godot 4.4.1
+        run: |
+          mkdir -p .cache/godot
+          archive=".cache/godot/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          curl --fail --location --retry 3 \
+            --output "$archive" \
+            "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          echo "${GODOT_ARCHIVE_SHA256}  ${archive}" | sha256sum --check --strict
+          unzip -q "$archive" -d .cache/godot
+          chmod +x "$GODOT_BIN"
+          "$GODOT_BIN" --version
+
+      - name: Build Linux debug extension
+        run: >-
+          npm run build:native --workspace=godot-js-runtime --
+          --platform linux
+          --arch x86_64
+          --target template_debug
+
+      - name: Smoke on official stock Godot
+        run: >-
+          npm run smoke:native --workspace=godot-js-runtime --
+          --skip-build

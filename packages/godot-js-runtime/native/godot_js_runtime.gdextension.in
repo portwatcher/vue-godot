@@ -1,0 +1,22 @@
+[configuration]
+
+entry_symbol = "godot_js_runtime_library_init"
+compatibility_minimum = "{{GODOT_MINIMUM}}"
+reloadable = true
+
+[libraries]
+
+macos.debug = "res://addons/godot-js-runtime/bin/libgodot_js_runtime.macos.template_debug.universal.framework"
+macos.release = "res://addons/godot-js-runtime/bin/libgodot_js_runtime.macos.template_release.universal.framework"
+windows.debug.x86_64 = "res://addons/godot-js-runtime/bin/libgodot_js_runtime.windows.template_debug.x86_64.dll"
+windows.release.x86_64 = "res://addons/godot-js-runtime/bin/libgodot_js_runtime.windows.template_release.x86_64.dll"
+linux.debug.x86_64 = "res://addons/godot-js-runtime/bin/libgodot_js_runtime.linux.template_debug.x86_64.so"
+linux.release.x86_64 = "res://addons/godot-js-runtime/bin/libgodot_js_runtime.linux.template_release.x86_64.so"
+android.debug.arm64 = "res://addons/godot-js-runtime/bin/libgodot_js_runtime.android.template_debug.arm64.so"
+android.release.arm64 = "res://addons/godot-js-runtime/bin/libgodot_js_runtime.android.template_release.arm64.so"
+android.debug.x86_64 = "res://addons/godot-js-runtime/bin/libgodot_js_runtime.android.template_debug.x86_64.so"
+android.release.x86_64 = "res://addons/godot-js-runtime/bin/libgodot_js_runtime.android.template_release.x86_64.so"
+ios.debug = "res://addons/godot-js-runtime/bin/libgodot_js_runtime.ios.template_debug.xcframework"
+ios.release = "res://addons/godot-js-runtime/bin/libgodot_js_runtime.ios.template_release.xcframework"
+web.debug.threads.wasm32 = "res://addons/godot-js-runtime/bin/libgodot_js_runtime.web.template_debug.wasm32.wasm"
+web.release.threads.wasm32 = "res://addons/godot-js-runtime/bin/libgodot_js_runtime.web.template_release.wasm32.wasm"

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "runtimeName": "Godot JavaScript Runtime",
+  "packageName": "godot-js-runtime",
+  "version": "0.0.0-development",
+  "gitCommit": "development",
+  "godotMinimum": "4.4",
+  "dependencies": [
+    {
+      "name": "godot-cpp",
+      "repository": "https://github.com/godotengine/godot-cpp",
+      "commit": "e4b7c25e721ce3435a029087e3917a30aa73f06b",
+      "license": "MIT"
+    },
+    {
+      "name": "QuickJS-ng",
+      "repository": "https://github.com/quickjs-ng/quickjs",
+      "commit": "433941b99fb3c5e7f98b7ebd78727972bcf467ee",
+      "license": "MIT"
+    }
+  ],
+  "artifacts": []
+}
