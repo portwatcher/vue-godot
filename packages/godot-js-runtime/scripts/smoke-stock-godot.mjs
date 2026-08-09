@@ -78,19 +78,6 @@ function countOccurrences(output, marker) {
   return output.split(marker).length - 1
 }
 
-function assertParentOrForwardedChildCount(output, marker, description) {
-  const count = countOccurrences(output, marker)
-  const playCycles = countOccurrences(
-    output,
-    '[godot-js-runtime] EDITOR_PLAY_START',
-  )
-  if (count !== 1 && count !== playCycles + 1) {
-    throw new Error(
-      `${description} expected one parent occurrence of ${marker}, or the parent plus all ${String(playCycles)} forwarded child runs; received ${String(count)}\n${output}`,
-    )
-  }
-}
-
 function assertNoneOrForwardedChildCount(output, marker, description) {
   const count = countOccurrences(output, marker)
   const playCycles = countOccurrences(
@@ -157,6 +144,44 @@ function verifyLifecycle(output, description) {
   verifyCleanOutput(output, description)
 }
 
+function verifyProjectRuntimeBalance(output, description, minimumCycles = 1) {
+  const starts = countOccurrences(
+    output,
+    '[godot-js-runtime] PROJECT_RUNTIME_STARTED live=1',
+  )
+  const stops = countOccurrences(
+    output,
+    '[godot-js-runtime] PROJECT_RUNTIME_STOPPED live=0',
+  )
+  if (starts < minimumCycles || starts !== stops) {
+    throw new Error(
+      `${description} expected at least ${String(minimumCycles)} balanced project runtime cycle(s), received ${String(starts)} start(s) and ${String(stops)} stop(s)\n${output}`,
+    )
+  }
+  if (
+    output.includes('PROJECT_RUNTIME_STARTED live=2') ||
+    output.includes('PROJECT_RUNTIME_STOPPED live=1')
+  ) {
+    throw new Error(`${description} ran overlapping project runtimes\n${output}`)
+  }
+  return starts
+}
+
+function verifySerializedScene() {
+  const staged = fs.readFileSync(
+    path.join(sceneStagingRoot, 'main.tscn'),
+    'utf-8',
+  )
+  if (
+    !staged.includes('path="res://attached.mjs"') ||
+    !staged.includes('speed = 321.0')
+  ) {
+    throw new Error(
+      'Attached-script scene does not serialize its JavaScript resource and exported property',
+    )
+  }
+}
+
 function verifyEditorLifecycle(output, description) {
   const initialized = countOccurrences(output, '[godot-js-runtime] INITIALIZED')
   const terminated = countOccurrences(output, '[godot-js-runtime] TERMINATED')
@@ -166,6 +191,27 @@ function verifyEditorLifecycle(output, description) {
     )
   }
   verifyCleanOutput(output, description)
+}
+
+function verifyEditorProjectRuntimes(output, description, playCycles) {
+  const starts = countOccurrences(
+    output,
+    '[godot-js-runtime] PROJECT_RUNTIME_STARTED live=1',
+  )
+  const stops = countOccurrences(
+    output,
+    '[godot-js-runtime] PROJECT_RUNTIME_STOPPED live=0',
+  )
+  if (
+    (starts !== 1 && starts !== playCycles + 1) ||
+    stops < 1 ||
+    stops > starts ||
+    output.includes('PROJECT_RUNTIME_STARTED live=2')
+  ) {
+    throw new Error(
+      `${description} observed an invalid parent/forwarded-child runtime lifecycle: ${String(starts)} start(s), ${String(stops)} stop(s)\n${output}`,
+    )
+  }
 }
 
 export async function smokeStockGodot(options) {
@@ -198,6 +244,7 @@ export async function smokeStockGodot(options) {
     'headless editor load/unload probe',
   )
   verifyLifecycle(shellOutput, 'headless editor load/unload probe')
+  verifyProjectRuntimeBalance(shellOutput, 'headless editor load/unload probe')
 
   const editorPlayOutput = runGodot(
     options.godot,
@@ -207,26 +254,28 @@ export async function smokeStockGodot(options) {
   verifyEditorLifecycle(editorPlayOutput, 'headless editor play/stop loop')
   assertCount(
     editorPlayOutput,
-    '[godot-js-runtime] PHASE2_EDITOR_PLAY_LOOP PASS',
+    '[godot-js-runtime] PHASE4_EDITOR_PLACEHOLDER PASS',
     1,
     'headless editor play/stop loop',
   )
-  assertParentOrForwardedChildCount(
+  assertCount(
     editorPlayOutput,
-    '[godot-js-runtime] PHASE3_BINDING PASS',
+    '[godot-js-runtime] PHASE4_TOOL_SCRIPT PASS',
+    1,
     'headless editor play/stop loop',
   )
-  assertParentOrForwardedChildCount(
+  assertCount(
     editorPlayOutput,
-    '[godot-js-runtime] PHASE3_VARIANT_MATRIX PASS 39 types',
+    '[godot-js-runtime] PHASE4_EDITOR_PLAY_LOOP PASS',
+    1,
     'headless editor play/stop loop',
   )
   assertNoneOrForwardedChildCount(
     editorPlayOutput,
-    '[godot-js-runtime] PHASE3_COMMONJS_BINDING PASS',
+    '[godot-js-runtime] PHASE4_SCRIPT_READY PASS',
     'headless editor play/stop loop',
   )
-  assertParentOrForwardedChildCount(
+  assertNoneOrForwardedChildCount(
     editorPlayOutput,
     expectedCallbackException,
     'headless editor play/stop loop',
@@ -250,22 +299,15 @@ export async function smokeStockGodot(options) {
     editorPlayStarts,
     'headless editor play/stop loop',
   )
-  const editorRuntimeStarts = countOccurrences(
+  verifyEditorProjectRuntimes(
     editorPlayOutput,
-    '[godot-js-runtime] RUNTIME_STARTED live=1',
+    'headless editor play/stop loop',
+    editorPlayStarts,
   )
-  const editorRuntimeStops = countOccurrences(
-    editorPlayOutput,
-    '[godot-js-runtime] RUNTIME_STOPPED live=0',
-  )
-  if (editorRuntimeStarts < 1 || editorRuntimeStarts !== editorRuntimeStops) {
-    throw new Error(
-      `headless editor play/stop loop left unbalanced QuickJS instances: ${String(editorRuntimeStarts)} start(s), ${String(editorRuntimeStops)} stop(s)\n${editorPlayOutput}`,
-    )
-  }
+  verifySerializedScene()
 
   const runScene = (runNumber) => {
-    const description = `main-scene initialization probe ${String(runNumber)}`
+    const description = `attached-script main-scene probe ${String(runNumber)}`
     const output = runGodot(
       options.godot,
       ['--headless', '--path', sceneStagingRoot, '--quit-after', '120'],
@@ -274,26 +316,19 @@ export async function smokeStockGodot(options) {
     verifyLifecycle(output, description)
     assertCount(
       output,
-      '[godot-js-runtime] phase-two loader evaluated res://main.mjs',
+      '[godot-js-runtime] PHASE4_SCRIPT_READY PASS',
       1,
       description,
     )
-    const runtimeStarts = countOccurrences(
-      output,
-      '[godot-js-runtime] RUNTIME_STARTED live=1',
-    )
-    const runtimeStops = countOccurrences(
-      output,
-      '[godot-js-runtime] RUNTIME_STOPPED live=0',
-    )
-    if (runtimeStarts < 3 || runtimeStarts !== runtimeStops) {
-      throw new Error(
-        `${description} expected at least three balanced QuickJS start/stop cycles, received ${String(runtimeStarts)} start(s) and ${String(runtimeStops)} stop(s)\n${output}`,
-      )
-    }
     assertCount(
       output,
-      '[godot-js-runtime] PHASE2_MODULE_PROMISE PASS relative-esm resource-json',
+      '[godot-js-runtime] PHASE4_LIFECYCLE PASS',
+      1,
+      description,
+    )
+    assertCount(
+      output,
+      '[godot-js-runtime] PHASE4_EXIT_TREE PASS',
       1,
       description,
     )
@@ -318,47 +353,125 @@ export async function smokeStockGodot(options) {
     assertCount(output, expectedCallbackException, 1, description)
     assertCount(
       output,
-      '[godot-js-runtime] PROMISE_JOBS_DRAINED count=1',
-      runtimeStarts - 1,
-      description,
-    )
-    assertCount(
-      output,
-      '[godot-js-runtime] PROMISE_JOBS_DRAINED count=0',
+      '[godot-js-runtime] PHASE2_MODULE_PROMISE PASS relative-esm resource-json',
       1,
       description,
     )
     assertCount(
       output,
       '[godot-js-runtime] PHASE2_LOOP_PROMISE PASS',
-      runtimeStarts - 2,
+      8,
       description,
     )
-    assertCount(
-      output,
-      '[godot-js-runtime] PHASE2_RELOAD_LOOP PASS',
-      1,
-      description,
-    )
-    assertCount(
-      output,
-      '[godot-js-runtime] PHASE2_SCRIPT_READY PASS',
-      1,
-      description,
-    )
+    verifyProjectRuntimeBalance(output, description)
     return output
   }
 
   const firstRun = runScene(1)
   const secondRun = runScene(2)
+
+  const contractDescription = 'script-language contract and rejection probe'
+  const contractOutput = runGodot(
+    options.godot,
+    [
+      '--headless',
+      '--path',
+      sceneStagingRoot,
+      'res://script-contract.tscn',
+      '--quit-after',
+      '600',
+    ],
+    contractDescription,
+  )
+  assertCount(contractOutput, '[godot-js-runtime] INITIALIZED', 1, contractDescription)
+  assertCount(contractOutput, '[godot-js-runtime] TERMINATED', 1, contractDescription)
+  assertCount(
+    contractOutput,
+    '[godot-js-runtime] PHASE4_LANGUAGE_CONTRACT PASS',
+    1,
+    contractDescription,
+  )
+  assertCount(
+    contractOutput,
+    '[godot-js-runtime] PHASE4_PROJECT_SETTINGS PASS',
+    1,
+    contractDescription,
+  )
+  for (const expected of [
+    'res://incompatible-base.mjs requires base Node2D but was attached to Node',
+    'res://invalid-export.mjs: default export must be a JavaScript class',
+    'res://missing-default.mjs: default export must be a JavaScript class',
+    'res://syntax-error.mjs:4:1',
+  ]) {
+    if (!contractOutput.includes(expected)) {
+      throw new Error(
+        `${contractDescription} did not report actionable error detail ${expected}\n${contractOutput}`,
+      )
+    }
+  }
+  if (
+    contractOutput.includes('Phase 4 script contract failed') ||
+    contractOutput.includes('SCRIPT ERROR')
+  ) {
+    throw new Error(`${contractDescription} failed its controller\n${contractOutput}`)
+  }
+  verifyProjectRuntimeBalance(contractOutput, contractDescription)
+
+  const runReloadScene = (runNumber) => {
+    fs.copyFileSync(
+      path.join(fixtureRoot, 'reload-probe.mjs'),
+      path.join(sceneStagingRoot, 'reload-probe.mjs'),
+    )
+    const description = `script reload probe ${String(runNumber)}`
+    const output = runGodot(
+      options.godot,
+      [
+        '--headless',
+        '--path',
+        sceneStagingRoot,
+        'res://reload-probe.tscn',
+        '--quit-after',
+        '600',
+      ],
+      description,
+    )
+    verifyLifecycle(output, description)
+    for (const marker of [
+      'PHASE4_DEFERRED_RELOAD PASS',
+      'PHASE4_SOFT_RELOAD PASS',
+      'PHASE4_INCOMPATIBLE_STATE PASS',
+      'PHASE4_HARD_RELOAD PASS',
+      'PHASE4_IN_MEMORY_RELOAD PASS',
+      'PHASE4_PREDELETE PASS',
+    ]) {
+      assertCount(output, `[godot-js-runtime] ${marker}`, 1, description)
+    }
+    assertCount(output, '[godot-js-runtime] RELOAD_DEFERRED', 1, description)
+    assertCount(output, '[godot-js-runtime] SOFT_RELOAD_COMPLETE', 4, description)
+    assertCount(output, '[godot-js-runtime] HARD_RELOAD_COMPLETE', 1, description)
+    if (
+      output.includes('STALE_RELOAD_PROMISE_EXECUTED') ||
+      output.includes('STALE_RELOAD_TIMER_EXECUTED')
+    ) {
+      throw new Error(`${description} executed a callback from a destroyed context\n${output}`)
+    }
+    verifyProjectRuntimeBalance(output, description, 6)
+    return output
+  }
+
+  const firstReload = runReloadScene(1)
+  const secondReload = runReloadScene(2)
   if (options.verbose) {
     process.stdout.write(shellOutput)
     process.stdout.write(editorPlayOutput)
     process.stdout.write(firstRun)
     process.stdout.write(secondRun)
+    process.stdout.write(contractOutput)
+    process.stdout.write(firstReload)
+    process.stdout.write(secondReload)
   }
   console.log(`[stock-smoke] PASS ${version}`)
-  const allOutput = `${shellOutput}${editorPlayOutput}${firstRun}${secondRun}`
+  const allOutput = `${shellOutput}${editorPlayOutput}${firstRun}${secondRun}${contractOutput}${firstReload}${secondReload}`
   const extensionCycles = countOccurrences(
     allOutput,
     '[godot-js-runtime] TERMINATED',
@@ -368,10 +481,10 @@ export async function smokeStockGodot(options) {
   )
   const runtimeCycles = countOccurrences(
     allOutput,
-    '[godot-js-runtime] RUNTIME_STOPPED live=0',
+    '[godot-js-runtime] PROJECT_RUNTIME_STOPPED live=0',
   )
   console.log(
-    `[stock-smoke] resource ESM, JSON, and Promise jobs: ${String(runtimeCycles)} balanced runtime cycles`,
+    `[stock-smoke] attached scripts, reloads, and Promise jobs: ${String(runtimeCycles)} balanced project runtime cycles`,
   )
   console.log(
     `[stock-smoke] editor play/stop: ${String(editorPlayStarts)} balanced cycles`,

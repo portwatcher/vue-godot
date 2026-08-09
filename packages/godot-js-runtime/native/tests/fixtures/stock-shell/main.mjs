@@ -278,3 +278,5 @@ Promise.resolve().then(() => {
     `[godot-js-runtime] PHASE2_MODULE_PROMISE PASS ${moduleMarker} ${settings.marker}`,
   )
 })
+
+export default class BindingProbe extends Node {}

@@ -4,15 +4,16 @@ Godot JavaScript Runtime is a standalone JavaScript and ahead-of-time
 TypeScript runtime for official Godot. It is not a Vue package and its native
 extension does not import, link, or bundle Vue.
 
-The repository now contains the resource-backed QuickJS-ng host, module system,
-and generated Godot 4.4 binding with complete Variant conversion. The
-JavaScript `ScriptLanguage` adapter is still under construction, so JavaScript
-scene attachment is not yet a supported release surface.
+The repository now contains the resource-backed QuickJS-ng host, generated
+Godot 4.4 binding with complete Variant conversion, and the JavaScript
+`ScriptLanguage` implementation. Stock Godot can load, attach, serialize, run,
+and reload `.js`, `.mjs`, and `.cjs` scripts. Installation tooling and release
+artifacts remain under development, so this is not yet a published release.
 
-## Plain JavaScript goal
+## Attached JavaScript scripts
 
-The completed runtime will let an ordinary Godot project attach a bundled
-JavaScript module to a scene while importing engine APIs from `godot`:
+An ordinary Godot project can attach a JavaScript module to a scene while
+importing engine APIs from `godot`:
 
 ```js
 import { Node2D } from 'godot'
@@ -23,6 +24,12 @@ export default class Player extends Node2D {
   }
 }
 ```
+
+The default export must be a JavaScript class derived from a generated Godot
+class compatible with the node or resource receiving the script. Prototype
+methods are exposed to Godot and virtual methods such as `_ready`, `_process`,
+`_physics_process`, `_input`, `_notification`, and `_exit_tree` are dispatched
+through the script instance.
 
 TypeScript is compiled before Godot runs it. The embedded engine will not
 execute TypeScript source directly.
@@ -65,13 +72,15 @@ Resource-backed ES modules can import `godot-js`, and CommonJS bundles can
 `require('godot-js')`. This module reports runtime capabilities alongside the
 `godot` engine binding:
 
-| Function            | Description                                                       |
-| ------------------- | ----------------------------------------------------------------- |
-| `runtimeVersion()`  | Returns the `godot-js-runtime` package/runtime version.           |
-| `quickJSVersion()`  | Returns the embedded QuickJS-ng version.                          |
-| `runtimeFeatures()` | Returns the deterministic list of enabled host features.          |
-| `hasFeature(name)`  | Tests one host feature without version-string parsing.            |
-| `collectGarbage()`  | Forces a QuickJS collection and prunes weak Godot wrapper caches. |
+| Function                             | Description                                                                           |
+| ------------------------------------ | ------------------------------------------------------------------------------------- |
+| `runtimeVersion()`                   | Returns the `godot-js-runtime` package/runtime version.                               |
+| `quickJSVersion()`                   | Returns the embedded QuickJS-ng version.                                              |
+| `runtimeFeatures()`                  | Returns the deterministic list of enabled host features.                              |
+| `hasFeature(name)`                   | Tests one host feature without version-string parsing.                                |
+| `collectGarbage()`                   | Forces a QuickJS collection and prunes weak Godot wrapper caches.                     |
+| `defineScript(ScriptClass, options)` | Attaches inspector-property, signal, tool-script, and RPC metadata to a script class. |
+| `getScriptMetadata(value)`           | Returns metadata previously attached with `defineScript()`.                           |
 
 The host currently supports resource-backed ESM, CommonJS, JSON modules,
 relative extension and index resolution, circular dependencies, module caches,
@@ -84,6 +93,83 @@ diagnostics. It reports the product/package/runtime/minimum-Godot versions,
 initialization state, `get_live_runtime_count()`, `get_live_wrapper_count()`,
 and `get_live_callback_root_count()` so smoke and editor loops can prove that
 runtime, wrapper, and callback ownership was torn down.
+
+## Script metadata
+
+Classes work without metadata. Use `defineScript()` from the embedded
+`godot-js` module when a script needs exported inspector properties, declared
+signals, tool execution, or RPC configuration:
+
+```js
+import { defineScript } from 'godot-js'
+import { Node2D } from 'godot'
+
+class Player extends Node2D {
+  speed = 240
+
+  move(distance) {
+    this.emit_signal('moved', distance)
+  }
+}
+
+export default defineScript(Player, {
+  properties: {
+    speed: {
+      type: 'float',
+      default: 240,
+      hint: { range: [0, 1000, 1] },
+    },
+  },
+  signals: {
+    moved: [{ name: 'distance', type: 'float' }],
+  },
+  rpc: {
+    move: {
+      rpc_mode: 1,
+      call_local: true,
+      transfer_mode: 2,
+      channel: 0,
+    },
+  },
+  tool: false,
+})
+```
+
+Property types accept Godot Variant names such as `float`, `string`,
+`vector2`, `array`, and generated Godot class names. Range hints use
+`{ range: [minimum, maximum, step] }`; enum hints use
+`{ enum: ['First', 'Second'] }`. Non-tool scripts use Godot placeholder script
+instances while their scene is open in the editor, preserving serialized
+values without running game code. Scripts marked `tool: true` execute in the
+editor.
+
+## Reload behavior
+
+Godot's `Script.reload(keepState)` entry point reloads the project JavaScript
+context safely:
+
+- Soft reload (`true`) restores exported property values only when the old and
+  new metadata types are compatible; changed types fall back to their new
+  defaults.
+- Hard reload (`false`) recreates instances from declared defaults.
+- A reload requested from inside JavaScript is deferred until the active call
+  and Promise-job pump finish. Pending callbacks and signal connections from
+  the old context are disconnected before teardown.
+- Unsaved editor source stored in `Script.source_code` is used for reload;
+  otherwise the resource is refreshed from disk.
+
+## Runtime project settings
+
+The extension registers these settings in Godot's Project Settings. Invalid or
+out-of-range values produce a warning and use the default.
+
+| Setting                                                    | Default | Range          |
+| ---------------------------------------------------------- | ------: | -------------- |
+| `godot_js_runtime/runtime/memory_limit_mb`                 |     128 | 16–4096 MB     |
+| `godot_js_runtime/runtime/maximum_stack_size_kb`           |    1024 | 256–16384 KB   |
+| `godot_js_runtime/runtime/interrupt_interval_milliseconds` |       1 | 0–1000 ms      |
+| `godot_js_runtime/runtime/execution_timeout_milliseconds`  |    5000 | 0–600000 ms    |
+| `godot_js_runtime/runtime/maximum_promise_jobs_per_frame`  |   10000 | 1–1000000 jobs |
 
 ## Embedded `godot` module
 
@@ -166,19 +252,17 @@ The build tooling also supports print-only operation for CI inspection.
 
 ## Current verification boundary
 
-At this phase, the extension and live generated binding load and unload cleanly
-in official Godot 4.4.1 and the current stable editor. The stock fixture covers
-all 39 Variant types, inheritance, constructors and overloads, singletons,
-properties, methods, signals, callback roots, object/container identity,
-invalid-object errors, deep nested containers, 64-bit boundaries, Unicode,
-2,048-node ownership stress, forced garbage collection, repeated reloads, and
-three editor play/stop cycles. Native tests separately cover ESM and CommonJS
-cycles, Vite-style chunks, limits, exceptions, source maps, caches, and repeated
-teardown. Every cycle asserts that live runtime, wrapper, and callback counts
-return to zero. This is not yet the final scene-script integration: the loader
-still returns a placeholder Godot script after evaluating a resource module.
-Script instances, editor tooling, installers, platform exports, and Vue
-migration remain later gates.
+At this phase, the extension, live generated binding, and JavaScript script
+language load and unload cleanly in official Godot 4.4.1 and the current stable
+editor. The stock fixture attaches a non-Vue script, exercises lifecycle and
+notification dispatch, reflected methods/properties/signals/RPC metadata,
+editor placeholders, tool scripts, source serialization, actionable loader
+errors, hard and state-preserving soft reloads, deferred reloads, and repeated
+editor play/stop cycles. It retains the earlier all-Variant, ownership,
+callback, ESM, CommonJS, source-map, limit, and stress coverage. Every cycle
+asserts balanced runtime, wrapper, and callback ownership. Type generation,
+broader editor tooling, installers, platform exports, and Vue migration remain
+later gates.
 
 ## Security model
 

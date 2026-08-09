@@ -96,7 +96,7 @@ test('native build embeds pinned QuickJS-ng and exposes host tests', () => {
   assert.match(sconstruct, /-fno-omit-frame-pointer/)
 })
 
-test('stock fixture enforces module, teardown, and editor play gates', () => {
+test('stock fixture enforces binding, script-language, reload, and editor gates', () => {
   const fixtureRoot = path.join(
     packageRoot,
     'native/tests/fixtures/stock-shell',
@@ -125,15 +125,38 @@ test('stock fixture enforces module, teardown, and editor play gates', () => {
     path.join(fixtureRoot, 'binding.cjs'),
     'utf-8',
   )
+  const attachedFixture = fs.readFileSync(
+    path.join(fixtureRoot, 'attached.mjs'),
+    'utf-8',
+  )
+  const contractController = fs.readFileSync(
+    path.join(fixtureRoot, 'script-contract-controller.gd'),
+    'utf-8',
+  )
+  const reloadController = fs.readFileSync(
+    path.join(fixtureRoot, 'reload-controller.gd'),
+    'utf-8',
+  )
   assert.match(project, /run\/main_run_args="--headless"/)
-  assert.match(editorPlugin, /PHASE2_EDITOR_PLAY_LOOP PASS/)
-  assert.match(editorPlugin, /get_live_runtime_count\(\) != 0/)
-  assert.match(editorPlugin, /get_live_wrapper_count\(\) != 0/)
-  assert.match(editorPlugin, /get_live_callback_root_count\(\) != 0/)
-  assert.match(smoke, /balanced QuickJS start\/stop cycles/)
+  assert.match(project, /\[godot_js_runtime\]/)
+  assert.match(project, /runtime\/memory_limit_mb=96/)
+  assert.match(project, /maximum_promise_jobs_per_frame=12000/)
+  assert.match(editorPlugin, /PHASE4_EDITOR_PLACEHOLDER PASS/)
+  assert.match(editorPlugin, /PHASE4_EDITOR_PLAY_LOOP PASS/)
+  assert.match(editorPlugin, /get_live_runtime_count\(\) != 1/)
+  assert.match(editorPlugin, /get_live_wrapper_count\(\) != baseline_wrappers/)
+  assert.match(
+    editorPlugin,
+    /get_live_callback_root_count\(\) != baseline_callbacks/,
+  )
+  assert.match(smoke, /attached scripts, reloads, and Promise jobs/)
   assert.match(smoke, /EDITOR_PLAY_START/)
   assert.match(smoke, /PHASE3_VARIANT_MATRIX PASS 39 types/)
   assert.match(smoke, /PHASE3_COMMONJS_BINDING PASS/)
+  assert.match(smoke, /PHASE4_LANGUAGE_CONTRACT PASS/)
+  assert.match(smoke, /PHASE4_DEFERRED_RELOAD PASS/)
+  assert.match(smoke, /PHASE4_IN_MEMORY_RELOAD PASS/)
+  assert.match(smoke, /STALE_RELOAD_PROMISE_EXECUTED/)
   assert.match(bindingFixture, /index < 2048/)
   assert.match(bindingFixture, /collectGarbage\(\)/)
   assert.match(bindingFixture, /stress signal disconnect/)
@@ -145,6 +168,61 @@ test('stock fixture enforces module, teardown, and editor play gates', () => {
   )
   assert.match(variantFixture, /depth < 32/)
   assert.match(commonJsFixture, /require\('godot'\)/)
+  assert.match(attachedFixture, /export default defineScript/)
+  assert.match(attachedFixture, /_enter_tree\(\)/)
+  assert.match(attachedFixture, /_notification\(\)/)
+  assert.match(attachedFixture, /_physics_process\(\)/)
+  assert.match(attachedFixture, /_input\(event\)/)
+  assert.match(attachedFixture, /signals: \{/)
+  assert.match(attachedFixture, /rpc: \{/)
+  assert.match(contractController, /ResourceSaver\.save/)
+  assert.match(contractController, /invalid-export\.mjs/)
+  assert.match(contractController, /incompatible-base\.mjs/)
+  assert.match(reloadController, /script\.reload\(true\)/)
+  assert.match(reloadController, /script\.reload\(false\)/)
+  assert.match(reloadController, /script\.source_code = in_memory_source/)
+  assert.match(reloadController, /PHASE4_PREDELETE PASS/)
+})
+
+test('script-language implementation registers public contracts and runtime settings', () => {
+  const registerTypes = fs.readFileSync(
+    path.join(packageRoot, 'native/src/register_types.cpp'),
+    'utf-8',
+  )
+  const language = fs.readFileSync(
+    path.join(packageRoot, 'native/src/scripting/javascript_language.cpp'),
+    'utf-8',
+  )
+  const projectSettings = fs.readFileSync(
+    path.join(packageRoot, 'native/src/runtime/runtime_project_settings.cpp'),
+    'utf-8',
+  )
+  const scriptInstance = fs.readFileSync(
+    path.join(
+      packageRoot,
+      'native/include/godot_js_runtime/scripting/javascript_script_instance.hpp',
+    ),
+    'utf-8',
+  )
+
+  assert.match(registerTypes, /register_runtime_project_settings\(\)/)
+  assert.match(registerTypes, /register_script_language/)
+  assert.match(registerTypes, /add_resource_format_loader/)
+  assert.match(registerTypes, /add_resource_format_saver/)
+  assert.match(language, /_get_recognized_extensions\(\)/)
+  assert.match(language, /_reload_scripts/)
+  assert.match(projectSettings, /MEMORY_LIMIT_MB, 128, 16, 4096/)
+  assert.match(projectSettings, /MAXIMUM_STACK_SIZE_KB, 1024, 256, 16384/)
+  assert.match(
+    projectSettings,
+    /EXECUTION_TIMEOUT_MILLISECONDS, 5000, 0, 600000/,
+  )
+  assert.match(
+    projectSettings,
+    /MAXIMUM_PROMISE_JOBS_PER_FRAME, 10000, 1, 1000000/,
+  )
+  assert.match(scriptInstance, /GDExtensionScriptInstanceInfo3/)
+  assert.match(scriptInstance, /godot::Ref<JavaScriptScript>/)
 })
 
 test('native version constants match the npm package', () => {

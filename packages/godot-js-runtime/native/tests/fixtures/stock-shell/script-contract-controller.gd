@@ -1,0 +1,95 @@
+extends Node
+
+var failed := false
+
+func require_condition(condition: bool, message: String) -> bool:
+	if condition:
+		return true
+	failed = true
+	push_error("Phase 4 script contract failed: %s" % message)
+	return false
+
+func load_fresh(path: String):
+	return ResourceLoader.load(path, "Script", ResourceLoader.CACHE_MODE_IGNORE)
+
+func has_named_entry(entries: Array, name: StringName) -> bool:
+	for entry in entries:
+		if entry.get("name") == name:
+			return true
+	return false
+
+func _ready() -> void:
+	var plain: Script = load_fresh("res://plain.js")
+	require_condition(plain != null and plain.can_instantiate(), ".js default class export")
+	require_condition(plain.get_instance_base_type() == &"Node", ".js base class")
+	var plain_node := Node.new()
+	plain_node.set_script(plain)
+	require_condition(plain_node.call("echo", "ok") == "plain:ok", ".js method dispatch")
+	plain_node.free()
+
+	var common_js: Script = load_fresh("res://binding.cjs")
+	require_condition(common_js != null and common_js.can_instantiate(), ".cjs default class export")
+	var attached: Script = load_fresh("res://attached.mjs")
+	require_condition(attached != null and attached.can_instantiate(), ".mjs default class export")
+	require_condition(
+		has_named_entry(attached.get_script_method_list(), &"ping"),
+		"reflected method list",
+	)
+	require_condition(
+		has_named_entry(attached.get_script_property_list(), &"speed"),
+		"reflected property list",
+	)
+	require_condition(
+		has_named_entry(attached.get_script_signal_list(), &"moved"),
+		"reflected signal list",
+	)
+	require_condition(attached.get_property_default_value(&"speed") == 240.0, "property default")
+	var rpc: Dictionary = attached.get_rpc_config()
+	require_condition(rpc.has("ping"), "RPC method metadata")
+	require_condition(rpc["ping"].get("rpc_mode") == 1, "RPC mode metadata")
+	var tool_script: Script = load_fresh("res://tool-script.mjs")
+	require_condition(tool_script != null and tool_script.is_tool(), "tool script metadata")
+
+	var saved_path := "user://godot-js-runtime-phase4-saved.js"
+	var original_source := plain.source_code
+	require_condition(ResourceSaver.save(plain, saved_path) == OK, "JavaScript ResourceSaver")
+	require_condition(
+		FileAccess.get_file_as_string(saved_path) == original_source,
+		"ResourceSaver source round trip",
+	)
+	print("[godot-js-runtime] PHASE4_LANGUAGE_CONTRACT PASS js mjs cjs metadata tool saver")
+
+	var incompatible: Script = load_fresh("res://incompatible-base.mjs")
+	require_condition(incompatible != null and incompatible.can_instantiate(), "incompatible script load")
+	var incompatible_node := Node.new()
+	incompatible_node.set_script(incompatible)
+	incompatible_node.free()
+	print("[godot-js-runtime] PHASE4_EXPECTED_INCOMPATIBLE_BASE")
+
+	require_condition(load_fresh("res://invalid-export.mjs") == null, "invalid default export rejected")
+	require_condition(load_fresh("res://missing-default.mjs") == null, "missing default export rejected")
+	require_condition(load_fresh("res://syntax-error.mjs") == null, "syntax error rejected")
+	print("[godot-js-runtime] PHASE4_EXPECTED_SCRIPT_ERRORS")
+
+	require_condition(
+		ProjectSettings.get_setting("godot_js_runtime/runtime/memory_limit_mb") == 96,
+		"memory-limit project setting",
+	)
+	require_condition(
+		ProjectSettings.get_setting("godot_js_runtime/runtime/maximum_stack_size_kb") == 768,
+		"stack-limit project setting",
+	)
+	require_condition(
+		ProjectSettings.get_setting("godot_js_runtime/runtime/interrupt_interval_milliseconds") == 2,
+		"interrupt-interval project setting",
+	)
+	require_condition(
+		ProjectSettings.get_setting("godot_js_runtime/runtime/execution_timeout_milliseconds") == 4000,
+		"execution-timeout project setting",
+	)
+	require_condition(
+		ProjectSettings.get_setting("godot_js_runtime/runtime/maximum_promise_jobs_per_frame") == 12000,
+		"Promise-job project setting",
+	)
+	print("[godot-js-runtime] PHASE4_PROJECT_SETTINGS PASS")
+	get_tree().quit(0 if not failed else 1)

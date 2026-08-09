@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://script-contract-controller.gd" id="1_controller"]
+
+[node name="ScriptContractController" type="Node"]
+script = ExtResource("1_controller")

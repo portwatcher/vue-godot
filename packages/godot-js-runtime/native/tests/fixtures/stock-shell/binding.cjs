@@ -2,6 +2,7 @@ const {
   Array: GodotArray,
   ClassDB,
   Dictionary,
+  Node,
   Vector3,
   typeof: godotTypeof,
   Variant,
@@ -22,4 +23,4 @@ if (godotTypeof(vector) !== Variant.Type.TYPE_VECTOR3) {
 }
 
 console.log('[godot-js-runtime] PHASE3_COMMONJS_BINDING PASS')
-module.exports = { passed: true }
+module.exports = class CommonJsBindingProbe extends Node {}

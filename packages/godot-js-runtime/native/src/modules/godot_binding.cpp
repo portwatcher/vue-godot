@@ -240,6 +240,8 @@ struct GodotBinding::Impl {
 	bool in_wrapper_finalizer = false;
 	std::optional<bool> editor_hint_cache;
 	std::thread::id owner_thread;
+	GDExtensionObjectPtr pending_script_owner = nullptr;
+	bool pending_script_owner_consumed = false;
 
 	explicit Impl(ConsoleSink &console_sink) : console_sink(console_sink) {
 		builtin_index_by_variant_type.assign(
@@ -511,7 +513,9 @@ struct GodotBinding::Impl {
 		return JS_Call(context, dereference.get(), weak_reference, 0, nullptr);
 	}
 
-	JSValue wrap_object(const godot::Variant &value) {
+	JSValue wrap_object(
+			const godot::Variant &value,
+			JSValueConst prototype_override = JS_UNDEFINED) {
 		const std::uint64_t object_id =
 				godot::internal::gdextension_interface_variant_get_object_instance_id(
 						value._native_ptr());
@@ -529,6 +533,10 @@ struct GodotBinding::Impl {
 				return JS_EXCEPTION;
 			}
 			if (!JS_IsUndefined(existing.get())) {
+				if (!JS_IsUndefined(prototype_override) &&
+						JS_SetPrototype(context, existing.get(), prototype_override) < 0) {
+					return JS_EXCEPTION;
+				}
 				return existing.release();
 			}
 			JS_FreeValue(context, cached->second.weak_reference);
@@ -539,7 +547,9 @@ struct GodotBinding::Impl {
 		const auto object_class = class_index_by_name.find("Object");
 		const std::uint32_t resolved_class_index = class_index.value_or(
 				object_class == class_index_by_name.end() ? NO_INDEX : object_class->second);
-		JSValue prototype = resolved_class_index < class_prototypes.size()
+		JSValue prototype = !JS_IsUndefined(prototype_override)
+				? prototype_override
+				: resolved_class_index < class_prototypes.size()
 				? class_prototypes[resolved_class_index]
 				: JS_UNDEFINED;
 		JSValue wrapper = JS_NewObjectProtoClass(context, prototype, object_class_id);
@@ -1596,7 +1606,7 @@ struct GodotBinding::Impl {
 
 	static JSValue js_class_constructor(
 			JSContext *call_context,
-			JSValueConst,
+			JSValueConst new_target,
 			int argument_count,
 			JSValueConst *,
 			int,
@@ -1622,10 +1632,33 @@ struct GodotBinding::Impl {
 					binding_class.name,
 					argument_count);
 		}
-		godot::StringName class_name(binding_class.name);
-		GDExtensionObjectPtr owner =
-				godot::internal::gdextension_interface_classdb_construct_object2(
-						class_name._native_ptr());
+		ScopedJSValue prototype(
+				call_context,
+				JS_IsObject(new_target)
+						? JS_GetPropertyStr(call_context, new_target, "prototype")
+						: JS_UNDEFINED);
+		if (JS_IsException(prototype.get())) {
+			return JS_EXCEPTION;
+		}
+
+		GDExtensionObjectPtr owner = nullptr;
+		bool owns_constructed_object = false;
+		if (binding->pending_script_owner != nullptr &&
+				!binding->pending_script_owner_consumed) {
+			owner = binding->pending_script_owner;
+			if (!binding->object_is_class(owner, binding_class.name)) {
+				return JS_ThrowTypeError(
+						call_context,
+						"JavaScript script base %s is incompatible with its attached Godot object",
+						binding_class.name);
+			}
+			binding->pending_script_owner_consumed = true;
+		} else {
+			godot::StringName class_name(binding_class.name);
+			owner = godot::internal::gdextension_interface_classdb_construct_object2(
+					class_name._native_ptr());
+			owns_constructed_object = owner != nullptr;
+		}
 		if (owner == nullptr) {
 			return JS_ThrowInternalError(
 					call_context,
@@ -1633,11 +1666,102 @@ struct GodotBinding::Impl {
 					binding_class.name);
 		}
 		godot::Variant object_value = binding->object_variant(owner);
-		JSValue wrapper = binding->wrap_object(object_value);
-		if (JS_IsException(wrapper) && !binding_class.is_refcounted) {
+		JSValue wrapper = binding->wrap_object(object_value, prototype.get());
+		if (JS_IsException(wrapper) && owns_constructed_object &&
+				!binding_class.is_refcounted) {
 			godot::internal::gdextension_interface_object_destroy(owner);
 		}
 		return wrapper;
+	}
+
+	JSValue construct_script_instance(
+			JSValueConst script_class,
+			GDExtensionObjectPtr owner,
+			std::uint64_t owner_id) {
+		if (context == nullptr) {
+			return JS_EXCEPTION;
+		}
+		if (owner == nullptr || owner_id == 0) {
+			return JS_ThrowInternalError(context, "JavaScript script construction has no live owner");
+		}
+		if (!JS_IsConstructor(context, script_class)) {
+			return JS_ThrowTypeError(context, "JavaScript script default export must be a class constructor");
+		}
+		if (pending_script_owner != nullptr) {
+			return JS_ThrowInternalError(context, "JavaScript script construction is already active");
+		}
+		pending_script_owner = owner;
+		pending_script_owner_consumed = false;
+		JSValue instance = JS_CallConstructor(context, script_class, 0, nullptr);
+		const bool consumed = pending_script_owner_consumed;
+		pending_script_owner = nullptr;
+		pending_script_owner_consumed = false;
+		if (JS_IsException(instance)) {
+			return instance;
+		}
+		if (!consumed) {
+			JS_FreeValue(context, instance);
+			return JS_ThrowTypeError(
+					context,
+					"JavaScript script class did not initialize a generated Godot base class");
+		}
+		WrapperPayload *payload = wrapper_payload(instance);
+		if (payload == nullptr || !payload->is_object() ||
+				payload->object_id != owner_id) {
+			JS_FreeValue(context, instance);
+			return JS_ThrowTypeError(
+					context,
+					"JavaScript script constructor returned an object other than its attached Godot owner");
+		}
+		return instance;
+	}
+
+	bool script_base_class(
+			JSValueConst script_class,
+			std::string &base_class,
+			std::string &error) const {
+		base_class.clear();
+		if (context == nullptr || !JS_IsConstructor(context, script_class)) {
+			error = "default export must be a JavaScript class extending a generated Godot class";
+			return false;
+		}
+		ScopedJSValue prototype(
+				context,
+				JS_GetPropertyStr(context, script_class, "prototype"));
+		if (JS_IsException(prototype.get())) {
+			error = exception_text(context);
+			return false;
+		}
+		while (JS_IsObject(prototype.get())) {
+			for (std::uint32_t index = 0; index < class_prototypes.size(); ++index) {
+				if (!JS_IsUndefined(class_prototypes[index]) &&
+						JS_IsStrictEqual(context, prototype.get(), class_prototypes[index])) {
+					base_class = generated::CLASSES[index].name;
+					return true;
+				}
+			}
+			ScopedJSValue parent(context, JS_GetPrototype(context, prototype.get()));
+			if (JS_IsException(parent.get())) {
+				error = exception_text(context);
+				return false;
+			}
+			prototype = std::move(parent);
+		}
+		error = "default export does not extend a generated Godot class";
+		return false;
+	}
+
+	bool is_godot_class_prototype(JSValueConst value) const {
+		if (context == nullptr || !JS_IsObject(value)) {
+			return false;
+		}
+		return std::any_of(
+				class_prototypes.begin(),
+				class_prototypes.end(),
+				[this, value](JSValueConst prototype) {
+					return !JS_IsUndefined(prototype) &&
+							JS_IsStrictEqual(context, value, prototype);
+				});
 	}
 
 	static JSValue js_builtin_constructor(
@@ -3586,6 +3710,51 @@ void GodotBinding::after_garbage_collection(JSContext *) noexcept {
 
 void GodotBinding::shutdown(JSContext *context) noexcept {
 	impl->shutdown(context);
+}
+
+JSValue GodotBinding::construct_script_instance(
+		JSValueConst script_class,
+		GDExtensionObjectPtr owner,
+		std::uint64_t owner_id) {
+	return impl == nullptr
+			? JS_EXCEPTION
+			: impl->construct_script_instance(script_class, owner, owner_id);
+}
+
+JSValue GodotBinding::variant_to_javascript(const godot::Variant &value) {
+	return impl == nullptr ? JS_EXCEPTION : impl->from_variant(value);
+}
+
+bool GodotBinding::javascript_to_variant(
+		JSValueConst value,
+		const std::string &expected_type,
+		godot::Variant &result,
+		std::string &error) {
+	if (impl == nullptr || impl->context == nullptr) {
+		error = "Godot binding is not installed";
+		return false;
+	}
+	return impl->to_variant(
+			impl->context,
+			value,
+			expected_type,
+			result,
+			error);
+}
+
+bool GodotBinding::script_base_class(
+		JSValueConst script_class,
+		std::string &base_class,
+		std::string &error) const {
+	if (impl == nullptr) {
+		error = "Godot binding is unavailable";
+		return false;
+	}
+	return impl->script_base_class(script_class, base_class, error);
+}
+
+bool GodotBinding::is_godot_class_prototype(JSValueConst value) const {
+	return impl != nullptr && impl->is_godot_class_prototype(value);
 }
 
 const std::vector<std::string> &GodotBinding::feature_names() const noexcept {

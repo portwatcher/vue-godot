@@ -22,3 +22,11 @@ run/main_run_args="--headless"
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+
+[godot_js_runtime]
+
+runtime/memory_limit_mb=96
+runtime/maximum_stack_size_kb=768
+runtime/interrupt_interval_milliseconds=2
+runtime/execution_timeout_milliseconds=4000
+runtime/maximum_promise_jobs_per_frame=12000

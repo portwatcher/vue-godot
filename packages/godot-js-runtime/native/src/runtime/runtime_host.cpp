@@ -10,6 +10,7 @@
 
 #include "godot_js_runtime/runtime/module_resolver.hpp"
 #include "godot_js_runtime/runtime/runtime_module_provider.hpp"
+#include "godot_js_runtime/runtime/script_metadata_key.hpp"
 #include "godot_js_runtime/runtime/scoped_js_value.hpp"
 #include "godot_js_runtime/runtime/source_map.hpp"
 #include "godot_js_runtime/version.hpp"
@@ -96,6 +97,7 @@ struct RuntimeHost::Impl {
 	std::atomic_bool interrupt_requested = false;
 	bool execution_active = false;
 	std::chrono::steady_clock::time_point execution_deadline;
+	std::chrono::steady_clock::time_point next_interrupt_check;
 	std::string startup_error;
 
 	Impl(
@@ -190,8 +192,9 @@ struct RuntimeHost::Impl {
 			return false;
 		}
 		execution_active = true;
+		next_interrupt_check = std::chrono::steady_clock::now();
 		if (options.execution_timeout_milliseconds > 0) {
-			execution_deadline = std::chrono::steady_clock::now() +
+			execution_deadline = next_interrupt_check +
 					std::chrono::milliseconds(options.execution_timeout_milliseconds);
 		}
 		return true;
@@ -210,11 +213,17 @@ struct RuntimeHost::Impl {
 		if (host->interrupt_requested.load(std::memory_order_acquire)) {
 			return 1;
 		}
-		return host->execution_active &&
-						host->options.execution_timeout_milliseconds > 0 &&
-						std::chrono::steady_clock::now() >= host->execution_deadline
-				? 1
-				: 0;
+		if (!host->execution_active ||
+				host->options.execution_timeout_milliseconds == 0) {
+			return 0;
+		}
+		const auto now = std::chrono::steady_clock::now();
+		if (now < host->next_interrupt_check) {
+			return 0;
+		}
+		host->next_interrupt_check = now + std::chrono::milliseconds(
+				host->options.interrupt_interval_milliseconds);
+		return now >= host->execution_deadline ? 1 : 0;
 	}
 
 	static void promise_rejection_tracker(
@@ -383,6 +392,54 @@ struct RuntimeHost::Impl {
 		return JS_UNDEFINED;
 	}
 
+	static JSValue js_define_script(
+			JSContext *context,
+			JSValueConst,
+			int argument_count,
+			JSValueConst *arguments) {
+		if (argument_count < 2 || !JS_IsConstructor(context, arguments[0]) ||
+				!JS_IsObject(arguments[1])) {
+			return JS_ThrowTypeError(
+					context,
+					"defineScript() expects a Godot script class and metadata object");
+		}
+		if (JS_FreezeObject(context, arguments[1]) < 0) {
+			return JS_EXCEPTION;
+		}
+		const JSAtom atom = script_metadata_atom(context);
+		if (atom == JS_ATOM_NULL) {
+			return JS_EXCEPTION;
+		}
+		const int status = JS_DefinePropertyValue(
+				context,
+				arguments[0],
+				atom,
+				JS_DupValue(context, arguments[1]),
+				0);
+		JS_FreeAtom(context, atom);
+		return status < 0
+				? JS_EXCEPTION
+				: JS_DupValue(context, arguments[0]);
+	}
+
+	static JSValue js_get_script_metadata(
+			JSContext *context,
+			JSValueConst,
+			int argument_count,
+			JSValueConst *arguments) {
+		if (argument_count < 1 ||
+				(!JS_IsObject(arguments[0]) && !JS_IsFunction(context, arguments[0]))) {
+			return JS_UNDEFINED;
+		}
+		const JSAtom atom = script_metadata_atom(context);
+		if (atom == JS_ATOM_NULL) {
+			return JS_EXCEPTION;
+		}
+		JSValue metadata = JS_GetProperty(context, arguments[0], atom);
+		JS_FreeAtom(context, atom);
+		return metadata;
+	}
+
 	static int runtime_module_init(JSContext *context, JSModuleDef *module) {
 		if (JS_SetModuleExport(
 					context,
@@ -412,6 +469,20 @@ struct RuntimeHost::Impl {
 					JS_NewCFunction(context, js_collect_garbage, "collectGarbage", 0)) < 0) {
 			return -1;
 		}
+		if (JS_SetModuleExport(
+					context,
+					module,
+					"defineScript",
+					JS_NewCFunction(context, js_define_script, "defineScript", 2)) < 0) {
+			return -1;
+		}
+		if (JS_SetModuleExport(
+					context,
+					module,
+					"getScriptMetadata",
+					JS_NewCFunction(context, js_get_script_metadata, "getScriptMetadata", 1)) < 0) {
+			return -1;
+		}
 		return JS_SetModuleExport(
 				context,
 				module,
@@ -432,6 +503,8 @@ struct RuntimeHost::Impl {
 					 "runtimeFeatures",
 					 "collectGarbage",
 					 "hasFeature",
+					 "defineScript",
+					 "getScriptMetadata",
 			 }) {
 			if (JS_AddModuleExport(context, module, name) < 0) {
 				return nullptr;
@@ -455,6 +528,8 @@ struct RuntimeHost::Impl {
 			{ "runtimeFeatures", js_runtime_features, 0 },
 			{ "collectGarbage", js_collect_garbage, 0 },
 			{ "hasFeature", js_has_feature, 1 },
+			{ "defineScript", js_define_script, 2 },
+			{ "getScriptMetadata", js_get_script_metadata, 1 },
 		};
 		for (const auto &function : functions) {
 			if (JS_SetPropertyStr(
@@ -1020,6 +1095,85 @@ struct RuntimeHost::Impl {
 		return JS_IsException(value.get()) ? exception_result(context) : success(value.get());
 	}
 
+	EvaluationResult evaluate_module_default(
+			const std::string &entry_path,
+			JSValue &default_export) {
+		default_export = JS_UNDEFINED;
+		if (context == nullptr) {
+			return host_error("JavaScript runtime has been shut down");
+		}
+		const ModuleResolution entry = resolve_entry(entry_path, ModuleKind::ES_MODULE);
+		if (!entry.ok || entry.virtual_module) {
+			return host_error(
+					entry.ok ? "A virtual module cannot be used as the runtime entry" : entry.error,
+					"ModuleResolutionError",
+					entry_path);
+		}
+		if (has_suffix(entry.path, ".json")) {
+			return host_error(
+					"A JSON module cannot be used as the runtime entry",
+					"ModuleTypeError",
+					entry.path);
+		}
+		std::string source;
+		std::string read_error;
+		if (!resource_provider.read_text(entry.path, source, read_error)) {
+			return host_error(read_error, "ModuleReadError", entry.path);
+		}
+
+		register_source_map(entry.path, source);
+		ExecutionGuard execution_guard(*this);
+		SourceGuard source_guard(*this, entry.path);
+		ScopedValue compiled(
+				context,
+				JS_Eval(
+						context,
+						source.c_str(),
+						source.size(),
+						entry.path.c_str(),
+						JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_COMPILE_ONLY));
+		if (JS_IsException(compiled.get())) {
+			return exception_result(context);
+		}
+		if (!JS_IsModule(compiled.get())) {
+			return host_error("Compiled entry is not an ES module", "ModuleTypeError", entry.path);
+		}
+
+		JSModuleDef *module = static_cast<JSModuleDef *>(JS_VALUE_GET_PTR(compiled.get()));
+		ScopedValue import_meta(context, JS_GetImportMeta(context, module));
+		if (!JS_IsException(import_meta.get())) {
+			JS_SetPropertyStr(
+					context,
+					import_meta.get(),
+					"url",
+					JS_NewString(context, entry.path.c_str()));
+			JS_SetPropertyStr(
+					context,
+					import_meta.get(),
+					"main",
+					JS_NewBool(context, true));
+		}
+		ScopedValue evaluation(context, JS_EvalFunction(context, compiled.release()));
+		if (JS_IsException(evaluation.get())) {
+			return exception_result(context);
+		}
+		ScopedValue module_namespace(context, JS_GetModuleNamespace(context, module));
+		if (JS_IsException(module_namespace.get())) {
+			return exception_result(context);
+		}
+		ScopedValue exported(
+				context,
+				JS_GetPropertyStr(context, module_namespace.get(), "default"));
+		if (JS_IsException(exported.get())) {
+			return exception_result(context);
+		}
+		default_export = exported.release();
+		EvaluationResult result;
+		result.ok = true;
+		result.value = "default";
+		return result;
+	}
+
 	EvaluationResult evaluate_commonjs(const std::string &entry_path) {
 		if (context == nullptr) {
 			return host_error("JavaScript runtime has been shut down");
@@ -1035,6 +1189,65 @@ struct RuntimeHost::Impl {
 		SourceGuard source_guard(*this, entry.path);
 		ScopedValue value(context, load_commonjs(context, entry.path));
 		return JS_IsException(value.get()) ? exception_result(context) : success(value.get());
+	}
+
+	EvaluationResult evaluate_commonjs_default(
+			const std::string &entry_path,
+			JSValue &default_export) {
+		default_export = JS_UNDEFINED;
+		if (context == nullptr) {
+			return host_error("JavaScript runtime has been shut down");
+		}
+		const ModuleResolution entry = resolve_entry(entry_path, ModuleKind::COMMONJS);
+		if (!entry.ok || entry.virtual_module) {
+			return host_error(
+					entry.ok ? "A virtual module cannot be used as the runtime entry" : entry.error,
+					"ModuleResolutionError",
+					entry_path);
+		}
+		ExecutionGuard execution_guard(*this);
+		SourceGuard source_guard(*this, entry.path);
+		ScopedValue exports(context, load_commonjs(context, entry.path));
+		if (JS_IsException(exports.get())) {
+			return exception_result(context);
+		}
+		if (JS_IsFunction(context, exports.get())) {
+			default_export = exports.release();
+		} else {
+			ScopedValue exported(
+					context,
+					JS_GetPropertyStr(context, exports.get(), "default"));
+			if (JS_IsException(exported.get())) {
+				return exception_result(context);
+			}
+			default_export = exported.release();
+		}
+		EvaluationResult result;
+		result.ok = true;
+		result.value = "default";
+		return result;
+	}
+
+	EvaluationResult run_javascript_operation(
+			const std::string &source_path,
+			const JavaScriptOperation &operation,
+			JSValue *result_value) {
+		if (context == nullptr) {
+			return host_error("JavaScript runtime has been shut down");
+		}
+		ExecutionGuard execution_guard(*this);
+		SourceGuard source_guard(*this, source_path);
+		ScopedValue value(context, operation(context));
+		if (JS_IsException(value.get())) {
+			return exception_result(context);
+		}
+		if (result_value != nullptr) {
+			*result_value = value.release();
+		}
+		EvaluationResult result;
+		result.ok = true;
+		result.value = "ok";
+		return result;
 	}
 
 	EvaluationResult pump_jobs() {
@@ -1164,6 +1377,51 @@ EvaluationResult RuntimeHost::evaluate_commonjs(const std::string &entry_path) {
 			: impl->evaluate_commonjs(entry_path);
 }
 
+EvaluationResult RuntimeHost::evaluate_module_default(
+		const std::string &entry_path,
+		JSValue &default_export) {
+	default_export = JS_UNDEFINED;
+	return impl == nullptr
+			? EvaluationResult{
+				  false,
+				  {},
+				  JavaScriptException{ "RuntimeError", "Runtime host was moved", {}, {}, 0, 0, false },
+				  0,
+			  }
+			: impl->evaluate_module_default(entry_path, default_export);
+}
+
+EvaluationResult RuntimeHost::evaluate_commonjs_default(
+		const std::string &entry_path,
+		JSValue &default_export) {
+	default_export = JS_UNDEFINED;
+	return impl == nullptr
+			? EvaluationResult{
+				  false,
+				  {},
+				  JavaScriptException{ "RuntimeError", "Runtime host was moved", {}, {}, 0, 0, false },
+				  0,
+			  }
+			: impl->evaluate_commonjs_default(entry_path, default_export);
+}
+
+EvaluationResult RuntimeHost::run_javascript_operation(
+		const std::string &source_path,
+		const JavaScriptOperation &operation,
+		JSValue *result) {
+	if (result != nullptr) {
+		*result = JS_UNDEFINED;
+	}
+	return impl == nullptr
+			? EvaluationResult{
+				  false,
+				  {},
+				  JavaScriptException{ "RuntimeError", "Runtime host was moved", {}, {}, 0, 0, false },
+				  0,
+			  }
+			: impl->run_javascript_operation(source_path, operation, result);
+}
+
 EvaluationResult RuntimeHost::pump_jobs() {
 	return impl == nullptr
 			? EvaluationResult{
@@ -1209,8 +1467,16 @@ bool RuntimeHost::is_running() const {
 	return impl != nullptr && impl->runtime != nullptr && impl->context != nullptr;
 }
 
+bool RuntimeHost::is_executing() const {
+	return impl != nullptr && impl->execution_active;
+}
+
 std::string RuntimeHost::initialization_error() const {
 	return impl == nullptr ? std::string("Runtime host was moved") : impl->startup_error;
+}
+
+JSContext *RuntimeHost::javascript_context() const noexcept {
+	return impl == nullptr ? nullptr : impl->context;
 }
 
 std::size_t RuntimeHost::live_runtime_count() {

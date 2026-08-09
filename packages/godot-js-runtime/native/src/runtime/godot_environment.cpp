@@ -1,5 +1,7 @@
 #include "godot_js_runtime/runtime/godot_environment.hpp"
 
+#include <utility>
+
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -35,14 +37,34 @@ const char *console_level_name(ConsoleLevel level) {
 
 } // namespace
 
+void GodotResourceProvider::set_text_override(
+		std::string path,
+		std::string contents) {
+	text_overrides.insert_or_assign(std::move(path), std::move(contents));
+}
+
+void GodotResourceProvider::clear_text_override(const std::string &path) {
+	text_overrides.erase(path);
+}
+
+void GodotResourceProvider::clear_text_overrides() {
+	text_overrides.clear();
+}
+
 bool GodotResourceProvider::exists(const std::string &path) const noexcept {
-	return godot::FileAccess::file_exists(godot_string(path));
+	return text_overrides.count(path) > 0 ||
+			godot::FileAccess::file_exists(godot_string(path));
 }
 
 bool GodotResourceProvider::read_text(
 		const std::string &path,
 		std::string &contents,
 		std::string &error) const noexcept {
+	const auto overridden = text_overrides.find(path);
+	if (overridden != text_overrides.end()) {
+		contents = overridden->second;
+		return true;
+	}
 	const godot::String godot_path = godot_string(path);
 	godot::Ref<godot::FileAccess> file = godot::FileAccess::open(
 			godot_path,

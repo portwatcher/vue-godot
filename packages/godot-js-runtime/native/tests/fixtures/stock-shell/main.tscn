@@ -1,6 +1,11 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://main.mjs" id="1_runtime"]
+[ext_resource type="Script" path="res://attached.mjs" id="1_runtime"]
+[ext_resource type="Script" path="res://tool-script.mjs" id="2_tool"]
 
 [node name="RuntimeShellProbe" type="Node"]
 script = ExtResource("1_runtime")
+speed = 321.0
+
+[node name="ToolScriptProbe" type="Node" parent="."]
+script = ExtResource("2_tool")
