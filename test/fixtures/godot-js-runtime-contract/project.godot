@@ -1,0 +1,20 @@
+; Engine configuration file.
+; This fixture intentionally has no Vue dependency.
+
+config_version=5
+
+[application]
+
+config/name="Godot JavaScript Runtime Contract"
+run/main_scene="res://app.tscn"
+config/features=PackedStringArray("4.4", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=320
+window/size/viewport_height=180
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

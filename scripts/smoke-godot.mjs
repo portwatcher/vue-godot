@@ -1,4 +1,3 @@
-import { spawn } from 'node:child_process'
 import http from 'node:http'
 import path from 'node:path'
 import {
@@ -7,6 +6,7 @@ import {
   repoRoot,
   resolveGodotCommand,
   run,
+  runAsync,
 } from './smoke-utils.mjs'
 
 const htmlDemoDir = path.join(repoRoot, 'apps/html-demo')
@@ -27,74 +27,6 @@ const exampleSmokeApps = [
     marker: '[vue-godot-smoke] game-ui-demo passed',
   },
 ]
-
-function runAsync(command, args, options = {}) {
-  return new Promise((resolve, reject) => {
-    const child = spawn(command, args, {
-      cwd: options.cwd ?? repoRoot,
-      env: options.env ?? process.env,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    })
-
-    let stdout = ''
-    let stderr = ''
-    let didSettle = false
-
-    const timeout =
-      typeof options.timeout === 'number'
-        ? setTimeout(() => {
-            child.kill('SIGTERM')
-          }, options.timeout)
-        : null
-
-    child.stdout.setEncoding('utf-8')
-    child.stderr.setEncoding('utf-8')
-    child.stdout.on('data', (chunk) => {
-      stdout += chunk
-    })
-    child.stderr.on('data', (chunk) => {
-      stderr += chunk
-    })
-
-    child.on('error', (error) => {
-      if (timeout) {
-        clearTimeout(timeout)
-      }
-      if (!didSettle) {
-        didSettle = true
-        reject(error)
-      }
-    })
-
-    child.on('close', (status, signal) => {
-      if (timeout) {
-        clearTimeout(timeout)
-      }
-      if (didSettle) {
-        return
-      }
-      didSettle = true
-
-      if (status !== 0) {
-        const rendered = [command, ...args].join(' ')
-        reject(
-          new Error(
-            [
-              `Command failed (${status ?? signal ?? 'unknown'}): ${rendered}`,
-              stdout,
-              stderr,
-            ]
-              .filter(Boolean)
-              .join('\n'),
-          ),
-        )
-        return
-      }
-
-      resolve({ stdout, stderr })
-    })
-  })
-}
 
 function startFetchSmokeServer() {
   const server = http.createServer((request, response) => {
