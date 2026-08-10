@@ -21,6 +21,7 @@ passes.
 | Universal release ZIP | Complete | `784c206` | deterministic clean-copy archive tests |
 | Standalone TypeScript declarations | Complete | `a6d1ce8` | declarations ship inside the add-on; clean-checkout demo build passes |
 | Vue/npm separation | Complete | `784c206` | generated projects contain no GodotJS dependency or install scripts |
+| Manual-copy generated-project gate | Complete | `dbe8c89` | fresh generated app receives the add-on fixture explicitly and passes Godot 4.7.1 import/run/rebuild smoke |
 | Docs, demos, templates, and migration cleanup | Complete | `784c206` | root guide and maintained examples aligned |
 | Latest-stable discovery and release automation | Implemented; hosted verification pending | `784c206` | live discovery resolved Godot `4.7.1-stable` |
 | Local quality and stock-engine gates | Complete | `784c206` | unit/build tests, native tests, standalone and Vue smoke on Godot 4.7.1 |
