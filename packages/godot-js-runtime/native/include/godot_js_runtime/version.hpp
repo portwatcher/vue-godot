@@ -5,7 +5,7 @@ namespace godot_js_runtime {
 
 inline constexpr char PRODUCT_NAME[] = "Godot JavaScript Runtime";
 inline constexpr char PACKAGE_NAME[] = "godot-js-runtime";
-inline constexpr char VERSION[] = "0.0.0-development";
+inline constexpr char VERSION[] = "0.0.1";
 inline constexpr char MINIMUM_GODOT_VERSION[] = "4.4";
 
 } // namespace godot_js_runtime

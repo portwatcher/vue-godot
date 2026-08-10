@@ -1,9 +1,13 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+addons/godot-js-runtime/
 
-# GodotJS auto-generated scene/resource types
+# Generated declarations and scene/resource types
 gen/
+typings/*.d.ts
+typings/manifest.json
+!typings/.gdignore
 
 # Node
 node_modules/

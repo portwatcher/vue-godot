@@ -4,6 +4,10 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { buildNative } from './build-native.mjs'
+import {
+  assertOfficialGodotExecutable,
+  godotCommandArguments,
+} from './godot-command.mjs'
 import { generateExtensionManifest } from './generate-extension-manifest.mjs'
 
 const scriptPath = fileURLToPath(import.meta.url)
@@ -134,6 +138,7 @@ function markerCount(output, marker) {
 }
 
 export async function smokeStandaloneDemo(options) {
+  assertOfficialGodotExecutable(options.godot)
   run('npm', ['run', 'build', '--workspace=godot-js-runtime'], {
     description: 'standalone runtime package build',
   })
@@ -253,7 +258,13 @@ export async function smokeStandaloneDemo(options) {
     }
     const godotOutput = run(
       options.godot,
-      ['--headless', '--path', projectRoot, '--quit-after', '120'],
+      godotCommandArguments([
+        '--headless',
+        '--path',
+        projectRoot,
+        '--quit-after',
+        '120',
+      ]),
       {
         description: 'standalone demo in official Godot',
         timeout: 120_000,

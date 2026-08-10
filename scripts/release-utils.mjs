@@ -10,6 +10,20 @@ export const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 
 export const releasePackageConfigs = [
   {
+    name: 'godot-js-runtime',
+    dir: 'packages/godot-js-runtime',
+    expectedFiles: [
+      'dist/index.js',
+      'dist/index.d.ts',
+      'dist/cli.js',
+      'addon/godot-js-runtime/godot_js_runtime.gdextension',
+      'addon/godot-js-runtime/runtime-manifest.json',
+      'typings/godot.d.ts',
+      'typings/godot-js.d.ts',
+      'THIRD_PARTY_NOTICES.md',
+    ],
+  },
+  {
     name: '@vue-godot/runtime-tscn',
     dir: 'packages/runtime-tscn',
     expectedFiles: ['dist/index.js', 'dist/index.d.ts'],
@@ -59,6 +73,7 @@ export const releasePackageConfigs = [
 ]
 
 const publishOrder = [
+  'godot-js-runtime',
   '@vue-godot/runtime-tscn',
   '@vue-godot/device',
   '@vue-godot/browser',
@@ -216,7 +231,7 @@ export function parseNpmJson(stdout, label) {
 export function isTrustedPublishingEnvironment() {
   return Boolean(
     process.env.GITHUB_ACTIONS === 'true' &&
-      process.env.ACTIONS_ID_TOKEN_REQUEST_URL &&
-      process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN,
+    process.env.ACTIONS_ID_TOKEN_REQUEST_URL &&
+    process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN,
   )
 }

@@ -4,6 +4,10 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildNative } from './build-native.mjs'
+import {
+  assertOfficialGodotExecutable,
+  godotCommandArguments,
+} from './godot-command.mjs'
 
 const scriptPath = fileURLToPath(import.meta.url)
 const packageRoot = path.resolve(path.dirname(scriptPath), '..')
@@ -49,7 +53,7 @@ function parseArgs(argv) {
 }
 
 function runGodot(executable, args, description) {
-  const result = spawnSync(executable, args, {
+  const result = spawnSync(executable, godotCommandArguments(args), {
     cwd: packageRoot,
     encoding: 'utf-8',
     timeout: 120_000,
@@ -183,6 +187,17 @@ function prepareFixture() {
   fs.rmSync(stagingRoot, { recursive: true, force: true })
   fs.mkdirSync(stagingRoot, { recursive: true })
   fs.cpSync(fixtureRoot, sceneStagingRoot, { recursive: true })
+  if (process.platform === 'darwin') {
+    const projectFile = path.join(sceneStagingRoot, 'project.godot')
+    const source = fs.readFileSync(projectFile, 'utf-8')
+    fs.writeFileSync(
+      projectFile,
+      source.replace(
+        'run/main_run_args="--headless"',
+        'run/main_run_args="--headless -ApplePersistenceIgnoreState YES"',
+      ),
+    )
+  }
   fs.cpSync(
     path.join(packageRoot, 'native/tests/fixtures/stock-empty'),
     editorStagingRoot,
@@ -296,6 +311,7 @@ function verifyEditorProjectRuntimes(output, description, playCycles) {
 }
 
 export async function smokeStockGodot(options) {
+  assertOfficialGodotExecutable(options.godot)
   if (!options.skipBuild) {
     await buildNative({
       platform: process.platform === 'darwin' ? 'macos' : 'linux',
@@ -447,6 +463,12 @@ export async function smokeStockGodot(options) {
     assertCount(
       output,
       '[godot-js-runtime] PHASE5_SIGNAL_PROMISE PASS',
+      1,
+      description,
+    )
+    assertCount(
+      output,
+      '[godot-js-runtime] PHASE7_EPHEMERAL_SIGNAL PASS',
       1,
       description,
     )

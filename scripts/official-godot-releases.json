@@ -1,0 +1,26 @@
+{
+  "4.4.1-stable": {
+    "linux-x86_64": {
+      "filename": "Godot_v4.4.1-stable_linux.x86_64.zip",
+      "sha256": "d6e382fb531019f85630c1f485a561a0d20c4a2344b6c3847735cfee7da812aa",
+      "executable": "Godot_v4.4.1-stable_linux.x86_64"
+    },
+    "macos-universal": {
+      "filename": "Godot_v4.4.1-stable_macos.universal.zip",
+      "sha256": "6c670596d21afb7917c739d0b85b10b4ac6a44051ffa2a672f90bc7da5062864",
+      "executable": "Godot.app/Contents/MacOS/Godot"
+    }
+  },
+  "4.7.1-stable": {
+    "linux-x86_64": {
+      "filename": "Godot_v4.7.1-stable_linux.x86_64.zip",
+      "sha256": "c7ff14fd28472c8d4f193043de30278dcf7e5241a1dcf7566b02e27addaa33ba",
+      "executable": "Godot_v4.7.1-stable_linux.x86_64"
+    },
+    "macos-universal": {
+      "filename": "Godot_v4.7.1-stable_macos.universal.zip",
+      "sha256": "897cb7f9799796c717ae75f31446aed883dc92b1d6c3b33d893cc7843fff2fa9",
+      "executable": "Godot.app/Contents/MacOS/Godot"
+    }
+  }
+}

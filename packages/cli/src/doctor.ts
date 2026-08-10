@@ -1,5 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { verifyRuntime } from 'godot-js-runtime'
 
 export type DoctorStatus = 'ok' | 'warning' | 'error'
 
@@ -263,10 +264,7 @@ const EXPORT_FEATURE_RULES: FeatureRule[] = [
   {
     id: 'notifications',
     label: 'native notifications',
-    patterns: [
-      /\bNotification\b/,
-      /capability\s*:\s*['"]notifications['"]/,
-    ],
+    patterns: [/\bNotification\b/, /capability\s*:\s*['"]notifications['"]/],
     android: [
       {
         label: 'android.permission.POST_NOTIFICATIONS',
@@ -307,9 +305,9 @@ function addCheck(
   checks.push({ status, label, details })
 }
 
-function readJsonFile(filePath: string):
-  | { ok: true; value: unknown }
-  | { ok: false; error: string } {
+function readJsonFile(
+  filePath: string,
+): { ok: true; value: unknown } | { ok: false; error: string } {
   try {
     return {
       ok: true,
@@ -470,7 +468,9 @@ function migrationTierWeight(tier: MigrationTier): number {
   }
 }
 
-function strongestMigrationTier(findings: readonly MigrationFinding[]): MigrationTier {
+function strongestMigrationTier(
+  findings: readonly MigrationFinding[],
+): MigrationTier {
   let tier: MigrationTier = 'small-change'
   for (const finding of findings) {
     if (migrationTierWeight(finding.tier) > migrationTierWeight(tier)) {
@@ -623,7 +623,9 @@ function scanCssForMigration(
           continue
         }
 
-        for (const selector of selectorText.split(',').map((part) => part.trim())) {
+        for (const selector of selectorText
+          .split(',')
+          .map((part) => part.trim())) {
           if (selector && !isSupportedMigrationSelector(selector)) {
             addMigrationFinding(
               findings,
@@ -793,10 +795,7 @@ function diagnoseNode(checks: DoctorCheck[], nodeVersion: string): void {
   ])
 }
 
-function diagnoseProjectShape(
-  checks: DoctorCheck[],
-  targetDir: string,
-): void {
+function diagnoseProjectShape(checks: DoctorCheck[], targetDir: string): void {
   const projectFile = path.join(targetDir, 'project.godot')
   if (fs.existsSync(projectFile)) {
     addCheck(checks, 'ok', 'Godot project file found', [
@@ -817,7 +816,7 @@ function diagnoseProjectShape(
     ])
   }
 
-  for (const ignoredDir of ['vue', 'gen', 'typings']) {
+  for (const ignoredDir of ['node_modules', 'vue', 'gen', 'typings']) {
     const dirPath = path.join(targetDir, ignoredDir)
     if (!fs.existsSync(dirPath)) {
       continue
@@ -842,28 +841,60 @@ function diagnoseProjectShape(
   }
 }
 
-function diagnoseGodotJs(
+function diagnoseRuntimeInstallation(
   checks: DoctorCheck[],
   targetDir: string,
 ): void {
+  const installationManifest = path.join(
+    targetDir,
+    'addons/godot-js-runtime/installation-manifest.json',
+  )
+  if (!fs.existsSync(installationManifest)) {
+    addCheck(checks, 'warning', 'Godot JavaScript Runtime is not installed', [
+      'Run npm run setup:runtime before opening or exporting the project.',
+    ])
+  } else {
+    const verification = verifyRuntime(targetDir)
+    if (verification.ok) {
+      addCheck(checks, 'ok', 'Godot JavaScript Runtime installation verified', [
+        `${verification.checkedFiles} manifest-owned file(s) passed checksum verification.`,
+      ])
+    } else {
+      addCheck(
+        checks,
+        'error',
+        'Godot JavaScript Runtime installation is invalid',
+        [...verification.errors],
+      )
+    }
+  }
+
   const typingsDir = path.join(targetDir, 'typings')
   if (!fs.existsSync(typingsDir)) {
-    addCheck(checks, 'warning', 'GodotJS typings directory not found', [
-      'Open the project in the GodotJS editor and run npm run gen:types.',
+    addCheck(checks, 'warning', 'Stock-Godot typings directory not found', [
+      'Run npm run gen:types; no custom editor is required.',
     ])
     return
   }
 
-  const typingFiles = fs
-    .readdirSync(typingsDir)
-    .filter((file) => /^godot\d*\.gen\.d\.ts$/.test(file))
-  if (typingFiles.length === 0) {
-    addCheck(checks, 'warning', 'GodotJS generated typings not found', [
-      'Expected typings/godot*.gen.d.ts from the GodotJS editor.',
+  const requiredTypingFiles = [
+    'godot.d.ts',
+    'godot-js.d.ts',
+    'godot-jsb.d.ts',
+    'index.d.ts',
+    'manifest.json',
+  ]
+  const missingTypingFiles = requiredTypingFiles.filter(
+    (file) => !fs.existsSync(path.join(typingsDir, file)),
+  )
+  if (missingTypingFiles.length > 0) {
+    addCheck(checks, 'warning', 'Stock-Godot declarations are incomplete', [
+      'Run npm run gen:types to regenerate declarations.',
+      ...missingTypingFiles,
     ])
   } else {
-    addCheck(checks, 'ok', 'GodotJS generated typings found', [
-      `${typingFiles.length} godot*.gen.d.ts file(s).`,
+    addCheck(checks, 'ok', 'Stock-Godot declarations found', [
+      'godot, godot-js, and limited godot-jsb modules',
     ])
   }
 
@@ -877,7 +908,7 @@ function diagnoseGodotJs(
     ])
   } else {
     addCheck(checks, 'warning', 'Vue Godot component typings not found', [
-      'Run npm run gen:types after GodotJS typings are generated.',
+      'Run npm run gen:types after installing godot-js-runtime.',
     ])
   }
 }
@@ -916,6 +947,11 @@ function diagnosePackageSetup(
   }
 
   const required: PackageRequirement[] = [
+    {
+      name: 'godot-js-runtime',
+      field: 'dependencies',
+      reason: 'official-Godot JavaScript runtime and installer',
+    },
     {
       name: '@vue-godot/runtime-tscn',
       field: 'dependencies',
@@ -970,6 +1006,26 @@ function diagnosePackageSetup(
     ])
   }
 
+  const scripts = isStringRecord(parsed.value['scripts'])
+    ? parsed.value['scripts']
+    : {}
+  const missingRuntimeScripts = [
+    'install:runtime',
+    'verify:runtime',
+    'setup:runtime',
+    'gen:types',
+  ].filter((name) => !scripts[name])
+  if (missingRuntimeScripts.length > 0) {
+    addCheck(checks, 'error', 'Runtime project scripts are missing', [
+      'Run vue-godot integrate to add the official-Godot runtime workflow.',
+      ...missingRuntimeScripts,
+    ])
+  } else {
+    addCheck(checks, 'ok', 'Runtime project scripts are configured', [
+      'install, verify, setup, and stock-Godot type generation',
+    ])
+  }
+
   if (!findNodeModules(targetDir)) {
     addCheck(checks, 'warning', 'node_modules not found', [
       'Run npm install before building or running generated scripts.',
@@ -986,7 +1042,7 @@ function diagnosePackageSetup(
       }
     }
     if (installed.length === required.length) {
-      addCheck(checks, 'ok', 'Installed vue-godot package versions found', [
+      addCheck(checks, 'ok', 'Installed project package versions found', [
         ...installed,
       ])
     } else {
@@ -1203,7 +1259,7 @@ export function diagnoseProject(options: DoctorOptions): DoctorReport {
   if (!options.exportsOnly) {
     diagnoseNode(checks, options.nodeVersion ?? process.versions.node)
     diagnoseProjectShape(checks, targetDir)
-    diagnoseGodotJs(checks, targetDir)
+    diagnoseRuntimeInstallation(checks, targetDir)
     const packageJson = diagnosePackageSetup(checks, targetDir, source)
     if (packageJson) {
       const htmlMode = detectHtmlMode(packageJson, source)

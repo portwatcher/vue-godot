@@ -102,6 +102,7 @@
       "destination": "Delete the custom-editor setup action, downloader, and downloader tests after replacement gates pass.",
       "paths": [
         ".github/actions/setup-godotjs/action.yml",
+        "packages/godot-js-runtime/test/godot-command.test.mjs",
         "scripts/setup-godotjs.mjs",
         "test/setup-godotjs.test.mjs"
       ]
@@ -112,7 +113,6 @@
       "destination": "Use official Godot setup, repository runtime artifacts, and stock-runtime diagnostics in root scripts and CI.",
       "paths": [
         ".github/workflows/godot-smoke.yml",
-        ".github/workflows/publish.yml",
         "package.json",
         "scripts/smoke-utils.mjs"
       ]
@@ -123,15 +123,6 @@
       "destination": "Generate neutral declarations and cache paths from the stock Godot extension API.",
       "paths": [
         ".gitignore",
-        "apps/anchor-ordering/.gitignore",
-        "apps/game-ui-demo/.gitignore",
-        "apps/html-demo/.gitignore",
-        "apps/lifecycles/.gitignore",
-        "apps/native-app-demo/.gitignore",
-        "apps/template-ref/.gitignore",
-        "apps/v-model/.gitignore",
-        "apps/v-on/.gitignore",
-        "packages/cli/templates/godot/.gitignore",
         "packages/cli/templates/typings/godot.minimal.d.ts",
         "packages/cli/templates/typings/godot.vue-components.gen.d.ts",
         "packages/cli/templates/typings/godot3.gen.d.ts",
@@ -142,19 +133,6 @@
         "packages/runtime-tscn/typings/godot3.gen.d.ts",
         "packages/runtime-tscn/typings/jsb.editor.bundle.d.ts",
         "packages/runtime-tscn/typings/jsb.runtime.bundle.d.ts"
-      ]
-    },
-    {
-      "disposition": "replace",
-      "phase": 7,
-      "destination": "Make create, integrate, type generation, doctor, and templates install and diagnose the standalone runtime.",
-      "paths": [
-        "packages/cli/README.md",
-        "packages/cli/src/cli.ts",
-        "packages/cli/src/create.ts",
-        "packages/cli/src/doctor.ts",
-        "packages/cli/src/integrate.ts",
-        "packages/cli/templates/docs/production.md"
       ]
     },
     {
@@ -213,11 +191,39 @@
     {
       "disposition": "preserve",
       "phase": 10,
+      "destination": "Keep negative regression guards that reject custom-editor setup and legacy declaration bundles.",
+      "paths": ["scripts/smoke-cli.mjs", "test/setup-godot.test.mjs"]
+    },
+    {
+      "disposition": "preserve",
+      "phase": 10,
       "destination": "Retain as historical migration contract and final evidence ledger.",
       "paths": ["docs/godot-js-gdextension-plan.md"]
     }
   ],
   "resolvedInventory": [
+    {
+      "phase": 7,
+      "destination": "Official-Godot release setup, standalone runtime installation, and neutral generated paths replaced these custom-editor couplings.",
+      "paths": [
+        ".github/workflows/publish.yml",
+        "apps/anchor-ordering/.gitignore",
+        "apps/game-ui-demo/.gitignore",
+        "apps/html-demo/.gitignore",
+        "apps/lifecycles/.gitignore",
+        "apps/native-app-demo/.gitignore",
+        "apps/template-ref/.gitignore",
+        "apps/v-model/.gitignore",
+        "apps/v-on/.gitignore",
+        "packages/cli/README.md",
+        "packages/cli/src/cli.ts",
+        "packages/cli/src/create.ts",
+        "packages/cli/src/doctor.ts",
+        "packages/cli/src/integrate.ts",
+        "packages/cli/templates/docs/production.md",
+        "packages/cli/templates/godot/.gitignore"
+      ]
+    },
     {
       "phase": 5,
       "destination": "TypeScript checking now uses noEmit with Vite-owned output and no custom-editor cache path.",

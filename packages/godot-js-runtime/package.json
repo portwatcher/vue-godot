@@ -1,6 +1,6 @@
 {
   "name": "godot-js-runtime",
-  "version": "0.0.0-development",
+  "version": "0.0.1",
   "description": "Standalone JavaScript and TypeScript runtime for official Godot",
   "type": "module",
   "repository": {

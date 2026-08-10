@@ -14,6 +14,17 @@ declare module 'godot' {
     is_instance(value: unknown): value is Value
   }
 
+  export type PackedByteArrayInput = PackedByteArray | Uint8Array | readonly number[] | ArrayBuffer
+  export type PackedColorArrayInput = PackedColorArray | readonly Color[]
+  export type PackedFloat32ArrayInput = PackedFloat32Array | Float32Array | readonly number[]
+  export type PackedFloat64ArrayInput = PackedFloat64Array | Float64Array | readonly number[]
+  export type PackedInt32ArrayInput = PackedInt32Array | Int32Array | readonly number[]
+  export type PackedInt64ArrayInput = PackedInt64Array | BigInt64Array | readonly Integer[]
+  export type PackedStringArrayInput = PackedStringArray | readonly string[]
+  export type PackedVector2ArrayInput = PackedVector2Array | readonly Vector2[]
+  export type PackedVector3ArrayInput = PackedVector3Array | readonly Vector3[]
+  export type PackedVector4ArrayInput = PackedVector4Array | readonly Vector4[]
+
   /**
    * Godot AABB value type.
    * @see https://docs.godotengine.org/en/4.4/classes/class_aabb.html
@@ -59,25 +70,25 @@ declare module 'godot' {
    */
   export class Array<Element = GodotVariant> {
     constructor()
-    constructor(from_: Array<Element>)
-    constructor(base: Array<Element>, type_: Integer, class_name: StringName | string, script: Element)
-    constructor(from_: PackedByteArray)
-    constructor(from_: PackedInt32Array)
-    constructor(from_: PackedInt64Array)
-    constructor(from_: PackedFloat32Array)
-    constructor(from_: PackedFloat64Array)
-    constructor(from_: PackedStringArray)
-    constructor(from_: PackedVector2Array)
-    constructor(from_: PackedVector3Array)
-    constructor(from_: PackedColorArray)
-    constructor(from_: PackedVector4Array)
+    constructor(from_: Array<Element> | readonly Element[])
+    constructor(base: Array<Element> | readonly Element[], type_: Integer, class_name: StringName | string, script: Element)
+    constructor(from_: PackedByteArrayInput)
+    constructor(from_: PackedInt32ArrayInput)
+    constructor(from_: PackedInt64ArrayInput)
+    constructor(from_: PackedFloat32ArrayInput)
+    constructor(from_: PackedFloat64ArrayInput)
+    constructor(from_: PackedStringArrayInput)
+    constructor(from_: PackedVector2ArrayInput)
+    constructor(from_: PackedVector3ArrayInput)
+    constructor(from_: PackedColorArrayInput)
+    constructor(from_: PackedVector4ArrayInput)
     static is_instance(value: unknown): value is Array<GodotVariant>
     [index: number]: Element
     all(method: Callable | ((...args: GodotVariant[]) => GodotVariant)): boolean
     "any"(method: Callable | ((...args: GodotVariant[]) => GodotVariant)): boolean
     append(value: Element): void
-    append_array(array: Array<Element>): void
-    assign(array: Array<Element>): void
+    append_array(array: Array<Element> | readonly Element[]): void
+    assign(array: Array<Element> | readonly Element[]): void
     back(): Element
     bsearch(value: Element, before?: boolean): Integer
     bsearch_custom(value: Element, func: Callable | ((...args: GodotVariant[]) => GodotVariant), before?: boolean): Integer
@@ -99,7 +110,7 @@ declare module 'godot' {
     insert(position: Integer, value: Element): Integer
     is_empty(): boolean
     is_read_only(): boolean
-    is_same_typed(array: Array<Element>): boolean
+    is_same_typed(array: Array<Element> | readonly Element[]): boolean
     is_typed(): boolean
     make_read_only(): void
     map(method: Callable | ((...args: GodotVariant[]) => GodotVariant)): Array<Element>
@@ -175,10 +186,10 @@ declare module 'godot' {
     constructor(object_: Object, method: StringName | string)
     static is_instance(value: unknown): value is Callable<readonly GodotVariant[], GodotVariant>
     bind(...args: GodotVariant[]): Callable
-    bindv(arguments: Array<GodotVariant>): Callable
+    bindv(arguments: Array<GodotVariant> | readonly GodotVariant[]): Callable
     call(...args: GodotVariant[]): GodotVariant
     call_deferred(...args: GodotVariant[]): void
-    callv(arguments: Array<GodotVariant>): GodotVariant
+    callv(arguments: Array<GodotVariant> | readonly GodotVariant[]): GodotVariant
     get_argument_count(): Integer
     get_bound_arguments(): Array<GodotVariant>
     get_bound_arguments_count(): Integer
@@ -412,10 +423,10 @@ declare module 'godot' {
    */
   export class Dictionary<Key = GodotVariant, Value = GodotVariant> {
     constructor()
-    constructor(from_: Dictionary)
-    constructor(base: Dictionary, key_type: Integer, key_class_name: StringName | string, key_script: GodotVariant, value_type: Integer, value_class_name: StringName | string, value_script: GodotVariant)
+    constructor(from_: Dictionary | Readonly<Record<string, GodotVariant>>)
+    constructor(base: Dictionary | Readonly<Record<string, GodotVariant>>, key_type: Integer, key_class_name: StringName | string, key_script: GodotVariant, value_type: Integer, value_class_name: StringName | string, value_script: GodotVariant)
     static is_instance(value: unknown): value is Dictionary<GodotVariant, GodotVariant>
-    assign(dictionary: Dictionary): void
+    assign(dictionary: Dictionary | Readonly<Record<string, GodotVariant>>): void
     clear(): void
     duplicate(deep?: boolean): Dictionary
     erase(key: GodotVariant): boolean
@@ -429,21 +440,21 @@ declare module 'godot' {
     get_typed_value_class_name(): StringName
     get_typed_value_script(): GodotVariant
     has(key: GodotVariant): boolean
-    has_all(keys: Array<GodotVariant>): boolean
+    has_all(keys: Array<GodotVariant> | readonly GodotVariant[]): boolean
     hash(): Integer
     is_empty(): boolean
     is_read_only(): boolean
-    is_same_typed(dictionary: Dictionary): boolean
-    is_same_typed_key(dictionary: Dictionary): boolean
-    is_same_typed_value(dictionary: Dictionary): boolean
+    is_same_typed(dictionary: Dictionary | Readonly<Record<string, GodotVariant>>): boolean
+    is_same_typed_key(dictionary: Dictionary | Readonly<Record<string, GodotVariant>>): boolean
+    is_same_typed_value(dictionary: Dictionary | Readonly<Record<string, GodotVariant>>): boolean
     is_typed(): boolean
     is_typed_key(): boolean
     is_typed_value(): boolean
     keys(): Array<GodotVariant>
     make_read_only(): void
-    merge(dictionary: Dictionary, overwrite?: boolean): void
-    merged(dictionary: Dictionary, overwrite?: boolean): Dictionary
-    recursive_equal(dictionary: Dictionary, recursion_count: Integer): boolean
+    merge(dictionary: Dictionary | Readonly<Record<string, GodotVariant>>, overwrite?: boolean): void
+    merged(dictionary: Dictionary | Readonly<Record<string, GodotVariant>>, overwrite?: boolean): Dictionary
+    recursive_equal(dictionary: Dictionary | Readonly<Record<string, GodotVariant>>, recursion_count: Integer): boolean
     "set"(key: GodotVariant, value: GodotVariant): boolean
     size(): Integer
     sort(): void
@@ -483,12 +494,12 @@ declare module 'godot' {
    */
   export class PackedByteArray {
     constructor()
-    constructor(from_: PackedByteArray)
-    constructor(from_: Array<GodotVariant>)
+    constructor(from_: PackedByteArrayInput)
+    constructor(from_: Array<GodotVariant> | readonly GodotVariant[])
     static is_instance(value: unknown): value is PackedByteArray
     [index: number]: Integer
     append(value: Integer): boolean
-    append_array(array: PackedByteArray): void
+    append_array(array: PackedByteArrayInput): void
     bsearch(value: Integer, before?: boolean): Integer
     clear(): void
     compress(compression_mode?: Integer): PackedByteArray
@@ -557,12 +568,12 @@ declare module 'godot' {
    */
   export class PackedColorArray {
     constructor()
-    constructor(from_: PackedColorArray)
-    constructor(from_: Array<GodotVariant>)
+    constructor(from_: PackedColorArrayInput)
+    constructor(from_: Array<GodotVariant> | readonly GodotVariant[])
     static is_instance(value: unknown): value is PackedColorArray
     [index: number]: Color
     append(value: Color): boolean
-    append_array(array: PackedColorArray): void
+    append_array(array: PackedColorArrayInput): void
     bsearch(value: Color, before?: boolean): Integer
     clear(): void
     count(value: Color): Integer
@@ -592,12 +603,12 @@ declare module 'godot' {
    */
   export class PackedFloat32Array {
     constructor()
-    constructor(from_: PackedFloat32Array)
-    constructor(from_: Array<GodotVariant>)
+    constructor(from_: PackedFloat32ArrayInput)
+    constructor(from_: Array<GodotVariant> | readonly GodotVariant[])
     static is_instance(value: unknown): value is PackedFloat32Array
     [index: number]: number
     append(value: number): boolean
-    append_array(array: PackedFloat32Array): void
+    append_array(array: PackedFloat32ArrayInput): void
     bsearch(value: number, before?: boolean): Integer
     clear(): void
     count(value: number): Integer
@@ -627,12 +638,12 @@ declare module 'godot' {
    */
   export class PackedFloat64Array {
     constructor()
-    constructor(from_: PackedFloat64Array)
-    constructor(from_: Array<GodotVariant>)
+    constructor(from_: PackedFloat64ArrayInput)
+    constructor(from_: Array<GodotVariant> | readonly GodotVariant[])
     static is_instance(value: unknown): value is PackedFloat64Array
     [index: number]: number
     append(value: number): boolean
-    append_array(array: PackedFloat64Array): void
+    append_array(array: PackedFloat64ArrayInput): void
     bsearch(value: number, before?: boolean): Integer
     clear(): void
     count(value: number): Integer
@@ -662,12 +673,12 @@ declare module 'godot' {
    */
   export class PackedInt32Array {
     constructor()
-    constructor(from_: PackedInt32Array)
-    constructor(from_: Array<GodotVariant>)
+    constructor(from_: PackedInt32ArrayInput)
+    constructor(from_: Array<GodotVariant> | readonly GodotVariant[])
     static is_instance(value: unknown): value is PackedInt32Array
     [index: number]: Integer
     append(value: Integer): boolean
-    append_array(array: PackedInt32Array): void
+    append_array(array: PackedInt32ArrayInput): void
     bsearch(value: Integer, before?: boolean): Integer
     clear(): void
     count(value: Integer): Integer
@@ -697,12 +708,12 @@ declare module 'godot' {
    */
   export class PackedInt64Array {
     constructor()
-    constructor(from_: PackedInt64Array)
-    constructor(from_: Array<GodotVariant>)
+    constructor(from_: PackedInt64ArrayInput)
+    constructor(from_: Array<GodotVariant> | readonly GodotVariant[])
     static is_instance(value: unknown): value is PackedInt64Array
     [index: number]: Integer
     append(value: Integer): boolean
-    append_array(array: PackedInt64Array): void
+    append_array(array: PackedInt64ArrayInput): void
     bsearch(value: Integer, before?: boolean): Integer
     clear(): void
     count(value: Integer): Integer
@@ -732,12 +743,12 @@ declare module 'godot' {
    */
   export class PackedStringArray {
     constructor()
-    constructor(from_: PackedStringArray)
-    constructor(from_: Array<GodotVariant>)
+    constructor(from_: PackedStringArrayInput)
+    constructor(from_: Array<GodotVariant> | readonly GodotVariant[])
     static is_instance(value: unknown): value is PackedStringArray
     [index: number]: string
     append(value: string): boolean
-    append_array(array: PackedStringArray): void
+    append_array(array: PackedStringArrayInput): void
     bsearch(value: string, before?: boolean): Integer
     clear(): void
     count(value: string): Integer
@@ -767,12 +778,12 @@ declare module 'godot' {
    */
   export class PackedVector2Array {
     constructor()
-    constructor(from_: PackedVector2Array)
-    constructor(from_: Array<GodotVariant>)
+    constructor(from_: PackedVector2ArrayInput)
+    constructor(from_: Array<GodotVariant> | readonly GodotVariant[])
     static is_instance(value: unknown): value is PackedVector2Array
     [index: number]: Vector2
     append(value: Vector2): boolean
-    append_array(array: PackedVector2Array): void
+    append_array(array: PackedVector2ArrayInput): void
     bsearch(value: Vector2, before?: boolean): Integer
     clear(): void
     count(value: Vector2): Integer
@@ -802,12 +813,12 @@ declare module 'godot' {
    */
   export class PackedVector3Array {
     constructor()
-    constructor(from_: PackedVector3Array)
-    constructor(from_: Array<GodotVariant>)
+    constructor(from_: PackedVector3ArrayInput)
+    constructor(from_: Array<GodotVariant> | readonly GodotVariant[])
     static is_instance(value: unknown): value is PackedVector3Array
     [index: number]: Vector3
     append(value: Vector3): boolean
-    append_array(array: PackedVector3Array): void
+    append_array(array: PackedVector3ArrayInput): void
     bsearch(value: Vector3, before?: boolean): Integer
     clear(): void
     count(value: Vector3): Integer
@@ -837,12 +848,12 @@ declare module 'godot' {
    */
   export class PackedVector4Array {
     constructor()
-    constructor(from_: PackedVector4Array)
-    constructor(from_: Array<GodotVariant>)
+    constructor(from_: PackedVector4ArrayInput)
+    constructor(from_: Array<GodotVariant> | readonly GodotVariant[])
     static is_instance(value: unknown): value is PackedVector4Array
     [index: number]: Vector4
     append(value: Vector4): boolean
-    append_array(array: PackedVector4Array): void
+    append_array(array: PackedVector4ArrayInput): void
     bsearch(value: Vector4, before?: boolean): Integer
     clear(): void
     count(value: Vector4): Integer
@@ -1146,7 +1157,7 @@ declare module 'godot' {
     is_valid_int(): boolean
     is_valid_ip_address(): boolean
     is_valid_unicode_identifier(): boolean
-    join(parts: PackedStringArray): string
+    join(parts: PackedStringArrayInput): string
     json_escape(): string
     left(length: Integer): string
     length(): Integer
@@ -2296,8 +2307,8 @@ declare module 'godot' {
     static is_instance(value: unknown): value is AESContext
     finish(): void
     get_iv_state(): PackedByteArray
-    start(mode: AESContext.Mode, key: PackedByteArray, iv?: PackedByteArray): Error
-    update(src: PackedByteArray): PackedByteArray
+    start(mode: AESContext.Mode, key: PackedByteArrayInput, iv?: PackedByteArrayInput): Error
+    update(src: PackedByteArrayInput): PackedByteArray
   }
   export namespace AESContext {
     export enum Mode {
@@ -2340,8 +2351,10 @@ declare module 'godot' {
   export class AnimatedSprite2D extends Node2D {
     constructor()
     static is_instance(value: unknown): value is AnimatedSprite2D
-    animation: StringName
-    autoplay: StringName
+    get animation(): StringName
+    set animation(value: StringName | string)
+    get autoplay(): StringName
+    set autoplay(value: StringName | string)
     centered: boolean
     flip_h: boolean
     flip_v: boolean
@@ -2391,8 +2404,10 @@ declare module 'godot' {
   export class AnimatedSprite3D extends SpriteBase3D {
     constructor()
     static is_instance(value: unknown): value is AnimatedSprite3D
-    animation: StringName
-    autoplay: StringName
+    get animation(): StringName
+    set animation(value: StringName | string)
+    get autoplay(): StringName
+    set autoplay(value: StringName | string)
     frame: Integer
     frame_progress: number
     speed_scale: number
@@ -2624,8 +2639,10 @@ declare module 'godot' {
     deterministic: boolean
     reset_on_save: boolean
     root_motion_local: boolean
-    root_motion_track: NodePath
-    root_node: NodePath
+    get root_motion_track(): NodePath
+    set root_motion_track(value: NodePath | string)
+    get root_node(): NodePath
+    set root_node(value: NodePath | string)
     readonly animation_finished: Signal<readonly [StringName]>
     readonly animation_libraries_updated: Signal<readonly []>
     readonly animation_list_changed: Signal<readonly []>
@@ -2700,7 +2717,8 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is AnimationNode
     filter_enabled: boolean
-    filters: Array<GodotVariant>
+    get filters(): Array<GodotVariant>
+    set filters(value: Array<GodotVariant> | readonly GodotVariant[])
     readonly animation_node_removed: Signal<readonly [Integer, string]>
     readonly animation_node_renamed: Signal<readonly [Integer, string, string]>
     readonly tree_changed: Signal<readonly []>
@@ -2765,7 +2783,8 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is AnimationNodeAnimation
     advance_on_start: boolean
-    animation: StringName
+    get animation(): StringName
+    set animation(value: StringName | string)
     loop_mode: Integer
     play_mode: Integer
     start_offset: number
@@ -2868,7 +2887,8 @@ declare module 'godot' {
     min_space: Vector2
     snap: Vector2
     sync: boolean
-    triangles: PackedInt32Array
+    get triangles(): PackedInt32Array
+    set triangles(value: PackedInt32ArrayInput)
     x_label: string
     y_label: string
     readonly triangles_updated: Signal<readonly []>
@@ -2943,9 +2963,9 @@ declare module 'godot' {
   export class AnimationNodeExtension extends AnimationNode {
     constructor()
     static is_instance(value: unknown): value is AnimationNodeExtension
-    _process_animation_node(playback_info: PackedFloat64Array, test_only: boolean): PackedFloat32Array
-    static get_remaining_time(node_info: PackedFloat32Array, break_loop: boolean): number
-    static is_looping(node_info: PackedFloat32Array): boolean
+    _process_animation_node(playback_info: PackedFloat64ArrayInput, test_only: boolean): PackedFloat32Array
+    static get_remaining_time(node_info: PackedFloat32ArrayInput, break_loop: boolean): number
+    static is_looping(node_info: PackedFloat32ArrayInput): boolean
   }
 
   /**
@@ -3075,7 +3095,8 @@ declare module 'godot' {
   export class AnimationNodeStateMachineTransition extends Resource {
     constructor()
     static is_instance(value: unknown): value is AnimationNodeStateMachineTransition
-    advance_condition: StringName
+    get advance_condition(): StringName
+    set advance_condition(value: StringName | string)
     advance_expression: string
     advance_mode: Integer
     break_loop_at_end: boolean
@@ -3192,9 +3213,12 @@ declare module 'godot' {
   export class AnimationPlayer extends AnimationMixer {
     constructor()
     static is_instance(value: unknown): value is AnimationPlayer
-    assigned_animation: StringName
-    autoplay: StringName
-    current_animation: StringName
+    get assigned_animation(): StringName
+    set assigned_animation(value: StringName | string)
+    get autoplay(): StringName
+    set autoplay(value: StringName | string)
+    get current_animation(): StringName
+    set current_animation(value: StringName | string)
     readonly current_animation_length: number
     readonly current_animation_position: number
     movie_quit_on_finish: boolean
@@ -3288,8 +3312,10 @@ declare module 'godot' {
   export class AnimationTree extends AnimationMixer {
     constructor()
     static is_instance(value: unknown): value is AnimationTree
-    advance_expression_base_node: NodePath
-    anim_player: NodePath
+    get advance_expression_base_node(): NodePath
+    set advance_expression_base_node(value: NodePath | string)
+    get anim_player(): NodePath
+    set anim_player(value: NodePath | string)
     tree_root: AnimationRootNode
     readonly animation_player_changed: Signal<readonly []>
     get_advance_expression_base_node(): NodePath
@@ -3318,7 +3344,8 @@ declare module 'godot' {
     static is_instance(value: unknown): value is Area2D
     angular_damp: number
     angular_damp_space_override: Integer
-    audio_bus_name: StringName
+    get audio_bus_name(): StringName
+    set audio_bus_name(value: StringName | string)
     audio_bus_override: boolean
     gravity: number
     gravity_direction: Vector2
@@ -3395,7 +3422,8 @@ declare module 'godot' {
     static is_instance(value: unknown): value is Area3D
     angular_damp: number
     angular_damp_space_override: Integer
-    audio_bus_name: StringName
+    get audio_bus_name(): StringName
+    set audio_bus_name(value: StringName | string)
     audio_bus_override: boolean
     gravity: number
     gravity_direction: Vector3
@@ -3410,11 +3438,13 @@ declare module 'godot' {
     priority: Integer
     reverb_bus_amount: number
     reverb_bus_enabled: boolean
-    reverb_bus_name: StringName
+    get reverb_bus_name(): StringName
+    set reverb_bus_name(value: StringName | string)
     reverb_bus_uniformity: number
     wind_attenuation_factor: number
     wind_force_magnitude: number
-    wind_source_path: NodePath
+    get wind_source_path(): NodePath
+    set wind_source_path(value: NodePath | string)
     readonly area_entered: Signal<readonly [Area3D]>
     readonly area_exited: Signal<readonly [Area3D]>
     readonly area_shape_entered: Signal<readonly [RID, Area3D, Integer, Integer]>
@@ -3495,7 +3525,7 @@ declare module 'godot' {
     custom_aabb: AABB
     shadow_mesh: ArrayMesh
     add_blend_shape(name: StringName | string): void
-    add_surface_from_arrays(primitive: Mesh.PrimitiveType, arrays: Array<GodotVariant>, blend_shapes?: Array<Array<GodotVariant>>, lods?: Dictionary, flags?: Mesh.ArrayFormat): void
+    add_surface_from_arrays(primitive: Mesh.PrimitiveType, arrays: Array<GodotVariant> | readonly GodotVariant[], blend_shapes?: Array<Array<GodotVariant>> | readonly Array<GodotVariant>[], lods?: Dictionary | Readonly<Record<string, GodotVariant>>, flags?: Mesh.ArrayFormat): void
     clear_blend_shapes(): void
     clear_surfaces(): void
     get_blend_shape_count(): number
@@ -3517,9 +3547,9 @@ declare module 'godot' {
     surface_get_primitive_type(surf_idx: number): Mesh.PrimitiveType
     surface_remove(surf_idx: number): void
     surface_set_name(surf_idx: number, name: string): void
-    surface_update_attribute_region(surf_idx: number, offset: number, data: PackedByteArray): void
-    surface_update_skin_region(surf_idx: number, offset: number, data: PackedByteArray): void
-    surface_update_vertex_region(surf_idx: number, offset: number, data: PackedByteArray): void
+    surface_update_attribute_region(surf_idx: number, offset: number, data: PackedByteArrayInput): void
+    surface_update_skin_region(surf_idx: number, offset: number, data: PackedByteArrayInput): void
+    surface_update_vertex_region(surf_idx: number, offset: number, data: PackedByteArrayInput): void
   }
 
   /**
@@ -3529,11 +3559,13 @@ declare module 'godot' {
   export class ArrayOccluder3D extends Occluder3D {
     constructor()
     static is_instance(value: unknown): value is ArrayOccluder3D
-    indices: PackedInt32Array
-    vertices: PackedVector3Array
-    set_arrays(vertices: PackedVector3Array, indices: PackedInt32Array): void
-    set_indices(indices: PackedInt32Array): void
-    set_vertices(vertices: PackedVector3Array): void
+    get indices(): PackedInt32Array
+    set indices(value: PackedInt32ArrayInput)
+    get vertices(): PackedVector3Array
+    set vertices(value: PackedVector3ArrayInput)
+    set_arrays(vertices: PackedVector3ArrayInput, indices: PackedInt32ArrayInput): void
+    set_indices(indices: PackedInt32ArrayInput): void
+    set_vertices(vertices: PackedVector3ArrayInput): void
   }
 
   /**
@@ -3847,7 +3879,8 @@ declare module 'godot' {
     mix: number
     ratio: number
     release_ms: number
-    sidechain: StringName
+    get sidechain(): StringName
+    set sidechain(value: StringName | string)
     threshold: number
     get_attack_us(): number
     get_gain(): number
@@ -4525,7 +4558,7 @@ declare module 'godot' {
     clear_buffer(): void
     get_frames_available(): number
     get_skips(): number
-    push_buffer(frames: PackedVector2Array): boolean
+    push_buffer(frames: PackedVector2ArrayInput): boolean
     push_frame(frame: Vector2): boolean
   }
 
@@ -4607,7 +4640,8 @@ declare module 'godot' {
     bar_beats: Integer
     beat_count: Integer
     bpm: number
-    data: PackedByteArray
+    get data(): PackedByteArray
+    set data(value: PackedByteArrayInput)
     loop: boolean
     loop_offset: number
     get_bar_beats(): number
@@ -4616,12 +4650,12 @@ declare module 'godot' {
     get_data(): PackedByteArray
     get_loop_offset(): number
     has_loop(): boolean
-    static load_from_buffer(stream_data: PackedByteArray): AudioStreamMP3
+    static load_from_buffer(stream_data: PackedByteArrayInput): AudioStreamMP3
     static load_from_file(path: string): AudioStreamMP3
     set_bar_beats(count: number): void
     set_beat_count(count: number): void
     set_bpm(bpm: number): void
-    set_data(data: PackedByteArray): void
+    set_data(data: PackedByteArrayInput): void
     set_loop(enable: boolean): void
     set_loop_offset(seconds: number): void
   }
@@ -4645,7 +4679,7 @@ declare module 'godot' {
     get_loop_offset(): number
     get_packet_sequence(): OggPacketSequence
     has_loop(): boolean
-    static load_from_buffer(stream_data: PackedByteArray): AudioStreamOggVorbis
+    static load_from_buffer(stream_data: PackedByteArrayInput): AudioStreamOggVorbis
     static load_from_file(path: string): AudioStreamOggVorbis
     set_bar_beats(count: number): void
     set_beat_count(count: number): void
@@ -4753,7 +4787,8 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is AudioStreamPlayer
     autoplay: boolean
-    bus: StringName
+    get bus(): StringName
+    set bus(value: StringName | string)
     max_polyphony: Integer
     mix_target: Integer
     pitch_scale: number
@@ -4811,7 +4846,8 @@ declare module 'godot' {
     area_mask: Integer
     attenuation: number
     autoplay: boolean
-    bus: StringName
+    get bus(): StringName
+    set bus(value: StringName | string)
     max_distance: number
     max_polyphony: Integer
     panning_strength: number
@@ -4871,7 +4907,8 @@ declare module 'godot' {
     attenuation_filter_db: number
     attenuation_model: Integer
     autoplay: boolean
-    bus: StringName
+    get bus(): StringName
+    set bus(value: StringName | string)
     doppler_tracking: Integer
     emission_angle_degrees: number
     emission_angle_enabled: boolean
@@ -5114,7 +5151,8 @@ declare module 'godot' {
   export class AudioStreamWAV extends AudioStream {
     constructor()
     static is_instance(value: unknown): value is AudioStreamWAV
-    data: PackedByteArray
+    get data(): PackedByteArray
+    set data(value: PackedByteArrayInput)
     format: Integer
     loop_begin: Integer
     loop_end: Integer
@@ -5128,10 +5166,10 @@ declare module 'godot' {
     get_loop_mode(): AudioStreamWAV.LoopMode
     get_mix_rate(): number
     is_stereo(): boolean
-    static load_from_buffer(stream_data: PackedByteArray, options?: Dictionary): AudioStreamWAV
-    static load_from_file(path: string, options?: Dictionary): AudioStreamWAV
+    static load_from_buffer(stream_data: PackedByteArrayInput, options?: Dictionary | Readonly<Record<string, GodotVariant>>): AudioStreamWAV
+    static load_from_file(path: string, options?: Dictionary | Readonly<Record<string, GodotVariant>>): AudioStreamWAV
     save_to_wav(path: string): Error
-    set_data(data: PackedByteArray): void
+    set_data(data: PackedByteArrayInput): void
     set_format(format: AudioStreamWAV.Format): void
     set_loop_begin(loop_begin: number): void
     set_loop_end(loop_end: number): void
@@ -5651,7 +5689,8 @@ declare module 'godot' {
   export class BitMap extends Resource {
     constructor()
     static is_instance(value: unknown): value is BitMap
-    data: Dictionary
+    get data(): Dictionary
+    set data(value: Dictionary | Readonly<Record<string, GodotVariant>>)
     convert_to_image(): Image
     create(size: Vector2i): void
     create_from_image_alpha(image: Image, threshold?: number): void
@@ -5696,7 +5735,8 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is BoneAttachment3D
     bone_idx: Integer
-    bone_name: StringName
+    get bone_name(): StringName
+    set bone_name(value: StringName | string)
     override_pose: boolean
     get_bone_idx(): number
     get_bone_name(): string
@@ -6169,7 +6209,7 @@ declare module 'godot' {
     is_active(): boolean
     set_active(active: boolean): void
     set_external(width: number, height: number): void
-    set_format(index: number, parameters: Dictionary): boolean
+    set_format(index: number, parameters: Dictionary | Readonly<Record<string, GodotVariant>>): boolean
     set_name(name: string): void
     set_position(position: CameraFeed.FeedPosition): void
     set_rgb_image(rgb_image: Image): void
@@ -6287,22 +6327,22 @@ declare module 'godot' {
     draw_char(font: Font, pos: Vector2, char: string, font_size?: number, modulate?: Color): void
     draw_char_outline(font: Font, pos: Vector2, char: string, font_size?: number, size?: number, modulate?: Color): void
     draw_circle(position: Vector2, radius: number, color: Color, filled?: boolean, width?: number, antialiased?: boolean): void
-    draw_colored_polygon(points: PackedVector2Array, color: Color, uvs?: PackedVector2Array, texture?: Texture2D): void
+    draw_colored_polygon(points: PackedVector2ArrayInput, color: Color, uvs?: PackedVector2ArrayInput, texture?: Texture2D): void
     draw_dashed_line(from_: Vector2, to: Vector2, color: Color, width?: number, dash?: number, aligned?: boolean, antialiased?: boolean): void
     draw_end_animation(): void
     draw_lcd_texture_rect_region(texture: Texture2D, rect: Rect2, src_rect: Rect2, modulate?: Color): void
     draw_line(from_: Vector2, to: Vector2, color: Color, width?: number, antialiased?: boolean): void
     draw_mesh(mesh: Mesh, texture: Texture2D, transform?: Transform2D, modulate?: Color): void
     draw_msdf_texture_rect_region(texture: Texture2D, rect: Rect2, src_rect: Rect2, modulate?: Color, outline?: number, pixel_range?: number, scale?: number): void
-    draw_multiline(points: PackedVector2Array, color: Color, width?: number, antialiased?: boolean): void
-    draw_multiline_colors(points: PackedVector2Array, colors: PackedColorArray, width?: number, antialiased?: boolean): void
+    draw_multiline(points: PackedVector2ArrayInput, color: Color, width?: number, antialiased?: boolean): void
+    draw_multiline_colors(points: PackedVector2ArrayInput, colors: PackedColorArrayInput, width?: number, antialiased?: boolean): void
     draw_multiline_string(font: Font, pos: Vector2, text: string, alignment?: HorizontalAlignment, width?: number, font_size?: number, max_lines?: number, modulate?: Color, brk_flags?: TextServer.LineBreakFlag, justification_flags?: TextServer.JustificationFlag, direction?: TextServer.Direction, orientation?: TextServer.Orientation): void
     draw_multiline_string_outline(font: Font, pos: Vector2, text: string, alignment?: HorizontalAlignment, width?: number, font_size?: number, max_lines?: number, size?: number, modulate?: Color, brk_flags?: TextServer.LineBreakFlag, justification_flags?: TextServer.JustificationFlag, direction?: TextServer.Direction, orientation?: TextServer.Orientation): void
     draw_multimesh(multimesh: MultiMesh, texture: Texture2D): void
-    draw_polygon(points: PackedVector2Array, colors: PackedColorArray, uvs?: PackedVector2Array, texture?: Texture2D): void
-    draw_polyline(points: PackedVector2Array, color: Color, width?: number, antialiased?: boolean): void
-    draw_polyline_colors(points: PackedVector2Array, colors: PackedColorArray, width?: number, antialiased?: boolean): void
-    draw_primitive(points: PackedVector2Array, colors: PackedColorArray, uvs: PackedVector2Array, texture?: Texture2D): void
+    draw_polygon(points: PackedVector2ArrayInput, colors: PackedColorArrayInput, uvs?: PackedVector2ArrayInput, texture?: Texture2D): void
+    draw_polyline(points: PackedVector2ArrayInput, color: Color, width?: number, antialiased?: boolean): void
+    draw_polyline_colors(points: PackedVector2ArrayInput, colors: PackedColorArrayInput, width?: number, antialiased?: boolean): void
+    draw_primitive(points: PackedVector2ArrayInput, colors: PackedColorArrayInput, uvs: PackedVector2ArrayInput, texture?: Texture2D): void
     draw_rect(rect: Rect2, color: Color, filled?: boolean, width?: number, antialiased?: boolean): void
     draw_set_transform(position: Vector2, rotation?: number, scale?: Vector2): void
     draw_set_transform_matrix(xform: Transform2D): void
@@ -6768,7 +6808,8 @@ declare module 'godot' {
     static is_instance(value: unknown): value is CharFXTransform
     color: Color
     elapsed_time: number
-    env: Dictionary
+    get env(): Dictionary
+    set env(value: Dictionary | Readonly<Record<string, GodotVariant>>)
     font: RID
     glyph_count: Integer
     glyph_flags: Integer
@@ -6794,7 +6835,7 @@ declare module 'godot' {
     is_visible(): boolean
     set_color(color: Color): void
     set_elapsed_time(time: number): void
-    set_environment(environment: Dictionary): void
+    set_environment(environment: Dictionary | Readonly<Record<string, GodotVariant>>): void
     set_font(font: RID): void
     set_glyph_count(glyph_count: number): void
     set_glyph_flags(glyph_flags: number): void
@@ -6922,11 +6963,15 @@ declare module 'godot' {
     static is_instance(value: unknown): value is CodeEdit
     auto_brace_completion_enabled: boolean
     auto_brace_completion_highlight_matching: boolean
-    auto_brace_completion_pairs: Dictionary
+    get auto_brace_completion_pairs(): Dictionary
+    set auto_brace_completion_pairs(value: Dictionary | Readonly<Record<string, GodotVariant>>)
     code_completion_enabled: boolean
-    code_completion_prefixes: PackedStringArray
-    delimiter_comments: PackedStringArray
-    delimiter_strings: PackedStringArray
+    get code_completion_prefixes(): PackedStringArray
+    set code_completion_prefixes(value: PackedStringArrayInput)
+    get delimiter_comments(): PackedStringArray
+    set delimiter_comments(value: PackedStringArrayInput)
+    get delimiter_strings(): PackedStringArray
+    set delimiter_strings(value: PackedStringArrayInput)
     gutters_draw_bookmarks: boolean
     gutters_draw_breakpoints_gutter: boolean
     gutters_draw_executing_lines: boolean
@@ -6934,11 +6979,13 @@ declare module 'godot' {
     gutters_draw_line_numbers: boolean
     gutters_zero_pad_line_numbers: boolean
     indent_automatic: boolean
-    indent_automatic_prefixes: PackedStringArray
+    get indent_automatic_prefixes(): PackedStringArray
+    set indent_automatic_prefixes(value: PackedStringArrayInput)
     indent_size: Integer
     indent_use_spaces: boolean
     line_folding: boolean
-    line_length_guidelines: PackedInt32Array
+    get line_length_guidelines(): PackedInt32Array
+    set line_length_guidelines(value: PackedInt32ArrayInput)
     symbol_lookup_on_click: boolean
     symbol_tooltip_on_hover: boolean
     readonly breakpoint_toggled: Signal<readonly [Integer]>
@@ -6947,7 +6994,7 @@ declare module 'godot' {
     readonly symbol_lookup: Signal<readonly [string, Integer, Integer]>
     readonly symbol_validate: Signal<readonly [string]>
     _confirm_code_completion(replace: boolean): void
-    _filter_code_completion_candidates(candidates: Array<Dictionary>): Array<Dictionary>
+    _filter_code_completion_candidates(candidates: Array<Dictionary> | readonly Dictionary[]): Array<Dictionary>
     _request_code_completion(force: boolean): void
     add_auto_brace_completion_pair(start_key: string, end_key: string): void
     add_code_completion_option(type_: CodeEdit.CodeCompletionKind, display_text: string, insert_text: string, text_color?: Color, icon?: Resource, value?: GodotVariant, location?: number): void
@@ -7026,16 +7073,16 @@ declare module 'godot' {
     remove_string_delimiter(start_key: string): void
     request_code_completion(force?: boolean): void
     set_auto_brace_completion_enabled(enable: boolean): void
-    set_auto_brace_completion_pairs(pairs: Dictionary): void
+    set_auto_brace_completion_pairs(pairs: Dictionary | Readonly<Record<string, GodotVariant>>): void
     set_auto_indent_enabled(enable: boolean): void
-    set_auto_indent_prefixes(prefixes: Array<string>): void
+    set_auto_indent_prefixes(prefixes: Array<string> | readonly string[]): void
     set_code_completion_enabled(enable: boolean): void
-    set_code_completion_prefixes(prefixes: Array<string>): void
+    set_code_completion_prefixes(prefixes: Array<string> | readonly string[]): void
     set_code_completion_selected_index(index: number): void
     set_code_hint(code_hint: string): void
     set_code_hint_draw_below(draw_below: boolean): void
     set_code_region_tags(start?: string, end?: string): void
-    set_comment_delimiters(comment_delimiters: Array<string>): void
+    set_comment_delimiters(comment_delimiters: Array<string> | readonly string[]): void
     set_draw_bookmarks_gutter(enable: boolean): void
     set_draw_breakpoints_gutter(enable: boolean): void
     set_draw_executing_lines_gutter(enable: boolean): void
@@ -7048,9 +7095,9 @@ declare module 'godot' {
     set_line_as_breakpoint(line: number, breakpointed: boolean): void
     set_line_as_executing(line: number, executing: boolean): void
     set_line_folding_enabled(enabled: boolean): void
-    set_line_length_guidelines(guideline_columns: Array<Integer>): void
+    set_line_length_guidelines(guideline_columns: Array<Integer> | readonly Integer[]): void
     set_line_numbers_zero_padded(enable: boolean): void
-    set_string_delimiters(string_delimiters: Array<string>): void
+    set_string_delimiters(string_delimiters: Array<string> | readonly string[]): void
     set_symbol_lookup_on_click_enabled(enable: boolean): void
     set_symbol_lookup_word_as_valid(valid: boolean): void
     set_symbol_tooltip_on_hover_enabled(enable: boolean): void
@@ -7089,10 +7136,13 @@ declare module 'godot' {
   export class CodeHighlighter extends SyntaxHighlighter {
     constructor()
     static is_instance(value: unknown): value is CodeHighlighter
-    color_regions: Dictionary
+    get color_regions(): Dictionary
+    set color_regions(value: Dictionary | Readonly<Record<string, GodotVariant>>)
     function_color: Color
-    keyword_colors: Dictionary
-    member_keyword_colors: Dictionary
+    get keyword_colors(): Dictionary
+    set keyword_colors(value: Dictionary | Readonly<Record<string, GodotVariant>>)
+    get member_keyword_colors(): Dictionary
+    set member_keyword_colors(value: Dictionary | Readonly<Record<string, GodotVariant>>)
     member_variable_color: Color
     number_color: Color
     symbol_color: Color
@@ -7117,10 +7167,10 @@ declare module 'godot' {
     remove_color_region(start_key: string): void
     remove_keyword_color(keyword: string): void
     remove_member_keyword_color(member_keyword: string): void
-    set_color_regions(color_regions: Dictionary): void
+    set_color_regions(color_regions: Dictionary | Readonly<Record<string, GodotVariant>>): void
     set_function_color(color: Color): void
-    set_keyword_colors(keywords: Dictionary): void
-    set_member_keyword_colors(member_keyword: Dictionary): void
+    set_keyword_colors(keywords: Dictionary | Readonly<Record<string, GodotVariant>>): void
+    set_member_keyword_colors(member_keyword: Dictionary | Readonly<Record<string, GodotVariant>>): void
     set_member_variable_color(color: Color): void
     set_number_color(color: Color): void
     set_symbol_color(color: Color): void
@@ -7260,7 +7310,8 @@ declare module 'godot' {
     disabled: boolean
     one_way_collision: boolean
     one_way_collision_margin: number
-    polygon: PackedVector2Array
+    get polygon(): PackedVector2Array
+    set polygon(value: PackedVector2ArrayInput)
     get_build_mode(): CollisionPolygon2D.BuildMode
     get_one_way_collision_margin(): number
     get_polygon(): PackedVector2Array
@@ -7270,7 +7321,7 @@ declare module 'godot' {
     set_disabled(disabled: boolean): void
     set_one_way_collision(enabled: boolean): void
     set_one_way_collision_margin(margin: number): void
-    set_polygon(polygon: PackedVector2Array): void
+    set_polygon(polygon: PackedVector2ArrayInput): void
   }
   export namespace CollisionPolygon2D {
     export enum BuildMode {
@@ -7291,7 +7342,8 @@ declare module 'godot' {
     depth: number
     disabled: boolean
     margin: number
-    polygon: PackedVector2Array
+    get polygon(): PackedVector2Array
+    set polygon(value: PackedVector2ArrayInput)
     get_debug_color(): Color
     get_depth(): number
     get_enable_debug_fill(): boolean
@@ -7303,7 +7355,7 @@ declare module 'godot' {
     set_disabled(disabled: boolean): void
     set_enable_debug_fill(enable: boolean): void
     set_margin(margin: number): void
-    set_polygon(polygon: PackedVector2Array): void
+    set_polygon(polygon: PackedVector2ArrayInput): void
   }
 
   /**
@@ -7360,9 +7412,10 @@ declare module 'godot' {
   export class ColorPalette extends Resource {
     constructor()
     static is_instance(value: unknown): value is ColorPalette
-    colors: PackedColorArray
+    get colors(): PackedColorArray
+    set colors(value: PackedColorArrayInput)
     get_colors(): PackedColorArray
-    set_colors(colors: PackedColorArray): void
+    set_colors(colors: PackedColorArrayInput): void
   }
 
   /**
@@ -7470,9 +7523,10 @@ declare module 'godot' {
   export class Compositor extends Resource {
     constructor()
     static is_instance(value: unknown): value is Compositor
-    compositor_effects: Array<CompositorEffect>
+    get compositor_effects(): Array<CompositorEffect>
+    set compositor_effects(value: Array<CompositorEffect> | readonly CompositorEffect[])
     get_compositor_effects(): Array<CompositorEffect>
-    set_compositor_effects(compositor_effects: Array<CompositorEffect>): void
+    set_compositor_effects(compositor_effects: Array<CompositorEffect> | readonly CompositorEffect[]): void
   }
 
   /**
@@ -7585,9 +7639,10 @@ declare module 'godot' {
   export class ConcavePolygonShape2D extends Shape2D {
     constructor()
     static is_instance(value: unknown): value is ConcavePolygonShape2D
-    segments: PackedVector2Array
+    get segments(): PackedVector2Array
+    set segments(value: PackedVector2ArrayInput)
     get_segments(): PackedVector2Array
-    set_segments(segments: PackedVector2Array): void
+    set_segments(segments: PackedVector2ArrayInput): void
   }
 
   /**
@@ -7598,11 +7653,12 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is ConcavePolygonShape3D
     backface_collision: boolean
-    data: PackedVector3Array
+    get data(): PackedVector3Array
+    set data(value: PackedVector3ArrayInput)
     get_faces(): PackedVector3Array
     is_backface_collision_enabled(): boolean
     set_backface_collision_enabled(enabled: boolean): void
-    set_faces(faces: PackedVector3Array): void
+    set_faces(faces: PackedVector3ArrayInput): void
   }
 
   /**
@@ -7648,11 +7704,11 @@ declare module 'godot' {
     has_section(section: string): boolean
     has_section_key(section: string, key: string): boolean
     load(path: string): Error
-    load_encrypted(path: string, key: PackedByteArray): Error
+    load_encrypted(path: string, key: PackedByteArrayInput): Error
     load_encrypted_pass(path: string, password: string): Error
     parse(data: string): Error
     save(path: string): Error
-    save_encrypted(path: string, key: PackedByteArray): Error
+    save_encrypted(path: string, key: PackedByteArrayInput): Error
     save_encrypted_pass(path: string, password: string): Error
     set_value(section: string, key: string, value: GodotVariant): void
   }
@@ -7703,12 +7759,18 @@ declare module 'godot' {
     clip_contents: boolean
     custom_minimum_size: Vector2
     focus_mode: Integer
-    focus_neighbor_bottom: NodePath
-    focus_neighbor_left: NodePath
-    focus_neighbor_right: NodePath
-    focus_neighbor_top: NodePath
-    focus_next: NodePath
-    focus_previous: NodePath
+    get focus_neighbor_bottom(): NodePath
+    set focus_neighbor_bottom(value: NodePath | string)
+    get focus_neighbor_left(): NodePath
+    set focus_neighbor_left(value: NodePath | string)
+    get focus_neighbor_right(): NodePath
+    set focus_neighbor_right(value: NodePath | string)
+    get focus_neighbor_top(): NodePath
+    set focus_neighbor_top(value: NodePath | string)
+    get focus_next(): NodePath
+    set focus_next(value: NodePath | string)
+    get focus_previous(): NodePath
+    set focus_previous(value: NodePath | string)
     global_position: Vector2
     grow_horizontal: Integer
     grow_vertical: Integer
@@ -7753,7 +7815,7 @@ declare module 'godot' {
     _gui_input(event: InputEvent): void
     _has_point(point: Vector2): boolean
     _make_custom_tooltip(for_text: string): Object
-    _structured_text_parser(args: Array<GodotVariant>, text: string): Array<Vector3i>
+    _structured_text_parser(args: Array<GodotVariant> | readonly GodotVariant[], text: string): Array<Vector3i>
     accept_event(): void
     add_theme_color_override(name: StringName | string, color: Color): void
     add_theme_constant_override(name: StringName | string, constant: number): void
@@ -7991,10 +8053,11 @@ declare module 'godot' {
   export class ConvexPolygonShape2D extends Shape2D {
     constructor()
     static is_instance(value: unknown): value is ConvexPolygonShape2D
-    points: PackedVector2Array
+    get points(): PackedVector2Array
+    set points(value: PackedVector2ArrayInput)
     get_points(): PackedVector2Array
-    set_point_cloud(point_cloud: PackedVector2Array): void
-    set_points(points: PackedVector2Array): void
+    set_point_cloud(point_cloud: PackedVector2ArrayInput): void
+    set_points(points: PackedVector2ArrayInput): void
   }
 
   /**
@@ -8004,9 +8067,10 @@ declare module 'godot' {
   export class ConvexPolygonShape3D extends Shape3D {
     constructor()
     static is_instance(value: unknown): value is ConvexPolygonShape3D
-    points: Array<GodotVariant>
+    get points(): Array<GodotVariant>
+    set points(value: Array<GodotVariant> | readonly GodotVariant[])
     get_points(): PackedVector3Array
-    set_points(points: PackedVector3Array): void
+    set_points(points: PackedVector3ArrayInput): void
   }
 
   /**
@@ -8037,9 +8101,12 @@ declare module 'godot' {
     damping_min: number
     direction: Vector2
     draw_order: Integer
-    emission_colors: PackedColorArray
-    emission_normals: PackedVector2Array
-    emission_points: PackedVector2Array
+    get emission_colors(): PackedColorArray
+    set emission_colors(value: PackedColorArrayInput)
+    get emission_normals(): PackedVector2Array
+    set emission_normals(value: PackedVector2ArrayInput)
+    get emission_points(): PackedVector2Array
+    set emission_points(value: PackedVector2ArrayInput)
     emission_rect_extents: Vector2
     emission_shape: Integer
     emission_sphere_radius: number
@@ -8128,9 +8195,9 @@ declare module 'godot' {
     set_color_ramp(ramp: Gradient): void
     set_direction(direction: Vector2): void
     set_draw_order(order: CPUParticles2D.DrawOrder): void
-    set_emission_colors(array: PackedColorArray): void
-    set_emission_normals(array: PackedVector2Array): void
-    set_emission_points(array: PackedVector2Array): void
+    set_emission_colors(array: PackedColorArrayInput): void
+    set_emission_normals(array: PackedVector2ArrayInput): void
+    set_emission_points(array: PackedVector2ArrayInput): void
     set_emission_rect_extents(extents: Vector2): void
     set_emission_shape(shape: CPUParticles2D.EmissionShape): void
     set_emission_sphere_radius(radius: number): void
@@ -8224,9 +8291,12 @@ declare module 'godot' {
     direction: Vector3
     draw_order: Integer
     emission_box_extents: Vector3
-    emission_colors: PackedColorArray
-    emission_normals: PackedVector3Array
-    emission_points: PackedVector3Array
+    get emission_colors(): PackedColorArray
+    set emission_colors(value: PackedColorArrayInput)
+    get emission_normals(): PackedVector3Array
+    set emission_normals(value: PackedVector3ArrayInput)
+    get emission_points(): PackedVector3Array
+    set emission_points(value: PackedVector3ArrayInput)
     emission_ring_axis: Vector3
     emission_ring_cone_angle: number
     emission_ring_height: number
@@ -8334,9 +8404,9 @@ declare module 'godot' {
     set_direction(direction: Vector3): void
     set_draw_order(order: CPUParticles3D.DrawOrder): void
     set_emission_box_extents(extents: Vector3): void
-    set_emission_colors(array: PackedColorArray): void
-    set_emission_normals(array: PackedVector3Array): void
-    set_emission_points(array: PackedVector3Array): void
+    set_emission_colors(array: PackedColorArrayInput): void
+    set_emission_normals(array: PackedVector3ArrayInput): void
+    set_emission_points(array: PackedVector3ArrayInput): void
     set_emission_ring_axis(axis: Vector3): void
     set_emission_ring_cone_angle(cone_angle: number): void
     set_emission_ring_height(height: number): void
@@ -8417,15 +8487,15 @@ declare module 'godot' {
   export class Crypto extends RefCounted {
     constructor()
     static is_instance(value: unknown): value is Crypto
-    constant_time_compare(trusted: PackedByteArray, received: PackedByteArray): boolean
-    decrypt(key: CryptoKey, ciphertext: PackedByteArray): PackedByteArray
-    encrypt(key: CryptoKey, plaintext: PackedByteArray): PackedByteArray
+    constant_time_compare(trusted: PackedByteArrayInput, received: PackedByteArrayInput): boolean
+    decrypt(key: CryptoKey, ciphertext: PackedByteArrayInput): PackedByteArray
+    encrypt(key: CryptoKey, plaintext: PackedByteArrayInput): PackedByteArray
     generate_random_bytes(size: number): PackedByteArray
     generate_rsa(size: number): CryptoKey
     generate_self_signed_certificate(key: CryptoKey, issuer_name?: string, not_before?: string, not_after?: string): X509Certificate
-    hmac_digest(hash_type: HashingContext.HashType, key: PackedByteArray, msg: PackedByteArray): PackedByteArray
-    sign(hash_type: HashingContext.HashType, hash: PackedByteArray, key: CryptoKey): PackedByteArray
-    verify(hash_type: HashingContext.HashType, hash: PackedByteArray, signature: PackedByteArray, key: CryptoKey): boolean
+    hmac_digest(hash_type: HashingContext.HashType, key: PackedByteArrayInput, msg: PackedByteArrayInput): PackedByteArray
+    sign(hash_type: HashingContext.HashType, hash: PackedByteArrayInput, key: CryptoKey): PackedByteArray
+    verify(hash_type: HashingContext.HashType, hash: PackedByteArrayInput, signature: PackedByteArrayInput, key: CryptoKey): boolean
   }
 
   /**
@@ -8523,12 +8593,14 @@ declare module 'godot' {
     path_interval_type: Integer
     path_joined: boolean
     path_local: boolean
-    path_node: NodePath
+    get path_node(): NodePath
+    set path_node(value: NodePath | string)
     path_rotation: Integer
     path_rotation_accurate: boolean
     path_simplify_angle: number
     path_u_distance: number
-    polygon: PackedVector2Array
+    get polygon(): PackedVector2Array
+    set polygon(value: PackedVector2ArrayInput)
     smooth_faces: boolean
     spin_degrees: number
     spin_sides: Integer
@@ -8562,7 +8634,7 @@ declare module 'godot' {
     set_path_rotation_accurate(enable: boolean): void
     set_path_simplify_angle(degrees: number): void
     set_path_u_distance(distance: number): void
-    set_polygon(polygon: PackedVector2Array): void
+    set_polygon(polygon: PackedVector2ArrayInput): void
     set_smooth_faces(smooth_faces: boolean): void
     set_spin_degrees(degrees: number): void
     set_spin_sides(spin_sides: number): void
@@ -9142,14 +9214,14 @@ declare module 'godot' {
     static delete_status_indicator(id: number): void
     dialog_input_text(title: string, description: string, existing_text: string, callback: Callable | ((...args: GodotVariant[]) => GodotVariant)): Error
     static dialog_input_text(title: string, description: string, existing_text: string, callback: Callable | ((...args: GodotVariant[]) => GodotVariant)): Error
-    dialog_show(title: string, description: string, buttons: PackedStringArray, callback: Callable | ((...args: GodotVariant[]) => GodotVariant)): Error
-    static dialog_show(title: string, description: string, buttons: PackedStringArray, callback: Callable | ((...args: GodotVariant[]) => GodotVariant)): Error
+    dialog_show(title: string, description: string, buttons: PackedStringArrayInput, callback: Callable | ((...args: GodotVariant[]) => GodotVariant)): Error
+    static dialog_show(title: string, description: string, buttons: PackedStringArrayInput, callback: Callable | ((...args: GodotVariant[]) => GodotVariant)): Error
     enable_for_stealing_focus(process_id: Integer): void
     static enable_for_stealing_focus(process_id: Integer): void
-    file_dialog_show(title: string, current_directory: string, filename: string, show_hidden: boolean, mode: DisplayServer.FileDialogMode, filters: PackedStringArray, callback: Callable | ((...args: GodotVariant[]) => GodotVariant)): Error
-    static file_dialog_show(title: string, current_directory: string, filename: string, show_hidden: boolean, mode: DisplayServer.FileDialogMode, filters: PackedStringArray, callback: Callable | ((...args: GodotVariant[]) => GodotVariant)): Error
-    file_dialog_with_options_show(title: string, current_directory: string, root: string, filename: string, show_hidden: boolean, mode: DisplayServer.FileDialogMode, filters: PackedStringArray, options: Array<Dictionary>, callback: Callable | ((...args: GodotVariant[]) => GodotVariant)): Error
-    static file_dialog_with_options_show(title: string, current_directory: string, root: string, filename: string, show_hidden: boolean, mode: DisplayServer.FileDialogMode, filters: PackedStringArray, options: Array<Dictionary>, callback: Callable | ((...args: GodotVariant[]) => GodotVariant)): Error
+    file_dialog_show(title: string, current_directory: string, filename: string, show_hidden: boolean, mode: DisplayServer.FileDialogMode, filters: PackedStringArrayInput, callback: Callable | ((...args: GodotVariant[]) => GodotVariant)): Error
+    static file_dialog_show(title: string, current_directory: string, filename: string, show_hidden: boolean, mode: DisplayServer.FileDialogMode, filters: PackedStringArrayInput, callback: Callable | ((...args: GodotVariant[]) => GodotVariant)): Error
+    file_dialog_with_options_show(title: string, current_directory: string, root: string, filename: string, show_hidden: boolean, mode: DisplayServer.FileDialogMode, filters: PackedStringArrayInput, options: Array<Dictionary> | readonly Dictionary[], callback: Callable | ((...args: GodotVariant[]) => GodotVariant)): Error
+    static file_dialog_with_options_show(title: string, current_directory: string, root: string, filename: string, show_hidden: boolean, mode: DisplayServer.FileDialogMode, filters: PackedStringArrayInput, options: Array<Dictionary> | readonly Dictionary[], callback: Callable | ((...args: GodotVariant[]) => GodotVariant)): Error
     force_process_and_drop_events(): void
     static force_process_and_drop_events(): void
     get_accent_color(): Color
@@ -9470,8 +9542,8 @@ declare module 'godot' {
     static window_set_min_size(min_size: Vector2i, window_id?: number): void
     window_set_mode(mode: DisplayServer.WindowMode, window_id?: number): void
     static window_set_mode(mode: DisplayServer.WindowMode, window_id?: number): void
-    window_set_mouse_passthrough(region: PackedVector2Array, window_id?: number): void
-    static window_set_mouse_passthrough(region: PackedVector2Array, window_id?: number): void
+    window_set_mouse_passthrough(region: PackedVector2ArrayInput, window_id?: number): void
+    static window_set_mouse_passthrough(region: PackedVector2ArrayInput, window_id?: number): void
     window_set_popup_safe_rect(window: number, rect: Rect2i): void
     static window_set_popup_safe_rect(window: number, rect: Rect2i): void
     window_set_position(position: Vector2i, window_id?: number): void
@@ -9682,7 +9754,7 @@ declare module 'godot' {
   export class EditorContextMenuPlugin extends RefCounted {
     constructor()
     static is_instance(value: unknown): value is EditorContextMenuPlugin
-    _popup_menu(paths: PackedStringArray): void
+    _popup_menu(paths: PackedStringArrayInput): void
     add_context_menu_item(name: string, callback: Callable | ((...args: GodotVariant[]) => GodotVariant), icon?: Texture2D): void
     add_context_menu_item_from_shortcut(name: string, shortcut: Shortcut, icon?: Texture2D): void
     add_context_submenu_item(name: string, menu: PopupMenu, icon?: Texture2D): void
@@ -9709,7 +9781,7 @@ declare module 'godot' {
     static is_instance(value: unknown): value is EditorDebuggerPlugin
     _breakpoint_set_in_tree(script: Script, line: number, enabled: boolean): void
     _breakpoints_cleared_in_tree(): void
-    _capture(message: string, data: Array<GodotVariant>, session_id: number): boolean
+    _capture(message: string, data: Array<GodotVariant> | readonly GodotVariant[], session_id: number): boolean
     _goto_script_line(script: Script, line: number): void
     _has_capture(capture: string): boolean
     _setup_session(session_id: number): void
@@ -9732,9 +9804,9 @@ declare module 'godot' {
     is_breaked(): boolean
     is_debuggable(): boolean
     remove_session_tab(control: Control): void
-    send_message(message: string, data?: Array<GodotVariant>): void
+    send_message(message: string, data?: Array<GodotVariant> | readonly GodotVariant[]): void
     set_breakpoint(path: string, line: number, enabled: boolean): void
-    toggle_profiler(profiler: string, enable: boolean, data?: Array<GodotVariant>): void
+    toggle_profiler(profiler: string, enable: boolean, data?: Array<GodotVariant> | readonly GodotVariant[]): void
   }
 
   /**
@@ -9747,11 +9819,11 @@ declare module 'godot' {
     clear_messages(): void
     create_preset(): EditorExportPreset
     export_pack(preset: EditorExportPreset, debug: boolean, path: string, flags?: EditorExportPlatform.DebugFlags): Error
-    export_pack_patch(preset: EditorExportPreset, debug: boolean, path: string, patches?: PackedStringArray, flags?: EditorExportPlatform.DebugFlags): Error
+    export_pack_patch(preset: EditorExportPreset, debug: boolean, path: string, patches?: PackedStringArrayInput, flags?: EditorExportPlatform.DebugFlags): Error
     export_project(preset: EditorExportPreset, debug: boolean, path: string, flags?: EditorExportPlatform.DebugFlags): Error
     export_project_files(preset: EditorExportPreset, debug: boolean, save_cb: Callable | ((...args: GodotVariant[]) => GodotVariant), shared_cb?: Callable | ((...args: GodotVariant[]) => GodotVariant)): Error
     export_zip(preset: EditorExportPreset, debug: boolean, path: string, flags?: EditorExportPlatform.DebugFlags): Error
-    export_zip_patch(preset: EditorExportPreset, debug: boolean, path: string, patches?: PackedStringArray, flags?: EditorExportPlatform.DebugFlags): Error
+    export_zip_patch(preset: EditorExportPreset, debug: boolean, path: string, patches?: PackedStringArrayInput, flags?: EditorExportPlatform.DebugFlags): Error
     find_export_template(template_file_name: string): Dictionary
     gen_export_flags(flags: EditorExportPlatform.DebugFlags): PackedStringArray
     get_current_presets(): Array<GodotVariant>
@@ -9767,9 +9839,9 @@ declare module 'godot' {
     save_pack_patch(preset: EditorExportPreset, debug: boolean, path: string): Dictionary
     save_zip(preset: EditorExportPreset, debug: boolean, path: string): Dictionary
     save_zip_patch(preset: EditorExportPreset, debug: boolean, path: string): Dictionary
-    ssh_push_to_remote(host: string, port: string, scp_args: PackedStringArray, src_file: string, dst_file: string): Error
-    ssh_run_on_remote(host: string, port: string, ssh_arg: PackedStringArray, cmd_args: string, output?: Array<GodotVariant>, port_fwd?: number): Error
-    ssh_run_on_remote_no_wait(host: string, port: string, ssh_args: PackedStringArray, cmd_args: string, port_fwd?: number): Integer
+    ssh_push_to_remote(host: string, port: string, scp_args: PackedStringArrayInput, src_file: string, dst_file: string): Error
+    ssh_run_on_remote(host: string, port: string, ssh_arg: PackedStringArrayInput, cmd_args: string, output?: Array<GodotVariant> | readonly GodotVariant[], port_fwd?: number): Error
+    ssh_run_on_remote_no_wait(host: string, port: string, ssh_args: PackedStringArrayInput, cmd_args: string, port_fwd?: number): Integer
   }
   export namespace EditorExportPlatform {
     export enum DebugFlags {
@@ -9806,10 +9878,10 @@ declare module 'godot' {
     _can_export(preset: EditorExportPreset, debug: boolean): boolean
     _cleanup(): void
     _export_pack(preset: EditorExportPreset, debug: boolean, path: string, flags: EditorExportPlatform.DebugFlags): Error
-    _export_pack_patch(preset: EditorExportPreset, debug: boolean, path: string, patches: PackedStringArray, flags: EditorExportPlatform.DebugFlags): Error
+    _export_pack_patch(preset: EditorExportPreset, debug: boolean, path: string, patches: PackedStringArrayInput, flags: EditorExportPlatform.DebugFlags): Error
     _export_project(preset: EditorExportPreset, debug: boolean, path: string, flags: EditorExportPlatform.DebugFlags): Error
     _export_zip(preset: EditorExportPreset, debug: boolean, path: string, flags: EditorExportPlatform.DebugFlags): Error
-    _export_zip_patch(preset: EditorExportPreset, debug: boolean, path: string, patches: PackedStringArray, flags: EditorExportPlatform.DebugFlags): Error
+    _export_zip_patch(preset: EditorExportPreset, debug: boolean, path: string, patches: PackedStringArrayInput, flags: EditorExportPlatform.DebugFlags): Error
     _get_binary_extensions(preset: EditorExportPreset): PackedStringArray
     _get_debug_protocol(): string
     _get_device_architecture(device: number): string
@@ -9899,15 +9971,15 @@ declare module 'godot' {
   export class EditorExportPlugin extends RefCounted {
     constructor()
     static is_instance(value: unknown): value is EditorExportPlugin
-    _begin_customize_resources(platform: EditorExportPlatform, features: PackedStringArray): boolean
-    _begin_customize_scenes(platform: EditorExportPlatform, features: PackedStringArray): boolean
+    _begin_customize_resources(platform: EditorExportPlatform, features: PackedStringArrayInput): boolean
+    _begin_customize_scenes(platform: EditorExportPlatform, features: PackedStringArrayInput): boolean
     _customize_resource(resource: Resource, path: string): Resource
     _customize_scene(scene: Node, path: string): Node
     _end_customize_resources(): void
     _end_customize_scenes(): void
-    _export_begin(features: PackedStringArray, is_debug: boolean, path: string, flags: number): void
+    _export_begin(features: PackedStringArrayInput, is_debug: boolean, path: string, flags: number): void
     _export_end(): void
-    _export_file(path: string, type_: string, features: PackedStringArray): void
+    _export_file(path: string, type_: string, features: PackedStringArrayInput): void
     _get_android_dependencies(platform: EditorExportPlatform, debug: boolean): PackedStringArray
     _get_android_dependencies_maven_repos(platform: EditorExportPlatform, debug: boolean): PackedStringArray
     _get_android_libraries(platform: EditorExportPlatform, debug: boolean): PackedStringArray
@@ -9923,7 +9995,7 @@ declare module 'godot' {
     _get_name(): string
     _should_update_export_options(platform: EditorExportPlatform): boolean
     _supports_platform(platform: EditorExportPlatform): boolean
-    add_file(path: string, file: PackedByteArray, remap: boolean): void
+    add_file(path: string, file: PackedByteArrayInput, remap: boolean): void
     add_ios_bundle_file(path: string): void
     add_ios_cpp_code(code: string): void
     add_ios_embedded_framework(path: string): void
@@ -9932,7 +10004,7 @@ declare module 'godot' {
     add_ios_plist_content(plist_content: string): void
     add_ios_project_static_lib(path: string): void
     add_macos_plugin_file(path: string): void
-    add_shared_object(path: string, tags: PackedStringArray, target: string): void
+    add_shared_object(path: string, tags: PackedStringArrayInput, target: string): void
     get_export_platform(): EditorExportPlatform
     get_export_preset(): EditorExportPreset
     get_option(name: StringName | string): GodotVariant
@@ -10039,7 +10111,8 @@ declare module 'godot' {
     disable_overwrite_warning: boolean
     display_mode: Integer
     file_mode: Integer
-    filters: PackedStringArray
+    get filters(): PackedStringArray
+    set filters(value: PackedStringArrayInput)
     option_count: Integer
     show_hidden_files: boolean
     readonly dir_selected: Signal<readonly [string]>
@@ -10047,7 +10120,7 @@ declare module 'godot' {
     readonly filename_filter_changed: Signal<readonly [string]>
     readonly files_selected: Signal<readonly [PackedStringArray]>
     add_filter(filter: string, description?: string): void
-    add_option(name: string, values: PackedStringArray, default_value_index: number): void
+    add_option(name: string, values: PackedStringArrayInput, default_value_index: number): void
     add_side_menu(menu: Control, title?: string): void
     clear_filename_filter(): void
     clear_filters(): void
@@ -10078,11 +10151,11 @@ declare module 'godot' {
     set_display_mode(mode: EditorFileDialog.DisplayMode): void
     set_file_mode(mode: EditorFileDialog.FileMode): void
     set_filename_filter(filter: string): void
-    set_filters(filters: PackedStringArray): void
+    set_filters(filters: PackedStringArrayInput): void
     set_option_count(count: number): void
     set_option_default(option: number, default_value_index: number): void
     set_option_name(option: number, name: string): void
-    set_option_values(option: number, values: PackedStringArray): void
+    set_option_values(option: number, values: PackedStringArrayInput): void
     set_show_hidden_files(show: boolean): void
   }
   export namespace EditorFileDialog {
@@ -10121,7 +10194,7 @@ declare module 'godot' {
     get_filesystem_path(path: string): EditorFileSystemDirectory
     get_scanning_progress(): number
     is_scanning(): boolean
-    reimport_files(files: PackedStringArray): void
+    reimport_files(files: PackedStringArrayInput): void
     scan(): void
     scan_sources(): void
     update_file(path: string): void
@@ -10174,7 +10247,7 @@ declare module 'godot' {
     _get_import_options(path: string, preset_index: number): Array<Dictionary>
     _get_import_order(): number
     _get_importer_name(): string
-    _get_option_visibility(path: string, option_name: StringName | string, options: Dictionary): boolean
+    _get_option_visibility(path: string, option_name: StringName | string, options: Dictionary | Readonly<Record<string, GodotVariant>>): boolean
     _get_preset_count(): number
     _get_preset_name(preset_index: number): string
     _get_priority(): number
@@ -10182,8 +10255,8 @@ declare module 'godot' {
     _get_resource_type(): string
     _get_save_extension(): string
     _get_visible_name(): string
-    _import(source_file: string, save_path: string, options: Dictionary, platform_variants: Array<string>, gen_files: Array<string>): Error
-    append_import_external_resource(path: string, custom_options?: Dictionary, custom_importer?: string, generator_parameters?: GodotVariant): Error
+    _import(source_file: string, save_path: string, options: Dictionary | Readonly<Record<string, GodotVariant>>, platform_variants: Array<string> | readonly string[], gen_files: Array<string> | readonly string[]): Error
+    append_import_external_resource(path: string, custom_options?: Dictionary | Readonly<Record<string, GodotVariant>>, custom_importer?: string, generator_parameters?: GodotVariant): Error
   }
 
   /**
@@ -10223,7 +10296,7 @@ declare module 'godot' {
     _parse_property(object_: Object, type_: Variant.Type, name: string, hint_type: PropertyHint, hint_string: string, usage_flags: PropertyUsageFlags, wide: boolean): boolean
     add_custom_control(control: Control): void
     add_property_editor(property: string, editor: Control, add_to_end?: boolean, label?: string): void
-    add_property_editor_for_multiple_properties(label: string, properties: PackedStringArray, editor: Control): void
+    add_property_editor_for_multiple_properties(label: string, properties: PackedStringArrayInput, editor: Control): void
   }
 
   /**
@@ -10301,8 +10374,8 @@ declare module 'godot' {
     static is_playing_scene(): boolean
     is_plugin_enabled(plugin: string): boolean
     static is_plugin_enabled(plugin: string): boolean
-    make_mesh_previews(meshes: Array<Mesh>, preview_size: number): Array<Texture2D>
-    static make_mesh_previews(meshes: Array<Mesh>, preview_size: number): Array<Texture2D>
+    make_mesh_previews(meshes: Array<Mesh> | readonly Mesh[], preview_size: number): Array<Texture2D>
+    static make_mesh_previews(meshes: Array<Mesh> | readonly Mesh[], preview_size: number): Array<Texture2D>
     mark_scene_as_unsaved(): void
     static mark_scene_as_unsaved(): void
     open_scene_from_path(scene_filepath: string, set_inherited?: boolean): void
@@ -10313,8 +10386,8 @@ declare module 'godot' {
     static play_custom_scene(scene_filepath: string): void
     play_main_scene(): void
     static play_main_scene(): void
-    popup_create_dialog(callback: Callable | ((...args: GodotVariant[]) => GodotVariant), base_type?: StringName | string, current_type?: string, dialog_title?: string, type_blocklist?: Array<StringName>): void
-    static popup_create_dialog(callback: Callable | ((...args: GodotVariant[]) => GodotVariant), base_type?: StringName | string, current_type?: string, dialog_title?: string, type_blocklist?: Array<StringName>): void
+    popup_create_dialog(callback: Callable | ((...args: GodotVariant[]) => GodotVariant), base_type?: StringName | string, current_type?: string, dialog_title?: string, type_blocklist?: Array<StringName> | readonly StringName[]): void
+    static popup_create_dialog(callback: Callable | ((...args: GodotVariant[]) => GodotVariant), base_type?: StringName | string, current_type?: string, dialog_title?: string, type_blocklist?: Array<StringName> | readonly StringName[]): void
     popup_dialog(dialog: Window, rect?: Rect2i): void
     static popup_dialog(dialog: Window, rect?: Rect2i): void
     popup_dialog_centered(dialog: Window, minsize?: Vector2i): void
@@ -10325,12 +10398,12 @@ declare module 'godot' {
     static popup_dialog_centered_ratio(dialog: Window, ratio?: number): void
     popup_method_selector(object_: Object, callback: Callable | ((...args: GodotVariant[]) => GodotVariant), current_value?: string): void
     static popup_method_selector(object_: Object, callback: Callable | ((...args: GodotVariant[]) => GodotVariant), current_value?: string): void
-    popup_node_selector(callback: Callable | ((...args: GodotVariant[]) => GodotVariant), valid_types?: Array<StringName>, current_value?: Node): void
-    static popup_node_selector(callback: Callable | ((...args: GodotVariant[]) => GodotVariant), valid_types?: Array<StringName>, current_value?: Node): void
-    popup_property_selector(object_: Object, callback: Callable | ((...args: GodotVariant[]) => GodotVariant), type_filter?: PackedInt32Array, current_value?: string): void
-    static popup_property_selector(object_: Object, callback: Callable | ((...args: GodotVariant[]) => GodotVariant), type_filter?: PackedInt32Array, current_value?: string): void
-    popup_quick_open(callback: Callable | ((...args: GodotVariant[]) => GodotVariant), base_types?: Array<StringName>): void
-    static popup_quick_open(callback: Callable | ((...args: GodotVariant[]) => GodotVariant), base_types?: Array<StringName>): void
+    popup_node_selector(callback: Callable | ((...args: GodotVariant[]) => GodotVariant), valid_types?: Array<StringName> | readonly StringName[], current_value?: Node): void
+    static popup_node_selector(callback: Callable | ((...args: GodotVariant[]) => GodotVariant), valid_types?: Array<StringName> | readonly StringName[], current_value?: Node): void
+    popup_property_selector(object_: Object, callback: Callable | ((...args: GodotVariant[]) => GodotVariant), type_filter?: PackedInt32ArrayInput, current_value?: string): void
+    static popup_property_selector(object_: Object, callback: Callable | ((...args: GodotVariant[]) => GodotVariant), type_filter?: PackedInt32ArrayInput, current_value?: string): void
+    popup_quick_open(callback: Callable | ((...args: GodotVariant[]) => GodotVariant), base_types?: Array<StringName> | readonly StringName[]): void
+    static popup_quick_open(callback: Callable | ((...args: GodotVariant[]) => GodotVariant), base_types?: Array<StringName> | readonly StringName[]): void
     reload_scene_from_path(scene_filepath: string): void
     static reload_scene_from_path(scene_filepath: string): void
     restart_editor(save?: boolean): void
@@ -10366,7 +10439,7 @@ declare module 'godot' {
     static is_instance(value: unknown): value is EditorNode3DGizmo
     _begin_handle_action(id: number, secondary: boolean): void
     _commit_handle(id: number, secondary: boolean, restore: GodotVariant, cancel: boolean): void
-    _commit_subgizmos(ids: PackedInt32Array, restores: Array<Transform3D>, cancel: boolean): void
+    _commit_subgizmos(ids: PackedInt32ArrayInput, restores: Array<Transform3D> | readonly Transform3D[], cancel: boolean): void
     _get_handle_name(id: number, secondary: boolean): string
     _get_handle_value(id: number, secondary: boolean): GodotVariant
     _get_subgizmo_transform(id: number): Transform3D
@@ -10374,12 +10447,12 @@ declare module 'godot' {
     _redraw(): void
     _set_handle(id: number, secondary: boolean, camera: Camera3D, point: Vector2): void
     _set_subgizmo_transform(id: number, transform: Transform3D): void
-    _subgizmos_intersect_frustum(camera: Camera3D, frustum: Array<Plane>): PackedInt32Array
+    _subgizmos_intersect_frustum(camera: Camera3D, frustum: Array<Plane> | readonly Plane[]): PackedInt32Array
     _subgizmos_intersect_ray(camera: Camera3D, point: Vector2): number
-    add_collision_segments(segments: PackedVector3Array): void
+    add_collision_segments(segments: PackedVector3ArrayInput): void
     add_collision_triangles(triangles: TriangleMesh): void
-    add_handles(handles: PackedVector3Array, material: Material, ids: PackedInt32Array, billboard?: boolean, secondary?: boolean): void
-    add_lines(lines: PackedVector3Array, material: Material, billboard?: boolean, modulate?: Color): void
+    add_handles(handles: PackedVector3ArrayInput, material: Material, ids: PackedInt32ArrayInput, billboard?: boolean, secondary?: boolean): void
+    add_lines(lines: PackedVector3ArrayInput, material: Material, billboard?: boolean, modulate?: Color): void
     add_mesh(mesh: Mesh, material?: Material, transform?: Transform3D, skeleton?: SkinReference): void
     add_unscaled_billboard(material: Material, default_scale?: number, modulate?: Color): void
     clear(): void
@@ -10401,7 +10474,7 @@ declare module 'godot' {
     _begin_handle_action(gizmo: EditorNode3DGizmo, handle_id: number, secondary: boolean): void
     _can_be_hidden(): boolean
     _commit_handle(gizmo: EditorNode3DGizmo, handle_id: number, secondary: boolean, restore: GodotVariant, cancel: boolean): void
-    _commit_subgizmos(gizmo: EditorNode3DGizmo, ids: PackedInt32Array, restores: Array<Transform3D>, cancel: boolean): void
+    _commit_subgizmos(gizmo: EditorNode3DGizmo, ids: PackedInt32ArrayInput, restores: Array<Transform3D> | readonly Transform3D[], cancel: boolean): void
     _create_gizmo(for_node_3d: Node3D): EditorNode3DGizmo
     _get_gizmo_name(): string
     _get_handle_name(gizmo: EditorNode3DGizmo, handle_id: number, secondary: boolean): string
@@ -10414,7 +10487,7 @@ declare module 'godot' {
     _redraw(gizmo: EditorNode3DGizmo): void
     _set_handle(gizmo: EditorNode3DGizmo, handle_id: number, secondary: boolean, camera: Camera3D, screen_pos: Vector2): void
     _set_subgizmo_transform(gizmo: EditorNode3DGizmo, subgizmo_id: number, transform: Transform3D): void
-    _subgizmos_intersect_frustum(gizmo: EditorNode3DGizmo, camera: Camera3D, frustum_planes: Array<Plane>): PackedInt32Array
+    _subgizmos_intersect_frustum(gizmo: EditorNode3DGizmo, camera: Camera3D, frustum_planes: Array<Plane> | readonly Plane[]): PackedInt32Array
     _subgizmos_intersect_ray(gizmo: EditorNode3DGizmo, camera: Camera3D, screen_pos: Vector2): number
     add_material(name: string, material: StandardMaterial3D): void
     create_handle_material(name: string, billboard?: boolean, texture?: Texture2D): void
@@ -10473,7 +10546,7 @@ declare module 'godot' {
     _has_main_screen(): boolean
     _make_visible(visible: boolean): void
     _save_external_data(): void
-    _set_state(state: Dictionary): void
+    _set_state(state: Dictionary | Readonly<Record<string, GodotVariant>>): void
     _set_window_layout(configuration: ConfigFile): void
     add_autoload_singleton(name: string, path: string): void
     add_context_menu_plugin(slot: EditorContextMenuPlugin.ContextMenuSlot, plugin: EditorContextMenuPlugin): void
@@ -10689,8 +10762,8 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is EditorResourcePreviewGenerator
     _can_generate_small_preview(): boolean
-    _generate(resource: Resource, size: Vector2i, metadata: Dictionary): Texture2D
-    _generate_from_path(path: string, size: Vector2i, metadata: Dictionary): Texture2D
+    _generate(resource: Resource, size: Vector2i, metadata: Dictionary | Readonly<Record<string, GodotVariant>>): Texture2D
+    _generate_from_path(path: string, size: Vector2i, metadata: Dictionary | Readonly<Record<string, GodotVariant>>): Texture2D
     _generate_small_preview_automatically(): boolean
     _handles(type_: string): boolean
   }
@@ -10703,7 +10776,7 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is EditorResourceTooltipPlugin
     _handles(type_: string): boolean
-    _make_tooltip_for_path(path: string, metadata: Dictionary, base: Control): Control
+    _make_tooltip_for_path(path: string, metadata: Dictionary | Readonly<Record<string, GodotVariant>>, base: Control): Control
     request_thumbnail(path: string, control: TextureRect): void
   }
 
@@ -10717,7 +10790,7 @@ declare module 'godot' {
     _get_extensions(): PackedStringArray
     _get_import_options(path: string): void
     _get_option_visibility(path: string, for_animation: boolean, option: string): GodotVariant
-    _import_scene(path: string, flags: number, options: Dictionary): Object
+    _import_scene(path: string, flags: number, options: Dictionary | Readonly<Record<string, GodotVariant>>): Object
     add_import_option(name: string, value: GodotVariant): void
     add_import_option_advanced(type_: Variant.Type, name: string, default_value: GodotVariant, hint?: PropertyHint, hint_string?: string, usage_flags?: number): void
     static readonly IMPORT_ANIMATION: Integer
@@ -10856,7 +10929,7 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is EditorSettings
     readonly settings_changed: Signal<readonly []>
-    add_property_info(info: Dictionary): void
+    add_property_info(info: Dictionary | Readonly<Record<string, GodotVariant>>): void
     check_changed_settings_in_group(setting_prefix: string): boolean
     erase(property: string): void
     get_changed_settings(): PackedStringArray
@@ -10866,11 +10939,11 @@ declare module 'godot' {
     get_setting(name: string): GodotVariant
     has_setting(name: string): boolean
     mark_setting_changed(setting: string): void
-    set_builtin_action_override(name: string, actions_list: Array<InputEvent>): void
-    set_favorites(dirs: PackedStringArray): void
+    set_builtin_action_override(name: string, actions_list: Array<InputEvent> | readonly InputEvent[]): void
+    set_favorites(dirs: PackedStringArrayInput): void
     set_initial_value(name: StringName | string, value: GodotVariant, update_current: boolean): void
     set_project_metadata(section: string, key: string, data: GodotVariant): void
-    set_recent_dirs(dirs: PackedStringArray): void
+    set_recent_dirs(dirs: PackedStringArrayInput): void
     set_setting(name: string, value: GodotVariant): void
     static readonly NOTIFICATION_EDITOR_SETTINGS_CHANGED: Integer
   }
@@ -11005,8 +11078,8 @@ declare module 'godot' {
     _shut_down(): boolean
     _stage_file(file_path: string): void
     _unstage_file(file_path: string): void
-    add_diff_hunks_into_diff_file(diff_file: Dictionary, diff_hunks: Array<Dictionary>): Dictionary
-    add_line_diffs_into_diff_hunk(diff_hunk: Dictionary, line_diffs: Array<Dictionary>): Dictionary
+    add_diff_hunks_into_diff_file(diff_file: Dictionary | Readonly<Record<string, GodotVariant>>, diff_hunks: Array<Dictionary> | readonly Dictionary[]): Dictionary
+    add_line_diffs_into_diff_hunk(diff_hunk: Dictionary | Readonly<Record<string, GodotVariant>>, line_diffs: Array<Dictionary> | readonly Dictionary[]): Dictionary
     create_commit(msg: string, author: string, id: string, unix_timestamp: Integer, offset_minutes: Integer): Dictionary
     create_diff_file(new_file: string, old_file: string): Dictionary
     create_diff_hunk(old_start: number, new_start: number, old_lines: number, new_lines: number): Dictionary
@@ -11050,7 +11123,7 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is ENetConnection
     bandwidth_limit(in_bandwidth?: number, out_bandwidth?: number): void
-    broadcast(channel: number, packet: PackedByteArray, flags: number): void
+    broadcast(channel: number, packet: PackedByteArrayInput, flags: number): void
     channel_limit(limit: number): void
     compress(mode: ENetConnection.CompressionMode): void
     connect_to_host(address: string, port: number, channels?: number, data?: number): ENetPacketPeer
@@ -11066,7 +11139,7 @@ declare module 'godot' {
     pop_statistic(statistic: ENetConnection.HostStatistic): number
     refuse_new_connections(refuse: boolean): void
     service(timeout?: number): Array<GodotVariant>
-    socket_send(destination_address: string, destination_port: number, packet: PackedByteArray): void
+    socket_send(destination_address: string, destination_port: number, packet: PackedByteArrayInput): void
   }
   export namespace ENetConnection {
     export enum CompressionMode {
@@ -11127,7 +11200,7 @@ declare module 'godot' {
     ping(): void
     ping_interval(ping_interval: number): void
     reset(): void
-    send(channel: number, packet: PackedByteArray, flags: number): Error
+    send(channel: number, packet: PackedByteArrayInput, flags: number): Error
     set_timeout(timeout: number, timeout_min: number, timeout_max: number): void
     throttle_configure(interval: number, acceleration: number, deceleration: number): void
     static readonly FLAG_RELIABLE: Integer
@@ -11297,10 +11370,10 @@ declare module 'godot' {
     static is_skipping_breakpoints(): boolean
     line_poll(): void
     static line_poll(): void
-    profiler_add_frame_data(name: StringName | string, data: Array<GodotVariant>): void
-    static profiler_add_frame_data(name: StringName | string, data: Array<GodotVariant>): void
-    profiler_enable(name: StringName | string, enable: boolean, arguments?: Array<GodotVariant>): void
-    static profiler_enable(name: StringName | string, enable: boolean, arguments?: Array<GodotVariant>): void
+    profiler_add_frame_data(name: StringName | string, data: Array<GodotVariant> | readonly GodotVariant[]): void
+    static profiler_add_frame_data(name: StringName | string, data: Array<GodotVariant> | readonly GodotVariant[]): void
+    profiler_enable(name: StringName | string, enable: boolean, arguments?: Array<GodotVariant> | readonly GodotVariant[]): void
+    static profiler_enable(name: StringName | string, enable: boolean, arguments?: Array<GodotVariant> | readonly GodotVariant[]): void
     register_message_capture(name: StringName | string, callable: Callable | ((...args: GodotVariant[]) => GodotVariant)): void
     static register_message_capture(name: StringName | string, callable: Callable | ((...args: GodotVariant[]) => GodotVariant)): void
     register_profiler(name: StringName | string, profiler: EngineProfiler): void
@@ -11309,8 +11382,8 @@ declare module 'godot' {
     static remove_breakpoint(line: number, source: StringName | string): void
     script_debug(language: ScriptLanguage, can_continue?: boolean, is_error_breakpoint?: boolean): void
     static script_debug(language: ScriptLanguage, can_continue?: boolean, is_error_breakpoint?: boolean): void
-    send_message(message: string, data: Array<GodotVariant>): void
-    static send_message(message: string, data: Array<GodotVariant>): void
+    send_message(message: string, data: Array<GodotVariant> | readonly GodotVariant[]): void
+    static send_message(message: string, data: Array<GodotVariant> | readonly GodotVariant[]): void
     set_depth(depth: number): void
     static set_depth(depth: number): void
     set_lines_left(lines: number): void
@@ -11328,9 +11401,9 @@ declare module 'godot' {
   export class EngineProfiler extends RefCounted {
     constructor()
     static is_instance(value: unknown): value is EngineProfiler
-    _add_frame(data: Array<GodotVariant>): void
+    _add_frame(data: Array<GodotVariant> | readonly GodotVariant[]): void
     _tick(frame_time: number, process_time: number, physics_time: number, physics_frame_time: number): void
-    _toggle(enable: boolean, options: Array<GodotVariant>): void
+    _toggle(enable: boolean, options: Array<GodotVariant> | readonly GodotVariant[]): void
   }
 
   /**
@@ -11669,10 +11742,10 @@ declare module 'godot' {
   export class Expression extends RefCounted {
     constructor()
     static is_instance(value: unknown): value is Expression
-    execute(inputs?: Array<GodotVariant>, base_instance?: Object, show_error?: boolean, const_calls_only?: boolean): GodotVariant
+    execute(inputs?: Array<GodotVariant> | readonly GodotVariant[], base_instance?: Object, show_error?: boolean, const_calls_only?: boolean): GodotVariant
     get_error_text(): string
     has_execute_failed(): boolean
-    parse(expression: string, input_names?: PackedStringArray): Error
+    parse(expression: string, input_names?: PackedStringArrayInput): Error
   }
 
   /**
@@ -11866,7 +11939,7 @@ declare module 'godot' {
     is_open(): boolean
     static open(path: string, flags: FileAccess.ModeFlags): FileAccess
     static open_compressed(path: string, mode_flags: FileAccess.ModeFlags, compression_mode?: FileAccess.CompressionMode): FileAccess
-    static open_encrypted(path: string, mode_flags: FileAccess.ModeFlags, key: PackedByteArray, iv?: PackedByteArray): FileAccess
+    static open_encrypted(path: string, mode_flags: FileAccess.ModeFlags, key: PackedByteArrayInput, iv?: PackedByteArrayInput): FileAccess
     static open_encrypted_with_pass(path: string, mode_flags: FileAccess.ModeFlags, pass: string): FileAccess
     resize(length: Integer): Error
     seek(position: Integer): void
@@ -11879,8 +11952,8 @@ declare module 'godot' {
     store_32(value: number): boolean
     store_64(value: Integer): boolean
     store_8(value: number): boolean
-    store_buffer(buffer: PackedByteArray): boolean
-    store_csv_line(values: PackedStringArray, delim?: string): boolean
+    store_buffer(buffer: PackedByteArrayInput): boolean
+    store_csv_line(values: PackedStringArrayInput, delim?: string): boolean
     store_double(value: number): boolean
     store_float(value: number): boolean
     store_half(value: number): boolean
@@ -11933,7 +12006,8 @@ declare module 'godot' {
     current_path: string
     file_mode: Integer
     filename_filter: string
-    filters: PackedStringArray
+    get filters(): PackedStringArray
+    set filters(value: PackedStringArrayInput)
     mode_overrides_title: boolean
     option_count: Integer
     root_subfolder: string
@@ -11944,7 +12018,7 @@ declare module 'godot' {
     readonly filename_filter_changed: Signal<readonly [string]>
     readonly files_selected: Signal<readonly [PackedStringArray]>
     add_filter(filter: string, description?: string): void
-    add_option(name: string, values: PackedStringArray, default_value_index: number): void
+    add_option(name: string, values: PackedStringArrayInput, default_value_index: number): void
     clear_filename_filter(): void
     clear_filters(): void
     deselect_all(): void
@@ -11973,12 +12047,12 @@ declare module 'godot' {
     set_current_path(path: string): void
     set_file_mode(mode: FileDialog.FileMode): void
     set_filename_filter(filter: string): void
-    set_filters(filters: PackedStringArray): void
+    set_filters(filters: PackedStringArrayInput): void
     set_mode_overrides_title(override: boolean): void
     set_option_count(count: number): void
     set_option_default(option: number, default_value_index: number): void
     set_option_name(option: number, name: string): void
-    set_option_values(option: number, values: PackedStringArray): void
+    set_option_values(option: number, values: PackedStringArrayInput): void
     set_root_subfolder(dir: string): void
     set_show_hidden_files(show: boolean): void
     set_use_native_dialog(native: boolean): void
@@ -12104,14 +12178,15 @@ declare module 'godot' {
    */
   export abstract class Font extends Resource {
     static is_instance(value: unknown): value is Font
-    fallbacks: Array<Font>
+    get fallbacks(): Array<Font>
+    set fallbacks(value: Array<Font> | readonly Font[])
     draw_char(canvas_item: RID, pos: Vector2, char: number, font_size: number, modulate?: Color): number
     draw_char_outline(canvas_item: RID, pos: Vector2, char: number, font_size: number, size?: number, modulate?: Color): number
     draw_multiline_string(canvas_item: RID, pos: Vector2, text: string, alignment?: HorizontalAlignment, width?: number, font_size?: number, max_lines?: number, modulate?: Color, brk_flags?: TextServer.LineBreakFlag, justification_flags?: TextServer.JustificationFlag, direction?: TextServer.Direction, orientation?: TextServer.Orientation): void
     draw_multiline_string_outline(canvas_item: RID, pos: Vector2, text: string, alignment?: HorizontalAlignment, width?: number, font_size?: number, max_lines?: number, size?: number, modulate?: Color, brk_flags?: TextServer.LineBreakFlag, justification_flags?: TextServer.JustificationFlag, direction?: TextServer.Direction, orientation?: TextServer.Orientation): void
     draw_string(canvas_item: RID, pos: Vector2, text: string, alignment?: HorizontalAlignment, width?: number, font_size?: number, modulate?: Color, justification_flags?: TextServer.JustificationFlag, direction?: TextServer.Direction, orientation?: TextServer.Orientation): void
     draw_string_outline(canvas_item: RID, pos: Vector2, text: string, alignment?: HorizontalAlignment, width?: number, font_size?: number, size?: number, modulate?: Color, justification_flags?: TextServer.JustificationFlag, direction?: TextServer.Direction, orientation?: TextServer.Orientation): void
-    find_variation(variation_coordinates: Dictionary, face_index?: number, strength?: number, transform?: Transform2D, spacing_top?: number, spacing_bottom?: number, spacing_space?: number, spacing_glyph?: number, baseline_offset?: number): RID
+    find_variation(variation_coordinates: Dictionary | Readonly<Record<string, GodotVariant>>, face_index?: number, strength?: number, transform?: Transform2D, spacing_top?: number, spacing_bottom?: number, spacing_space?: number, spacing_glyph?: number, baseline_offset?: number): RID
     get_ascent(font_size?: number): number
     get_char_size(char: number, font_size: number): Vector2
     get_descent(font_size?: number): number
@@ -12138,7 +12213,7 @@ declare module 'godot' {
     is_language_supported(language: string): boolean
     is_script_supported(script: string): boolean
     set_cache_capacity(single_line: number, multi_line: number): void
-    set_fallbacks(fallbacks: Array<Font>): void
+    set_fallbacks(fallbacks: Array<Font> | readonly Font[]): void
   }
 
   /**
@@ -12150,7 +12225,8 @@ declare module 'godot' {
     static is_instance(value: unknown): value is FontFile
     allow_system_fallback: boolean
     antialiasing: Integer
-    data: PackedByteArray
+    get data(): PackedByteArray
+    set data(value: PackedByteArrayInput)
     disable_embedded_bitmaps: boolean
     fixed_size: Integer
     fixed_size_scale_mode: Integer
@@ -12165,7 +12241,8 @@ declare module 'godot' {
     msdf_pixel_range: Integer
     msdf_size: Integer
     multichannel_signed_distance_field: boolean
-    opentype_feature_overrides: Dictionary
+    get opentype_feature_overrides(): Dictionary
+    set opentype_feature_overrides(value: Dictionary | Readonly<Record<string, GodotVariant>>)
     oversampling: number
     style_name: string
     subpixel_positioning: Integer
@@ -12238,7 +12315,7 @@ declare module 'godot' {
     set_cache_scale(cache_index: number, size: number, scale: number): void
     set_cache_underline_position(cache_index: number, size: number, underline_position: number): void
     set_cache_underline_thickness(cache_index: number, size: number, underline_thickness: number): void
-    set_data(data: PackedByteArray): void
+    set_data(data: PackedByteArrayInput): void
     set_disable_embedded_bitmaps(disable_embedded_bitmaps: boolean): void
     set_embolden(cache_index: number, strength: number): void
     set_extra_baseline_offset(cache_index: number, baseline_offset: number): void
@@ -12265,14 +12342,14 @@ declare module 'godot' {
     set_msdf_pixel_range(msdf_pixel_range: number): void
     set_msdf_size(msdf_size: number): void
     set_multichannel_signed_distance_field(msdf: boolean): void
-    set_opentype_feature_overrides(overrides: Dictionary): void
+    set_opentype_feature_overrides(overrides: Dictionary | Readonly<Record<string, GodotVariant>>): void
     set_oversampling(oversampling: number): void
     set_script_support_override(script: string, supported: boolean): void
     set_subpixel_positioning(subpixel_positioning: TextServer.SubpixelPositioning): void
     set_texture_image(cache_index: number, size: Vector2i, texture_index: number, image: Image): void
-    set_texture_offsets(cache_index: number, size: Vector2i, texture_index: number, offset: PackedInt32Array): void
+    set_texture_offsets(cache_index: number, size: Vector2i, texture_index: number, offset: PackedInt32ArrayInput): void
     set_transform(cache_index: number, transform: Transform2D): void
-    set_variation_coordinates(cache_index: number, variation_coordinates: Dictionary): void
+    set_variation_coordinates(cache_index: number, variation_coordinates: Dictionary | Readonly<Record<string, GodotVariant>>): void
   }
 
   /**
@@ -12284,14 +12361,16 @@ declare module 'godot' {
     static is_instance(value: unknown): value is FontVariation
     base_font: Font
     baseline_offset: number
-    opentype_features: Dictionary
+    get opentype_features(): Dictionary
+    set opentype_features(value: Dictionary | Readonly<Record<string, GodotVariant>>)
     spacing_bottom: Integer
     spacing_glyph: Integer
     spacing_space: Integer
     spacing_top: Integer
     variation_embolden: number
     variation_face_index: Integer
-    variation_opentype: Dictionary
+    get variation_opentype(): Dictionary
+    set variation_opentype(value: Dictionary | Readonly<Record<string, GodotVariant>>)
     variation_transform: Transform2D
     get_base_font(): Font
     get_baseline_offset(): number
@@ -12301,11 +12380,11 @@ declare module 'godot' {
     get_variation_transform(): Transform2D
     set_base_font(font: Font): void
     set_baseline_offset(baseline_offset: number): void
-    set_opentype_features(features: Dictionary): void
+    set_opentype_features(features: Dictionary | Readonly<Record<string, GodotVariant>>): void
     set_spacing(spacing: TextServer.SpacingType, value: number): void
     set_variation_embolden(strength: number): void
     set_variation_face_index(face_index: number): void
-    set_variation_opentype(coords: Dictionary): void
+    set_variation_opentype(coords: Dictionary | Readonly<Record<string, GodotVariant>>): void
     set_variation_transform(transform: Transform2D): void
   }
 
@@ -12316,7 +12395,7 @@ declare module 'godot' {
   export class FramebufferCacheRD extends Object {
     constructor()
     static is_instance(value: unknown): value is FramebufferCacheRD
-    static get_cache_multipass(textures: Array<RID>, passes: Array<RDFramebufferPass>, views: number): RID
+    static get_cache_multipass(textures: Array<RID> | readonly RID[], passes: Array<RDFramebufferPass> | readonly RDFramebufferPass[], views: number): RID
   }
 
   /**
@@ -12455,52 +12534,52 @@ declare module 'godot' {
   export abstract class Geometry2D extends Object {
     bresenham_line(from_: Vector2i, to: Vector2i): Array<Vector2i>
     static bresenham_line(from_: Vector2i, to: Vector2i): Array<Vector2i>
-    clip_polygons(polygon_a: PackedVector2Array, polygon_b: PackedVector2Array): Array<PackedVector2Array>
-    static clip_polygons(polygon_a: PackedVector2Array, polygon_b: PackedVector2Array): Array<PackedVector2Array>
-    clip_polyline_with_polygon(polyline: PackedVector2Array, polygon: PackedVector2Array): Array<PackedVector2Array>
-    static clip_polyline_with_polygon(polyline: PackedVector2Array, polygon: PackedVector2Array): Array<PackedVector2Array>
-    convex_hull(points: PackedVector2Array): PackedVector2Array
-    static convex_hull(points: PackedVector2Array): PackedVector2Array
-    decompose_polygon_in_convex(polygon: PackedVector2Array): Array<PackedVector2Array>
-    static decompose_polygon_in_convex(polygon: PackedVector2Array): Array<PackedVector2Array>
-    exclude_polygons(polygon_a: PackedVector2Array, polygon_b: PackedVector2Array): Array<PackedVector2Array>
-    static exclude_polygons(polygon_a: PackedVector2Array, polygon_b: PackedVector2Array): Array<PackedVector2Array>
+    clip_polygons(polygon_a: PackedVector2ArrayInput, polygon_b: PackedVector2ArrayInput): Array<PackedVector2Array>
+    static clip_polygons(polygon_a: PackedVector2ArrayInput, polygon_b: PackedVector2ArrayInput): Array<PackedVector2Array>
+    clip_polyline_with_polygon(polyline: PackedVector2ArrayInput, polygon: PackedVector2ArrayInput): Array<PackedVector2Array>
+    static clip_polyline_with_polygon(polyline: PackedVector2ArrayInput, polygon: PackedVector2ArrayInput): Array<PackedVector2Array>
+    convex_hull(points: PackedVector2ArrayInput): PackedVector2Array
+    static convex_hull(points: PackedVector2ArrayInput): PackedVector2Array
+    decompose_polygon_in_convex(polygon: PackedVector2ArrayInput): Array<PackedVector2Array>
+    static decompose_polygon_in_convex(polygon: PackedVector2ArrayInput): Array<PackedVector2Array>
+    exclude_polygons(polygon_a: PackedVector2ArrayInput, polygon_b: PackedVector2ArrayInput): Array<PackedVector2Array>
+    static exclude_polygons(polygon_a: PackedVector2ArrayInput, polygon_b: PackedVector2ArrayInput): Array<PackedVector2Array>
     get_closest_point_to_segment(point: Vector2, s1: Vector2, s2: Vector2): Vector2
     static get_closest_point_to_segment(point: Vector2, s1: Vector2, s2: Vector2): Vector2
     get_closest_point_to_segment_uncapped(point: Vector2, s1: Vector2, s2: Vector2): Vector2
     static get_closest_point_to_segment_uncapped(point: Vector2, s1: Vector2, s2: Vector2): Vector2
     get_closest_points_between_segments(p1: Vector2, q1: Vector2, p2: Vector2, q2: Vector2): PackedVector2Array
     static get_closest_points_between_segments(p1: Vector2, q1: Vector2, p2: Vector2, q2: Vector2): PackedVector2Array
-    intersect_polygons(polygon_a: PackedVector2Array, polygon_b: PackedVector2Array): Array<PackedVector2Array>
-    static intersect_polygons(polygon_a: PackedVector2Array, polygon_b: PackedVector2Array): Array<PackedVector2Array>
-    intersect_polyline_with_polygon(polyline: PackedVector2Array, polygon: PackedVector2Array): Array<PackedVector2Array>
-    static intersect_polyline_with_polygon(polyline: PackedVector2Array, polygon: PackedVector2Array): Array<PackedVector2Array>
+    intersect_polygons(polygon_a: PackedVector2ArrayInput, polygon_b: PackedVector2ArrayInput): Array<PackedVector2Array>
+    static intersect_polygons(polygon_a: PackedVector2ArrayInput, polygon_b: PackedVector2ArrayInput): Array<PackedVector2Array>
+    intersect_polyline_with_polygon(polyline: PackedVector2ArrayInput, polygon: PackedVector2ArrayInput): Array<PackedVector2Array>
+    static intersect_polyline_with_polygon(polyline: PackedVector2ArrayInput, polygon: PackedVector2ArrayInput): Array<PackedVector2Array>
     is_point_in_circle(point: Vector2, circle_position: Vector2, circle_radius: number): boolean
     static is_point_in_circle(point: Vector2, circle_position: Vector2, circle_radius: number): boolean
-    is_point_in_polygon(point: Vector2, polygon: PackedVector2Array): boolean
-    static is_point_in_polygon(point: Vector2, polygon: PackedVector2Array): boolean
-    is_polygon_clockwise(polygon: PackedVector2Array): boolean
-    static is_polygon_clockwise(polygon: PackedVector2Array): boolean
+    is_point_in_polygon(point: Vector2, polygon: PackedVector2ArrayInput): boolean
+    static is_point_in_polygon(point: Vector2, polygon: PackedVector2ArrayInput): boolean
+    is_polygon_clockwise(polygon: PackedVector2ArrayInput): boolean
+    static is_polygon_clockwise(polygon: PackedVector2ArrayInput): boolean
     line_intersects_line(from_a: Vector2, dir_a: Vector2, from_b: Vector2, dir_b: Vector2): GodotVariant
     static line_intersects_line(from_a: Vector2, dir_a: Vector2, from_b: Vector2, dir_b: Vector2): GodotVariant
-    make_atlas(sizes: PackedVector2Array): Dictionary
-    static make_atlas(sizes: PackedVector2Array): Dictionary
-    merge_polygons(polygon_a: PackedVector2Array, polygon_b: PackedVector2Array): Array<PackedVector2Array>
-    static merge_polygons(polygon_a: PackedVector2Array, polygon_b: PackedVector2Array): Array<PackedVector2Array>
-    offset_polygon(polygon: PackedVector2Array, delta: number, join_type?: Geometry2D.PolyJoinType): Array<PackedVector2Array>
-    static offset_polygon(polygon: PackedVector2Array, delta: number, join_type?: Geometry2D.PolyJoinType): Array<PackedVector2Array>
-    offset_polyline(polyline: PackedVector2Array, delta: number, join_type?: Geometry2D.PolyJoinType, end_type?: Geometry2D.PolyEndType): Array<PackedVector2Array>
-    static offset_polyline(polyline: PackedVector2Array, delta: number, join_type?: Geometry2D.PolyJoinType, end_type?: Geometry2D.PolyEndType): Array<PackedVector2Array>
+    make_atlas(sizes: PackedVector2ArrayInput): Dictionary
+    static make_atlas(sizes: PackedVector2ArrayInput): Dictionary
+    merge_polygons(polygon_a: PackedVector2ArrayInput, polygon_b: PackedVector2ArrayInput): Array<PackedVector2Array>
+    static merge_polygons(polygon_a: PackedVector2ArrayInput, polygon_b: PackedVector2ArrayInput): Array<PackedVector2Array>
+    offset_polygon(polygon: PackedVector2ArrayInput, delta: number, join_type?: Geometry2D.PolyJoinType): Array<PackedVector2Array>
+    static offset_polygon(polygon: PackedVector2ArrayInput, delta: number, join_type?: Geometry2D.PolyJoinType): Array<PackedVector2Array>
+    offset_polyline(polyline: PackedVector2ArrayInput, delta: number, join_type?: Geometry2D.PolyJoinType, end_type?: Geometry2D.PolyEndType): Array<PackedVector2Array>
+    static offset_polyline(polyline: PackedVector2ArrayInput, delta: number, join_type?: Geometry2D.PolyJoinType, end_type?: Geometry2D.PolyEndType): Array<PackedVector2Array>
     point_is_inside_triangle(point: Vector2, a: Vector2, b: Vector2, c: Vector2): boolean
     static point_is_inside_triangle(point: Vector2, a: Vector2, b: Vector2, c: Vector2): boolean
     segment_intersects_circle(segment_from: Vector2, segment_to: Vector2, circle_position: Vector2, circle_radius: number): number
     static segment_intersects_circle(segment_from: Vector2, segment_to: Vector2, circle_position: Vector2, circle_radius: number): number
     segment_intersects_segment(from_a: Vector2, to_a: Vector2, from_b: Vector2, to_b: Vector2): GodotVariant
     static segment_intersects_segment(from_a: Vector2, to_a: Vector2, from_b: Vector2, to_b: Vector2): GodotVariant
-    triangulate_delaunay(points: PackedVector2Array): PackedInt32Array
-    static triangulate_delaunay(points: PackedVector2Array): PackedInt32Array
-    triangulate_polygon(polygon: PackedVector2Array): PackedInt32Array
-    static triangulate_polygon(polygon: PackedVector2Array): PackedInt32Array
+    triangulate_delaunay(points: PackedVector2ArrayInput): PackedInt32Array
+    static triangulate_delaunay(points: PackedVector2ArrayInput): PackedInt32Array
+    triangulate_polygon(polygon: PackedVector2ArrayInput): PackedInt32Array
+    static triangulate_polygon(polygon: PackedVector2ArrayInput): PackedInt32Array
   }
   export namespace Geometry2D {
     export enum PolyBooleanOperation {
@@ -12534,10 +12613,10 @@ declare module 'godot' {
     static build_capsule_planes(radius: number, height: number, sides: number, lats: number, axis?: Vector3.Axis): Array<Plane>
     build_cylinder_planes(radius: number, height: number, sides: number, axis?: Vector3.Axis): Array<Plane>
     static build_cylinder_planes(radius: number, height: number, sides: number, axis?: Vector3.Axis): Array<Plane>
-    clip_polygon(points: PackedVector3Array, plane: Plane): PackedVector3Array
-    static clip_polygon(points: PackedVector3Array, plane: Plane): PackedVector3Array
-    compute_convex_mesh_points(planes: Array<Plane>): PackedVector3Array
-    static compute_convex_mesh_points(planes: Array<Plane>): PackedVector3Array
+    clip_polygon(points: PackedVector3ArrayInput, plane: Plane): PackedVector3Array
+    static clip_polygon(points: PackedVector3ArrayInput, plane: Plane): PackedVector3Array
+    compute_convex_mesh_points(planes: Array<Plane> | readonly Plane[]): PackedVector3Array
+    static compute_convex_mesh_points(planes: Array<Plane> | readonly Plane[]): PackedVector3Array
     get_closest_point_to_segment(point: Vector3, s1: Vector3, s2: Vector3): Vector3
     static get_closest_point_to_segment(point: Vector3, s1: Vector3, s2: Vector3): Vector3
     get_closest_point_to_segment_uncapped(point: Vector3, s1: Vector3, s2: Vector3): Vector3
@@ -12548,16 +12627,16 @@ declare module 'godot' {
     static get_triangle_barycentric_coords(point: Vector3, a: Vector3, b: Vector3, c: Vector3): Vector3
     ray_intersects_triangle(from_: Vector3, dir: Vector3, a: Vector3, b: Vector3, c: Vector3): GodotVariant
     static ray_intersects_triangle(from_: Vector3, dir: Vector3, a: Vector3, b: Vector3, c: Vector3): GodotVariant
-    segment_intersects_convex(from_: Vector3, to: Vector3, planes: Array<Plane>): PackedVector3Array
-    static segment_intersects_convex(from_: Vector3, to: Vector3, planes: Array<Plane>): PackedVector3Array
+    segment_intersects_convex(from_: Vector3, to: Vector3, planes: Array<Plane> | readonly Plane[]): PackedVector3Array
+    static segment_intersects_convex(from_: Vector3, to: Vector3, planes: Array<Plane> | readonly Plane[]): PackedVector3Array
     segment_intersects_cylinder(from_: Vector3, to: Vector3, height: number, radius: number): PackedVector3Array
     static segment_intersects_cylinder(from_: Vector3, to: Vector3, height: number, radius: number): PackedVector3Array
     segment_intersects_sphere(from_: Vector3, to: Vector3, sphere_position: Vector3, sphere_radius: number): PackedVector3Array
     static segment_intersects_sphere(from_: Vector3, to: Vector3, sphere_position: Vector3, sphere_radius: number): PackedVector3Array
     segment_intersects_triangle(from_: Vector3, to: Vector3, a: Vector3, b: Vector3, c: Vector3): GodotVariant
     static segment_intersects_triangle(from_: Vector3, to: Vector3, a: Vector3, b: Vector3, c: Vector3): GodotVariant
-    tetrahedralize_delaunay(points: PackedVector3Array): PackedInt32Array
-    static tetrahedralize_delaunay(points: PackedVector3Array): PackedInt32Array
+    tetrahedralize_delaunay(points: PackedVector3ArrayInput): PackedInt32Array
+    static tetrahedralize_delaunay(points: PackedVector3ArrayInput): PackedInt32Array
   }
 
   /**
@@ -12656,8 +12735,10 @@ declare module 'godot' {
     byte_offset: Integer
     component_type: Integer
     count: Integer
-    max: PackedFloat64Array
-    min: PackedFloat64Array
+    get max(): PackedFloat64Array
+    set max(value: PackedFloat64ArrayInput)
+    get min(): PackedFloat64Array
+    set min(value: PackedFloat64ArrayInput)
     normalized: boolean
     sparse_count: Integer
     sparse_indices_buffer_view: Integer
@@ -12686,8 +12767,8 @@ declare module 'godot' {
     set_byte_offset(byte_offset: number): void
     set_component_type(component_type: number): void
     set_count(count: number): void
-    set_max(max: PackedFloat64Array): void
-    set_min(min: PackedFloat64Array): void
+    set_max(max: PackedFloat64ArrayInput): void
+    set_min(min: PackedFloat64ArrayInput): void
     set_normalized(normalized: boolean): void
     set_sparse_count(sparse_count: number): void
     set_sparse_indices_buffer_view(sparse_indices_buffer_view: number): void
@@ -12780,7 +12861,7 @@ declare module 'godot' {
     fov: number
     perspective: boolean
     size_mag: number
-    static from_dictionary(dictionary: Dictionary): GLTFCamera
+    static from_dictionary(dictionary: Dictionary | Readonly<Record<string, GodotVariant>>): GLTFCamera
     static from_node(camera_node: Camera3D): GLTFCamera
     get_depth_far(): number
     get_depth_near(): number
@@ -12806,7 +12887,7 @@ declare module 'godot' {
     image_format: string
     lossy_quality: number
     root_node_mode: Integer
-    append_from_buffer(bytes: PackedByteArray, base_path: string, state: GLTFState, flags?: number): Error
+    append_from_buffer(bytes: PackedByteArrayInput, base_path: string, state: GLTFState, flags?: number): Error
     append_from_file(path: string, state: GLTFState, flags?: number, base_path?: string): Error
     append_from_scene(node: Node, state: GLTFState, flags?: number): Error
     static export_object_model_property(state: GLTFState, node_path: NodePath | string, godot_node: Node, gltf_node_index: number): GLTFObjectModelProperty
@@ -12840,7 +12921,7 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is GLTFDocumentExtension
     _convert_scene_node(state: GLTFState, gltf_node: GLTFNode, scene_node: Node): void
-    _export_node(state: GLTFState, gltf_node: GLTFNode, json: Dictionary, node: Node): Error
+    _export_node(state: GLTFState, gltf_node: GLTFNode, json: Dictionary | Readonly<Record<string, GodotVariant>>, node: Node): Error
     _export_object_model_property(state: GLTFState, node_path: NodePath | string, godot_node: Node, gltf_node_index: number, target_object: Object, target_depth: number): GLTFObjectModelProperty
     _export_post(state: GLTFState): Error
     _export_post_convert(state: GLTFState, root: Node): Error
@@ -12850,18 +12931,18 @@ declare module 'godot' {
     _get_image_file_extension(): string
     _get_saveable_image_formats(): PackedStringArray
     _get_supported_extensions(): PackedStringArray
-    _import_node(state: GLTFState, gltf_node: GLTFNode, json: Dictionary, node: Node): Error
-    _import_object_model_property(state: GLTFState, split_json_pointer: PackedStringArray, partial_paths: Array<NodePath>): GLTFObjectModelProperty
+    _import_node(state: GLTFState, gltf_node: GLTFNode, json: Dictionary | Readonly<Record<string, GodotVariant>>, node: Node): Error
+    _import_object_model_property(state: GLTFState, split_json_pointer: PackedStringArrayInput, partial_paths: Array<NodePath> | readonly NodePath[]): GLTFObjectModelProperty
     _import_post(state: GLTFState, root: Node): Error
     _import_post_parse(state: GLTFState): Error
     _import_pre_generate(state: GLTFState): Error
-    _import_preflight(state: GLTFState, extensions: PackedStringArray): Error
-    _parse_image_data(state: GLTFState, image_data: PackedByteArray, mime_type: string, ret_image: Image): Error
-    _parse_node_extensions(state: GLTFState, gltf_node: GLTFNode, extensions: Dictionary): Error
-    _parse_texture_json(state: GLTFState, texture_json: Dictionary, ret_gltf_texture: GLTFTexture): Error
+    _import_preflight(state: GLTFState, extensions: PackedStringArrayInput): Error
+    _parse_image_data(state: GLTFState, image_data: PackedByteArrayInput, mime_type: string, ret_image: Image): Error
+    _parse_node_extensions(state: GLTFState, gltf_node: GLTFNode, extensions: Dictionary | Readonly<Record<string, GodotVariant>>): Error
+    _parse_texture_json(state: GLTFState, texture_json: Dictionary | Readonly<Record<string, GodotVariant>>, ret_gltf_texture: GLTFTexture): Error
     _save_image_at_path(state: GLTFState, image: Image, file_path: string, image_format: string, lossy_quality: number): Error
-    _serialize_image_to_bytes(state: GLTFState, image: Image, image_dict: Dictionary, image_format: string, lossy_quality: number): PackedByteArray
-    _serialize_texture_json(state: GLTFState, texture_json: Dictionary, gltf_texture: GLTFTexture, image_format: string): Error
+    _serialize_image_to_bytes(state: GLTFState, image: Image, image_dict: Dictionary | Readonly<Record<string, GodotVariant>>, image_format: string, lossy_quality: number): PackedByteArray
+    _serialize_texture_json(state: GLTFState, texture_json: Dictionary | Readonly<Record<string, GodotVariant>>, gltf_texture: GLTFTexture, image_format: string): Error
   }
 
   /**
@@ -12886,7 +12967,7 @@ declare module 'godot' {
     light_type: string
     outer_cone_angle: number
     range: number
-    static from_dictionary(dictionary: Dictionary): GLTFLight
+    static from_dictionary(dictionary: Dictionary | Readonly<Record<string, GodotVariant>>): GLTFLight
     static from_node(light_node: Light3D): GLTFLight
     get_additional_data(extension_name: StringName | string): GodotVariant
     get_color(): Color
@@ -12913,8 +12994,10 @@ declare module 'godot' {
   export class GLTFMesh extends Resource {
     constructor()
     static is_instance(value: unknown): value is GLTFMesh
-    blend_weights: PackedFloat32Array
-    instance_materials: Array<GodotVariant>
+    get blend_weights(): PackedFloat32Array
+    set blend_weights(value: PackedFloat32ArrayInput)
+    get instance_materials(): Array<GodotVariant>
+    set instance_materials(value: Array<GodotVariant> | readonly GodotVariant[])
     mesh: Object
     original_name: string
     get_additional_data(extension_name: StringName | string): GodotVariant
@@ -12923,8 +13006,8 @@ declare module 'godot' {
     get_mesh(): ImporterMesh
     get_original_name(): string
     set_additional_data(extension_name: StringName | string, additional_data: GodotVariant): void
-    set_blend_weights(blend_weights: PackedFloat32Array): void
-    set_instance_materials(instance_materials: Array<Material>): void
+    set_blend_weights(blend_weights: PackedFloat32ArrayInput): void
+    set_instance_materials(instance_materials: Array<Material> | readonly Material[]): void
     set_mesh(mesh: ImporterMesh): void
     set_original_name(original_name: string): void
   }
@@ -12937,7 +13020,8 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is GLTFNode
     camera: Integer
-    children: PackedInt32Array
+    get children(): PackedInt32Array
+    set children(value: PackedInt32ArrayInput)
     height: Integer
     light: Integer
     mesh: Integer
@@ -12967,7 +13051,7 @@ declare module 'godot' {
     get_xform(): Transform3D
     set_additional_data(extension_name: StringName | string, additional_data: GodotVariant): void
     set_camera(camera: number): void
-    set_children(children: PackedInt32Array): void
+    set_children(children: PackedInt32ArrayInput): void
     set_height(height: number): void
     set_light(light: number): void
     set_mesh(mesh: number): void
@@ -12990,8 +13074,10 @@ declare module 'godot' {
     static is_instance(value: unknown): value is GLTFObjectModelProperty
     gltf_to_godot_expression: Expression
     godot_to_gltf_expression: Expression
-    json_pointers: PackedStringArray
-    node_paths: Array<GodotVariant>
+    get json_pointers(): PackedStringArray
+    set json_pointers(value: PackedStringArrayInput)
+    get node_paths(): Array<GodotVariant>
+    set node_paths(value: Array<GodotVariant> | readonly GodotVariant[])
     object_model_type: Integer
     variant_type: Integer
     append_node_path(node_path: NodePath | string): void
@@ -13007,8 +13093,8 @@ declare module 'godot' {
     has_node_paths(): boolean
     set_gltf_to_godot_expression(gltf_to_godot_expr: Expression): void
     set_godot_to_gltf_expression(godot_to_gltf_expr: Expression): void
-    set_json_pointers(json_pointers: Array<PackedStringArray>): void
-    set_node_paths(node_paths: Array<NodePath>): void
+    set_json_pointers(json_pointers: Array<PackedStringArray> | readonly PackedStringArray[]): void
+    set_node_paths(node_paths: Array<NodePath> | readonly NodePath[]): void
     set_object_model_type(type_: GLTFObjectModelProperty.GLTFObjectModelType): void
     set_types(variant_type: Variant.Type, obj_model_type: GLTFObjectModelProperty.GLTFObjectModelType): void
     set_variant_type(variant_type: Variant.Type): void
@@ -13044,7 +13130,7 @@ declare module 'godot' {
     inertia_tensor: Basis
     linear_velocity: Vector3
     mass: number
-    static from_dictionary(dictionary: Dictionary): GLTFPhysicsBody
+    static from_dictionary(dictionary: Dictionary | Readonly<Record<string, GodotVariant>>): GLTFPhysicsBody
     static from_node(body_node: CollisionObject3D): GLTFPhysicsBody
     get_angular_velocity(): Vector3
     get_body_type(): string
@@ -13080,7 +13166,7 @@ declare module 'godot' {
     radius: number
     shape_type: string
     size: Vector3
-    static from_dictionary(dictionary: Dictionary): GLTFPhysicsShape
+    static from_dictionary(dictionary: Dictionary | Readonly<Record<string, GodotVariant>>): GLTFPhysicsShape
     static from_node(shape_node: CollisionShape3D): GLTFPhysicsShape
     static from_resource(shape_resource: Shape3D): GLTFPhysicsShape
     get_height(): number
@@ -13109,10 +13195,14 @@ declare module 'godot' {
   export class GLTFSkeleton extends Resource {
     constructor()
     static is_instance(value: unknown): value is GLTFSkeleton
-    godot_bone_node: Dictionary
-    joints: PackedInt32Array
-    roots: PackedInt32Array
-    unique_names: Array<GodotVariant>
+    get godot_bone_node(): Dictionary
+    set godot_bone_node(value: Dictionary | Readonly<Record<string, GodotVariant>>)
+    get joints(): PackedInt32Array
+    set joints(value: PackedInt32ArrayInput)
+    get roots(): PackedInt32Array
+    set roots(value: PackedInt32ArrayInput)
+    get unique_names(): Array<GodotVariant>
+    set unique_names(value: Array<GodotVariant> | readonly GodotVariant[])
     get_bone_attachment(idx: number): BoneAttachment3D
     get_bone_attachment_count(): number
     get_godot_bone_node(): Dictionary
@@ -13120,10 +13210,10 @@ declare module 'godot' {
     get_joints(): PackedInt32Array
     get_roots(): PackedInt32Array
     get_unique_names(): Array<string>
-    set_godot_bone_node(godot_bone_node: Dictionary): void
-    set_joints(joints: PackedInt32Array): void
-    set_roots(roots: PackedInt32Array): void
-    set_unique_names(unique_names: Array<string>): void
+    set_godot_bone_node(godot_bone_node: Dictionary | Readonly<Record<string, GodotVariant>>): void
+    set_joints(joints: PackedInt32ArrayInput): void
+    set_roots(roots: PackedInt32ArrayInput): void
+    set_unique_names(unique_names: Array<string> | readonly string[]): void
   }
 
   /**
@@ -13134,13 +13224,20 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is GLTFSkin
     godot_skin: Skin
-    inverse_binds: Array<GodotVariant>
-    joint_i_to_bone_i: Dictionary
-    joint_i_to_name: Dictionary
-    joints: PackedInt32Array
-    joints_original: PackedInt32Array
-    non_joints: PackedInt32Array
-    roots: PackedInt32Array
+    get inverse_binds(): Array<GodotVariant>
+    set inverse_binds(value: Array<GodotVariant> | readonly GodotVariant[])
+    get joint_i_to_bone_i(): Dictionary
+    set joint_i_to_bone_i(value: Dictionary | Readonly<Record<string, GodotVariant>>)
+    get joint_i_to_name(): Dictionary
+    set joint_i_to_name(value: Dictionary | Readonly<Record<string, GodotVariant>>)
+    get joints(): PackedInt32Array
+    set joints(value: PackedInt32ArrayInput)
+    get joints_original(): PackedInt32Array
+    set joints_original(value: PackedInt32ArrayInput)
+    get non_joints(): PackedInt32Array
+    set non_joints(value: PackedInt32ArrayInput)
+    get roots(): PackedInt32Array
+    set roots(value: PackedInt32ArrayInput)
     skeleton: Integer
     skin_root: Integer
     get_godot_skin(): Skin
@@ -13154,13 +13251,13 @@ declare module 'godot' {
     get_skeleton(): number
     get_skin_root(): number
     set_godot_skin(godot_skin: Skin): void
-    set_inverse_binds(inverse_binds: Array<Transform3D>): void
-    set_joint_i_to_bone_i(joint_i_to_bone_i: Dictionary): void
-    set_joint_i_to_name(joint_i_to_name: Dictionary): void
-    set_joints(joints: PackedInt32Array): void
-    set_joints_original(joints_original: PackedInt32Array): void
-    set_non_joints(non_joints: PackedInt32Array): void
-    set_roots(roots: PackedInt32Array): void
+    set_inverse_binds(inverse_binds: Array<Transform3D> | readonly Transform3D[]): void
+    set_joint_i_to_bone_i(joint_i_to_bone_i: Dictionary | Readonly<Record<string, GodotVariant>>): void
+    set_joint_i_to_name(joint_i_to_name: Dictionary | Readonly<Record<string, GodotVariant>>): void
+    set_joints(joints: PackedInt32ArrayInput): void
+    set_joints_original(joints_original: PackedInt32ArrayInput): void
+    set_non_joints(non_joints: PackedInt32ArrayInput): void
+    set_roots(roots: PackedInt32ArrayInput): void
     set_skeleton(skeleton: number): void
     set_skin_root(skin_root: number): void
   }
@@ -13196,38 +13293,57 @@ declare module 'godot' {
   export class GLTFState extends Resource {
     constructor()
     static is_instance(value: unknown): value is GLTFState
-    accessors: Array<GodotVariant>
-    animations: Array<GodotVariant>
+    get accessors(): Array<GodotVariant>
+    set accessors(value: Array<GodotVariant> | readonly GodotVariant[])
+    get animations(): Array<GodotVariant>
+    set animations(value: Array<GodotVariant> | readonly GodotVariant[])
     bake_fps: number
     base_path: string
-    buffer_views: Array<GodotVariant>
-    buffers: Array<GodotVariant>
-    cameras: Array<GodotVariant>
+    get buffer_views(): Array<GodotVariant>
+    set buffer_views(value: Array<GodotVariant> | readonly GodotVariant[])
+    get buffers(): Array<GodotVariant>
+    set buffers(value: Array<GodotVariant> | readonly GodotVariant[])
+    get cameras(): Array<GodotVariant>
+    set cameras(value: Array<GodotVariant> | readonly GodotVariant[])
     copyright: string
     create_animations: boolean
     filename: string
-    glb_data: PackedByteArray
+    get glb_data(): PackedByteArray
+    set glb_data(value: PackedByteArrayInput)
     handle_binary_image: Integer
-    images: Array<GodotVariant>
+    get images(): Array<GodotVariant>
+    set images(value: Array<GodotVariant> | readonly GodotVariant[])
     import_as_skeleton_bones: boolean
-    json: Dictionary
-    lights: Array<GodotVariant>
+    get json(): Dictionary
+    set json(value: Dictionary | Readonly<Record<string, GodotVariant>>)
+    get lights(): Array<GodotVariant>
+    set lights(value: Array<GodotVariant> | readonly GodotVariant[])
     major_version: Integer
-    materials: Array<GodotVariant>
-    meshes: Array<GodotVariant>
+    get materials(): Array<GodotVariant>
+    set materials(value: Array<GodotVariant> | readonly GodotVariant[])
+    get meshes(): Array<GodotVariant>
+    set meshes(value: Array<GodotVariant> | readonly GodotVariant[])
     minor_version: Integer
-    nodes: Array<GodotVariant>
-    root_nodes: PackedInt32Array
+    get nodes(): Array<GodotVariant>
+    set nodes(value: Array<GodotVariant> | readonly GodotVariant[])
+    get root_nodes(): PackedInt32Array
+    set root_nodes(value: PackedInt32ArrayInput)
     scene_name: string
-    skeletons: Array<GodotVariant>
-    skins: Array<GodotVariant>
-    texture_samplers: Array<GodotVariant>
-    textures: Array<GodotVariant>
-    unique_animation_names: Array<GodotVariant>
-    unique_names: Array<GodotVariant>
+    get skeletons(): Array<GodotVariant>
+    set skeletons(value: Array<GodotVariant> | readonly GodotVariant[])
+    get skins(): Array<GodotVariant>
+    set skins(value: Array<GodotVariant> | readonly GodotVariant[])
+    get texture_samplers(): Array<GodotVariant>
+    set texture_samplers(value: Array<GodotVariant> | readonly GodotVariant[])
+    get textures(): Array<GodotVariant>
+    set textures(value: Array<GodotVariant> | readonly GodotVariant[])
+    get unique_animation_names(): Array<GodotVariant>
+    set unique_animation_names(value: Array<GodotVariant> | readonly GodotVariant[])
+    get unique_names(): Array<GodotVariant>
+    set unique_names(value: Array<GodotVariant> | readonly GodotVariant[])
     use_named_skin_binds: boolean
     add_used_extension(extension_name: string, required: boolean): void
-    append_data_to_buffers(data: PackedByteArray, deduplication: boolean): number
+    append_data_to_buffers(data: PackedByteArrayInput, deduplication: boolean): number
     append_gltf_node(gltf_node: GLTFNode, godot_scene_node: Node, parent_node_index: number): number
     get_accessors(): Array<GLTFAccessor>
     get_additional_data(extension_name: StringName | string): GodotVariant
@@ -13264,36 +13380,36 @@ declare module 'godot' {
     get_unique_animation_names(): Array<string>
     get_unique_names(): Array<string>
     get_use_named_skin_binds(): boolean
-    set_accessors(accessors: Array<GLTFAccessor>): void
+    set_accessors(accessors: Array<GLTFAccessor> | readonly GLTFAccessor[]): void
     set_additional_data(extension_name: StringName | string, additional_data: GodotVariant): void
-    set_animations(animations: Array<GLTFAnimation>): void
+    set_animations(animations: Array<GLTFAnimation> | readonly GLTFAnimation[]): void
     set_bake_fps(value: number): void
     set_base_path(base_path: string): void
-    set_buffer_views(buffer_views: Array<GLTFBufferView>): void
-    set_buffers(buffers: Array<PackedByteArray>): void
-    set_cameras(cameras: Array<GLTFCamera>): void
+    set_buffer_views(buffer_views: Array<GLTFBufferView> | readonly GLTFBufferView[]): void
+    set_buffers(buffers: Array<PackedByteArray> | readonly PackedByteArray[]): void
+    set_cameras(cameras: Array<GLTFCamera> | readonly GLTFCamera[]): void
     set_copyright(copyright: string): void
     set_create_animations(create_animations: boolean): void
     set_filename(filename: string): void
-    set_glb_data(glb_data: PackedByteArray): void
+    set_glb_data(glb_data: PackedByteArrayInput): void
     set_handle_binary_image(method: number): void
-    set_images(images: Array<Texture2D>): void
+    set_images(images: Array<Texture2D> | readonly Texture2D[]): void
     set_import_as_skeleton_bones(import_as_skeleton_bones: boolean): void
-    set_json(json: Dictionary): void
-    set_lights(lights: Array<GLTFLight>): void
+    set_json(json: Dictionary | Readonly<Record<string, GodotVariant>>): void
+    set_lights(lights: Array<GLTFLight> | readonly GLTFLight[]): void
     set_major_version(major_version: number): void
-    set_materials(materials: Array<Material>): void
-    set_meshes(meshes: Array<GLTFMesh>): void
+    set_materials(materials: Array<Material> | readonly Material[]): void
+    set_meshes(meshes: Array<GLTFMesh> | readonly GLTFMesh[]): void
     set_minor_version(minor_version: number): void
-    set_nodes(nodes: Array<GLTFNode>): void
-    set_root_nodes(root_nodes: PackedInt32Array): void
+    set_nodes(nodes: Array<GLTFNode> | readonly GLTFNode[]): void
+    set_root_nodes(root_nodes: PackedInt32ArrayInput): void
     set_scene_name(scene_name: string): void
-    set_skeletons(skeletons: Array<GLTFSkeleton>): void
-    set_skins(skins: Array<GLTFSkin>): void
-    set_texture_samplers(texture_samplers: Array<GLTFTextureSampler>): void
-    set_textures(textures: Array<GLTFTexture>): void
-    set_unique_animation_names(unique_animation_names: Array<string>): void
-    set_unique_names(unique_names: Array<string>): void
+    set_skeletons(skeletons: Array<GLTFSkeleton> | readonly GLTFSkeleton[]): void
+    set_skins(skins: Array<GLTFSkin> | readonly GLTFSkin[]): void
+    set_texture_samplers(texture_samplers: Array<GLTFTextureSampler> | readonly GLTFTextureSampler[]): void
+    set_textures(textures: Array<GLTFTexture> | readonly GLTFTexture[]): void
+    set_unique_animation_names(unique_animation_names: Array<string> | readonly string[]): void
+    set_unique_names(unique_names: Array<string> | readonly string[]): void
     set_use_named_skin_binds(use_named_skin_binds: boolean): void
     static readonly HANDLE_BINARY_DISCARD_TEXTURES: Integer
     static readonly HANDLE_BINARY_EMBED_AS_BASISU: Integer
@@ -13362,7 +13478,8 @@ declare module 'godot' {
     randomness: number
     seed: Integer
     speed_scale: number
-    sub_emitter: NodePath
+    get sub_emitter(): NodePath
+    set sub_emitter(value: NodePath | string)
     texture: Texture2D
     trail_enabled: boolean
     trail_lifetime: number
@@ -13475,7 +13592,8 @@ declare module 'godot' {
     randomness: number
     seed: Integer
     speed_scale: number
-    sub_emitter: NodePath
+    get sub_emitter(): NodePath
+    set sub_emitter(value: NodePath | string)
     trail_enabled: boolean
     trail_lifetime: number
     transform_align: Integer
@@ -13744,10 +13862,12 @@ declare module 'godot' {
   export class Gradient extends Resource {
     constructor()
     static is_instance(value: unknown): value is Gradient
-    colors: PackedColorArray
+    get colors(): PackedColorArray
+    set colors(value: PackedColorArrayInput)
     interpolation_color_space: Integer
     interpolation_mode: Integer
-    offsets: PackedFloat32Array
+    get offsets(): PackedFloat32Array
+    set offsets(value: PackedFloat32ArrayInput)
     add_point(offset: number, color: Color): void
     get_color(point: number): Color
     get_colors(): PackedColorArray
@@ -13760,11 +13880,11 @@ declare module 'godot' {
     reverse(): void
     sample(offset: number): Color
     set_color(point: number, color: Color): void
-    set_colors(colors: PackedColorArray): void
+    set_colors(colors: PackedColorArrayInput): void
     set_interpolation_color_space(interpolation_color_space: Gradient.ColorSpace): void
     set_interpolation_mode(interpolation_mode: Gradient.InterpolationMode): void
     set_offset(point: number, offset: number): void
-    set_offsets(offsets: PackedFloat32Array): void
+    set_offsets(offsets: PackedFloat32ArrayInput): void
   }
   export namespace Gradient {
     export enum ColorSpace {
@@ -13849,7 +13969,8 @@ declare module 'godot' {
     connection_lines_antialiased: boolean
     connection_lines_curvature: number
     connection_lines_thickness: number
-    connections: Array<GodotVariant>
+    get connections(): Array<GodotVariant>
+    set connections(value: Array<GodotVariant> | readonly GodotVariant[])
     grid_pattern: Integer
     minimap_enabled: boolean
     minimap_opacity: number
@@ -13943,7 +14064,7 @@ declare module 'godot' {
     set_connection_lines_antialiased(pixels: boolean): void
     set_connection_lines_curvature(curvature: number): void
     set_connection_lines_thickness(pixels: number): void
-    set_connections(connections: Array<Dictionary>): void
+    set_connections(connections: Array<Dictionary> | readonly Dictionary[]): void
     set_grid_pattern(pattern: GraphEdit.GridPattern): void
     set_minimap_enabled(enable: boolean): void
     set_minimap_opacity(opacity: number): void
@@ -14211,7 +14332,7 @@ declare module 'godot' {
     static is_instance(value: unknown): value is HashingContext
     finish(): PackedByteArray
     start(type_: HashingContext.HashType): Error
-    update(chunk: PackedByteArray): Error
+    update(chunk: PackedByteArrayInput): Error
   }
   export namespace HashingContext {
     export enum HashType {
@@ -14237,7 +14358,8 @@ declare module 'godot' {
   export class HeightMapShape3D extends Shape3D {
     constructor()
     static is_instance(value: unknown): value is HeightMapShape3D
-    map_data: PackedFloat32Array
+    get map_data(): PackedFloat32Array
+    set map_data(value: PackedFloat32ArrayInput)
     map_depth: Integer
     map_width: Integer
     get_map_data(): PackedFloat32Array
@@ -14245,7 +14367,7 @@ declare module 'godot' {
     get_map_width(): number
     get_max_height(): number
     get_min_height(): number
-    set_map_data(data: PackedFloat32Array): void
+    set_map_data(data: PackedFloat32ArrayInput): void
     set_map_depth(height: number): void
     set_map_width(width: number): void
     update_map_data_from_image(image: Image, height_min: number, height_max: number): void
@@ -14299,8 +14421,8 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is HMACContext
     finish(): PackedByteArray
-    start(hash_type: HashingContext.HashType, key: PackedByteArray): Error
-    update(data: PackedByteArray): Error
+    start(hash_type: HashingContext.HashType, key: PackedByteArrayInput): Error
+    update(data: PackedByteArrayInput): Error
   }
 
   /**
@@ -14362,10 +14484,10 @@ declare module 'godot' {
     is_blocking_mode_enabled(): boolean
     is_response_chunked(): boolean
     poll(): Error
-    query_string_from_dict(fields: Dictionary): string
+    query_string_from_dict(fields: Dictionary | Readonly<Record<string, GodotVariant>>): string
     read_response_body_chunk(): PackedByteArray
-    request(method: HTTPClient.Method, url: string, headers: PackedStringArray, body?: string): Error
-    request_raw(method: HTTPClient.Method, url: string, headers: PackedStringArray, body: PackedByteArray): Error
+    request(method: HTTPClient.Method, url: string, headers: PackedStringArrayInput, body?: string): Error
+    request_raw(method: HTTPClient.Method, url: string, headers: PackedStringArrayInput, body: PackedByteArrayInput): Error
     set_blocking_mode(enabled: boolean): void
     set_connection(connection: StreamPeer): void
     set_http_proxy(host: string, port: number): void
@@ -14488,8 +14610,8 @@ declare module 'godot' {
     get_timeout(): number
     is_accepting_gzip(): boolean
     is_using_threads(): boolean
-    request(url: string, custom_headers?: PackedStringArray, method?: HTTPClient.Method, request_data?: string): Error
-    request_raw(url: string, custom_headers?: PackedStringArray, method?: HTTPClient.Method, request_data_raw?: PackedByteArray): Error
+    request(url: string, custom_headers?: PackedStringArrayInput, method?: HTTPClient.Method, request_data?: string): Error
+    request_raw(url: string, custom_headers?: PackedStringArrayInput, method?: HTTPClient.Method, request_data_raw?: PackedByteArrayInput): Error
     set_accept_gzip(enable: boolean): void
     set_body_size_limit(bytes: number): void
     set_download_chunk_size(chunk_size: number): void
@@ -14527,7 +14649,8 @@ declare module 'godot' {
   export class Image extends Resource {
     constructor()
     static is_instance(value: unknown): value is Image
-    data: Dictionary
+    get data(): Dictionary
+    set data(value: Dictionary | Readonly<Record<string, GodotVariant>>)
     adjust_bcs(brightness: number, contrast: number, saturation: number): void
     blend_rect(src: Image, src_rect: Rect2i, dst: Vector2i): void
     blend_rect_mask(src: Image, mask: Image, src_rect: Rect2i, dst: Vector2i): void
@@ -14542,7 +14665,7 @@ declare module 'godot' {
     copy_from(src: Image): void
     static create(width: number, height: number, use_mipmaps: boolean, format: Image.Format): Image
     static create_empty(width: number, height: number, use_mipmaps: boolean, format: Image.Format): Image
-    static create_from_data(width: number, height: number, use_mipmaps: boolean, format: Image.Format, data: PackedByteArray): Image
+    static create_from_data(width: number, height: number, use_mipmaps: boolean, format: Image.Format, data: PackedByteArrayInput): Image
     crop(width: number, height: number): void
     decompress(): Error
     detect_alpha(): Image.AlphaMode
@@ -14571,15 +14694,15 @@ declare module 'godot' {
     is_invisible(): boolean
     linear_to_srgb(): void
     load(path: string): Error
-    load_bmp_from_buffer(buffer: PackedByteArray): Error
+    load_bmp_from_buffer(buffer: PackedByteArrayInput): Error
     static load_from_file(path: string): Image
-    load_jpg_from_buffer(buffer: PackedByteArray): Error
-    load_ktx_from_buffer(buffer: PackedByteArray): Error
-    load_png_from_buffer(buffer: PackedByteArray): Error
-    load_svg_from_buffer(buffer: PackedByteArray, scale?: number): Error
+    load_jpg_from_buffer(buffer: PackedByteArrayInput): Error
+    load_ktx_from_buffer(buffer: PackedByteArrayInput): Error
+    load_png_from_buffer(buffer: PackedByteArrayInput): Error
+    load_svg_from_buffer(buffer: PackedByteArrayInput, scale?: number): Error
     load_svg_from_string(svg_str: string, scale?: number): Error
-    load_tga_from_buffer(buffer: PackedByteArray): Error
-    load_webp_from_buffer(buffer: PackedByteArray): Error
+    load_tga_from_buffer(buffer: PackedByteArrayInput): Error
+    load_webp_from_buffer(buffer: PackedByteArrayInput): Error
     normal_map_to_xy(): void
     premultiply_alpha(): void
     resize(width: number, height: number, interpolation?: Image.Interpolation): void
@@ -14595,7 +14718,7 @@ declare module 'godot' {
     save_png_to_buffer(): PackedByteArray
     save_webp(path: string, lossy?: boolean, quality?: number): Error
     save_webp_to_buffer(lossy?: boolean, quality?: number): PackedByteArray
-    set_data(width: number, height: number, use_mipmaps: boolean, format: Image.Format, data: PackedByteArray): void
+    set_data(width: number, height: number, use_mipmaps: boolean, format: Image.Format, data: PackedByteArrayInput): void
     set_pixel(x: number, y: number, color: Color): void
     set_pixelv(point: Vector2i, color: Color): void
     shrink_x2(): void
@@ -14734,8 +14857,8 @@ declare module 'godot' {
   export class ImageTexture3D extends Texture3D {
     constructor()
     static is_instance(value: unknown): value is ImageTexture3D
-    create(format: Image.Format, width: number, height: number, depth: number, use_mipmaps: boolean, data: Array<Image>): Error
-    update(data: Array<Image>): void
+    create(format: Image.Format, width: number, height: number, depth: number, use_mipmaps: boolean, data: Array<Image> | readonly Image[]): Error
+    update(data: Array<Image> | readonly Image[]): void
   }
 
   /**
@@ -14744,7 +14867,7 @@ declare module 'godot' {
    */
   export abstract class ImageTextureLayered extends TextureLayered {
     static is_instance(value: unknown): value is ImageTextureLayered
-    create_from_images(images: Array<Image>): Error
+    create_from_images(images: Array<Image> | readonly Image[]): Error
     update_layer(image: Image, layer: number): void
   }
 
@@ -14775,9 +14898,9 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is ImporterMesh
     add_blend_shape(name: string): void
-    add_surface(primitive: Mesh.PrimitiveType, arrays: Array<GodotVariant>, blend_shapes?: Array<Array<GodotVariant>>, lods?: Dictionary, material?: Material, name?: string, flags?: Integer): void
+    add_surface(primitive: Mesh.PrimitiveType, arrays: Array<GodotVariant> | readonly GodotVariant[], blend_shapes?: Array<Array<GodotVariant>> | readonly Array<GodotVariant>[], lods?: Dictionary | Readonly<Record<string, GodotVariant>>, material?: Material, name?: string, flags?: Integer): void
     clear(): void
-    generate_lods(normal_merge_angle: number, normal_split_angle: number, bone_transform_array: Array<GodotVariant>): void
+    generate_lods(normal_merge_angle: number, normal_split_angle: number, bone_transform_array: Array<GodotVariant> | readonly GodotVariant[]): void
     get_blend_shape_count(): number
     get_blend_shape_mode(): Mesh.BlendShapeMode
     get_blend_shape_name(blend_shape_idx: number): string
@@ -14809,7 +14932,8 @@ declare module 'godot' {
     cast_shadow: Integer
     layer_mask: Integer
     mesh: ImporterMesh
-    skeleton_path: NodePath
+    get skeleton_path(): NodePath
+    set skeleton_path(value: NodePath | string)
     skin: Skin
     visibility_range_begin: number
     visibility_range_begin_margin: number
@@ -15024,7 +15148,8 @@ declare module 'godot' {
   export class InputEventAction extends InputEvent {
     constructor()
     static is_instance(value: unknown): value is InputEventAction
-    action: StringName
+    get action(): StringName
+    set action(value: StringName | string)
     event_index: Integer
     pressed: boolean
     strength: number
@@ -15608,8 +15733,8 @@ declare module 'godot' {
     static create_callback(callable: Callable | ((...args: GodotVariant[]) => GodotVariant)): JavaScriptObject
     create_object(object_: string, ...args: GodotVariant[]): GodotVariant
     static create_object(object_: string, ...args: GodotVariant[]): GodotVariant
-    download_buffer(buffer: PackedByteArray, name: string, mime?: string): void
-    static download_buffer(buffer: PackedByteArray, name: string, mime?: string): void
+    download_buffer(buffer: PackedByteArrayInput, name: string, mime?: string): void
+    static download_buffer(buffer: PackedByteArrayInput, name: string, mime?: string): void
     eval(code: string, use_global_execution_context?: boolean): GodotVariant
     static eval(code: string, use_global_execution_context?: boolean): GodotVariant
     force_fs_sync(): void
@@ -15651,8 +15776,10 @@ declare module 'godot' {
     static is_instance(value: unknown): value is Joint2D
     bias: number
     disable_collision: boolean
-    node_a: NodePath
-    node_b: NodePath
+    get node_a(): NodePath
+    set node_a(value: NodePath | string)
+    get node_b(): NodePath
+    set node_b(value: NodePath | string)
     get_bias(): number
     get_exclude_nodes_from_collision(): boolean
     get_node_a(): NodePath
@@ -15671,8 +15798,10 @@ declare module 'godot' {
   export abstract class Joint3D extends Node3D {
     static is_instance(value: unknown): value is Joint3D
     exclude_nodes_from_collision: boolean
-    node_a: NodePath
-    node_b: NodePath
+    get node_a(): NodePath
+    set node_a(value: NodePath | string)
+    get node_b(): NodePath
+    set node_b(value: NodePath | string)
     solver_priority: Integer
     get_exclude_nodes_from_collision(): boolean
     get_node_a(): NodePath
@@ -15793,8 +15922,10 @@ declare module 'godot' {
     max_lines_visible: Integer
     paragraph_separator: string
     structured_text_bidi_override: Integer
-    structured_text_bidi_override_options: Array<GodotVariant>
-    tab_stops: PackedFloat32Array
+    get structured_text_bidi_override_options(): Array<GodotVariant>
+    set structured_text_bidi_override_options(value: Array<GodotVariant> | readonly GodotVariant[])
+    get tab_stops(): PackedFloat32Array
+    set tab_stops(value: PackedFloat32ArrayInput)
     text: string
     text_direction: Integer
     text_overrun_behavior: Integer
@@ -15840,8 +15971,8 @@ declare module 'godot' {
     set_max_lines_visible(lines_visible: number): void
     set_paragraph_separator(paragraph_separator: string): void
     set_structured_text_bidi_override(parser: TextServer.StructuredTextParser): void
-    set_structured_text_bidi_override_options(args: Array<GodotVariant>): void
-    set_tab_stops(tab_stops: PackedFloat32Array): void
+    set_structured_text_bidi_override_options(args: Array<GodotVariant> | readonly GodotVariant[]): void
+    set_tab_stops(tab_stops: PackedFloat32ArrayInput): void
     set_text(text: string): void
     set_text_direction(direction: Control.TextDirection): void
     set_text_overrun_behavior(overrun_behavior: TextServer.OverrunBehavior): void
@@ -15884,7 +16015,8 @@ declare module 'godot' {
     render_priority: Integer
     shaded: boolean
     structured_text_bidi_override: Integer
-    structured_text_bidi_override_options: Array<GodotVariant>
+    get structured_text_bidi_override_options(): Array<GodotVariant>
+    set structured_text_bidi_override_options(value: Array<GodotVariant> | readonly GodotVariant[])
     text: string
     text_direction: Integer
     texture_filter: Integer
@@ -15943,7 +16075,7 @@ declare module 'godot' {
     set_pixel_size(pixel_size: number): void
     set_render_priority(priority: number): void
     set_structured_text_bidi_override(parser: TextServer.StructuredTextParser): void
-    set_structured_text_bidi_override_options(args: Array<GodotVariant>): void
+    set_structured_text_bidi_override_options(args: Array<GodotVariant> | readonly GodotVariant[]): void
     set_text(text: string): void
     set_text_direction(direction: TextServer.Direction): void
     set_texture_filter(mode: BaseMaterial3D.TextureFilter): void
@@ -16288,11 +16420,16 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is LightmapGIData
     light_texture: TextureLayered
-    light_textures: Array<GodotVariant>
-    lightmap_textures: Array<TextureLayered>
-    probe_data: Dictionary
-    shadowmask_textures: Array<TextureLayered>
-    user_data: Array<GodotVariant>
+    get light_textures(): Array<GodotVariant>
+    set light_textures(value: Array<GodotVariant> | readonly GodotVariant[])
+    get lightmap_textures(): Array<TextureLayered>
+    set lightmap_textures(value: Array<TextureLayered> | readonly TextureLayered[])
+    get probe_data(): Dictionary
+    set probe_data(value: Dictionary | Readonly<Record<string, GodotVariant>>)
+    get shadowmask_textures(): Array<TextureLayered>
+    set shadowmask_textures(value: Array<TextureLayered> | readonly TextureLayered[])
+    get user_data(): Array<GodotVariant>
+    set user_data(value: Array<GodotVariant> | readonly GodotVariant[])
     uses_spherical_harmonics: boolean
     add_user(path: NodePath | string, uv_scale: Rect2, slice_index: number, sub_instance: number): void
     clear_users(): void
@@ -16303,8 +16440,8 @@ declare module 'godot' {
     get_user_path(user_idx: number): NodePath
     is_using_spherical_harmonics(): boolean
     set_light_texture(light_texture: TextureLayered): void
-    set_lightmap_textures(light_textures: Array<TextureLayered>): void
-    set_shadowmask_textures(shadowmask_textures: Array<TextureLayered>): void
+    set_lightmap_textures(light_textures: Array<TextureLayered> | readonly TextureLayered[]): void
+    set_shadowmask_textures(shadowmask_textures: Array<TextureLayered> | readonly TextureLayered[]): void
     set_uses_spherical_harmonics(uses_spherical_harmonics: boolean): void
   }
   export namespace LightmapGIData {
@@ -16373,7 +16510,8 @@ declare module 'godot' {
     end_cap_mode: Integer
     gradient: Gradient
     joint_mode: Integer
-    points: PackedVector2Array
+    get points(): PackedVector2Array
+    set points(value: PackedVector2ArrayInput)
     round_precision: Integer
     sharp_limit: number
     texture: Texture2D
@@ -16408,7 +16546,7 @@ declare module 'godot' {
     set_gradient(color: Gradient): void
     set_joint_mode(mode: Line2D.LineJointMode): void
     set_point_position(index: number, position: Vector2): void
-    set_points(points: PackedVector2Array): void
+    set_points(points: PackedVector2ArrayInput): void
     set_round_precision(precision: number): void
     set_sharp_limit(limit: number): void
     set_texture(texture: Texture2D): void
@@ -16467,7 +16605,8 @@ declare module 'godot' {
     selecting_enabled: boolean
     shortcut_keys_enabled: boolean
     structured_text_bidi_override: Integer
-    structured_text_bidi_override_options: Array<GodotVariant>
+    get structured_text_bidi_override_options(): Array<GodotVariant>
+    set structured_text_bidi_override_options(value: Array<GodotVariant> | readonly GodotVariant[])
     text: string
     text_direction: Integer
     virtual_keyboard_enabled: boolean
@@ -16557,7 +16696,7 @@ declare module 'godot' {
     set_selecting_enabled(enable: boolean): void
     set_shortcut_keys_enabled(enable: boolean): void
     set_structured_text_bidi_override(parser: TextServer.StructuredTextParser): void
-    set_structured_text_bidi_override_options(args: Array<GodotVariant>): void
+    set_structured_text_bidi_override_options(args: Array<GodotVariant> | readonly GodotVariant[]): void
     set_text(text: string): void
     set_text_direction(direction: Control.TextDirection): void
     set_virtual_keyboard_enabled(enable: boolean): void
@@ -16620,7 +16759,8 @@ declare module 'godot' {
     static is_instance(value: unknown): value is LinkButton
     language: string
     structured_text_bidi_override: Integer
-    structured_text_bidi_override_options: Array<GodotVariant>
+    get structured_text_bidi_override_options(): Array<GodotVariant>
+    set structured_text_bidi_override_options(value: Array<GodotVariant> | readonly GodotVariant[])
     text: string
     text_direction: Integer
     underline: Integer
@@ -16634,7 +16774,7 @@ declare module 'godot' {
     get_uri(): string
     set_language(language: string): void
     set_structured_text_bidi_override(parser: TextServer.StructuredTextParser): void
-    set_structured_text_bidi_override_options(args: Array<GodotVariant>): void
+    set_structured_text_bidi_override_options(args: Array<GodotVariant> | readonly GodotVariant[]): void
     set_text(text: string): void
     set_text_direction(direction: Control.TextDirection): void
     set_underline_mode(underline_mode: LinkButton.UnderlineMode): void
@@ -16662,7 +16802,8 @@ declare module 'godot' {
     forward_axis: Integer
     origin_bone: Integer
     origin_bone_name: string
-    origin_external_node: NodePath
+    get origin_external_node(): NodePath
+    set origin_external_node(value: NodePath | string)
     origin_from: Integer
     origin_offset: Vector3
     origin_safe_margin: number
@@ -16680,7 +16821,8 @@ declare module 'godot' {
     secondary_positive_damp_threshold: number
     secondary_positive_limit_angle: number
     symmetry_limitation: boolean
-    target_node: NodePath
+    get target_node(): NodePath
+    set target_node(value: NodePath | string)
     transition_type: Integer
     use_angle_limitation: boolean
     use_secondary_rotation: boolean
@@ -16822,8 +16964,8 @@ declare module 'godot' {
     static base64_to_utf8(base64_str: string): string
     base64_to_variant(base64_str: string, allow_objects?: boolean): GodotVariant
     static base64_to_variant(base64_str: string, allow_objects?: boolean): GodotVariant
-    raw_to_base64(array: PackedByteArray): string
-    static raw_to_base64(array: PackedByteArray): string
+    raw_to_base64(array: PackedByteArrayInput): string
+    static raw_to_base64(array: PackedByteArrayInput): string
     utf8_to_base64(utf8_str: string): string
     static utf8_to_base64(utf8_str: string): string
     variant_to_base64(variant: GodotVariant, full_objects?: boolean): string
@@ -17109,14 +17251,14 @@ declare module 'godot' {
     set_face_meta(idx: number, meta: GodotVariant): void
     set_material(material: Material): void
     set_vertex(idx: number, vertex: Vector3): void
-    set_vertex_bones(idx: number, bones: PackedInt32Array): void
+    set_vertex_bones(idx: number, bones: PackedInt32ArrayInput): void
     set_vertex_color(idx: number, color: Color): void
     set_vertex_meta(idx: number, meta: GodotVariant): void
     set_vertex_normal(idx: number, normal: Vector3): void
     set_vertex_tangent(idx: number, tangent: Plane): void
     set_vertex_uv(idx: number, uv: Vector2): void
     set_vertex_uv2(idx: number, uv2: Vector2): void
-    set_vertex_weights(idx: number, weights: PackedFloat32Array): void
+    set_vertex_weights(idx: number, weights: PackedFloat32ArrayInput): void
   }
 
   /**
@@ -17143,7 +17285,8 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is MeshInstance3D
     mesh: Mesh
-    skeleton: NodePath
+    get skeleton(): NodePath
+    set skeleton(value: NodePath | string)
     skin: Skin
     bake_mesh_from_current_blend_shape_mix(existing?: ArrayMesh): ArrayMesh
     bake_mesh_from_current_skeleton_pose(existing?: ArrayMesh): ArrayMesh
@@ -17198,7 +17341,7 @@ declare module 'godot' {
     set_item_navigation_mesh(id: number, navigation_mesh: NavigationMesh): void
     set_item_navigation_mesh_transform(id: number, navigation_mesh: Transform3D): void
     set_item_preview(id: number, texture: Texture2D): void
-    set_item_shapes(id: number, shapes: Array<GodotVariant>): void
+    set_item_shapes(id: number, shapes: Array<GodotVariant> | readonly GodotVariant[]): void
   }
 
   /**
@@ -17326,15 +17469,20 @@ declare module 'godot' {
   export class MultiMesh extends Resource {
     constructor()
     static is_instance(value: unknown): value is MultiMesh
-    buffer: PackedFloat32Array
-    color_array: PackedColorArray
+    get buffer(): PackedFloat32Array
+    set buffer(value: PackedFloat32ArrayInput)
+    get color_array(): PackedColorArray
+    set color_array(value: PackedColorArrayInput)
     custom_aabb: AABB
-    custom_data_array: PackedColorArray
+    get custom_data_array(): PackedColorArray
+    set custom_data_array(value: PackedColorArrayInput)
     instance_count: Integer
     mesh: Mesh
     physics_interpolation_quality: Integer
-    transform_2d_array: PackedVector2Array
-    transform_array: PackedVector3Array
+    get transform_2d_array(): PackedVector2Array
+    set transform_2d_array(value: PackedVector2ArrayInput)
+    get transform_array(): PackedVector3Array
+    set transform_array(value: PackedVector3ArrayInput)
     transform_format: Integer
     use_colors: boolean
     use_custom_data: boolean
@@ -17354,8 +17502,8 @@ declare module 'godot' {
     is_using_colors(): boolean
     is_using_custom_data(): boolean
     reset_instance_physics_interpolation(instance: number): void
-    set_buffer(buffer: PackedFloat32Array): void
-    set_buffer_interpolated(buffer_curr: PackedFloat32Array, buffer_prev: PackedFloat32Array): void
+    set_buffer(buffer: PackedFloat32ArrayInput): void
+    set_buffer_interpolated(buffer_curr: PackedFloat32ArrayInput, buffer_prev: PackedFloat32ArrayInput): void
     set_custom_aabb(aabb: AABB): void
     set_instance_color(instance: number, color: Color): void
     set_instance_count(count: number): void
@@ -17431,7 +17579,7 @@ declare module 'godot' {
     object_configuration_add(object_: Object, configuration: GodotVariant): Error
     object_configuration_remove(object_: Object, configuration: GodotVariant): Error
     poll(): Error
-    rpc(peer: number, object_: Object, method: StringName | string, arguments?: Array<GodotVariant>): Error
+    rpc(peer: number, object_: Object, method: StringName | string, arguments?: Array<GodotVariant> | readonly GodotVariant[]): Error
     static set_default_interface(interface_name: StringName | string): void
     set_multiplayer_peer(peer: MultiplayerPeer): void
   }
@@ -17457,7 +17605,7 @@ declare module 'godot' {
     _object_configuration_add(object_: Object, configuration: GodotVariant): Error
     _object_configuration_remove(object_: Object, configuration: GodotVariant): Error
     _poll(): Error
-    _rpc(peer: number, object_: Object, method: StringName | string, args: Array<GodotVariant>): Error
+    _rpc(peer: number, object_: Object, method: StringName | string, args: Array<GodotVariant> | readonly GodotVariant[]): Error
     _set_multiplayer_peer(multiplayer_peer: MultiplayerPeer): void
   }
 
@@ -17530,7 +17678,7 @@ declare module 'godot' {
     _is_server_relay_supported(): boolean
     _poll(): void
     _put_packet(p_buffer: Uint8Array | NativePointer<number>, p_buffer_size: number): Error
-    _put_packet_script(p_buffer: PackedByteArray): Error
+    _put_packet_script(p_buffer: PackedByteArrayInput): Error
     _set_refuse_new_connections(p_enable: boolean): void
     _set_target_peer(p_peer: number): void
     _set_transfer_channel(p_channel: number): void
@@ -17544,9 +17692,11 @@ declare module 'godot' {
   export class MultiplayerSpawner extends Node {
     constructor()
     static is_instance(value: unknown): value is MultiplayerSpawner
-    spawn_function: Callable
+    get spawn_function(): Callable
+    set spawn_function(value: Callable | ((...args: GodotVariant[]) => GodotVariant))
     spawn_limit: Integer
-    spawn_path: NodePath
+    get spawn_path(): NodePath
+    set spawn_path(value: NodePath | string)
     readonly despawned: Signal<readonly [Node]>
     readonly spawned: Signal<readonly [Node]>
     add_spawnable_scene(path: string): void
@@ -17573,7 +17723,8 @@ declare module 'godot' {
     public_visibility: boolean
     replication_config: SceneReplicationConfig
     replication_interval: number
-    root_path: NodePath
+    get root_path(): NodePath
+    set root_path(value: NodePath | string)
     visibility_update_mode: Integer
     readonly delta_synchronized: Signal<readonly []>
     readonly synchronized: Signal<readonly []>
@@ -18110,13 +18261,15 @@ declare module 'godot' {
     geometry_parsed_geometry_type: Integer
     geometry_source_geometry_mode: Integer
     geometry_source_group_name: string
-    polygons: Array<GodotVariant>
+    get polygons(): Array<GodotVariant>
+    set polygons(value: Array<GodotVariant> | readonly GodotVariant[])
     region_merge_size: number
     region_min_size: number
     sample_partition_type: Integer
-    vertices: PackedVector3Array
+    get vertices(): PackedVector3Array
+    set vertices(value: PackedVector3ArrayInput)
     vertices_per_polygon: number
-    add_polygon(polygon: PackedInt32Array): void
+    add_polygon(polygon: PackedInt32ArrayInput): void
     clear(): void
     clear_polygons(): void
     create_from_mesh(mesh: Mesh): void
@@ -18172,7 +18325,7 @@ declare module 'godot' {
     set_sample_partition_type(sample_partition_type: NavigationMesh.SamplePartitionType): void
     set_source_geometry_mode(mask: NavigationMesh.SourceGeometryMode): void
     set_source_group_name(mask: StringName | string): void
-    set_vertices(vertices: PackedVector3Array): void
+    set_vertices(vertices: PackedVector3ArrayInput): void
     set_vertices_per_polygon(vertices_per_polygon: number): void
   }
   export namespace NavigationMesh {
@@ -18218,14 +18371,17 @@ declare module 'godot' {
   export class NavigationMeshSourceGeometryData2D extends Resource {
     constructor()
     static is_instance(value: unknown): value is NavigationMeshSourceGeometryData2D
-    obstruction_outlines: Array<GodotVariant>
-    projected_obstructions: Array<GodotVariant>
-    traversable_outlines: Array<GodotVariant>
-    add_obstruction_outline(shape_outline: PackedVector2Array): void
-    add_projected_obstruction(vertices: PackedVector2Array, carve: boolean): void
-    add_traversable_outline(shape_outline: PackedVector2Array): void
-    append_obstruction_outlines(obstruction_outlines: Array<PackedVector2Array>): void
-    append_traversable_outlines(traversable_outlines: Array<PackedVector2Array>): void
+    get obstruction_outlines(): Array<GodotVariant>
+    set obstruction_outlines(value: Array<GodotVariant> | readonly GodotVariant[])
+    get projected_obstructions(): Array<GodotVariant>
+    set projected_obstructions(value: Array<GodotVariant> | readonly GodotVariant[])
+    get traversable_outlines(): Array<GodotVariant>
+    set traversable_outlines(value: Array<GodotVariant> | readonly GodotVariant[])
+    add_obstruction_outline(shape_outline: PackedVector2ArrayInput): void
+    add_projected_obstruction(vertices: PackedVector2ArrayInput, carve: boolean): void
+    add_traversable_outline(shape_outline: PackedVector2ArrayInput): void
+    append_obstruction_outlines(obstruction_outlines: Array<PackedVector2Array> | readonly PackedVector2Array[]): void
+    append_traversable_outlines(traversable_outlines: Array<PackedVector2Array> | readonly PackedVector2Array[]): void
     clear(): void
     clear_projected_obstructions(): void
     get_bounds(): Rect2
@@ -18234,9 +18390,9 @@ declare module 'godot' {
     get_traversable_outlines(): Array<PackedVector2Array>
     has_data(): boolean
     merge(other_geometry: NavigationMeshSourceGeometryData2D): void
-    set_obstruction_outlines(obstruction_outlines: Array<PackedVector2Array>): void
-    set_projected_obstructions(projected_obstructions: Array<GodotVariant>): void
-    set_traversable_outlines(traversable_outlines: Array<PackedVector2Array>): void
+    set_obstruction_outlines(obstruction_outlines: Array<PackedVector2Array> | readonly PackedVector2Array[]): void
+    set_projected_obstructions(projected_obstructions: Array<GodotVariant> | readonly GodotVariant[]): void
+    set_traversable_outlines(traversable_outlines: Array<PackedVector2Array> | readonly PackedVector2Array[]): void
   }
 
   /**
@@ -18246,14 +18402,17 @@ declare module 'godot' {
   export class NavigationMeshSourceGeometryData3D extends Resource {
     constructor()
     static is_instance(value: unknown): value is NavigationMeshSourceGeometryData3D
-    indices: PackedInt32Array
-    projected_obstructions: Array<GodotVariant>
-    vertices: PackedVector3Array
-    add_faces(faces: PackedVector3Array, xform: Transform3D): void
+    get indices(): PackedInt32Array
+    set indices(value: PackedInt32ArrayInput)
+    get projected_obstructions(): Array<GodotVariant>
+    set projected_obstructions(value: Array<GodotVariant> | readonly GodotVariant[])
+    get vertices(): PackedVector3Array
+    set vertices(value: PackedVector3ArrayInput)
+    add_faces(faces: PackedVector3ArrayInput, xform: Transform3D): void
     add_mesh(mesh: Mesh, xform: Transform3D): void
-    add_mesh_array(mesh_array: Array<GodotVariant>, xform: Transform3D): void
-    add_projected_obstruction(vertices: PackedVector3Array, elevation: number, height: number, carve: boolean): void
-    append_arrays(vertices: PackedFloat32Array, indices: PackedInt32Array): void
+    add_mesh_array(mesh_array: Array<GodotVariant> | readonly GodotVariant[], xform: Transform3D): void
+    add_projected_obstruction(vertices: PackedVector3ArrayInput, elevation: number, height: number, carve: boolean): void
+    append_arrays(vertices: PackedFloat32ArrayInput, indices: PackedInt32ArrayInput): void
     clear(): void
     clear_projected_obstructions(): void
     get_bounds(): AABB
@@ -18262,9 +18421,9 @@ declare module 'godot' {
     get_vertices(): PackedFloat32Array
     has_data(): boolean
     merge(other_geometry: NavigationMeshSourceGeometryData3D): void
-    set_indices(indices: PackedInt32Array): void
-    set_projected_obstructions(projected_obstructions: Array<GodotVariant>): void
-    set_vertices(vertices: PackedFloat32Array): void
+    set_indices(indices: PackedInt32ArrayInput): void
+    set_projected_obstructions(projected_obstructions: Array<GodotVariant> | readonly GodotVariant[]): void
+    set_vertices(vertices: PackedFloat32ArrayInput): void
   }
 
   /**
@@ -18280,7 +18439,8 @@ declare module 'godot' {
     carve_navigation_mesh: boolean
     radius: number
     velocity: Vector2
-    vertices: PackedVector2Array
+    get vertices(): PackedVector2Array
+    set vertices(value: PackedVector2ArrayInput)
     get_affect_navigation_mesh(): boolean
     get_avoidance_enabled(): boolean
     get_avoidance_layer_value(layer_number: number): boolean
@@ -18299,7 +18459,7 @@ declare module 'godot' {
     set_navigation_map(navigation_map: RID): void
     set_radius(radius: number): void
     set_velocity(velocity: Vector2): void
-    set_vertices(vertices: PackedVector2Array): void
+    set_vertices(vertices: PackedVector2ArrayInput): void
   }
 
   /**
@@ -18317,7 +18477,8 @@ declare module 'godot' {
     radius: number
     use_3d_avoidance: boolean
     velocity: Vector3
-    vertices: PackedVector3Array
+    get vertices(): PackedVector3Array
+    set vertices(value: PackedVector3ArrayInput)
     get_affect_navigation_mesh(): boolean
     get_avoidance_enabled(): boolean
     get_avoidance_layer_value(layer_number: number): boolean
@@ -18340,7 +18501,7 @@ declare module 'godot' {
     set_radius(radius: number): void
     set_use_3d_avoidance(enabled: boolean): void
     set_velocity(velocity: Vector3): void
-    set_vertices(vertices: PackedVector3Array): void
+    set_vertices(vertices: PackedVector3ArrayInput): void
   }
 
   /**
@@ -18456,19 +18617,23 @@ declare module 'godot' {
   export class NavigationPathQueryResult2D extends RefCounted {
     constructor()
     static is_instance(value: unknown): value is NavigationPathQueryResult2D
-    path: PackedVector2Array
-    path_owner_ids: PackedInt64Array
-    path_rids: Array<RID>
-    path_types: PackedInt32Array
+    get path(): PackedVector2Array
+    set path(value: PackedVector2ArrayInput)
+    get path_owner_ids(): PackedInt64Array
+    set path_owner_ids(value: PackedInt64ArrayInput)
+    get path_rids(): Array<RID>
+    set path_rids(value: Array<RID> | readonly RID[])
+    get path_types(): PackedInt32Array
+    set path_types(value: PackedInt32ArrayInput)
     get_path(): PackedVector2Array
     get_path_owner_ids(): PackedInt64Array
     get_path_rids(): Array<RID>
     get_path_types(): PackedInt32Array
     reset(): void
-    set_path(path: PackedVector2Array): void
-    set_path_owner_ids(path_owner_ids: PackedInt64Array): void
-    set_path_rids(path_rids: Array<RID>): void
-    set_path_types(path_types: PackedInt32Array): void
+    set_path(path: PackedVector2ArrayInput): void
+    set_path_owner_ids(path_owner_ids: PackedInt64ArrayInput): void
+    set_path_rids(path_rids: Array<RID> | readonly RID[]): void
+    set_path_types(path_types: PackedInt32ArrayInput): void
   }
   export namespace NavigationPathQueryResult2D {
     export enum PathSegmentType {
@@ -18484,19 +18649,23 @@ declare module 'godot' {
   export class NavigationPathQueryResult3D extends RefCounted {
     constructor()
     static is_instance(value: unknown): value is NavigationPathQueryResult3D
-    path: PackedVector3Array
-    path_owner_ids: PackedInt64Array
-    path_rids: Array<RID>
-    path_types: PackedInt32Array
+    get path(): PackedVector3Array
+    set path(value: PackedVector3ArrayInput)
+    get path_owner_ids(): PackedInt64Array
+    set path_owner_ids(value: PackedInt64ArrayInput)
+    get path_rids(): Array<RID>
+    set path_rids(value: Array<RID> | readonly RID[])
+    get path_types(): PackedInt32Array
+    set path_types(value: PackedInt32ArrayInput)
     get_path(): PackedVector3Array
     get_path_owner_ids(): PackedInt64Array
     get_path_rids(): Array<RID>
     get_path_types(): PackedInt32Array
     reset(): void
-    set_path(path: PackedVector3Array): void
-    set_path_owner_ids(path_owner_ids: PackedInt64Array): void
-    set_path_rids(path_rids: Array<RID>): void
-    set_path_types(path_types: PackedInt32Array): void
+    set_path(path: PackedVector3ArrayInput): void
+    set_path_owner_ids(path_owner_ids: PackedInt64ArrayInput): void
+    set_path_rids(path_rids: Array<RID> | readonly RID[]): void
+    set_path_types(path_types: PackedInt32ArrayInput): void
   }
   export namespace NavigationPathQueryResult3D {
     export enum PathSegmentType {
@@ -18517,17 +18686,20 @@ declare module 'godot' {
     baking_rect_offset: Vector2
     border_size: number
     cell_size: number
-    outlines: Array<GodotVariant>
+    get outlines(): Array<GodotVariant>
+    set outlines(value: Array<GodotVariant> | readonly GodotVariant[])
     parsed_collision_mask: Integer
     parsed_geometry_type: Integer
-    polygons: Array<GodotVariant>
+    get polygons(): Array<GodotVariant>
+    set polygons(value: Array<GodotVariant> | readonly GodotVariant[])
     sample_partition_type: Integer
     source_geometry_group_name: string
     source_geometry_mode: Integer
-    vertices: PackedVector2Array
-    add_outline(outline: PackedVector2Array): void
-    add_outline_at_index(outline: PackedVector2Array, index: number): void
-    add_polygon(polygon: PackedInt32Array): void
+    get vertices(): PackedVector2Array
+    set vertices(value: PackedVector2ArrayInput)
+    add_outline(outline: PackedVector2ArrayInput): void
+    add_outline_at_index(outline: PackedVector2ArrayInput, index: number): void
+    add_polygon(polygon: PackedInt32ArrayInput): void
     clear(): void
     clear_outlines(): void
     clear_polygons(): void
@@ -18555,14 +18727,14 @@ declare module 'godot' {
     set_baking_rect_offset(rect_offset: Vector2): void
     set_border_size(border_size: number): void
     set_cell_size(cell_size: number): void
-    set_outline(idx: number, outline: PackedVector2Array): void
+    set_outline(idx: number, outline: PackedVector2ArrayInput): void
     set_parsed_collision_mask(mask: number): void
     set_parsed_collision_mask_value(layer_number: number, value: boolean): void
     set_parsed_geometry_type(geometry_type: NavigationPolygon.ParsedGeometryType): void
     set_sample_partition_type(sample_partition_type: NavigationPolygon.SamplePartitionType): void
     set_source_geometry_group_name(group_name: StringName | string): void
     set_source_geometry_mode(geometry_mode: NavigationPolygon.SourceGeometryMode): void
-    set_vertices(vertices: PackedVector2Array): void
+    set_vertices(vertices: PackedVector2ArrayInput): void
   }
   export namespace NavigationPolygon {
     export enum ParsedGeometryType {
@@ -18863,8 +19035,8 @@ declare module 'godot' {
     static obstacle_set_radius(obstacle: RID, radius: number): void
     obstacle_set_velocity(obstacle: RID, velocity: Vector2): void
     static obstacle_set_velocity(obstacle: RID, velocity: Vector2): void
-    obstacle_set_vertices(obstacle: RID, vertices: PackedVector2Array): void
-    static obstacle_set_vertices(obstacle: RID, vertices: PackedVector2Array): void
+    obstacle_set_vertices(obstacle: RID, vertices: PackedVector2ArrayInput): void
+    static obstacle_set_vertices(obstacle: RID, vertices: PackedVector2ArrayInput): void
     parse_source_geometry_data(navigation_polygon: NavigationPolygon, source_geometry_data: NavigationMeshSourceGeometryData2D, root_node: Node, callback?: Callable | ((...args: GodotVariant[]) => GodotVariant)): void
     static parse_source_geometry_data(navigation_polygon: NavigationPolygon, source_geometry_data: NavigationMeshSourceGeometryData2D, root_node: Node, callback?: Callable | ((...args: GodotVariant[]) => GodotVariant)): void
     query_path(parameters: NavigationPathQueryParameters2D, result: NavigationPathQueryResult2D, callback?: Callable | ((...args: GodotVariant[]) => GodotVariant)): void
@@ -18921,8 +19093,8 @@ declare module 'godot' {
     static region_set_use_edge_connections(region: RID, enabled: boolean): void
     set_debug_enabled(enabled: boolean): void
     static set_debug_enabled(enabled: boolean): void
-    simplify_path(path: PackedVector2Array, epsilon: number): PackedVector2Array
-    static simplify_path(path: PackedVector2Array, epsilon: number): PackedVector2Array
+    simplify_path(path: PackedVector2ArrayInput, epsilon: number): PackedVector2Array
+    static simplify_path(path: PackedVector2ArrayInput, epsilon: number): PackedVector2Array
     source_geometry_parser_create(): RID
     static source_geometry_parser_create(): RID
     source_geometry_parser_set_callback(parser: RID, callback: Callable | ((...args: GodotVariant[]) => GodotVariant)): void
@@ -19168,8 +19340,8 @@ declare module 'godot' {
     static obstacle_set_use_3d_avoidance(obstacle: RID, enabled: boolean): void
     obstacle_set_velocity(obstacle: RID, velocity: Vector3): void
     static obstacle_set_velocity(obstacle: RID, velocity: Vector3): void
-    obstacle_set_vertices(obstacle: RID, vertices: PackedVector3Array): void
-    static obstacle_set_vertices(obstacle: RID, vertices: PackedVector3Array): void
+    obstacle_set_vertices(obstacle: RID, vertices: PackedVector3ArrayInput): void
+    static obstacle_set_vertices(obstacle: RID, vertices: PackedVector3ArrayInput): void
     parse_source_geometry_data(navigation_mesh: NavigationMesh, source_geometry_data: NavigationMeshSourceGeometryData3D, root_node: Node, callback?: Callable | ((...args: GodotVariant[]) => GodotVariant)): void
     static parse_source_geometry_data(navigation_mesh: NavigationMesh, source_geometry_data: NavigationMeshSourceGeometryData3D, root_node: Node, callback?: Callable | ((...args: GodotVariant[]) => GodotVariant)): void
     query_path(parameters: NavigationPathQueryParameters3D, result: NavigationPathQueryResult3D, callback?: Callable | ((...args: GodotVariant[]) => GodotVariant)): void
@@ -19234,8 +19406,8 @@ declare module 'godot' {
     static set_active(active: boolean): void
     set_debug_enabled(enabled: boolean): void
     static set_debug_enabled(enabled: boolean): void
-    simplify_path(path: PackedVector3Array, epsilon: number): PackedVector3Array
-    static simplify_path(path: PackedVector3Array, epsilon: number): PackedVector3Array
+    simplify_path(path: PackedVector3ArrayInput, epsilon: number): PackedVector3Array
+    static simplify_path(path: PackedVector3ArrayInput, epsilon: number): PackedVector3Array
     source_geometry_parser_create(): RID
     static source_geometry_parser_create(): RID
     source_geometry_parser_set_callback(parser: RID, callback: Callable | ((...args: GodotVariant[]) => GodotVariant)): void
@@ -19304,7 +19476,8 @@ declare module 'godot' {
     auto_translate_mode: Integer
     editor_description: string
     readonly multiplayer: MultiplayerAPI
-    name: StringName
+    get name(): StringName
+    set name(value: StringName | string)
     owner: Node
     physics_interpolation_mode: Integer
     process_mode: Integer
@@ -19412,7 +19585,7 @@ declare module 'godot' {
     static print_orphan_nodes(): void
     print_tree(): void
     print_tree_pretty(): void
-    propagate_call(method: StringName | string, args?: Array<GodotVariant>, parent_first?: boolean): void
+    propagate_call(method: StringName | string, args?: Array<GodotVariant> | readonly GodotVariant[], parent_first?: boolean): void
     propagate_notification(what: number): void
     queue_free(): void
     remove_child(node: Node): void
@@ -19615,7 +19788,8 @@ declare module 'godot' {
     scale: Vector3
     top_level: boolean
     transform: Transform3D
-    visibility_parent: NodePath
+    get visibility_parent(): NodePath
+    set visibility_parent(value: NodePath | string)
     visible: boolean
     readonly visibility_changed: Signal<readonly []>
     add_gizmo(gizmo: Node3DGizmo): void
@@ -19813,10 +19987,10 @@ declare module 'godot' {
     static is_instance(value: unknown): value is Object
     readonly property_list_changed: Signal<readonly []>
     readonly script_changed: Signal<readonly []>
-    add_user_signal(signal: string, arguments?: Array<GodotVariant>): void
+    add_user_signal(signal: string, arguments?: Array<GodotVariant> | readonly GodotVariant[]): void
     call(method: StringName | string, ...args: GodotVariant[]): GodotVariant
     call_deferred(method: StringName | string, ...args: GodotVariant[]): GodotVariant
-    callv(method: StringName | string, arg_array: Array<GodotVariant>): GodotVariant
+    callv(method: StringName | string, arg_array: Array<GodotVariant> | readonly GodotVariant[]): GodotVariant
     can_translate_messages(): boolean
     cancel_free(): void
     connect(signal: StringName | string, callable: Callable | ((...args: GodotVariant[]) => GodotVariant), flags?: number): Error
@@ -19914,13 +20088,14 @@ declare module 'godot' {
     static is_instance(value: unknown): value is OccluderPolygon2D
     closed: boolean
     cull_mode: Integer
-    polygon: PackedVector2Array
+    get polygon(): PackedVector2Array
+    set polygon(value: PackedVector2ArrayInput)
     get_cull_mode(): OccluderPolygon2D.CullMode
     get_polygon(): PackedVector2Array
     is_closed(): boolean
     set_closed(closed: boolean): void
     set_cull_mode(cull_mode: OccluderPolygon2D.CullMode): void
-    set_polygon(polygon: PackedVector2Array): void
+    set_polygon(polygon: PackedVector2ArrayInput): void
   }
   export namespace OccluderPolygon2D {
     export enum CullMode {
@@ -19946,15 +20121,17 @@ declare module 'godot' {
   export class OggPacketSequence extends Resource {
     constructor()
     static is_instance(value: unknown): value is OggPacketSequence
-    granule_positions: PackedInt64Array
-    packet_data: Array<PackedByteArray>
+    get granule_positions(): PackedInt64Array
+    set granule_positions(value: PackedInt64ArrayInput)
+    get packet_data(): Array<PackedByteArray>
+    set packet_data(value: Array<PackedByteArray> | readonly PackedByteArray[])
     sampling_rate: number
     get_length(): number
     get_packet_data(): Array<Array<GodotVariant>>
     get_packet_granule_positions(): PackedInt64Array
     get_sampling_rate(): number
-    set_packet_data(packet_data: Array<Array<GodotVariant>>): void
-    set_packet_granule_positions(granule_positions: PackedInt64Array): void
+    set_packet_data(packet_data: Array<Array<GodotVariant>> | readonly Array<GodotVariant>[]): void
+    set_packet_granule_positions(granule_positions: PackedInt64ArrayInput): void
     set_sampling_rate(sampling_rate: number): void
   }
 
@@ -19996,13 +20173,14 @@ declare module 'godot' {
     static is_instance(value: unknown): value is OpenXRAction
     action_type: Integer
     localized_name: string
-    toplevel_paths: PackedStringArray
+    get toplevel_paths(): PackedStringArray
+    set toplevel_paths(value: PackedStringArrayInput)
     get_action_type(): OpenXRAction.ActionType
     get_localized_name(): string
     get_toplevel_paths(): PackedStringArray
     set_action_type(action_type: OpenXRAction.ActionType): void
     set_localized_name(localized_name: string): void
-    set_toplevel_paths(toplevel_paths: PackedStringArray): void
+    set_toplevel_paths(toplevel_paths: PackedStringArrayInput): void
   }
   export namespace OpenXRAction {
     export enum ActionType {
@@ -20044,8 +20222,8 @@ declare module 'godot' {
     get_interaction_profiles(): Array<GodotVariant>
     remove_action_set(action_set: OpenXRActionSet): void
     remove_interaction_profile(interaction_profile: OpenXRInteractionProfile): void
-    set_action_sets(action_sets: Array<GodotVariant>): void
-    set_interaction_profiles(interaction_profiles: Array<GodotVariant>): void
+    set_action_sets(action_sets: Array<GodotVariant> | readonly GodotVariant[]): void
+    set_interaction_profiles(interaction_profiles: Array<GodotVariant> | readonly GodotVariant[]): void
   }
 
   /**
@@ -20064,7 +20242,7 @@ declare module 'godot' {
     get_localized_name(): string
     get_priority(): number
     remove_action(action: OpenXRAction): void
-    set_actions(actions: Array<GodotVariant>): void
+    set_actions(actions: Array<GodotVariant> | readonly GodotVariant[]): void
     set_localized_name(localized_name: string): void
     set_priority(priority: number): void
   }
@@ -20138,7 +20316,7 @@ declare module 'godot' {
     transform_from_pose(pose: NativePointer): Transform3D
     unregister_composition_layer_provider(extension: OpenXRExtensionWrapperExtension): void
     unregister_projection_views_extension(extension: OpenXRExtensionWrapperExtension): void
-    xr_result(result: Integer, format: string, args: Array<GodotVariant>): boolean
+    xr_result(result: Integer, format: string, args: Array<GodotVariant> | readonly GodotVariant[]): boolean
   }
   export namespace OpenXRAPIExtension {
     export enum OpenXRAlphaBlendModeSupport {
@@ -20327,14 +20505,14 @@ declare module 'godot' {
     _on_state_synchronized(): void
     _on_state_visible(): void
     _on_viewport_composition_layer_destroyed(layer: NativePointer): void
-    _set_android_surface_swapchain_create_info_and_get_next_pointer(property_values: Dictionary, next_pointer: NativePointer): Integer
+    _set_android_surface_swapchain_create_info_and_get_next_pointer(property_values: Dictionary | Readonly<Record<string, GodotVariant>>, next_pointer: NativePointer): Integer
     _set_hand_joint_locations_and_get_next_pointer(hand_index: number, next_pointer: NativePointer): Integer
     _set_instance_create_info_and_get_next_pointer(next_pointer: NativePointer): Integer
     _set_projection_views_and_get_next_pointer(view_index: number, next_pointer: NativePointer): Integer
     _set_session_create_and_get_next_pointer(next_pointer: NativePointer): Integer
     _set_swapchain_create_info_and_get_next_pointer(next_pointer: NativePointer): Integer
     _set_system_properties_and_get_next_pointer(next_pointer: NativePointer): Integer
-    _set_viewport_composition_layer_and_get_next_pointer(layer: NativePointer, property_values: Dictionary, next_pointer: NativePointer): Integer
+    _set_viewport_composition_layer_and_get_next_pointer(layer: NativePointer, property_values: Dictionary | Readonly<Record<string, GodotVariant>>, next_pointer: NativePointer): Integer
     get_openxr_api(): OpenXRAPIExtension
     register_extension_wrapper(): void
   }
@@ -20348,7 +20526,8 @@ declare module 'godot' {
     static is_instance(value: unknown): value is OpenXRHand
     bone_update: Integer
     hand: Integer
-    hand_skeleton: NodePath
+    get hand_skeleton(): NodePath
+    set hand_skeleton(value: NodePath | string)
     motion_range: Integer
     skeleton_rig: Integer
     get_bone_update(): OpenXRHand.BoneUpdate
@@ -20428,8 +20607,8 @@ declare module 'godot' {
     get_binding_modifiers(): Array<GodotVariant>
     get_bindings(): Array<GodotVariant>
     get_interaction_profile_path(): string
-    set_binding_modifiers(binding_modifiers: Array<GodotVariant>): void
-    set_bindings(bindings: Array<GodotVariant>): void
+    set_binding_modifiers(binding_modifiers: Array<GodotVariant> | readonly GodotVariant[]): void
+    set_bindings(bindings: Array<GodotVariant> | readonly GodotVariant[]): void
     set_interaction_profile_path(interaction_profile_path: string): void
   }
 
@@ -20582,7 +20761,8 @@ declare module 'godot' {
     action: OpenXRAction
     binding_modifiers: OpenXRActionBindingModifier
     binding_path: string
-    paths: PackedStringArray
+    get paths(): PackedStringArray
+    set paths(value: PackedStringArrayInput)
     add_path(path: string): void
     get_action(): OpenXRAction
     get_binding_modifier(index: number): OpenXRActionBindingModifier
@@ -20594,9 +20774,9 @@ declare module 'godot' {
     has_path(path: string): boolean
     remove_path(path: string): void
     set_action(action: OpenXRAction): void
-    set_binding_modifiers(binding_modifiers: Array<GodotVariant>): void
+    set_binding_modifiers(binding_modifiers: Array<GodotVariant> | readonly GodotVariant[]): void
     set_binding_path(binding_path: string): void
-    set_paths(paths: PackedStringArray): void
+    set_paths(paths: PackedStringArrayInput): void
   }
 
   /**
@@ -20702,18 +20882,18 @@ declare module 'godot' {
     static close_midi_inputs(): void
     crash(message: string): void
     static crash(message: string): void
-    create_instance(arguments: PackedStringArray): number
-    static create_instance(arguments: PackedStringArray): number
-    create_process(path: string, arguments: PackedStringArray, open_console?: boolean): number
-    static create_process(path: string, arguments: PackedStringArray, open_console?: boolean): number
+    create_instance(arguments: PackedStringArrayInput): number
+    static create_instance(arguments: PackedStringArrayInput): number
+    create_process(path: string, arguments: PackedStringArrayInput, open_console?: boolean): number
+    static create_process(path: string, arguments: PackedStringArrayInput, open_console?: boolean): number
     delay_msec(msec: number): void
     static delay_msec(msec: number): void
     delay_usec(usec: number): void
     static delay_usec(usec: number): void
-    execute(path: string, arguments: PackedStringArray, output?: Array<GodotVariant>, read_stderr?: boolean, open_console?: boolean): number
-    static execute(path: string, arguments: PackedStringArray, output?: Array<GodotVariant>, read_stderr?: boolean, open_console?: boolean): number
-    execute_with_pipe(path: string, arguments: PackedStringArray, blocking?: boolean): Dictionary
-    static execute_with_pipe(path: string, arguments: PackedStringArray, blocking?: boolean): Dictionary
+    execute(path: string, arguments: PackedStringArrayInput, output?: Array<GodotVariant> | readonly GodotVariant[], read_stderr?: boolean, open_console?: boolean): number
+    static execute(path: string, arguments: PackedStringArrayInput, output?: Array<GodotVariant> | readonly GodotVariant[], read_stderr?: boolean, open_console?: boolean): number
+    execute_with_pipe(path: string, arguments: PackedStringArrayInput, blocking?: boolean): Dictionary
+    static execute_with_pipe(path: string, arguments: PackedStringArrayInput, blocking?: boolean): Dictionary
     find_keycode_from_string(string_: string): Key
     static find_keycode_from_string(string_: string): Key
     get_cache_dir(): string
@@ -20844,8 +21024,8 @@ declare module 'godot' {
     static set_low_processor_usage_mode(enable: boolean): void
     set_low_processor_usage_mode_sleep_usec(usec: number): void
     static set_low_processor_usage_mode_sleep_usec(usec: number): void
-    set_restart_on_exit(restart: boolean, arguments?: PackedStringArray): void
-    static set_restart_on_exit(restart: boolean, arguments?: PackedStringArray): void
+    set_restart_on_exit(restart: boolean, arguments?: PackedStringArrayInput): void
+    static set_restart_on_exit(restart: boolean, arguments?: PackedStringArrayInput): void
     set_thread_name(name: string): Error
     static set_thread_name(name: string): Error
     set_use_file_access_save_and_swap(enabled: boolean): void
@@ -20936,7 +21116,7 @@ declare module 'godot' {
     get_packet(): PackedByteArray
     get_packet_error(): Error
     get_var(allow_objects?: boolean): GodotVariant
-    put_packet(buffer: PackedByteArray): Error
+    put_packet(buffer: PackedByteArrayInput): Error
     put_var(var_: GodotVariant, full_objects?: boolean): Error
     set_encode_buffer_max_size(max_size: number): void
   }
@@ -21528,8 +21708,8 @@ declare module 'godot' {
    * @see https://docs.godotengine.org/en/4.4/classes/class_performance.html
    */
   export abstract class Performance extends Object {
-    add_custom_monitor(id: StringName | string, callable: Callable | ((...args: GodotVariant[]) => GodotVariant), arguments?: Array<GodotVariant>): void
-    static add_custom_monitor(id: StringName | string, callable: Callable | ((...args: GodotVariant[]) => GodotVariant), arguments?: Array<GodotVariant>): void
+    add_custom_monitor(id: StringName | string, callable: Callable | ((...args: GodotVariant[]) => GodotVariant), arguments?: Array<GodotVariant> | readonly GodotVariant[]): void
+    static add_custom_monitor(id: StringName | string, callable: Callable | ((...args: GodotVariant[]) => GodotVariant), arguments?: Array<GodotVariant> | readonly GodotVariant[]): void
     get_custom_monitor(id: StringName | string): GodotVariant
     static get_custom_monitor(id: StringName | string): GodotVariant
     get_custom_monitor_names(): Array<StringName>
@@ -21597,7 +21777,8 @@ declare module 'godot' {
     static is_instance(value: unknown): value is PhysicalBone2D
     auto_configure_joint: boolean
     bone2d_index: Integer
-    bone2d_nodepath: NodePath
+    get bone2d_nodepath(): NodePath
+    set bone2d_nodepath(value: NodePath | string)
     follow_bone_when_simulating: boolean
     simulate_physics: boolean
     get_auto_configure_joint(): boolean
@@ -21701,7 +21882,7 @@ declare module 'godot' {
     is_simulating_physics(): boolean
     physical_bones_add_collision_exception(exception: RID): void
     physical_bones_remove_collision_exception(exception: RID): void
-    physical_bones_start_simulation(bones?: Array<StringName>): void
+    physical_bones_start_simulation(bones?: Array<StringName> | readonly StringName[]): void
     physical_bones_stop_simulation(): void
   }
 
@@ -22116,7 +22297,8 @@ declare module 'godot' {
     collide_with_areas: boolean
     collide_with_bodies: boolean
     collision_mask: Integer
-    exclude: Array<RID>
+    get exclude(): Array<RID>
+    set exclude(value: Array<RID> | readonly RID[])
     position: Vector2
     get_canvas_instance_id(): Integer
     get_collision_mask(): number
@@ -22128,7 +22310,7 @@ declare module 'godot' {
     set_collide_with_areas(enable: boolean): void
     set_collide_with_bodies(enable: boolean): void
     set_collision_mask(collision_mask: number): void
-    set_exclude(exclude: Array<RID>): void
+    set_exclude(exclude: Array<RID> | readonly RID[]): void
     set_position(position: Vector2): void
   }
 
@@ -22142,7 +22324,8 @@ declare module 'godot' {
     collide_with_areas: boolean
     collide_with_bodies: boolean
     collision_mask: Integer
-    exclude: Array<RID>
+    get exclude(): Array<RID>
+    set exclude(value: Array<RID> | readonly RID[])
     position: Vector3
     get_collision_mask(): number
     get_exclude(): Array<RID>
@@ -22152,7 +22335,7 @@ declare module 'godot' {
     set_collide_with_areas(enable: boolean): void
     set_collide_with_bodies(enable: boolean): void
     set_collision_mask(collision_mask: number): void
-    set_exclude(exclude: Array<RID>): void
+    set_exclude(exclude: Array<RID> | readonly RID[]): void
     set_position(position: Vector3): void
   }
 
@@ -22166,11 +22349,12 @@ declare module 'godot' {
     collide_with_areas: boolean
     collide_with_bodies: boolean
     collision_mask: Integer
-    exclude: Array<RID>
+    get exclude(): Array<RID>
+    set exclude(value: Array<RID> | readonly RID[])
     "from": Vector2
     hit_from_inside: boolean
     to: Vector2
-    static create(from_: Vector2, to: Vector2, collision_mask?: number, exclude?: Array<RID>): PhysicsRayQueryParameters2D
+    static create(from_: Vector2, to: Vector2, collision_mask?: number, exclude?: Array<RID> | readonly RID[]): PhysicsRayQueryParameters2D
     get_collision_mask(): number
     get_exclude(): Array<RID>
     get_from(): Vector2
@@ -22181,7 +22365,7 @@ declare module 'godot' {
     set_collide_with_areas(enable: boolean): void
     set_collide_with_bodies(enable: boolean): void
     set_collision_mask(collision_mask: number): void
-    set_exclude(exclude: Array<RID>): void
+    set_exclude(exclude: Array<RID> | readonly RID[]): void
     set_from(from_: Vector2): void
     set_hit_from_inside(enable: boolean): void
     set_to(to: Vector2): void
@@ -22197,12 +22381,13 @@ declare module 'godot' {
     collide_with_areas: boolean
     collide_with_bodies: boolean
     collision_mask: Integer
-    exclude: Array<RID>
+    get exclude(): Array<RID>
+    set exclude(value: Array<RID> | readonly RID[])
     "from": Vector3
     hit_back_faces: boolean
     hit_from_inside: boolean
     to: Vector3
-    static create(from_: Vector3, to: Vector3, collision_mask?: number, exclude?: Array<RID>): PhysicsRayQueryParameters3D
+    static create(from_: Vector3, to: Vector3, collision_mask?: number, exclude?: Array<RID> | readonly RID[]): PhysicsRayQueryParameters3D
     get_collision_mask(): number
     get_exclude(): Array<RID>
     get_from(): Vector3
@@ -22214,7 +22399,7 @@ declare module 'godot' {
     set_collide_with_areas(enable: boolean): void
     set_collide_with_bodies(enable: boolean): void
     set_collision_mask(collision_mask: number): void
-    set_exclude(exclude: Array<RID>): void
+    set_exclude(exclude: Array<RID> | readonly RID[]): void
     set_from(from_: Vector3): void
     set_hit_back_faces(enable: boolean): void
     set_hit_from_inside(enable: boolean): void
@@ -23507,7 +23692,8 @@ declare module 'godot' {
     collide_with_areas: boolean
     collide_with_bodies: boolean
     collision_mask: Integer
-    exclude: Array<RID>
+    get exclude(): Array<RID>
+    set exclude(value: Array<RID> | readonly RID[])
     margin: number
     motion: Vector2
     shape: Shape2D
@@ -23525,7 +23711,7 @@ declare module 'godot' {
     set_collide_with_areas(enable: boolean): void
     set_collide_with_bodies(enable: boolean): void
     set_collision_mask(collision_mask: number): void
-    set_exclude(exclude: Array<RID>): void
+    set_exclude(exclude: Array<RID> | readonly RID[]): void
     set_margin(margin: number): void
     set_motion(motion: Vector2): void
     set_shape(shape: Resource): void
@@ -23543,7 +23729,8 @@ declare module 'godot' {
     collide_with_areas: boolean
     collide_with_bodies: boolean
     collision_mask: Integer
-    exclude: Array<RID>
+    get exclude(): Array<RID>
+    set exclude(value: Array<RID> | readonly RID[])
     margin: number
     motion: Vector3
     shape: Shape3D
@@ -23561,7 +23748,7 @@ declare module 'godot' {
     set_collide_with_areas(enable: boolean): void
     set_collide_with_bodies(enable: boolean): void
     set_collision_mask(collision_mask: number): void
-    set_exclude(exclude: Array<RID>): void
+    set_exclude(exclude: Array<RID> | readonly RID[]): void
     set_margin(margin: number): void
     set_motion(motion: Vector3): void
     set_shape(shape: Resource): void
@@ -23577,8 +23764,10 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is PhysicsTestMotionParameters2D
     collide_separation_ray: boolean
-    exclude_bodies: Array<RID>
-    exclude_objects: Array<GodotVariant>
+    get exclude_bodies(): Array<RID>
+    set exclude_bodies(value: Array<RID> | readonly RID[])
+    get exclude_objects(): Array<GodotVariant>
+    set exclude_objects(value: Array<GodotVariant> | readonly GodotVariant[])
     "from": Transform2D
     margin: number
     motion: Vector2
@@ -23591,8 +23780,8 @@ declare module 'godot' {
     is_collide_separation_ray_enabled(): boolean
     is_recovery_as_collision_enabled(): boolean
     set_collide_separation_ray_enabled(enabled: boolean): void
-    set_exclude_bodies(exclude_list: Array<RID>): void
-    set_exclude_objects(exclude_list: Array<Integer>): void
+    set_exclude_bodies(exclude_list: Array<RID> | readonly RID[]): void
+    set_exclude_objects(exclude_list: Array<Integer> | readonly Integer[]): void
     set_from(from_: Transform2D): void
     set_margin(margin: number): void
     set_motion(motion: Vector2): void
@@ -23607,8 +23796,10 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is PhysicsTestMotionParameters3D
     collide_separation_ray: boolean
-    exclude_bodies: Array<RID>
-    exclude_objects: Array<GodotVariant>
+    get exclude_bodies(): Array<RID>
+    set exclude_bodies(value: Array<RID> | readonly RID[])
+    get exclude_objects(): Array<GodotVariant>
+    set exclude_objects(value: Array<GodotVariant> | readonly GodotVariant[])
     "from": Transform3D
     margin: number
     max_collisions: Integer
@@ -23623,8 +23814,8 @@ declare module 'godot' {
     is_collide_separation_ray_enabled(): boolean
     is_recovery_as_collision_enabled(): boolean
     set_collide_separation_ray_enabled(enabled: boolean): void
-    set_exclude_bodies(exclude_list: Array<RID>): void
-    set_exclude_objects(exclude_list: Array<Integer>): void
+    set_exclude_bodies(exclude_list: Array<RID> | readonly RID[]): void
+    set_exclude_objects(exclude_list: Array<Integer> | readonly Integer[]): void
     set_from(from_: Transform3D): void
     set_margin(margin: number): void
     set_max_collisions(max_collisions: number): void
@@ -23872,22 +24063,28 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is Polygon2D
     antialiased: boolean
-    bones: Array<GodotVariant>
+    get bones(): Array<GodotVariant>
+    set bones(value: Array<GodotVariant> | readonly GodotVariant[])
     color: Color
     internal_vertex_count: Integer
     invert_border: number
     invert_enabled: boolean
     offset: Vector2
-    polygon: PackedVector2Array
-    polygons: Array<GodotVariant>
-    skeleton: NodePath
+    get polygon(): PackedVector2Array
+    set polygon(value: PackedVector2ArrayInput)
+    get polygons(): Array<GodotVariant>
+    set polygons(value: Array<GodotVariant> | readonly GodotVariant[])
+    get skeleton(): NodePath
+    set skeleton(value: NodePath | string)
     texture: Texture2D
     texture_offset: Vector2
     texture_rotation: number
     texture_scale: Vector2
-    uv: PackedVector2Array
-    vertex_colors: PackedColorArray
-    add_bone(path: NodePath | string, weights: PackedFloat32Array): void
+    get uv(): PackedVector2Array
+    set uv(value: PackedVector2ArrayInput)
+    get vertex_colors(): PackedColorArray
+    set vertex_colors(value: PackedColorArrayInput)
+    add_bone(path: NodePath | string, weights: PackedFloat32ArrayInput): void
     clear_bones(): void
     erase_bone(index: number): void
     get_antialiased(): boolean
@@ -23910,21 +24107,21 @@ declare module 'godot' {
     get_vertex_colors(): PackedColorArray
     set_antialiased(antialiased: boolean): void
     set_bone_path(index: number, path: NodePath | string): void
-    set_bone_weights(index: number, weights: PackedFloat32Array): void
+    set_bone_weights(index: number, weights: PackedFloat32ArrayInput): void
     set_color(color: Color): void
     set_internal_vertex_count(internal_vertex_count: number): void
     set_invert_border(invert_border: number): void
     set_invert_enabled(invert: boolean): void
     set_offset(offset: Vector2): void
-    set_polygon(polygon: PackedVector2Array): void
-    set_polygons(polygons: Array<GodotVariant>): void
+    set_polygon(polygon: PackedVector2ArrayInput): void
+    set_polygons(polygons: Array<GodotVariant> | readonly GodotVariant[]): void
     set_skeleton(skeleton: NodePath | string): void
     set_texture(texture: Texture2D): void
     set_texture_offset(texture_offset: Vector2): void
     set_texture_rotation(texture_rotation: number): void
     set_texture_scale(texture_scale: Vector2): void
-    set_uv(uv: PackedVector2Array): void
-    set_vertex_colors(vertex_colors: PackedColorArray): void
+    set_uv(uv: PackedVector2ArrayInput): void
+    set_vertex_colors(vertex_colors: PackedColorArrayInput): void
   }
 
   /**
@@ -23934,9 +24131,10 @@ declare module 'godot' {
   export class PolygonOccluder3D extends Occluder3D {
     constructor()
     static is_instance(value: unknown): value is PolygonOccluder3D
-    polygon: PackedVector2Array
+    get polygon(): PackedVector2Array
+    set polygon(value: PackedVector2ArrayInput)
     get_polygon(): PackedVector2Array
-    set_polygon(polygon: PackedVector2Array): void
+    set_polygon(polygon: PackedVector2ArrayInput): void
   }
 
   /**
@@ -23946,7 +24144,8 @@ declare module 'godot' {
   export class PolygonPathFinder extends Resource {
     constructor()
     static is_instance(value: unknown): value is PolygonPathFinder
-    data: Dictionary
+    get data(): Dictionary
+    set data(value: Dictionary | Readonly<Record<string, GodotVariant>>)
     find_path(from_: Vector2, to: Vector2): PackedVector2Array
     get_bounds(): Rect2
     get_closest_point(point: Vector2): Vector2
@@ -23954,7 +24153,7 @@ declare module 'godot' {
     get_point_penalty(idx: number): number
     is_point_inside(point: Vector2): boolean
     set_point_penalty(idx: number, penalty: number): void
-    setup(points: PackedVector2Array, connections: PackedInt32Array): void
+    setup(points: PackedVector2ArrayInput, connections: PackedInt32ArrayInput): void
   }
 
   /**
@@ -24252,8 +24451,8 @@ declare module 'godot' {
   export abstract class ProjectSettings extends Object {
     readonly settings_changed: Signal<readonly []>
     static readonly settings_changed: Signal<readonly []>
-    add_property_info(hint: Dictionary): void
-    static add_property_info(hint: Dictionary): void
+    add_property_info(hint: Dictionary | Readonly<Record<string, GodotVariant>>): void
+    static add_property_info(hint: Dictionary | Readonly<Record<string, GodotVariant>>): void
     clear(name: string): void
     static clear(name: string): void
     get_global_class_list(): Array<Dictionary>
@@ -24338,7 +24537,7 @@ declare module 'godot' {
     state: Integer
     get_seed(): Integer
     get_state(): Integer
-    rand_weighted(weights: PackedFloat32Array): Integer
+    rand_weighted(weights: PackedFloat32ArrayInput): Integer
     randf(): number
     randf_range(from_: number, to: number): number
     randfn(mean?: number, deviation?: number): number
@@ -24517,21 +24716,25 @@ declare module 'godot' {
   export class RDFramebufferPass extends RefCounted {
     constructor()
     static is_instance(value: unknown): value is RDFramebufferPass
-    color_attachments: PackedInt32Array
+    get color_attachments(): PackedInt32Array
+    set color_attachments(value: PackedInt32ArrayInput)
     depth_attachment: Integer
-    input_attachments: PackedInt32Array
-    preserve_attachments: PackedInt32Array
-    resolve_attachments: PackedInt32Array
+    get input_attachments(): PackedInt32Array
+    set input_attachments(value: PackedInt32ArrayInput)
+    get preserve_attachments(): PackedInt32Array
+    set preserve_attachments(value: PackedInt32ArrayInput)
+    get resolve_attachments(): PackedInt32Array
+    set resolve_attachments(value: PackedInt32ArrayInput)
     get_color_attachments(): PackedInt32Array
     get_depth_attachment(): number
     get_input_attachments(): PackedInt32Array
     get_preserve_attachments(): PackedInt32Array
     get_resolve_attachments(): PackedInt32Array
-    set_color_attachments(p_member: PackedInt32Array): void
+    set_color_attachments(p_member: PackedInt32ArrayInput): void
     set_depth_attachment(p_member: number): void
-    set_input_attachments(p_member: PackedInt32Array): void
-    set_preserve_attachments(p_member: PackedInt32Array): void
-    set_resolve_attachments(p_member: PackedInt32Array): void
+    set_input_attachments(p_member: PackedInt32ArrayInput): void
+    set_preserve_attachments(p_member: PackedInt32ArrayInput): void
+    set_resolve_attachments(p_member: PackedInt32ArrayInput): void
     static readonly ATTACHMENT_UNUSED: Integer
   }
 
@@ -24542,7 +24745,8 @@ declare module 'godot' {
   export class RDPipelineColorBlendState extends RefCounted {
     constructor()
     static is_instance(value: unknown): value is RDPipelineColorBlendState
-    attachments: Array<RDPipelineColorBlendStateAttachment>
+    get attachments(): Array<RDPipelineColorBlendStateAttachment>
+    set attachments(value: Array<RDPipelineColorBlendStateAttachment> | readonly RDPipelineColorBlendStateAttachment[])
     blend_constant: Color
     enable_logic_op: boolean
     logic_op: Integer
@@ -24550,7 +24754,7 @@ declare module 'godot' {
     get_blend_constant(): Color
     get_enable_logic_op(): boolean
     get_logic_op(): RenderingDevice.LogicOperation
-    set_attachments(attachments: Array<RDPipelineColorBlendStateAttachment>): void
+    set_attachments(attachments: Array<RDPipelineColorBlendStateAttachment> | readonly RDPipelineColorBlendStateAttachment[]): void
     set_blend_constant(p_member: Color): void
     set_enable_logic_op(p_member: boolean): void
     set_logic_op(p_member: RenderingDevice.LogicOperation): void
@@ -24683,7 +24887,8 @@ declare module 'godot' {
     enable_sample_shading: boolean
     min_sample_shading: number
     sample_count: Integer
-    sample_masks: Array<Integer>
+    get sample_masks(): Array<Integer>
+    set sample_masks(value: Array<Integer> | readonly Integer[])
     get_enable_alpha_to_coverage(): boolean
     get_enable_alpha_to_one(): boolean
     get_enable_sample_shading(): boolean
@@ -24695,7 +24900,7 @@ declare module 'godot' {
     set_enable_sample_shading(p_member: boolean): void
     set_min_sample_shading(p_member: number): void
     set_sample_count(p_member: RenderingDevice.TextureSamples): void
-    set_sample_masks(masks: Array<Integer>): void
+    set_sample_masks(masks: Array<Integer> | readonly Integer[]): void
   }
 
   /**
@@ -24850,11 +25055,16 @@ declare module 'godot' {
   export class RDShaderSPIRV extends Resource {
     constructor()
     static is_instance(value: unknown): value is RDShaderSPIRV
-    bytecode_compute: PackedByteArray
-    bytecode_fragment: PackedByteArray
-    bytecode_tesselation_control: PackedByteArray
-    bytecode_tesselation_evaluation: PackedByteArray
-    bytecode_vertex: PackedByteArray
+    get bytecode_compute(): PackedByteArray
+    set bytecode_compute(value: PackedByteArrayInput)
+    get bytecode_fragment(): PackedByteArray
+    set bytecode_fragment(value: PackedByteArrayInput)
+    get bytecode_tesselation_control(): PackedByteArray
+    set bytecode_tesselation_control(value: PackedByteArrayInput)
+    get bytecode_tesselation_evaluation(): PackedByteArray
+    set bytecode_tesselation_evaluation(value: PackedByteArrayInput)
+    get bytecode_vertex(): PackedByteArray
+    set bytecode_vertex(value: PackedByteArrayInput)
     compile_error_compute: string
     compile_error_fragment: string
     compile_error_tesselation_control: string
@@ -24862,7 +25072,7 @@ declare module 'godot' {
     compile_error_vertex: string
     get_stage_bytecode(stage: RenderingDevice.ShaderStage): PackedByteArray
     get_stage_compile_error(stage: RenderingDevice.ShaderStage): string
-    set_stage_bytecode(stage: RenderingDevice.ShaderStage, bytecode: PackedByteArray): void
+    set_stage_bytecode(stage: RenderingDevice.ShaderStage, bytecode: PackedByteArrayInput): void
     set_stage_compile_error(stage: RenderingDevice.ShaderStage, compile_error: string): void
   }
 
@@ -25129,7 +25339,8 @@ declare module 'godot' {
   export class RemoteTransform2D extends Node2D {
     constructor()
     static is_instance(value: unknown): value is RemoteTransform2D
-    remote_path: NodePath
+    get remote_path(): NodePath
+    set remote_path(value: NodePath | string)
     update_position: boolean
     update_rotation: boolean
     update_scale: boolean
@@ -25154,7 +25365,8 @@ declare module 'godot' {
   export class RemoteTransform3D extends Node3D {
     constructor()
     static is_instance(value: unknown): value is RemoteTransform3D
-    remote_path: NodePath
+    get remote_path(): NodePath
+    set remote_path(value: NodePath | string)
     update_position: boolean
     update_rotation: boolean
     update_scale: boolean
@@ -25218,7 +25430,7 @@ declare module 'godot' {
     buffer_get_data(buffer: RID, offset_bytes?: number, size_bytes?: number): PackedByteArray
     buffer_get_data_async(buffer: RID, callback: Callable | ((...args: GodotVariant[]) => GodotVariant), offset_bytes?: number, size_bytes?: number): Error
     buffer_get_device_address(buffer: RID): Integer
-    buffer_update(buffer: RID, offset: number, size_bytes: number, data: PackedByteArray): Error
+    buffer_update(buffer: RID, offset: number, size_bytes: number, data: PackedByteArrayInput): Error
     capture_timestamp(name: string): void
     compute_list_add_barrier(compute_list: Integer): void
     compute_list_begin(): Integer
@@ -25227,16 +25439,16 @@ declare module 'godot' {
     compute_list_dispatch(compute_list: Integer, x_groups: number, y_groups: number, z_groups: number): void
     compute_list_dispatch_indirect(compute_list: Integer, buffer: RID, offset: number): void
     compute_list_end(): void
-    compute_list_set_push_constant(compute_list: Integer, buffer: PackedByteArray, size_bytes: number): void
-    compute_pipeline_create(shader: RID, specialization_constants?: Array<RDPipelineSpecializationConstant>): RID
+    compute_list_set_push_constant(compute_list: Integer, buffer: PackedByteArrayInput, size_bytes: number): void
+    compute_pipeline_create(shader: RID, specialization_constants?: Array<RDPipelineSpecializationConstant> | readonly RDPipelineSpecializationConstant[]): RID
     compute_pipeline_is_valid(compute_pipeline: RID): boolean
     create_local_device(): RenderingDevice
     draw_command_begin_label(name: string, color: Color): void
     draw_command_end_label(): void
     draw_command_insert_label(name: string, color: Color): void
-    draw_list_begin(framebuffer: RID, draw_flags?: RenderingDevice.DrawFlags, clear_color_values?: PackedColorArray, clear_depth_value?: number, clear_stencil_value?: number, region?: Rect2, breadcrumb?: number): Integer
+    draw_list_begin(framebuffer: RID, draw_flags?: RenderingDevice.DrawFlags, clear_color_values?: PackedColorArrayInput, clear_depth_value?: number, clear_stencil_value?: number, region?: Rect2, breadcrumb?: number): Integer
     draw_list_begin_for_screen(screen?: number, clear_color?: Color): Integer
-    draw_list_begin_split(framebuffer: RID, splits: number, initial_color_action: RenderingDevice.InitialAction, final_color_action: RenderingDevice.FinalAction, initial_depth_action: RenderingDevice.InitialAction, final_depth_action: RenderingDevice.FinalAction, clear_color_values?: PackedColorArray, clear_depth?: number, clear_stencil?: number, region?: Rect2, storage_textures?: Array<RID>): PackedInt64Array
+    draw_list_begin_split(framebuffer: RID, splits: number, initial_color_action: RenderingDevice.InitialAction, final_color_action: RenderingDevice.FinalAction, initial_depth_action: RenderingDevice.InitialAction, final_depth_action: RenderingDevice.FinalAction, clear_color_values?: PackedColorArrayInput, clear_depth?: number, clear_stencil?: number, region?: Rect2, storage_textures?: Array<RID> | readonly RID[]): PackedInt64Array
     draw_list_bind_index_array(draw_list: Integer, index_array: RID): void
     draw_list_bind_render_pipeline(draw_list: Integer, render_pipeline: RID): void
     draw_list_bind_uniform_set(draw_list: Integer, uniform_set: RID, set_index: number): void
@@ -25247,15 +25459,15 @@ declare module 'godot' {
     draw_list_enable_scissor(draw_list: Integer, rect?: Rect2): void
     draw_list_end(): void
     draw_list_set_blend_constants(draw_list: Integer, color: Color): void
-    draw_list_set_push_constant(draw_list: Integer, buffer: PackedByteArray, size_bytes: number): void
+    draw_list_set_push_constant(draw_list: Integer, buffer: PackedByteArrayInput, size_bytes: number): void
     draw_list_switch_to_next_pass(): Integer
     draw_list_switch_to_next_pass_split(splits: number): PackedInt64Array
-    framebuffer_create(textures: Array<RID>, validate_with_format?: Integer, view_count?: number): RID
+    framebuffer_create(textures: Array<RID> | readonly RID[], validate_with_format?: Integer, view_count?: number): RID
     framebuffer_create_empty(size: Vector2i, samples?: RenderingDevice.TextureSamples, validate_with_format?: Integer): RID
-    framebuffer_create_multipass(textures: Array<RID>, passes: Array<RDFramebufferPass>, validate_with_format?: Integer, view_count?: number): RID
-    framebuffer_format_create(attachments: Array<RDAttachmentFormat>, view_count?: number): Integer
+    framebuffer_create_multipass(textures: Array<RID> | readonly RID[], passes: Array<RDFramebufferPass> | readonly RDFramebufferPass[], validate_with_format?: Integer, view_count?: number): RID
+    framebuffer_format_create(attachments: Array<RDAttachmentFormat> | readonly RDAttachmentFormat[], view_count?: number): Integer
     framebuffer_format_create_empty(samples?: RenderingDevice.TextureSamples): Integer
-    framebuffer_format_create_multipass(attachments: Array<RDAttachmentFormat>, passes: Array<RDFramebufferPass>, view_count?: number): Integer
+    framebuffer_format_create_multipass(attachments: Array<RDAttachmentFormat> | readonly RDAttachmentFormat[], passes: Array<RDFramebufferPass> | readonly RDFramebufferPass[], view_count?: number): Integer
     framebuffer_format_get_texture_samples(format: Integer, render_pass?: number): RenderingDevice.TextureSamples
     framebuffer_get_format(framebuffer: RID): Integer
     framebuffer_is_valid(framebuffer: RID): boolean
@@ -25286,9 +25498,9 @@ declare module 'godot' {
     get_tracked_object_type_count(): Integer
     has_feature(feature: RenderingDevice.Features): boolean
     index_array_create(index_buffer: RID, index_offset: number, index_count: number): RID
-    index_buffer_create(size_indices: number, format: RenderingDevice.IndexBufferFormat, data?: PackedByteArray, use_restart_indices?: boolean, creation_bits?: RenderingDevice.BufferCreationBits): RID
+    index_buffer_create(size_indices: number, format: RenderingDevice.IndexBufferFormat, data?: PackedByteArrayInput, use_restart_indices?: boolean, creation_bits?: RenderingDevice.BufferCreationBits): RID
     limit_get(limit: RenderingDevice.Limit): Integer
-    render_pipeline_create(shader: RID, framebuffer_format: Integer, vertex_format: Integer, primitive: RenderingDevice.RenderPrimitive, rasterization_state: RDPipelineRasterizationState, multisample_state: RDPipelineMultisampleState, stencil_state: RDPipelineDepthStencilState, color_blend_state: RDPipelineColorBlendState, dynamic_state_flags?: RenderingDevice.PipelineDynamicStateFlags, for_render_pass?: number, specialization_constants?: Array<RDPipelineSpecializationConstant>): RID
+    render_pipeline_create(shader: RID, framebuffer_format: Integer, vertex_format: Integer, primitive: RenderingDevice.RenderPrimitive, rasterization_state: RDPipelineRasterizationState, multisample_state: RDPipelineMultisampleState, stencil_state: RDPipelineDepthStencilState, color_blend_state: RDPipelineColorBlendState, dynamic_state_flags?: RenderingDevice.PipelineDynamicStateFlags, for_render_pass?: number, specialization_constants?: Array<RDPipelineSpecializationConstant> | readonly RDPipelineSpecializationConstant[]): RID
     render_pipeline_is_valid(render_pipeline: RID): boolean
     sampler_create(state: RDSamplerState): RID
     sampler_is_format_supported_for_filter(format: RenderingDevice.DataFormat, sampler_filter: RenderingDevice.SamplerFilter): boolean
@@ -25298,17 +25510,17 @@ declare module 'godot' {
     set_resource_name(id: RID, name: string): void
     shader_compile_binary_from_spirv(spirv_data: RDShaderSPIRV, name?: string): PackedByteArray
     shader_compile_spirv_from_source(shader_source: RDShaderSource, allow_cache?: boolean): RDShaderSPIRV
-    shader_create_from_bytecode(binary_data: PackedByteArray, placeholder_rid?: RID): RID
+    shader_create_from_bytecode(binary_data: PackedByteArrayInput, placeholder_rid?: RID): RID
     shader_create_from_spirv(spirv_data: RDShaderSPIRV, name?: string): RID
     shader_create_placeholder(): RID
     shader_get_vertex_input_attribute_mask(shader: RID): Integer
-    storage_buffer_create(size_bytes: number, data?: PackedByteArray, usage?: RenderingDevice.StorageBufferUsage, creation_bits?: RenderingDevice.BufferCreationBits): RID
+    storage_buffer_create(size_bytes: number, data?: PackedByteArrayInput, usage?: RenderingDevice.StorageBufferUsage, creation_bits?: RenderingDevice.BufferCreationBits): RID
     submit(): void
     sync(): void
-    texture_buffer_create(size_bytes: number, format: RenderingDevice.DataFormat, data?: PackedByteArray): RID
+    texture_buffer_create(size_bytes: number, format: RenderingDevice.DataFormat, data?: PackedByteArrayInput): RID
     texture_clear(texture: RID, color: Color, base_mipmap: number, mipmap_count: number, base_layer: number, layer_count: number): Error
     texture_copy(from_texture: RID, to_texture: RID, from_pos: Vector3, to_pos: Vector3, size: Vector3, src_mipmap: number, dst_mipmap: number, src_layer: number, dst_layer: number): Error
-    texture_create(format: RDTextureFormat, view: RDTextureView, data?: Array<PackedByteArray>): RID
+    texture_create(format: RDTextureFormat, view: RDTextureView, data?: Array<PackedByteArray> | readonly PackedByteArray[]): RID
     texture_create_from_extension(type_: RenderingDevice.TextureType, format: RenderingDevice.DataFormat, samples: RenderingDevice.TextureSamples, usage_flags: RenderingDevice.TextureUsageBits, image: Integer, width: Integer, height: Integer, depth: Integer, layers: Integer): RID
     texture_create_shared(view: RDTextureView, with_texture: RID): RID
     texture_create_shared_from_slice(view: RDTextureView, with_texture: RID, layer: number, mipmap: number, mipmaps?: number, slice_type?: RenderingDevice.TextureSliceType): RID
@@ -25322,13 +25534,13 @@ declare module 'godot' {
     texture_is_valid(texture: RID): boolean
     texture_resolve_multisample(from_texture: RID, to_texture: RID): Error
     texture_set_discardable(texture: RID, discardable: boolean): void
-    texture_update(texture: RID, layer: number, data: PackedByteArray): Error
-    uniform_buffer_create(size_bytes: number, data?: PackedByteArray, creation_bits?: RenderingDevice.BufferCreationBits): RID
-    uniform_set_create(uniforms: Array<RDUniform>, shader: RID, shader_set: number): RID
+    texture_update(texture: RID, layer: number, data: PackedByteArrayInput): Error
+    uniform_buffer_create(size_bytes: number, data?: PackedByteArrayInput, creation_bits?: RenderingDevice.BufferCreationBits): RID
+    uniform_set_create(uniforms: Array<RDUniform> | readonly RDUniform[], shader: RID, shader_set: number): RID
     uniform_set_is_valid(uniform_set: RID): boolean
-    vertex_array_create(vertex_count: number, vertex_format: Integer, src_buffers: Array<RID>, offsets?: PackedInt64Array): RID
-    vertex_buffer_create(size_bytes: number, data?: PackedByteArray, creation_bits?: RenderingDevice.BufferCreationBits): RID
-    vertex_format_create(vertex_descriptions: Array<RDVertexAttribute>): Integer
+    vertex_array_create(vertex_count: number, vertex_format: Integer, src_buffers: Array<RID> | readonly RID[], offsets?: PackedInt64ArrayInput): RID
+    vertex_buffer_create(size_bytes: number, data?: PackedByteArrayInput, creation_bits?: RenderingDevice.BufferCreationBits): RID
+    vertex_format_create(vertex_descriptions: Array<RDVertexAttribute> | readonly RDVertexAttribute[]): Integer
     static readonly INVALID_FORMAT_ID: Integer
     static readonly INVALID_ID: Integer
   }
@@ -25958,8 +26170,8 @@ declare module 'godot' {
     static readonly frame_post_draw: Signal<readonly []>
     readonly frame_pre_draw: Signal<readonly []>
     static readonly frame_pre_draw: Signal<readonly []>
-    bake_render_uv2(base: RID, material_overrides: Array<RID>, image_size: Vector2i): Array<Image>
-    static bake_render_uv2(base: RID, material_overrides: Array<RID>, image_size: Vector2i): Array<Image>
+    bake_render_uv2(base: RID, material_overrides: Array<RID> | readonly RID[], image_size: Vector2i): Array<Image>
+    static bake_render_uv2(base: RID, material_overrides: Array<RID> | readonly RID[], image_size: Vector2i): Array<Image>
     call_on_render_thread(callable: Callable | ((...args: GodotVariant[]) => GodotVariant)): void
     static call_on_render_thread(callable: Callable | ((...args: GodotVariant[]) => GodotVariant)): void
     camera_attributes_create(): RID
@@ -26010,20 +26222,20 @@ declare module 'godot' {
     static canvas_item_add_mesh(item: RID, mesh: RID, transform?: Transform2D, modulate?: Color, texture?: RID): void
     canvas_item_add_msdf_texture_rect_region(item: RID, rect: Rect2, texture: RID, src_rect: Rect2, modulate?: Color, outline_size?: number, px_range?: number, scale?: number): void
     static canvas_item_add_msdf_texture_rect_region(item: RID, rect: Rect2, texture: RID, src_rect: Rect2, modulate?: Color, outline_size?: number, px_range?: number, scale?: number): void
-    canvas_item_add_multiline(item: RID, points: PackedVector2Array, colors: PackedColorArray, width?: number, antialiased?: boolean): void
-    static canvas_item_add_multiline(item: RID, points: PackedVector2Array, colors: PackedColorArray, width?: number, antialiased?: boolean): void
+    canvas_item_add_multiline(item: RID, points: PackedVector2ArrayInput, colors: PackedColorArrayInput, width?: number, antialiased?: boolean): void
+    static canvas_item_add_multiline(item: RID, points: PackedVector2ArrayInput, colors: PackedColorArrayInput, width?: number, antialiased?: boolean): void
     canvas_item_add_multimesh(item: RID, mesh: RID, texture?: RID): void
     static canvas_item_add_multimesh(item: RID, mesh: RID, texture?: RID): void
     canvas_item_add_nine_patch(item: RID, rect: Rect2, source: Rect2, texture: RID, topleft: Vector2, bottomright: Vector2, x_axis_mode?: RenderingServer.NinePatchAxisMode, y_axis_mode?: RenderingServer.NinePatchAxisMode, draw_center?: boolean, modulate?: Color): void
     static canvas_item_add_nine_patch(item: RID, rect: Rect2, source: Rect2, texture: RID, topleft: Vector2, bottomright: Vector2, x_axis_mode?: RenderingServer.NinePatchAxisMode, y_axis_mode?: RenderingServer.NinePatchAxisMode, draw_center?: boolean, modulate?: Color): void
     canvas_item_add_particles(item: RID, particles: RID, texture: RID): void
     static canvas_item_add_particles(item: RID, particles: RID, texture: RID): void
-    canvas_item_add_polygon(item: RID, points: PackedVector2Array, colors: PackedColorArray, uvs?: PackedVector2Array, texture?: RID): void
-    static canvas_item_add_polygon(item: RID, points: PackedVector2Array, colors: PackedColorArray, uvs?: PackedVector2Array, texture?: RID): void
-    canvas_item_add_polyline(item: RID, points: PackedVector2Array, colors: PackedColorArray, width?: number, antialiased?: boolean): void
-    static canvas_item_add_polyline(item: RID, points: PackedVector2Array, colors: PackedColorArray, width?: number, antialiased?: boolean): void
-    canvas_item_add_primitive(item: RID, points: PackedVector2Array, colors: PackedColorArray, uvs: PackedVector2Array, texture: RID): void
-    static canvas_item_add_primitive(item: RID, points: PackedVector2Array, colors: PackedColorArray, uvs: PackedVector2Array, texture: RID): void
+    canvas_item_add_polygon(item: RID, points: PackedVector2ArrayInput, colors: PackedColorArrayInput, uvs?: PackedVector2ArrayInput, texture?: RID): void
+    static canvas_item_add_polygon(item: RID, points: PackedVector2ArrayInput, colors: PackedColorArrayInput, uvs?: PackedVector2ArrayInput, texture?: RID): void
+    canvas_item_add_polyline(item: RID, points: PackedVector2ArrayInput, colors: PackedColorArrayInput, width?: number, antialiased?: boolean): void
+    static canvas_item_add_polyline(item: RID, points: PackedVector2ArrayInput, colors: PackedColorArrayInput, width?: number, antialiased?: boolean): void
+    canvas_item_add_primitive(item: RID, points: PackedVector2ArrayInput, colors: PackedColorArrayInput, uvs: PackedVector2ArrayInput, texture: RID): void
+    static canvas_item_add_primitive(item: RID, points: PackedVector2ArrayInput, colors: PackedColorArrayInput, uvs: PackedVector2ArrayInput, texture: RID): void
     canvas_item_add_rect(item: RID, rect: Rect2, color: Color, antialiased?: boolean): void
     static canvas_item_add_rect(item: RID, rect: Rect2, color: Color, antialiased?: boolean): void
     canvas_item_add_set_transform(item: RID, transform: Transform2D): void
@@ -26032,8 +26244,8 @@ declare module 'godot' {
     static canvas_item_add_texture_rect(item: RID, rect: Rect2, texture: RID, tile?: boolean, modulate?: Color, transpose?: boolean): void
     canvas_item_add_texture_rect_region(item: RID, rect: Rect2, texture: RID, src_rect: Rect2, modulate?: Color, transpose?: boolean, clip_uv?: boolean): void
     static canvas_item_add_texture_rect_region(item: RID, rect: Rect2, texture: RID, src_rect: Rect2, modulate?: Color, transpose?: boolean, clip_uv?: boolean): void
-    canvas_item_add_triangle_array(item: RID, indices: PackedInt32Array, points: PackedVector2Array, colors: PackedColorArray, uvs?: PackedVector2Array, bones?: PackedInt32Array, weights?: PackedFloat32Array, texture?: RID, count?: number): void
-    static canvas_item_add_triangle_array(item: RID, indices: PackedInt32Array, points: PackedVector2Array, colors: PackedColorArray, uvs?: PackedVector2Array, bones?: PackedInt32Array, weights?: PackedFloat32Array, texture?: RID, count?: number): void
+    canvas_item_add_triangle_array(item: RID, indices: PackedInt32ArrayInput, points: PackedVector2ArrayInput, colors: PackedColorArrayInput, uvs?: PackedVector2ArrayInput, bones?: PackedInt32ArrayInput, weights?: PackedFloat32ArrayInput, texture?: RID, count?: number): void
+    static canvas_item_add_triangle_array(item: RID, indices: PackedInt32ArrayInput, points: PackedVector2ArrayInput, colors: PackedColorArrayInput, uvs?: PackedVector2ArrayInput, bones?: PackedInt32ArrayInput, weights?: PackedFloat32ArrayInput, texture?: RID, count?: number): void
     canvas_item_attach_skeleton(item: RID, skeleton: RID): void
     static canvas_item_attach_skeleton(item: RID, skeleton: RID): void
     canvas_item_clear(item: RID): void
@@ -26168,8 +26380,8 @@ declare module 'godot' {
     static canvas_occluder_polygon_create(): RID
     canvas_occluder_polygon_set_cull_mode(occluder_polygon: RID, mode: RenderingServer.CanvasOccluderPolygonCullMode): void
     static canvas_occluder_polygon_set_cull_mode(occluder_polygon: RID, mode: RenderingServer.CanvasOccluderPolygonCullMode): void
-    canvas_occluder_polygon_set_shape(occluder_polygon: RID, shape: PackedVector2Array, closed: boolean): void
-    static canvas_occluder_polygon_set_shape(occluder_polygon: RID, shape: PackedVector2Array, closed: boolean): void
+    canvas_occluder_polygon_set_shape(occluder_polygon: RID, shape: PackedVector2ArrayInput, closed: boolean): void
+    static canvas_occluder_polygon_set_shape(occluder_polygon: RID, shape: PackedVector2ArrayInput, closed: boolean): void
     canvas_set_disable_scale(disable: boolean): void
     static canvas_set_disable_scale(disable: boolean): void
     canvas_set_item_mirroring(canvas: RID, item: RID, mirroring: Vector2): void
@@ -26200,8 +26412,8 @@ declare module 'godot' {
     static compositor_effect_set_enabled(effect: RID, enabled: boolean): void
     compositor_effect_set_flag(effect: RID, flag: RenderingServer.CompositorEffectFlags, set_: boolean): void
     static compositor_effect_set_flag(effect: RID, flag: RenderingServer.CompositorEffectFlags, set_: boolean): void
-    compositor_set_compositor_effects(compositor: RID, effects: Array<RID>): void
-    static compositor_set_compositor_effects(compositor: RID, effects: Array<RID>): void
+    compositor_set_compositor_effects(compositor: RID, effects: Array<RID> | readonly RID[]): void
+    static compositor_set_compositor_effects(compositor: RID, effects: Array<RID> | readonly RID[]): void
     create_local_rendering_device(): RenderingDevice
     static create_local_rendering_device(): RenderingDevice
     debug_canvas_item_get_rect(item: RID): Rect2
@@ -26256,8 +26468,8 @@ declare module 'godot' {
     static environment_set_canvas_max_layer(env: RID, max_layer: number): void
     environment_set_fog(env: RID, enable: boolean, light_color: Color, light_energy: number, sun_scatter: number, density: number, height: number, height_density: number, aerial_perspective: number, sky_affect: number, fog_mode?: RenderingServer.EnvironmentFogMode): void
     static environment_set_fog(env: RID, enable: boolean, light_color: Color, light_energy: number, sun_scatter: number, density: number, height: number, height_density: number, aerial_perspective: number, sky_affect: number, fog_mode?: RenderingServer.EnvironmentFogMode): void
-    environment_set_glow(env: RID, enable: boolean, levels: PackedFloat32Array, intensity: number, strength: number, mix: number, bloom_threshold: number, blend_mode: RenderingServer.EnvironmentGlowBlendMode, hdr_bleed_threshold: number, hdr_bleed_scale: number, hdr_luminance_cap: number, glow_map_strength: number, glow_map: RID): void
-    static environment_set_glow(env: RID, enable: boolean, levels: PackedFloat32Array, intensity: number, strength: number, mix: number, bloom_threshold: number, blend_mode: RenderingServer.EnvironmentGlowBlendMode, hdr_bleed_threshold: number, hdr_bleed_scale: number, hdr_luminance_cap: number, glow_map_strength: number, glow_map: RID): void
+    environment_set_glow(env: RID, enable: boolean, levels: PackedFloat32ArrayInput, intensity: number, strength: number, mix: number, bloom_threshold: number, blend_mode: RenderingServer.EnvironmentGlowBlendMode, hdr_bleed_threshold: number, hdr_bleed_scale: number, hdr_luminance_cap: number, glow_map_strength: number, glow_map: RID): void
+    static environment_set_glow(env: RID, enable: boolean, levels: PackedFloat32ArrayInput, intensity: number, strength: number, mix: number, bloom_threshold: number, blend_mode: RenderingServer.EnvironmentGlowBlendMode, hdr_bleed_threshold: number, hdr_bleed_scale: number, hdr_luminance_cap: number, glow_map_strength: number, glow_map: RID): void
     environment_set_sdfgi(env: RID, enable: boolean, cascades: number, min_cell_size: number, y_scale: RenderingServer.EnvironmentSDFGIYScale, use_occlusion: boolean, bounce_feedback: number, read_sky: boolean, energy: number, normal_bias: number, probe_bias: number): void
     static environment_set_sdfgi(env: RID, enable: boolean, cascades: number, min_cell_size: number, y_scale: RenderingServer.EnvironmentSDFGIYScale, use_occlusion: boolean, bounce_feedback: number, read_sky: boolean, energy: number, normal_bias: number, probe_bias: number): void
     environment_set_sdfgi_frames_to_converge(frames: RenderingServer.EnvironmentSDFGIFramesToConverge): void
@@ -26416,8 +26628,8 @@ declare module 'godot' {
     static instance_set_visible(instance: RID, visible: boolean): void
     instances_cull_aabb(aabb: AABB, scenario?: RID): PackedInt64Array
     static instances_cull_aabb(aabb: AABB, scenario?: RID): PackedInt64Array
-    instances_cull_convex(convex: Array<Plane>, scenario?: RID): PackedInt64Array
-    static instances_cull_convex(convex: Array<Plane>, scenario?: RID): PackedInt64Array
+    instances_cull_convex(convex: Array<Plane> | readonly Plane[], scenario?: RID): PackedInt64Array
+    static instances_cull_convex(convex: Array<Plane> | readonly Plane[], scenario?: RID): PackedInt64Array
     instances_cull_ray(from_: Vector3, to: Vector3, scenario?: RID): PackedInt64Array
     static instances_cull_ray(from_: Vector3, to: Vector3, scenario?: RID): PackedInt64Array
     is_on_render_thread(): boolean
@@ -26470,8 +26682,8 @@ declare module 'godot' {
     static lightmap_set_baked_exposure_normalization(lightmap: RID, baked_exposure: number): void
     lightmap_set_probe_bounds(lightmap: RID, bounds: AABB): void
     static lightmap_set_probe_bounds(lightmap: RID, bounds: AABB): void
-    lightmap_set_probe_capture_data(lightmap: RID, points: PackedVector3Array, point_sh: PackedColorArray, tetrahedra: PackedInt32Array, bsp_tree: PackedInt32Array): void
-    static lightmap_set_probe_capture_data(lightmap: RID, points: PackedVector3Array, point_sh: PackedColorArray, tetrahedra: PackedInt32Array, bsp_tree: PackedInt32Array): void
+    lightmap_set_probe_capture_data(lightmap: RID, points: PackedVector3ArrayInput, point_sh: PackedColorArrayInput, tetrahedra: PackedInt32ArrayInput, bsp_tree: PackedInt32ArrayInput): void
+    static lightmap_set_probe_capture_data(lightmap: RID, points: PackedVector3ArrayInput, point_sh: PackedColorArrayInput, tetrahedra: PackedInt32ArrayInput, bsp_tree: PackedInt32ArrayInput): void
     lightmap_set_probe_capture_update_speed(speed: number): void
     static lightmap_set_probe_capture_update_speed(speed: number): void
     lightmap_set_probe_interior(lightmap: RID, interior: boolean): void
@@ -26494,16 +26706,16 @@ declare module 'godot' {
     static material_set_render_priority(material: RID, priority: number): void
     material_set_shader(shader_material: RID, shader: RID): void
     static material_set_shader(shader_material: RID, shader: RID): void
-    mesh_add_surface(mesh: RID, surface: Dictionary): void
-    static mesh_add_surface(mesh: RID, surface: Dictionary): void
-    mesh_add_surface_from_arrays(mesh: RID, primitive: RenderingServer.PrimitiveType, arrays: Array<GodotVariant>, blend_shapes?: Array<GodotVariant>, lods?: Dictionary, compress_format?: RenderingServer.ArrayFormat): void
-    static mesh_add_surface_from_arrays(mesh: RID, primitive: RenderingServer.PrimitiveType, arrays: Array<GodotVariant>, blend_shapes?: Array<GodotVariant>, lods?: Dictionary, compress_format?: RenderingServer.ArrayFormat): void
+    mesh_add_surface(mesh: RID, surface: Dictionary | Readonly<Record<string, GodotVariant>>): void
+    static mesh_add_surface(mesh: RID, surface: Dictionary | Readonly<Record<string, GodotVariant>>): void
+    mesh_add_surface_from_arrays(mesh: RID, primitive: RenderingServer.PrimitiveType, arrays: Array<GodotVariant> | readonly GodotVariant[], blend_shapes?: Array<GodotVariant> | readonly GodotVariant[], lods?: Dictionary | Readonly<Record<string, GodotVariant>>, compress_format?: RenderingServer.ArrayFormat): void
+    static mesh_add_surface_from_arrays(mesh: RID, primitive: RenderingServer.PrimitiveType, arrays: Array<GodotVariant> | readonly GodotVariant[], blend_shapes?: Array<GodotVariant> | readonly GodotVariant[], lods?: Dictionary | Readonly<Record<string, GodotVariant>>, compress_format?: RenderingServer.ArrayFormat): void
     mesh_clear(mesh: RID): void
     static mesh_clear(mesh: RID): void
     mesh_create(): RID
     static mesh_create(): RID
-    mesh_create_from_surfaces(surfaces: Array<Dictionary>, blend_shape_count?: number): RID
-    static mesh_create_from_surfaces(surfaces: Array<Dictionary>, blend_shape_count?: number): RID
+    mesh_create_from_surfaces(surfaces: Array<Dictionary> | readonly Dictionary[], blend_shape_count?: number): RID
+    static mesh_create_from_surfaces(surfaces: Array<Dictionary> | readonly Dictionary[], blend_shape_count?: number): RID
     mesh_get_blend_shape_count(mesh: RID): number
     static mesh_get_blend_shape_count(mesh: RID): number
     mesh_get_blend_shape_mode(mesh: RID): RenderingServer.BlendShapeMode
@@ -26540,12 +26752,12 @@ declare module 'godot' {
     static mesh_surface_remove(mesh: RID, surface: number): void
     mesh_surface_set_material(mesh: RID, surface: number, material: RID): void
     static mesh_surface_set_material(mesh: RID, surface: number, material: RID): void
-    mesh_surface_update_attribute_region(mesh: RID, surface: number, offset: number, data: PackedByteArray): void
-    static mesh_surface_update_attribute_region(mesh: RID, surface: number, offset: number, data: PackedByteArray): void
-    mesh_surface_update_skin_region(mesh: RID, surface: number, offset: number, data: PackedByteArray): void
-    static mesh_surface_update_skin_region(mesh: RID, surface: number, offset: number, data: PackedByteArray): void
-    mesh_surface_update_vertex_region(mesh: RID, surface: number, offset: number, data: PackedByteArray): void
-    static mesh_surface_update_vertex_region(mesh: RID, surface: number, offset: number, data: PackedByteArray): void
+    mesh_surface_update_attribute_region(mesh: RID, surface: number, offset: number, data: PackedByteArrayInput): void
+    static mesh_surface_update_attribute_region(mesh: RID, surface: number, offset: number, data: PackedByteArrayInput): void
+    mesh_surface_update_skin_region(mesh: RID, surface: number, offset: number, data: PackedByteArrayInput): void
+    static mesh_surface_update_skin_region(mesh: RID, surface: number, offset: number, data: PackedByteArrayInput): void
+    mesh_surface_update_vertex_region(mesh: RID, surface: number, offset: number, data: PackedByteArrayInput): void
+    static mesh_surface_update_vertex_region(mesh: RID, surface: number, offset: number, data: PackedByteArrayInput): void
     multimesh_allocate_data(multimesh: RID, instances: number, transform_format: RenderingServer.MultimeshTransformFormat, color_format?: boolean, custom_data_format?: boolean, use_indirect?: boolean): void
     static multimesh_allocate_data(multimesh: RID, instances: number, transform_format: RenderingServer.MultimeshTransformFormat, color_format?: boolean, custom_data_format?: boolean, use_indirect?: boolean): void
     multimesh_create(): RID
@@ -26584,10 +26796,10 @@ declare module 'godot' {
     static multimesh_instance_set_transform(multimesh: RID, index: number, transform: Transform3D): void
     multimesh_instance_set_transform_2d(multimesh: RID, index: number, transform: Transform2D): void
     static multimesh_instance_set_transform_2d(multimesh: RID, index: number, transform: Transform2D): void
-    multimesh_set_buffer(multimesh: RID, buffer: PackedFloat32Array): void
-    static multimesh_set_buffer(multimesh: RID, buffer: PackedFloat32Array): void
-    multimesh_set_buffer_interpolated(multimesh: RID, buffer: PackedFloat32Array, buffer_previous: PackedFloat32Array): void
-    static multimesh_set_buffer_interpolated(multimesh: RID, buffer: PackedFloat32Array, buffer_previous: PackedFloat32Array): void
+    multimesh_set_buffer(multimesh: RID, buffer: PackedFloat32ArrayInput): void
+    static multimesh_set_buffer(multimesh: RID, buffer: PackedFloat32ArrayInput): void
+    multimesh_set_buffer_interpolated(multimesh: RID, buffer: PackedFloat32ArrayInput, buffer_previous: PackedFloat32ArrayInput): void
+    static multimesh_set_buffer_interpolated(multimesh: RID, buffer: PackedFloat32ArrayInput, buffer_previous: PackedFloat32ArrayInput): void
     multimesh_set_custom_aabb(multimesh: RID, aabb: AABB): void
     static multimesh_set_custom_aabb(multimesh: RID, aabb: AABB): void
     multimesh_set_mesh(multimesh: RID, mesh: RID): void
@@ -26600,8 +26812,8 @@ declare module 'godot' {
     static multimesh_set_visible_instances(multimesh: RID, visible: number): void
     occluder_create(): RID
     static occluder_create(): RID
-    occluder_set_mesh(occluder: RID, vertices: PackedVector3Array, indices: PackedInt32Array): void
-    static occluder_set_mesh(occluder: RID, vertices: PackedVector3Array, indices: PackedInt32Array): void
+    occluder_set_mesh(occluder: RID, vertices: PackedVector3ArrayInput, indices: PackedInt32ArrayInput): void
+    static occluder_set_mesh(occluder: RID, vertices: PackedVector3ArrayInput, indices: PackedInt32ArrayInput): void
     omni_light_create(): RID
     static omni_light_create(): RID
     particles_collision_create(): RID
@@ -26690,8 +26902,8 @@ declare module 'godot' {
     static particles_set_speed_scale(particles: RID, scale: number): void
     particles_set_subemitter(particles: RID, subemitter_particles: RID): void
     static particles_set_subemitter(particles: RID, subemitter_particles: RID): void
-    particles_set_trail_bind_poses(particles: RID, bind_poses: Array<Transform3D>): void
-    static particles_set_trail_bind_poses(particles: RID, bind_poses: Array<Transform3D>): void
+    particles_set_trail_bind_poses(particles: RID, bind_poses: Array<Transform3D> | readonly Transform3D[]): void
+    static particles_set_trail_bind_poses(particles: RID, bind_poses: Array<Transform3D> | readonly Transform3D[]): void
     particles_set_trails(particles: RID, enable: boolean, length_sec: number): void
     static particles_set_trails(particles: RID, enable: boolean, length_sec: number): void
     particles_set_transform_align(particles: RID, align: RenderingServer.ParticlesTransformAlign): void
@@ -26808,22 +27020,22 @@ declare module 'godot' {
     static texture_2d_get(texture: RID): Image
     texture_2d_layer_get(texture: RID, layer: number): Image
     static texture_2d_layer_get(texture: RID, layer: number): Image
-    texture_2d_layered_create(layers: Array<Image>, layered_type: RenderingServer.TextureLayeredType): RID
-    static texture_2d_layered_create(layers: Array<Image>, layered_type: RenderingServer.TextureLayeredType): RID
+    texture_2d_layered_create(layers: Array<Image> | readonly Image[], layered_type: RenderingServer.TextureLayeredType): RID
+    static texture_2d_layered_create(layers: Array<Image> | readonly Image[], layered_type: RenderingServer.TextureLayeredType): RID
     texture_2d_layered_placeholder_create(layered_type: RenderingServer.TextureLayeredType): RID
     static texture_2d_layered_placeholder_create(layered_type: RenderingServer.TextureLayeredType): RID
     texture_2d_placeholder_create(): RID
     static texture_2d_placeholder_create(): RID
     texture_2d_update(texture: RID, image: Image, layer: number): void
     static texture_2d_update(texture: RID, image: Image, layer: number): void
-    texture_3d_create(format: Image.Format, width: number, height: number, depth: number, mipmaps: boolean, data: Array<Image>): RID
-    static texture_3d_create(format: Image.Format, width: number, height: number, depth: number, mipmaps: boolean, data: Array<Image>): RID
+    texture_3d_create(format: Image.Format, width: number, height: number, depth: number, mipmaps: boolean, data: Array<Image> | readonly Image[]): RID
+    static texture_3d_create(format: Image.Format, width: number, height: number, depth: number, mipmaps: boolean, data: Array<Image> | readonly Image[]): RID
     texture_3d_get(texture: RID): Array<Image>
     static texture_3d_get(texture: RID): Array<Image>
     texture_3d_placeholder_create(): RID
     static texture_3d_placeholder_create(): RID
-    texture_3d_update(texture: RID, data: Array<Image>): void
-    static texture_3d_update(texture: RID, data: Array<Image>): void
+    texture_3d_update(texture: RID, data: Array<Image> | readonly Image[]): void
+    static texture_3d_update(texture: RID, data: Array<Image> | readonly Image[]): void
     texture_create_from_native_handle(type_: RenderingServer.TextureType, format: Image.Format, native_handle: Integer, width: number, height: number, depth: number, layers?: number, layered_type?: RenderingServer.TextureLayeredType): RID
     static texture_create_from_native_handle(type_: RenderingServer.TextureType, format: Image.Format, native_handle: Integer, width: number, height: number, depth: number, layers?: number, layered_type?: RenderingServer.TextureLayeredType): RID
     texture_get_format(texture: RID): Image.Format
@@ -26960,8 +27172,8 @@ declare module 'godot' {
     static visibility_notifier_set_aabb(notifier: RID, aabb: AABB): void
     visibility_notifier_set_callbacks(notifier: RID, enter_callable: Callable | ((...args: GodotVariant[]) => GodotVariant), exit_callable: Callable | ((...args: GodotVariant[]) => GodotVariant)): void
     static visibility_notifier_set_callbacks(notifier: RID, enter_callable: Callable | ((...args: GodotVariant[]) => GodotVariant), exit_callable: Callable | ((...args: GodotVariant[]) => GodotVariant)): void
-    voxel_gi_allocate_data(voxel_gi: RID, to_cell_xform: Transform3D, aabb: AABB, octree_size: Vector3i, octree_cells: PackedByteArray, data_cells: PackedByteArray, distance_field: PackedByteArray, level_counts: PackedInt32Array): void
-    static voxel_gi_allocate_data(voxel_gi: RID, to_cell_xform: Transform3D, aabb: AABB, octree_size: Vector3i, octree_cells: PackedByteArray, data_cells: PackedByteArray, distance_field: PackedByteArray, level_counts: PackedInt32Array): void
+    voxel_gi_allocate_data(voxel_gi: RID, to_cell_xform: Transform3D, aabb: AABB, octree_size: Vector3i, octree_cells: PackedByteArrayInput, data_cells: PackedByteArrayInput, distance_field: PackedByteArrayInput, level_counts: PackedInt32ArrayInput): void
+    static voxel_gi_allocate_data(voxel_gi: RID, to_cell_xform: Transform3D, aabb: AABB, octree_size: Vector3i, octree_cells: PackedByteArrayInput, data_cells: PackedByteArrayInput, distance_field: PackedByteArrayInput, level_counts: PackedInt32ArrayInput): void
     voxel_gi_create(): RID
     static voxel_gi_create(): RID
     voxel_gi_get_data_cells(voxel_gi: RID): PackedByteArray
@@ -27845,7 +28057,7 @@ declare module 'godot' {
     _handles_type(type_: StringName | string): boolean
     _load(path: string, original_path: string, use_sub_threads: boolean, cache_mode: number): GodotVariant
     _recognize_path(path: string, type_: StringName | string): boolean
-    _rename_dependencies(path: string, renames: Dictionary): Error
+    _rename_dependencies(path: string, renames: Dictionary | Readonly<Record<string, GodotVariant>>): Error
   }
   export namespace ResourceFormatLoader {
     export enum CacheMode {
@@ -27973,7 +28185,7 @@ declare module 'godot' {
   export class ResourceImporterOggVorbis extends ResourceImporter {
     constructor()
     static is_instance(value: unknown): value is ResourceImporterOggVorbis
-    static load_from_buffer(stream_data: PackedByteArray): AudioStreamOggVorbis
+    static load_from_buffer(stream_data: PackedByteArrayInput): AudioStreamOggVorbis
     static load_from_file(path: string): AudioStreamOggVorbis
   }
 
@@ -28047,8 +28259,8 @@ declare module 'godot' {
     static load(path: string, type_hint?: string, cache_mode?: ResourceLoader.CacheMode): Resource
     load_threaded_get(path: string): Resource
     static load_threaded_get(path: string): Resource
-    load_threaded_get_status(path: string, progress?: Array<GodotVariant>): ResourceLoader.ThreadLoadStatus
-    static load_threaded_get_status(path: string, progress?: Array<GodotVariant>): ResourceLoader.ThreadLoadStatus
+    load_threaded_get_status(path: string, progress?: Array<GodotVariant> | readonly GodotVariant[]): ResourceLoader.ThreadLoadStatus
+    static load_threaded_get_status(path: string, progress?: Array<GodotVariant> | readonly GodotVariant[]): ResourceLoader.ThreadLoadStatus
     load_threaded_request(path: string, type_hint?: string, use_sub_threads?: boolean, cache_mode?: ResourceLoader.CacheMode): Error
     static load_threaded_request(path: string, type_hint?: string, use_sub_threads?: boolean, cache_mode?: ResourceLoader.CacheMode): Error
     remove_resource_format_loader(format_loader: ResourceFormatLoader): void
@@ -28079,7 +28291,8 @@ declare module 'godot' {
   export class ResourcePreloader extends Node {
     constructor()
     static is_instance(value: unknown): value is ResourcePreloader
-    resources: Array<GodotVariant>
+    get resources(): Array<GodotVariant>
+    set resources(value: Array<GodotVariant> | readonly GodotVariant[])
     add_resource(name: StringName | string, resource: Resource): void
     get_resource(name: StringName | string): Resource
     get_resource_list(): PackedStringArray
@@ -28226,7 +28439,8 @@ declare module 'godot' {
     autowrap_mode: Integer
     bbcode_enabled: boolean
     context_menu_enabled: boolean
-    custom_effects: Array<RichTextEffect>
+    get custom_effects(): Array<RichTextEffect>
+    set custom_effects(value: Array<RichTextEffect> | readonly RichTextEffect[])
     deselect_on_focus_loss_enabled: boolean
     drag_and_drop_selection_enabled: boolean
     fit_content: boolean
@@ -28241,9 +28455,11 @@ declare module 'godot' {
     selection_enabled: boolean
     shortcut_keys_enabled: boolean
     structured_text_bidi_override: Integer
-    structured_text_bidi_override_options: Array<GodotVariant>
+    get structured_text_bidi_override_options(): Array<GodotVariant>
+    set structured_text_bidi_override_options(value: Array<GodotVariant> | readonly GodotVariant[])
     tab_size: Integer
-    tab_stops: PackedFloat32Array
+    get tab_stops(): PackedFloat32Array
+    set tab_stops(value: PackedFloat32ArrayInput)
     text: string
     text_direction: Integer
     threaded: boolean
@@ -28315,7 +28531,7 @@ declare module 'godot' {
     menu_option(option: number): void
     newline(): void
     parse_bbcode(bbcode: string): void
-    parse_expressions_for_values(expressions: PackedStringArray): Dictionary
+    parse_expressions_for_values(expressions: PackedStringArrayInput): Dictionary
     pop(): void
     pop_all(): void
     pop_context(): void
@@ -28325,7 +28541,7 @@ declare module 'godot' {
     push_cell(): void
     push_color(color: Color): void
     push_context(): void
-    push_customfx(effect: RichTextEffect, env: Dictionary): void
+    push_customfx(effect: RichTextEffect, env: Dictionary | Readonly<Record<string, GodotVariant>>): void
     push_dropcap(string_: string, font: Font, size: number, dropcap_margins?: Rect2, color?: Color, outline_size?: number, outline_color?: Color): void
     push_fgcolor(fgcolor: Color): void
     push_font(font: Font, font_size?: number): void
@@ -28340,7 +28556,7 @@ declare module 'godot' {
     push_normal(): void
     push_outline_color(color: Color): void
     push_outline_size(outline_size: number): void
-    push_paragraph(alignment: HorizontalAlignment, base_direction?: Control.TextDirection, language?: string, st_parser?: TextServer.StructuredTextParser, justification_flags?: TextServer.JustificationFlag, tab_stops?: PackedFloat32Array): void
+    push_paragraph(alignment: HorizontalAlignment, base_direction?: Control.TextDirection, language?: string, st_parser?: TextServer.StructuredTextParser, justification_flags?: TextServer.JustificationFlag, tab_stops?: PackedFloat32ArrayInput): void
     push_strikethrough(): void
     push_table(columns: number, inline_align?: InlineAlignment, align_to_row?: number): void
     push_underline(): void
@@ -28357,7 +28573,7 @@ declare module 'godot' {
     set_context_menu_enabled(enabled: boolean): void
     set_deselect_on_focus_loss_enabled(enable: boolean): void
     set_drag_and_drop_selection_enabled(enable: boolean): void
-    set_effects(effects: Array<GodotVariant>): void
+    set_effects(effects: Array<GodotVariant> | readonly GodotVariant[]): void
     set_fit_content(enabled: boolean): void
     set_hint_underline(enable: boolean): void
     set_horizontal_alignment(alignment: HorizontalAlignment): void
@@ -28370,9 +28586,9 @@ declare module 'godot' {
     set_selection_enabled(enabled: boolean): void
     set_shortcut_keys_enabled(enabled: boolean): void
     set_structured_text_bidi_override(parser: TextServer.StructuredTextParser): void
-    set_structured_text_bidi_override_options(args: Array<GodotVariant>): void
+    set_structured_text_bidi_override_options(args: Array<GodotVariant> | readonly GodotVariant[]): void
     set_tab_size(spaces: number): void
-    set_tab_stops(tab_stops: PackedFloat32Array): void
+    set_tab_stops(tab_stops: PackedFloat32ArrayInput): void
     set_table_column_expand(column: number, expand: boolean, ratio?: number, shrink?: boolean): void
     set_text(text: string): void
     set_text_direction(direction: Control.TextDirection): void
@@ -28646,7 +28862,8 @@ declare module 'godot' {
   export class RootMotionView extends VisualInstance3D {
     constructor()
     static is_instance(value: unknown): value is RootMotionView
-    animation_path: NodePath
+    get animation_path(): NodePath
+    set animation_path(value: NodePath | string)
     cell_size: number
     color: Color
     radius: number
@@ -28671,12 +28888,14 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is SceneMultiplayer
     allow_object_decoding: boolean
-    auth_callback: Callable
+    get auth_callback(): Callable
+    set auth_callback(value: Callable | ((...args: GodotVariant[]) => GodotVariant))
     auth_timeout: number
     max_delta_packet_size: Integer
     max_sync_packet_size: Integer
     refuse_new_connections: boolean
-    root_path: NodePath
+    get root_path(): NodePath
+    set root_path(value: NodePath | string)
     server_relay: boolean
     readonly peer_authenticating: Signal<readonly [Integer]>
     readonly peer_authentication_failed: Signal<readonly [Integer]>
@@ -28693,8 +28912,8 @@ declare module 'godot' {
     is_object_decoding_allowed(): boolean
     is_refusing_new_connections(): boolean
     is_server_relay_enabled(): boolean
-    send_auth(id: number, data: PackedByteArray): Error
-    send_bytes(bytes: PackedByteArray, id?: number, mode?: MultiplayerPeer.TransferMode, channel?: number): Error
+    send_auth(id: number, data: PackedByteArrayInput): Error
+    send_bytes(bytes: PackedByteArrayInput, id?: number, mode?: MultiplayerPeer.TransferMode, channel?: number): Error
     set_allow_object_decoding(enable: boolean): void
     set_auth_callback(callback: Callable | ((...args: GodotVariant[]) => GodotVariant)): void
     set_auth_timeout(timeout: number): void
@@ -29051,7 +29270,7 @@ declare module 'godot' {
     _is_control_flow_keyword(keyword: string): boolean
     _is_using_templates(): boolean
     _lookup_code(code: string, symbol_: string, path: string, owner: Object): Dictionary
-    _make_function(class_name: string, function_name: string, function_args: PackedStringArray): string
+    _make_function(class_name: string, function_name: string, function_args: PackedStringArrayInput): string
     _make_template(template: string, class_name: string, base_class_name: string): Script
     _open_in_external_editor(script: Script, line: number, column: number): Error
     _overrides_external_editor(): boolean
@@ -29062,7 +29281,7 @@ declare module 'godot' {
     _profiling_start(): void
     _profiling_stop(): void
     _reload_all_scripts(): void
-    _reload_scripts(scripts: Array<GodotVariant>, soft_reload: boolean): void
+    _reload_scripts(scripts: Array<GodotVariant> | readonly GodotVariant[], soft_reload: boolean): void
     _reload_tool_script(script: Script, soft_reload: boolean): void
     _remove_named_global_constant(name: StringName | string): void
     _supports_builtin_mode(): boolean
@@ -29461,12 +29680,13 @@ declare module 'godot' {
   export class Shortcut extends Resource {
     constructor()
     static is_instance(value: unknown): value is Shortcut
-    events: Array<InputEvent>
+    get events(): Array<InputEvent>
+    set events(value: Array<InputEvent> | readonly InputEvent[])
     get_as_text(): string
     get_events(): Array<GodotVariant>
     has_valid_event(): boolean
     matches_event(event: InputEvent): boolean
-    set_events(events: Array<GodotVariant>): void
+    set_events(events: Array<GodotVariant> | readonly GodotVariant[]): void
   }
 
   /**
@@ -29538,7 +29758,7 @@ declare module 'godot' {
     localize_rests(): void
     physical_bones_add_collision_exception(exception: RID): void
     physical_bones_remove_collision_exception(exception: RID): void
-    physical_bones_start_simulation(bones?: Array<StringName>): void
+    physical_bones_start_simulation(bones?: Array<StringName> | readonly StringName[]): void
     physical_bones_stop_simulation(): void
     register_skin(skin: Skin): SkinReference
     reset_bone_pose(bone_idx: number): void
@@ -29580,10 +29800,13 @@ declare module 'godot' {
     max_iterations: Integer
     min_distance: number
     override_tip_basis: boolean
-    root_bone: StringName
+    get root_bone(): StringName
+    set root_bone(value: StringName | string)
     target: Transform3D
-    target_node: NodePath
-    tip_bone: StringName
+    get target_node(): NodePath
+    set target_node(value: NodePath | string)
+    get tip_bone(): StringName
+    set tip_bone(value: StringName | string)
     use_magnet: boolean
     get_interpolation(): number
     get_magnet_position(): Vector3
@@ -29643,8 +29866,10 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is SkeletonModification2DCCDIK
     ccdik_data_chain_length: Integer
-    target_nodepath: NodePath
-    tip_nodepath: NodePath
+    get target_nodepath(): NodePath
+    set target_nodepath(value: NodePath | string)
+    get tip_nodepath(): NodePath
+    set tip_nodepath(value: NodePath | string)
     get_ccdik_data_chain_length(): number
     get_ccdik_joint_bone_index(joint_idx: number): number
     get_ccdik_joint_bone2d_node(joint_idx: number): NodePath
@@ -29675,7 +29900,8 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is SkeletonModification2DFABRIK
     fabrik_data_chain_length: Integer
-    target_nodepath: NodePath
+    get target_nodepath(): NodePath
+    set target_nodepath(value: NodePath | string)
     get_fabrik_data_chain_length(): number
     get_fabrik_joint_bone_index(joint_idx: number): number
     get_fabrik_joint_bone2d_node(joint_idx: number): NodePath
@@ -29702,7 +29928,8 @@ declare module 'godot' {
     jiggle_data_chain_length: Integer
     mass: number
     stiffness: number
-    target_nodepath: NodePath
+    get target_nodepath(): NodePath
+    set target_nodepath(value: NodePath | string)
     use_gravity: boolean
     get_collision_mask(): number
     get_damping(): number
@@ -29748,8 +29975,10 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is SkeletonModification2DLookAt
     bone_index: Integer
-    bone2d_node: NodePath
-    target_nodepath: NodePath
+    get bone2d_node(): NodePath
+    set bone2d_node(value: NodePath | string)
+    get target_nodepath(): NodePath
+    set target_nodepath(value: NodePath | string)
     get_additional_rotation(): number
     get_bone_index(): number
     get_bone2d_node(): NodePath
@@ -29781,8 +30010,8 @@ declare module 'godot' {
     get_physical_bone_node(joint_idx: number): NodePath
     set_physical_bone_chain_length(length: number): void
     set_physical_bone_node(joint_idx: number, physicalbone2d_node: NodePath | string): void
-    start_simulation(bones?: Array<StringName>): void
-    stop_simulation(bones?: Array<StringName>): void
+    start_simulation(bones?: Array<StringName> | readonly StringName[]): void
+    stop_simulation(bones?: Array<StringName> | readonly StringName[]): void
   }
 
   /**
@@ -29806,7 +30035,8 @@ declare module 'godot' {
     flip_bend_direction: boolean
     target_maximum_distance: number
     target_minimum_distance: number
-    target_nodepath: NodePath
+    get target_nodepath(): NodePath
+    set target_nodepath(value: NodePath | string)
     get_flip_bend_direction(): boolean
     get_joint_one_bone_idx(): number
     get_joint_one_bone2d_node(): NodePath
@@ -29889,8 +30119,10 @@ declare module 'godot' {
     static is_instance(value: unknown): value is SkeletonProfile
     bone_size: Integer
     group_size: Integer
-    root_bone: StringName
-    scale_base_bone: StringName
+    get root_bone(): StringName
+    set root_bone(value: StringName | string)
+    get scale_base_bone(): StringName
+    set scale_base_bone(value: StringName | string)
     readonly profile_updated: Signal<readonly []>
     find_bone(bone_name: StringName | string): number
     get_bone_name(bone_idx: number): StringName
@@ -30078,7 +30310,8 @@ declare module 'godot' {
     disable_mode: Integer
     drag_coefficient: number
     linear_stiffness: number
-    parent_collision_ignore: NodePath
+    get parent_collision_ignore(): NodePath
+    set parent_collision_ignore(value: NodePath | string)
     pressure_coefficient: number
     ray_pickable: boolean
     simulation_precision: Integer
@@ -30298,7 +30531,8 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is SpringBoneCollision3D
     bone: Integer
-    bone_name: StringName
+    get bone_name(): StringName
+    set bone_name(value: StringName | string)
     position_offset: Vector3
     rotation_offset: Quaternion
     get_bone(): number
@@ -30627,7 +30861,8 @@ declare module 'godot' {
   export class SpriteFrames extends Resource {
     constructor()
     static is_instance(value: unknown): value is SpriteFrames
-    animations: Array<GodotVariant>
+    get animations(): Array<GodotVariant>
+    set animations(value: Array<GodotVariant> | readonly GodotVariant[])
     add_animation(anim: StringName | string): void
     add_frame(anim: StringName | string, texture: Texture2D, duration?: number, at_position?: number): void
     clear(anim: StringName | string): void
@@ -30701,7 +30936,8 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is StatusIndicator
     icon: Texture2D
-    menu: NodePath
+    get menu(): NodePath
+    set menu(value: NodePath | string)
     tooltip: string
     visible: boolean
     readonly pressed: Signal<readonly [Integer, Vector2i]>
@@ -30745,11 +30981,11 @@ declare module 'godot' {
     put_32(value: number): void
     put_64(value: Integer): void
     put_8(value: number): void
-    put_data(data: PackedByteArray): Error
+    put_data(data: PackedByteArrayInput): Error
     put_double(value: number): void
     put_float(value: number): void
     put_half(value: number): void
-    put_partial_data(data: PackedByteArray): Array<GodotVariant>
+    put_partial_data(data: PackedByteArrayInput): Array<GodotVariant>
     put_string(value: string): void
     put_u16(value: number): void
     put_u32(value: number): void
@@ -30767,7 +31003,8 @@ declare module 'godot' {
   export class StreamPeerBuffer extends StreamPeer {
     constructor()
     static is_instance(value: unknown): value is StreamPeerBuffer
-    data_array: PackedByteArray
+    get data_array(): PackedByteArray
+    set data_array(value: PackedByteArrayInput)
     clear(): void
     duplicate(): StreamPeerBuffer
     get_data_array(): PackedByteArray
@@ -30775,7 +31012,7 @@ declare module 'godot' {
     get_size(): number
     resize(size: number): void
     seek(position: number): void
-    set_data_array(data: PackedByteArray): void
+    set_data_array(data: PackedByteArrayInput): void
   }
 
   /**
@@ -31101,7 +31338,7 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is SurfaceTool
     add_index(index: number): void
-    add_triangle_fan(vertices: PackedVector3Array, uvs?: PackedVector2Array, colors?: PackedColorArray, uv2s?: PackedVector2Array, normals?: PackedVector3Array, tangents?: Array<Plane>): void
+    add_triangle_fan(vertices: PackedVector3ArrayInput, uvs?: PackedVector2ArrayInput, colors?: PackedColorArrayInput, uv2s?: PackedVector2ArrayInput, normals?: PackedVector3ArrayInput, tangents?: Array<Plane> | readonly Plane[]): void
     add_vertex(vertex: Vector3): void
     append_from(existing: Mesh, surface: number, transform: Transform3D): void
     begin(primitive: Mesh.PrimitiveType): void
@@ -31109,7 +31346,7 @@ declare module 'godot' {
     commit(existing?: ArrayMesh, flags?: Integer): ArrayMesh
     commit_to_arrays(): Array<GodotVariant>
     create_from(existing: Mesh, surface: number): void
-    create_from_arrays(arrays: Array<GodotVariant>, primitive_type?: Mesh.PrimitiveType): void
+    create_from_arrays(arrays: Array<GodotVariant> | readonly GodotVariant[], primitive_type?: Mesh.PrimitiveType): void
     create_from_blend_shape(existing: Mesh, surface: number, blend_shape: string): void
     deindex(): void
     generate_lod(nd_threshold: number, target_index_count?: number): PackedInt32Array
@@ -31121,7 +31358,7 @@ declare module 'godot' {
     get_skin_weight_count(): SurfaceTool.SkinWeightCount
     index(): void
     optimize_indices_for_cache(): void
-    set_bones(bones: PackedInt32Array): void
+    set_bones(bones: PackedInt32ArrayInput): void
     set_color(color: Color): void
     set_custom(channel_index: number, custom_color: Color): void
     set_custom_format(channel_index: number, format: SurfaceTool.CustomFormat): void
@@ -31132,7 +31369,7 @@ declare module 'godot' {
     set_tangent(tangent: Plane): void
     set_uv(uv: Vector2): void
     set_uv2(uv2: Vector2): void
-    set_weights(weights: PackedFloat32Array): void
+    set_weights(weights: PackedFloat32ArrayInput): void
   }
   export namespace SurfaceTool {
     export enum CustomFormat {
@@ -31179,7 +31416,8 @@ declare module 'godot' {
     antialiasing: Integer
     disable_embedded_bitmaps: boolean
     font_italic: boolean
-    font_names: PackedStringArray
+    get font_names(): PackedStringArray
+    set font_names(value: PackedStringArrayInput)
     font_stretch: Integer
     font_weight: Integer
     force_autohinter: boolean
@@ -31209,7 +31447,7 @@ declare module 'godot' {
     set_antialiasing(antialiasing: TextServer.FontAntialiasing): void
     set_disable_embedded_bitmaps(disable_embedded_bitmaps: boolean): void
     set_font_italic(italic: boolean): void
-    set_font_names(names: PackedStringArray): void
+    set_font_names(names: PackedStringArrayInput): void
     set_font_stretch(stretch: number): void
     set_font_weight(weight: number): void
     set_force_autohinter(force_autohinter: boolean): void
@@ -31463,7 +31701,8 @@ declare module 'godot' {
     selecting_enabled: boolean
     shortcut_keys_enabled: boolean
     structured_text_bidi_override: Integer
-    structured_text_bidi_override_options: Array<GodotVariant>
+    get structured_text_bidi_override_options(): Array<GodotVariant>
+    set structured_text_bidi_override_options(value: Array<GodotVariant> | readonly GodotVariant[])
     syntax_highlighter: SyntaxHighlighter
     text: string
     text_direction: Integer
@@ -31708,7 +31947,7 @@ declare module 'godot' {
     set_shortcut_keys_enabled(enabled: boolean): void
     set_smooth_scroll_enabled(enable: boolean): void
     set_structured_text_bidi_override(parser: TextServer.StructuredTextParser): void
-    set_structured_text_bidi_override_options(args: Array<GodotVariant>): void
+    set_structured_text_bidi_override_options(args: Array<GodotVariant> | readonly GodotVariant[]): void
     set_syntax_highlighter(syntax_highlighter: SyntaxHighlighter): void
     set_tab_size(size: number): void
     set_text(text: string): void
@@ -31834,7 +32073,7 @@ declare module 'godot' {
     get_width(): number
     hit_test(coords: number): number
     resize_object(key: GodotVariant, size: Vector2, inline_align?: InlineAlignment, baseline?: number): boolean
-    set_bidi_override(override: Array<GodotVariant>): void
+    set_bidi_override(override: Array<GodotVariant> | readonly GodotVariant[]): void
     set_direction(direction: TextServer.Direction): void
     set_ellipsis_char(char: string): void
     set_flags(flags: TextServer.JustificationFlag): void
@@ -31844,7 +32083,7 @@ declare module 'godot' {
     set_preserve_invalid(enabled: boolean): void
     set_text_overrun_behavior(overrun_behavior: TextServer.OverrunBehavior): void
     set_width(width: number): void
-    tab_align(tab_stops: PackedFloat32Array): void
+    tab_align(tab_stops: PackedFloat32ArrayInput): void
   }
 
   /**
@@ -31866,7 +32105,8 @@ declare module 'godot' {
     offset: Vector2
     pixel_size: number
     structured_text_bidi_override: Integer
-    structured_text_bidi_override_options: Array<GodotVariant>
+    get structured_text_bidi_override_options(): Array<GodotVariant>
+    set structured_text_bidi_override_options(value: Array<GodotVariant> | readonly GodotVariant[])
     text: string
     text_direction: Integer
     uppercase: boolean
@@ -31902,7 +32142,7 @@ declare module 'godot' {
     set_offset(offset: Vector2): void
     set_pixel_size(pixel_size: number): void
     set_structured_text_bidi_override(parser: TextServer.StructuredTextParser): void
-    set_structured_text_bidi_override_options(args: Array<GodotVariant>): void
+    set_structured_text_bidi_override_options(args: Array<GodotVariant> | readonly GodotVariant[]): void
     set_text(text: string): void
     set_text_direction(direction: TextServer.Direction): void
     set_uppercase(enable: boolean): void
@@ -31973,7 +32213,7 @@ declare module 'godot' {
     hit_test(coords: Vector2): number
     resize_object(key: GodotVariant, size: Vector2, inline_align?: InlineAlignment, baseline?: number): boolean
     set_alignment(alignment: HorizontalAlignment): void
-    set_bidi_override(override: Array<GodotVariant>): void
+    set_bidi_override(override: Array<GodotVariant> | readonly GodotVariant[]): void
     set_break_flags(flags: TextServer.LineBreakFlag): void
     set_custom_punctuation(custom_punctuation: string): void
     set_direction(direction: TextServer.Direction): void
@@ -31987,7 +32227,7 @@ declare module 'godot' {
     set_preserve_invalid(enabled: boolean): void
     set_text_overrun_behavior(overrun_behavior: TextServer.OverrunBehavior): void
     set_width(width: number): void
-    tab_align(tab_stops: PackedFloat32Array): void
+    tab_align(tab_stops: PackedFloat32ArrayInput): void
   }
 
   /**
@@ -32078,7 +32318,7 @@ declare module 'godot' {
     font_set_antialiasing(font_rid: RID, antialiasing: TextServer.FontAntialiasing): void
     font_set_ascent(font_rid: RID, size: Integer, ascent: number): void
     font_set_baseline_offset(font_rid: RID, baseline_offset: number): void
-    font_set_data(font_rid: RID, data: PackedByteArray): void
+    font_set_data(font_rid: RID, data: PackedByteArrayInput): void
     font_set_descent(font_rid: RID, size: Integer, descent: number): void
     font_set_disable_embedded_bitmaps(font_rid: RID, disable_embedded_bitmaps: boolean): void
     font_set_embolden(font_rid: RID, strength: number): void
@@ -32101,7 +32341,7 @@ declare module 'godot' {
     font_set_msdf_size(font_rid: RID, msdf_size: Integer): void
     font_set_multichannel_signed_distance_field(font_rid: RID, msdf: boolean): void
     font_set_name(font_rid: RID, name: string): void
-    font_set_opentype_feature_overrides(font_rid: RID, overrides: Dictionary): void
+    font_set_opentype_feature_overrides(font_rid: RID, overrides: Dictionary | Readonly<Record<string, GodotVariant>>): void
     font_set_oversampling(font_rid: RID, oversampling: number): void
     font_set_scale(font_rid: RID, size: Integer, scale: number): void
     font_set_script_support_override(font_rid: RID, script: string, supported: boolean): void
@@ -32111,11 +32351,11 @@ declare module 'godot' {
     font_set_style_name(font_rid: RID, name: string): void
     font_set_subpixel_positioning(font_rid: RID, subpixel_positioning: TextServer.SubpixelPositioning): void
     font_set_texture_image(font_rid: RID, size: Vector2i, texture_index: Integer, image: Image): void
-    font_set_texture_offsets(font_rid: RID, size: Vector2i, texture_index: Integer, offset: PackedInt32Array): void
+    font_set_texture_offsets(font_rid: RID, size: Vector2i, texture_index: Integer, offset: PackedInt32ArrayInput): void
     font_set_transform(font_rid: RID, transform: Transform2D): void
     font_set_underline_position(font_rid: RID, size: Integer, underline_position: number): void
     font_set_underline_thickness(font_rid: RID, size: Integer, underline_thickness: number): void
-    font_set_variation_coordinates(font_rid: RID, variation_coordinates: Dictionary): void
+    font_set_variation_coordinates(font_rid: RID, variation_coordinates: Dictionary | Readonly<Record<string, GodotVariant>>): void
     font_set_weight(font_rid: RID, weight: Integer): void
     font_supported_feature_list(font_rid: RID): Dictionary
     font_supported_variation_list(font_rid: RID): Dictionary
@@ -32129,22 +32369,22 @@ declare module 'godot' {
     get_support_data_info(): string
     has(rid: RID): boolean
     has_feature(feature: TextServer.Feature): boolean
-    is_confusable(string_: string, dict: PackedStringArray): Integer
+    is_confusable(string_: string, dict: PackedStringArrayInput): Integer
     is_locale_right_to_left(locale: string): boolean
     is_valid_identifier(string_: string): boolean
     is_valid_letter(unicode: Integer): boolean
     load_support_data(filename: string): boolean
     name_to_tag(name: string): Integer
     parse_number(number_: string, language?: string): string
-    parse_structured_text(parser_type: TextServer.StructuredTextParser, args: Array<GodotVariant>, text: string): Array<Vector3i>
+    parse_structured_text(parser_type: TextServer.StructuredTextParser, args: Array<GodotVariant> | readonly GodotVariant[], text: string): Array<Vector3i>
     percent_sign(language?: string): string
     save_support_data(filename: string): boolean
     shaped_get_span_count(shaped: RID): Integer
     shaped_get_span_embedded_object(shaped: RID, index: Integer): GodotVariant
     shaped_get_span_meta(shaped: RID, index: Integer): GodotVariant
-    shaped_set_span_update_font(shaped: RID, index: Integer, fonts: Array<RID>, size: Integer, opentype_features?: Dictionary): void
+    shaped_set_span_update_font(shaped: RID, index: Integer, fonts: Array<RID> | readonly RID[], size: Integer, opentype_features?: Dictionary | Readonly<Record<string, GodotVariant>>): void
     shaped_text_add_object(shaped: RID, key: GodotVariant, size: Vector2, inline_align?: InlineAlignment, length?: Integer, baseline?: number): boolean
-    shaped_text_add_string(shaped: RID, text: string, fonts: Array<RID>, size: Integer, opentype_features?: Dictionary, language?: string, meta?: GodotVariant): boolean
+    shaped_text_add_string(shaped: RID, text: string, fonts: Array<RID> | readonly RID[], size: Integer, opentype_features?: Dictionary | Readonly<Record<string, GodotVariant>>, language?: string, meta?: GodotVariant): boolean
     shaped_text_clear(rid: RID): void
     shaped_text_closest_character_pos(shaped: RID, pos: Integer): Integer
     shaped_text_draw(shaped: RID, canvas: RID, pos: Vector2, clip_l?: number, clip_r?: number, color?: Color): void
@@ -32166,7 +32406,7 @@ declare module 'godot' {
     shaped_text_get_grapheme_bounds(shaped: RID, pos: Integer): Vector2
     shaped_text_get_inferred_direction(shaped: RID): TextServer.Direction
     shaped_text_get_line_breaks(shaped: RID, width: number, start?: Integer, break_flags?: TextServer.LineBreakFlag): PackedInt32Array
-    shaped_text_get_line_breaks_adv(shaped: RID, width: PackedFloat32Array, start?: Integer, once?: boolean, break_flags?: TextServer.LineBreakFlag): PackedInt32Array
+    shaped_text_get_line_breaks_adv(shaped: RID, width: PackedFloat32ArrayInput, start?: Integer, once?: boolean, break_flags?: TextServer.LineBreakFlag): PackedInt32Array
     shaped_text_get_object_glyph(shaped: RID, key: GodotVariant): Integer
     shaped_text_get_object_range(shaped: RID, key: GodotVariant): Vector2i
     shaped_text_get_object_rect(shaped: RID, key: GodotVariant): Rect2
@@ -32194,7 +32434,7 @@ declare module 'godot' {
     shaped_text_prev_character_pos(shaped: RID, pos: Integer): Integer
     shaped_text_prev_grapheme_pos(shaped: RID, pos: Integer): Integer
     shaped_text_resize_object(shaped: RID, key: GodotVariant, size: Vector2, inline_align?: InlineAlignment, baseline?: number): boolean
-    shaped_text_set_bidi_override(shaped: RID, override: Array<GodotVariant>): void
+    shaped_text_set_bidi_override(shaped: RID, override: Array<GodotVariant> | readonly GodotVariant[]): void
     shaped_text_set_custom_ellipsis(shaped: RID, char: Integer): void
     shaped_text_set_custom_punctuation(shaped: RID, punct: string): void
     shaped_text_set_direction(shaped: RID, direction?: TextServer.Direction): void
@@ -32205,7 +32445,7 @@ declare module 'godot' {
     shaped_text_shape(shaped: RID): boolean
     shaped_text_sort_logical(shaped: RID): Array<Dictionary>
     shaped_text_substr(shaped: RID, start: Integer, length: Integer): RID
-    shaped_text_tab_align(shaped: RID, tab_stops: PackedFloat32Array): number
+    shaped_text_tab_align(shaped: RID, tab_stops: PackedFloat32ArrayInput): number
     spoof_check(string_: string): boolean
     string_get_character_breaks(string_: string, language?: string): PackedInt32Array
     string_get_word_breaks(string_: string, language?: string, chars_per_line?: Integer): PackedInt32Array
@@ -32474,7 +32714,7 @@ declare module 'godot' {
     _font_set_antialiasing(font_rid: RID, antialiasing: TextServer.FontAntialiasing): void
     _font_set_ascent(font_rid: RID, size: Integer, ascent: number): void
     _font_set_baseline_offset(font_rid: RID, baseline_offset: number): void
-    _font_set_data(font_rid: RID, data: PackedByteArray): void
+    _font_set_data(font_rid: RID, data: PackedByteArrayInput): void
     _font_set_data_ptr(font_rid: RID, data_ptr: Uint8Array | NativePointer<number>, data_size: Integer): void
     _font_set_descent(font_rid: RID, size: Integer, descent: number): void
     _font_set_disable_embedded_bitmaps(font_rid: RID, disable_embedded_bitmaps: boolean): void
@@ -32498,7 +32738,7 @@ declare module 'godot' {
     _font_set_msdf_size(font_rid: RID, msdf_size: Integer): void
     _font_set_multichannel_signed_distance_field(font_rid: RID, msdf: boolean): void
     _font_set_name(font_rid: RID, name: string): void
-    _font_set_opentype_feature_overrides(font_rid: RID, overrides: Dictionary): void
+    _font_set_opentype_feature_overrides(font_rid: RID, overrides: Dictionary | Readonly<Record<string, GodotVariant>>): void
     _font_set_oversampling(font_rid: RID, oversampling: number): void
     _font_set_scale(font_rid: RID, size: Integer, scale: number): void
     _font_set_script_support_override(font_rid: RID, script: string, supported: boolean): void
@@ -32508,11 +32748,11 @@ declare module 'godot' {
     _font_set_style_name(font_rid: RID, name_style: string): void
     _font_set_subpixel_positioning(font_rid: RID, subpixel_positioning: TextServer.SubpixelPositioning): void
     _font_set_texture_image(font_rid: RID, size: Vector2i, texture_index: Integer, image: Image): void
-    _font_set_texture_offsets(font_rid: RID, size: Vector2i, texture_index: Integer, offset: PackedInt32Array): void
+    _font_set_texture_offsets(font_rid: RID, size: Vector2i, texture_index: Integer, offset: PackedInt32ArrayInput): void
     _font_set_transform(font_rid: RID, transform: Transform2D): void
     _font_set_underline_position(font_rid: RID, size: Integer, underline_position: number): void
     _font_set_underline_thickness(font_rid: RID, size: Integer, underline_thickness: number): void
-    _font_set_variation_coordinates(font_rid: RID, variation_coordinates: Dictionary): void
+    _font_set_variation_coordinates(font_rid: RID, variation_coordinates: Dictionary | Readonly<Record<string, GodotVariant>>): void
     _font_set_weight(font_rid: RID, weight: Integer): void
     _font_supported_feature_list(font_rid: RID): Dictionary
     _font_supported_variation_list(font_rid: RID): Dictionary
@@ -32526,22 +32766,22 @@ declare module 'godot' {
     _get_support_data_info(): string
     _has(rid: RID): boolean
     _has_feature(feature: TextServer.Feature): boolean
-    _is_confusable(string_: string, dict: PackedStringArray): Integer
+    _is_confusable(string_: string, dict: PackedStringArrayInput): Integer
     _is_locale_right_to_left(locale: string): boolean
     _is_valid_identifier(string_: string): boolean
     _is_valid_letter(unicode: Integer): boolean
     _load_support_data(filename: string): boolean
     _name_to_tag(name: string): Integer
     _parse_number(number_: string, language: string): string
-    _parse_structured_text(parser_type: TextServer.StructuredTextParser, args: Array<GodotVariant>, text: string): Array<Vector3i>
+    _parse_structured_text(parser_type: TextServer.StructuredTextParser, args: Array<GodotVariant> | readonly GodotVariant[], text: string): Array<Vector3i>
     _percent_sign(language: string): string
     _save_support_data(filename: string): boolean
     _shaped_get_span_count(shaped: RID): Integer
     _shaped_get_span_embedded_object(shaped: RID, index: Integer): GodotVariant
     _shaped_get_span_meta(shaped: RID, index: Integer): GodotVariant
-    _shaped_set_span_update_font(shaped: RID, index: Integer, fonts: Array<RID>, size: Integer, opentype_features: Dictionary): void
+    _shaped_set_span_update_font(shaped: RID, index: Integer, fonts: Array<RID> | readonly RID[], size: Integer, opentype_features: Dictionary | Readonly<Record<string, GodotVariant>>): void
     _shaped_text_add_object(shaped: RID, key: GodotVariant, size: Vector2, inline_align: InlineAlignment, length: Integer, baseline: number): boolean
-    _shaped_text_add_string(shaped: RID, text: string, fonts: Array<RID>, size: Integer, opentype_features: Dictionary, language: string, meta: GodotVariant): boolean
+    _shaped_text_add_string(shaped: RID, text: string, fonts: Array<RID> | readonly RID[], size: Integer, opentype_features: Dictionary | Readonly<Record<string, GodotVariant>>, language: string, meta: GodotVariant): boolean
     _shaped_text_clear(shaped: RID): void
     _shaped_text_closest_character_pos(shaped: RID, pos: Integer): Integer
     _shaped_text_draw(shaped: RID, canvas: RID, pos: Vector2, clip_l: number, clip_r: number, color: Color): void
@@ -32563,7 +32803,7 @@ declare module 'godot' {
     _shaped_text_get_grapheme_bounds(shaped: RID, pos: Integer): Vector2
     _shaped_text_get_inferred_direction(shaped: RID): TextServer.Direction
     _shaped_text_get_line_breaks(shaped: RID, width: number, start: Integer, break_flags: TextServer.LineBreakFlag): PackedInt32Array
-    _shaped_text_get_line_breaks_adv(shaped: RID, width: PackedFloat32Array, start: Integer, once: boolean, break_flags: TextServer.LineBreakFlag): PackedInt32Array
+    _shaped_text_get_line_breaks_adv(shaped: RID, width: PackedFloat32ArrayInput, start: Integer, once: boolean, break_flags: TextServer.LineBreakFlag): PackedInt32Array
     _shaped_text_get_object_glyph(shaped: RID, key: GodotVariant): Integer
     _shaped_text_get_object_range(shaped: RID, key: GodotVariant): Vector2i
     _shaped_text_get_object_rect(shaped: RID, key: GodotVariant): Rect2
@@ -32590,7 +32830,7 @@ declare module 'godot' {
     _shaped_text_prev_character_pos(shaped: RID, pos: Integer): Integer
     _shaped_text_prev_grapheme_pos(shaped: RID, pos: Integer): Integer
     _shaped_text_resize_object(shaped: RID, key: GodotVariant, size: Vector2, inline_align: InlineAlignment, baseline: number): boolean
-    _shaped_text_set_bidi_override(shaped: RID, override: Array<GodotVariant>): void
+    _shaped_text_set_bidi_override(shaped: RID, override: Array<GodotVariant> | readonly GodotVariant[]): void
     _shaped_text_set_custom_ellipsis(shaped: RID, char: Integer): void
     _shaped_text_set_custom_punctuation(shaped: RID, punct: string): void
     _shaped_text_set_direction(shaped: RID, direction: TextServer.Direction): void
@@ -32601,7 +32841,7 @@ declare module 'godot' {
     _shaped_text_shape(shaped: RID): boolean
     _shaped_text_sort_logical(shaped: RID): NativePointer<Glyph>
     _shaped_text_substr(shaped: RID, start: Integer, length: Integer): RID
-    _shaped_text_tab_align(shaped: RID, tab_stops: PackedFloat32Array): number
+    _shaped_text_tab_align(shaped: RID, tab_stops: PackedFloat32ArrayInput): number
     _shaped_text_update_breaks(shaped: RID): boolean
     _shaped_text_update_justification_ops(shaped: RID): boolean
     _spoof_check(string_: string): boolean
@@ -33163,7 +33403,7 @@ declare module 'godot' {
     remove_occluder_polygon(layer_id: number, polygon_index: number): void
     set_collision_polygon_one_way(layer_id: number, polygon_index: number, one_way: boolean): void
     set_collision_polygon_one_way_margin(layer_id: number, polygon_index: number, one_way_margin: number): void
-    set_collision_polygon_points(layer_id: number, polygon_index: number, polygon: PackedVector2Array): void
+    set_collision_polygon_points(layer_id: number, polygon_index: number, polygon: PackedVector2ArrayInput): void
     set_collision_polygons_count(layer_id: number, polygons_count: number): void
     set_constant_angular_velocity(layer_id: number, velocity: number): void
     set_constant_linear_velocity(layer_id: number, velocity: Vector2): void
@@ -33224,7 +33464,7 @@ declare module 'godot' {
     get_navigation_map(layer: number): RID
     get_navigation_visibility_mode(): TileMap.VisibilityMode
     get_neighbor_cell(coords: Vector2i, neighbor: TileSet.CellNeighbor): Vector2i
-    get_pattern(layer: number, coords_array: Array<Vector2i>): TileMapPattern
+    get_pattern(layer: number, coords_array: Array<Vector2i> | readonly Vector2i[]): TileMapPattern
     get_rendering_quadrant_size(): number
     get_surrounding_cells(coords: Vector2i): Array<Vector2i>
     get_tileset(): TileSet
@@ -33245,8 +33485,8 @@ declare module 'godot' {
     notify_runtime_tile_data_update(layer?: number): void
     remove_layer(layer: number): void
     set_cell(layer: number, coords: Vector2i, source_id?: number, atlas_coords?: Vector2i, alternative_tile?: number): void
-    set_cells_terrain_connect(layer: number, cells: Array<Vector2i>, terrain_set: number, terrain: number, ignore_empty_terrains?: boolean): void
-    set_cells_terrain_path(layer: number, path: Array<Vector2i>, terrain_set: number, terrain: number, ignore_empty_terrains?: boolean): void
+    set_cells_terrain_connect(layer: number, cells: Array<Vector2i> | readonly Vector2i[], terrain_set: number, terrain: number, ignore_empty_terrains?: boolean): void
+    set_cells_terrain_path(layer: number, path: Array<Vector2i> | readonly Vector2i[], terrain_set: number, terrain: number, ignore_empty_terrains?: boolean): void
     set_collision_animatable(enabled: boolean): void
     set_collision_visibility_mode(collision_visibility_mode: TileMap.VisibilityMode): void
     set_layer_enabled(layer: number, enabled: boolean): void
@@ -33286,14 +33526,15 @@ declare module 'godot' {
     navigation_visibility_mode: Integer
     occlusion_enabled: boolean
     rendering_quadrant_size: Integer
-    tile_map_data: PackedByteArray
+    get tile_map_data(): PackedByteArray
+    set tile_map_data(value: PackedByteArrayInput)
     tile_set: TileSet
     use_kinematic_bodies: boolean
     x_draw_order_reversed: boolean
     y_sort_origin: Integer
     readonly changed: Signal<readonly []>
     _tile_data_runtime_update(coords: Vector2i, tile_data: TileData): void
-    _update_cells(coords: Array<Vector2i>, forced_cleanup: boolean): void
+    _update_cells(coords: Array<Vector2i> | readonly Vector2i[], forced_cleanup: boolean): void
     _use_tile_data_runtime_update(coords: Vector2i): boolean
     clear(): void
     erase_cell(coords: Vector2i): void
@@ -33307,7 +33548,7 @@ declare module 'godot' {
     get_navigation_map(): RID
     get_navigation_visibility_mode(): TileMapLayer.DebugVisibilityMode
     get_neighbor_cell(coords: Vector2i, neighbor: TileSet.CellNeighbor): Vector2i
-    get_pattern(coords_array: Array<Vector2i>): TileMapPattern
+    get_pattern(coords_array: Array<Vector2i> | readonly Vector2i[]): TileMapPattern
     get_rendering_quadrant_size(): number
     get_surrounding_cells(coords: Vector2i): Array<Vector2i>
     get_tile_map_data_as_array(): PackedByteArray
@@ -33331,8 +33572,8 @@ declare module 'godot' {
     map_to_local(map_position: Vector2i): Vector2
     notify_runtime_tile_data_update(): void
     set_cell(coords: Vector2i, source_id?: number, atlas_coords?: Vector2i, alternative_tile?: number): void
-    set_cells_terrain_connect(cells: Array<Vector2i>, terrain_set: number, terrain: number, ignore_empty_terrains?: boolean): void
-    set_cells_terrain_path(path: Array<Vector2i>, terrain_set: number, terrain: number, ignore_empty_terrains?: boolean): void
+    set_cells_terrain_connect(cells: Array<Vector2i> | readonly Vector2i[], terrain_set: number, terrain: number, ignore_empty_terrains?: boolean): void
+    set_cells_terrain_path(path: Array<Vector2i> | readonly Vector2i[], terrain_set: number, terrain: number, ignore_empty_terrains?: boolean): void
     set_collision_enabled(enabled: boolean): void
     set_collision_visibility_mode(visibility_mode: TileMapLayer.DebugVisibilityMode): void
     set_enabled(enabled: boolean): void
@@ -33342,7 +33583,7 @@ declare module 'godot' {
     set_occlusion_enabled(enabled: boolean): void
     set_pattern(position: Vector2i, pattern: TileMapPattern): void
     set_rendering_quadrant_size(size: number): void
-    set_tile_map_data_from_array(tile_map_layer_data: PackedByteArray): void
+    set_tile_map_data_from_array(tile_map_layer_data: PackedByteArrayInput): void
     set_tile_set(tile_set: TileSet): void
     set_use_kinematic_bodies(use_kinematic_bodies: boolean): void
     set_x_draw_order_reversed(x_draw_order_reversed: boolean): void
@@ -33640,8 +33881,8 @@ declare module 'godot' {
     static get_datetime_dict_from_system(utc?: boolean): Dictionary
     get_datetime_dict_from_unix_time(unix_time_val: Integer): Dictionary
     static get_datetime_dict_from_unix_time(unix_time_val: Integer): Dictionary
-    get_datetime_string_from_datetime_dict(datetime: Dictionary, use_space: boolean): string
-    static get_datetime_string_from_datetime_dict(datetime: Dictionary, use_space: boolean): string
+    get_datetime_string_from_datetime_dict(datetime: Dictionary | Readonly<Record<string, GodotVariant>>, use_space: boolean): string
+    static get_datetime_string_from_datetime_dict(datetime: Dictionary | Readonly<Record<string, GodotVariant>>, use_space: boolean): string
     get_datetime_string_from_system(utc?: boolean, use_space?: boolean): string
     static get_datetime_string_from_system(utc?: boolean, use_space?: boolean): string
     get_datetime_string_from_unix_time(unix_time_val: Integer, use_space?: boolean): string
@@ -33662,8 +33903,8 @@ declare module 'godot' {
     static get_time_string_from_unix_time(unix_time_val: Integer): string
     get_time_zone_from_system(): Dictionary
     static get_time_zone_from_system(): Dictionary
-    get_unix_time_from_datetime_dict(datetime: Dictionary): Integer
-    static get_unix_time_from_datetime_dict(datetime: Dictionary): Integer
+    get_unix_time_from_datetime_dict(datetime: Dictionary | Readonly<Record<string, GodotVariant>>): Integer
+    static get_unix_time_from_datetime_dict(datetime: Dictionary | Readonly<Record<string, GodotVariant>>): Integer
     get_unix_time_from_datetime_string(datetime: string): Integer
     static get_unix_time_from_datetime_string(datetime: string): Integer
     get_unix_time_from_system(): number
@@ -33779,7 +34020,8 @@ declare module 'godot' {
   export class TouchScreenButton extends Node2D {
     constructor()
     static is_instance(value: unknown): value is TouchScreenButton
-    action: StringName
+    get action(): StringName
+    set action(value: StringName | string)
     bitmask: BitMap
     passby_press: boolean
     shape: Shape2D
@@ -33825,11 +34067,12 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is Translation
     locale: string
-    messages: Dictionary
+    get messages(): Dictionary
+    set messages(value: Dictionary | Readonly<Record<string, GodotVariant>>)
     _get_message(src_message: StringName | string, context: StringName | string): StringName
     _get_plural_message(src_message: StringName | string, src_plural_message: StringName | string, n: number, context: StringName | string): StringName
     add_message(src_message: StringName | string, xlated_message: StringName | string, context?: StringName | string): void
-    add_plural_message(src_message: StringName | string, xlated_messages: PackedStringArray, context?: StringName | string): void
+    add_plural_message(src_message: StringName | string, xlated_messages: PackedStringArrayInput, context?: StringName | string): void
     erase_message(src_message: StringName | string, context?: StringName | string): void
     get_locale(): string
     get_message(src_message: StringName | string, context?: StringName | string): StringName
@@ -34173,7 +34416,7 @@ declare module 'godot' {
     set_range_config(column: number, min: number, max: number, step: number, expr?: boolean): void
     set_selectable(column: number, selectable: boolean): void
     set_structured_text_bidi_override(column: number, parser: TextServer.StructuredTextParser): void
-    set_structured_text_bidi_override_options(column: number, args: Array<GodotVariant>): void
+    set_structured_text_bidi_override_options(column: number, args: Array<GodotVariant> | readonly GodotVariant[]): void
     set_suffix(column: number, text: string): void
     set_text(column: number, text: string): void
     set_text_alignment(column: number, text_alignment: HorizontalAlignment): void
@@ -34380,7 +34623,7 @@ declare module 'godot' {
   export class UniformSetCacheRD extends Object {
     constructor()
     static is_instance(value: unknown): value is UniformSetCacheRD
-    static get_cache(shader: RID, set_: number, uniforms: Array<RDUniform>): RID
+    static get_cache(shader: RID, set_: number, uniforms: Array<RDUniform> | readonly RDUniform[]): RID
   }
 
   /**
@@ -34616,7 +34859,7 @@ declare module 'godot' {
     _set_paused(paused: boolean): void
     _stop(): void
     _update(delta: number): void
-    mix_audio(num_frames: number, buffer?: PackedFloat32Array, offset?: number): number
+    mix_audio(num_frames: number, buffer?: PackedFloat32ArrayInput, offset?: number): number
   }
 
   /**
@@ -34629,7 +34872,8 @@ declare module 'godot' {
     audio_track: Integer
     autoplay: boolean
     buffering_msec: Integer
-    bus: StringName
+    get bus(): StringName
+    set bus(value: StringName | string)
     expand: boolean
     loop: boolean
     paused: boolean
@@ -34981,7 +35225,8 @@ declare module 'godot' {
   export class ViewportTexture extends Texture2D {
     constructor()
     static is_instance(value: unknown): value is ViewportTexture
-    viewport_path: NodePath
+    get viewport_path(): NodePath
+    set viewport_path(value: NodePath | string)
     get_viewport_path_in_scene(): NodePath
     set_viewport_path_in_scene(path: NodePath | string): void
   }
@@ -34994,7 +35239,8 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is VisibleOnScreenEnabler2D
     enable_mode: Integer
-    enable_node_path: NodePath
+    get enable_node_path(): NodePath
+    set enable_node_path(value: NodePath | string)
     get_enable_mode(): VisibleOnScreenEnabler2D.EnableMode
     get_enable_node_path(): NodePath
     set_enable_mode(mode: VisibleOnScreenEnabler2D.EnableMode): void
@@ -35016,7 +35262,8 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is VisibleOnScreenEnabler3D
     enable_mode: Integer
-    enable_node_path: NodePath
+    get enable_node_path(): NodePath
+    set enable_node_path(value: NodePath | string)
     get_enable_mode(): VisibleOnScreenEnabler3D.EnableMode
     get_enable_node_path(): NodePath
     set_enable_mode(mode: VisibleOnScreenEnabler3D.EnableMode): void
@@ -35155,8 +35402,10 @@ declare module 'godot' {
    */
   export abstract class VisualShaderNode extends Resource {
     static is_instance(value: unknown): value is VisualShaderNode
-    default_input_values: Array<GodotVariant>
-    expanded_output_ports: Array<GodotVariant>
+    get default_input_values(): Array<GodotVariant>
+    set default_input_values(value: Array<GodotVariant> | readonly GodotVariant[])
+    get expanded_output_ports(): Array<GodotVariant>
+    set expanded_output_ports(value: Array<GodotVariant> | readonly GodotVariant[])
     linked_parent_graph_frame: Integer
     output_port_for_preview: Integer
     clear_default_input_values(): void
@@ -35166,7 +35415,7 @@ declare module 'godot' {
     get_input_port_default_value(port: number): GodotVariant
     get_output_port_for_preview(): number
     remove_input_port_default_value(port: number): void
-    set_default_input_values(values: Array<GodotVariant>): void
+    set_default_input_values(values: Array<GodotVariant> | readonly GodotVariant[]): void
     set_frame(frame: number): void
     set_input_port_default_value(port: number, value: GodotVariant, prev_value?: GodotVariant): void
     set_output_port_for_preview(port: number): void
@@ -35475,7 +35724,7 @@ declare module 'godot' {
     initialized: boolean
     properties: string
     _get_category(): string
-    _get_code(input_vars: Array<string>, output_vars: Array<string>, mode: Shader.Mode, type_: VisualShader.Type): string
+    _get_code(input_vars: Array<string> | readonly string[], output_vars: Array<string> | readonly string[], mode: Shader.Mode, type_: VisualShader.Type): string
     _get_default_input_port(type_: VisualShaderNode.PortType): number
     _get_description(): string
     _get_func_code(mode: Shader.Mode, type_: VisualShader.Type): string
@@ -35715,7 +35964,8 @@ declare module 'godot' {
   export class VisualShaderNodeFrame extends VisualShaderNodeResizableBase {
     constructor()
     static is_instance(value: unknown): value is VisualShaderNodeFrame
-    attached_nodes: PackedInt32Array
+    get attached_nodes(): PackedInt32Array
+    set attached_nodes(value: PackedInt32ArrayInput)
     autoshrink: boolean
     tint_color: Color
     tint_color_enabled: boolean
@@ -35727,7 +35977,7 @@ declare module 'godot' {
     is_autoshrink_enabled(): boolean
     is_tint_color_enabled(): boolean
     remove_attached_node(node: number): void
-    set_attached_nodes(attached_nodes: PackedInt32Array): void
+    set_attached_nodes(attached_nodes: PackedInt32ArrayInput): void
     set_autoshrink_enabled(enable: boolean): void
     set_tint_color(color: Color): void
     set_tint_color_enabled(enable: boolean): void
@@ -35797,7 +36047,8 @@ declare module 'godot' {
   export class VisualShaderNodeInput extends VisualShaderNode {
     constructor()
     static is_instance(value: unknown): value is VisualShaderNodeInput
-    input_name: StringName
+    get input_name(): StringName
+    set input_name(value: StringName | string)
     readonly input_type_changed: Signal<readonly []>
     get_input_name(): string
     get_input_real_name(): string
@@ -35875,7 +36126,8 @@ declare module 'godot' {
     static is_instance(value: unknown): value is VisualShaderNodeIntParameter
     default_value: Integer
     default_value_enabled: boolean
-    enum_names: PackedStringArray
+    get enum_names(): PackedStringArray
+    set enum_names(value: PackedStringArrayInput)
     hint: Integer
     max: Integer
     min: Integer
@@ -35889,7 +36141,7 @@ declare module 'godot' {
     is_default_value_enabled(): boolean
     set_default_value(value: number): void
     set_default_value_enabled(enabled: boolean): void
-    set_enum_names(names: PackedStringArray): void
+    set_enum_names(names: PackedStringArrayInput): void
     set_hint(hint: VisualShaderNodeIntParameter.Hint): void
     set_max(value: number): void
     set_min(value: number): void
@@ -36001,7 +36253,8 @@ declare module 'godot' {
    */
   export abstract class VisualShaderNodeParameter extends VisualShaderNode {
     static is_instance(value: unknown): value is VisualShaderNodeParameter
-    parameter_name: StringName
+    get parameter_name(): StringName
+    set parameter_name(value: StringName | string)
     qualifier: Integer
     get_parameter_name(): string
     get_qualifier(): VisualShaderNodeParameter.Qualifier
@@ -36025,7 +36278,8 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is VisualShaderNodeParameterRef
     param_type: Integer
-    parameter_name: StringName
+    get parameter_name(): StringName
+    set parameter_name(value: StringName | string)
     get_parameter_name(): string
     set_parameter_name(name: string): void
   }
@@ -36774,7 +37028,8 @@ declare module 'godot' {
    */
   export abstract class VisualShaderNodeVarying extends VisualShaderNode {
     static is_instance(value: unknown): value is VisualShaderNodeVarying
-    varying_name: StringName
+    get varying_name(): StringName
+    set varying_name(value: StringName | string)
     varying_type: Integer
     get_varying_name(): string
     get_varying_type(): VisualShader.VaryingType
@@ -37080,7 +37335,7 @@ declare module 'godot' {
     normal_bias: number
     propagation: number
     use_two_bounces: boolean
-    allocate(to_cell_xform: Transform3D, aabb: AABB, octree_size: Vector3, octree_cells: PackedByteArray, data_cells: PackedByteArray, distance_field: PackedByteArray, level_counts: PackedInt32Array): void
+    allocate(to_cell_xform: Transform3D, aabb: AABB, octree_size: Vector3, octree_cells: PackedByteArrayInput, data_cells: PackedByteArrayInput, distance_field: PackedByteArrayInput, level_counts: PackedInt32ArrayInput): void
     get_bias(): number
     get_bounds(): AABB
     get_data_cells(): PackedByteArray
@@ -37219,9 +37474,9 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is WebRTCMultiplayerPeer
     add_peer(peer: WebRTCPeerConnection, peer_id: number, unreliable_lifetime?: number): Error
-    create_client(peer_id: number, channels_config?: Array<GodotVariant>): Error
-    create_mesh(peer_id: number, channels_config?: Array<GodotVariant>): Error
-    create_server(channels_config?: Array<GodotVariant>): Error
+    create_client(peer_id: number, channels_config?: Array<GodotVariant> | readonly GodotVariant[]): Error
+    create_mesh(peer_id: number, channels_config?: Array<GodotVariant> | readonly GodotVariant[]): Error
+    create_server(channels_config?: Array<GodotVariant> | readonly GodotVariant[]): Error
     get_peer(peer_id: number): Dictionary
     get_peers(): Dictionary
     has_peer(peer_id: number): boolean
@@ -37240,12 +37495,12 @@ declare module 'godot' {
     readonly session_description_created: Signal<readonly [string, string]>
     add_ice_candidate(media: string, index: number, name: string): Error
     close(): void
-    create_data_channel(label: string, options?: Dictionary): WebRTCDataChannel
+    create_data_channel(label: string, options?: Dictionary | Readonly<Record<string, GodotVariant>>): WebRTCDataChannel
     create_offer(): Error
     get_connection_state(): WebRTCPeerConnection.ConnectionState
     get_gathering_state(): WebRTCPeerConnection.GatheringState
     get_signaling_state(): WebRTCPeerConnection.SignalingState
-    initialize(configuration?: Dictionary): Error
+    initialize(configuration?: Dictionary | Readonly<Record<string, GodotVariant>>): Error
     poll(): Error
     static set_default_extension(extension_class: StringName | string): void
     set_local_description(type_: string, sdp: string): Error
@@ -37284,12 +37539,12 @@ declare module 'godot' {
     static is_instance(value: unknown): value is WebRTCPeerConnectionExtension
     _add_ice_candidate(p_sdp_mid_name: string, p_sdp_mline_index: number, p_sdp_name: string): Error
     _close(): void
-    _create_data_channel(p_label: string, p_config: Dictionary): WebRTCDataChannel
+    _create_data_channel(p_label: string, p_config: Dictionary | Readonly<Record<string, GodotVariant>>): WebRTCDataChannel
     _create_offer(): Error
     _get_connection_state(): WebRTCPeerConnection.ConnectionState
     _get_gathering_state(): WebRTCPeerConnection.GatheringState
     _get_signaling_state(): WebRTCPeerConnection.SignalingState
-    _initialize(p_config: Dictionary): Error
+    _initialize(p_config: Dictionary | Readonly<Record<string, GodotVariant>>): Error
     _poll(): Error
     _set_local_description(p_type: string, p_sdp: string): Error
     _set_remote_description(p_type: string, p_sdp: string): Error
@@ -37302,12 +37557,14 @@ declare module 'godot' {
   export class WebSocketMultiplayerPeer extends MultiplayerPeer {
     constructor()
     static is_instance(value: unknown): value is WebSocketMultiplayerPeer
-    handshake_headers: PackedStringArray
+    get handshake_headers(): PackedStringArray
+    set handshake_headers(value: PackedStringArrayInput)
     handshake_timeout: number
     inbound_buffer_size: Integer
     max_queued_packets: Integer
     outbound_buffer_size: Integer
-    supported_protocols: PackedStringArray
+    get supported_protocols(): PackedStringArray
+    set supported_protocols(value: PackedStringArrayInput)
     create_client(url: string, tls_client_options?: TLSOptions): Error
     create_server(port: number, bind_address?: string, tls_server_options?: TLSOptions): Error
     get_handshake_headers(): PackedStringArray
@@ -37319,12 +37576,12 @@ declare module 'godot' {
     get_peer_address(id: number): string
     get_peer_port(id: number): number
     get_supported_protocols(): PackedStringArray
-    set_handshake_headers(protocols: PackedStringArray): void
+    set_handshake_headers(protocols: PackedStringArrayInput): void
     set_handshake_timeout(timeout: number): void
     set_inbound_buffer_size(buffer_size: number): void
     set_max_queued_packets(max_queued_packets: number): void
     set_outbound_buffer_size(buffer_size: number): void
-    set_supported_protocols(protocols: PackedStringArray): void
+    set_supported_protocols(protocols: PackedStringArrayInput): void
   }
 
   /**
@@ -37334,12 +37591,14 @@ declare module 'godot' {
   export class WebSocketPeer extends PacketPeer {
     constructor()
     static is_instance(value: unknown): value is WebSocketPeer
-    handshake_headers: PackedStringArray
+    get handshake_headers(): PackedStringArray
+    set handshake_headers(value: PackedStringArrayInput)
     heartbeat_interval: Integer
     inbound_buffer_size: Integer
     max_queued_packets: Integer
     outbound_buffer_size: Integer
-    supported_protocols: PackedStringArray
+    get supported_protocols(): PackedStringArray
+    set supported_protocols(value: PackedStringArrayInput)
     accept_stream(stream: StreamPeer): Error
     close(code?: number, reason?: string): void
     connect_to_url(url: string, tls_client_options?: TLSOptions): Error
@@ -37358,15 +37617,15 @@ declare module 'godot' {
     get_selected_protocol(): string
     get_supported_protocols(): PackedStringArray
     poll(): void
-    send(message: PackedByteArray, write_mode?: WebSocketPeer.WriteMode): Error
+    send(message: PackedByteArrayInput, write_mode?: WebSocketPeer.WriteMode): Error
     send_text(message: string): Error
-    set_handshake_headers(protocols: PackedStringArray): void
+    set_handshake_headers(protocols: PackedStringArrayInput): void
     set_heartbeat_interval(interval: number): void
     set_inbound_buffer_size(buffer_size: number): void
     set_max_queued_packets(buffer_size: number): void
     set_no_delay(enabled: boolean): void
     set_outbound_buffer_size(buffer_size: number): void
-    set_supported_protocols(protocols: PackedStringArray): void
+    set_supported_protocols(protocols: PackedStringArrayInput): void
     was_string_packet(): boolean
   }
   export namespace WebSocketPeer {
@@ -37462,7 +37721,8 @@ declare module 'godot' {
     min_size: Vector2i
     mode: Integer
     mouse_passthrough: boolean
-    mouse_passthrough_polygon: PackedVector2Array
+    get mouse_passthrough_polygon(): PackedVector2Array
+    set mouse_passthrough_polygon(value: PackedVector2ArrayInput)
     popup_window: boolean
     position: Vector2i
     sharp_corners: boolean
@@ -37598,7 +37858,7 @@ declare module 'godot' {
     set_max_size(max_size: Vector2i): void
     set_min_size(min_size: Vector2i): void
     set_mode(mode: Window.Mode): void
-    set_mouse_passthrough_polygon(polygon: PackedVector2Array): void
+    set_mouse_passthrough_polygon(polygon: PackedVector2ArrayInput): void
     set_position(position: Vector2i): void
     set_size(size: Vector2i): void
     set_theme(theme: Theme): void
@@ -37814,7 +38074,7 @@ declare module 'godot' {
     has_attribute(name: string): boolean
     is_empty(): boolean
     open(file: string): Error
-    open_buffer(buffer: PackedByteArray): Error
+    open_buffer(buffer: PackedByteArrayInput): Error
     read(): Error
     seek(position: Integer): Error
     skip_section(): void
@@ -38028,7 +38288,8 @@ declare module 'godot' {
     constructor()
     static is_instance(value: unknown): value is XRFaceModifier3D
     face_tracker: string
-    target: NodePath
+    get target(): NodePath
+    set target(value: NodePath | string)
     get_face_tracker(): StringName
     get_target(): NodePath
     set_face_tracker(tracker_name: StringName | string): void
@@ -38042,11 +38303,12 @@ declare module 'godot' {
   export class XRFaceTracker extends XRTracker {
     constructor()
     static is_instance(value: unknown): value is XRFaceTracker
-    blend_shapes: PackedFloat32Array
+    get blend_shapes(): PackedFloat32Array
+    set blend_shapes(value: PackedFloat32ArrayInput)
     get_blend_shape(blend_shape: XRFaceTracker.BlendShapeEntry): number
     get_blend_shapes(): PackedFloat32Array
     set_blend_shape(blend_shape: XRFaceTracker.BlendShapeEntry, weight: number): void
-    set_blend_shapes(weights: PackedFloat32Array): void
+    set_blend_shapes(weights: PackedFloat32ArrayInput): void
   }
   export namespace XRFaceTracker {
     export enum BlendShapeEntry {
@@ -38635,7 +38897,7 @@ declare module 'godot' {
     get_vrs_min_radius(): number
     get_vrs_render_region(): Rect2i
     get_vrs_strength(): number
-    make_vrs_texture(target_size: Vector2, eye_foci: PackedVector2Array): RID
+    make_vrs_texture(target_size: Vector2, eye_foci: PackedVector2ArrayInput): RID
     set_vrs_min_radius(radius: number): void
     set_vrs_render_region(render_region: Rect2i): void
     set_vrs_strength(strength: number): void
@@ -38652,7 +38914,7 @@ declare module 'godot' {
     close_file(): Error
     open(path: string, append?: ZIPPacker.ZipAppend): Error
     start_file(path: string): Error
-    write_file(data: PackedByteArray): Error
+    write_file(data: PackedByteArrayInput): Error
   }
   export namespace ZIPPacker {
     export enum ZipAppend {
@@ -38689,8 +38951,8 @@ declare module 'godot' {
   export function atanh(x: number): number
   export function bezier_derivative(start: number, control_1: number, control_2: number, end: number, t: number): number
   export function bezier_interpolate(start: number, control_1: number, control_2: number, end: number, t: number): number
-  export function bytes_to_var(bytes: PackedByteArray): GodotVariant
-  export function bytes_to_var_with_objects(bytes: PackedByteArray): GodotVariant
+  export function bytes_to_var(bytes: PackedByteArrayInput): GodotVariant
+  export function bytes_to_var_with_objects(bytes: PackedByteArrayInput): GodotVariant
   export function ceil(x: GodotVariant): GodotVariant
   export function ceilf(x: number): number
   export function ceili(x: number): Integer

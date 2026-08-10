@@ -4,8 +4,10 @@ import {
   FileAccess,
   Input,
   InputEventAction,
+  Label,
   Node,
   ResourceLoader,
+  VBoxContainer,
 } from 'godot'
 
 const EDITOR_PLAY_MARKER = 'user://godot-js-runtime-editor-play.log'
@@ -52,6 +54,23 @@ class RuntimeShellProbe extends Node {
       this.process_mode === originalProcessMode,
       'inherited native property write falls through script metadata',
     )
+
+    const propertyContainer = new VBoxContainer()
+    for (let index = 0; index < 9; index += 1) {
+      const propertyLabel = new Label()
+      propertyLabel.set('text', `dynamic label ${String(index)}`)
+      propertyContainer.add_child(propertyLabel)
+    }
+    this.add_child(propertyContainer)
+    assertScript(
+      propertyContainer.get_child_count() === 9,
+      'dynamic Object.set labels enter the live scene tree',
+    )
+
+    const ephemeralTimer = this.get_tree().create_timer(0.001)
+    ephemeralTimer.timeout.as_promise().then(() => {
+      console.log('[godot-js-runtime] PHASE7_EPHEMERAL_SIGNAL PASS')
+    })
 
     const moved = Callable.create((distance) => {
       this.signalDistance = distance
@@ -106,14 +125,20 @@ class RuntimeShellProbe extends Node {
   }
 
   _input(event) {
-    if (event instanceof InputEventAction && String(event.action) === 'ui_accept') {
+    if (
+      event instanceof InputEventAction &&
+      String(event.action) === 'ui_accept'
+    ) {
       this.inputCount += 1
     }
   }
 
   _process() {
     this.processCount += 1
-    if (this.processCount < 4 || (this.inputCount === 0 && this.processCount < 120)) {
+    if (
+      this.processCount < 4 ||
+      (this.inputCount === 0 && this.processCount < 120)
+    ) {
       return
     }
     assertScript(this.readyCount === 1, 'ready callback count')
@@ -127,10 +152,9 @@ class RuntimeShellProbe extends Node {
       EDITOR_PLAY_MARKER,
       FileAccess.ModeFlags.READ_WRITE,
     )
-    const markerFile = marker ?? FileAccess.open(
-      EDITOR_PLAY_MARKER,
-      FileAccess.ModeFlags.WRITE_READ,
-    )
+    const markerFile =
+      marker ??
+      FileAccess.open(EDITOR_PLAY_MARKER, FileAccess.ModeFlags.WRITE_READ)
     assertScript(markerFile !== null, 'editor play completion marker')
     markerFile.seek_end()
     markerFile.store_line('ready')

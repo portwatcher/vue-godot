@@ -18,6 +18,7 @@
 </template>
 
 <script setup lang="ts">
+import { clearInterval, setInterval } from '@vue-godot/browser'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 const tick = ref(0)
@@ -28,7 +29,7 @@ const keyedOrder = computed(() =>
   swapAB.value ? ['B', 'A', 'C'] : ['A', 'B', 'C'],
 )
 
-let timer: ReturnType<typeof setInterval> | undefined
+let timer: number | undefined
 
 onMounted(() => {
   timer = setInterval(() => {

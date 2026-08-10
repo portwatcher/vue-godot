@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 
+import * as fs from 'node:fs'
 import * as path from 'node:path'
 import * as readline from 'node:readline/promises'
+import { generateProjectTypes } from 'godot-js-runtime'
 import { create, type CreateProfile } from './create.js'
 import { printDoctorReport, runDoctor } from './doctor.js'
+import { HTML_COMPONENT_TAGS } from './html-tags.js'
 import { generate } from './index.js'
 import { integrate } from './integrate.js'
 
@@ -17,7 +20,7 @@ function mainUsage(): never {
 Commands:
   create      Create a new Godot project with vue-godot set up and ready to go
   integrate   Scaffold a vue/ folder with Vite + Vue configs for an existing Godot project
-  gen-types   Generate Vue GlobalComponents type augmentation from Godot typings
+  gen-types   Generate stock-Godot declarations and Vue GlobalComponents types
   doctor      Check setup, packages, exports, migration risks, and plugin APIs
 
 Run \`vue-godot <command> --help\` for command-specific options.
@@ -30,11 +33,14 @@ function genTypesUsage(): never {
   console.error(
     `Usage: vue-godot gen-types [options]
 
-Generate Vue GlobalComponents type augmentation from GodotJS typings.
+Generate Godot declarations through godot-js-runtime, then generate Vue
+GlobalComponents type augmentation from those declarations.
 
 Options:
-  --typings   Path to the typings directory containing godot*.gen.d.ts files.
-              Defaults to ./typings
+  --typings   Use an existing typings directory without running runtime typegen.
+              Defaults to generated ./typings declarations.
+  --godot     Official Godot executable used for version-matched declarations.
+              Defaults to GODOT_BIN or the package's pinned declarations.
   --out       Output file path for the generated .d.ts file.
               Defaults to <typings>/godot.vue-components.gen.d.ts
   --ancestor  Base class to filter by inheritance. Only descendants are included.
@@ -52,6 +58,7 @@ function parseGenTypesArgs(argv: string[]) {
   let outFile: string | undefined
   let ancestor: string | undefined
   let vueSrcDir: string | undefined
+  let godotExecutable: string | undefined
 
   for (let i = 0; i < argv.length; i++) {
     switch (argv[i]) {
@@ -60,6 +67,9 @@ function parseGenTypesArgs(argv: string[]) {
         break
       case '--out':
         outFile = argv[++i]
+        break
+      case '--godot':
+        godotExecutable = argv[++i]
         break
       case '--ancestor':
         ancestor = argv[++i]
@@ -76,7 +86,34 @@ function parseGenTypesArgs(argv: string[]) {
     }
   }
 
-  return { typingsDir, outFile, ancestor, vueSrcDir }
+  if (typingsDir && godotExecutable) {
+    console.error('--typings and --godot are mutually exclusive')
+    genTypesUsage()
+  }
+
+  return { typingsDir, outFile, ancestor, vueSrcDir, godotExecutable }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function projectUsesHtmlComponents(projectDirectory: string): boolean {
+  const packageJsonPath = path.join(projectDirectory, 'package.json')
+  try {
+    const parsed: unknown = JSON.parse(
+      fs.readFileSync(packageJsonPath, 'utf-8'),
+    )
+    if (!isRecord(parsed)) {
+      return false
+    }
+    return ['dependencies', 'devDependencies'].some((field) => {
+      const dependencies = parsed[field]
+      return isRecord(dependencies) && '@vue-godot/html' in dependencies
+    })
+  } catch {
+    return false
+  }
 }
 
 function createUsage(): never {
@@ -291,7 +328,8 @@ function doctorUsage(): never {
   console.error(
     `Usage: vue-godot doctor [dir] [options]
 
-Check local project setup, package versions, GodotJS typings, export settings,
+Check local project setup, package versions, runtime installation, stock-Godot
+typings, export settings,
 permissions, migration risks, and plugin-backed API setup.
 
 Arguments:
@@ -374,12 +412,30 @@ switch (command) {
   case 'gen-types': {
     const parsed = parseGenTypesArgs(args.slice(1))
     const typingsDir = path.resolve(parsed.typingsDir ?? './typings')
+    if (!parsed.typingsDir) {
+      const result = generateProjectTypes({
+        projectDirectory: process.cwd(),
+        outputDirectory: path.relative(process.cwd(), typingsDir),
+        godotExecutable: parsed.godotExecutable ?? process.env.GODOT_BIN,
+      })
+      console.log(
+        `vue-godot: generated ${result.files.length} declaration file(s) from ${result.source} → ${result.outputDirectory}`,
+      )
+    }
     const outFile = path.resolve(
       parsed.outFile ?? path.join(typingsDir, 'godot.vue-components.gen.d.ts'),
     )
     const ancestor = parsed.ancestor ?? 'Control'
     const vueSrcDir = path.resolve(parsed.vueSrcDir ?? './vue/src')
-    generate({ typingsDir, outFile, ancestor, vueSrcDir })
+    generate({
+      typingsDir,
+      outFile,
+      ancestor,
+      vueSrcDir,
+      excludeComponents: projectUsesHtmlComponents(process.cwd())
+        ? HTML_COMPONENT_TAGS
+        : undefined,
+    })
     break
   }
   case 'integrate': {

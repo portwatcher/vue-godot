@@ -4,24 +4,32 @@ Vue Godot performance depends on three layers: Vite bundle output, Vue renderer
 work, and Godot node/resource behavior. Use this guide to set app-level budgets
 and to measure regressions consistently.
 
-These budgets are initial release targets. `npm run bench:performance` enforces
-deterministic Node-side regression budgets for startup, first render, tree
-updates, virtual list scrolling, media loader paths, fetch/WebSocket throughput,
-repeated mount/unmount cleanup, and editor-style reload stability. Keep real
-device/export measurements in app or release notes when hardware-specific
-numbers matter.
+These budgets are initial release targets. `npm run bench:performance` keeps the
+deterministic Node-side regression budgets and, when `GODOT_BIN` resolves to an
+official editor, also launches `apps/html-demo` through the standalone
+GDExtension. The live gate records runtime/context startup, first entry-module
+evaluation, first Vue mount, repeated real-node mount/unmount, QuickJS memory,
+Godot static memory, wrapper roots, and callback roots.
 
 ## Target Budgets
 
-| Area | Starter app target | Serious app target | Notes |
-| --- | --- | --- | --- |
-| Cold launch to first usable screen | <= 2s desktop/editor, <= 4s mobile/export | app-owned budget, documented per target platform | Measure exported builds, not only editor play mode. |
-| First Vue render after `_ready()` | <= 250ms desktop, <= 500ms mobile | <= 10% of cold-start budget | Time from before `createApp(...).mount()` to first screen-ready mark. |
-| Hot reload edit to rebuilt `dist/app.js` | <= 1s starter, <= 3s serious app | app-owned budget | Keep stable chunk names to avoid Godot editor dependency churn. |
-| Large list rendering | 60 fps target while scrolling | no sustained frame over 33ms | Use `<VirtualList>` for large fixed-height lists. |
-| Asset loading for first screen | critical local assets <= 250ms after mount | remote assets async and non-blocking | Import or preload critical `res://` resources where possible. |
-| Repeated mount/unmount | 200 cycles <= 1s with no stale rendered children or unfreed descendants | no unbounded memory growth in exported builds | `npm run bench:performance` enforces the deterministic cleanup budget; app teams should add heap snapshots when hardware-specific memory growth matters. |
-| Fetch/WebSocket responsiveness | app-owned timeout budget | app-owned timeout budget | Use abort/timeouts and avoid blocking first render on non-critical network calls. |
+| Area                                     | Starter app target                                                      | Serious app target                               | Notes                                                                                                                                                    |
+| ---------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cold launch to first usable screen       | <= 2s desktop/editor, <= 4s mobile/export                               | app-owned budget, documented per target platform | Measure exported builds, not only editor play mode.                                                                                                      |
+| First Vue render after `_ready()`        | <= 250ms desktop, <= 500ms mobile                                       | <= 10% of cold-start budget                      | Time from before `createApp(...).mount()` to first screen-ready mark.                                                                                    |
+| Hot reload edit to rebuilt `dist/app.js` | <= 1s starter, <= 3s serious app                                        | app-owned budget                                 | Keep stable chunk names to avoid Godot editor dependency churn.                                                                                          |
+| Large list rendering                     | 60 fps target while scrolling                                           | no sustained frame over 33ms                     | Use `<VirtualList>` for large fixed-height lists.                                                                                                        |
+| Asset loading for first screen           | critical local assets <= 250ms after mount                              | remote assets async and non-blocking             | Import or preload critical `res://` resources where possible.                                                                                            |
+| Repeated mount/unmount                   | 200 cycles <= 1s with no stale rendered children or unfreed descendants | no unbounded memory growth in exported builds    | `npm run bench:performance` enforces the deterministic cleanup budget; app teams should add heap snapshots when hardware-specific memory growth matters. |
+| Fetch/WebSocket responsiveness           | app-owned timeout budget                                                | app-owned timeout budget                         | Use abort/timeouts and avoid blocking first render on non-critical network calls.                                                                        |
+
+The official-Godot host gate currently enforces a 250ms first Vue mount, a
+500ms runtime/context initialization, a 2s first module evaluation, a 10s cold
+process launch to the first rendered frame, and ten serious-demo remount cycles
+within 5s. After forced QuickJS collection and final unmount it permits at most
+2 MiB above the pre-mount QuickJS baseline and 32 MiB above the pre-mount Godot
+static-memory baseline. The existing deterministic 200-cycle/1s cleanup budget
+is unchanged.
 
 If an app needs different numbers, commit the app-specific budget in its docs or
 README and explain the target hardware.
@@ -87,13 +95,13 @@ are part of the exported project and do not depend on network conditions.
 Use remote, data, blob, or `user://` sources only when they match the product
 need:
 
-| Source | Use for | Performance note |
-| --- | --- | --- |
-| `res://` / relative path | bundled UI images, icons, local media | best for first screen and deterministic exports |
-| `user://` | user-generated or downloaded content | validate existence and size before blocking UI |
-| data URL | small inline fixtures or generated content | avoid large payloads because they copy through JS strings/buffers |
-| blob URL | process-local generated objects | revoke app-owned object URLs when no longer needed |
-| remote URL | network content | show loading states and use timeouts/retry policy |
+| Source                   | Use for                                    | Performance note                                                  |
+| ------------------------ | ------------------------------------------ | ----------------------------------------------------------------- |
+| `res://` / relative path | bundled UI images, icons, local media      | best for first screen and deterministic exports                   |
+| `user://`                | user-generated or downloaded content       | validate existence and size before blocking UI                    |
+| data URL                 | small inline fixtures or generated content | avoid large payloads because they copy through JS strings/buffers |
+| blob URL                 | process-local generated objects            | revoke app-owned object URLs when no longer needed                |
+| remote URL               | network content                            | show loading states and use timeouts/retry policy                 |
 
 Do not block first render on non-critical remote assets. Render the shell first,
 then stream or swap media as it becomes available.
@@ -154,7 +162,10 @@ template performance-sensitive code:
 npm run bench:performance
 ```
 
-`npm run check` also runs this benchmark suite. The current gate covers:
+`npm run check` also runs this benchmark suite. Without an official Godot
+executable the live half reports an explicit skip; CI and release preflight set
+`GODOT_BIN`, so the official runtime gate is mandatory there. The current gate
+covers:
 
 - Startup time: cold import of the runtime renderer package.
 - First Vue render: mounting a small app and waiting for Vue to flush.
@@ -169,9 +180,10 @@ npm run bench:performance
 - Editor reload stability: repeated unmount/remount cycles with stale node
   checks.
 
-These checks are intentionally deterministic and broad enough for CI. They are
-not a substitute for release-candidate measurements in exported desktop/mobile
-builds on target hardware.
+The Node checks are intentionally deterministic. The official-Godot half uses
+the real GDExtension and serious demo; exported desktop/mobile measurements are
+added by the platform release gates because their numbers depend on the target
+runner or device.
 
 ## Bundle And Build Hygiene
 

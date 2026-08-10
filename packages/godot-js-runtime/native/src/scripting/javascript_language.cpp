@@ -15,6 +15,7 @@
 #include <godot_cpp/variant/packed_string_array.hpp>
 
 #include "godot_js_runtime/runtime/runtime_host.hpp"
+#include "godot_js_runtime/runtime/module_format.hpp"
 #include "godot_js_runtime/runtime/string_conversion.hpp"
 #include "godot_js_runtime/scripting/javascript_project_runtime.hpp"
 #include "godot_js_runtime/scripting/javascript_script.hpp"
@@ -334,7 +335,9 @@ godot::Dictionary JavaScriptLanguage::_validate(
 				: project->validate_source(
 						standard_string(script),
 						standard_string(path.is_empty() ? godot::String("res://untitled.js") : path),
-						path.get_extension().to_lower() != "cjs");
+						detect_javascript_module_format(
+								standard_string(path.is_empty() ? godot::String("res://untitled.js") : path),
+								standard_string(script)) == JavaScriptModuleFormat::ES_MODULE);
 	}
 	result["valid"] = validation.ok;
 	if (validation.ok) {

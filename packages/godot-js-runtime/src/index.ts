@@ -34,6 +34,7 @@ export type {
   UninstallResult,
   VerificationResult,
 } from './install.js'
+export { commonJsBundleBanner } from './bundle-format.js'
 export {
   defineScript,
   getScriptMetadata,

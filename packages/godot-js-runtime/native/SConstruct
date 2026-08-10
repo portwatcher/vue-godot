@@ -94,6 +94,7 @@ if os.environ.get("GODOT_JS_RUNTIME_BUILD_TESTS") == "1":
     test_env = env.Clone()
     test_sources = [
         "tests/runtime_host_tests.cpp",
+        "src/runtime/module_format.cpp",
         "src/runtime/module_resolver.cpp",
         "src/runtime/runtime_host.cpp",
         "src/runtime/source_map.cpp",

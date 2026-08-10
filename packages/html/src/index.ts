@@ -54,6 +54,7 @@ export {
   captureCameraImage,
   captureCameraTextureImage,
   createCameraTexture,
+  deactivateCameraTexture,
   listCameraFeeds,
   resolveCameraFeedId,
 } from './utils/camera.js'

@@ -4,6 +4,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import { godotCommandArguments } from './godot-command.mjs'
 
 const packageRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -120,6 +121,18 @@ const packedTypedArrays = new Map([
   ['PackedFloat32Array', 'Float32Array'],
   ['PackedFloat64Array', 'Float64Array'],
 ])
+const packedInputElements = new Map([
+  ['PackedByteArray', 'number'],
+  ['PackedColorArray', 'Color'],
+  ['PackedFloat32Array', 'number'],
+  ['PackedFloat64Array', 'number'],
+  ['PackedInt32Array', 'number'],
+  ['PackedInt64Array', 'Integer'],
+  ['PackedStringArray', 'string'],
+  ['PackedVector2Array', 'Vector2'],
+  ['PackedVector3Array', 'Vector3'],
+  ['PackedVector4Array', 'Vector4'],
+])
 
 function fail(message) {
   throw new Error(`[generate-types] ${message}`)
@@ -179,7 +192,7 @@ function dumpStockGodotApi(godotPath) {
   try {
     const result = spawnSync(
       godotPath,
-      ['--headless', '--dump-extension-api'],
+      godotCommandArguments(['--headless', '--dump-extension-api']),
       {
         cwd: temporaryDirectory,
         encoding: 'utf-8',
@@ -322,6 +335,16 @@ function methodReturnType(method, context) {
 function godotArgumentType(value, metadata, context) {
   const type = godotType(value, metadata, context)
   if (value === 'StringName' || value === 'NodePath') return `${type} | string`
+  if (packedInputElements.has(value)) return `${value}Input`
+  if (value === 'Array') {
+    return `${type} | readonly ${context.arrayElement ?? 'GodotVariant'}[]`
+  }
+  if (value.startsWith('typedarray::')) {
+    return `${type} | readonly ${godotType(typedArrayElement(value))}[]`
+  }
+  if (value === 'Dictionary') {
+    return `${type} | Readonly<Record<string, GodotVariant>>`
+  }
   if (value === 'Callable') {
     return `${type} | ((...args: GodotVariant[]) => GodotVariant)`
   }
@@ -515,13 +538,19 @@ function renderClass(value, singletonNames, docsVersion) {
   }
   for (const property of sorted(value.properties)) {
     const readonlyPrefix = property.setter ? '' : 'readonly '
-    lines.push(
-      `    ${readonlyPrefix}${memberName(property.name)}: ${godotType(property.type)}`,
-    )
-    if (singleton) {
+    const propertyName = memberName(property.name)
+    const outputType = godotType(property.type)
+    const inputType = godotArgumentType(property.type, undefined, {})
+    if (property.setter && outputType !== inputType) {
       lines.push(
-        `    static ${readonlyPrefix}${memberName(property.name)}: ${godotType(property.type)}`,
+        `    get ${propertyName}(): ${outputType}`,
+        `    set ${propertyName}(value: ${inputType})`,
       )
+    } else {
+      lines.push(`    ${readonlyPrefix}${propertyName}: ${outputType}`)
+    }
+    if (singleton) {
+      lines.push(`    static ${readonlyPrefix}${propertyName}: ${outputType}`)
     }
   }
   for (const signal of sorted(value.signals)) {
@@ -615,6 +644,17 @@ function renderGodotDeclaration(api, apiHash) {
     '  }',
     '',
   ]
+  for (const [name, element] of [...packedInputElements].sort(
+    ([left], [right]) => left.localeCompare(right),
+  )) {
+    const inputs = [name]
+    const typedArray = packedTypedArrays.get(name)
+    if (typedArray) inputs.push(typedArray)
+    inputs.push(`readonly ${element}[]`)
+    if (name === 'PackedByteArray') inputs.push('ArrayBuffer')
+    lines.push(`  export type ${name}Input = ${inputs.join(' | ')}`)
+  }
+  lines.push('')
   for (const value of builtins.filter(
     (builtin) => !primitiveBuiltinTypes.has(builtin.name),
   )) {

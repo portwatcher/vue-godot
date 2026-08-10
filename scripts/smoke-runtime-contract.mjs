@@ -5,6 +5,9 @@ import {
 } from './runtime-contract-fixture.mjs'
 import {
   assertNoGodotScriptLoadErrors,
+  assertOfficialGodotExecutable,
+  godotCommandArguments,
+  installBuiltRuntime,
   resolveGodotCommand,
   runAsync,
 } from './smoke-utils.mjs'
@@ -39,7 +42,13 @@ function combinedOutput(result) {
 async function runSuccessSmoke(godot) {
   const importResult = await runAsync(
     godot,
-    ['--headless', '--path', runtimeContractFixtureDir, '--import', '--quit'],
+    godotCommandArguments([
+      '--headless',
+      '--path',
+      runtimeContractFixtureDir,
+      '--import',
+      '--quit',
+    ]),
     { timeout: 60_000 },
   )
   printResult(importResult)
@@ -50,13 +59,7 @@ async function runSuccessSmoke(godot) {
 
   const result = await runAsync(
     godot,
-    [
-      '--headless',
-      '--path',
-      runtimeContractFixtureDir,
-      '--quit-after',
-      '600',
-    ],
+    ['--headless', '--path', runtimeContractFixtureDir, '--quit-after', '600'],
     {
       env: {
         ...process.env,
@@ -79,13 +82,7 @@ async function runSuccessSmoke(godot) {
 async function runMissingRuntimeSmoke(godot, contract) {
   const result = await runAsync(
     godot,
-    [
-      '--headless',
-      '--path',
-      runtimeContractFixtureDir,
-      '--quit-after',
-      '60',
-    ],
+    ['--headless', '--path', runtimeContractFixtureDir, '--quit-after', '60'],
     { allowFailure: true, timeout: 15_000 },
   )
   printResult(result)
@@ -94,7 +91,9 @@ async function runMissingRuntimeSmoke(godot, contract) {
   if (output.includes(PASS_MARKER)) {
     throw new Error('Missing-runtime control unexpectedly executed JavaScript')
   }
-  if (!contract.missingRuntimePatterns.some((pattern) => output.includes(pattern))) {
+  if (
+    !contract.missingRuntimePatterns.some((pattern) => output.includes(pattern))
+  ) {
     throw new Error(
       [
         'Missing-runtime control failed for an unrecognized reason.',
@@ -126,8 +125,12 @@ try {
   if (expectMissingRuntime) {
     await runMissingRuntimeSmoke(godot, contract)
   } else {
+    assertOfficialGodotExecutable(godot)
+    if (process.env.VUE_GODOT_ALLOW_LEGACY_RUNTIME !== '1') {
+      installBuiltRuntime(runtimeContractFixtureDir)
+    }
     await runSuccessSmoke(godot)
-    console.log('[runtime-contract] legacy baseline passed')
+    console.log('[runtime-contract] runtime contract passed')
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error))

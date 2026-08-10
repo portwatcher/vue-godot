@@ -19,6 +19,7 @@
 
 #include "godot_js_runtime/modules/godot_binding.hpp"
 #include "godot_js_runtime/runtime/godot_environment.hpp"
+#include "godot_js_runtime/runtime/module_format.hpp"
 #include "godot_js_runtime/runtime/runtime_host.hpp"
 #include "godot_js_runtime/runtime/runtime_project_settings.hpp"
 #include "godot_js_runtime/runtime/scoped_js_value.hpp"
@@ -296,6 +297,9 @@ struct JavaScriptProjectRuntime::Impl {
 	std::thread::id owner_thread = std::this_thread::get_id();
 	std::optional<bool> pending_reload_keep_state;
 	std::chrono::steady_clock::time_point next_file_poll{};
+	std::uint64_t initialization_time_microseconds = 0;
+	std::uint64_t first_module_evaluation_time_microseconds = 0;
+	bool first_module_evaluation_recorded = false;
 	bool stopping = false;
 
 	bool on_owner_thread() const {
@@ -317,11 +321,18 @@ struct JavaScriptProjectRuntime::Impl {
 			return true;
 		}
 		binding = std::make_unique<GodotBinding>(console);
+		const auto initialization_started_at = std::chrono::steady_clock::now();
 		host = std::make_unique<RuntimeHost>(
 				resources,
 				console,
 				runtime_options_from_project_settings(),
 				binding.get());
+		if (initialization_time_microseconds == 0) {
+			initialization_time_microseconds = static_cast<std::uint64_t>(
+					std::chrono::duration_cast<std::chrono::microseconds>(
+							std::chrono::steady_clock::now() - initialization_started_at)
+							.count());
+		}
 		if (!host->is_running()) {
 			const std::string detail = host->initialization_error();
 			host.reset();
@@ -707,10 +718,20 @@ struct JavaScriptProjectRuntime::Impl {
 		record.observed_source = standard_string(script._get_source_code());
 		free_value(record.constructor);
 		JSValue script_class = JS_UNDEFINED;
-		const std::string extension = standard_string(script.source_path().get_extension().to_lower());
-		const EvaluationResult evaluation = extension == "cjs"
+		const JavaScriptModuleFormat format = detect_javascript_module_format(
+				path,
+				record.observed_source);
+		const auto evaluation_started_at = std::chrono::steady_clock::now();
+		const EvaluationResult evaluation = format == JavaScriptModuleFormat::COMMONJS
 				? host->evaluate_commonjs_default(path, script_class)
 				: host->evaluate_module_default(path, script_class);
+		if (!first_module_evaluation_recorded) {
+			first_module_evaluation_recorded = true;
+			first_module_evaluation_time_microseconds = static_cast<std::uint64_t>(
+					std::chrono::duration_cast<std::chrono::microseconds>(
+							std::chrono::steady_clock::now() - evaluation_started_at)
+							.count());
+		}
 		if (!evaluation.ok) {
 			const std::string detail = evaluation_error(evaluation);
 			script.mark_invalid(godot_string(detail));
@@ -1080,7 +1101,13 @@ struct JavaScriptProjectRuntime::Impl {
 			return;
 		}
 		next_file_poll = now + std::chrono::milliseconds(250);
-		std::vector<godot::String> changed_paths;
+		std::vector<std::string> changed_paths;
+		auto record_changed_path = [&changed_paths](const std::string &path) {
+			if (std::find(changed_paths.begin(), changed_paths.end(), path) ==
+					changed_paths.end()) {
+				changed_paths.push_back(path);
+			}
+		};
 		for (auto &entry : scripts) {
 			JavaScriptScript *script = entry.first;
 			if (script == nullptr || script->has_source_changes()) {
@@ -1094,15 +1121,22 @@ struct JavaScriptProjectRuntime::Impl {
 				continue;
 			}
 			entry.second.observed_source = std::move(source);
-			changed_paths.push_back(script->source_path());
+			record_changed_path(path);
+		}
+		if (host != nullptr) {
+			for (const std::string &path :
+					host->consume_changed_resource_module_paths()) {
+				record_changed_path(path);
+			}
 		}
 		if (changed_paths.empty()) {
 			return;
 		}
-		for (const godot::String &path : changed_paths) {
+		std::sort(changed_paths.begin(), changed_paths.end());
+		for (const std::string &path : changed_paths) {
 			godot::UtilityFunctions::print(
 					"[godot-js-runtime] FILE_CHANGE_DETECTED ",
-					path);
+					godot_string(path));
 		}
 		reload_all(true);
 	}
@@ -1332,6 +1366,26 @@ void JavaScriptProjectRuntime::shutdown() noexcept {
 bool JavaScriptProjectRuntime::is_running() const {
 	return impl != nullptr && impl->host != nullptr && impl->host->is_running() &&
 			!impl->stopping;
+}
+
+std::size_t JavaScriptProjectRuntime::memory_usage_bytes() const {
+	return impl == nullptr || impl->host == nullptr
+			? 0
+			: impl->host->memory_usage_bytes();
+}
+
+std::uint64_t JavaScriptProjectRuntime::initialization_time_microseconds() const {
+	return impl == nullptr ? 0 : impl->initialization_time_microseconds;
+}
+
+std::uint64_t JavaScriptProjectRuntime::first_module_evaluation_time_microseconds() const {
+	return impl == nullptr ? 0 : impl->first_module_evaluation_time_microseconds;
+}
+
+void JavaScriptProjectRuntime::collect_garbage() {
+	if (impl != nullptr && impl->host != nullptr) {
+		impl->host->collect_garbage();
+	}
 }
 
 } // namespace godot_js_runtime

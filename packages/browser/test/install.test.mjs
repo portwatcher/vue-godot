@@ -4,10 +4,8 @@ import test from 'node:test'
 
 register(new URL('./godot-loader.mjs', import.meta.url).href)
 
-const {
-  deviceCapabilities,
-  registerDeviceCapability,
-} = await import('@vue-godot/device')
+const { deviceCapabilities, registerDeviceCapability } =
+  await import('@vue-godot/device')
 
 const {
   GodotBlob,
@@ -117,10 +115,7 @@ test('installBrowserAPIs installs missing browser globals', async () => {
     assert.ok(globalThis.navigator.permissions instanceof GodotPermissions)
     assert.equal(typeof globalThis.navigator.permissions.query, 'function')
     assert.equal(globalThis.DeviceMotionEvent, GodotDeviceMotionEvent)
-    assert.equal(
-      globalThis.DeviceOrientationEvent,
-      GodotDeviceOrientationEvent,
-    )
+    assert.equal(globalThis.DeviceOrientationEvent, GodotDeviceOrientationEvent)
     assert.equal(typeof globalThis.navigator.onLine, 'boolean')
     assert.equal(globalThis.navigator.geolocation, undefined)
     assert.equal(globalThis.navigator.mediaDevices, undefined)
@@ -158,6 +153,17 @@ test('installBrowserAPIs installs missing browser globals', async () => {
     assert.equal(String(globalThis.location), 'http://localhost/')
     assert.equal(typeof globalThis.addEventListener, 'function')
     assert.equal(typeof globalThis.dispatchEvent, 'function')
+  })
+})
+
+test('installBrowserAPIs replaces a partial host performance object', async () => {
+  await withClearedGlobals(['performance'], async () => {
+    globalThis.performance = { now: () => 1, timeOrigin: 0 }
+    installBrowserAPIs()
+
+    assert.equal(typeof globalThis.performance.now, 'function')
+    assert.equal(typeof globalThis.performance.mark, 'function')
+    assert.equal(typeof globalThis.performance.clearMeasures, 'function')
   })
 })
 

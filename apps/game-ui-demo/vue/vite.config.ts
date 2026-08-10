@@ -1,4 +1,5 @@
 import vue from '@vitejs/plugin-vue'
+import { commonJsBundleBanner } from 'godot-js-runtime'
 import { defineConfig } from 'vite'
 
 // Tags provided by @vue-godot/html — kept in sync with htmlTags from the package.
@@ -66,6 +67,7 @@ export default defineConfig({
     rollupOptions: {
       external: ['godot'],
       output: {
+        banner: commonJsBundleBanner,
         // Stable chunk paths avoid stale Godot editor resource dependencies
         // when Vite rebuilds while the project is open.
         chunkFileNames: 'chunks/[name].js',

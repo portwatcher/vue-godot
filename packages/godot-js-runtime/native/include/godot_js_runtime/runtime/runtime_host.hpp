@@ -80,6 +80,7 @@ public:
 			const JavaScriptOperation &operation,
 			JSValue *result = nullptr);
 	EvaluationResult pump_jobs();
+	std::vector<std::string> consume_changed_resource_module_paths();
 
 	void request_interrupt();
 	void collect_garbage();

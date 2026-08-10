@@ -9,6 +9,7 @@ const {
   captureCameraImage,
   captureCameraTextureImage,
   createCameraTexture,
+  deactivateCameraTexture,
   listCameraFeeds,
   resolveCameraFeedId,
 } = await import('../dist/index.js')
@@ -88,6 +89,14 @@ test('createCameraTexture returns null when no camera feed is available', () => 
   setMockFeeds([])
 
   assert.equal(createCameraTexture(), null)
+})
+
+test('deactivateCameraTexture releases an active camera feed', () => {
+  const texture = createCameraTexture({ feedId: 9, active: true })
+
+  deactivateCameraTexture(texture)
+
+  assert.equal(texture.camera_is_active, false)
 })
 
 test('captureCameraImage returns a camera texture image snapshot', () => {

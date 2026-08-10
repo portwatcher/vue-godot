@@ -60,31 +60,31 @@ Path resolution:
 
 Rather than embedding a layout engine like Yoga, we map a CSS flexbox subset to Godot's native container system. This gives us GPU-side layout computed in C++ and a scene tree that game developers can inspect in the Godot editor.
 
-| CSS                                           | Godot Node                                                      |
-| --------------------------------------------- | --------------------------------------------------------------- |
-| `display: flex; flex-direction: row`          | `HBoxContainer`                                                 |
-| `display: flex; flex-direction: column`       | `VBoxContainer`                                                 |
-| `flex-wrap: wrap` (row)                       | `HFlowContainer`                                                |
-| `flex-wrap: wrap` (column)                    | `VFlowContainer`                                                |
-| `display: grid`                               | `GridContainer`                                                 |
-| `gap: <n>`                                    | Theme override (`separation` / `h_separation` + `v_separation`) |
-| `justify-content: flex-start/center/flex-end` | Container `alignment`                                           |
-| `flex: 1` (on child)                          | Size flag `EXPAND_FILL`                                         |
-| `align-items: *`                              | Default child cross-axis size flag                              |
-| `align-self: center` (on child)               | Size flag `SHRINK_CENTER`                                       |
-| `padding: <n>`                                | `MarginContainer` wrapper or theme override                     |
-| `margin: <n>`                                 | Outer `MarginContainer` wrapper where supported                 |
-| `backgroundColor: <color>`                    | `PanelContainer` wrapper with `StyleBoxFlat`                    |
-| `backgroundImage: url(...)`                   | `PanelContainer` wrapper with `StyleBoxTexture`                 |
-| `borderColor` / `borderWidth` / `borderRadius` | `StyleBoxFlat` border and corner-radius props                 |
-| `transform: translate/scale/rotate(...)`       | Godot `position`, `scale`, and `rotation` props                |
-| `transition: opacity/transform/width/height ...` | Godot `Tween` property tweens on supported style updates     |
-| `animationName` plus `animation*` props         | Godot `Tween` keyframe loops registered with `registerStyleKeyframes()` |
-| `color: <color>`                              | `theme_override_colors/font_color` on text controls             |
-| `fontFamily: <family list>`                   | Registered/local Godot fonts with fallback `FontVariation`      |
-| `fontWeight: 'bold'`                          | `theme_override_fonts/font` with `FontVariation` embolden       |
-| `width` / `height`                            | Pixel minimum size or percent Control anchors                   |
-| `display: none`                               | `visible = false`                                               |
+| CSS                                              | Godot Node                                                              |
+| ------------------------------------------------ | ----------------------------------------------------------------------- |
+| `display: flex; flex-direction: row`             | `HBoxContainer`                                                         |
+| `display: flex; flex-direction: column`          | `VBoxContainer`                                                         |
+| `flex-wrap: wrap` (row)                          | `HFlowContainer`                                                        |
+| `flex-wrap: wrap` (column)                       | `VFlowContainer`                                                        |
+| `display: grid`                                  | `GridContainer`                                                         |
+| `gap: <n>`                                       | Theme override (`separation` / `h_separation` + `v_separation`)         |
+| `justify-content: flex-start/center/flex-end`    | Container `alignment`                                                   |
+| `flex: 1` (on child)                             | Size flag `EXPAND_FILL`                                                 |
+| `align-items: *`                                 | Default child cross-axis size flag                                      |
+| `align-self: center` (on child)                  | Size flag `SHRINK_CENTER`                                               |
+| `padding: <n>`                                   | `MarginContainer` wrapper or theme override                             |
+| `margin: <n>`                                    | Outer `MarginContainer` wrapper where supported                         |
+| `backgroundColor: <color>`                       | `PanelContainer` wrapper with `StyleBoxFlat`                            |
+| `backgroundImage: url(...)`                      | `PanelContainer` wrapper with `StyleBoxTexture`                         |
+| `borderColor` / `borderWidth` / `borderRadius`   | `StyleBoxFlat` border and corner-radius props                           |
+| `transform: translate/scale/rotate(...)`         | Godot `position`, `scale`, and `rotation` props                         |
+| `transition: opacity/transform/width/height ...` | Godot `Tween` property tweens on supported style updates                |
+| `animationName` plus `animation*` props          | Godot `Tween` keyframe loops registered with `registerStyleKeyframes()` |
+| `color: <color>`                                 | `theme_override_colors/font_color` on text controls                     |
+| `fontFamily: <family list>`                      | Registered/local Godot fonts with fallback `FontVariation`              |
+| `fontWeight: 'bold'`                             | `theme_override_fonts/font` with `FontVariation` embolden               |
+| `width` / `height`                               | Pixel minimum size or percent Control anchors                           |
+| `display: none`                                  | `visible = false`                                                       |
 
 Style objects (inline, React Native-style) are the primary styling API. For
 migration, `style` also accepts CSS declaration strings and arrays of style
@@ -123,42 +123,42 @@ Color values support hex (`#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`), named CSS co
 
 Inline style inputs are intentionally limited to the Godot-backed subset below. CSS declaration strings are parsed from kebab-case into the same `HtmlStyle` keys and support common `margin`, `padding`, `border`, `border-radius`, and `background` shorthands. Unsupported style keys emit a `[vue-godot/html]` warning once per component/property pair so migrations surface ignored CSS instead of failing silently.
 
-| Style prop | Godot behavior |
-| --- | --- |
-| `display` | `none` maps to `visible = false`; `flex` and `grid` affect `<Div>` container selection. |
-| `flexDirection` | Chooses row/column containers for `<Div>` and content wrappers. |
-| `flexWrap` | Chooses flow containers for wrapping `<Div>` layouts. |
-| `justifyContent` | Maps supported containers to Godot `alignment`. |
-| `alignItems` | Provides the default child cross-axis size flag in `<Div>`. |
-| `alignSelf` | Maps a child to a Godot size flag when it is inside `<Div>`. |
-| `flex` | Maps positive child values to expand/fill size flags inside `<Div>`. |
-| `gap` | Maps to Godot theme separation constants. |
-| `columns` | Maps to `GridContainer.columns` for grid `<Div>` layouts. |
-| `padding`, `paddingTop`, `paddingRight`, `paddingBottom`, `paddingLeft` | Maps to `MarginContainer` theme margin constants. |
-| `margin`, `marginTop`, `marginRight`, `marginBottom`, `marginLeft` | Maps to an outer `MarginContainer` where supported. |
-| `width`, `height` | Maps numeric or pixel-string values to minimum/control size; maps percent strings to Godot Control anchor ratios with zero offsets. |
-| `minWidth`, `minHeight`, `maxWidth`, `maxHeight` | Clamps container minimum size where the component uses container sizing. |
-| `objectFit` | Maps media texture stretch/expand behavior for `<Img>`, `<CameraView>`, and `<Svg>`. |
-| `backgroundColor` | Maps to a `PanelContainer` `StyleBoxFlat` background where supported. |
-| `backgroundImage` | Supports a single `url(...)` image and maps loaded textures to a stretched `StyleBoxTexture` background where supported. |
-| `borderColor` | Maps to `StyleBoxFlat.border_color` where the component uses a panel style. |
-| `borderStyle` | Supports `'solid'` and `'none'` for `StyleBoxFlat` borders. |
-| `borderWidth`, `borderTopWidth`, `borderRightWidth`, `borderBottomWidth`, `borderLeftWidth` | Maps to `StyleBoxFlat` border widths. |
-| `borderRadius`, `borderTopLeftRadius`, `borderTopRightRadius`, `borderBottomRightRadius`, `borderBottomLeftRadius` | Maps to `StyleBoxFlat` corner radii. |
-| `color` | Maps text-capable controls to `theme_override_colors/font_color`. |
-| `fontSize` | Maps text-capable controls to `theme_override_font_sizes/font_size`, multiplied by the process-wide HTML font scale. |
-| `fontFamily` | Supports registered family names from `registerFontFamily()` and direct local font paths in CSS fallback-list order. |
-| `fontWeight` | Supports `'bold'` via a Godot `FontVariation` embolden override. |
-| `textTransform` | Supports `'uppercase'` on `<Span>` and `<Label>`. |
-| `textAlign` | Maps `<Span>` and `<Label>` to Godot horizontal alignment. |
-| `transform` | Supports `translate()`, `translateX()`, `translateY()`, `scale()`, `scaleX()`, `scaleY()`, `rotate()`, and `rotateZ()` and maps them to Godot control transform props. |
-| `transition` | Supports CSS-like shorthand for `opacity`, `transform`, `width`, `height`, and `all`; durations accept seconds, `s`, or `ms`; timing supports `linear`, `ease`, `ease-in`, `ease-out`, and `ease-in-out`. |
-| `transitionProperty`, `transitionDuration`, `transitionDelay`, `transitionTimingFunction` | Longhand transition props for the same Godot-backed property subset. |
-| `animationName` | Starts a style keyframe animation registered with `registerStyleKeyframes()`; `'none'` stops an active style animation on the next update. |
-| `animationDuration`, `animationDelay`, `animationTimingFunction`, `animationIterationCount`, `animationDirection` | Configure registered style animations. Durations accept seconds, `s`, or `ms`; timing supports the same basic easing names as transitions; iteration count accepts positive numbers or `'infinite'`; direction supports `'normal'` and `'reverse'`. |
-| `overflowWrap` | Supports `'break-word'` on `<Span>` and `<Label>` via smart word wrapping. |
-| `overflow` | Supports `'hidden'` clipping where the backing Godot node exposes it. |
-| `opacity` | Maps to a Godot `modulate` alpha color. |
+| Style prop                                                                                                         | Godot behavior                                                                                                                                                                                                                                      |
+| ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `display`                                                                                                          | `none` maps to `visible = false`; `flex` and `grid` affect `<Div>` container selection.                                                                                                                                                             |
+| `flexDirection`                                                                                                    | Chooses row/column containers for `<Div>` and content wrappers.                                                                                                                                                                                     |
+| `flexWrap`                                                                                                         | Chooses flow containers for wrapping `<Div>` layouts.                                                                                                                                                                                               |
+| `justifyContent`                                                                                                   | Maps supported containers to Godot `alignment`.                                                                                                                                                                                                     |
+| `alignItems`                                                                                                       | Provides the default child cross-axis size flag in `<Div>`.                                                                                                                                                                                         |
+| `alignSelf`                                                                                                        | Maps a child to a Godot size flag when it is inside `<Div>`.                                                                                                                                                                                        |
+| `flex`                                                                                                             | Maps positive child values to expand/fill size flags inside `<Div>`.                                                                                                                                                                                |
+| `gap`                                                                                                              | Maps to Godot theme separation constants.                                                                                                                                                                                                           |
+| `columns`                                                                                                          | Maps to `GridContainer.columns` for grid `<Div>` layouts.                                                                                                                                                                                           |
+| `padding`, `paddingTop`, `paddingRight`, `paddingBottom`, `paddingLeft`                                            | Maps to `MarginContainer` theme margin constants.                                                                                                                                                                                                   |
+| `margin`, `marginTop`, `marginRight`, `marginBottom`, `marginLeft`                                                 | Maps to an outer `MarginContainer` where supported.                                                                                                                                                                                                 |
+| `width`, `height`                                                                                                  | Maps numeric or pixel-string values to minimum/control size; maps percent strings to Godot Control anchor ratios with zero offsets.                                                                                                                 |
+| `minWidth`, `minHeight`, `maxWidth`, `maxHeight`                                                                   | Clamps container minimum size where the component uses container sizing.                                                                                                                                                                            |
+| `objectFit`                                                                                                        | Maps media texture stretch/expand behavior for `<Img>`, `<CameraView>`, and `<Svg>`.                                                                                                                                                                |
+| `backgroundColor`                                                                                                  | Maps to a `PanelContainer` `StyleBoxFlat` background where supported.                                                                                                                                                                               |
+| `backgroundImage`                                                                                                  | Supports a single `url(...)` image and maps loaded textures to a stretched `StyleBoxTexture` background where supported.                                                                                                                            |
+| `borderColor`                                                                                                      | Maps to `StyleBoxFlat.border_color` where the component uses a panel style.                                                                                                                                                                         |
+| `borderStyle`                                                                                                      | Supports `'solid'` and `'none'` for `StyleBoxFlat` borders.                                                                                                                                                                                         |
+| `borderWidth`, `borderTopWidth`, `borderRightWidth`, `borderBottomWidth`, `borderLeftWidth`                        | Maps to `StyleBoxFlat` border widths.                                                                                                                                                                                                               |
+| `borderRadius`, `borderTopLeftRadius`, `borderTopRightRadius`, `borderBottomRightRadius`, `borderBottomLeftRadius` | Maps to `StyleBoxFlat` corner radii.                                                                                                                                                                                                                |
+| `color`                                                                                                            | Maps text-capable controls to `theme_override_colors/font_color`.                                                                                                                                                                                   |
+| `fontSize`                                                                                                         | Maps text-capable controls to `theme_override_font_sizes/font_size`, multiplied by the process-wide HTML font scale.                                                                                                                                |
+| `fontFamily`                                                                                                       | Supports registered family names from `registerFontFamily()` and direct local font paths in CSS fallback-list order.                                                                                                                                |
+| `fontWeight`                                                                                                       | Supports `'bold'` via a Godot `FontVariation` embolden override.                                                                                                                                                                                    |
+| `textTransform`                                                                                                    | Supports `'uppercase'` on `<Span>` and `<Label>`.                                                                                                                                                                                                   |
+| `textAlign`                                                                                                        | Maps `<Span>` and `<Label>` to Godot horizontal alignment.                                                                                                                                                                                          |
+| `transform`                                                                                                        | Supports `translate()`, `translateX()`, `translateY()`, `scale()`, `scaleX()`, `scaleY()`, `rotate()`, and `rotateZ()` and maps them to Godot control transform props.                                                                              |
+| `transition`                                                                                                       | Supports CSS-like shorthand for `opacity`, `transform`, `width`, `height`, and `all`; durations accept seconds, `s`, or `ms`; timing supports `linear`, `ease`, `ease-in`, `ease-out`, and `ease-in-out`.                                           |
+| `transitionProperty`, `transitionDuration`, `transitionDelay`, `transitionTimingFunction`                          | Longhand transition props for the same Godot-backed property subset.                                                                                                                                                                                |
+| `animationName`                                                                                                    | Starts a style keyframe animation registered with `registerStyleKeyframes()`; `'none'` stops an active style animation on the next update.                                                                                                          |
+| `animationDuration`, `animationDelay`, `animationTimingFunction`, `animationIterationCount`, `animationDirection`  | Configure registered style animations. Durations accept seconds, `s`, or `ms`; timing supports the same basic easing names as transitions; iteration count accepts positive numbers or `'infinite'`; direction supports `'normal'` and `'reverse'`. |
+| `overflowWrap`                                                                                                     | Supports `'break-word'` on `<Span>` and `<Label>` via smart word wrapping.                                                                                                                                                                          |
+| `overflow`                                                                                                         | Supports `'hidden'` clipping where the backing Godot node exposes it.                                                                                                                                                                               |
+| `opacity`                                                                                                          | Maps to a Godot `modulate` alpha color.                                                                                                                                                                                                             |
 
 Background images use the same loader as `<Img>` for local Godot paths, relative paths, data URIs, blob URLs, and remote URLs. CSS gradients, multiple backgrounds, repeat modes, and precise `background-size` / `background-position` behavior are not part of the current subset; the loaded texture is stretched to the panel bounds.
 
@@ -343,7 +343,7 @@ button defaults. Both presets are opt-in.
 
 ### CameraView camera feed scope
 
-`<CameraView>` previews a Godot camera feed by creating a `CameraTexture` and rendering it in a `TextureRect`. It selects the first feed by default, or you can choose a feed with `feedIndex` or `feedId`. The `active` prop maps to `camera_is_active`, and `whichFeed` maps to Godot's split-feed image selection.
+`<CameraView>` previews a Godot camera feed by creating a `CameraTexture` and rendering it in a `TextureRect`. It selects the first feed by default, or you can choose a feed with `feedIndex` or `feedId`. The `active` prop maps to `camera_is_active`, and `whichFeed` maps to Godot's split-feed image selection. Replaced textures and unmounted views deactivate their feeds so native camera capture shuts down cleanly.
 
 Use `listCameraFeeds()` before rendering selection UI. Use
 `captureCameraImage()` when you need a best-effort `Image` snapshot from a
@@ -452,59 +452,59 @@ HTML-like components are Godot nodes, not browser DOM elements. The current inpu
 
 ## Component Mapping
 
-| HTML-like Component | Godot Node                                                             | Key Props             |
-| ------------------- | ---------------------------------------------------------------------- | --------------------- |
-| `<ActivityIndicator>` | `ProgressBar`                                                        | `active`, `size`, `fill`, `style` |
-| `<Dialog>`          | `AcceptDialog`                                                         | `v-model`, `title`, `message`, `confirmText`, `trapFocus`, `restoreFocus` |
-| `<Div>`             | `HBoxContainer` / `VBoxContainer` / `*FlowContainer` / `GridContainer` plus style wrappers | `style` (layout/background/border/motion) |
-| `<Form>`            | `PanelContainer` plus inner `<Div>`                                    | `disabled`, `submitOnAccept`, `resetOnCancel`, `contentStyle` |
-| `<CameraView>`      | `TextureRect` with `CameraTexture`                                     | `feedId`, `feedIndex`, `active`, `whichFeed`, `style` |
-| `<Canvas>`          | `Control`                                                              | `width`, `height`, `style`, template ref |
-| `<Img>`             | `TextureRect`                                                          | `src`, `style` (`width`, `height`, `objectFit`, `display`) |
-| `<KeyboardAvoidingView>` | `MarginContainer` / `PanelContainer`                              | `behavior`, `keyboardVerticalOffset`, `fallbackKeyboardHeight`, `contentStyle` |
-| `<Label>`           | `Label` / inner `<Div>` wrapper                                        | `text`, `required`, `requiredIndicator`, `contentStyle` |
-| `<Modal>`           | `Window`                                                               | `v-model`, `title`, `width`, `height`, `trapFocus`, `restoreFocus` |
-| `<Overlay>`         | `PanelContainer` plus inner `<Div>`                                    | `v-model`, `closeOnClick`, `blockInput`, `trapFocus`, `restoreFocus`, `contentStyle` |
-| `<Pressable>`       | `PanelContainer`                                                       | `disabled`, `longPressDelay`, `minTouchTarget`, interaction events |
-| `<Progress>`        | `ProgressBar`                                                          | `value`, `min`, `max`, `indeterminate`, `showPercentage` |
-| `<SafeAreaView>`    | `MarginContainer` / `PanelContainer`                                   | `edges`, `fallbackInsets`, `contentStyle` |
-| `<Screen>`          | `Control` / `PanelContainer` plus inner `<Div>`                        | `visible`, `fullRect`, `contentStyle` |
-| `<ScreenStack>`     | `<Screen>` plus active named slot                                      | `v-model`, `routes`, `initialRouteName`, `contentStyle` |
-| `<ScrollView>`      | `ScrollContainer`                                                      | `horizontal`, `vertical`, `scrollbarMode`, `contentStyle` |
-| `<VirtualList>`     | `ScrollContainer` plus spacer `Control` nodes                          | `items`, `itemHeight`, `height`, `overscan`, slot props |
-| `<Span>`            | `Label`                                                                | text content, `style` |
-| `<Switch>`          | `CheckButton`                                                          | `v-model`, `label`, `disabled`, `style` |
-| `<Button>`          | `Button`                                                               | `@click`, `disabled`, `style`, shared focus/touch props |
-| `<Input>`           | `LineEdit` / `CheckBox` / `HSlider`                                    | `type`, `v-model`, `placeholder`, `readonly`, `disabled`, `label`, `name`, `value`, `min`/`max`/`step`, `style` |
-| `<Textarea>`        | `TextEdit`                                                             | `v-model`, `placeholder`, `disabled`, `readonly`, `rows`, `cols`, `style` |
-| `<Select>`          | `OptionButton`                                                         | `v-model`, `<Option value disabled selected>`, `style`, shared focus/touch props |
-| `<Video>`           | `VideoStreamPlayer`                                                    | `src`, `autoplay`, `loop`, `muted`, `volume`, `style`, `@ended` |
-| `<Audio>`           | `AudioStreamPlayer`                                                    | `src`, `autoplay`, `loop`, `muted`, `volume`, `@ended` |
-| `<Svg>`             | `TextureRect` (SVG resource)                                           | `src`, `scale`, `style` |
-| `<A>`               | `LinkButton`                                                           | `href`, `target` (accepted but ignored), `disabled`, `style`, `@click` |
+| HTML-like Component      | Godot Node                                                                                 | Key Props                                                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `<ActivityIndicator>`    | `ProgressBar`                                                                              | `active`, `size`, `fill`, `style`                                                                               |
+| `<Dialog>`               | `AcceptDialog`                                                                             | `v-model`, `title`, `message`, `confirmText`, `trapFocus`, `restoreFocus`                                       |
+| `<Div>`                  | `HBoxContainer` / `VBoxContainer` / `*FlowContainer` / `GridContainer` plus style wrappers | `style` (layout/background/border/motion)                                                                       |
+| `<Form>`                 | `PanelContainer` plus inner `<Div>`                                                        | `disabled`, `submitOnAccept`, `resetOnCancel`, `contentStyle`                                                   |
+| `<CameraView>`           | `TextureRect` with `CameraTexture`                                                         | `feedId`, `feedIndex`, `active`, `whichFeed`, `style`                                                           |
+| `<Canvas>`               | `Control`                                                                                  | `width`, `height`, `style`, template ref                                                                        |
+| `<Img>`                  | `TextureRect`                                                                              | `src`, `style` (`width`, `height`, `objectFit`, `display`)                                                      |
+| `<KeyboardAvoidingView>` | `MarginContainer` / `PanelContainer`                                                       | `behavior`, `keyboardVerticalOffset`, `fallbackKeyboardHeight`, `contentStyle`                                  |
+| `<Label>`                | `Label` / inner `<Div>` wrapper                                                            | `text`, `required`, `requiredIndicator`, `contentStyle`                                                         |
+| `<Modal>`                | `Window`                                                                                   | `v-model`, `title`, `width`, `height`, `trapFocus`, `restoreFocus`                                              |
+| `<Overlay>`              | `PanelContainer` plus inner `<Div>`                                                        | `v-model`, `closeOnClick`, `blockInput`, `trapFocus`, `restoreFocus`, `contentStyle`                            |
+| `<Pressable>`            | `PanelContainer`                                                                           | `disabled`, `longPressDelay`, `minTouchTarget`, interaction events                                              |
+| `<Progress>`             | `ProgressBar`                                                                              | `value`, `min`, `max`, `indeterminate`, `showPercentage`                                                        |
+| `<SafeAreaView>`         | `MarginContainer` / `PanelContainer`                                                       | `edges`, `fallbackInsets`, `contentStyle`                                                                       |
+| `<Screen>`               | `Control` / `PanelContainer` plus inner `<Div>`                                            | `visible`, `fullRect`, `contentStyle`                                                                           |
+| `<ScreenStack>`          | `<Screen>` plus active named slot                                                          | `v-model`, `routes`, `initialRouteName`, `contentStyle`                                                         |
+| `<ScrollView>`           | `ScrollContainer`                                                                          | `horizontal`, `vertical`, `scrollbarMode`, `contentStyle`                                                       |
+| `<VirtualList>`          | `ScrollContainer` plus spacer `Control` nodes                                              | `items`, `itemHeight`, `height`, `overscan`, slot props                                                         |
+| `<Span>`                 | `Label`                                                                                    | text content, `style`                                                                                           |
+| `<Switch>`               | `CheckButton`                                                                              | `v-model`, `label`, `disabled`, `style`                                                                         |
+| `<Button>`               | `Button`                                                                                   | `@click`, `disabled`, `style`, shared focus/touch props                                                         |
+| `<Input>`                | `LineEdit` / `CheckBox` / `HSlider`                                                        | `type`, `v-model`, `placeholder`, `readonly`, `disabled`, `label`, `name`, `value`, `min`/`max`/`step`, `style` |
+| `<Textarea>`             | `TextEdit`                                                                                 | `v-model`, `placeholder`, `disabled`, `readonly`, `rows`, `cols`, `style`                                       |
+| `<Select>`               | `OptionButton`                                                                             | `v-model`, `<Option value disabled selected>`, `style`, shared focus/touch props                                |
+| `<Video>`                | `VideoStreamPlayer`                                                                        | `src`, `autoplay`, `loop`, `muted`, `volume`, `style`, `@ended`                                                 |
+| `<Audio>`                | `AudioStreamPlayer`                                                                        | `src`, `autoplay`, `loop`, `muted`, `volume`, `@ended`                                                          |
+| `<Svg>`                  | `TextureRect` (SVG resource)                                                               | `src`, `scale`, `style`                                                                                         |
+| `<A>`                    | `LinkButton`                                                                               | `href`, `target` (accepted but ignored), `disabled`, `style`, `@click`                                          |
 
 ## Provided APIs
 
-| API                                                                                                                                    | Description                                                                                              |
-| -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `CameraView`, `Canvas`, `Dialog`, `Div`, `Form`, `Img`, `Input`, `KeyboardAvoidingView`, `Label`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `SafeAreaView`, `Screen`, `ScreenStack`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`, `VirtualList`) | Vue components backed by Godot nodes                                                                     |
-| Shared focus props (`autoFocus`, `autofocus`, `focusNext`, `focusPrevious`, `focusNeighbor*`)                                            | Mount-time focus and explicit Godot focus graph traversal for focusable controls                         |
-| Shared touch target prop (`minTouchTarget`)                                                                                            | Minimum Godot Control hit size for focusable controls                                                    |
-| `listCameraFeeds`, `resolveCameraFeedId`, `createCameraTexture`                                                                         | Camera feed discovery and `CameraTexture` creation helpers for Godot `CameraServer`                      |
-| `htmlPlugin`                                                                                                                           | Registers all HTML-like components globally in PascalCase and lowercase                                  |
-| `htmlTags`                                                                                                                             | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                 |
-| `registerFontFamily`, `unregisterFontFamily`, `parseFontFamilyList`                                                                     | Registers CSS `fontFamily` names to local Godot font resources and parses CSS fallback lists              |
-| `setHtmlFontScale`, `getHtmlFontScale`                                                                                                  | Sets or reads the process-wide multiplier applied to explicit numeric `fontSize` values                    |
-| `parseHtmlStyle`, `normalizeHtmlStyle`                                                                                                  | Parses CSS declaration strings and normalizes object/string/array style inputs to `HtmlStyle`             |
-| `defineHtmlTheme`, `createHtmlTheme`                                                                                                    | Defines structured theme tokens, component defaults, and state styles for `htmlPlugin`                    |
-| `createHtmlStyleSheet`                                                                                                                  | Parses explicit CSS-like stylesheet text with root tokens, type/class selectors, state pseudo-classes, and limited media queries |
-| `registerHtmlStyleSheet`, `clearRegisteredHtmlStyleSheetsForTests`                                                                       | Registers globally collected stylesheets before `htmlPlugin` creates a style context                      |
-| `createHtmlStyleContext`, `resolveHtmlComponentStyle`, `normalizeHtmlClassList`                                                          | Shared resolver utilities for tests, advanced integrations, and class/style diagnostics                   |
-| `readHtmlViewportSize`, `refreshHtmlStyleContextViewport`                                                                                | Reads Godot window metrics and refreshes responsive stylesheet viewport buckets                           |
-| `clearHtmlCssWarningsForTests`                                                                                                          | Clears deduplicated CSS warning state for unit tests                                                      |
-| `registerStyleKeyframes`, `unregisterStyleKeyframes`                                                                                    | Registers Tween-backed style keyframes for `animationName` on `opacity`, `transform`, `width`, and `height` |
-| `@vue-godot/html/vite`                                                                                                                   | Vite plugin subpath exposing `vueGodotHtmlCss()` for global CSS collection                                |
-| `@vue-godot/html/volar-plugin`                                                                                                         | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE |
+| API                                                                                                                                                                                                                                                                                                                                                       | Description                                                                                                                      |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| HTML-like components (`A`, `ActivityIndicator`, `Audio`, `Button`, `CameraView`, `Canvas`, `Dialog`, `Div`, `Form`, `Img`, `Input`, `KeyboardAvoidingView`, `Label`, `Modal`, `Option`, `Overlay`, `Pressable`, `Progress`, `SafeAreaView`, `Screen`, `ScreenStack`, `ScrollView`, `Select`, `Span`, `Svg`, `Switch`, `Textarea`, `Video`, `VirtualList`) | Vue components backed by Godot nodes                                                                                             |
+| Shared focus props (`autoFocus`, `autofocus`, `focusNext`, `focusPrevious`, `focusNeighbor*`)                                                                                                                                                                                                                                                             | Mount-time focus and explicit Godot focus graph traversal for focusable controls                                                 |
+| Shared touch target prop (`minTouchTarget`)                                                                                                                                                                                                                                                                                                               | Minimum Godot Control hit size for focusable controls                                                                            |
+| `listCameraFeeds`, `resolveCameraFeedId`, `createCameraTexture`, `deactivateCameraTexture`                                                                                                                                                                                                                                                                | Camera feed discovery, `CameraTexture` creation, and explicit feed teardown helpers for Godot `CameraServer`                     |
+| `htmlPlugin`                                                                                                                                                                                                                                                                                                                                              | Registers all HTML-like components globally in PascalCase and lowercase                                                          |
+| `htmlTags`                                                                                                                                                                                                                                                                                                                                                | Lowercase tag-name list for Vue compiler `isCustomElement` configuration                                                         |
+| `registerFontFamily`, `unregisterFontFamily`, `parseFontFamilyList`                                                                                                                                                                                                                                                                                       | Registers CSS `fontFamily` names to local Godot font resources and parses CSS fallback lists                                     |
+| `setHtmlFontScale`, `getHtmlFontScale`                                                                                                                                                                                                                                                                                                                    | Sets or reads the process-wide multiplier applied to explicit numeric `fontSize` values                                          |
+| `parseHtmlStyle`, `normalizeHtmlStyle`                                                                                                                                                                                                                                                                                                                    | Parses CSS declaration strings and normalizes object/string/array style inputs to `HtmlStyle`                                    |
+| `defineHtmlTheme`, `createHtmlTheme`                                                                                                                                                                                                                                                                                                                      | Defines structured theme tokens, component defaults, and state styles for `htmlPlugin`                                           |
+| `createHtmlStyleSheet`                                                                                                                                                                                                                                                                                                                                    | Parses explicit CSS-like stylesheet text with root tokens, type/class selectors, state pseudo-classes, and limited media queries |
+| `registerHtmlStyleSheet`, `clearRegisteredHtmlStyleSheetsForTests`                                                                                                                                                                                                                                                                                        | Registers globally collected stylesheets before `htmlPlugin` creates a style context                                             |
+| `createHtmlStyleContext`, `resolveHtmlComponentStyle`, `normalizeHtmlClassList`                                                                                                                                                                                                                                                                           | Shared resolver utilities for tests, advanced integrations, and class/style diagnostics                                          |
+| `readHtmlViewportSize`, `refreshHtmlStyleContextViewport`                                                                                                                                                                                                                                                                                                 | Reads Godot window metrics and refreshes responsive stylesheet viewport buckets                                                  |
+| `clearHtmlCssWarningsForTests`                                                                                                                                                                                                                                                                                                                            | Clears deduplicated CSS warning state for unit tests                                                                             |
+| `registerStyleKeyframes`, `unregisterStyleKeyframes`                                                                                                                                                                                                                                                                                                      | Registers Tween-backed style keyframes for `animationName` on `opacity`, `transform`, `width`, and `height`                      |
+| `@vue-godot/html/vite`                                                                                                                                                                                                                                                                                                                                    | Vite plugin subpath exposing `vueGodotHtmlCss()` for global CSS collection                                                       |
+| `@vue-godot/html/volar-plugin`                                                                                                                                                                                                                                                                                                                            | Volar language-service plugin that makes lowercase HTML-like tags resolve to these components in the IDE                         |
 
 Package types augment `@vue/runtime-core` `GlobalComponents`. PascalCase tags
 such as `<Div>` and lowercase tags such as `<div>` share the same component
@@ -629,7 +629,16 @@ export default class App extends Control {
 
 ```vue
 <script setup>
-import { Div, Form, Img, Label, Span, Button, Input, Switch } from '@vue-godot/html'
+import {
+  Div,
+  Form,
+  Img,
+  Label,
+  Span,
+  Button,
+  Input,
+  Switch,
+} from '@vue-godot/html'
 import { ref } from '@vue/runtime-core'
 
 const name = ref('')
@@ -650,8 +659,20 @@ const volume = ref(50)
     </Form>
     <Input type="password" v-model="password" placeholder="Password"></Input>
     <Input type="checkbox" v-model="agreed" label="I agree"></Input>
-    <Input type="radio" v-model="plan" name="plan" value="basic" label="Basic"></Input>
-    <Input type="radio" v-model="plan" name="plan" value="pro" label="Pro"></Input>
+    <Input
+      type="radio"
+      v-model="plan"
+      name="plan"
+      value="basic"
+      label="Basic"
+    ></Input>
+    <Input
+      type="radio"
+      v-model="plan"
+      name="plan"
+      value="pro"
+      label="Pro"
+    ></Input>
     <Switch v-model="agreed" label="Enable sync"></Switch>
     <Input type="range" v-model="volume" :min="0" :max="100"></Input>
     <Button @click="save" :style="{ fontSize: 16 }">Save</Button>
@@ -728,7 +749,10 @@ It supports `value`, `min`, `max`, `step`, `indeterminate`, `showPercentage`, `f
 `<ActivityIndicator>` is a bar-style busy indicator backed by the same native `ProgressBar` indeterminate mode:
 
 ```vue
-<ActivityIndicator :active="isLoading" :style="{ width: 120, height: 18 }"></ActivityIndicator>
+<ActivityIndicator
+  :active="isLoading"
+  :style="{ width: 120, height: 18 }"
+></ActivityIndicator>
 ```
 
 It supports `active`, `size`, `fill`, and `style`. When `active` is `false`, the indicator is hidden and the indeterminate animation is disabled.
@@ -744,7 +768,13 @@ It supports `active`, `size`, `fill`, and `style`. When `active` is `false`, the
 `<Input type="radio">` maps to Godot `CheckBox`. When a `name` is provided, inputs with the same name share a Godot `ButtonGroup` so selection is exclusive:
 
 ```vue
-<Input type="radio" v-model="plan" name="plan" value="basic" label="Basic"></Input>
+<Input
+  type="radio"
+  v-model="plan"
+  name="plan"
+  value="basic"
+  label="Basic"
+></Input>
 <Input type="radio" v-model="plan" name="plan" value="pro" label="Pro"></Input>
 ```
 

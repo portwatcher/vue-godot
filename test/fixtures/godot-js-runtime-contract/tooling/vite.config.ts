@@ -1,5 +1,6 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { commonJsBundleBanner } from 'godot-js-runtime'
 import { defineConfig } from 'vite'
 
 const fixtureRoot = path.resolve(
@@ -21,6 +22,7 @@ export default defineConfig({
     rollupOptions: {
       external: ['godot'],
       output: {
+        banner: commonJsBundleBanner,
         chunkFileNames: 'chunks/[name].js',
         exports: 'named',
       },

@@ -65,6 +65,12 @@ assertBinding(
   dynamicLabel instanceof Label,
   'ClassDB preserves runtime wrapper type',
 )
+dynamicLabel.set('text', 'dynamic property text')
+assertBinding(
+  dynamicLabel.get('text') === 'dynamic property text',
+  'Object.set/get dynamic property round-trip',
+)
+dynamicLabel.get_minimum_size()
 
 const vector = new Vector2(12.5, -4)
 assertBinding(vector.x === 12.5 && vector.y === -4, 'Vector2 fields')
@@ -82,6 +88,12 @@ const array = new GodotArray([1, 'two', vector])
 assertBinding(array.size() === 3, 'nested Array construction')
 assertBinding(array.get(2).x === 12.5, 'nested value wrapper conversion')
 assertBinding(array[0] === 1, 'Array bracket read')
+const arrayBufferBytes = new PackedByteArray(new Uint8Array([1, 2, 3]).buffer)
+arrayBufferBytes.append_array(new Uint8Array([4, 5]).buffer)
+assertBinding(
+  arrayBufferBytes.size() === 5 && arrayBufferBytes[4] === 5,
+  'ArrayBuffer converts to PackedByteArray arguments',
+)
 array[1] = 'updated'
 assertBinding(array.get(1) === 'updated', 'Array bracket write')
 assertBinding(
@@ -281,8 +293,12 @@ console.log(
   '[godot-js-runtime] PHASE3_BINDING PASS classdb properties variants callable signals identity errors gc-stress',
 )
 
-if (runtimeVersion() !== '0.0.0-development') {
-  throw new Error(`Unexpected runtime version: ${runtimeVersion()}`)
+const runtimeInfo = ClassDB.instantiate('GodotJavaScriptRuntimeInfo')
+const reportedRuntimeVersion = String(runtimeInfo.call('get_runtime_version'))
+if (runtimeVersion() !== reportedRuntimeVersion) {
+  throw new Error(
+    `Runtime version mismatch: godot-js=${runtimeVersion()} extension=${reportedRuntimeVersion}`,
+  )
 }
 if (
   compatibilityVersion !== runtimeVersion() ||

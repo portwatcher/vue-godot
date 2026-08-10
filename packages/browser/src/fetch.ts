@@ -13,6 +13,7 @@
 // ---------------------------------------------------------------------------
 
 import { HTTPClient, TLSOptions } from 'godot'
+import { packedStringArrayToStrings } from '@vue-godot/device'
 import { GodotHeaders } from './headers.js'
 import {
   GodotRequest,
@@ -200,11 +201,9 @@ async function fetchInternal(
 
   // Read response headers
   const responseCode = client.get_response_code()
-  const rawHeaders = client.get_response_headers()
-  const headerStrings: string[] = []
-  for (let i = 0; i < rawHeaders.size(); i++) {
-    headerStrings.push(rawHeaders.get_indexed(i))
-  }
+  const headerStrings = packedStringArrayToStrings(
+    client.get_response_headers(),
+  )
   const responseHeaders = GodotHeaders.fromGodotArray(headerStrings)
 
   // Handle redirects

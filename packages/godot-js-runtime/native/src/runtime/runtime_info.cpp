@@ -1,9 +1,12 @@
 #include "godot_js_runtime/runtime/runtime_info.hpp"
 
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/classes/script.hpp>
 
 #include "godot_js_runtime/modules/godot_binding.hpp"
 #include "godot_js_runtime/runtime/runtime_host.hpp"
+#include "godot_js_runtime/scripting/javascript_language.hpp"
+#include "godot_js_runtime/scripting/javascript_project_runtime.hpp"
 #include "godot_js_runtime/version.hpp"
 
 namespace godot_js_runtime {
@@ -30,6 +33,18 @@ void GodotJavaScriptRuntimeInfo::_bind_methods() {
 	godot::ClassDB::bind_method(
 			godot::D_METHOD("get_live_callback_root_count"),
 			&GodotJavaScriptRuntimeInfo::get_live_callback_root_count);
+	godot::ClassDB::bind_method(
+			godot::D_METHOD("get_memory_usage_bytes"),
+			&GodotJavaScriptRuntimeInfo::get_memory_usage_bytes);
+	godot::ClassDB::bind_method(
+			godot::D_METHOD("get_initialization_time_usec"),
+			&GodotJavaScriptRuntimeInfo::get_initialization_time_usec);
+	godot::ClassDB::bind_method(
+			godot::D_METHOD("get_first_module_evaluation_time_usec"),
+			&GodotJavaScriptRuntimeInfo::get_first_module_evaluation_time_usec);
+	godot::ClassDB::bind_method(
+			godot::D_METHOD("collect_garbage"),
+			&GodotJavaScriptRuntimeInfo::collect_garbage);
 	godot::ClassDB::bind_method(
 			godot::D_METHOD("is_initialized"),
 			&GodotJavaScriptRuntimeInfo::is_initialized);
@@ -65,6 +80,47 @@ int64_t GodotJavaScriptRuntimeInfo::get_live_wrapper_count() const {
 
 int64_t GodotJavaScriptRuntimeInfo::get_live_callback_root_count() const {
 	return static_cast<int64_t>(GodotBinding::live_callback_root_count());
+}
+
+int64_t GodotJavaScriptRuntimeInfo::get_memory_usage_bytes() const {
+	JavaScriptLanguage *language = JavaScriptLanguage::get_singleton();
+	JavaScriptProjectRuntime *runtime = language == nullptr
+			? nullptr
+			: language->project_runtime();
+	return runtime == nullptr
+			? 0
+			: static_cast<int64_t>(runtime->memory_usage_bytes());
+}
+
+int64_t GodotJavaScriptRuntimeInfo::get_initialization_time_usec() const {
+	JavaScriptLanguage *language = JavaScriptLanguage::get_singleton();
+	JavaScriptProjectRuntime *runtime = language == nullptr
+			? nullptr
+			: language->project_runtime();
+	return runtime == nullptr
+			? 0
+			: static_cast<int64_t>(runtime->initialization_time_microseconds());
+}
+
+int64_t GodotJavaScriptRuntimeInfo::get_first_module_evaluation_time_usec() const {
+	JavaScriptLanguage *language = JavaScriptLanguage::get_singleton();
+	JavaScriptProjectRuntime *runtime = language == nullptr
+			? nullptr
+			: language->project_runtime();
+	return runtime == nullptr
+			? 0
+			: static_cast<int64_t>(
+					runtime->first_module_evaluation_time_microseconds());
+}
+
+void GodotJavaScriptRuntimeInfo::collect_garbage() const {
+	JavaScriptLanguage *language = JavaScriptLanguage::get_singleton();
+	JavaScriptProjectRuntime *runtime = language == nullptr
+			? nullptr
+			: language->project_runtime();
+	if (runtime != nullptr) {
+		runtime->collect_garbage();
+	}
 }
 
 bool GodotJavaScriptRuntimeInfo::is_initialized() const {

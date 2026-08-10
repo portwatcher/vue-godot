@@ -11,6 +11,13 @@ and reload `.js`, `.mjs`, and `.cjs` scripts. The standalone installer and
 non-Vue TypeScript demo are implemented; the complete release-platform artifact
 matrix remains under development, so this is not yet a published release.
 
+## Package exports
+
+- `godot-js-runtime` exposes bundle-format helpers and the package's primary
+  TypeScript API.
+- `godot-js-runtime/installer` exposes the manifest-driven installer and
+  verification API for programmatic tooling.
+
 ## Install into an official Godot project
 
 Install the package in a new or existing project, inspect the available native
@@ -143,6 +150,7 @@ npm install godot-js-runtime
 | Manifest types and guards             | Typed representation and runtime validation for native artifact manifests.                                   |
 | Installer functions                   | Programmatic install, add-target, verify, uninstall, target discovery, and manifest guards.                  |
 | `generateProjectTypes(options)`       | Copies pinned declarations or generates version-matched declarations from official Godot.                    |
+| `commonJsBundleBanner`                | Deterministic Rollup/Vite banner that marks a `.js` entry as CommonJS for the native loader.                 |
 
 ```ts
 import { defineScript } from 'godot-js-runtime'
@@ -158,12 +166,50 @@ export default defineScript(Player, {
 })
 ```
 
+### CommonJS Vite bundles
+
+The `.cjs` extension always selects CommonJS and `.mjs` always selects ESM.
+Plain `.js` defaults to ESM unless a bundler emits the runtime's explicit
+CommonJS metadata banner. Keep the existing `dist/app.js` scene contract by
+adding the shared banner to Rollup output:
+
+```ts
+import { commonJsBundleBanner } from 'godot-js-runtime'
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  build: {
+    lib: {
+      entry: 'src/main.ts',
+      formats: ['cjs'],
+      fileName: () => 'app.js',
+    },
+    rollupOptions: {
+      external: ['godot'],
+      output: {
+        banner: commonJsBundleBanner,
+        chunkFileNames: 'chunks/[name].js',
+      },
+    },
+  },
+})
+```
+
+The same banner is written to relative chunks, while the entry format controls
+their `require()` evaluation. Format selection is therefore identical in the
+editor, headless runs, and exported applications and does not rely on source
+guessing.
+
 ## TypeScript declarations
 
 The package ships generated ambient declarations for the virtual `godot`,
 `godot-js`, and limited `godot-jsb` compatibility modules under `typings/`.
 They are generated from the pinned official Godot 4.4.1 extension API and do
 not require a custom editor or editor-generated binding bundle.
+
+Generated input types mirror the runtime bridge: ordinary JavaScript arrays
+are accepted for Godot and packed arrays, and `PackedByteArray` inputs also
+accept `Uint8Array` and `ArrayBuffer` without an intermediate wrapper.
 
 For a standalone TypeScript project, include the declaration entry point in
 `tsconfig.json` while keeping application output owned by the project's
@@ -232,8 +278,12 @@ helper functions are not part of this runtime's compatibility contract.
 The extension also registers `GodotJavaScriptRuntimeInfo` for stock-Godot
 diagnostics. It reports the product/package/runtime/minimum-Godot versions,
 initialization state, `get_live_runtime_count()`, `get_live_wrapper_count()`,
-and `get_live_callback_root_count()` so smoke and editor loops can prove that
-runtime, wrapper, and callback ownership was torn down.
+`get_live_callback_root_count()`, `get_memory_usage_bytes()`,
+`get_initialization_time_usec()`, and
+`get_first_module_evaluation_time_usec()`. Its `collect_garbage()` diagnostic
+hook forces a QuickJS collection. Together these let smoke, performance, and
+editor loops verify runtime cost and prove that wrapper and callback ownership
+was torn down.
 
 ## Script metadata
 
@@ -298,9 +348,10 @@ context safely:
   the old context are disconnected before teardown.
 - Unsaved editor source stored in `Script.source_code` is used for reload;
   otherwise the resource is refreshed from disk.
-- While the editor is open, saved `.js`, `.mjs`, and `.cjs` file changes are
-  detected and trigger a state-preserving soft reload. Unsaved in-memory source
-  is never overwritten by the disk monitor.
+- While the editor is open, changes to loaded `.js`, `.mjs`, `.cjs`, and JSON
+  modules—including relative Vite chunks—trigger a state-preserving soft
+  reload. Unsaved in-memory entry source is never overwritten by the disk
+  monitor.
 
 ## Editor integration
 

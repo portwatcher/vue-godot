@@ -6,6 +6,7 @@ import test from 'node:test'
 
 import { resolveCreateProfile } from '../dist/create.js'
 import {
+  copyTemplateDir,
   integrate,
   newPackageJson,
   resolveProjectFeatures,
@@ -31,6 +32,15 @@ async function withMutedConsole(callback) {
 
 test('newPackageJson supports device-only projects', () => {
   const pkg = newPackageJson('device-app', { device: true })
+  assert.equal(pkg.dependencies['godot-js-runtime'], '^0.0.1')
+  assert.equal(
+    pkg.scripts['setup:runtime'],
+    'npm run install:runtime && npm run gen:types',
+  )
+  assert.equal(
+    pkg.scripts.postinstall,
+    'npm run setup:runtime && npm run build',
+  )
   assert.equal(pkg.dependencies['@vue-godot/device'], '^0.0.1')
   assert.equal(pkg.dependencies['@vue-godot/browser'], undefined)
   assert.equal(pkg.dependencies['@vue-godot/html'], undefined)
@@ -110,6 +120,39 @@ test('create profiles preserve starter feature flags', () => {
   })
 })
 
+test('template copying excludes generated project state', async () => {
+  const tempDir = createTempDir()
+  const sourceDir = path.join(tempDir, 'source')
+  const outputDir = path.join(tempDir, 'output')
+
+  try {
+    fs.mkdirSync(path.join(sourceDir, '.godot'), { recursive: true })
+    fs.mkdirSync(path.join(sourceDir, 'node_modules'), { recursive: true })
+    fs.mkdirSync(path.join(sourceDir, 'src'), { recursive: true })
+    fs.writeFileSync(path.join(sourceDir, '.godot', 'uid_cache.bin'), 'cache')
+    fs.writeFileSync(
+      path.join(sourceDir, 'node_modules', 'runtime.js'),
+      'cache',
+    )
+    fs.writeFileSync(path.join(sourceDir, 'scene.tscn.uid'), 'cache')
+    fs.writeFileSync(path.join(sourceDir, 'src', 'main.ts'), '__NAME__')
+
+    await withMutedConsole(() =>
+      copyTemplateDir(sourceDir, outputDir, { __NAME__: 'generated' }, tempDir),
+    )
+
+    assert.equal(fs.existsSync(path.join(outputDir, '.godot')), false)
+    assert.equal(fs.existsSync(path.join(outputDir, 'node_modules')), false)
+    assert.equal(fs.existsSync(path.join(outputDir, 'scene.tscn.uid')), false)
+    assert.equal(
+      fs.readFileSync(path.join(outputDir, 'src', 'main.ts'), 'utf-8'),
+      'generated',
+    )
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('integrate adds @vue-godot/device without enabling html mode', async () => {
   const tempDir = createTempDir()
   try {
@@ -118,6 +161,14 @@ test('integrate adds @vue-godot/device without enabling html mode', async () => 
     )
     const pkg = readJson(path.join(tempDir, 'package.json'))
 
+    assert.equal(pkg.dependencies['godot-js-runtime'], '^0.0.1')
+    assert.equal(
+      pkg.scripts['install:runtime'],
+      'godot-js-runtime install --project .',
+    )
+    assert.equal(pkg.scripts['gen:types'], 'vue-godot gen-types')
+    assert.ok(fs.existsSync(path.join(tempDir, 'typings/.gdignore')))
+    assert.ok(fs.existsSync(path.join(tempDir, 'node_modules/.gdignore')))
     assert.equal(pkg.dependencies['@vue-godot/device'], '^0.0.1')
     assert.equal(pkg.dependencies['@vue-godot/browser'], undefined)
     assert.equal(pkg.dependencies['@vue-godot/html'], undefined)
@@ -140,9 +191,18 @@ test('integrate writes router and helper starter files', async () => {
       }),
     )
     const pkg = readJson(path.join(tempDir, 'package.json'))
-    const mainTs = fs.readFileSync(path.join(tempDir, 'vue/src/main.ts'), 'utf-8')
-    const appVue = fs.readFileSync(path.join(tempDir, 'vue/src/App.vue'), 'utf-8')
-    const appCss = fs.readFileSync(path.join(tempDir, 'vue/src/app.css'), 'utf-8')
+    const mainTs = fs.readFileSync(
+      path.join(tempDir, 'vue/src/main.ts'),
+      'utf-8',
+    )
+    const appVue = fs.readFileSync(
+      path.join(tempDir, 'vue/src/App.vue'),
+      'utf-8',
+    )
+    const appCss = fs.readFileSync(
+      path.join(tempDir, 'vue/src/app.css'),
+      'utf-8',
+    )
     const viteConfig = fs.readFileSync(
       path.join(tempDir, 'vue/vite.config.ts'),
       'utf-8',
@@ -150,6 +210,11 @@ test('integrate writes router and helper starter files', async () => {
 
     assert.equal(pkg.dependencies['vue-router'], '~4.5.1')
     assert.match(viteConfig, /vueGodotHtmlCss\(\)/)
+    assert.match(
+      viteConfig,
+      /import \{ commonJsBundleBanner \} from 'godot-js-runtime'/,
+    )
+    assert.match(viteConfig, /banner: commonJsBundleBanner/)
     assert.match(mainTs, /import '\.\/app\.css'/)
     assert.match(mainTs, /app\.use\(router\)/)
     assert.match(appCss, /\.starter-card/)
@@ -158,7 +223,9 @@ test('integrate writes router and helper starter files', async () => {
     assert.ok(fs.existsSync(path.join(tempDir, 'vue/src/app/storage.ts')))
     assert.ok(fs.existsSync(path.join(tempDir, 'vue/src/app/network.ts')))
     assert.ok(fs.existsSync(path.join(tempDir, 'vue/src/app/device.ts')))
-    assert.ok(fs.existsSync(path.join(tempDir, 'vue/src/screens/HomeScreen.vue')))
+    assert.ok(
+      fs.existsSync(path.join(tempDir, 'vue/src/screens/HomeScreen.vue')),
+    )
     assert.ok(
       fs.existsSync(path.join(tempDir, 'vue/src/screens/SettingsScreen.vue')),
     )

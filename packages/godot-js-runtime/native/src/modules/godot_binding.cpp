@@ -135,6 +135,7 @@ struct GodotBinding::Impl {
 	struct SignalConnection {
 		godot::Signal signal;
 		godot::Callable callable;
+		std::uint64_t owner_id = 0;
 	};
 
 	struct WrapperPayload {
@@ -357,6 +358,9 @@ struct GodotBinding::Impl {
 		if (JS_IsArray(value)) {
 			return "Array";
 		}
+		if (JS_IsArrayBuffer(value)) {
+			return "ArrayBuffer";
+		}
 		if (JS_GetTypedArrayType(value) >= 0) {
 			return "TypedArray";
 		}
@@ -494,6 +498,44 @@ struct GodotBinding::Impl {
 				reinterpret_cast<GDExtensionConstVariantPtr>(storage));
 		godot::internal::gdextension_interface_variant_destroy(storage);
 		return result;
+	}
+
+	bool instantiate_class(
+			const char *class_name,
+			godot::Variant &result,
+			std::string &error) const {
+		godot::StringName class_db_name("ClassDB");
+		GDExtensionObjectPtr class_db_owner =
+				godot::internal::gdextension_interface_global_get_singleton(
+						class_db_name._native_ptr());
+		if (class_db_owner == nullptr) {
+			error = "Godot ClassDB singleton is unavailable";
+			return false;
+		}
+		const godot::Variant requested_class = godot::StringName(class_name);
+		const godot::Variant *arguments[] = { &requested_class };
+		GDExtensionCallError call_error{};
+		godot::Variant class_db = object_variant(class_db_owner);
+		class_db.callp(
+				godot::StringName("instantiate"),
+				arguments,
+				1,
+				result,
+				call_error);
+		if (call_error.error != GDEXTENSION_CALL_OK) {
+			error = std::string("ClassDB.instantiate failed: ") +
+					call_error_name(call_error.error) +
+					" (argument=" + std::to_string(call_error.argument) +
+					", expected_variant_type=" + std::to_string(call_error.expected) + ")";
+			return false;
+		}
+		if (result.get_type() != godot::Variant::OBJECT ||
+				godot::internal::gdextension_interface_variant_get_object_instance_id(
+						result._native_ptr()) == 0) {
+			error = std::string("ClassDB could not instantiate ") + class_name;
+			return false;
+		}
+		return true;
 	}
 
 	JSValue dereference_weak_reference(JSValueConst weak_reference) {
@@ -815,6 +857,36 @@ struct GodotBinding::Impl {
 		return true;
 	}
 
+	bool convert_javascript_array_buffer(
+			JSContext *conversion_context,
+			JSValueConst value,
+			godot::PackedByteArray &result,
+			std::string &error) const {
+		if (!JS_IsArrayBuffer(value)) {
+			error = "expected ArrayBuffer; received " +
+					describe_value(conversion_context, value);
+			return false;
+		}
+		std::size_t length = 0;
+		std::uint8_t *bytes = JS_GetArrayBuffer(conversion_context, &length, value);
+		if (bytes == nullptr && length != 0) {
+			error = exception_text(conversion_context);
+			return false;
+		}
+		if (length > static_cast<std::size_t>(std::numeric_limits<std::int64_t>::max())) {
+			error = "ArrayBuffer length exceeds the PackedByteArray limit";
+			return false;
+		}
+		if (result.resize(static_cast<std::int64_t>(length)) != godot::OK) {
+			error = "Godot could not allocate the PackedByteArray";
+			return false;
+		}
+		if (length != 0) {
+			std::memcpy(result.ptrw(), bytes, length);
+		}
+		return true;
+	}
+
 	bool convert_javascript_dictionary(
 			JSContext *conversion_context,
 			JSValueConst value,
@@ -1048,6 +1120,18 @@ struct GodotBinding::Impl {
 			if (JS_IsFunction(conversion_context, value)) {
 				return javascript_callable(conversion_context, value, result, error);
 			}
+			if (JS_IsArrayBuffer(value)) {
+				godot::PackedByteArray converted;
+				if (!convert_javascript_array_buffer(
+							conversion_context,
+							value,
+							converted,
+							error)) {
+					return false;
+				}
+				result = converted;
+				return true;
+			}
 			if (JS_IsArray(value) || JS_GetTypedArrayType(value) >= 0) {
 				godot::Array converted;
 				if (!convert_javascript_array(
@@ -1177,6 +1261,19 @@ struct GodotBinding::Impl {
 		if (builtin != builtin_index_by_name.end()) {
 			const godot::Variant::Type target_type = static_cast<godot::Variant::Type>(
 					generated::BUILTINS[builtin->second].variant_type);
+			if (target_type == godot::Variant::PACKED_BYTE_ARRAY &&
+					JS_IsArrayBuffer(value)) {
+				godot::PackedByteArray converted;
+				if (!convert_javascript_array_buffer(
+							conversion_context,
+							value,
+							converted,
+							error)) {
+					return false;
+				}
+				result = converted;
+				return true;
+			}
 			if (is_packed_variant_type(target_type) &&
 					(JS_IsArray(value) || JS_GetTypedArrayType(value) >= 0)) {
 				godot::Array converted;
@@ -1313,20 +1410,7 @@ struct GodotBinding::Impl {
 			}
 		}
 
-		GDExtensionMethodBindPtr method_bind =
-				godot::internal::gdextension_interface_classdb_get_method_bind(
-						class_name._native_ptr(),
-						method_name._native_ptr(),
-						method.hash);
-		if (method_bind != nullptr && (method.flags & METHOD_VIRTUAL) == 0) {
-			godot::internal::gdextension_interface_object_method_bind_call(
-					method_bind,
-					is_static ? nullptr : object,
-					reinterpret_cast<GDExtensionConstVariantPtr *>(argument_pointers.data()),
-					static_cast<GDExtensionInt>(argument_pointers.size()),
-					result._native_ptr(),
-					&call_error);
-		} else if (is_static) {
+		if (is_static) {
 			godot::StringName class_db_name("ClassDB");
 			GDExtensionObjectPtr class_db_owner =
 					godot::internal::gdextension_interface_global_get_singleton(
@@ -1359,13 +1443,28 @@ struct GodotBinding::Impl {
 					result,
 					call_error);
 		} else {
-			WrapperPayload *payload = wrapper_payload(this_value);
-			payload->value.callp(
-					method_name,
-					argument_pointers.data(),
-					static_cast<int>(argument_pointers.size()),
-					result,
-					call_error);
+			GDExtensionMethodBindPtr method_bind =
+					godot::internal::gdextension_interface_classdb_get_method_bind(
+							class_name._native_ptr(),
+							method_name._native_ptr(),
+							method.hash);
+			if (method_bind != nullptr && (method.flags & METHOD_VIRTUAL) == 0) {
+				godot::internal::gdextension_interface_object_method_bind_call(
+						method_bind,
+						object,
+						reinterpret_cast<GDExtensionConstVariantPtr *>(argument_pointers.data()),
+						static_cast<GDExtensionInt>(argument_pointers.size()),
+						result._native_ptr(),
+						&call_error);
+			} else {
+				WrapperPayload *payload = wrapper_payload(this_value);
+				payload->value.callp(
+						method_name,
+						argument_pointers.data(),
+						static_cast<int>(argument_pointers.size()),
+						result,
+						call_error);
+			}
 		}
 		if (call_error.error != GDEXTENSION_CALL_OK) {
 			return throw_godot_call_error(
@@ -1448,7 +1547,11 @@ struct GodotBinding::Impl {
 			if (std::strcmp(method.name, "connect") == 0 &&
 					result.get_type() == godot::Variant::INT &&
 					static_cast<std::int64_t>(result) == godot::OK) {
-				signal_connections.push_back({ signal, callable });
+				signal_connections.push_back({
+					signal,
+					callable,
+					static_cast<std::uint64_t>(signal.get_object_id()),
+				});
 			} else if (std::strcmp(method.name, "disconnect") == 0) {
 				const auto connection = std::find_if(
 						signal_connections.begin(),
@@ -1471,7 +1574,10 @@ struct GodotBinding::Impl {
 						signal_connections.begin(),
 						signal_connections.end(),
 						[](const SignalConnection &entry) {
-							return entry.signal.is_null() ||
+							return entry.owner_id == 0 ||
+									godot::internal::gdextension_interface_object_get_instance_from_id(
+											entry.owner_id) == nullptr ||
+									entry.signal.is_null() ||
 									!entry.signal.is_connected(entry.callable);
 						}),
 				signal_connections.end());
@@ -1479,7 +1585,11 @@ struct GodotBinding::Impl {
 
 	void disconnect_signal_connections() noexcept {
 		for (SignalConnection &entry : signal_connections) {
-			if (!entry.signal.is_null() && entry.signal.is_connected(entry.callable)) {
+			if (entry.owner_id != 0 &&
+					godot::internal::gdextension_interface_object_get_instance_from_id(
+							entry.owner_id) != nullptr &&
+					!entry.signal.is_null() &&
+					entry.signal.is_connected(entry.callable)) {
 				entry.signal.disconnect(entry.callable);
 			}
 		}
@@ -1635,6 +1745,7 @@ struct GodotBinding::Impl {
 		}
 
 		GDExtensionObjectPtr owner = nullptr;
+		godot::Variant object_value;
 		bool owns_constructed_object = false;
 		if (binding->pending_script_owner != nullptr &&
 				!binding->pending_script_owner_consumed) {
@@ -1646,10 +1757,20 @@ struct GodotBinding::Impl {
 						binding_class.name);
 			}
 			binding->pending_script_owner_consumed = true;
+			object_value = binding->object_variant(owner);
 		} else {
-			godot::StringName class_name(binding_class.name);
-			owner = godot::internal::gdextension_interface_classdb_construct_object2(
-					class_name._native_ptr());
+			std::string error;
+			if (!binding->instantiate_class(
+						binding_class.name,
+						object_value,
+						error)) {
+				return JS_ThrowInternalError(call_context, "%s", error.c_str());
+			}
+			const std::uint64_t object_id =
+					godot::internal::gdextension_interface_variant_get_object_instance_id(
+							object_value._native_ptr());
+			owner = godot::internal::gdextension_interface_object_get_instance_from_id(
+					object_id);
 			owns_constructed_object = owner != nullptr;
 		}
 		if (owner == nullptr) {
@@ -1658,7 +1779,6 @@ struct GodotBinding::Impl {
 					"Godot ClassDB could not construct %s",
 					binding_class.name);
 		}
-		godot::Variant object_value = binding->object_variant(owner);
 		JSValue wrapper = binding->wrap_object(object_value, prototype.get());
 		if (JS_IsException(wrapper) && owns_constructed_object &&
 				!binding_class.is_refcounted) {
@@ -1787,6 +1907,23 @@ struct GodotBinding::Impl {
 				return JS_ThrowTypeError(
 						call_context,
 						"Array constructor conversion failed: %s",
+						error.c_str());
+			}
+			return binding->from_variant(godot::Variant(converted));
+		}
+		if (std::strcmp(builtin.name, "PackedByteArray") == 0 &&
+				argument_count == 1 && JS_IsArrayBuffer(arguments[0])) {
+			godot::PackedByteArray converted;
+			std::string error;
+			if (!binding->convert_javascript_array_buffer(
+						call_context,
+						arguments[0],
+						converted,
+						error)) {
+				binding->clear_exception(call_context);
+				return JS_ThrowTypeError(
+						call_context,
+						"PackedByteArray constructor conversion failed: %s",
 						error.c_str());
 			}
 			return binding->from_variant(godot::Variant(converted));
@@ -2566,7 +2703,11 @@ struct GodotBinding::Impl {
 					"Signal.as_promise could not create a one-shot connection (error %lld)",
 					static_cast<long long>(result));
 		}
-		binding->signal_connections.push_back({ signal, callable });
+		binding->signal_connections.push_back({
+			signal,
+			callable,
+			static_cast<std::uint64_t>(signal.get_object_id()),
+		});
 		return promise.release();
 	}
 

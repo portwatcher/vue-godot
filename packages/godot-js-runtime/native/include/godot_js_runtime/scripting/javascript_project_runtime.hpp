@@ -1,6 +1,7 @@
 #ifndef GODOT_JS_RUNTIME_JAVASCRIPT_PROJECT_RUNTIME_HPP
 #define GODOT_JS_RUNTIME_JAVASCRIPT_PROJECT_RUNTIME_HPP
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -58,6 +59,10 @@ public:
 	void pump_jobs();
 	void shutdown() noexcept;
 	bool is_running() const;
+	std::size_t memory_usage_bytes() const;
+	std::uint64_t initialization_time_microseconds() const;
+	std::uint64_t first_module_evaluation_time_microseconds() const;
+	void collect_garbage();
 
 private:
 	struct Impl;

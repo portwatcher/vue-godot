@@ -28,6 +28,10 @@ public:
 	int64_t get_live_runtime_count() const;
 	int64_t get_live_wrapper_count() const;
 	int64_t get_live_callback_root_count() const;
+	int64_t get_memory_usage_bytes() const;
+	int64_t get_initialization_time_usec() const;
+	int64_t get_first_module_evaluation_time_usec() const;
+	void collect_garbage() const;
 	bool is_initialized() const;
 };
 

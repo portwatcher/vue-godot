@@ -47,40 +47,41 @@ unregister()
 
 ## Provided APIs
 
-| API | Description |
-| --- | --- |
-| `DeviceCapabilityRegistry` | Isolated registry for capability adapters. Useful in tests or multiple integration layers. |
-| `deviceCapabilities` | Shared default registry used by the top-level helper functions. |
-| `registerDeviceCapability(adapter)` | Registers a capability adapter and returns an unregister function. |
-| `unregisterDeviceCapability(capability, adapter?)` | Removes a registered adapter. |
-| `getCapabilityStatus(capability)` | Returns a typed status object for a capability. |
-| `isSupported(capability)` | Returns `true` only when a registered adapter reports `supported`. |
-| `requireCapability(capability)` | Resolves with the supported status or rejects with `DeviceCapabilityError`. |
-| `DeviceCapabilityError` | Typed error with `code` and `capability` fields. |
-| `createDeviceCapabilityError()` | Constructs a typed capability error. |
-| `normalizeDeviceCapabilityError()` | Preserves typed errors and wraps unknown errors. |
-| Adapter interfaces | `DeepLinkAdapter`, `GeolocationAdapter`, `MediaDevicesAdapter`, `NotificationAdapter`, `PermissionAdapter`, `ShareAdapter`, and generic `DeviceCapabilityAdapter`. |
-| Adapter type guards | `isDeepLinkAdapter()`, `isNotificationAdapter()`, and `isShareAdapter()` for safely narrowing registry adapters. |
-| `@vue-godot/device/clipboard` | Godot-backed text, primary-selection text, and image-read clipboard helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
-| `@vue-godot/device/haptics` | Godot-backed handheld and joypad/controller vibration helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
-| `@vue-godot/device/geolocation` | Backend-neutral bridge for Android/iOS/native geolocation plugins that implement the `GeolocationAdapter` contract. |
-| `@vue-godot/device/media-devices` | Backend-neutral bridge for Android/iOS/native camera and microphone plugins that implement the `MediaDevicesAdapter` contract. |
-| `@vue-godot/device/microphone` | Godot-backed microphone and audio-bus capture helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
-| `@vue-godot/device/permissions` | Godot-backed permission helpers for Android runtime requests, permission result events, and granted-permission lists. Imported from a subpath so the root package stays backend-neutral outside Godot. |
-| `@vue-godot/device/secure-storage` | Backend-neutral bridge for Android/iOS/native keychain or encrypted preference plugins that implement the `SecureStorageAdapter` contract. |
-| `@vue-godot/device/sensors` | Godot-backed accelerometer, gravity, gyroscope, magnetometer, motion, and orientation snapshot helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
-| `@vue-godot/device/system` | Godot-backed platform, feature, URL open, window lifecycle, deep-link, share, and native-notification helpers. Imported from a subpath so the root package stays backend-neutral outside Godot. |
+| API                                                | Description                                                                                                                                                                                            |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `DeviceCapabilityRegistry`                         | Isolated registry for capability adapters. Useful in tests or multiple integration layers.                                                                                                             |
+| `deviceCapabilities`                               | Shared default registry used by the top-level helper functions.                                                                                                                                        |
+| `registerDeviceCapability(adapter)`                | Registers a capability adapter and returns an unregister function.                                                                                                                                     |
+| `unregisterDeviceCapability(capability, adapter?)` | Removes a registered adapter.                                                                                                                                                                          |
+| `getCapabilityStatus(capability)`                  | Returns a typed status object for a capability.                                                                                                                                                        |
+| `isSupported(capability)`                          | Returns `true` only when a registered adapter reports `supported`.                                                                                                                                     |
+| `requireCapability(capability)`                    | Resolves with the supported status or rejects with `DeviceCapabilityError`.                                                                                                                            |
+| `DeviceCapabilityError`                            | Typed error with `code` and `capability` fields.                                                                                                                                                       |
+| `createDeviceCapabilityError()`                    | Constructs a typed capability error.                                                                                                                                                                   |
+| `normalizeDeviceCapabilityError()`                 | Preserves typed errors and wraps unknown errors.                                                                                                                                                       |
+| Adapter interfaces                                 | `DeepLinkAdapter`, `GeolocationAdapter`, `MediaDevicesAdapter`, `NotificationAdapter`, `PermissionAdapter`, `ShareAdapter`, and generic `DeviceCapabilityAdapter`.                                     |
+| Adapter type guards                                | `isDeepLinkAdapter()`, `isNotificationAdapter()`, and `isShareAdapter()` for safely narrowing registry adapters.                                                                                       |
+| `packedStringArrayToStrings()`                     | Normalizes stock-runtime indexed `PackedStringArray` values and legacy array-like values into JavaScript strings.                                                                                      |
+| `@vue-godot/device/clipboard`                      | Godot-backed text, primary-selection text, and image-read clipboard helpers. Imported from a subpath so the root package stays backend-neutral outside Godot.                                          |
+| `@vue-godot/device/haptics`                        | Godot-backed handheld and joypad/controller vibration helpers. Imported from a subpath so the root package stays backend-neutral outside Godot.                                                        |
+| `@vue-godot/device/geolocation`                    | Backend-neutral bridge for Android/iOS/native geolocation plugins that implement the `GeolocationAdapter` contract.                                                                                    |
+| `@vue-godot/device/media-devices`                  | Backend-neutral bridge for Android/iOS/native camera and microphone plugins that implement the `MediaDevicesAdapter` contract.                                                                         |
+| `@vue-godot/device/microphone`                     | Godot-backed microphone and audio-bus capture helpers. Imported from a subpath so the root package stays backend-neutral outside Godot.                                                                |
+| `@vue-godot/device/permissions`                    | Godot-backed permission helpers for Android runtime requests, permission result events, and granted-permission lists. Imported from a subpath so the root package stays backend-neutral outside Godot. |
+| `@vue-godot/device/secure-storage`                 | Backend-neutral bridge for Android/iOS/native keychain or encrypted preference plugins that implement the `SecureStorageAdapter` contract.                                                             |
+| `@vue-godot/device/sensors`                        | Godot-backed accelerometer, gravity, gyroscope, magnetometer, motion, and orientation snapshot helpers. Imported from a subpath so the root package stays backend-neutral outside Godot.               |
+| `@vue-godot/device/system`                         | Godot-backed platform, feature, URL open, window lifecycle, deep-link, share, and native-notification helpers. Imported from a subpath so the root package stays backend-neutral outside Godot.        |
 
 ## Capability Status
 
 Statuses are intentionally small and predictable:
 
-| State | Meaning |
-| --- | --- |
-| `supported` | A registered adapter says the capability is usable now. |
-| `unsupported-platform` | The adapter exists, but the current platform/runtime cannot provide the capability. |
-| `permission-denied` | The platform or user denied permission. |
-| `missing-plugin` | No adapter/plugin is registered, or a required plugin is unavailable. |
+| State                     | Meaning                                                                                                |
+| ------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `supported`               | A registered adapter says the capability is usable now.                                                |
+| `unsupported-platform`    | The adapter exists, but the current platform/runtime cannot provide the capability.                    |
+| `permission-denied`       | The platform or user denied permission.                                                                |
+| `missing-plugin`          | No adapter/plugin is registered, or a required plugin is unavailable.                                  |
 | `export-misconfiguration` | The app is missing export settings, Android permissions, iOS plist keys, or equivalent platform setup. |
 
 `requireCapability()` rejects with the same values through

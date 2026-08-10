@@ -2,6 +2,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import * as readline from 'node:readline/promises'
 import { fileURLToPath } from 'node:url'
+import { HTML_COMPONENT_TAGS } from './html-tags.js'
 
 export interface IntegrateOptions {
   targetDir: string
@@ -48,8 +49,32 @@ const PACKAGE_SPECS = {
   '@vue-godot/html': '^0.0.1',
   '@vue-godot/runtime-tscn': '^0.0.2',
   '@vue/runtime-core': '^3.5.14',
+  'godot-js-runtime': '^0.0.1',
   'vue-router': '~4.5.1',
 } as const
+
+const RUNTIME_PROJECT_SCRIPTS = {
+  'install:runtime': 'godot-js-runtime install --project .',
+  'verify:runtime': 'godot-js-runtime verify --project .',
+  'add-target:runtime': 'godot-js-runtime add-target --project .',
+  'uninstall:runtime': 'godot-js-runtime uninstall --project .',
+  'gen:types': 'vue-godot gen-types',
+  'setup:runtime': 'npm run install:runtime && npm run gen:types',
+} as const
+
+const EPHEMERAL_TEMPLATE_DIRECTORIES = new Set([
+  '.godot',
+  '.turbo',
+  'dist',
+  'node_modules',
+])
+
+function isEphemeralTemplateEntry(entry: fs.Dirent): boolean {
+  if (entry.isDirectory()) {
+    return EPHEMERAL_TEMPLATE_DIRECTORIES.has(entry.name)
+  }
+  return entry.name === '.DS_Store' || entry.name.endsWith('.uid')
+}
 
 function isStringRecord(value: unknown): value is Record<string, string> {
   if (typeof value !== 'object' || value === null) {
@@ -177,6 +202,9 @@ export function copyTemplateDir(
   fs.mkdirSync(destDir, { recursive: true })
 
   for (const entry of fs.readdirSync(srcDir, { withFileTypes: true })) {
+    if (isEphemeralTemplateEntry(entry)) {
+      continue
+    }
     const srcPath = path.join(srcDir, entry.name)
     const destPath = path.join(destDir, entry.name)
 
@@ -202,6 +230,9 @@ export function copyTemplateDirIfMissing(
   fs.mkdirSync(destDir, { recursive: true })
 
   for (const entry of fs.readdirSync(srcDir, { withFileTypes: true })) {
+    if (isEphemeralTemplateEntry(entry)) {
+      continue
+    }
     const srcPath = path.join(srcDir, entry.name)
     const destPath = path.join(destDir, entry.name)
 
@@ -224,7 +255,10 @@ export function copyTemplateDirIfMissing(
   }
 }
 
-export function copyProductionSupportFiles(targetDir: string, cwd: string): void {
+export function copyProductionSupportFiles(
+  targetDir: string,
+  cwd: string,
+): void {
   const templatesDir = getTemplatesDir()
   for (const entryName of ['docs', 'scripts']) {
     const templateDir = path.join(templatesDir, entryName)
@@ -241,6 +275,38 @@ export function copyProductionSupportFiles(targetDir: string, cwd: string): void
       cwd,
     )
   }
+}
+
+export function copyGodotScanIgnoreScaffold(
+  targetDir: string,
+  cwd: string,
+): void {
+  const sourcePath = path.join(getTemplatesDir(), 'typings', '.gdignore')
+  if (!fs.existsSync(sourcePath)) {
+    console.error(
+      `Template file not found: ${sourcePath}\nThe CLI package may not be installed correctly.`,
+    )
+    process.exit(1)
+  }
+  for (const directory of ['node_modules', 'typings']) {
+    const destinationPath = path.join(targetDir, directory, '.gdignore')
+    fs.mkdirSync(path.dirname(destinationPath), { recursive: true })
+    if (fs.existsSync(destinationPath)) {
+      console.log(`  kept ${path.relative(cwd, destinationPath)}`)
+      continue
+    }
+    fs.copyFileSync(sourcePath, destinationPath)
+    console.log(`  created ${path.relative(cwd, destinationPath)}`)
+  }
+}
+
+function applyRuntimeScripts(
+  scripts: Record<string, unknown>,
+): Record<string, unknown> {
+  for (const [name, command] of Object.entries(RUNTIME_PROJECT_SCRIPTS)) {
+    scripts[name] ??= command
+  }
+  return scripts
 }
 
 function normalizeProjectFeaturesInput(
@@ -282,6 +348,7 @@ export function newPackageJson(
       packageOverrides,
     ),
     '@vue/runtime-core': packageSpec('@vue/runtime-core', packageOverrides),
+    'godot-js-runtime': packageSpec('godot-js-runtime', packageOverrides),
   }
   if (html) {
     deps['@vue-godot/browser'] = packageSpec(
@@ -303,13 +370,12 @@ export function newPackageJson(
     name,
     version: '1.0.0',
     type: 'commonjs',
-    scripts: {
+    scripts: applyRuntimeScripts({
       dev: 'vite build --watch -c vue/vite.config.ts',
       build: 'vite build -c vue/vite.config.ts',
       'check:exports': 'node scripts/check-export-settings.mjs',
-      postinstall: 'npm run build',
-      'gen:types': 'vue-godot gen-types',
-    },
+      postinstall: 'npm run setup:runtime && npm run build',
+    }),
     devDependencies: {
       '@vue-godot/cli': packageSpec('@vue-godot/cli', packageOverrides),
       '@types/node': '^20.11.18',
@@ -325,20 +391,15 @@ export function newPackageJson(
 /* ------------------------------------------------------------------ */
 
 export function generateHtmlViteConfig(): string {
+  const htmlTags = JSON.stringify(HTML_COMPONENT_TAGS, null, 2)
   return `import vue from '@vitejs/plugin-vue'
 import { vueGodotHtmlCss } from '@vue-godot/html/vite'
+import { commonJsBundleBanner } from 'godot-js-runtime'
 import { defineConfig } from 'vite'
 
 // Tags provided by @vue-godot/html — kept in sync with htmlTags from the package.
 // Listed here to avoid importing at config-load time (Node ESM resolution).
-const htmlTags = [
-  'a', 'activityindicator', 'audio', 'cameraview', 'dialog', 'div', 'form',
-  'img', 'span', 'button', 'input', 'modal', 'textarea', 'select', 'option',
-  'overlay',
-  'keyboardavoidingview', 'label', 'pressable', 'progress', 'safeareaview',
-  'screen', 'screenstack', 'scrollview', 'switch', 'canvas', 'video', 'svg',
-  'virtuallist',
-]
+const htmlTags = ${htmlTags}
 
 export default defineConfig({
   plugins: [
@@ -372,6 +433,7 @@ export default defineConfig({
     rollupOptions: {
       external: ['godot'],
       output: {
+        banner: commonJsBundleBanner,
         // Stable chunk paths avoid stale Godot editor resource dependencies
         // when Vite rebuilds while the project is open.
         chunkFileNames: 'chunks/[name].js',
@@ -1052,7 +1114,7 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     process.cwd(),
   )
 
-  /* --- keep GodotJS generated resource type stubs out of Godot's scan --- */
+  /* --- keep generated resource type stubs out of Godot's scan --- */
   const genTplDir = path.join(templatesDir, 'gen')
 
   if (!fs.existsSync(genTplDir)) {
@@ -1063,6 +1125,7 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
   }
 
   copyTemplateDir(genTplDir, path.join(absTarget, 'gen'), {}, process.cwd())
+  copyGodotScanIgnoreScaffold(absTarget, process.cwd())
   copyProductionSupportFiles(absTarget, process.cwd())
 
   /* --- apply HTML-mode overrides --- */
@@ -1110,12 +1173,12 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
 
   if (fs.existsSync(pkgJsonPath)) {
     const existing = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf-8'))
-    existing.scripts = existing.scripts || {}
+    existing.scripts = applyRuntimeScripts(existing.scripts || {})
     existing.scripts.dev ??= 'vite build --watch -c vue/vite.config.ts'
     existing.scripts.build ??= 'vite build -c vue/vite.config.ts'
-    existing.scripts['check:exports'] ??= 'node scripts/check-export-settings.mjs'
-    existing.scripts.postinstall ??= 'npm run build'
-    existing.scripts['gen:types'] ??= 'vue-godot gen-types'
+    existing.scripts['check:exports'] ??=
+      'node scripts/check-export-settings.mjs'
+    existing.scripts.postinstall ??= 'npm run setup:runtime && npm run build'
 
     existing.devDependencies = existing.devDependencies || {}
     const packageOverrides = readPackageSpecOverrides()
@@ -1134,6 +1197,10 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     )
     existing.dependencies['@vue/runtime-core'] ??= packageSpec(
       '@vue/runtime-core',
+      packageOverrides,
+    )
+    existing.dependencies['godot-js-runtime'] ??= packageSpec(
+      'godot-js-runtime',
       packageOverrides,
     )
     if (html) {
@@ -1188,7 +1255,7 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
   console.log(
     `  1. npm install        (runs initial build and creates dist/app.js)`,
   )
-  console.log(`  2. npm run gen:types`)
+  console.log(`  2. npm run setup:runtime`)
   console.log(
     `  3. npm run dev          (rebuilds on change; Godot hot-reloads dist/app.js)`,
   )

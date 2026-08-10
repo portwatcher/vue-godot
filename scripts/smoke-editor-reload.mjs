@@ -5,7 +5,9 @@ import path from 'node:path'
 import {
   assertGeneratedOutputIgnoredByGodot,
   assertStableViteChunkNames,
+  godotCommandArguments,
   assertNoGodotScriptLoadErrors,
+  assertOfficialGodotExecutable,
   assertVueSourceIgnoredByGodot,
   createPackedPackageOverrides,
   nodeCommand,
@@ -14,6 +16,7 @@ import {
   resolveGodotCommand,
   run,
   runGodotImport,
+  runGodotProjectUntilMarker,
   startNpmDevWatch,
   stopProcess,
   waitFor,
@@ -21,6 +24,7 @@ import {
 
 const SMOKE_PREFIX = '[smoke-editor-reload]'
 const PLUGIN_MARKER = '[vue-godot-editor-reload-smoke]'
+const MODULE_MARKER_PREFIX = '[vue-godot-editor-module-smoke]'
 const PLAY_MARKER_PREFIX = '[vue-godot-editor-play-smoke]'
 const EDITOR_TIMEOUT_MS = 90_000
 const INITIAL_SCENE_MARKER = `editor scene initial ${Date.now()}`
@@ -61,6 +65,8 @@ import { VBoxContainer } from 'godot'
 import App from './App.vue'
 
 const SMOKE_MARKER = ${JSON.stringify(marker)}
+
+console.log(${JSON.stringify(MODULE_MARKER_PREFIX)} + ' ' + SMOKE_MARKER)
 
 installBrowserAPIs()
 
@@ -107,41 +113,31 @@ script="plugin.gd"
 extends EditorPlugin
 
 const MARKER := "${PLUGIN_MARKER}"
-const TARGET := "res://dist/app.js"
+const WATCHED_CHUNK := "res://dist/chunks/main.js"
 
 var fs: EditorFileSystem
 var scan_timer: Timer
-var play_timer: Timer
-var ticks := 0
+var content_hash := ""
 
 func _enter_tree() -> void:
 \tfs = EditorInterface.get_resource_filesystem()
+\tcontent_hash = FileAccess.get_sha256(WATCHED_CHUNK)
 \tscan_timer = Timer.new()
 \tscan_timer.wait_time = 0.25
 \tscan_timer.timeout.connect(_scan)
 \tadd_child(scan_timer)
 \tscan_timer.start()
 
-\tplay_timer = Timer.new()
-\tplay_timer.wait_time = 1.0
-\tplay_timer.timeout.connect(_play_if_idle)
-\tadd_child(play_timer)
-\tplay_timer.start()
-
 \tprint(MARKER + " ready")
 
 func _scan() -> void:
-\tfs.update_file(TARGET)
-\tfs.scan()
-
-func _play_if_idle() -> void:
-\tticks += 1
-\tif ticks > 240:
-\t\tpush_error(MARKER + " timed out waiting for reload")
-\t\tget_tree().quit(1)
+\tvar next_hash := FileAccess.get_sha256(WATCHED_CHUNK)
+\tif next_hash.is_empty() or next_hash == content_hash:
 \t\treturn
-\tif not EditorInterface.is_playing_scene():
-\t\tEditorInterface.play_main_scene()
+\tcontent_hash = next_hash
+\tfs.update_file(WATCHED_CHUNK)
+\tfs.scan()
+\tprint(MARKER + " noticed rebuilt chunk " + content_hash)
 `,
   )
 
@@ -158,13 +154,17 @@ enabled=PackedStringArray("res://addons/vue_godot_editor_reload_smoke/plugin.cfg
 async function runEditorReloadSmoke(godot, projectDir) {
   let output = ''
   let wroteUpdatedSource = false
-  let observedUpdatedScene = false
+  let observedUpdatedModule = false
 
-  const child = spawn(godot, ['--headless', '--editor', '--path', projectDir], {
-    cwd: projectDir,
-    env: process.env,
-    stdio: ['ignore', 'pipe', 'pipe'],
-  })
+  const child = spawn(
+    godot,
+    godotCommandArguments(['--headless', '--editor', '--path', projectDir]),
+    {
+      cwd: projectDir,
+      env: process.env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    },
+  )
 
   const result = await new Promise((resolve, reject) => {
     let didSettle = false
@@ -198,8 +198,8 @@ async function runEditorReloadSmoke(godot, projectDir) {
       output += text
       process.stdout.write(text)
 
-      const initialSceneLog = `[JS] ${PLAY_MARKER_PREFIX} ${INITIAL_SCENE_MARKER}`
-      if (!wroteUpdatedSource && output.includes(initialSceneLog)) {
+      const initialModuleLog = `${MODULE_MARKER_PREFIX} ${INITIAL_SCENE_MARKER}`
+      if (!wroteUpdatedSource && output.includes(initialModuleLog)) {
         wroteUpdatedSource = true
         writeSmokeApp(projectDir, UPDATED_SCENE_MARKER)
         console.log(
@@ -209,9 +209,9 @@ async function runEditorReloadSmoke(godot, projectDir) {
         )
       }
 
-      const updatedSceneLog = `[JS] ${PLAY_MARKER_PREFIX} ${UPDATED_SCENE_MARKER}`
-      if (output.includes(updatedSceneLog)) {
-        observedUpdatedScene = true
+      const updatedModuleLog = `${MODULE_MARKER_PREFIX} ${UPDATED_SCENE_MARKER}`
+      if (output.includes(updatedModuleLog)) {
+        observedUpdatedModule = true
         child.kill('SIGTERM')
       }
     }
@@ -222,14 +222,14 @@ async function runEditorReloadSmoke(godot, projectDir) {
     child.stderr.on('data', handleOutput)
     child.on('error', (error) => settle(error))
     child.on('close', (code, signal) => {
-      if (observedUpdatedScene) {
+      if (observedUpdatedModule) {
         settle(null, { code, signal })
         return
       }
       settle(
         new Error(
           [
-            'Godot editor exited before the rebuilt played-scene marker was observed',
+            'Godot editor exited before the rebuilt module marker was observed',
             `status=${code ?? signal ?? 'unknown'}`,
             output,
           ]
@@ -255,6 +255,7 @@ if (!godot) {
   )
   process.exit(0)
 }
+assertOfficialGodotExecutable(godot)
 
 const cliPath = requireBuiltCli()
 const workspaceDir = fs.mkdtempSync(
@@ -264,7 +265,9 @@ const packDir = path.join(workspaceDir, 'packs')
 const projectDir = path.join(workspaceDir, 'html-app')
 fs.mkdirSync(packDir)
 
-const packageOverrides = createPackedPackageOverrides(packDir)
+const packageOverrides = createPackedPackageOverrides(packDir, {
+  runtimeArtifacts: 'required',
+})
 const env = {
   ...process.env,
   VUE_GODOT_PACKAGE_OVERRIDES: JSON.stringify(packageOverrides),
@@ -287,6 +290,12 @@ run(npmCommand, ['run', 'build'], {
 assertStableViteChunkNames(projectDir)
 writeEditorReloadPlugin(projectDir)
 runGodotImport(godot, projectDir)
+await runGodotProjectUntilMarker(
+  godot,
+  projectDir,
+  `${PLAY_MARKER_PREFIX} ${INITIAL_SCENE_MARKER}`,
+  'editor reload initial scene run',
+)
 const watcher = startNpmDevWatch(projectDir, env)
 try {
   await waitFor(
@@ -309,6 +318,12 @@ try {
 
   await runEditorReloadSmoke(godot, projectDir)
   assertStableViteChunkNames(projectDir)
+  await runGodotProjectUntilMarker(
+    godot,
+    projectDir,
+    `${PLAY_MARKER_PREFIX} ${UPDATED_SCENE_MARKER}`,
+    'editor reload rebuilt scene run',
+  )
 } finally {
   await watcher.stop()
 }

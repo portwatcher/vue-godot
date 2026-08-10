@@ -1,6 +1,7 @@
 interface PackedStringArrayLike {
   size(): number
-  get_indexed(index: number): unknown
+  get_indexed?: (index: number) => unknown
+  [index: number]: unknown
 }
 
 function isPackedStringArrayLike(
@@ -11,10 +12,7 @@ function isPackedStringArrayLike(
   }
 
   const record = value as Record<string, unknown>
-  return (
-    typeof record['size'] === 'function' &&
-    typeof record['get_indexed'] === 'function'
-  )
+  return typeof record['size'] === 'function'
 }
 
 export function packedStringArrayToStrings(value: unknown): string[] {
@@ -29,7 +27,11 @@ export function packedStringArrayToStrings(value: unknown): string[] {
   const count = Math.max(0, Math.trunc(Number(value.size())))
   const items: string[] = []
   for (let index = 0; index < count; index++) {
-    items.push(String(value.get_indexed(index)))
+    const item =
+      typeof value.get_indexed === 'function'
+        ? value.get_indexed(index)
+        : value[index]
+    items.push(String(item))
   }
 
   return items

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
+  commonJsBundleBanner,
   defineScript,
   getScriptMetadata,
   isRuntimeManifest,
@@ -13,6 +14,7 @@ test('public identity is standalone and Godot 4.4 compatible', () => {
   assert.equal(runtimeName, 'Godot JavaScript Runtime')
   assert.equal(runtimePackageName, 'godot-js-runtime')
   assert.equal(minimumGodotVersion, '4.4')
+  assert.equal(commonJsBundleBanner, '/*! godot-js-runtime:format=commonjs */')
 })
 
 test('defineScript attaches canonical metadata without decorators', () => {
@@ -43,8 +45,8 @@ test('runtime manifest guard rejects incomplete or invalid artifacts', () => {
     schemaVersion: 1,
     runtimeName,
     packageName: runtimePackageName,
-    version: '0.0.0-development',
-    gitCommit: 'development',
+    version: '0.0.1',
+    gitCommit: '0123456789abcdef',
     godotMinimum: minimumGodotVersion,
     dependencies: [],
     artifacts: [],

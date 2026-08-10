@@ -92,6 +92,7 @@ struct RuntimeHost::Impl {
 	JSContext *context = nullptr;
 	std::string runtime_info;
 	std::unordered_map<std::string, JSValue> commonjs_cache;
+	std::unordered_map<std::string, std::string> resource_module_sources;
 	SourceMapRegistry source_maps;
 	std::string current_source = "<runtime>";
 	std::atomic_bool interrupt_requested = false;
@@ -927,6 +928,28 @@ struct RuntimeHost::Impl {
 		}
 	}
 
+	void observe_resource_module(
+			const std::string &path,
+			const std::string &source) {
+		resource_module_sources.insert_or_assign(path, source);
+	}
+
+	std::vector<std::string> consume_changed_resource_module_paths() {
+		std::vector<std::string> changed_paths;
+		for (auto &[path, observed_source] : resource_module_sources) {
+			std::string source;
+			std::string read_error;
+			if (!resource_provider.read_text(path, source, read_error) ||
+					source == observed_source) {
+				continue;
+			}
+			observed_source = std::move(source);
+			changed_paths.push_back(path);
+		}
+		std::sort(changed_paths.begin(), changed_paths.end());
+		return changed_paths;
+	}
+
 	JSModuleDef *load_es_module(JSContext *module_context, const std::string &path) {
 		std::string source;
 		std::string read_error;
@@ -938,6 +961,7 @@ struct RuntimeHost::Impl {
 					read_error.c_str());
 			return nullptr;
 		}
+		observe_resource_module(path, source);
 		if (has_suffix(path, ".json")) {
 			ScopedValue parsed(
 					module_context,
@@ -1071,6 +1095,7 @@ struct RuntimeHost::Impl {
 					path.c_str(),
 					read_error.c_str());
 		}
+		observe_resource_module(path, source);
 		if (has_suffix(path, ".json")) {
 			ScopedValue parsed(
 					require_context,
@@ -1244,6 +1269,7 @@ struct RuntimeHost::Impl {
 		if (!resource_provider.read_text(entry.path, source, read_error)) {
 			return host_error(read_error, "ModuleReadError", entry.path);
 		}
+		observe_resource_module(entry.path, source);
 
 		register_source_map(entry.path, source);
 		ExecutionGuard execution_guard(*this);
@@ -1306,6 +1332,7 @@ struct RuntimeHost::Impl {
 		if (!resource_provider.read_text(entry.path, source, read_error)) {
 			return host_error(read_error, "ModuleReadError", entry.path);
 		}
+		observe_resource_module(entry.path, source);
 
 		register_source_map(entry.path, source);
 		ExecutionGuard execution_guard(*this);
@@ -1631,6 +1658,12 @@ EvaluationResult RuntimeHost::pump_jobs() {
 				  0,
 			  }
 			: impl->pump_jobs();
+}
+
+std::vector<std::string> RuntimeHost::consume_changed_resource_module_paths() {
+	return impl == nullptr
+			? std::vector<std::string>{}
+			: impl->consume_changed_resource_module_paths();
 }
 
 void RuntimeHost::request_interrupt() {

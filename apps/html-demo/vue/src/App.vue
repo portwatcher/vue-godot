@@ -80,9 +80,7 @@
     <Span :style="{ color: '#a7f3d0', fontWeight: 'bold' }">
       Safe area content
     </Span>
-    <Span :style="{ color: '#d1d5db' }">
-      fallback inset smoke test
-    </Span>
+    <Span :style="{ color: '#d1d5db' }"> fallback inset smoke test </Span>
   </SafeAreaView>
 
   <!-- ===== Section: KeyboardAvoidingView ===== -->
@@ -99,9 +97,7 @@
       placeholder="Keyboard test"
       :style="{ width: 180 }"
     ></Input>
-    <Span :style="{ color: '#fde68a' }">
-      fallback avoidance smoke test
-    </Span>
+    <Span :style="{ color: '#fde68a' }"> fallback avoidance smoke test </Span>
   </KeyboardAvoidingView>
 
   <!-- ===== Section: ScrollView ===== -->
@@ -148,9 +144,9 @@
   </VirtualList>
   <Span>
     {{
-      `VirtualList offset=${virtualScrollOffset} rendered around row ${Math.floor(
-        virtualScrollOffset / 28,
-      ) + 1}`
+      `VirtualList offset=${virtualScrollOffset} rendered around row ${
+        Math.floor(virtualScrollOffset / 28) + 1
+      }`
     }}
   </Span>
 
@@ -304,9 +300,7 @@
     </Button>
   </Div>
   <Span>
-    {{
-      `Presses: ${pressablePresses} long presses: ${pressableLongPresses}`
-    }}
+    {{ `Presses: ${pressablePresses} long presses: ${pressableLongPresses}` }}
   </Span>
 
   <!-- ===== Section: PascalCase HTML components ===== -->
@@ -345,10 +339,7 @@
       :style="{ fontWeight: 'bold', color: '#fef3c7' }"
       :content-style="{ gap: 4 }"
     >
-      <Input
-        v-model="formName"
-        placeholder="Ada"
-      ></Input>
+      <Input v-model="formName" placeholder="Ada"></Input>
     </Label>
     <Div :style="{ flexDirection: 'row', gap: 8 }">
       <Button @click="onFormSubmit">Submit Form</Button>
@@ -417,11 +408,7 @@
     :style="{ width: 220, fontSize: 14 }"
   ></Input>
   <Span>{{ `Text input: ${textValue}` }}</Span>
-  <Input
-    v-model="readonlyValue"
-    readonly
-    :style="{ width: 220 }"
-  ></Input>
+  <Input v-model="readonlyValue" readonly :style="{ width: 220 }"></Input>
   <Span>{{ `Readonly input: ${readonlyValue}` }}</Span>
 
   <!-- ===== Section: Input (password) ===== -->
@@ -436,11 +423,7 @@
 
   <!-- ===== Section: Input (checkbox) ===== -->
   <Span>--- Input (checkbox) ---</Span>
-  <Input
-    type="checkbox"
-    v-model="checkboxValue"
-    label="Accept updates"
-  ></Input>
+  <Input type="checkbox" v-model="checkboxValue" label="Accept updates"></Input>
   <Span>{{ `Checked: ${checkboxValue}` }}</Span>
 
   <!-- ===== Section: Input (radio) ===== -->
@@ -508,16 +491,16 @@
 
   <!-- ===== Section: Img ===== -->
   <Span>--- Img ---</Span>
-  <Img
-    :src="demoSvgDataUri"
-    :style="{ width: 64, height: 64 }"
-  ></Img>
+  <Img :src="demoSvgDataUri" :style="{ width: 64, height: 64 }"></Img>
 
   <!-- ===== Section: CameraView ===== -->
   <Span>--- CameraView ---</Span>
   <CameraView
+    v-if="cameraActive"
+    :active="cameraActive"
     :style="{ width: 320, height: 180, objectFit: 'cover' }"
   ></CameraView>
+  <Span v-else>Camera preview disabled during automated smoke.</Span>
 
   <!-- ===== Section: Svg ===== -->
   <Span>--- Svg ---</Span>
@@ -598,9 +581,7 @@
   <!-- ===== Section: CSS Theme Stylesheet ===== -->
   <Span>--- CSS theme stylesheet ---</Span>
   <Div class="css-theme-card">
-    <Span class="css-theme-title">
-      Token stylesheet card
-    </Span>
+    <Span class="css-theme-title"> Token stylesheet card </Span>
     <Span class="css-theme-copy">
       Class rules, root variables, and state styles
     </Span>
@@ -613,9 +594,7 @@
       <Button class="css-theme-action" @click="toggleCssThemeSample">
         Toggle
       </Button>
-      <Button class="css-theme-action" :disabled="true">
-        Disabled
-      </Button>
+      <Button class="css-theme-action" :disabled="true"> Disabled </Button>
     </Div>
     <Span class="css-theme-copy">
       {{ `stylesheet value=${cssThemeSample}` }}
@@ -635,6 +614,7 @@
 import { registerStyleKeyframes } from '@vue-godot/html'
 import { onMounted, ref } from 'vue'
 import { formatBrowserSmokeResults, runBrowserSmokeTests } from './browserSmoke'
+import { isSmokeEnabled } from './smokeEnvironment'
 
 registerStyleKeyframes('html-demo-pulse', [
   { offset: 0, style: { opacity: 0.72, transform: 'scale(1)' } },
@@ -694,6 +674,7 @@ function toggleCssThemeSample() {
 // --- Progress ---
 const progressValue = ref(45)
 const activityActive = ref(true)
+const cameraActive = !isSmokeEnabled()
 
 function advanceProgress() {
   progressValue.value =

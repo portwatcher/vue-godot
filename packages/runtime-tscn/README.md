@@ -10,6 +10,8 @@ See the repository [compatibility checklist](../../docs/compatibility.md) for cu
 
 - Render Vue components into Godot scene nodes.
 - Manipulate Godot node properties using Vue's reactivity system.
+- Disconnect Vue-owned signal callables across an entire rendered subtree
+  before its Godot nodes are queued for deletion.
 
 ## Runtime Diagnostics
 
@@ -18,6 +20,11 @@ The renderer emits `[vue-godot]` warnings for unsupported or rejected host opera
 - Unsupported Vue tags / Godot node classes include the tag name and explain the fallback to a generic `Node`.
 - Prop update failures include the prop name and whether Godot rejected reading or writing the value.
 - Signal connection failures include the Godot signal name, target node, and original Vue event prop.
+
+Unmount and keyed-removal cleanup walks the removed Godot subtree, disconnects
+every callable created for Vue event props, and then queues the nodes for
+deletion. This keeps callback roots and object wrappers at their pre-mount
+baseline across repeated editor reloads and app remounts.
 
 ## Prop Removal / Unset Semantics
 

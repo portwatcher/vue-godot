@@ -137,6 +137,7 @@ function checkPackageMetadata(packagesByName) {
   const device = packagesByName.get('@vue-godot/device')
   const html = packagesByName.get('@vue-godot/html')
   const runtime = packagesByName.get('@vue-godot/runtime-tscn')
+  const javascriptRuntime = packagesByName.get('godot-js-runtime')
   const cli = packagesByName.get('@vue-godot/cli')
   const cliAlias = packagesByName.get('vue-godot')
 
@@ -174,6 +175,13 @@ function checkPackageMetadata(packagesByName) {
       expectedRange(cli.version),
     )
   }
+  if (cli && javascriptRuntime) {
+    assertEqual(
+      '@vue-godot/cli dependency godot-js-runtime',
+      cli.dependencies?.['godot-js-runtime'],
+      expectedRange(javascriptRuntime.version),
+    )
+  }
 }
 
 async function checkGeneratedPackageSpecs(packagesByName) {
@@ -197,6 +205,7 @@ async function checkGeneratedPackageSpecs(packagesByName) {
     '@vue-godot/device',
     '@vue-godot/html',
     '@vue-godot/runtime-tscn',
+    'godot-js-runtime',
   ]) {
     const pkg = packagesByName.get(packageName)
     if (pkg) {
@@ -397,6 +406,40 @@ function checkGodotSmoke() {
 
   logStep('checking Godot smoke')
 
+  const runtimeResult = run(npmCommand, [
+    'run',
+    'smoke:godot-js-runtime',
+    '--',
+    '--skip-build',
+  ])
+  const runtimeOutput = `${runtimeResult.stdout ?? ''}\n${runtimeResult.stderr ?? ''}`
+  process.stdout.write(runtimeResult.stdout ?? '')
+  process.stderr.write(runtimeResult.stderr ?? '')
+  if (runtimeResult.status !== 0) {
+    failures.push(`npm run smoke:godot-js-runtime failed\n${runtimeOutput}`)
+    return
+  }
+  if (!runtimeOutput.includes('[stock-smoke] PASS')) {
+    failures.push('Standalone runtime smoke completed without the pass marker')
+  }
+
+  const standaloneResult = run(npmCommand, ['run', 'smoke:js-runtime-demo'], {
+    env: {
+      ...process.env,
+      GODOT_JS_RUNTIME_SKIP_NATIVE_BUILD: '1',
+    },
+  })
+  const standaloneOutput = `${standaloneResult.stdout ?? ''}\n${standaloneResult.stderr ?? ''}`
+  process.stdout.write(standaloneResult.stdout ?? '')
+  process.stderr.write(standaloneResult.stderr ?? '')
+  if (standaloneResult.status !== 0) {
+    failures.push(`npm run smoke:js-runtime-demo failed\n${standaloneOutput}`)
+    return
+  }
+  if (!standaloneOutput.includes('[standalone-smoke] PASS')) {
+    failures.push('Standalone demo smoke completed without the pass marker')
+  }
+
   const result = run(npmCommand, ['run', 'smoke:godot'])
   const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`
   process.stdout.write(result.stdout ?? '')
@@ -550,9 +593,7 @@ function writePreflightSummary() {
     resolved,
     `${JSON.stringify(buildPreflightSummary(), null, 2)}\n`,
   )
-  console.log(
-    `[release-preflight] wrote ${path.relative(repoRoot, resolved)}`,
-  )
+  console.log(`[release-preflight] wrote ${path.relative(repoRoot, resolved)}`)
 }
 
 function printSummary() {

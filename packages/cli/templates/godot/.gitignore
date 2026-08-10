@@ -2,8 +2,13 @@
 .godot/
 /android/
 
-# GodotJS auto-generated scene/resource types
+# Generated scene/resource types
 gen/
+
+# Installed standalone runtime and generated declarations
+addons/godot-js-runtime/
+typings/*
+!typings/.gdignore
 
 # Node
 node_modules/

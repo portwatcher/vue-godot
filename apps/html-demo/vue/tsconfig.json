@@ -6,11 +6,11 @@
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
+    "skipLibCheck": false,
     "forceConsistentCasingInFileNames": true,
     "paths": {
       "vue": ["../../../node_modules/@vue/runtime-core/dist/runtime-core.d.ts"],
-      "godot": ["../../../packages/godot-js-runtime/typings/godot.d.ts"]
+      "godot": ["../typings/godot.d.ts"]
     }
   },
   "vueCompilerOptions": {

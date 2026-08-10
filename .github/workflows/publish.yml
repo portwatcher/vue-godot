@@ -37,17 +37,31 @@ jobs:
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
 
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
       - name: Update npm
         run: npm install -g npm@^11.15.0
 
       - name: Install
         run: npm ci
 
-      - name: Setup GodotJS
-        uses: ./.github/actions/setup-godotjs
+      - name: Setup official Godot
+        uses: ./.github/actions/setup-godot
+        with:
+          version: 4.4.1-stable
 
       - name: Install virtual display
         run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - name: Build Linux runtime
+        run: >-
+          npm run build:native --workspace=godot-js-runtime --
+          --platform linux
+          --arch x86_64
+          --target template_debug
 
       - name: Publish
         env:

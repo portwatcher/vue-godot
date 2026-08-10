@@ -1,4 +1,14 @@
-import { Callable, Input, Node2D, PackedByteArray, Timer, Vector2 } from 'godot'
+import {
+  AudioStreamMP3,
+  Callable,
+  HTTPClient,
+  Image,
+  Input,
+  Node2D,
+  PackedByteArray,
+  Timer,
+  Vector2,
+} from 'godot'
 import {
   defineScript,
   hasFeature,
@@ -39,11 +49,28 @@ const modernCallable: Callable<readonly [number], number> = Callable.create(
 )
 const compatibilityCallable = callable((distance: number) => distance * 2)
 const bytes = new PackedByteArray()
+const bytesFromBuffer = new PackedByteArray(new Uint8Array([1, 2]).buffer)
+bytes.append_array(new Uint8Array([3]))
+const image = new Image()
+image.load_png_from_buffer(new ArrayBuffer(0))
+const stream = new AudioStreamMP3()
+stream.data = new ArrayBuffer(0)
+const client = new HTTPClient()
+client.request_raw(
+  HTTPClient.Method.METHOD_GET,
+  '/',
+  ['accept: text/plain'],
+  new ArrayBuffer(0),
+)
 const buffer: ArrayBuffer = to_array_buffer(bytes)
 const timeoutPromise: Promise<void> = new Timer().timeout.as_promise()
 
 void modernCallable
 void compatibilityCallable
+void bytesFromBuffer
+void image
+void stream
+void client
 void buffer
 void timeoutPromise
 void runtimeVersion()

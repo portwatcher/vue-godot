@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "godot_js_runtime/runtime/module_resolver.hpp"
+#include "godot_js_runtime/runtime/module_format.hpp"
 #include "godot_js_runtime/runtime/resource_provider.hpp"
 #include "godot_js_runtime/runtime/runtime_host.hpp"
 #include "godot_js_runtime/runtime/source_map.hpp"
@@ -308,7 +309,9 @@ export function readA() { return nameA + '-cycle' }
 	expect(result.value.find("a-cycle") != std::string::npos, "ESM circular dependency failed");
 	expect(result.value.find("\"loads\":1") != std::string::npos, "ESM cache executed a module twice");
 	expect(
-			result.value.find("\"runtime\":\"0.0.0-development\"") != std::string::npos,
+			result.value.find(
+					"\"runtime\":\"" + RuntimeHost::runtime_version() + "\"") !=
+					std::string::npos,
 			"godot-js runtime version failed");
 	expect(result.value.find("\"quickjs\":\"0.15.0\"") != std::string::npos, "godot-js QuickJS version failed");
 	expect(result.value.find("\"supported\":true") != std::string::npos, "godot-js feature probe failed");
@@ -328,6 +331,31 @@ export function readA() { return nameA + '-cycle' }
 }
 
 void test_commonjs_json_cycles_cache_and_vite_chunks() {
+	expect(
+			godot_js_runtime::detect_javascript_module_format(
+					"res://dist/app.js",
+					"\xEF\xBB\xBF\n  \"use strict\";\n/*! godot-js-runtime:format=commonjs */\nexports.default = 1") ==
+					godot_js_runtime::JavaScriptModuleFormat::COMMONJS,
+			"generated CommonJS .js metadata was not detected");
+	expect(
+			godot_js_runtime::detect_javascript_module_format(
+					"res://plain.js",
+					"export default 1") ==
+					godot_js_runtime::JavaScriptModuleFormat::ES_MODULE,
+			"plain .js did not default to ESM");
+	expect(
+			godot_js_runtime::detect_javascript_module_format(
+					"res://forced.cjs",
+					"module.exports = 1") ==
+					godot_js_runtime::JavaScriptModuleFormat::COMMONJS,
+			".cjs extension did not select CommonJS");
+	expect(
+			godot_js_runtime::detect_javascript_module_format(
+					"res://forced.mjs",
+					"/*! godot-js-runtime:format=commonjs */\nexport default 1") ==
+					godot_js_runtime::JavaScriptModuleFormat::ES_MODULE,
+			".mjs extension did not remain ESM");
+
 	MemoryResources resources;
 	RecordingConsole console;
 	resources.files = {
@@ -387,6 +415,20 @@ module.exports = { marker: 'once' }
 	const EvaluationResult chunk = runtime.evaluate_script("globalThis.cjsChunk");
 	expect_ok(chunk, "Vite-style chunk result read");
 	expect(chunk.value == "vite-relative-chunk", "relative Vite chunk did not load");
+	expect(
+			runtime.consume_changed_resource_module_paths().empty(),
+			"unchanged CommonJS graph reported a file change");
+	resources.files["res://chunks/chunk.js"] =
+			"exports.asyncContractMarker = 'vite-relative-chunk-rebuilt'\n";
+	const std::vector<std::string> changed_paths =
+			runtime.consume_changed_resource_module_paths();
+	expect(
+			changed_paths ==
+					std::vector<std::string>{ "res://chunks/chunk.js" },
+			"rebuilt Vite chunk was not reported as a changed module dependency");
+	expect(
+			runtime.consume_changed_resource_module_paths().empty(),
+			"consumed Vite chunk change was reported twice");
 
 	expect_ok(runtime.evaluate_commonjs("res://entry.cjs"), "cached CommonJS entry");
 	const EvaluationResult loads = runtime.evaluate_script("globalThis.cjsLoads");
