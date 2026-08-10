@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Web-standards-compatible History API polyfill for GodotJS
+// Web-standards-compatible History API polyfill for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 // Implements the core History API surface:
 //   • History      — push / replace / go / back / forward + state

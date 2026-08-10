@@ -26,7 +26,7 @@ test('generateSource emits method-filtered GlobalComponents without any', () => 
   const tempDir = createTempDir()
   try {
     writeFile(
-      path.join(tempDir, 'godot0.gen.d.ts'),
+      path.join(tempDir, 'godot.d.ts'),
       `declare module "godot" {
   export class Node<T = unknown> {}
   export class Control<T = unknown> extends Node<T> {
@@ -62,7 +62,7 @@ test('generateSource emits method-filtered GlobalComponents without any', () => 
   }
 })
 
-test('generateSource consumes standalone stock-Godot class declarations', () => {
+test('generateSource follows transitive stock-Godot class inheritance', () => {
   const tempDir = createTempDir()
   try {
     writeFile(

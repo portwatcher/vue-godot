@@ -336,7 +336,7 @@ export function assertNoGodotScriptLoadErrors(output, context) {
   const diagnostics = relevantGodotDiagnosticLines(output)
   throw new Error(
     [
-      `${context} printed GodotJS script-load, asset-load, or signal wiring diagnostics`,
+      `${context} printed runtime script-load, asset-load, or signal wiring diagnostics`,
       diagnostics || output,
     ]
       .filter(Boolean)
@@ -488,7 +488,7 @@ export function assertVueSourceIgnoredByGodot(projectDir) {
 export function assertGeneratedOutputIgnoredByGodot(projectDir) {
   assertFileExists(
     path.join(projectDir, 'gen/.gdignore'),
-    'generated GodotJS resource type output .gdignore',
+    'generated runtime resource type output .gdignore',
   )
 }
 

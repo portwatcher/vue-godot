@@ -1,9 +1,9 @@
 // ---------------------------------------------------------------------------
-// @vue-godot/browser — Browser API polyfills for GodotJS
+// @vue-godot/browser — Browser API polyfills for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 //
-// GodotJS provides only engine bindings (the "godot" module) and a minimal
-// JS runtime (V8/QuickJS). Browser/DOM APIs like `fetch`, `URL`, `Blob`,
+// The standalone runtime provides QuickJS-ng and engine bindings through the
+// "godot" module. Browser/DOM APIs like `fetch`, `URL`, `Blob`,
 // `atob`, `TextEncoder`, etc. are not available.
 //
 // This package implements those APIs on top of Godot's native classes:
@@ -14,8 +14,8 @@
 //   • Response        → ArrayBuffer-backed, fetch-compatible
 //   • Blob            → ArrayBuffer-backed
 //   • atob / btoa     → Pure JS base64
-//   • TextEncoder     → Pure JS UTF-8 (with V8 fast-path)
-//   • TextDecoder     → Pure JS UTF-8 (with V8 fast-path)
+//   • TextEncoder     → Pure JS UTF-8 (with native-global fast-path)
+//   • TextDecoder     → Pure JS UTF-8 (with native-global fast-path)
 //   • AbortController → Signal-based
 //   • URLSearchParams → Pure JS query parameter helper
 //   • FormData/File   → Multipart-compatible form bodies
@@ -198,10 +198,7 @@ export type {
   GodotPerformanceMeasureOptions,
   GodotTimerHandler,
 } from './timing.js'
-export {
-  isVibrationSupported,
-  vibrate,
-} from './vibration.js'
+export { isVibrationSupported, vibrate } from './vibration.js'
 export type { GodotVibrationPattern } from './vibration.js'
 
 // Batch installers

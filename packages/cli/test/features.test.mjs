@@ -46,7 +46,7 @@ test('newPackageJson supports device-only projects', () => {
   assert.equal(pkg.dependencies['@vue-godot/html'], undefined)
 })
 
-test('newPackageJson keeps legacy html boolean behavior', () => {
+test('newPackageJson keeps the backward-compatible html boolean option', () => {
   const pkg = newPackageJson('html-app', true)
   assert.equal(pkg.dependencies['@vue-godot/browser'], '^0.0.1')
   assert.equal(pkg.dependencies['@vue-godot/device'], '^0.0.1')

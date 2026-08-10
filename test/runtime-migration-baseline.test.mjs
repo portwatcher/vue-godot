@@ -10,10 +10,7 @@ import {
 } from '../scripts/runtime-contract-fixture.mjs'
 
 const repoRoot = process.cwd()
-const baselinePath = path.join(
-  repoRoot,
-  'docs/godot-js-runtime-baseline.json',
-)
+const baselinePath = path.join(repoRoot, 'docs/godot-js-runtime-baseline.json')
 const baseline = JSON.parse(fs.readFileSync(baselinePath, 'utf-8'))
 
 function repositoryFiles() {
@@ -26,7 +23,9 @@ function repositoryFiles() {
   return result.stdout
     .toString('utf-8')
     .split('\0')
-    .filter(Boolean)
+    .filter(
+      (filePath) => filePath && fs.existsSync(path.join(repoRoot, filePath)),
+    )
     .sort()
 }
 
@@ -64,11 +63,15 @@ test('baseline records every required Phase 0 command as passing', () => {
     'GODOT_BIN=<legacy-editor> npm run smoke:runtime-contract',
     'GODOT_BIN=<stock-4.4.1> npm run smoke:runtime-contract -- --expect-missing-runtime',
   ]) {
-    assert.equal(commands.get(command), 'pass', `Missing passing check: ${command}`)
+    assert.equal(
+      commands.get(command),
+      'pass',
+      `Missing passing check: ${command}`,
+    )
   }
 })
 
-test('every tracked legacy coupling has one planned destination', () => {
+test('the Phase 0 legacy inventory is unique and has planned destinations', () => {
   const inventoryPaths = baseline.inventory
     .flatMap((entry) => {
       assert.ok(['preserve', 'replace', 'remove'].includes(entry.disposition))
@@ -83,9 +86,30 @@ test('every tracked legacy coupling has one planned destination', () => {
     inventoryPaths.length,
     'Inventory paths must be unique',
   )
+})
+
+test('the Phase 9 cutover scan permits only classified references', () => {
+  const allowedClassifications = new Set([
+    'historical-migration-contract',
+    'negative-regression-guard',
+  ])
+  const allowlistedPaths = baseline.cutoverAllowlist
+    .map((entry) => {
+      assert.ok(allowedClassifications.has(entry.classification))
+      assert.ok(entry.reason.length > 0)
+      assert.ok(fs.existsSync(path.join(repoRoot, entry.path)))
+      return entry.path
+    })
+    .sort()
+
+  assert.equal(
+    new Set(allowlistedPaths).size,
+    allowlistedPaths.length,
+    'Cutover allowlist paths must be unique',
+  )
 
   const discoveredPaths = repositoryFiles().filter(containsLegacyPattern)
-  assert.deepEqual(discoveredPaths, inventoryPaths)
+  assert.deepEqual(discoveredPaths, allowlistedPaths)
 })
 
 test('runtime contract fixture covers the required binding and lifecycle surface', () => {

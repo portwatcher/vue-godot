@@ -20,20 +20,11 @@ export function readGodotVersion(executable) {
   return output
 }
 
-export function assertOfficialGodotExecutable(executable, options = {}) {
+export function assertOfficialGodotExecutable(executable) {
   const version = readGodotVersion(executable)
   if (version.includes('official')) return version
 
-  const allowLegacy =
-    options.allowLegacy ?? process.env.VUE_GODOT_ALLOW_LEGACY_RUNTIME === '1'
-  if (allowLegacy) {
-    console.warn(
-      `[godot-command] temporary legacy runtime control enabled for ${version}`,
-    )
-    return version
-  }
-
   throw new Error(
-    `Expected an official stock Godot executable, received ${version || '<empty>'}. Set VUE_GODOT_ALLOW_LEGACY_RUNTIME=1 only for the temporary opt-in parity control.`,
+    `Expected an official stock Godot executable, received ${version || '<empty>'}.`,
   )
 }

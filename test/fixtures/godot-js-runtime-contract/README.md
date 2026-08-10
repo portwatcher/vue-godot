@@ -6,5 +6,5 @@ res://dist/app.js and exercises class construction, ClassDB, properties,
 signals, Callable, resource loading, environment access, timing, networking,
 media-related types, Promise jobs, relative chunks, and scene lifecycle hooks.
 
-During Phase 0 it is a control against the legacy runtime. Later phases run the
-same fixture through the repository-owned extension and unmodified Godot.
+Phase 0 captured the original control results. The maintained gate now runs the
+same fixture only through the repository-owned extension and official Godot.

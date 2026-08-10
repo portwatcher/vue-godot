@@ -27,16 +27,20 @@ capability adapters, while `game-ui` starts with a HUD-oriented screen of
 health, actions, and session controls. Choose either as a starting point—the
 difference is the starter content, not a runtime limitation.
 
-Then start the Vue build:
+Then install the standalone runtime, generate stock-Godot declarations, and
+start the Vue build:
 
 ```bash
 cd my-app # or my-hud
+npm install
+npm run setup:runtime
 npm run dev
 ```
 
-Open `project.godot` in the
-[GodotJS editor](https://github.com/ialex32x/GodotJS-Build/releases) and press
-**F5**. Use `npm run build` for a one-time build.
+Open `project.godot` in an
+[official Godot editor](https://godotengine.org/download/) and press **F5**.
+Use `npm run build` for a one-time build. The generated project installs
+`godot-js-runtime` under `addons/godot-js-runtime`; no custom editor is needed.
 
 The `app` profile includes HTML-like components, browser APIs, and native
 capability adapters. Add only the starters you need:
@@ -126,8 +130,9 @@ and node ordering under [`apps`](./apps). See the
 
 ## Requirements
 
-- Node.js 18 or newer
-- [GodotJS editor](https://github.com/ialex32x/GodotJS-Build/releases)
+- Node.js 20 or newer
+- Official Godot 4.4 or newer
+- `godot-js-runtime`, installed by the generated `npm run setup:runtime` command
 
 ## Documentation
 

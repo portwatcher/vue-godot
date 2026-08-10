@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Minimal URL parser for GodotJS
+// Minimal URL parser for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 // Implements the subset of the WHATWG URL API needed by fetch and general use.
 // ---------------------------------------------------------------------------

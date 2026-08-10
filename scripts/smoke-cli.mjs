@@ -120,7 +120,7 @@ function assertRuntimeConfigured(target) {
       .readdirSync(path.join(target, 'typings'))
       .some((name) => /^godot\d*\.gen\.d\.ts$/.test(name))
   ) {
-    throw new Error(`${target} copied legacy GodotJS declaration bundles`)
+    throw new Error(`${target} copied legacy custom-editor declaration bundles`)
   }
 }
 

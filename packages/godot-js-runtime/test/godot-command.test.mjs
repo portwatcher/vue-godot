@@ -18,32 +18,28 @@ test('macOS Godot commands bypass persistent crash-recovery dialogs', () => {
 })
 
 test(
-  'runtime gates require official Godot unless the temporary legacy control is explicit',
+  'runtime gates always require official Godot',
   { skip: process.platform === 'win32' },
   () => {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'godot-command-'))
     try {
       const official = path.join(tempDir, 'official-godot')
-      const legacy = path.join(tempDir, 'legacy-godot')
+      const custom = path.join(tempDir, 'custom-godot')
       fs.writeFileSync(
         official,
         "#!/bin/sh\nprintf '%s\\n' '4.4.1.stable.official.fixture'\n",
       )
       fs.writeFileSync(
-        legacy,
-        "#!/bin/sh\nprintf '%s\\n' '4.4.1.stable.custom_build.godotjs'\n",
+        custom,
+        "#!/bin/sh\nprintf '%s\\n' '4.4.1.stable.custom_build.fixture'\n",
       )
       fs.chmodSync(official, 0o755)
-      fs.chmodSync(legacy, 0o755)
+      fs.chmodSync(custom, 0o755)
 
       assert.match(assertOfficialGodotExecutable(official), /official/)
       assert.throws(
-        () => assertOfficialGodotExecutable(legacy),
+        () => assertOfficialGodotExecutable(custom),
         /Expected an official stock Godot executable/,
-      )
-      assert.match(
-        assertOfficialGodotExecutable(legacy, { allowLegacy: true }),
-        /godotjs/,
       )
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true })

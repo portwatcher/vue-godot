@@ -192,6 +192,10 @@ test('stock Godot setup is exposed through npm and a checksum-only CI action', (
     '.github/workflows/publish.yml',
     'utf-8',
   )
+  const smokeWorkflow = fs.readFileSync(
+    '.github/workflows/godot-smoke.yml',
+    'utf-8',
+  )
 
   assert.equal(
     packageJson.scripts['setup:godot'],
@@ -200,6 +204,26 @@ test('stock Godot setup is exposed through npm and a checksum-only CI action', (
   assert.equal(
     packageJson.scripts['setup:godot-templates'],
     'node scripts/setup-godot-export-templates.mjs',
+  )
+  assert.equal(packageJson.scripts['setup:godotjs'], undefined)
+  for (const removedPath of [
+    '.github/actions/setup-godotjs/action.yml',
+    'scripts/setup-godotjs.mjs',
+    'test/setup-godotjs.test.mjs',
+  ]) {
+    assert.equal(
+      fs.existsSync(removedPath),
+      false,
+      `${removedPath} still exists`,
+    )
+  }
+  assert.deepEqual(fs.readdirSync('packages/cli/templates/typings').sort(), [
+    '.gdignore',
+  ])
+  const rendererTypingsDir = 'packages/runtime-tscn/typings'
+  assert.deepEqual(
+    fs.existsSync(rendererTypingsDir) ? fs.readdirSync(rendererTypingsDir) : [],
+    [],
   )
   assert.match(action, /default: 4\.4\.1-stable/)
   assert.match(action, /actions\/cache@v5/)
@@ -228,4 +252,5 @@ test('stock Godot setup is exposed through npm and a checksum-only CI action', (
   assert.match(publishWorkflow, /name: godot-js-runtime-linux/)
   assert.match(publishWorkflow, /cmp \\/)
   assert.doesNotMatch(publishWorkflow, /Build Linux runtime/)
+  assert.doesNotMatch(smokeWorkflow, /setup-godotjs|legacy-parity-control/)
 })

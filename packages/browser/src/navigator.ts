@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Navigator and network reachability polyfills for GodotJS
+// Navigator and network reachability polyfills for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 
 import { OS } from 'godot'

@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Timing and Performance polyfills for GodotJS
+// Timing and Performance polyfills for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 
 import { Engine, SceneTree, Time } from 'godot'

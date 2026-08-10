@@ -13,6 +13,10 @@ current support status and platform caveats, and
 requirements. See the [plugin adapter guide](../../docs/plugins.md) for adapter
 implementation guidance.
 
+The root adapter registry is backend-neutral. Subpaths that import `godot`
+run through [`godot-js-runtime`](../godot-js-runtime/README.md) in official
+Godot and use its generated stock-Godot declarations.
+
 ## Installation
 
 ```bash
@@ -61,7 +65,7 @@ unregister()
 | `normalizeDeviceCapabilityError()`                 | Preserves typed errors and wraps unknown errors.                                                                                                                                                       |
 | Adapter interfaces                                 | `DeepLinkAdapter`, `GeolocationAdapter`, `MediaDevicesAdapter`, `NotificationAdapter`, `PermissionAdapter`, `ShareAdapter`, and generic `DeviceCapabilityAdapter`.                                     |
 | Adapter type guards                                | `isDeepLinkAdapter()`, `isNotificationAdapter()`, and `isShareAdapter()` for safely narrowing registry adapters.                                                                                       |
-| `packedStringArrayToStrings()`                     | Normalizes stock-runtime indexed `PackedStringArray` values and legacy array-like values into JavaScript strings.                                                                                      |
+| `packedStringArrayToStrings()`                     | Normalizes stock-runtime indexed `PackedStringArray` values and compatible array-like values into JavaScript strings.                                                                                  |
 | `@vue-godot/device/clipboard`                      | Godot-backed text, primary-selection text, and image-read clipboard helpers. Imported from a subpath so the root package stays backend-neutral outside Godot.                                          |
 | `@vue-godot/device/haptics`                        | Godot-backed handheld and joypad/controller vibration helpers. Imported from a subpath so the root package stays backend-neutral outside Godot.                                                        |
 | `@vue-godot/device/geolocation`                    | Backend-neutral bridge for Android/iOS/native geolocation plugins that implement the `GeolocationAdapter` contract.                                                                                    |

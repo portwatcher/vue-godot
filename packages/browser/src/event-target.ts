@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Minimal EventTarget implementation for GodotJS
+// Minimal EventTarget implementation for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 // Provides a spec-aligned EventTarget that can be subclassed or used
 // standalone. Also exposes a lightweight GodotEvent base class.

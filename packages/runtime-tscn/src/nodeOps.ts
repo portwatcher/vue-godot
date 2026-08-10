@@ -68,9 +68,14 @@ export const nodeOps: Omit<RendererOptions<Node, Node>, 'patchProp'> = {
   },
 
   createElement: (tag, isSVG, isCustomElement, vnodeProps): Node => {
-    return ClassDB.can_instantiate(tag)
-      ? ClassDB.instantiate(tag)
-      : createFallbackNodeForUnsupportedTag(tag)
+    if (ClassDB.can_instantiate(tag)) {
+      const instance = ClassDB.instantiate(tag)
+      if (instance instanceof Node) {
+        return instance
+      }
+    }
+
+    return createFallbackNodeForUnsupportedTag(tag)
   },
 
   createText: (text): Node => {

@@ -4,7 +4,6 @@ on:
   pull_request:
     paths:
       - '.github/actions/setup-godot/**'
-      - '.github/actions/setup-godotjs/**'
       - '.github/workflows/godot-smoke.yml'
       - 'apps/**'
       - 'package*.json'
@@ -17,7 +16,6 @@ on:
       - main
     paths:
       - '.github/actions/setup-godot/**'
-      - '.github/actions/setup-godotjs/**'
       - '.github/workflows/godot-smoke.yml'
       - 'apps/**'
       - 'package*.json'
@@ -25,12 +23,6 @@ on:
       - 'scripts/**'
       - 'turbo.json'
   workflow_dispatch:
-    inputs:
-      run_legacy:
-        description: Run the temporary opt-in GodotJS parity control.
-        required: true
-        default: false
-        type: boolean
 
 permissions:
   contents: read
@@ -102,33 +94,3 @@ jobs:
 
       - name: Performance budgets
         run: npm run bench:performance
-
-  legacy-parity-control:
-    name: Temporary legacy parity control
-    if: github.event_name == 'workflow_dispatch' && inputs.run_legacy
-    runs-on: ubuntu-22.04
-    timeout-minutes: 20
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: npm
-
-      - name: Setup legacy GodotJS
-        uses: ./.github/actions/setup-godotjs
-
-      - name: Install
-        run: npm ci
-
-      - name: Build runtime contract
-        run: npm run build:runtime-contract-fixture
-
-      - name: Run legacy contract control
-        env:
-          VUE_GODOT_ALLOW_LEGACY_RUNTIME: '1'
-        run: npm run smoke:runtime-contract

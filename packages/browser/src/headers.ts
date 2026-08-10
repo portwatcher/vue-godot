@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Minimal Headers implementation for GodotJS
+// Minimal Headers implementation for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 
 /**

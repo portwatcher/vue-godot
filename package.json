@@ -28,7 +28,6 @@
     "smoke:js-runtime-demo": "node packages/godot-js-runtime/scripts/smoke-standalone-demo.mjs",
     "setup:godot": "node scripts/setup-godot.mjs",
     "setup:godot-templates": "node scripts/setup-godot-export-templates.mjs",
-    "setup:godotjs": "node scripts/setup-godotjs.mjs",
     "bench:performance": "npm run bench:performance:deterministic && npm run bench:performance:godot",
     "bench:performance:deterministic": "node scripts/performance-benchmarks.mjs",
     "bench:performance:godot": "node scripts/performance-godot.mjs",
@@ -52,7 +51,7 @@
     "vue-tsc": "2.2.12"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "author": {
     "name": "portwatcher",

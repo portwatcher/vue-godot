@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// FormData polyfill for GodotJS
+// FormData polyfill for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 
 import { GodotBlob } from './blob.js'

@@ -1,8 +1,13 @@
 # @vue-godot/browser
 
-Browser API polyfills for **GodotJS**.
+Browser API polyfills for the standalone **Godot JavaScript Runtime**.
 
-GodotJS provides only engine bindings (the `godot` module) and a minimal JS runtime (V8 or QuickJS). Standard browser/DOM APIs like `fetch`, `URL`, `Blob`, `File`, `FormData`, `atob`, `TextEncoder`, `history`, timers, `requestAnimationFrame`, etc. are **not** available. This package re-implements them on top of Godot's native classes so that higher-level libraries (and your own code) can use familiar Web APIs without modification.
+The runtime provides QuickJS-ng and engine bindings through the `godot` module,
+not a browser or Node.js environment. Standard browser/DOM APIs like `fetch`,
+`URL`, `Blob`, `File`, `FormData`, `atob`, `TextEncoder`, `history`, timers, and
+`requestAnimationFrame` are not built in. This package implements them on top of
+Godot's native classes so higher-level libraries can use the documented Web-like
+surface.
 
 See the repository [compatibility checklist](../../docs/compatibility.md) for support status, platform caveats, and skipped browser APIs. See [permissions and export setup](../../docs/permissions.md) for native capability requirements.
 
@@ -56,50 +61,50 @@ globals and can conflict with TypeScript's `lib.dom.d.ts`.
 
 ## Provided APIs
 
-| API                                              | Implementation         | Notes                                                                                                                                            |
-| ------------------------------------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `fetch()`                                        | Godot `HTTPClient`     | Supports GET/POST/PUT/DELETE, `Request` input, redirects (up to 20), TLS, `AbortSignal`, string/ArrayBuffer/Uint8Array/Blob/File/FormData bodies |
-| `Request`                                        | `GodotRequest`         | Fetch-compatible request metadata/body wrapper; `.text()`, `.json()`, `.arrayBuffer()`, `.blob()`, `.clone()`                                    |
-| `Headers`                                        | `GodotHeaders`         | Map-backed with `toGodotArray()` / `fromGodotArray()` interop                                                                                    |
-| `Response`                                       | `GodotResponse`        | ArrayBuffer-backed; `.json()`, `.text()`, `.arrayBuffer()`, `.blob()`, `.clone()`                                                                |
-| `Blob`                                           | `GodotBlob`            | ArrayBuffer-backed; `.slice()`, `.text()`, `.arrayBuffer()`, `.size`, `.type`                                                                    |
-| `File`                                           | `GodotFile`            | Blob-backed file metadata; `.name`, `.lastModified`, `.webkitRelativePath`                                                                       |
-| `FormData`                                       | `GodotFormData`        | Ordered duplicate keys, string/file values, multipart serialization for `fetch()` bodies                                                         |
-| `FileReader`                                     | `GodotFileReader`      | Async `readAsText()`, `readAsArrayBuffer()`, `readAsDataURL()`, `readAsBinaryString()` for Blob/File values                                      |
-| `WebSocket`                                      | `GodotWebSocket`       | Browser WebSocket subset backed by `WebSocketPeer`; supports open/message/error/close, text/binary send, `binaryType`, protocols, and close codes |
-| `Storage`                                        | `GodotStorage`         | Web Storage API shape; `.length`, `.key()`, `.getItem()`, `.setItem()`, `.removeItem()`, `.clear()`                                              |
-| `localStorage`                                   | `GodotStorage`         | Persistent JSON-backed storage at `user://vue-godot-browser-local-storage.json` with memory fallback                                             |
-| `sessionStorage`                                 | `GodotStorage`         | Process-memory storage; cleared when the GodotJS runtime exits or reloads                                                                        |
+| API                                              | Implementation         | Notes                                                                                                                                                                                                                         |
+| ------------------------------------------------ | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fetch()`                                        | Godot `HTTPClient`     | Supports GET/POST/PUT/DELETE, `Request` input, redirects (up to 20), TLS, `AbortSignal`, string/ArrayBuffer/Uint8Array/Blob/File/FormData bodies                                                                              |
+| `Request`                                        | `GodotRequest`         | Fetch-compatible request metadata/body wrapper; `.text()`, `.json()`, `.arrayBuffer()`, `.blob()`, `.clone()`                                                                                                                 |
+| `Headers`                                        | `GodotHeaders`         | Map-backed with `toGodotArray()` / `fromGodotArray()` interop                                                                                                                                                                 |
+| `Response`                                       | `GodotResponse`        | ArrayBuffer-backed; `.json()`, `.text()`, `.arrayBuffer()`, `.blob()`, `.clone()`                                                                                                                                             |
+| `Blob`                                           | `GodotBlob`            | ArrayBuffer-backed; `.slice()`, `.text()`, `.arrayBuffer()`, `.size`, `.type`                                                                                                                                                 |
+| `File`                                           | `GodotFile`            | Blob-backed file metadata; `.name`, `.lastModified`, `.webkitRelativePath`                                                                                                                                                    |
+| `FormData`                                       | `GodotFormData`        | Ordered duplicate keys, string/file values, multipart serialization for `fetch()` bodies                                                                                                                                      |
+| `FileReader`                                     | `GodotFileReader`      | Async `readAsText()`, `readAsArrayBuffer()`, `readAsDataURL()`, `readAsBinaryString()` for Blob/File values                                                                                                                   |
+| `WebSocket`                                      | `GodotWebSocket`       | Browser WebSocket subset backed by `WebSocketPeer`; supports open/message/error/close, text/binary send, `binaryType`, protocols, and close codes                                                                             |
+| `Storage`                                        | `GodotStorage`         | Web Storage API shape; `.length`, `.key()`, `.getItem()`, `.setItem()`, `.removeItem()`, `.clear()`                                                                                                                           |
+| `localStorage`                                   | `GodotStorage`         | Persistent JSON-backed storage at `user://vue-godot-browser-local-storage.json` with memory fallback                                                                                                                          |
+| `sessionStorage`                                 | `GodotStorage`         | Process-memory storage; cleared when the JavaScript runtime exits or reloads                                                                                                                                                  |
 | `navigator`                                      | `GodotNavigator`       | Provides `navigator.onLine`, `navigator.permissions`, adapter-backed `navigator.geolocation`, adapter-backed `navigator.mediaDevices`, `navigator.clipboard`, and `navigator.vibrate()`; reachability changes dispatch events |
-| `navigator.permissions.query()`                  | `GodotPermissions`     | Query-only Permissions API subset that asks a registered `PermissionAdapter` first, then falls back to mapped Godot/Android permissions and local capabilities |
-| `navigator.geolocation`                          | `GodotGeolocation`     | Browser Geolocation API callback subset exposed only when a `@vue-godot/device` `GeolocationAdapter` is registered                                 |
-| `navigator.mediaDevices.getUserMedia()`          | `GodotMediaDevices`    | Browser media capture subset exposed only when a `@vue-godot/device` `MediaDevicesAdapter` is registered                                           |
-| `MediaStream` / `MediaStreamTrack`               | `GodotMediaStream`     | Small stream/track wrapper for adapter-provided audio/video tracks, including `getTracks()`, `getAudioTracks()`, `getVideoTracks()`, and `stop()`   |
-| `Notification`                                   | `GodotNotification`    | Native notification subset exposed by `installBrowserAPIs()` only when a `@vue-godot/device` `NotificationAdapter` is registered                    |
-| `navigator.clipboard.readText()` / `writeText()` | `GodotClipboard`       | Async text clipboard subset backed by `DisplayServer.clipboard_get()` / `clipboard_set()` when the display server supports clipboard access       |
-| `isClipboardSupported()`                         | DisplayServer helper   | Returns whether the current display server reports text clipboard support                                                                         |
-| `navigator.vibrate()`                            | Godot handheld haptics | Browser Vibration API subset backed by `Input.vibrate_handheld()`                                                                                |
-| `isVibrationSupported()`                         | Input helper           | Returns whether Godot's handheld vibration method is exposed                                                                                     |
-| `DeviceMotionEvent` / `DeviceOrientationEvent`   | Godot sensor events    | Event classes plus opt-in polling helpers backed by `Input` accelerometer, gyroscope, magnetometer, and gravity sensors                          |
-| `readDeviceMotion()` / `readDeviceOrientation()` | Godot sensor reads     | Snapshot helpers for motion/orientation data without starting an event loop                                                                      |
-| `checkNetworkReachability()`                     | Fetch probe            | Configurable HTTP probe using `fetch()` and `AbortController`                                                                                    |
-| `URL`                                            | `GodotURL`             | WHATWG subset — `protocol`, `hostname`, `port`, `pathname`, `search`, `searchParams`, `hash`, `href`, `toString()`                               |
-| `URLSearchParams`                                | `GodotURLSearchParams` | Query string helper with duplicate-key support, iteration, `.append()`, `.set()`, `.getAll()`, `.sort()`                                         |
-| `atob` / `btoa`                                  | Pure JS                | RFC 4648 base64 encode/decode                                                                                                                    |
-| `TextEncoder`                                    | `GodotTextEncoder`     | UTF-8 `.encode()` with V8 native fast-path when available                                                                                        |
-| `TextDecoder`                                    | `GodotTextDecoder`     | UTF-8 `.decode()` with V8 native fast-path when available                                                                                        |
-| `AbortController`                                | `GodotAbortController` | Signal-based; `.abort()`, `.signal`                                                                                                              |
-| `AbortSignal`                                    | `GodotAbortSignal`     | `.aborted`, `.reason` typed as `unknown`, `addEventListener('abort', …)`                                                                         |
-| `setTimeout` / `clearTimeout`                    | Godot timing           | Uses `SceneTree.create_timer()` where available; falls back to host timers in tests                                                              |
-| `setInterval` / `clearInterval`                  | Godot timing           | Repeating timer built on the same scheduler as `setTimeout`                                                                                      |
-| `queueMicrotask`                                 | Promise microtask      | Schedules callbacks through the JS microtask queue                                                                                               |
-| `requestAnimationFrame` / `cancelAnimationFrame` | Godot frame timing     | Uses `SceneTree.process_frame` where available; falls back to a 16 ms timer before the scene tree exists                                         |
-| `performance`                                    | `GodotPerformance`     | `Time.get_ticks_usec()`-backed `.now()` plus basic marks, measures, and entry lookup                                                             |
-| `history`                                        | `GodotHistory`         | In-memory session history; `pushState()`, `replaceState()`, `go()`, `back()`, `forward()`, `.state`                                              |
-| `location`                                       | `GodotLocation`        | Reflects the current URL; `.href`, `.pathname`, `.search`, `.hash`, `assign()`, `replace()`                                                      |
-| `PopStateEvent`                                  | `PopStateEvent`        | Fired on traversal (`go` / `back` / `forward`); carries `.state`                                                                                 |
-| `addEventListener` (global)                      | `GodotEventTarget`     | Enables `addEventListener('popstate', …)` on `globalThis`                                                                                        |
-| `EventTarget`                                    | `GodotEventTarget`     | Standalone or subclassable; `addEventListener`, `removeEventListener`, `dispatchEvent`                                                           |
+| `navigator.permissions.query()`                  | `GodotPermissions`     | Query-only Permissions API subset that asks a registered `PermissionAdapter` first, then falls back to mapped Godot/Android permissions and local capabilities                                                                |
+| `navigator.geolocation`                          | `GodotGeolocation`     | Browser Geolocation API callback subset exposed only when a `@vue-godot/device` `GeolocationAdapter` is registered                                                                                                            |
+| `navigator.mediaDevices.getUserMedia()`          | `GodotMediaDevices`    | Browser media capture subset exposed only when a `@vue-godot/device` `MediaDevicesAdapter` is registered                                                                                                                      |
+| `MediaStream` / `MediaStreamTrack`               | `GodotMediaStream`     | Small stream/track wrapper for adapter-provided audio/video tracks, including `getTracks()`, `getAudioTracks()`, `getVideoTracks()`, and `stop()`                                                                             |
+| `Notification`                                   | `GodotNotification`    | Native notification subset exposed by `installBrowserAPIs()` only when a `@vue-godot/device` `NotificationAdapter` is registered                                                                                              |
+| `navigator.clipboard.readText()` / `writeText()` | `GodotClipboard`       | Async text clipboard subset backed by `DisplayServer.clipboard_get()` / `clipboard_set()` when the display server supports clipboard access                                                                                   |
+| `isClipboardSupported()`                         | DisplayServer helper   | Returns whether the current display server reports text clipboard support                                                                                                                                                     |
+| `navigator.vibrate()`                            | Godot handheld haptics | Browser Vibration API subset backed by `Input.vibrate_handheld()`                                                                                                                                                             |
+| `isVibrationSupported()`                         | Input helper           | Returns whether Godot's handheld vibration method is exposed                                                                                                                                                                  |
+| `DeviceMotionEvent` / `DeviceOrientationEvent`   | Godot sensor events    | Event classes plus opt-in polling helpers backed by `Input` accelerometer, gyroscope, magnetometer, and gravity sensors                                                                                                       |
+| `readDeviceMotion()` / `readDeviceOrientation()` | Godot sensor reads     | Snapshot helpers for motion/orientation data without starting an event loop                                                                                                                                                   |
+| `checkNetworkReachability()`                     | Fetch probe            | Configurable HTTP probe using `fetch()` and `AbortController`                                                                                                                                                                 |
+| `URL`                                            | `GodotURL`             | WHATWG subset — `protocol`, `hostname`, `port`, `pathname`, `search`, `searchParams`, `hash`, `href`, `toString()`                                                                                                            |
+| `URLSearchParams`                                | `GodotURLSearchParams` | Query string helper with duplicate-key support, iteration, `.append()`, `.set()`, `.getAll()`, `.sort()`                                                                                                                      |
+| `atob` / `btoa`                                  | Pure JS                | RFC 4648 base64 encode/decode                                                                                                                                                                                                 |
+| `TextEncoder`                                    | `GodotTextEncoder`     | UTF-8 `.encode()` with an existing native-global fast path when available                                                                                                                                                     |
+| `TextDecoder`                                    | `GodotTextDecoder`     | UTF-8 `.decode()` with an existing native-global fast path when available                                                                                                                                                     |
+| `AbortController`                                | `GodotAbortController` | Signal-based; `.abort()`, `.signal`                                                                                                                                                                                           |
+| `AbortSignal`                                    | `GodotAbortSignal`     | `.aborted`, `.reason` typed as `unknown`, `addEventListener('abort', …)`                                                                                                                                                      |
+| `setTimeout` / `clearTimeout`                    | Godot timing           | Uses `SceneTree.create_timer()` where available; falls back to host timers in tests                                                                                                                                           |
+| `setInterval` / `clearInterval`                  | Godot timing           | Repeating timer built on the same scheduler as `setTimeout`                                                                                                                                                                   |
+| `queueMicrotask`                                 | Promise microtask      | Schedules callbacks through the JS microtask queue                                                                                                                                                                            |
+| `requestAnimationFrame` / `cancelAnimationFrame` | Godot frame timing     | Uses `SceneTree.process_frame` where available; falls back to a 16 ms timer before the scene tree exists                                                                                                                      |
+| `performance`                                    | `GodotPerformance`     | `Time.get_ticks_usec()`-backed `.now()` plus basic marks, measures, and entry lookup                                                                                                                                          |
+| `history`                                        | `GodotHistory`         | In-memory session history; `pushState()`, `replaceState()`, `go()`, `back()`, `forward()`, `.state`                                                                                                                           |
+| `location`                                       | `GodotLocation`        | Reflects the current URL; `.href`, `.pathname`, `.search`, `.hash`, `assign()`, `replace()`                                                                                                                                   |
+| `PopStateEvent`                                  | `PopStateEvent`        | Fired on traversal (`go` / `back` / `forward`); carries `.state`                                                                                                                                                              |
+| `addEventListener` (global)                      | `GodotEventTarget`     | Enables `addEventListener('popstate', …)` on `globalThis`                                                                                                                                                                     |
+| `EventTarget`                                    | `GodotEventTarget`     | Standalone or subclassable; `addEventListener`, `removeEventListener`, `dispatchEvent`                                                                                                                                        |
 
 ## History API
 
@@ -276,7 +281,9 @@ const token = localStorage.getItem('auth-token')
 localStorage.removeItem('auth-token')
 ```
 
-`sessionStorage` uses process memory only. It survives within the active GodotJS runtime but is cleared when the runtime exits, the app restarts, or the script context is reloaded.
+`sessionStorage` uses process memory only. It survives within the active
+JavaScript runtime but is cleared when the runtime exits, the app restarts, or
+the script context is reloaded.
 
 ## Network Reachability
 
@@ -511,7 +518,7 @@ Godot returns zero vectors for unsupported platforms or missing sensors. The ori
 
 ## Requirements
 
-- **GodotJS** runtime (V8 or QuickJS) with access to the `godot` module
+- `godot-js-runtime` with QuickJS-ng and access to the `godot` module
 - `@vue-godot/device` for plugin-backed capability adapters such as geolocation
 - Godot engine classes: `HTTPClient`, `DisplayServer`, `Engine`, `FileAccess`, `Input`, `OS`, `SceneTree`, `Time`, `TLSOptions`, `WebSocketPeer`, `PackedByteArray`, `PackedStringArray`
 

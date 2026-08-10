@@ -41,9 +41,10 @@ sources from being registered as project resources.
 
 ## Android Exports
 
-Install the required Android runtime ABI artifacts, create an official Godot
-Android export preset, and enable the permissions required by the APIs your app
-actually uses:
+Install `android.template_debug.arm64` / `x86_64` or the matching release
+targets, create an official Godot Android export preset, and enable the
+permissions required by the APIs your app actually uses. Verify every ABI
+included in the APK/AAB and launch at least the arm64 build on a device or AVD.
 
 | App capability                                       | Android permission / export setting                                                          |
 | ---------------------------------------------------- | -------------------------------------------------------------------------------------------- |
@@ -60,8 +61,10 @@ the app repository next to the adapter registration code.
 
 ## iOS Exports
 
-Install the required iOS runtime slices, create an official Godot iOS export
-preset, and add plist usage descriptions for selected APIs:
+Install the device arm64 or simulator arm64/x86_64 runtime slices, create an
+official Godot iOS export preset, and add plist usage descriptions for selected
+APIs. Unsigned export/link checks do not replace a signed physical-device launch
+before release:
 
 | App capability     | iOS plist key                         |
 | ------------------ | ------------------------------------- |
@@ -75,12 +78,12 @@ capabilities, or plugin-specific setup.
 
 ## Web Exports
 
-Web export requires a `wasm32` runtime artifact and an official Godot export
-mode that supports GDExtension. A packaged runtime may not include that target
-yet; confirm it with `npx godot-js-runtime targets` before creating a Web
-preset. Treat Web as unsupported unless the target is listed and the exported
-app passes its automated browser smoke. Browser sandbox restrictions still
-apply to networking, file access, audio/video, and plugin-backed capabilities.
+Install `web.template_debug.wasm32` or `web.template_release.wasm32` and use
+official Godot's threaded Web export. Serve the files with WebAssembly MIME and
+COOP/COEP headers so the engine worker is cross-origin isolated. The runtime's
+release gate launches both modes in Chrome; application-specific networking,
+file access, audio/video, and plugin-backed capabilities still need exported
+browser validation.
 
 ## Export Setting Check
 

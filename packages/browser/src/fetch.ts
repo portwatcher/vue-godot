@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// fetch() polyfill for GodotJS
+// fetch() polyfill for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 // Built on Godot's HTTPClient (RefCounted — no scene-tree required).
 //
@@ -288,7 +288,7 @@ async function fetchInternal(
 // ---------------------------------------------------------------------------
 
 /**
- * `fetch()` implementation for GodotJS.
+ * `fetch()` implementation for the Godot JavaScript Runtime.
  *
  * Built on Godot's `HTTPClient` — works without adding nodes to the
  * scene tree. Supports GET, POST, PUT, DELETE, etc., redirects, headers,

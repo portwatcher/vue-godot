@@ -1,7 +1,7 @@
 {
   "name": "@vue-godot/browser",
   "version": "0.0.1",
-  "description": "Browser API polyfills for GodotJS (fetch, URL, Blob, atob/btoa, TextEncoder, etc.)",
+  "description": "Browser API polyfills for the Godot JavaScript Runtime (fetch, URL, Blob, atob/btoa, TextEncoder, etc.)",
   "type": "module",
   "repository": {
     "type": "git",

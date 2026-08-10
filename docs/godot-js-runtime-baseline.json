@@ -95,6 +95,18 @@
     "docs/godot-js-runtime-baseline.json",
     "test/runtime-migration-baseline.test.mjs"
   ],
+  "cutoverAllowlist": [
+    {
+      "path": "docs/godot-js-gdextension-plan.md",
+      "classification": "historical-migration-contract",
+      "reason": "Preserves the execution contract, original inventory, decisions, and commit ledger."
+    },
+    {
+      "path": "test/setup-godot.test.mjs",
+      "classification": "negative-regression-guard",
+      "reason": "Asserts that official setup cannot name the removed custom editor or its former publisher."
+    }
+  ],
   "inventory": [
     {
       "disposition": "remove",

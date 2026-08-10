@@ -114,7 +114,10 @@ test('compatibility rows use the required schema and status values', () => {
     )
     assert.ok(row.backend, `Compatibility row ${row.api} must name a backend`)
     assert.ok(row.platforms, `Compatibility row ${row.api} must name platforms`)
-    assert.ok(row.permissions, `Compatibility row ${row.api} must name permissions`)
+    assert.ok(
+      row.permissions,
+      `Compatibility row ${row.api} must name permissions`,
+    )
     assert.ok(row.tests, `Compatibility row ${row.api} must name tests`)
     assert.ok(row.caveats, `Compatibility row ${row.api} must name caveats`)
   }
@@ -222,25 +225,20 @@ test('html README documents every registered component', () => {
   }
 })
 
-test('html accessibility docs match the checked-in GodotJS bindings', () => {
-  const typingsDir = path.join(repoRoot, 'packages/runtime-tscn/typings')
-  const typingFiles = fs
-    .readdirSync(typingsDir)
-    .filter((name) => /^godot\d+\.gen\.d\.ts$/.test(name))
-  assert.ok(typingFiles.length > 0, 'Expected generated Godot typings')
-
-  const generatedTypings = typingFiles
-    .map((name) => fs.readFileSync(path.join(typingsDir, name), 'utf-8'))
-    .join('\n')
+test('html accessibility docs match the stock-Godot bindings', () => {
+  const generatedTypings = fs.readFileSync(
+    path.join(repoRoot, 'packages/godot-js-runtime/typings/godot.d.ts'),
+    'utf-8',
+  )
 
   assert.doesNotMatch(
     generatedTypings,
     /\b(?:get|set)\s+(?:accessibility_|accessible_|aria_)?role\b|\b(?:get|set)\s+accessibility_/i,
-    'If GodotJS exposes portable accessibility bindings, revisit the documented unsupported status.',
+    'If stock Godot exposes portable accessibility bindings, revisit the documented unsupported status.',
   )
   assert.match(
     compatibility,
-    /accessibility-tree integration are not exposed on the\s+current GodotJS baseline/,
+    /accessibility-tree integration are not exposed by the\s+supported stock-Godot API/,
   )
   assert.match(htmlReadme, /does not expose ARIA-style labels/)
 })

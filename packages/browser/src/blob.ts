@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Minimal Blob implementation for GodotJS
+// Minimal Blob implementation for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 
 import { GodotTextEncoder } from './encoding.js'

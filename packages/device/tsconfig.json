@@ -16,5 +16,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*", "../runtime-tscn/typings/**/*"]
+  "include": ["src/**/*", "../godot-js-runtime/typings/**/*"]
 }

@@ -7,6 +7,7 @@ need explicit platform setup. Run this checklist before making release builds.
 
 ```bash
 npm run build
+npm run setup:runtime
 npm run check:exports
 npx vue-godot doctor
 ```
@@ -16,7 +17,8 @@ Godot loads `dist/app.js`, so build before exporting. Keep `vue/`, `gen/`, and
 
 ## Desktop Exports
 
-- Install the Godot export templates for your GodotJS editor version.
+- Install official export templates matching your stock Godot version.
+- Verify the installed `godot-js-runtime` desktop target before exporting.
 - Create Windows, macOS, and Linux export presets in Godot.
 - Include `dist/app.js` and `dist/chunks/*.js` in exported resources.
 - Test the exported binary, not only editor play mode.
@@ -70,18 +72,19 @@ for the selected production-profile APIs:
 | Geolocation        | `NSLocationWhenInUseUsageDescription` |
 | Photo/media access | `NSPhotoLibraryUsageDescription`      |
 
-Install both GodotJS iOS library assets, then assemble the local project-export
-package before running the Godot export:
+Install the standalone runtime and official export templates before running the
+Godot export:
 
 ```bash
-npm run setup:godotjs -- --release v1.1.0-generate-typings --release-repo godotjs/GodotJS --asset ios-template_debug-4.4-v8 --asset-kind templates --install-templates --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir
-npm run setup:godotjs -- --release v1.1.0-generate-typings --release-repo godotjs/GodotJS --asset ios-template_release-4.4-v8 --asset-kind templates --install-templates --assemble-ios-package --godot-bin "$(npm run -s setup:godotjs -- --print-bin)" --print-dir
+npm run setup:runtime
+npm run verify:runtime
+# From the monorepo when preparing the pinned official templates:
+npm run setup:godot-templates
 ```
 
-The assembled `ios.zip` supports Godot's project-only Xcode export path. Local
-iOS simulator execution still requires upstream-compatible GodotJS simulator
-template slices plus real Apple signing/team configuration; the published
-GodotJS 4.4 V8 iOS assets currently provide device `arm64` static libraries.
+The runtime ships device arm64 and simulator arm64/x86_64 XCFramework slices.
+Godot's project-only export produces the Xcode project; a signed physical-device
+launch still requires an Apple development team and provisioning profile.
 Native notification and share-sheet plugins may require additional entitlements,
 capabilities, or plugin-specific setup.
 
@@ -95,8 +98,9 @@ SIMCTL_CHILD_VUE_GODOT_RELEASE_CHECKS=1 SIMCTL_CHILD_VUE_GODOT_RELEASE_CHECKS_DE
 
 ## Web Exports
 
-Vue Godot targets GodotJS. Web exports depend on what the selected GodotJS build
-and browser sandbox expose. Test networking, file access, audio/video, and any
+Install the threaded Web runtime target and use official Godot's Web export
+templates. Serve the export with COOP/COEP headers so the runtime worker is
+cross-origin isolated. Test networking, file access, audio/video, and any
 plugin-backed capability in the exported Web build.
 
 ## Export Setting Check
@@ -105,5 +109,5 @@ plugin-backed capability in the exported Web build.
 scans `vue/` and `src/` for selected APIs and prints warnings when matching
 Android permissions or iOS plist keys are missing from `export_presets.cfg`.
 Run `npx vue-godot doctor` for the broader local setup check covering package
-installs, GodotJS typings, Vite/Volar setup, and plugin-backed API hints. These
+installs, stock-Godot typings, Vite/Volar setup, and plugin-backed API hints. These
 checks are guardrails, not replacements for real device testing.

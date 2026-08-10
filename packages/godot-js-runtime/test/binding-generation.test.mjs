@@ -27,7 +27,13 @@ function repositoryFiles() {
     },
   )
   assert.equal(result.status, 0, result.stderr.toString('utf-8'))
-  return result.stdout.toString('utf-8').split('\0').filter(Boolean)
+  return result.stdout
+    .toString('utf-8')
+    .split('\0')
+    .filter(
+      (filePath) =>
+        filePath && fs.existsSync(path.join(repositoryRoot, filePath)),
+    )
 }
 
 function runtimeGodotImports() {

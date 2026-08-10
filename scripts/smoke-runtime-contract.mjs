@@ -126,9 +126,7 @@ try {
     await runMissingRuntimeSmoke(godot, contract)
   } else {
     assertOfficialGodotExecutable(godot)
-    if (process.env.VUE_GODOT_ALLOW_LEGACY_RUNTIME !== '1') {
-      installBuiltRuntime(runtimeContractFixtureDir)
-    }
+    installBuiltRuntime(runtimeContractFixtureDir)
     await runSuccessSmoke(godot)
     console.log('[runtime-contract] runtime contract passed')
   }

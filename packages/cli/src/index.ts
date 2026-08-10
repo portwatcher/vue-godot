@@ -31,20 +31,14 @@ export interface GenerateOptions {
 }
 
 /**
- * Parse class inheritance from legacy binding bundles or the standalone
- * runtime's stock-Godot declaration and build a class-to-parent map.
+ * Parse class inheritance from the standalone runtime's stock-Godot
+ * declaration and build a class-to-parent map.
  */
 function parseClassHierarchy(typingsDir: string): Map<string, string> {
   const classes = new Map<string, string>()
   const files = fs
     .readdirSync(typingsDir)
-    .filter(
-      (file) =>
-        /^godot\d*\.gen\.d\.ts$/.test(file) ||
-        file === 'godot.mix.d.ts' ||
-        file === 'godot.d.ts' ||
-        file === 'godot.runtime.d.ts',
-    )
+    .filter((file) => file === 'godot.d.ts')
 
   for (const file of files.sort()) {
     const content = fs.readFileSync(path.join(typingsDir, file), 'utf-8')

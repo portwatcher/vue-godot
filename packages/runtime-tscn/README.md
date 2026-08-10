@@ -6,6 +6,11 @@ It provides a Vue runtime renderer for Godot TSCN files. This allows you to use 
 
 See the repository [compatibility checklist](../../docs/compatibility.md) for current renderer support status, platform caveats, and known limits. See [runtime renderer support](../../docs/runtime.md) for supported Vue features and unsupported browser/DOM assumptions.
 
+The renderer runs inside official Godot through the standalone
+[`godot-js-runtime`](../godot-js-runtime/README.md). Repository builds and
+generated projects type-check against that runtime's stock-Godot declarations;
+the removed custom-editor declaration bundles are not a supported input.
+
 ## Features
 
 - Render Vue components into Godot scene nodes.
@@ -45,3 +50,6 @@ Limitations:
 ```
 npm install @vue-godot/runtime-tscn
 ```
+
+Install and verify `godot-js-runtime` in the Godot project before mounting the
+renderer.

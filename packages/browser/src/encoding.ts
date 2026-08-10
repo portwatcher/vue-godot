@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// TextEncoder / TextDecoder polyfills for GodotJS
+// TextEncoder / TextDecoder polyfills for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 // Only UTF-8 is supported (matching the web platform's practical reality).
 // ---------------------------------------------------------------------------
@@ -17,7 +17,7 @@ export class GodotTextEncoder {
   readonly encoding = 'utf-8'
 
   encode(input: string = ''): Uint8Array {
-    // Fast path: V8/QuickJS may have a native encoder hidden somewhere.
+    // Fast path when the host already provides a native encoder.
     const g: Record<string, unknown> = globalThis
     const TextEncoderCtor = g['TextEncoder']
     if (

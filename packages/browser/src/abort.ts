@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Minimal AbortController / AbortSignal for GodotJS
+// Minimal AbortController / AbortSignal for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 
 /**

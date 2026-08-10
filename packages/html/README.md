@@ -4,6 +4,10 @@ HTML-like Vue components built on Godot nodes.
 
 This package provides familiar HTML element abstractions (`<Div>`, `<Img>`, `<Button>`, etc.) that render as native Godot nodes under the hood. It runs on top of `@vue-godot/runtime-tscn` — the same renderer used for direct Godot node access.
 
+Projects run in official Godot through the standalone
+[`godot-js-runtime`](../godot-js-runtime/README.md); install and verify that
+runtime before launching or exporting the app.
+
 See the repository [compatibility checklist](../../docs/compatibility.md) for current component support status, platform caveats, and known spec differences.
 
 ## Motivation
@@ -385,8 +389,8 @@ regions, or an accessibility tree. Tooltip text is not a screen-reader semantic,
 so earlier tooltip-backed compatibility props were removed rather than presenting
 them as accessibility support.
 
-Adding real screen-reader metadata requires upgrading the GodotJS baseline and
-generated bindings to a Godot version that exposes the native accessibility API.
+Adding real screen-reader metadata requires a supported stock-Godot API and
+generated bindings that expose portable native accessibility metadata.
 Platform support must then be implemented and validated separately. Godot focus
 navigation below remains available, but it does not make controls discoverable to
 TalkBack, VoiceOver, or desktop screen readers by itself.
@@ -444,7 +448,7 @@ For controller fallback behavior, set `autoFocus` on the first interactive contr
 
 HTML-like components are Godot nodes, not browser DOM elements. The current input surface is intentionally limited to stable Godot-backed behavior:
 
-- Screen-reader labels, descriptions, roles, live regions, and accessibility-tree integration are unsupported on the current GodotJS baseline.
+- Screen-reader labels, descriptions, roles, live regions, and accessibility-tree integration are unsupported by the supported stock-Godot API.
 - Focus management supports mount-time focus, explicit Godot focus graph props, and Godot-native focus containment/restoration for `<Overlay>`, `<Modal>`, and `<Dialog>`; browser DOM tab-order emulation is not implemented.
 - Keyboard, controller, and back behavior use Godot input actions such as `ui_accept` and `ui_cancel`; DOM keyboard events and document-level shortcut bubbling are not emulated.
 - `minTouchTarget` changes the Control minimum size; it does not create invisible hit slop outside the Godot Control rect.

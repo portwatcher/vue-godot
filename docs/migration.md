@@ -57,7 +57,8 @@ npx vue-godot integrate --html
    limited media query buckets where useful, and Godot container layout.
 7. Run `npx vue-godot doctor --migration` to triage unsupported CSS, DOM
    assumptions, and browser tags before deeper porting work.
-8. Run `npm run build`, `npm run check:exports`, and test in the GodotJS editor.
+8. Run `npm run setup:runtime`, `npm run build`, `npm run check:exports`, and
+   test in an official Godot editor.
 
 See the `@vue-godot/html` README's lowercase tag migration section for the
 exact `isNativeTag`, `isCustomElement`, `htmlPlugin`, and Volar setup.
@@ -72,11 +73,11 @@ for browser DOM assumptions such as `document.querySelector`, `HTMLElement`,
 
 Findings are grouped into three tiers:
 
-| Tier | Meaning |
-| --- | --- |
-| `small-change` | Usually a component rename, supported style replacement, or visual approximation. |
-| `medium` | Requires layout or state reshaping, often around selectors, positioning, or CSSOM reads. |
-| `rewrite` | Relies on browser DOM construction, observers, float layout, keyframes outside the supported API, or browser canvas drawing. |
+| Tier           | Meaning                                                                                                                      |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `small-change` | Usually a component rename, supported style replacement, or visual approximation.                                            |
+| `medium`       | Requires layout or state reshaping, often around selectors, positioning, or CSSOM reads.                                     |
+| `rewrite`      | Relies on browser DOM construction, observers, float layout, keyframes outside the supported API, or browser canvas drawing. |
 
 The report also suggests equivalent `@vue-godot/html` components for browser
 tags such as `<div>`, `<button>`, `<input>`, and `<img>`. It is a triage tool,
@@ -85,25 +86,25 @@ target devices.
 
 ### What Usually Ports Cleanly
 
-| Vue web pattern | Vue Godot approach |
-| --- | --- |
-| Composition API, refs, computed state | Keep as-is. |
-| SFC components and slots | Keep as-is unless they depend on DOM nodes. |
-| `fetch()`, `URL`, `Blob`, timers, storage | Use `installBrowserAPIs()` and check [compatibility](./compatibility.md). |
-| Vue Router route records and guards | Use `createWebHistory()` with the in-memory history implementation. |
-| Form state with `v-model` | Use `@vue-godot/html` form/input components and explicit submit/reset events. |
-| Asset components | Use `res://`, relative project paths, `user://`, blob/data URLs, or remote URLs where the component supports them. |
+| Vue web pattern                           | Vue Godot approach                                                                                                 |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Composition API, refs, computed state     | Keep as-is.                                                                                                        |
+| SFC components and slots                  | Keep as-is unless they depend on DOM nodes.                                                                        |
+| `fetch()`, `URL`, `Blob`, timers, storage | Use `installBrowserAPIs()` and check [compatibility](./compatibility.md).                                          |
+| Vue Router route records and guards       | Use `createWebHistory()` with the in-memory history implementation.                                                |
+| Form state with `v-model`                 | Use `@vue-godot/html` form/input components and explicit submit/reset events.                                      |
+| Asset components                          | Use `res://`, relative project paths, `user://`, blob/data URLs, or remote URLs where the component supports them. |
 
 ### What Needs Redesign
 
-| Browser assumption | Replacement |
-| --- | --- |
-| `document.querySelector`, DOM refs, `HTMLElement` methods | Vue refs to components or Godot node instances. |
-| CSS cascade, stylesheets, computed styles | Explicit `createHtmlStyleSheet()` registration or global CSS imports through `@vue-godot/html/vite`, structured `defineHtmlTheme()` defaults, inline style overrides, limited viewport media buckets, Godot containers, and explicit component props. No CSSOM or computed style reads. |
-| DOM event bubbling/capture | Vue component events and Godot signals. |
-| Browser focus and ARIA tree | Godot focus traversal props cover keyboard/controller navigation; screen-reader semantics are unsupported until the GodotJS baseline exposes Godot's native accessibility API. |
-| Service workers, IndexedDB, Web Workers | Treat as unsupported unless a real project-specific backend is added. |
-| Full-page navigation and reloads | In-memory routing, app state restoration, and Godot scene/app lifecycle. |
+| Browser assumption                                        | Replacement                                                                                                                                                                                                                                                                             |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `document.querySelector`, DOM refs, `HTMLElement` methods | Vue refs to components or Godot node instances.                                                                                                                                                                                                                                         |
+| CSS cascade, stylesheets, computed styles                 | Explicit `createHtmlStyleSheet()` registration or global CSS imports through `@vue-godot/html/vite`, structured `defineHtmlTheme()` defaults, inline style overrides, limited viewport media buckets, Godot containers, and explicit component props. No CSSOM or computed style reads. |
+| DOM event bubbling/capture                                | Vue component events and Godot signals.                                                                                                                                                                                                                                                 |
+| Browser focus and ARIA tree                               | Godot focus traversal props cover keyboard/controller navigation; screen-reader semantics are unsupported until the supported stock-Godot API exposes portable native accessibility metadata.                                                                                           |
+| Service workers, IndexedDB, Web Workers                   | Treat as unsupported unless a real project-specific backend is added.                                                                                                                                                                                                                   |
+| Full-page navigation and reloads                          | In-memory routing, app state restoration, and Godot scene/app lifecycle.                                                                                                                                                                                                                |
 
 ## React Native Mental Model To Vue Godot
 
@@ -114,19 +115,19 @@ UIKit/Android views and not Yoga layout.
 
 Useful mental mappings:
 
-| React Native idea | Vue Godot equivalent |
-| --- | --- |
-| `View` | `<Div>` or a Godot container/control tag. |
-| `Text` | `<Span>` or Godot `<Label>`. |
-| `Image` | `<Img>` or Godot texture nodes. |
-| `Pressable` | `<Pressable>` or focusable button components. |
-| `TextInput` | `<Input>` / `<Textarea>`. |
-| `FlatList` | `<VirtualList>` for fixed-height rows. |
-| `Modal` | `<Modal>`, `<Dialog>`, or `<Overlay>`. |
-| `SafeAreaView` | `<SafeAreaView>`. |
-| `KeyboardAvoidingView` | `<KeyboardAvoidingView>`. |
-| `Vibration` | `navigator.vibrate()` or `@vue-godot/device/haptics`. |
-| Native modules | `@vue-godot/device` adapters registered before browser API installation. |
+| React Native idea      | Vue Godot equivalent                                                     |
+| ---------------------- | ------------------------------------------------------------------------ |
+| `View`                 | `<Div>` or a Godot container/control tag.                                |
+| `Text`                 | `<Span>` or Godot `<Label>`.                                             |
+| `Image`                | `<Img>` or Godot texture nodes.                                          |
+| `Pressable`            | `<Pressable>` or focusable button components.                            |
+| `TextInput`            | `<Input>` / `<Textarea>`.                                                |
+| `FlatList`             | `<VirtualList>` for fixed-height rows.                                   |
+| `Modal`                | `<Modal>`, `<Dialog>`, or `<Overlay>`.                                   |
+| `SafeAreaView`         | `<SafeAreaView>`.                                                        |
+| `KeyboardAvoidingView` | `<KeyboardAvoidingView>`.                                                |
+| `Vibration`            | `navigator.vibrate()` or `@vue-godot/device/haptics`.                    |
+| Native modules         | `@vue-godot/device` adapters registered before browser API installation. |
 
 Key differences:
 
@@ -149,7 +150,8 @@ Control node into HTML-like components.
 Recommended path:
 
 1. Keep gameplay, physics, rendering, and existing scene resources in Godot.
-2. Mount Vue into a root `Control` node from the GodotJS script.
+2. Mount Vue into a root `Control` node from the runtime-backed JavaScript
+   script.
 3. Convert one screen or panel at a time into Vue components.
 4. Use Godot node tags directly for native controls where that is clearer:
 
