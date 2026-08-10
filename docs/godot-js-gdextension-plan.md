@@ -23,7 +23,7 @@ passes.
 | Vue/npm separation | Complete | `784c206` | generated projects contain no GodotJS dependency or install scripts |
 | Manual-copy generated-project gate | Complete | `dbe8c89` | fresh generated app receives the add-on fixture explicitly and passes Godot 4.7.1 import/run/rebuild smoke |
 | Docs, demos, templates, and migration cleanup | Complete | `784c206` | root guide and maintained examples aligned |
-| Latest-stable discovery and release automation | Implemented; hosted verification pending | `784c206` | live discovery resolved Godot `4.7.1-stable` |
+| Latest-stable discovery and release automation | Implemented; hosted verification pending | `784c206`, `f26660b` | live discovery resolved Godot `4.7.1-stable`; pinned downloads retry transient network failures |
 | Local quality and stock-engine gates | Complete | `784c206` | unit/build tests, native tests, standalone and Vue smoke on Godot 4.7.1 |
 | Six-platform debug/release builds and exports | In progress | `784c206` | run `31433732006`: all six native build jobs and universal ZIP passed; export jobs exposed the fixed clean-checkout typings gap |
 | Compatibility release publication | Pending | — | Runs only after the platform matrix passes |
