@@ -141,9 +141,9 @@ const fixtureApps = [
     },
   },
   {
-    id: 'js-runtime-demo',
+    id: 'godotjs-demo',
     standalone: true,
-    requiredDependencies: ['godot-js-runtime'],
+    requiredDependencies: [],
     sources: {
       'src/player.ts': [
         'class StandalonePlayer extends Node2D',
@@ -292,7 +292,6 @@ test('fixture registry includes every checked-in app workspace', () => {
 
 test('workspace CLI packages expose tracked launchers before build output exists', () => {
   for (const [packageDirectory, commandName] of [
-    ['packages/godot-js-runtime', 'godot-js-runtime'],
     ['packages/cli', 'vue-godot'],
     ['packages/vue-godot', 'vue-godot'],
   ]) {
@@ -318,6 +317,16 @@ test('workspace tests finish dependency tests before importing their build outpu
   assert.deepEqual(turboConfig.tasks?.test?.dependsOn, ['build', '^test'])
 })
 
+test('generated-project Godot smokes model manual GodotJS installation', () => {
+  for (const script of [
+    'scripts/smoke-generated-godot.mjs',
+    'scripts/smoke-editor-reload.mjs',
+  ]) {
+    const source = fs.readFileSync(path.join(repoRoot, script), 'utf-8')
+    assert.match(source, /installBuiltRuntime\(projectDir\)/)
+  }
+})
+
 test('fixture app workspaces expose the regression build contract', () => {
   for (const fixture of fixtureApps) {
     const fixtureRoot = fixturePath(fixture)
@@ -336,16 +345,13 @@ test('fixture app workspaces expose the regression build contract', () => {
       const packageJson = readJson(fixturePath(fixture, 'package.json'))
       assert.equal(
         packageJson.scripts?.build,
-        'npm run typegen && tsc -p tsconfig.json',
+        'tsc -p tsconfig.json',
       )
       assert.equal(
         packageJson.scripts?.dev,
-        'npm run typegen && tsc -p tsconfig.json --watch',
+        'tsc -p tsconfig.json --watch',
       )
-      assert.equal(
-        packageJson.scripts?.['install:runtime'],
-        'godot-js-runtime install --project .',
-      )
+      assert.equal(packageJson.scripts?.['install:runtime'], undefined)
       for (const dependencyName of fixture.requiredDependencies) {
         assert.ok(
           hasDependency(packageJson, dependencyName),
@@ -394,30 +400,21 @@ test('fixture app workspaces expose the regression build contract', () => {
       `${fixture.id} must build runtime-tscn before Vite`,
     )
     assert.equal(packageJson.scripts?.['gen:types'], 'vue-godot gen-types')
-    assert.deepEqual(
-      {
-        'install:runtime': packageJson.scripts?.['install:runtime'],
-        'verify:runtime': packageJson.scripts?.['verify:runtime'],
-        'add-target:runtime': packageJson.scripts?.['add-target:runtime'],
-        'uninstall:runtime': packageJson.scripts?.['uninstall:runtime'],
-        'setup:runtime': packageJson.scripts?.['setup:runtime'],
-      },
-      {
-        'install:runtime': 'godot-js-runtime install --project .',
-        'verify:runtime': 'godot-js-runtime verify --project .',
-        'add-target:runtime': 'godot-js-runtime add-target --project .',
-        'uninstall:runtime': 'godot-js-runtime uninstall --project .',
-        'setup:runtime': 'npm run install:runtime && npm run gen:types',
-      },
-      `${fixture.id} must expose the standalone runtime lifecycle`,
-    )
+    for (const legacyScript of [
+      'install:runtime',
+      'verify:runtime',
+      'add-target:runtime',
+      'uninstall:runtime',
+      'setup:runtime',
+    ]) {
+      assert.equal(packageJson.scripts?.[legacyScript], undefined)
+    }
 
     for (const dependencyName of [
       '@vue-godot/cli',
       '@vitejs/plugin-vue',
       'vite',
       '@vue/runtime-core',
-      'godot-js-runtime',
       ...fixture.requiredDependencies,
     ]) {
       assert.ok(
@@ -436,7 +433,6 @@ test('fixture app workspaces expose the regression build contract', () => {
     const gitignorePath = fixturePath(fixture, '.gitignore')
     const gitignore = readText(gitignorePath)
     for (const marker of [
-      'addons/godot-js-runtime/',
       'typings/*.d.ts',
       'typings/manifest.json',
       '!typings/.gdignore',
@@ -465,7 +461,7 @@ test('fixture app workspaces expose the regression build contract', () => {
       "formats: ['cjs']",
       "fileName: () => 'app.js'",
       externalModules,
-      "import { commonJsBundleBanner } from 'godot-js-runtime'",
+      "import { commonJsBundleBanner } from '@vue-godot/runtime-tscn/bundle-format'",
       'banner: commonJsBundleBanner',
       "chunkFileNames: 'chunks/[name].js'",
       "alias: { vue: '@vue/runtime-core' }",

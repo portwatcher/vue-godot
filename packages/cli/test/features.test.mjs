@@ -32,14 +32,11 @@ async function withMutedConsole(callback) {
 
 test('newPackageJson supports device-only projects', () => {
   const pkg = newPackageJson('device-app', { device: true })
-  assert.equal(pkg.dependencies['godot-js-runtime'], '^0.0.1')
-  assert.equal(
-    pkg.scripts['setup:runtime'],
-    'npm run install:runtime && npm run gen:types',
-  )
+  assert.equal(pkg.dependencies['godot-js-runtime'], undefined)
+  assert.equal(pkg.scripts['setup:runtime'], undefined)
   assert.equal(
     pkg.scripts.postinstall,
-    'npm run setup:runtime && npm run build',
+    'npm run gen:types && npm run build',
   )
   assert.equal(pkg.dependencies['@vue-godot/device'], '^0.0.1')
   assert.equal(pkg.dependencies['@vue-godot/browser'], undefined)
@@ -161,11 +158,8 @@ test('integrate adds @vue-godot/device without enabling html mode', async () => 
     )
     const pkg = readJson(path.join(tempDir, 'package.json'))
 
-    assert.equal(pkg.dependencies['godot-js-runtime'], '^0.0.1')
-    assert.equal(
-      pkg.scripts['install:runtime'],
-      'godot-js-runtime install --project .',
-    )
+    assert.equal(pkg.dependencies['godot-js-runtime'], undefined)
+    assert.equal(pkg.scripts['install:runtime'], undefined)
     assert.equal(pkg.scripts['gen:types'], 'vue-godot gen-types')
     assert.ok(fs.existsSync(path.join(tempDir, 'typings/.gdignore')))
     assert.ok(fs.existsSync(path.join(tempDir, 'node_modules/.gdignore')))
@@ -212,7 +206,7 @@ test('integrate writes router and helper starter files', async () => {
     assert.match(viteConfig, /vueGodotHtmlCss\(\)/)
     assert.match(
       viteConfig,
-      /import \{ commonJsBundleBanner \} from 'godot-js-runtime'/,
+      /import \{ commonJsBundleBanner \} from '@vue-godot\/runtime-tscn\/bundle-format'/,
     )
     assert.match(viteConfig, /banner: commonJsBundleBanner/)
     assert.match(mainTs, /import '\.\/app\.css'/)

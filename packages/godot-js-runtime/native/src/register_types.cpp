@@ -48,7 +48,7 @@ void initialize_runtime(godot::ModuleInitializationLevel level) {
 					javascript_language);
 	if (language_error != godot::OK) {
 		godot::UtilityFunctions::push_error(
-				"Godot JavaScript Runtime could not register its script language (error ",
+				"GodotJS could not register its script language (error ",
 				static_cast<int64_t>(language_error),
 				")");
 		memdelete(javascript_language);
@@ -69,7 +69,7 @@ void initialize_runtime(godot::ModuleInitializationLevel level) {
 	javascript_saver_registered = true;
 	GodotJavaScriptRuntimeInfo::set_initialized(true);
 	godot::UtilityFunctions::print(
-			"[godot-js-runtime] INITIALIZED ", VERSION,
+			"[godotjs] INITIALIZED ", VERSION,
 			" at scene initialization level");
 }
 
@@ -100,7 +100,7 @@ void uninitialize_runtime(godot::ModuleInitializationLevel level) {
 						javascript_language);
 		if (language_error != godot::OK) {
 			godot::UtilityFunctions::push_error(
-					"Godot JavaScript Runtime could not unregister its script language (error ",
+					"GodotJS could not unregister its script language (error ",
 					static_cast<int64_t>(language_error),
 					")");
 		}
@@ -111,7 +111,7 @@ void uninitialize_runtime(godot::ModuleInitializationLevel level) {
 		javascript_language = nullptr;
 	}
 	godot::UtilityFunctions::print(
-			"[godot-js-runtime] TERMINATED ", VERSION,
+			"[godotjs] TERMINATED ", VERSION,
 			" with script language and resource handlers removed");
 }
 
@@ -119,7 +119,7 @@ void uninitialize_runtime(godot::ModuleInitializationLevel level) {
 
 extern "C" {
 
-GDExtensionBool GDE_EXPORT godot_js_runtime_library_init(
+GDExtensionBool GDE_EXPORT godotjs_library_init(
 		GDExtensionInterfaceGetProcAddress get_proc_address,
 		GDExtensionClassLibraryPtr library,
 		GDExtensionInitialization *initialization) {

@@ -85,25 +85,30 @@ function assertProductionSupportConfigured(target) {
   }
 }
 
-function assertRuntimeConfigured(target) {
+function assertGodotJsBoundary(target) {
   const packageJsonPath = path.join(target, 'package.json')
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
-  if (!packageJson.dependencies?.['godot-js-runtime']) {
-    throw new Error(`${packageJsonPath} must pin godot-js-runtime`)
+  if (
+    packageJson.dependencies?.['godot-js-runtime'] ||
+    packageJson.devDependencies?.['godot-js-runtime']
+  ) {
+    throw new Error(`${packageJsonPath} must not depend on godot-js-runtime`)
   }
   for (const scriptName of [
     'install:runtime',
     'verify:runtime',
+    'add-target:runtime',
+    'uninstall:runtime',
     'setup:runtime',
-    'gen:types',
   ]) {
-    if (!packageJson.scripts?.[scriptName]) {
-      throw new Error(`${packageJsonPath} must include ${scriptName}`)
+    if (packageJson.scripts?.[scriptName]) {
+      throw new Error(`${packageJsonPath} must not include ${scriptName}`)
     }
   }
+  if (!packageJson.scripts?.['gen:types']) {
+    throw new Error(`${packageJsonPath} must include gen:types`)
+  }
   for (const relativePath of [
-    'addons/godot-js-runtime/installation-manifest.json',
-    '.godot/extension_list.cfg',
     'typings/godot.d.ts',
     'typings/godot-js.d.ts',
     'typings/godot-jsb.d.ts',
@@ -266,7 +271,7 @@ function smokeProject(cliPath, workspaceDir, name, createArgs, env) {
     env,
     stdio: 'inherit',
   })
-  assertRuntimeConfigured(target)
+  assertGodotJsBoundary(target)
   assertStableViteChunkNames(target)
   return target
 }

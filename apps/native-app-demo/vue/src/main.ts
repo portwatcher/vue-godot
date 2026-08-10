@@ -99,8 +99,8 @@ const nativeAppStyleContext = createHtmlStyleContext({
 
 const SMOKE_ENV = 'VUE_GODOT_SMOKE'
 const SMOKE_PASS_MARKER = '[vue-godot-smoke] native-app-demo passed'
-const EXPORT_SMOKE_FEATURE = 'godot_js_runtime_export_smoke'
-const EXPORT_SMOKE_PASS_MARKER = '[godot-js-runtime-export] VUE PASS'
+const EXPORT_SMOKE_FEATURE = 'godotjs_export_smoke'
+const EXPORT_SMOKE_PASS_MARKER = '[godotjs-export] VUE PASS'
 const RELEASE_CHECKS_ENV = 'VUE_GODOT_RELEASE_CHECKS'
 const RELEASE_CHECKS_DELAY_ENV = 'VUE_GODOT_RELEASE_CHECKS_DELAY_MS'
 const RELEASE_CHECKS_PASS_MARKER =

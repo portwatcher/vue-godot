@@ -16,8 +16,9 @@ the full browser, DOM, or native platform spec is complete.
 
 ## Runtime And Platform Baseline
 
-Vue Godot uses `godot-js-runtime` 0.0.1 or a compatible newer artifact release.
-The runtime ABI minimum is stock Godot 4.4.1. Regular editor/runtime smoke keeps
+Vue Godot uses GodotJS 0.0.1 or a compatible newer GDExtension release.
+The add-on is manually copied from one universal GitHub release ZIP; it is not
+an npm dependency. The ABI minimum is stock Godot 4.4.1. Regular editor/runtime smoke keeps
 that floor and the current stable catalog entry (4.7.1 for this release). A
 daily workflow also discovers the newest official stable release and publishes
 a versioned compatibility release only after the stock-engine smoke suite and
@@ -39,8 +40,8 @@ time; the runtime executes emitted JavaScript through QuickJS-ng and does not
 provide Node.js or browser DOM APIs.
 
 The final 0.0.1 hardening gate ran this complete matrix twice from committed
-state: once from the in-tree installation and once from clean offline release
-archives. Each pass produced 24 exports with 20 automated launch markers and
+state: once from the in-tree add-on and once from a clean universal release
+ZIP. Each pass produced 24 exports with 20 automated launch markers and
 four explicit unsigned iOS device/simulator link gates. The evidence SHA-256
 values are `f8c1bde71a602252c8e262f4e5ad2204dab6bd49c76f28737c54f72ff2780103`
 and `d7334ac55f48e2119fe649ca12f73884917d97e2bc1e4fc4139d76dd5369d5dc`.

@@ -6,10 +6,10 @@ It provides a Vue runtime renderer for Godot TSCN files. This allows you to use 
 
 See the repository [compatibility checklist](../../docs/compatibility.md) for current renderer support status, platform caveats, and known limits. See [runtime renderer support](../../docs/runtime.md) for supported Vue features and unsupported browser/DOM assumptions.
 
-The renderer runs inside official Godot through the standalone
-[`godot-js-runtime`](../godot-js-runtime/README.md). Repository builds and
-generated projects type-check against that runtime's stock-Godot declarations;
-the removed custom-editor declaration bundles are not a supported input.
+The renderer runs inside official Godot through the GodotJS GDExtension.
+Install GodotJS by extracting its GitHub release ZIP into the Godot project so
+that `addons/godotjs/godotjs.gdextension` exists. GodotJS is not an npm
+dependency.
 
 ## Features
 
@@ -17,6 +17,9 @@ the removed custom-editor declaration bundles are not a supported input.
 - Manipulate Godot node properties using Vue's reactivity system.
 - Disconnect Vue-owned signal callables across an entire rendered subtree
   before its Godot nodes are queued for deletion.
+- Export `commonJsBundleBanner` from
+  `@vue-godot/runtime-tscn/bundle-format` for Vite/Rollup CommonJS bundles
+  loaded by GodotJS without loading the Godot-backed renderer in Node.
 
 ## Runtime Diagnostics
 
@@ -51,5 +54,4 @@ Limitations:
 npm install @vue-godot/runtime-tscn
 ```
 
-Install and verify `godot-js-runtime` in the Godot project before mounting the
-renderer.
+Install GodotJS in the Godot project before mounting the renderer.

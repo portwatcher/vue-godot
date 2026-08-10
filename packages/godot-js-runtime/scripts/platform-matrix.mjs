@@ -2,9 +2,8 @@ import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const libraryStem = 'libgodot_js_runtime'
+const libraryStem = 'libgodotjs'
 const forbiddenLegacyIdentities = Object.freeze([
-  ['godot', 'js'].join(''),
   ['ialex', '32x'].join(''),
   ['jsb', 'editor', 'bundle'].join('.'),
   ['jsb', 'runtime', 'bundle'].join('.'),
@@ -18,12 +17,12 @@ export function findLegacyRuntimeIdentity(value) {
 }
 
 export const releasePlatforms = Object.freeze([
-  Object.freeze({ id: 'macos', archiveLabel: 'macos-universal' }),
-  Object.freeze({ id: 'windows', archiveLabel: 'windows-x86_64' }),
-  Object.freeze({ id: 'linux', archiveLabel: 'linux-x86_64' }),
-  Object.freeze({ id: 'android', archiveLabel: 'android' }),
-  Object.freeze({ id: 'ios', archiveLabel: 'ios-xcframework' }),
-  Object.freeze({ id: 'web', archiveLabel: 'web-wasm32' }),
+  Object.freeze({ id: 'macos' }),
+  Object.freeze({ id: 'windows' }),
+  Object.freeze({ id: 'linux' }),
+  Object.freeze({ id: 'android' }),
+  Object.freeze({ id: 'ios' }),
+  Object.freeze({ id: 'web' }),
 ])
 
 function target({
@@ -279,16 +278,10 @@ export function collectReleaseArtifacts(
   return artifacts.sort((left, right) => left.name.localeCompare(right.name))
 }
 
-export function releaseArchiveName(version, platform) {
-  const releasePlatform = releasePlatforms.find(
-    (candidate) => candidate.id === platform,
-  )
-  if (!releasePlatform) {
-    throw new Error(`Unknown release platform: ${platform}`)
-  }
-  return `godot-js-runtime-v${version}-${releasePlatform.archiveLabel}.tar.gz`
+export function universalReleaseArchiveName(version) {
+  return `godotjs-v${version}.zip`
 }
 
 export function defaultReleaseBaseUrl(version) {
-  return `https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v${version}`
+  return `https://github.com/portwatcher/vue-godot/releases/download/godotjs-v${version}`
 }

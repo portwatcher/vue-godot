@@ -50,7 +50,7 @@ std::int64_t read_setting(
 			definition.default_value);
 	if (value.get_type() != godot::Variant::INT) {
 		godot::UtilityFunctions::push_warning(
-				"Godot JavaScript Runtime ignored non-integer project setting ",
+				"GodotJS ignored non-integer project setting ",
 				definition.name,
 				" and used ",
 				definition.default_value);
@@ -59,7 +59,7 @@ std::int64_t read_setting(
 	const std::int64_t converted = value;
 	if (converted < definition.minimum || converted > definition.maximum) {
 		godot::UtilityFunctions::push_warning(
-				"Godot JavaScript Runtime ignored out-of-range project setting ",
+				"GodotJS ignored out-of-range project setting ",
 				definition.name,
 				"=",
 				converted,

@@ -1,6 +1,6 @@
 # Third-party notices
 
-Godot JavaScript Runtime pins the following upstream projects. Source archive
+GodotJS pins the following upstream projects. Source archive
 hashes and complete commits are recorded in `native/deps.lock.json`.
 
 ## godot-cpp

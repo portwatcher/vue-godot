@@ -57,8 +57,8 @@ npx vue-godot integrate --html
    limited media query buckets where useful, and Godot container layout.
 7. Run `npx vue-godot doctor --migration` to triage unsupported CSS, DOM
    assumptions, and browser tags before deeper porting work.
-8. Run `npm run setup:runtime`, `npm run build`, `npm run check:exports`, and
-   test in an official Godot editor.
+8. Extract the GodotJS release ZIP at the project root, run `npm run build` and
+   `npm run check:exports`, then test in an official Godot editor.
 
 See the `@vue-godot/html` README's lowercase tag migration section for the
 exact `isNativeTag`, `isCustomElement`, `htmlPlugin`, and Volar setup.

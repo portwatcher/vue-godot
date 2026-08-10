@@ -2,13 +2,13 @@ config_version=5
 
 [application]
 
-config/name="Godot JavaScript Runtime empty editor shell smoke"
+config/name="GodotJS empty editor shell smoke"
 run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.4")
 
 [native_extensions]
 
-paths=["res://addons/godot-js-runtime/godot_js_runtime.gdextension"]
+paths=["res://addons/godotjs/godotjs.gdextension"]
 
 [rendering]
 

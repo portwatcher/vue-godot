@@ -53,16 +53,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: '3.13'
 
@@ -94,9 +94,9 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Build Linux runtime
+      - name: Build Linux GodotJS GDExtension
         run: >-
-          npm run build:native --workspace=godot-js-runtime --
+          npm run build:native --workspace=packages/godot-js-runtime --
           --platform linux
           --arch x86_64
           --target template_debug
@@ -104,8 +104,8 @@ jobs:
       - name: Build repository
         run: npm run build
 
-      - name: Standalone runtime smoke
-        run: npm run smoke:js-runtime-demo
+      - name: Standalone GodotJS smoke
+        run: npm run smoke:godotjs-demo
 
       - name: Vue Godot smoke
         run: npm run smoke:godot

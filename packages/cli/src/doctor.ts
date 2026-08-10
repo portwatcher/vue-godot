@@ -1,6 +1,5 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import { verifyRuntime } from 'godot-js-runtime'
 
 export type DoctorStatus = 'ok' | 'warning' | 'error'
 
@@ -845,27 +844,36 @@ function diagnoseRuntimeInstallation(
   checks: DoctorCheck[],
   targetDir: string,
 ): void {
-  const installationManifest = path.join(
+  const descriptor = path.join(
     targetDir,
-    'addons/godot-js-runtime/installation-manifest.json',
+    'addons/godotjs/godotjs.gdextension',
   )
-  if (!fs.existsSync(installationManifest)) {
-    addCheck(checks, 'warning', 'Godot JavaScript Runtime is not installed', [
-      'Run npm run setup:runtime before opening or exporting the project.',
+  if (!fs.existsSync(descriptor)) {
+    addCheck(checks, 'warning', 'GodotJS is not installed', [
+      'Download the GodotJS ZIP from the GitHub release and extract it at the project root.',
+      'Expected: addons/godotjs/godotjs.gdextension',
     ])
   } else {
-    const verification = verifyRuntime(targetDir)
-    if (verification.ok) {
-      addCheck(checks, 'ok', 'Godot JavaScript Runtime installation verified', [
-        `${verification.checkedFiles} manifest-owned file(s) passed checksum verification.`,
+    const source = fs.readFileSync(descriptor, 'utf-8')
+    const libraryPaths = [...source.matchAll(/"res:\/\/([^"\n]+)"/g)].map(
+      (match) => match[1],
+    )
+    const invalidPaths = libraryPaths.filter(
+      (relativePath) =>
+        !relativePath.startsWith('addons/godotjs/bin/') ||
+        !fs.existsSync(path.join(targetDir, ...relativePath.split('/'))),
+    )
+    if (libraryPaths.length === 0 || invalidPaths.length > 0) {
+      addCheck(checks, 'error', 'GodotJS installation is incomplete', [
+        ...(libraryPaths.length === 0
+          ? ['The GDExtension descriptor has no native libraries.']
+          : invalidPaths.map((entry) => `Missing or invalid: ${entry}`)),
+        'Extract the complete release ZIP again; do not copy a platform subset.',
       ])
     } else {
-      addCheck(
-        checks,
-        'error',
-        'Godot JavaScript Runtime installation is invalid',
-        [...verification.errors],
-      )
+      addCheck(checks, 'ok', 'GodotJS installation verified', [
+        `${libraryPaths.length} platform library mapping(s) found.`,
+      ])
     }
   }
 
@@ -908,7 +916,7 @@ function diagnoseRuntimeInstallation(
     ])
   } else {
     addCheck(checks, 'warning', 'Vue Godot component typings not found', [
-      'Run npm run gen:types after installing godot-js-runtime.',
+      'Run npm run gen:types to regenerate declarations.',
     ])
   }
 }
@@ -947,11 +955,6 @@ function diagnosePackageSetup(
   }
 
   const required: PackageRequirement[] = [
-    {
-      name: 'godot-js-runtime',
-      field: 'dependencies',
-      reason: 'official-Godot JavaScript runtime and installer',
-    },
     {
       name: '@vue-godot/runtime-tscn',
       field: 'dependencies',
@@ -1006,23 +1009,39 @@ function diagnosePackageSetup(
     ])
   }
 
+  const legacyRuntimeSpec =
+    dependencyField(parsed.value, 'dependencies')['godot-js-runtime'] ??
+    dependencyField(parsed.value, 'devDependencies')['godot-js-runtime']
+  if (legacyRuntimeSpec) {
+    addCheck(checks, 'error', 'Legacy runtime npm package must be removed', [
+      `godot-js-runtime@${legacyRuntimeSpec}`,
+      'GodotJS is a native GDExtension installed under addons/godotjs, not an npm dependency.',
+    ])
+  }
+
   const scripts = isStringRecord(parsed.value['scripts'])
     ? parsed.value['scripts']
     : {}
-  const missingRuntimeScripts = [
+  const legacyRuntimeScripts = [
     'install:runtime',
     'verify:runtime',
+    'add-target:runtime',
+    'uninstall:runtime',
     'setup:runtime',
-    'gen:types',
-  ].filter((name) => !scripts[name])
-  if (missingRuntimeScripts.length > 0) {
-    addCheck(checks, 'error', 'Runtime project scripts are missing', [
-      'Run vue-godot integrate to add the official-Godot runtime workflow.',
-      ...missingRuntimeScripts,
+  ].filter((name) => scripts[name])
+  if (!scripts['gen:types']) {
+    addCheck(checks, 'error', 'Vue Godot type-generation script is missing', [
+      'Run vue-godot integrate to add gen:types.',
     ])
   } else {
-    addCheck(checks, 'ok', 'Runtime project scripts are configured', [
-      'install, verify, setup, and stock-Godot type generation',
+    addCheck(checks, 'ok', 'Vue Godot project script is configured', [
+      'gen:types',
+    ])
+  }
+  if (legacyRuntimeScripts.length > 0) {
+    addCheck(checks, 'error', 'Legacy runtime installer scripts must be removed', [
+      ...legacyRuntimeScripts,
+      'Install GodotJS by extracting the release ZIP instead.',
     ])
   }
 

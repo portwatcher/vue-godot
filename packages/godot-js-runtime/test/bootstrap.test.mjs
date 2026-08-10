@@ -1,9 +1,14 @@
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { resolveBootstrapPlan } from '../scripts/bootstrap-deps.mjs'
+import {
+  downloadArchive,
+  resolveBootstrapPlan,
+} from '../scripts/bootstrap-deps.mjs'
 
 const packageRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -36,4 +41,28 @@ test('bootstrap print plan is deterministic and outside tracked source', () => {
   const plan = resolveBootstrapPlan(options)
   assert.equal(plan.dependencies.length, 3)
   assert.ok(plan.dependencies.every((dependency) => dependency.archivePath))
+})
+
+test('dependency downloads retry transient failures before checksum validation', async (t) => {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), 'godotjs-bootstrap-'))
+  t.after(() => fs.rmSync(cacheDir, { recursive: true, force: true }))
+  const payload = Buffer.from('pinned dependency archive')
+  const dependency = {
+    name: 'test dependency',
+    archiveName: 'dependency.tar.gz',
+    url: 'https://example.test/dependency.tar.gz',
+    sha256: createHash('sha256').update(payload).digest('hex'),
+  }
+  let calls = 0
+  const archivePath = await downloadArchive(dependency, cacheDir, {
+    attempts: 3,
+    retryDelayMs: 0,
+    fetchImplementation: async () => {
+      calls += 1
+      if (calls < 3) throw new Error('transient network failure')
+      return new Response(payload, { status: 200 })
+    },
+  })
+  assert.equal(calls, 3)
+  assert.deepEqual(fs.readFileSync(archivePath), payload)
 })

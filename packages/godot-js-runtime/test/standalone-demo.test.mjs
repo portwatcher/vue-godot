@@ -9,7 +9,7 @@ const packageRoot = path.resolve(
   '..',
 )
 const repositoryRoot = path.resolve(packageRoot, '../..')
-const demoRoot = path.join(repositoryRoot, 'apps/js-runtime-demo')
+const demoRoot = path.join(repositoryRoot, 'apps/godotjs-demo')
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'))
@@ -38,18 +38,10 @@ test('standalone package and demo dependency surfaces contain no Vue package', (
   const demoPackage = readJson(path.join(demoRoot, 'package.json'))
   assert.deepEqual(vueDependencies(runtimePackage), [])
   assert.deepEqual(vueDependencies(demoPackage), [])
-  assert.deepEqual(runtimePackage.bin, {
-    'godot-js-runtime': 'bin/godot-js-runtime.mjs',
-  })
-  assert.equal(
-    runtimePackage.exports['./installer'].import,
-    './dist/install.js',
-  )
-  assert.equal(
-    runtimePackage.exports['./installer'].types,
-    './dist/install.d.ts',
-  )
-  assert.deepEqual(demoPackage.dependencies, { 'godot-js-runtime': '*' })
+  assert.equal(runtimePackage.private, true)
+  assert.equal(runtimePackage.bin, undefined)
+  assert.equal(runtimePackage.exports, undefined)
+  assert.deepEqual(demoPackage.dependencies, {})
   assert.equal(demoPackage.private, true)
 
   for (const name of fs.readdirSync(path.join(packageRoot, 'src'))) {
@@ -88,12 +80,10 @@ test('standalone demo covers the complete non-Vue scripting contract', () => {
   assert.equal(tsconfig.compilerOptions.skipLibCheck, false)
   assert.equal(tsconfig.compilerOptions.sourceMap, true)
   assert.equal(runtimePackage.scripts.pretest, 'npm run bootstrap:native')
-  assert.match(
-    demoPackage.scripts['install:runtime'],
-    /godot-js-runtime install/,
-  )
-  assert.match(demoPackage.scripts.typegen, /godot-js-runtime typegen/)
-  assert.match(smoke, /installation-manifest\.json/)
+  assert.equal(demoPackage.scripts['install:runtime'], undefined)
+  assert.equal(demoPackage.scripts.typegen, undefined)
+  assert.match(smoke, /addons\/godotjs\/godotjs\.gdextension/)
+  assert.match(smoke, /GodotJS manual-copy extraction/)
   assert.match(smoke, /--quit-after/)
-  assert.match(smoke, /user-preserved\.txt/)
+  assert.doesNotMatch(smoke, /npm pack|installation-manifest/)
 })

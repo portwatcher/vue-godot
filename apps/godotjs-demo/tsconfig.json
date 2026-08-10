@@ -10,5 +10,8 @@
     "skipLibCheck": false,
     "noEmitOnError": true
   },
-  "files": ["typings/index.d.ts", "src/player.ts"]
+  "files": [
+    "../../packages/cli/templates/typings/index.d.ts",
+    "src/player.ts"
+  ]
 }

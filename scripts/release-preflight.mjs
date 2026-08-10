@@ -12,7 +12,6 @@ import {
   releasePackageConfigs as packageConfigs,
   repoRoot,
   run,
-  runtimeReleaseManifestErrors,
 } from './release-utils.mjs'
 
 function usage() {
@@ -138,7 +137,6 @@ function checkPackageMetadata(packagesByName) {
   const device = packagesByName.get('@vue-godot/device')
   const html = packagesByName.get('@vue-godot/html')
   const runtime = packagesByName.get('@vue-godot/runtime-tscn')
-  const javascriptRuntime = packagesByName.get('godot-js-runtime')
   const cli = packagesByName.get('@vue-godot/cli')
   const cliAlias = packagesByName.get('vue-godot')
 
@@ -176,32 +174,24 @@ function checkPackageMetadata(packagesByName) {
       expectedRange(cli.version),
     )
   }
-  if (cli && javascriptRuntime) {
-    assertEqual(
-      '@vue-godot/cli dependency godot-js-runtime',
-      cli.dependencies?.['godot-js-runtime'],
-      expectedRange(javascriptRuntime.version),
-    )
-  }
 }
 
 function checkRuntimeReleaseManifest(packagesByName) {
-  logStep('checking Godot JavaScript Runtime release manifest')
+  logStep('checking GodotJS release manifest')
 
-  const runtimePackage = packagesByName.get('godot-js-runtime')
-  if (!runtimePackage) {
-    failures.push('Missing local package metadata for godot-js-runtime')
-    return
-  }
+  const runtimePackage = readJson('packages/godot-js-runtime/package.json')
+  assertEqual('GodotJS build workspace private', runtimePackage.private, true)
   const manifest = readJson(
-    'packages/godot-js-runtime/addon/godot-js-runtime/runtime-manifest.json',
+    'packages/godot-js-runtime/addon/godotjs/manifest.json',
   )
-  for (const error of runtimeReleaseManifestErrors(
-    manifest,
+  assertEqual('GodotJS source manifest name', manifest.runtimeName, 'GodotJS')
+  assertEqual('GodotJS source manifest id', manifest.packageName, 'godotjs')
+  assertEqual(
+    'GodotJS source manifest version',
+    manifest.version,
     runtimePackage.version,
-  )) {
-    failures.push(error)
-  }
+  )
+  assertEqual('GodotJS minimum ABI', manifest.godotMinimum, '4.4')
 
   if (typeof manifest.gitCommit === 'string') {
     const ancestor = run('git', [
@@ -236,7 +226,7 @@ function checkRuntimeReleaseManifest(packagesByName) {
   }
 
   console.log(
-    `[release-preflight] runtime manifest includes ${String(manifest.artifacts?.length ?? 0)} payload files and ${String(manifest.archives?.length ?? 0)} archives`,
+    `[release-preflight] GodotJS manifest includes ${String(manifest.artifacts?.length ?? 0)} payload files and ${String(manifest.archives?.length ?? 0)} archives`,
   )
 }
 
@@ -261,7 +251,6 @@ async function checkGeneratedPackageSpecs(packagesByName) {
     '@vue-godot/device',
     '@vue-godot/html',
     '@vue-godot/runtime-tscn',
-    'godot-js-runtime',
   ]) {
     const pkg = packagesByName.get(packageName)
     if (pkg) {
@@ -271,6 +260,9 @@ async function checkGeneratedPackageSpecs(packagesByName) {
         expectedRange(pkg.version),
       )
     }
+  }
+  if (deps['godot-js-runtime'] || devDeps['godot-js-runtime']) {
+    failures.push('generated projects must not depend on godot-js-runtime')
   }
 
   const cli = packagesByName.get('@vue-godot/cli')
@@ -464,7 +456,7 @@ function checkGodotSmoke() {
 
   const runtimeResult = run(npmCommand, [
     'run',
-    'smoke:godot-js-runtime',
+    'smoke:godotjs',
     '--',
     '--skip-build',
   ])
@@ -472,24 +464,24 @@ function checkGodotSmoke() {
   process.stdout.write(runtimeResult.stdout ?? '')
   process.stderr.write(runtimeResult.stderr ?? '')
   if (runtimeResult.status !== 0) {
-    failures.push(`npm run smoke:godot-js-runtime failed\n${runtimeOutput}`)
+    failures.push(`npm run smoke:godotjs failed\n${runtimeOutput}`)
     return
   }
   if (!runtimeOutput.includes('[stock-smoke] PASS')) {
     failures.push('Standalone runtime smoke completed without the pass marker')
   }
 
-  const standaloneResult = run(npmCommand, ['run', 'smoke:js-runtime-demo'], {
+  const standaloneResult = run(npmCommand, ['run', 'smoke:godotjs-demo'], {
     env: {
       ...process.env,
-      GODOT_JS_RUNTIME_SKIP_NATIVE_BUILD: '1',
+      GODOTJS_SKIP_NATIVE_BUILD: '1',
     },
   })
   const standaloneOutput = `${standaloneResult.stdout ?? ''}\n${standaloneResult.stderr ?? ''}`
   process.stdout.write(standaloneResult.stdout ?? '')
   process.stderr.write(standaloneResult.stderr ?? '')
   if (standaloneResult.status !== 0) {
-    failures.push(`npm run smoke:js-runtime-demo failed\n${standaloneOutput}`)
+    failures.push(`npm run smoke:godotjs-demo failed\n${standaloneOutput}`)
     return
   }
   if (!standaloneOutput.includes('[standalone-smoke] PASS')) {

@@ -53,11 +53,11 @@ test('extension and artifact manifests preserve canonical identities', () => {
   const extension = fs.readFileSync(
     path.join(
       packageRoot,
-      'addon/godot-js-runtime/godot_js_runtime.gdextension',
+      'addon/godotjs/godotjs.gdextension',
     ),
     'utf-8',
   )
-  assert.match(extension, /entry_symbol = "godot_js_runtime_library_init"/)
+  assert.match(extension, /entry_symbol = "godotjs_library_init"/)
   assert.match(extension, /compatibility_minimum = "4\.4"/)
   assert.match(extension, /linux\.debug\.x86_64/)
   assert.match(extension, /macos\.debug/)
@@ -115,7 +115,7 @@ test('GDExtension feature tags select every release target without fallback', ()
   const extensionSource = fs.readFileSync(
     path.join(
       packageRoot,
-      'addon/godot-js-runtime/godot_js_runtime.gdextension',
+      'addon/godotjs/godotjs.gdextension',
     ),
     'utf-8',
   )
@@ -123,7 +123,7 @@ test('GDExtension feature tags select every release target without fallback', ()
   assert.equal(libraries.size, releaseTargets.length)
   assert.equal(
     parseExtensionLibraries(extensionSource).get('web.release.threads.wasm32'),
-    'libgodot_js_runtime.web.template_release.wasm32.wasm',
+    'libgodotjs.web.template_release.wasm32.wasm',
   )
 })
 
@@ -305,7 +305,7 @@ test('stock fixture enforces binding, script-language, reload, and editor gates'
     'utf-8',
   )
   assert.match(project, /run\/main_run_args="--headless"/)
-  assert.match(project, /\[godot_js_runtime\]/)
+  assert.match(project, /\[godotjs\]/)
   assert.match(project, /runtime\/memory_limit_mb=96/)
   assert.match(project, /maximum_promise_jobs_per_frame=12000/)
   assert.match(editorPlugin, /PHASE4_EDITOR_PLACEHOLDER PASS/)
@@ -407,7 +407,7 @@ test('script-language implementation registers public contracts and runtime sett
   assert.match(scriptInstance, /godot::Ref<JavaScriptScript>/)
 })
 
-test('native version constants match the npm package', () => {
+test('native version constants match the private build metadata', () => {
   const packageJson = JSON.parse(
     fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf-8'),
   )
@@ -419,7 +419,7 @@ test('native version constants match the npm package', () => {
   assert.ok(versionHeader.includes('MINIMUM_GODOT_VERSION[] = "4.4"'))
 })
 
-test('runtime native source uses only public GDExtension and godot-cpp headers', () => {
+test('GodotJS native source uses only public GDExtension and godot-cpp headers', () => {
   const sourceFiles = [
     ...walkFiles(path.join(packageRoot, 'native/include')),
     ...walkFiles(path.join(packageRoot, 'native/src')),

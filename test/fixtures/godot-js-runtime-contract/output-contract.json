@@ -13,7 +13,7 @@
   "entryPatterns": [
     {
       "description": "deterministic CommonJS bundle metadata",
-      "source": "^\\\"use strict\\\";\\n/\\*! godot-js-runtime:format=commonjs \\*/"
+      "source": "^\\\"use strict\\\";\\n/\\*! godotjs:format=commonjs \\*/"
     },
     {
       "description": "external godot CommonJS require",

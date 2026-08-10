@@ -3,12 +3,12 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import * as readline from 'node:readline/promises'
-import { generateProjectTypes } from 'godot-js-runtime'
 import { create, type CreateProfile } from './create.js'
 import { printDoctorReport, runDoctor } from './doctor.js'
 import { HTML_COMPONENT_TAGS } from './html-tags.js'
 import { generate } from './index.js'
 import { integrate } from './integrate.js'
+import { generateProjectTypes } from './project-types.js'
 
 const args = process.argv.slice(2)
 const command = args[0]
@@ -33,14 +33,14 @@ function genTypesUsage(): never {
   console.error(
     `Usage: vue-godot gen-types [options]
 
-Generate Godot declarations through godot-js-runtime, then generate Vue
+Generate GodotJS declarations, then generate Vue
 GlobalComponents type augmentation from those declarations.
 
 Options:
   --typings   Use an existing typings directory without running runtime typegen.
               Defaults to generated ./typings declarations.
   --godot     Official Godot executable used for version-matched declarations.
-              Defaults to GODOT_BIN or the package's pinned declarations.
+              Defaults to GODOT_BIN or Vue Godot's pinned declarations.
   --out       Output file path for the generated .d.ts file.
               Defaults to <typings>/godot.vue-components.gen.d.ts
   --ancestor  Base class to filter by inheritance. Only descendants are included.

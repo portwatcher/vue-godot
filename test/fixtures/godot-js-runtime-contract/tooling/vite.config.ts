@@ -1,6 +1,6 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { commonJsBundleBanner } from 'godot-js-runtime'
+import { commonJsBundleBanner } from '@vue-godot/runtime-tscn/bundle-format'
 import { defineConfig } from 'vite'
 
 const fixtureRoot = path.resolve(

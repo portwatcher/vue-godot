@@ -192,6 +192,6 @@ test('latest stable resolution uses the official source and build releases', asy
 
 test('compatibility release tags cannot trigger the npm v-tag publisher', () => {
   const tag = stableCompatibilityReleaseTag('0.0.1', '4.7.1-stable')
-  assert.equal(tag, 'godot-js-runtime-v0.0.1-godot-4.7.1')
+  assert.equal(tag, 'godotjs-v0.0.1-godot-4.7.1')
   assert.equal(tag.startsWith('v'), false)
 })

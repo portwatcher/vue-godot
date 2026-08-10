@@ -17,6 +17,7 @@ import {
   assertExportLaunchMarker,
   assertPlatformExportGodotVersion,
   createIsolatedIosLinkRoot,
+  platformExportImportArguments,
   resolveNpmInvocation,
   stripUnavailableSimulatorMetalFx,
 } from '../scripts/smoke-platform-exports.mjs'
@@ -79,13 +80,13 @@ test('the generated export matrix covers both apps and every required platform',
   assert.doesNotThrow(() => writeExportPresets({ check: true }))
 })
 
-test('export smoke entry points report runtime, Godot, and platform versions', () => {
+test('export smoke entry points report GodotJS, Godot, and platform versions', () => {
   const repositoryRoot = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
     '../../..',
   )
   const standalone = fs.readFileSync(
-    path.join(repositoryRoot, 'apps/js-runtime-demo/src/player.ts'),
+    path.join(repositoryRoot, 'apps/godotjs-demo/src/player.ts'),
     'utf-8',
   )
   const vue = fs.readFileSync(
@@ -98,7 +99,7 @@ test('export smoke entry points report runtime, Godot, and platform versions', (
   )
 
   for (const source of [standalone, vue]) {
-    assert.match(source, /godot_js_runtime_export_smoke/)
+    assert.match(source, /godotjs_export_smoke/)
     assert.match(source, /runtimeVersion\(\)/)
     assert.match(source, /Engine\.get_version_info\(\)/)
     assert.match(source, /OS\.get_name\(\)/)
@@ -234,7 +235,7 @@ test('Android export launch waits for both boot and package-manager readiness', 
   )
 })
 
-test('platform export builds resolve a native npm invocation', () => {
+test('platform export builds resolve the repository build command', () => {
   assert.deepEqual(
     resolveNpmInvocation('win32', {
       ComSpec: 'C:\\Windows\\System32\\cmd.exe',
@@ -256,6 +257,32 @@ test('platform export builds resolve a native npm invocation', () => {
     command: 'npm',
     prefixArguments: [],
   })
+})
+
+test('platform export imports use the bounded one-shot Godot lifecycle', () => {
+  assert.deepEqual(platformExportImportArguments('/fixture', 'linux'), [
+    '--headless',
+    '--rendering-method',
+    'gl_compatibility',
+    '--path',
+    '/fixture',
+    '--import',
+    '--quit-after',
+    '240',
+  ])
+  assert.deepEqual(platformExportImportArguments('/fixture', 'darwin'), [
+    '--headless',
+    '--rendering-method',
+    'gl_compatibility',
+    '--path',
+    '/fixture',
+    '--import',
+    '--quit-after',
+    '240',
+    '-ApplePersistenceIgnoreState',
+    'YES',
+  ])
+  assert.ok(!platformExportImportArguments('/fixture').includes('--editor'))
 })
 
 test('platform exports retain the minimum ABI and enforce the selected stable release', () => {
@@ -294,7 +321,7 @@ test('platform exports retain the minimum ABI and enforce the selected stable re
 
 test('export markers accept compatible stable Godot evidence', () => {
   const marker =
-    '[godot-js-runtime-export] STANDALONE PASS runtime=0.0.1 godot=4.7.1-stable (official) platform=Linux'
+    '[godotjs-export] STANDALONE PASS runtime=0.0.1 godot=4.7.1-stable (official) platform=Linux'
   assert.equal(assertExportLaunchMarker(marker, { id: 'standalone' }), marker)
   assert.throws(
     () =>

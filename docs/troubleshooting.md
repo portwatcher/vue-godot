@@ -33,7 +33,8 @@ GODOT_BIN="$(npm run -s setup:godot -- --print-bin)" npm run smoke:godot
 `godot*` executable, including macOS `.app/Contents/MacOS` layouts. The
 `setup:godot` helper downloads a checksum-pinned official editor and prints the
 executable path so the same editor can be reused across smoke commands. Project
-JavaScript is provided by the separately installed `godot-js-runtime` addon.
+JavaScript is provided by the separately installed GodotJS add-on under
+`addons/godotjs`.
 
 ## Godot Console Logs
 
@@ -130,7 +131,7 @@ rebuilding.
 
 ### `Cannot find module "godot"` Outside Godot
 
-The `godot` module is provided by `godot-js-runtime` and is externalized by the
+The `godot` module is provided by GodotJS and is externalized by the
 Vite config. Do not execute `dist/app.js` directly with Node. Use unit tests for
 package code and run the app through official Godot with the addon installed.
 
@@ -150,11 +151,10 @@ components render incorrectly, compare your config with
 
 ### Volar Or TypeScript Does Not Know Godot Tags
 
-Install the standalone runtime and generate declarations from the selected
-stock-Godot API:
+Install GodotJS by extracting its release ZIP at the project root, then
+generate declarations from the selected stock-Godot API:
 
 ```bash
-npm run setup:runtime
 npm run gen:types
 ```
 
@@ -218,7 +218,7 @@ When filing or debugging a failure, capture:
 
 - `git rev-parse --short HEAD`
 - Node and npm versions
-- official Godot version and `godot-js-runtime` manifest version/commit
+- official Godot version and GodotJS manifest version/commit
 - target platform and export preset
 - the exact command that failed
 - full Godot console or headless smoke output

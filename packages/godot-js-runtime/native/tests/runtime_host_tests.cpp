@@ -334,7 +334,7 @@ void test_commonjs_json_cycles_cache_and_vite_chunks() {
 	expect(
 			godot_js_runtime::detect_javascript_module_format(
 					"res://dist/app.js",
-					"\xEF\xBB\xBF\n  \"use strict\";\n/*! godot-js-runtime:format=commonjs */\nexports.default = 1") ==
+					"\xEF\xBB\xBF\n  \"use strict\";\n/*! godotjs:format=commonjs */\nexports.default = 1") ==
 					godot_js_runtime::JavaScriptModuleFormat::COMMONJS,
 			"generated CommonJS .js metadata was not detected");
 	expect(
@@ -352,7 +352,7 @@ void test_commonjs_json_cycles_cache_and_vite_chunks() {
 	expect(
 			godot_js_runtime::detect_javascript_module_format(
 					"res://forced.mjs",
-					"/*! godot-js-runtime:format=commonjs */\nexport default 1") ==
+					"/*! godotjs:format=commonjs */\nexport default 1") ==
 					godot_js_runtime::JavaScriptModuleFormat::ES_MODULE,
 			".mjs extension did not remain ESM");
 

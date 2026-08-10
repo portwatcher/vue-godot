@@ -14,6 +14,94 @@ export interface ExtractedTarArchiveEntry extends TarArchiveEntry {
   readonly mode: number
 }
 
+function crc32(contents: Buffer): number {
+  let crc = 0xffffffff
+  for (const byte of contents) {
+    crc ^= byte
+    for (let bit = 0; bit < 8; bit += 1) {
+      crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0)
+    }
+  }
+  return (crc ^ 0xffffffff) >>> 0
+}
+
+function zipHeader(
+  signature: number,
+  fileName: Buffer,
+  contents: Buffer,
+  mode: number,
+  offset?: number,
+): Buffer {
+  const central = offset !== undefined
+  const header = Buffer.alloc(central ? 46 : 30)
+  header.writeUInt32LE(signature, 0)
+  if (central) {
+    header.writeUInt16LE(0x0314, 4)
+    header.writeUInt16LE(20, 6)
+  } else {
+    header.writeUInt16LE(20, 4)
+  }
+  const base = central ? 8 : 6
+  header.writeUInt16LE(0x0800, base)
+  header.writeUInt16LE(0, base + 2)
+  header.writeUInt16LE(0, base + 4)
+  header.writeUInt16LE(0x21, base + 6)
+  header.writeUInt32LE(crc32(contents), base + 8)
+  header.writeUInt32LE(contents.length, base + 12)
+  header.writeUInt32LE(contents.length, base + 16)
+  header.writeUInt16LE(fileName.length, base + 20)
+  header.writeUInt16LE(0, base + 22)
+  if (central) {
+    header.writeUInt16LE(0, 32)
+    header.writeUInt16LE(0, 34)
+    header.writeUInt16LE(0, 36)
+    header.writeUInt32LE(((0o100000 | (mode & 0o777)) << 16) >>> 0, 38)
+    header.writeUInt32LE(offset, 42)
+  }
+  return header
+}
+
+/** Create a deterministic, uncompressed ZIP suitable for manual extraction. */
+export function createDeterministicZip(
+  entries: readonly TarArchiveEntry[],
+): Buffer {
+  const paths = new Set<string>()
+  const local: Buffer[] = []
+  const central: Buffer[] = []
+  let offset = 0
+  for (const entry of [...entries].sort((left, right) =>
+    left.path.localeCompare(right.path),
+  )) {
+    const archivePath = normalizeArchivePath(entry.path)
+    if (paths.has(archivePath)) {
+      throw new Error(`Archive contains a duplicate path: ${archivePath}`)
+    }
+    paths.add(archivePath)
+    const name = Buffer.from(archivePath, 'utf-8')
+    const mode = entry.mode ?? 0o644
+    const localHeader = zipHeader(
+      0x04034b50,
+      name,
+      entry.contents,
+      mode,
+    )
+    local.push(localHeader, name, entry.contents)
+    central.push(
+      zipHeader(0x02014b50, name, entry.contents, mode, offset),
+      name,
+    )
+    offset += localHeader.length + name.length + entry.contents.length
+  }
+  const centralDirectory = Buffer.concat(central)
+  const end = Buffer.alloc(22)
+  end.writeUInt32LE(0x06054b50, 0)
+  end.writeUInt16LE(entries.length, 8)
+  end.writeUInt16LE(entries.length, 10)
+  end.writeUInt32LE(centralDirectory.length, 12)
+  end.writeUInt32LE(offset, 16)
+  return Buffer.concat([...local, centralDirectory, end])
+}
+
 function normalizeArchivePath(value: string): string {
   if (value.length === 0 || value.includes('\0') || value.includes('\\')) {
     throw new Error(`Invalid archive path: ${value}`)

@@ -9,9 +9,8 @@ import {
 } from '../scripts/release-utils.mjs'
 import {
   defaultReleaseBaseUrl,
-  releaseArchiveName,
-  releasePlatforms,
   releaseTargets,
+  universalReleaseArchiveName,
 } from '../packages/godot-js-runtime/scripts/platform-matrix.mjs'
 
 const commit = '0123456789abcdef0123456789abcdef01234567'
@@ -49,29 +48,24 @@ test('shellQuote leaves safe tokens readable and quotes shell-sensitive values',
   assert.equal(shellQuote('release;candidate'), "'release;candidate'")
 })
 
-test('runtime release manifest validator requires the complete pinned matrix', () => {
+test('GodotJS release manifest validator requires the complete pinned matrix', () => {
   const version = '0.0.1'
   const baseUrl = defaultReleaseBaseUrl(version)
-  const archives = releasePlatforms.map((platform) => {
-    const name = releaseArchiveName(version, platform.id)
-    return {
+  const name = universalReleaseArchiveName(version)
+  const archives = [
+    {
       name,
-      platform: platform.id,
+      platform: 'universal',
       url: `${baseUrl}/${name}`,
       size: 123,
       sha256: 'a'.repeat(64),
-      targets: releaseTargets
-        .filter((target) => target.platform === platform.id)
-        .map((target) => target.id)
-        .sort(),
-    }
-  })
+      targets: releaseTargets.map((target) => target.id).sort(),
+    },
+  ]
   const artifacts = releaseTargets.flatMap((target) => {
     const count =
       target.platform === 'ios' ? 3 : target.platform === 'macos' ? 2 : 1
-    const archive = archives.find(
-      (candidate) => candidate.platform === target.platform,
-    )
+    const archive = archives[0]
     return Array.from({ length: count }, (_, index) => ({
       name: `${target.artifactPath}/payload-${String(index)}`,
       target: target.id,
@@ -83,8 +77,8 @@ test('runtime release manifest validator requires the complete pinned matrix', (
   })
   const manifest = {
     schemaVersion: 2,
-    runtimeName: 'Godot JavaScript Runtime',
-    packageName: 'godot-js-runtime',
+    runtimeName: 'GodotJS',
+    packageName: 'godotjs',
     version,
     gitCommit: commit,
     godotMinimum: '4.4',
@@ -112,6 +106,6 @@ test('runtime release manifest validator requires the complete pinned matrix', (
       { ...manifest, archives: archives.slice(1) },
       version,
     ).join('\n'),
-    /6 archives|missing the macos archive/,
+    /one universal ZIP/,
   )
 })

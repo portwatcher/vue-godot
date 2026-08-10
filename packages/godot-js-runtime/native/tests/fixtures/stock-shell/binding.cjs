@@ -29,5 +29,5 @@ if (
   throw new Error('CommonJS godot-jsb compatibility failed')
 }
 
-console.log('[godot-js-runtime] PHASE3_COMMONJS_BINDING PASS')
+console.log('[godotjs] PHASE3_COMMONJS_BINDING PASS')
 module.exports = class CommonJsBindingProbe extends Node {}

@@ -3,20 +3,20 @@ import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { createDeterministicTarGzip } from '../dist/archive.js'
+import { createDeterministicZip } from '../dist/archive.js'
 import { generateExtensionManifest } from './generate-extension-manifest.mjs'
 import {
   collectReleaseArtifacts,
   defaultReleaseBaseUrl,
-  releaseArchiveName,
   releasePlatforms,
   releaseTargetsForPlatforms,
+  universalReleaseArchiveName,
 } from './platform-matrix.mjs'
 
 const scriptPath = fileURLToPath(import.meta.url)
 const packageRoot = path.resolve(path.dirname(scriptPath), '..')
 const repoRoot = path.resolve(packageRoot, '../..')
-const addonRoot = path.join(packageRoot, 'addon/godot-js-runtime')
+const addonRoot = path.join(packageRoot, 'addon/godotjs')
 
 function sha256(contents) {
   return createHash('sha256').update(contents).digest('hex')
@@ -72,26 +72,55 @@ function fileEntry(archiveRoot, sourcePath, relativePath) {
     )
   }
   return {
-    path: `${archiveRoot}/${relativePath}`,
+    path: archiveRoot ? `${archiveRoot}/${relativePath}` : relativePath,
     contents: fs.readFileSync(sourcePath),
     mode: releaseFileMode(relativePath),
   }
 }
 
-function requiredNoticeEntries(archiveRoot) {
+function requiredAddonEntries(archiveRoot) {
   const sourceFiles = [
-    ['LICENSE', 'LICENSE'],
-    ['THIRD_PARTY_NOTICES.md', 'THIRD_PARTY_NOTICES.md'],
-    ['licenses/godot-cpp-MIT.md', 'licenses/godot-cpp-MIT.md'],
-    ['licenses/quickjs-ng-MIT.txt', 'licenses/quickjs-ng-MIT.txt'],
+    ['LICENSE', 'addons/godotjs/LICENSE'],
+    ['THIRD_PARTY_NOTICES.md', 'addons/godotjs/THIRD_PARTY_NOTICES.md'],
+    ['licenses/godot-cpp-MIT.md', 'addons/godotjs/licenses/godot-cpp-MIT.md'],
+    ['licenses/quickjs-ng-MIT.txt', 'addons/godotjs/licenses/quickjs-ng-MIT.txt'],
+    ['addon/godotjs/README.md', 'addons/godotjs/README.md'],
     [
-      'addon/godot-js-runtime/godot_js_runtime.gdextension',
-      'addon/godot-js-runtime/godot_js_runtime.gdextension',
+      'addon/godotjs/godotjs.gdextension',
+      'addons/godotjs/godotjs.gdextension',
     ],
   ]
-  return sourceFiles.map(([source, destination]) =>
+  const entries = sourceFiles.map(([source, destination]) =>
     fileEntry(archiveRoot, path.join(packageRoot, source), destination),
   )
+  const typingsRoot = path.join(repoRoot, 'packages/cli/templates/typings')
+  const typingsManifest = JSON.parse(
+    fs.readFileSync(path.join(typingsRoot, 'manifest.json'), 'utf-8'),
+  )
+  if (
+    !typingsManifest ||
+    typeof typingsManifest !== 'object' ||
+    Array.isArray(typingsManifest) ||
+    !typingsManifest.files ||
+    typeof typingsManifest.files !== 'object' ||
+    Array.isArray(typingsManifest.files)
+  ) {
+    throw new Error('GodotJS typings manifest is invalid')
+  }
+  const typingFiles = [
+    ...Object.keys(typingsManifest.files).sort(),
+    'manifest.json',
+  ]
+  for (const name of typingFiles) {
+    entries.push(
+      fileEntry(
+        archiveRoot,
+        path.join(typingsRoot, name),
+        `addons/godotjs/typings/${name}`,
+      ),
+    )
+  }
+  return entries
 }
 
 function platformProvenance(manifest, platform, targets, epoch) {
@@ -118,23 +147,27 @@ function archiveEntries({
   manifest,
   epoch,
 }) {
-  const entries = requiredNoticeEntries(archiveRoot)
+  const entries = requiredAddonEntries(archiveRoot)
   for (const artifact of artifacts) {
     entries.push(
       fileEntry(
         archiveRoot,
         path.join(binDirectory, ...artifact.name.split('/')),
-        `addon/godot-js-runtime/bin/${artifact.name}`,
+        `addons/godotjs/bin/${artifact.name}`,
       ),
     )
   }
   entries.push({
-    path: `${archiveRoot}/addon/godot-js-runtime/runtime-manifest.json`,
+    path: archiveRoot
+      ? `${archiveRoot}/addons/godotjs/manifest.json`
+      : 'addons/godotjs/manifest.json',
     contents: json(manifest),
     mode: 0o644,
   })
   entries.push({
-    path: `${archiveRoot}/PROVENANCE.json`,
+    path: archiveRoot
+      ? `${archiveRoot}/addons/godotjs/PROVENANCE.json`
+      : 'addons/godotjs/PROVENANCE.json',
     contents: json(
       platformProvenance(
         manifest,
@@ -146,7 +179,9 @@ function archiveEntries({
     mode: 0o644,
   })
   entries.push({
-    path: `${archiveRoot}/SHA256SUMS`,
+    path: archiveRoot
+      ? `${archiveRoot}/addons/godotjs/SHA256SUMS`
+      : 'addons/godotjs/SHA256SUMS',
     contents: checksums(entries),
     mode: 0o644,
   })
@@ -185,7 +220,7 @@ export function packageReleaseArtifacts(options = {}) {
     options.outputDirectory ??
       path.join(
         repoRoot,
-        '.artifacts/godot-js-runtime',
+        '.artifacts/godotjs',
         initialManifest.version,
       ),
   )
@@ -198,41 +233,34 @@ export function packageReleaseArtifacts(options = {}) {
     platforms,
     requireAll: true,
   })
-  const archives = []
-  for (const platform of platforms) {
-    const platformArtifacts = artifacts.filter(
-      (artifact) => artifact.target.split('.')[0] === platform,
-    )
-    const archiveName = releaseArchiveName(initialManifest.version, platform)
-    const archiveRoot = archiveName.slice(0, -'.tar.gz'.length)
-    const platformManifest = generateExtensionManifest({
-      gitCommit: initialManifest.gitCommit,
-      write: false,
-      artifacts: platformArtifacts,
-    })
-    const archive = createDeterministicTarGzip(
-      archiveEntries({
-        archiveRoot,
-        binDirectory,
-        platform,
-        artifacts: platformArtifacts,
-        manifest: platformManifest,
-        epoch,
-      }),
-    )
-    const archivePath = path.join(outputDirectory, archiveName)
-    fs.writeFileSync(archivePath, archive)
-    archives.push({
+  const archiveName = universalReleaseArchiveName(initialManifest.version)
+  const archiveManifest = generateExtensionManifest({
+    gitCommit: initialManifest.gitCommit,
+    write: false,
+    artifacts,
+  })
+  const archive = createDeterministicZip(
+    archiveEntries({
+      archiveRoot: '',
+      binDirectory,
+      platform: 'universal',
+      artifacts,
+      manifest: archiveManifest,
+      epoch,
+    }),
+  )
+  const archivePath = path.join(outputDirectory, archiveName)
+  fs.writeFileSync(archivePath, archive)
+  const archives = [
+    {
       name: archiveName,
-      platform,
+      platform: 'universal',
       url: `${releaseBaseUrl}/${archiveName}`,
       size: archive.length,
       sha256: sha256(archive),
-      targets: [
-        ...new Set(platformArtifacts.map((artifact) => artifact.target)),
-      ].sort(),
-    })
-  }
+      targets: [...new Set(artifacts.map((artifact) => artifact.target))].sort(),
+    },
+  ]
 
   const manifest = generateExtensionManifest({
     gitCommit: initialManifest.gitCommit,
@@ -241,7 +269,7 @@ export function packageReleaseArtifacts(options = {}) {
     archives,
     releaseBaseUrl,
   })
-  const manifestPath = path.join(outputDirectory, 'runtime-manifest.json')
+  const manifestPath = path.join(outputDirectory, 'godotjs-manifest.json')
   fs.writeFileSync(manifestPath, json(manifest))
   const provenancePath = path.join(outputDirectory, 'PROVENANCE.json')
   fs.writeFileSync(

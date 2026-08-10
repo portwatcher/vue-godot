@@ -10,9 +10,9 @@ import {
 } from 'godot'
 import { defineScript, runtimeVersion } from 'godot-js'
 
-const successMarker = '[godot-js-runtime-demo] PHASE6_STANDALONE_DEMO PASS'
-const exportSmokeFeature = 'godot_js_runtime_export_smoke'
-const exportSuccessMarker = '[godot-js-runtime-export] STANDALONE PASS'
+const successMarker = '[godotjs-demo] PHASE6_STANDALONE_DEMO PASS'
+const exportSmokeFeature = 'godotjs_export_smoke'
+const exportSuccessMarker = '[godotjs-export] STANDALONE PASS'
 
 class StandalonePlayer extends Node2D {
   speed = 240

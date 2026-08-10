@@ -6,7 +6,7 @@ const scriptPath = fileURLToPath(import.meta.url)
 const packageRoot = path.resolve(path.dirname(scriptPath), '..')
 const repositoryRoot = path.resolve(packageRoot, '../..')
 
-export const exportSmokeFeature = 'godot_js_runtime_export_smoke'
+export const exportSmokeFeature = 'godotjs_export_smoke'
 const exportApplicationResources = [
   'dist/*.js',
   'dist/**/*.js',
@@ -23,10 +23,10 @@ const exportApplicationResources = [
 export const exportApplications = Object.freeze([
   Object.freeze({
     id: 'standalone',
-    name: 'Godot JavaScript Runtime Smoke',
-    slug: 'godot-js-runtime-smoke',
+    name: 'GodotJS Smoke',
+    slug: 'godotjs-smoke',
     bundleId: 'org.vuegodot.javascript.runtime.smoke',
-    root: path.join(repositoryRoot, 'apps/js-runtime-demo'),
+    root: path.join(repositoryRoot, 'apps/godotjs-demo'),
   }),
   Object.freeze({
     id: 'vue',

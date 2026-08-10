@@ -61,7 +61,7 @@ func _run_play_loop() -> void:
 		push_error("Editor did not instantiate the JavaScript tool script")
 		get_tree().quit(1)
 		return
-	print("[godot-js-runtime] PHASE4_EDITOR_PLACEHOLDER PASS")
+	print("[godotjs] PHASE4_EDITOR_PLACEHOLDER PASS")
 	var language = null
 	for index in range(Engine.get_script_language_count()):
 		var candidate := Engine.get_script_language(index)
@@ -124,7 +124,7 @@ func _run_play_loop() -> void:
 		push_error("Editor JavaScript diagnostics have an incorrect file or line")
 		get_tree().quit(1)
 		return
-	print("[godot-js-runtime] PHASE5_EDITOR_LANGUAGE PASS")
+	print("[godotjs] PHASE5_EDITOR_LANGUAGE PASS")
 	tool_probe.set("state", 99)
 	var replacement := FileAccess.open("res://tool-script.mjs", FileAccess.WRITE)
 	if replacement == null:
@@ -143,12 +143,12 @@ func _run_play_loop() -> void:
 		push_error("Editor JavaScript file monitor did not preserve compatible state")
 		get_tree().quit(1)
 		return
-	print("[godot-js-runtime] PHASE5_EDITOR_FILE_MONITOR PASS")
+	print("[godotjs] PHASE5_EDITOR_FILE_MONITOR PASS")
 	var baseline_runtime_info := GodotJavaScriptRuntimeInfo.new()
 	var baseline_wrappers := baseline_runtime_info.get_live_wrapper_count()
 	var baseline_callbacks := baseline_runtime_info.get_live_callback_root_count()
 	for cycle in range(PLAY_CYCLES):
-		print("[godot-js-runtime] EDITOR_PLAY_START cycle=%d" % cycle)
+		print("[godotjs] EDITOR_PLAY_START cycle=%d" % cycle)
 		editor.play_main_scene()
 		var start_deadline := Time.get_ticks_msec() + PLAY_TIMEOUT_MSEC
 		while not editor.is_playing_scene() and Time.get_ticks_msec() < start_deadline:
@@ -200,7 +200,7 @@ func _run_play_loop() -> void:
 			)
 			get_tree().quit(1)
 			return
-		print("[godot-js-runtime] EDITOR_SCENE_READY cycle=%d" % cycle)
-		print("[godot-js-runtime] EDITOR_PLAY_STOP cycle=%d" % cycle)
-	print("[godot-js-runtime] PHASE4_EDITOR_PLAY_LOOP PASS")
+		print("[godotjs] EDITOR_SCENE_READY cycle=%d" % cycle)
+		print("[godotjs] EDITOR_PLAY_STOP cycle=%d" % cycle)
+	print("[godotjs] PHASE4_EDITOR_PLAY_LOOP PASS")
 	get_tree().quit(0)

@@ -13,9 +13,9 @@ current support status and platform caveats, and
 requirements. See the [plugin adapter guide](../../docs/plugins.md) for adapter
 implementation guidance.
 
-The root adapter registry is backend-neutral. Subpaths that import `godot`
-run through [`godot-js-runtime`](../godot-js-runtime/README.md) in official
-Godot and use its generated stock-Godot declarations.
+The root adapter registry is backend-neutral. Subpaths that import `godot` run
+through the [GodotJS GDExtension](../godot-js-runtime/README.md) in official
+Godot and use its stock-Godot declarations.
 
 ## Installation
 

@@ -1,9 +1,9 @@
-name: Godot JavaScript Runtime
+name: GodotJS Native GDExtension
 
 on:
   pull_request:
     paths:
-      - '.github/workflows/godot-js-runtime.yml'
+      - '.github/workflows/godotjs.yml'
       - 'package*.json'
       - 'packages/godot-js-runtime/**'
   push:
@@ -11,7 +11,7 @@ on:
       - develop
       - main
     paths:
-      - '.github/workflows/godot-js-runtime.yml'
+      - '.github/workflows/godotjs.yml'
       - 'package*.json'
       - 'packages/godot-js-runtime/**'
   workflow_dispatch:
@@ -31,24 +31,24 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: '3.13'
 
       - name: Install
         run: npm ci
 
-      - name: Test package tooling
-        run: npm run test:godot-js-runtime
+      - name: Test GodotJS build tooling
+        run: npm run test:godotjs
 
       - name: Download official Godot 4.4.1
         run: |
@@ -64,24 +64,24 @@ jobs:
 
       - name: Build Linux debug extension
         run: >-
-          npm run build:native --workspace=godot-js-runtime --
+          npm run build:native --workspace=packages/godot-js-runtime --
           --platform linux
           --arch x86_64
           --target template_debug
 
       - name: Verify generated Godot bindings
-        run: npm run check:bindings --workspace=godot-js-runtime
+        run: npm run check:bindings --workspace=packages/godot-js-runtime
 
       - name: Test native QuickJS host
         run: >-
-          npm run test:native --workspace=godot-js-runtime --
+          npm run test:native --workspace=packages/godot-js-runtime --
           --platform linux
           --arch x86_64
           --target template_debug
 
       - name: Smoke on official stock Godot
         run: >-
-          npm run smoke:native --workspace=godot-js-runtime --
+          npm run smoke:native --workspace=packages/godot-js-runtime --
           --skip-build
 
       - name: Test native host with AddressSanitizer and UndefinedBehaviorSanitizer
@@ -89,7 +89,7 @@ jobs:
           ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
           UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
         run: >-
-          npm run test:native --workspace=godot-js-runtime --
+          npm run test:native --workspace=packages/godot-js-runtime --
           --platform linux
           --arch x86_64
           --target template_debug
@@ -97,7 +97,7 @@ jobs:
 
       - name: Build binding with UndefinedBehaviorSanitizer
         run: >-
-          npm run build:native --workspace=godot-js-runtime --
+          npm run build:native --workspace=packages/godot-js-runtime --
           --platform linux
           --arch x86_64
           --target template_debug
@@ -107,7 +107,7 @@ jobs:
         env:
           UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
         run: >-
-          npm run smoke:native --workspace=godot-js-runtime --
+          npm run smoke:native --workspace=packages/godot-js-runtime --
           --skip-build
 
   macos-native-sanitizers:
@@ -116,16 +116,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: '3.13'
 
@@ -137,7 +137,7 @@ jobs:
           ASAN_OPTIONS: detect_leaks=0:halt_on_error=1
           UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
         run: >-
-          npm run test:native --workspace=godot-js-runtime --
+          npm run test:native --workspace=packages/godot-js-runtime --
           --platform macos
           --arch universal
           --target template_debug

@@ -6,12 +6,7 @@
     "dev": "npm run build:deps && vite build --watch -c vue/vite.config.ts",
     "build": "npm run build:deps && vite build -c vue/vite.config.ts",
     "build:deps": "npm run --workspace=@vue-godot/runtime-tscn build && npm run --workspace=@vue-godot/device build && npm run --workspace=@vue-godot/browser build && npm run --workspace=@vue-godot/html build",
-    "gen:types": "vue-godot gen-types",
-    "install:runtime": "godot-js-runtime install --project .",
-    "verify:runtime": "godot-js-runtime verify --project .",
-    "add-target:runtime": "godot-js-runtime add-target --project .",
-    "uninstall:runtime": "godot-js-runtime uninstall --project .",
-    "setup:runtime": "npm run install:runtime && npm run gen:types"
+    "gen:types": "vue-godot gen-types"
   },
   "devDependencies": {
     "@vue-godot/cli": "*",
@@ -24,7 +19,6 @@
     "@vue-godot/device": "*",
     "@vue-godot/html": "*",
     "@vue-godot/runtime-tscn": "*",
-    "@vue/runtime-core": "^3.5.14",
-    "godot-js-runtime": "*"
+    "@vue/runtime-core": "^3.5.14"
   }
 }

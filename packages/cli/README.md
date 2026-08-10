@@ -101,26 +101,26 @@ cd my-game
 npm run dev
 ```
 
-`create` runs the initial `npm install`, installs and verifies the standalone
-JavaScript runtime, generates stock-Godot declarations, and builds the first
-bundle. Keep `npm run dev` running while editing `vue/src`; Vite rebuilds
+`create` runs the initial `npm install`, generates declarations, and builds the
+first bundle. Install GodotJS separately by extracting its universal release
+ZIP at the project root. Keep `npm run dev` running while editing `vue/src`; Vite rebuilds
 `dist/app.js` and stable `dist/chunks/*.js` files for the Godot editor to
 reload.
 
 The generated `node_modules/`, `vue/`, `gen/`, and `typings/` directories
 include `.gdignore` files so Godot imports the built `dist/app.js` output
-without scanning installed package copies of the extension, Vite/TypeScript
+without scanning npm packages, Vite/TypeScript
 source files, or generated declaration scaffolds as project resources.
 
-Generated projects provide these runtime lifecycle commands:
+Generated projects provide this type-generation command:
 
-| Command                      | Purpose                                                        |
-| ---------------------------- | -------------------------------------------------------------- |
-| `npm run setup:runtime`      | Install the host runtime and generate stock-Godot declarations |
-| `npm run verify:runtime`     | Verify every manifest-owned runtime file by checksum           |
-| `npm run add-target:runtime` | Install an additional export-target artifact                   |
-| `npm run uninstall:runtime`  | Remove only files owned by the installation manifest           |
-| `npm run gen:types`          | Regenerate Godot and Vue component declarations                |
+| Command             | Purpose                                         |
+| ------------------- | ----------------------------------------------- |
+| `npm run gen:types` | Regenerate Godot and Vue component declarations |
+
+The CLI never installs, updates, or removes GodotJS. `vue-godot doctor`
+checks that `addons/godotjs/godotjs.gdextension` and its mapped libraries are
+present and reports the manual GitHub-release installation step when missing.
 
 Generated projects also include `docs/production.md` and
 `scripts/check-export-settings.mjs`. Run `npm run check:exports` before release
@@ -174,15 +174,14 @@ dependencies during watch rebuilds.
 cd my-existing-godot-project
 npx vue-godot integrate
 npm install
-npm run setup:runtime
-npm run verify:runtime
+# Extract godotjs-v<version>.zip here
 npm run dev
 ```
 
 ### `gen-types`
 
-Generate deterministic TypeScript declarations from the standalone runtime's
-pinned official-Godot API, then generate Vue `GlobalComponents` augmentation.
+Generate deterministic TypeScript declarations from Vue Godot's pinned
+official-Godot API, then generate Vue `GlobalComponents` augmentation.
 This gives Volar autocomplete and type checking for Godot node tags such as
 `<Button>` and `<Label>`. Generated props include settable Godot instance
 properties and exclude methods; the command also refreshes the Vue SFC shim
@@ -214,8 +213,8 @@ Volar sees one unambiguous component definition.
 
 ### `doctor`
 
-Check local project setup, package specs and installed versions, the standalone
-runtime installation manifest and checksums, stock-Godot declarations,
+Check local project setup, package specs and installed versions, the manually
+installed GodotJS add-on, stock-Godot declarations,
 Vite/Volar configuration, export settings, migration risks, and plugin-backed
 API hints.
 

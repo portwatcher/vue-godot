@@ -13,7 +13,7 @@ import {
 const scriptPath = fileURLToPath(import.meta.url)
 const packageRoot = path.resolve(path.dirname(scriptPath), '..')
 const nativeRoot = path.join(packageRoot, 'native')
-const addonBinDirectory = path.join(packageRoot, 'addon/godot-js-runtime/bin')
+const addonBinDirectory = path.join(packageRoot, 'addon/godotjs/bin')
 
 function usage() {
   console.log(`Usage: node scripts/build-release-artifacts.mjs [options]
@@ -130,7 +130,7 @@ function iosLibraryPath(target, simulator) {
   return path.join(
     nativeRoot,
     'bin/ios',
-    `libgodot_js_runtime.ios.${target.mode}.${suffix}.a`,
+    `libgodotjs.ios.${target.mode}.${suffix}.a`,
   )
 }
 

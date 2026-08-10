@@ -10,12 +10,12 @@ const packageRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '..',
 )
-const generatorPath = path.join(packageRoot, 'scripts/generate-types.mjs')
+const generatorPath = path.join(packageRoot, '../cli/scripts/generate-types.mjs')
 const apiPath = path.join(
   packageRoot,
   'native/third_party/godot-cpp/gdextension/extension_api.json',
 )
-const typingsDirectory = path.join(packageRoot, 'typings')
+const typingsDirectory = path.join(packageRoot, '../cli/templates/typings')
 
 function runGenerator(arguments_) {
   return spawnSync(process.execPath, [generatorPath, ...arguments_], {

@@ -15,7 +15,7 @@ class ToolScriptProbe extends Node {
         FileAccess.ModeFlags.WRITE,
       )
       marker.store_string('ready')
-      console.log('[godot-js-runtime] PHASE4_TOOL_SCRIPT PASS')
+      console.log('[godotjs] PHASE4_TOOL_SCRIPT PASS')
     }
   }
 }

@@ -169,7 +169,7 @@ assertBinding(
 )
 timer.timeout.as_promise().then((value) => {
   assertBinding(value === undefined, 'zero-argument Signal Promise value')
-  console.log('[godot-js-runtime] PHASE5_SIGNAL_PROMISE PASS')
+  console.log('[godotjs] PHASE5_SIGNAL_PROMISE PASS')
 })
 timer.timeout.emit()
 const shutdownCallable = Callable.create(() => {})
@@ -290,7 +290,7 @@ assertBinding(
 )
 
 console.log(
-  '[godot-js-runtime] PHASE3_BINDING PASS classdb properties variants callable signals identity errors gc-stress',
+  '[godotjs] PHASE3_BINDING PASS classdb properties variants callable signals identity errors gc-stress',
 )
 
 const runtimeInfo = ClassDB.instantiate('GodotJavaScriptRuntimeInfo')
@@ -318,7 +318,7 @@ if (settings.marker !== 'resource-json' || moduleMarker !== 'relative-esm') {
 
 Promise.resolve().then(() => {
   console.log(
-    `[godot-js-runtime] PHASE2_MODULE_PROMISE PASS ${moduleMarker} ${settings.marker}`,
+    `[godotjs] PHASE2_MODULE_PROMISE PASS ${moduleMarker} ${settings.marker}`,
   )
 })
 

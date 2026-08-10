@@ -8,6 +8,7 @@ import {
   assertVueSourceIgnoredByGodot,
   createPackedPackageOverrides,
   directoryContainsText,
+  installBuiltRuntime,
   nodeCommand,
   npmCommand,
   requireBuiltCli,
@@ -78,6 +79,7 @@ run(nodeCommand, [cliPath, 'create', projectDir, '-f', '--html'], {
   env,
   stdio: 'inherit',
 })
+installBuiltRuntime(projectDir)
 assertVueSourceIgnoredByGodot(projectDir)
 assertGeneratedOutputIgnoredByGodot(projectDir)
 

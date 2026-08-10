@@ -27,20 +27,24 @@ capability adapters, while `game-ui` starts with a HUD-oriented screen of
 health, actions, and session controls. Choose either as a starting point—the
 difference is the starter content, not a runtime limitation.
 
-Then install the standalone runtime, generate stock-Godot declarations, and
-start the Vue build:
+Install GodotJS, then install the Vue packages and start the build:
+
+1. Download `godotjs-v<version>.zip` from the latest
+   [GodotJS GitHub release](https://github.com/portwatcher/vue-godot/releases).
+2. Extract it at the project root. The result must include
+   `addons/godotjs/godotjs.gdextension`.
+3. Run:
 
 ```bash
 cd my-app # or my-hud
 npm install
-npm run setup:runtime
 npm run dev
 ```
 
 Open `project.godot` in an
 [official Godot editor](https://godotengine.org/download/) and press **F5**.
-Use `npm run build` for a one-time build. The generated project installs
-`godot-js-runtime` under `addons/godot-js-runtime`; no custom editor is needed.
+Use `npm run build` for a one-time build. GodotJS is a native add-on, not an npm
+package; Vue Godot never downloads, upgrades, or removes it.
 
 The `app` profile includes HTML-like components, browser APIs, and native
 capability adapters. Add only the starters you need:
@@ -102,33 +106,46 @@ With `--html`, familiar HTML-like components render to Godot nodes too:
 
 Both styles can be used in the same template.
 
-## Run JavaScript or TypeScript in official Godot
+## Install GodotJS in any Godot project
 
-`godot-js-runtime` is the standalone GDExtension behind Vue Godot's generated
-projects. It runs emitted JavaScript in an unmodified official Godot editor;
-Vue is optional. Generated projects install it with `npm run setup:runtime`.
-For an existing non-Vue Godot project, use the runtime directly:
+GodotJS is the standalone JavaScript GDExtension for unmodified official Godot.
+It is a Godot product in its own right; Vue Godot is a separate, optional npm
+framework that runs on it.
 
-```bash
-npm install --save-dev godot-js-runtime
-npx godot-js-runtime install --project .
-npx godot-js-runtime typegen --project .
-npx godot-js-runtime verify --project .
+Download the universal `godotjs-v*.zip` from
+[GitHub Releases](https://github.com/portwatcher/vue-godot/releases) and extract
+it at the project root:
+
+```text
+your-project/
+├── addons/
+│   └── godotjs/
+│       ├── godotjs.gdextension
+│       ├── bin/                 # all supported platform libraries
+│       └── typings/             # standalone TypeScript declarations
+└── project.godot
 ```
+
+Commit the complete `addons/godotjs` directory. Do not install GodotJS with
+npm, and do not copy only the current desktop library: the same add-on bundle
+contains debug and release binaries for macOS, Windows, Linux, Android, iOS,
+and Web. Standalone TypeScript projects include
+`addons/godotjs/typings/index.d.ts`; Vue projects run `npm run gen:types` for
+project declarations.
 
 Godot 4.4.1 is the minimum compatibility floor. Release integration tracks
 the latest official stable Godot (currently 4.7.1): a daily workflow discovers
 official checksummed editor and export-template assets, runs stock-engine smoke
 tests plus the complete six-platform debug/release export matrix, and publishes
-a versioned GDExtension compatibility release only when every gate passes. See
-the [runtime guide](./packages/godot-js-runtime/README.md) for TypeScript setup,
-target installation, exports, and platform constraints.
+a versioned universal GDExtension ZIP only when every gate passes. See the
+[GodotJS developer guide](./packages/godot-js-runtime/README.md) for native
+builds, exports, and platform constraints.
 
 ## Packages
 
 | Package                                                        | Purpose                                                     |
 | -------------------------------------------------------------- | ----------------------------------------------------------- |
-| [`godot-js-runtime`](./packages/godot-js-runtime/README.md)    | Run JavaScript or compiled TypeScript in official Godot     |
+| [GodotJS](./packages/godot-js-runtime/README.md)              | Native GDExtension for JavaScript in official Godot         |
 | [`@vue-godot/runtime-tscn`](./packages/runtime-tscn/README.md) | Render Vue components into the Godot scene tree             |
 | [`@vue-godot/html`](./packages/html/README.md)                 | Use HTML-like components backed by Godot nodes              |
 | [`@vue-godot/browser`](./packages/browser/README.md)           | Use browser-like APIs such as `fetch`, `URL`, and `history` |
@@ -138,7 +155,7 @@ target installation, exports, and platform constraints.
 
 ## Examples
 
-- [`apps/js-runtime-demo`](./apps/js-runtime-demo) — standalone TypeScript on
+- [`apps/godotjs-demo`](./apps/godotjs-demo) — standalone TypeScript on
   official Godot, with no Vue dependency
 - [`apps/native-app-demo`](./apps/native-app-demo) — routing, storage, network,
   permissions, and device APIs
@@ -154,7 +171,7 @@ and node ordering under [`apps`](./apps). See the
 
 - Node.js 20 or newer
 - Official Godot 4.4.1 or newer
-- `godot-js-runtime`, installed by the generated `npm run setup:runtime` command
+- GodotJS extracted under `addons/godotjs`
 
 ## Documentation
 

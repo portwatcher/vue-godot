@@ -56,14 +56,10 @@ test('project diagnostics accept a minimal generated project shape', () => {
       scripts: {
         build: 'vite build -c vue/vite.config.ts',
         'gen:types': 'vue-godot gen-types',
-        'install:runtime': 'godot-js-runtime install --project .',
-        'verify:runtime': 'godot-js-runtime verify --project .',
-        'setup:runtime': 'npm run install:runtime && npm run gen:types',
       },
       dependencies: {
         '@vue-godot/runtime-tscn': '^0.0.2',
         '@vue/runtime-core': '^3.5.14',
-        'godot-js-runtime': '^0.0.1',
       },
       devDependencies: {
         '@vue-godot/cli': '^0.0.3',

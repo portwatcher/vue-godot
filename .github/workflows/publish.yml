@@ -22,14 +22,14 @@ permissions:
   id-token: write
 
 jobs:
-  runtime-release:
-    name: Verify runtime release matrix
-    uses: ./.github/workflows/godot-js-runtime-release.yml
+  godotjs-release:
+    name: Verify GodotJS release matrix
+    uses: ./.github/workflows/godotjs-release.yml
     permissions:
       contents: read
 
   publish:
-    needs: runtime-release
+    needs: godotjs-release
     runs-on: ubuntu-24.04
     timeout-minutes: 120
 
@@ -62,25 +62,6 @@ jobs:
 
       - name: Install virtual display
         run: sudo apt-get update && sudo apt-get install -y xvfb
-
-      - name: Download verified release manifest and archives
-        uses: actions/download-artifact@v8
-        with:
-          name: godot-js-runtime-release
-          path: .artifacts/godot-js-runtime/${{ needs.runtime-release.outputs.runtime_version }}
-
-      - name: Download verified Linux runtime
-        uses: actions/download-artifact@v8
-        with:
-          name: godot-js-runtime-linux
-          path: packages/godot-js-runtime/addon/godot-js-runtime/bin
-
-      - name: Verify publish inputs match the committed release manifest
-        run: |
-          cmp \
-            .artifacts/godot-js-runtime/${{ needs.runtime-release.outputs.runtime_version }}/runtime-manifest.json \
-            packages/godot-js-runtime/addon/godot-js-runtime/runtime-manifest.json
-          npm run verify:release --workspace=godot-js-runtime -- --platform linux
 
       - name: Publish
         env:

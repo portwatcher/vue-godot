@@ -26,7 +26,7 @@ jobs:
     outputs:
       version: ${{ steps.resolve.outputs.version }}
       installed_version: ${{ steps.resolve.outputs.installed_version }}
-      runtime_version: ${{ steps.resolve.outputs.runtime_version }}
+      godotjs_version: ${{ steps.resolve.outputs.godotjs_version }}
       release_tag: ${{ steps.resolve.outputs.release_tag }}
       should_publish: ${{ steps.release.outputs.should_publish }}
       should_validate: ${{ steps.release.outputs.should_validate }}
@@ -96,7 +96,7 @@ jobs:
     if: >-
       needs.discover.outputs.should_validate == 'true' &&
       needs.stable-smoke.result == 'success'
-    uses: ./.github/workflows/godot-js-runtime-release.yml
+    uses: ./.github/workflows/godotjs-release.yml
     permissions:
       contents: read
     with:
@@ -124,7 +124,7 @@ jobs:
       - name: Download verified release bundle
         uses: actions/download-artifact@v8
         with:
-          name: godot-js-runtime-release
+          name: godotjs-release
           path: .artifacts/compatibility-release
 
       - name: Verify and publish compatibility release
@@ -132,29 +132,31 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GODOT_VERSION: ${{ needs.discover.outputs.version }}
           RELEASE_TAG: ${{ needs.discover.outputs.release_tag }}
-          RUNTIME_VERSION: ${{ needs.discover.outputs.runtime_version }}
+          GODOTJS_VERSION: ${{ needs.discover.outputs.godotjs_version }}
         shell: bash
         run: |
           cd .artifacts/compatibility-release
           sha256sum --check --strict SHA256SUMS
           release_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$RELEASE_TAG/"
-          jq --exit-status --arg version "$RUNTIME_VERSION" --arg release_url "$release_url" \
+          jq --exit-status --arg version "$GODOTJS_VERSION" --arg release_url "$release_url" \
             '.version == $version and ([.archives[].url | startswith($release_url)] | all)' \
-            runtime-manifest.json >/dev/null
-          mapfile -t release_archives < <(find . -maxdepth 1 -type f -name 'godot-js-runtime-*.tar.gz' -printf '%f\n' | sort)
-          if [ "${#release_archives[@]}" -ne 6 ]; then
-            echo "Expected exactly six GDExtension archives" >&2
+            godotjs-manifest.json >/dev/null
+          mapfile -t release_archives < <(find . -maxdepth 1 -type f -name 'godotjs-v*.zip' -printf '%f\n' | sort)
+          if [ "${#release_archives[@]}" -ne 1 ]; then
+            echo "Expected exactly one universal GodotJS ZIP" >&2
             exit 1
           fi
-          for metadata_file in PROVENANCE.json SHA256SUMS runtime-manifest.json; do
+          for metadata_file in PROVENANCE.json SHA256SUMS godotjs-manifest.json; do
             test -f "$metadata_file"
           done
-          release_files=("${release_archives[@]}" PROVENANCE.json SHA256SUMS runtime-manifest.json)
+          release_files=("${release_archives[@]}" PROVENANCE.json SHA256SUMS godotjs-manifest.json)
           notes_file="$RUNNER_TEMP/godot-compatibility-release.md"
           {
-            echo "Godot JavaScript Runtime $RUNTIME_VERSION verified on official Godot $GODOT_VERSION."
+            echo "GodotJS $GODOTJS_VERSION verified on official Godot $GODOT_VERSION."
             echo
-            echo "All stock-editor smoke tests and the macOS, Windows, Linux, Android, iOS, and Web debug/release export gates passed before publication. The runtime retains Godot 4.4.1 as its minimum compatibility floor."
+            echo "Install by extracting the universal ZIP at the Godot project root; it creates addons/godotjs. GodotJS is not distributed through npm."
+            echo
+            echo "All stock-editor smoke tests and the macOS, Windows, Linux, Android, iOS, and Web debug/release export gates passed before publication. GodotJS retains Godot 4.4.1 as its minimum compatibility floor."
             echo
             echo "The iOS gate covers unsigned device and simulator links; consuming applications still provide signing and physical-device provisioning."
             echo
@@ -165,7 +167,7 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --latest=false \
-            --title "Godot JavaScript Runtime $RUNTIME_VERSION for Godot $GODOT_VERSION" \
+            --title "GodotJS $GODOTJS_VERSION for Godot $GODOT_VERSION" \
             --notes-file "$notes_file"
 
   report-status:

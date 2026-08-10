@@ -12,14 +12,14 @@ import {
 
 const scriptPath = fileURLToPath(import.meta.url)
 const packageRoot = path.resolve(path.dirname(scriptPath), '..')
-const addonRoot = path.join(packageRoot, 'addon/godot-js-runtime')
+const addonRoot = path.join(packageRoot, 'addon/godotjs')
 const defaultBinDirectory = path.join(addonRoot, 'bin')
 const defaultExtensionPath = path.join(
   addonRoot,
-  'godot_js_runtime.gdextension',
+  'godotjs.gdextension',
 )
-const defaultManifestPath = path.join(addonRoot, 'runtime-manifest.json')
-const entrySymbol = 'godot_js_runtime_library_init'
+const defaultManifestPath = path.join(addonRoot, 'manifest.json')
+const entrySymbol = 'godotjs_library_init'
 const godotCppInterfaceSymbol = 'gdextension_interface_variant_destroy'
 
 function readJson(filePath) {
@@ -65,7 +65,7 @@ export function parseExtensionLibraries(source) {
     }
     if (!inLibraries || line.trim().length === 0) continue
     const match = line.match(
-      /^([^=]+?)\s*=\s*"res:\/\/addons\/godot-js-runtime\/bin\/(.+)"$/,
+      /^([^=]+?)\s*=\s*"res:\/\/addons\/godotjs\/bin\/(.+)"$/,
     )
     if (!match) throw new Error(`Invalid GDExtension library entry: ${line}`)
     libraries.set(match[1].trim(), match[2])

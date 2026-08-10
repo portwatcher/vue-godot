@@ -6,7 +6,6 @@
 gen/
 
 # Installed standalone runtime and generated declarations
-addons/godot-js-runtime/
 typings/*
 !typings/.gdignore
 
