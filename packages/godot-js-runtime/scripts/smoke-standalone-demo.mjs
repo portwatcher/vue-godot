@@ -83,11 +83,11 @@ function stageProject(root) {
   for (const name of ['project.godot', 'main.tscn', 'demo-data.tres', 'tsconfig.json']) {
     copyFile(path.join(demoRoot, name), path.join(project, name))
   }
+  const tsconfigPath = path.join(project, 'tsconfig.json')
+  const tsconfig = JSON.parse(fs.readFileSync(tsconfigPath, 'utf-8'))
+  tsconfig.files = ['addons/godotjs/typings/index.d.ts', 'src/player.ts']
+  fs.writeFileSync(tsconfigPath, `${JSON.stringify(tsconfig, null, 2)}\n`)
   copyFile(path.join(demoRoot, 'src/player.ts'), path.join(project, 'src/player.ts'))
-  copyTree(
-    path.join(repositoryRoot, 'packages/cli/templates/typings'),
-    path.join(project, 'typings'),
-  )
   return project
 }
 
@@ -95,6 +95,10 @@ function installLocalAddon(project) {
   const source = path.join(packageRoot, 'addon/godotjs')
   const destination = path.join(project, 'addons/godotjs')
   copyTree(source, destination)
+  copyTree(
+    path.join(repositoryRoot, 'packages/cli/templates/typings'),
+    path.join(destination, 'typings'),
+  )
 }
 
 function installReleaseAddon(project, releaseDirectory) {
