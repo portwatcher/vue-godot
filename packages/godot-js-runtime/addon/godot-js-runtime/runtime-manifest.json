@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "runtimeName": "Godot JavaScript Runtime",
   "packageName": "godot-js-runtime",
-  "version": "0.0.0-development",
-  "gitCommit": "development",
+  "version": "0.0.1",
+  "gitCommit": "f82f06ad1cd34132066b54915ffa778a1410148e",
   "godotMinimum": "4.4",
   "dependencies": [
     {
