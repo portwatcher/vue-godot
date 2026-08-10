@@ -64,6 +64,7 @@ test('standalone demo covers the complete non-Vue scripting contract', () => {
   const scene = fs.readFileSync(path.join(demoRoot, 'main.tscn'), 'utf-8')
   const tsconfig = readJson(path.join(demoRoot, 'tsconfig.json'))
   const demoPackage = readJson(path.join(demoRoot, 'package.json'))
+  const runtimePackage = readJson(path.join(packageRoot, 'package.json'))
   const smoke = fs.readFileSync(
     path.join(packageRoot, 'scripts/smoke-standalone-demo.mjs'),
     'utf-8',
@@ -86,11 +87,16 @@ test('standalone demo covers the complete non-Vue scripting contract', () => {
   assert.match(scene, /res:\/\/dist\/player\.js/)
   assert.equal(tsconfig.compilerOptions.skipLibCheck, false)
   assert.equal(tsconfig.compilerOptions.sourceMap, true)
+  assert.equal(runtimePackage.scripts.pretest, 'npm run bootstrap:native')
+  assert.equal(
+    demoPackage.scripts.runtime,
+    'node ../../packages/godot-js-runtime/dist/cli.js',
+  )
   assert.match(
     demoPackage.scripts['install:runtime'],
-    /godot-js-runtime install/,
+    /^npm run runtime -- install/,
   )
-  assert.match(demoPackage.scripts.typegen, /godot-js-runtime typegen/)
+  assert.match(demoPackage.scripts.typegen, /^npm run runtime -- typegen/)
   assert.match(smoke, /installation-manifest\.json/)
   assert.match(smoke, /--quit-after/)
   assert.match(smoke, /user-preserved\.txt/)

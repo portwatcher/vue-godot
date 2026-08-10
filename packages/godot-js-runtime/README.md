@@ -466,6 +466,8 @@ releases while retaining correct `RefCounted` ownership through Variants.
 The build pins `godot-cpp`, QuickJS-ng, and SCons in
 `native/deps.lock.json`. Bootstrap verifies every archive with SHA-256 before
 extracting it into the ignored `native/third_party` directory.
+Package tests run that bootstrap automatically, so a clean checkout does not
+depend on a previously populated native dependency tree.
 `native/godot-cpp-profile.json` compiles only the public C++ wrappers used by
 the runtime host; the complete pinned extension API remains available for the
 generated JavaScript binding surface. The deterministic generator currently

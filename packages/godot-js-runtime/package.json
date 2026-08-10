@@ -51,6 +51,7 @@
   },
   "scripts": {
     "build": "npx tsc -p .",
+    "pretest": "npm run bootstrap:native",
     "test": "npm run build && npm run check:types && npm run test:types && node --test test/*.test.mjs",
     "bootstrap:native": "node scripts/bootstrap-deps.mjs",
     "build:native": "node scripts/build-native.mjs",
