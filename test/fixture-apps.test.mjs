@@ -316,7 +316,15 @@ test('fixture app workspaces expose the regression build contract', () => {
       )
       assert.equal(
         packageJson.scripts?.['install:runtime'],
-        'godot-js-runtime install --project .',
+        'npm run runtime -- install --project .',
+      )
+      assert.equal(
+        packageJson.scripts?.runtime,
+        'node ../../packages/godot-js-runtime/dist/cli.js',
+      )
+      assert.equal(
+        packageJson.scripts?.typegen,
+        'npm run runtime -- typegen --project .',
       )
       for (const dependencyName of fixture.requiredDependencies) {
         assert.ok(

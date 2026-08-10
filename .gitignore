@@ -47,8 +47,9 @@ dist
 .godot/
 /android/
 
-# Runtime-generated stock-Godot typings
-apps/*/typings/
+# Runtime-generated stock-Godot typings; keep Godot scan markers in fixtures.
+apps/*/typings/*
+!apps/*/typings/.gdignore
 
 # Debug
 npm-debug.log*
