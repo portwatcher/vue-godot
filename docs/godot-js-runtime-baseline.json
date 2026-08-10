@@ -126,13 +126,10 @@
         "apps/anchor-ordering/.gitignore",
         "apps/game-ui-demo/.gitignore",
         "apps/html-demo/.gitignore",
-        "apps/html-demo/tsconfig.json",
         "apps/lifecycles/.gitignore",
         "apps/native-app-demo/.gitignore",
         "apps/template-ref/.gitignore",
-        "apps/template-ref/tsconfig.json",
         "apps/v-model/.gitignore",
-        "apps/v-model/tsconfig.json",
         "apps/v-on/.gitignore",
         "packages/cli/templates/godot/.gitignore",
         "packages/cli/templates/typings/godot.minimal.d.ts",
@@ -218,6 +215,17 @@
       "phase": 10,
       "destination": "Retain as historical migration contract and final evidence ledger.",
       "paths": ["docs/godot-js-gdextension-plan.md"]
+    }
+  ],
+  "resolvedInventory": [
+    {
+      "phase": 5,
+      "destination": "TypeScript checking now uses noEmit with Vite-owned output and no custom-editor cache path.",
+      "paths": [
+        "apps/html-demo/tsconfig.json",
+        "apps/template-ref/tsconfig.json",
+        "apps/v-model/tsconfig.json"
+      ]
     }
   ]
 }

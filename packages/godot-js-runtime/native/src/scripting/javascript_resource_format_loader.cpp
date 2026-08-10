@@ -5,19 +5,11 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #include "godot_js_runtime/runtime/godot_environment.hpp"
+#include "godot_js_runtime/runtime/string_conversion.hpp"
 #include "godot_js_runtime/scripting/javascript_script.hpp"
 #include "godot_js_runtime/scripting/javascript_script_path.hpp"
 
 namespace godot_js_runtime {
-
-namespace {
-
-std::string standard_string(const godot::String &value) {
-	const godot::CharString utf8 = value.utf8();
-	return std::string(utf8.get_data(), static_cast<std::size_t>(utf8.length()));
-}
-
-} // namespace
 
 void JavaScriptResourceFormatLoader::_bind_methods() {
 }

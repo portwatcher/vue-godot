@@ -17,6 +17,7 @@
 #include <utility>
 #include <vector>
 
+#include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/core/object_id.hpp>
@@ -46,6 +47,7 @@
 #include "godot_js_runtime/generated/binding_metadata.gen.hpp"
 #include "godot_js_runtime/generated/utility_dispatch.gen.hpp"
 #include "godot_js_runtime/runtime/scoped_js_value.hpp"
+#include "godot_js_runtime/runtime/string_conversion.hpp"
 #include "quickjs.h"
 
 namespace godot_js_runtime {
@@ -62,15 +64,6 @@ constexpr std::size_t MAX_CONVERSION_DEPTH = 64U;
 std::atomic_size_t live_wrappers = 0;
 std::atomic_size_t live_callback_roots = 0;
 std::atomic_uint64_t next_callback_serial = 1;
-
-std::string standard_string(const godot::String &value) {
-	const godot::CharString utf8 = value.utf8();
-	return std::string(utf8.get_data(), static_cast<std::size_t>(utf8.length()));
-}
-
-godot::String godot_string(const std::string &value) {
-	return godot::String::utf8(value.c_str(), static_cast<std::int64_t>(value.size()));
-}
 
 JSValue javascript_string(JSContext *context, const godot::String &value) {
 	const godot::CharString utf8 = value.utf8();
@@ -2527,6 +2520,56 @@ struct GodotBinding::Impl {
 				godot::Callable(memnew(JavaScriptCallable(std::move(root)))));
 	}
 
+	static JSValue js_signal_as_promise(
+			JSContext *call_context,
+			JSValueConst this_value,
+			int,
+			JSValueConst *) {
+		Impl *binding = from_context(call_context);
+		WrapperPayload *payload = binding == nullptr
+				? nullptr
+				: binding->wrapper_payload(this_value);
+		if (payload == nullptr ||
+				payload->value.get_type() != godot::Variant::SIGNAL) {
+			return JS_ThrowTypeError(
+					call_context,
+					"Signal.as_promise requires a Signal receiver");
+		}
+
+		JSValue resolving_functions[2] = { JS_UNDEFINED, JS_UNDEFINED };
+		ScopedJSValue promise(
+				call_context,
+				JS_NewPromiseCapability(call_context, resolving_functions));
+		ScopedJSValue resolve(call_context, resolving_functions[0]);
+		ScopedJSValue reject(call_context, resolving_functions[1]);
+		if (JS_IsException(promise.get())) {
+			return JS_EXCEPTION;
+		}
+
+		std::shared_ptr<CallbackRoot> root = binding->create_callback_root(
+				call_context,
+				JS_UNDEFINED,
+				resolve.get(),
+				0);
+		// Promise resolve accepts one value, but a zero-argument Godot signal must
+		// still be allowed to connect. Extra signal arguments are forwarded and
+		// Promise resolution deliberately consumes only the first one.
+		root->argument_count = 0;
+		godot::Callable callable(memnew(JavaScriptCallable(std::move(root))));
+		godot::Signal signal = payload->value;
+		const int64_t result = signal.connect(
+				callable,
+				godot::Object::CONNECT_ONE_SHOT);
+		if (result != godot::OK) {
+			return JS_ThrowInternalError(
+					call_context,
+					"Signal.as_promise could not create a one-shot connection (error %lld)",
+					static_cast<long long>(result));
+		}
+		binding->signal_connections.push_back({ signal, callable });
+		return promise.release();
+	}
+
 	static JSValue js_packed_to_array_buffer(
 			JSContext *call_context,
 			JSValueConst this_value,
@@ -3017,6 +3060,18 @@ struct GodotBinding::Impl {
 								context,
 								js_packed_to_array_buffer,
 								"to_array_buffer",
+								0)) < 0) {
+			return false;
+		}
+		if (std::strcmp(builtin.name, "Signal") == 0 &&
+				JS_SetPropertyStr(
+						context,
+						prototype.get(),
+						"as_promise",
+						JS_NewCFunction(
+								context,
+								js_signal_as_promise,
+								"as_promise",
 								0)) < 0) {
 			return false;
 		}

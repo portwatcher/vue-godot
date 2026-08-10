@@ -38,6 +38,9 @@ release/release-readiness-checklist.md
 out/
 build
 dist
+!packages/godot-js-runtime/native/tests/fixtures/stock-shell/dist/
+!packages/godot-js-runtime/native/tests/fixtures/stock-shell/dist/source-map-error.mjs
+!packages/godot-js-runtime/native/tests/fixtures/stock-shell/dist/source-map-error.mjs.map
 
 # Godot
 .godot/

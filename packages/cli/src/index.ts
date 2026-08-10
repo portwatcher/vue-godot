@@ -11,7 +11,7 @@ export type {
 } from './doctor.js'
 
 export interface GenerateOptions {
-  /** Directory containing godot*.gen.d.ts files */
+  /** Directory containing generated Godot declaration files */
   typingsDir: string
   /** Output file path for the generated .d.ts */
   outFile: string
@@ -29,18 +29,24 @@ export interface GenerateOptions {
 }
 
 /**
- * Parse all `class Foo<…> extends Bar<…>` declarations from godot*.gen.d.ts
- * and build a { className → parentClassName } map.
+ * Parse class inheritance from legacy binding bundles or the standalone
+ * runtime's stock-Godot declaration and build a class-to-parent map.
  */
 function parseClassHierarchy(typingsDir: string): Map<string, string> {
   const classes = new Map<string, string>()
   const files = fs
     .readdirSync(typingsDir)
-    .filter((f) => /^godot\d*\.gen\.d\.ts$/.test(f) || f === 'godot.mix.d.ts')
+    .filter(
+      (file) =>
+        /^godot\d*\.gen\.d\.ts$/.test(file) ||
+        file === 'godot.mix.d.ts' ||
+        file === 'godot.d.ts' ||
+        file === 'godot.runtime.d.ts',
+    )
 
   for (const file of files.sort()) {
     const content = fs.readFileSync(path.join(typingsDir, file), 'utf-8')
-    const re = /class\s+(\w+)\s*<.*?>\s+extends\s+(\w+)/g
+    const re = /class\s+(\w+)(?:\s*<[^>{}]*>)?\s+extends\s+(\w+)/g
     let m: RegExpExecArray | null
     while ((m = re.exec(content)) !== null) {
       classes.set(m[1], m[2])
@@ -120,7 +126,13 @@ export function generateSource(options: GenerateOptions): string {
     )
   }
 
-  lines.push('  }', '}', '', 'declare module "vue" {', '  export interface GlobalComponents {')
+  lines.push(
+    '  }',
+    '}',
+    '',
+    'declare module "vue" {',
+    '  export interface GlobalComponents {',
+  )
 
   for (const node of nodes) {
     lines.push(

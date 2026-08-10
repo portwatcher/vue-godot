@@ -5,6 +5,12 @@ import {
   runtimeFeatures,
   runtimeVersion,
 } from 'godot-js'
+import {
+  callable as compatibilityCallable,
+  impl as compatibilityImplementation,
+  to_array_buffer as compatibilityArrayBuffer,
+  version as compatibilityVersion,
+} from 'godot-jsb'
 import settings from './settings.json'
 import { moduleMarker } from './module.mjs'
 import './variant-roundtrip.mjs'
@@ -113,9 +119,14 @@ streamPlayer.free()
 
 const bytes = new PackedByteArray(new Uint8Array([1, 2, 255]))
 const bytesCopy = new Uint8Array(bytes.to_array_buffer())
+const compatibilityBytesCopy = new Uint8Array(compatibilityArrayBuffer(bytes))
 assertBinding(
   bytesCopy.length === 3 && bytesCopy[0] === 1 && bytesCopy[2] === 255,
   'PackedByteArray copy API',
+)
+assertBinding(
+  compatibilityBytesCopy.length === 3 && compatibilityBytesCopy[2] === 255,
+  'limited godot-jsb PackedByteArray compatibility',
 )
 assertBinding(bytes[2] === 255, 'packed array indexed read')
 const wideIntegers = new PackedInt64Array([9007199254740993n])
@@ -131,6 +142,11 @@ const callable = Callable.create(() => {
 assertBinding(callable.is_valid(), 'JavaScript Callable is valid')
 callable.call()
 assertBinding(callbackCount === 1, 'Callable crosses Godot callback boundary')
+const compatibleCallable = compatibilityCallable(() => 42)
+assertBinding(
+  compatibleCallable.call() === 42,
+  'limited godot-jsb Callable compatibility',
+)
 const timer = new Timer()
 timer.timeout.connect(callable)
 assertBinding(timer.timeout.is_connected(callable), 'Signal retains Callable')
@@ -139,6 +155,11 @@ assertBinding(
   !timer.timeout.is_connected(callable),
   'Signal disconnect releases connection',
 )
+timer.timeout.as_promise().then((value) => {
+  assertBinding(value === undefined, 'zero-argument Signal Promise value')
+  console.log('[godot-js-runtime] PHASE5_SIGNAL_PROMISE PASS')
+})
+timer.timeout.emit()
 const shutdownCallable = Callable.create(() => {})
 ProjectSettings.settings_changed.connect(shutdownCallable)
 assertBinding(
@@ -262,6 +283,12 @@ console.log(
 
 if (runtimeVersion() !== '0.0.0-development') {
   throw new Error(`Unexpected runtime version: ${runtimeVersion()}`)
+}
+if (
+  compatibilityVersion !== runtimeVersion() ||
+  compatibilityImplementation !== 'QuickJS-ng'
+) {
+  throw new Error('godot-jsb compatibility identity is incorrect')
 }
 if (quickJSVersion() !== '0.15.0') {
   throw new Error(`Unexpected QuickJS-ng version: ${quickJSVersion()}`)

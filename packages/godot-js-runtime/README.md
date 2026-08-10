@@ -66,6 +66,47 @@ export default defineScript(Player, {
 })
 ```
 
+## TypeScript declarations
+
+The package ships generated ambient declarations for the virtual `godot`,
+`godot-js`, and limited `godot-jsb` compatibility modules under `typings/`.
+They are generated from the pinned official Godot 4.4.1 extension API and do
+not require a custom editor or editor-generated binding bundle.
+
+For a standalone TypeScript project, include the declaration entry point in
+`tsconfig.json` while keeping application output owned by the project's
+bundler:
+
+```json
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "strict": true
+  },
+  "files": ["node_modules/godot-js-runtime/typings/index.d.ts", "src/player.ts"]
+}
+```
+
+Regenerate the checked-in declarations from the pinned API, or verify them
+against the pinned input. To generate a separate declaration set from another
+official stock-Godot executable, provide an explicit output directory:
+
+```bash
+npm run gen:types --workspace=godot-js-runtime
+npm run check:types --workspace=godot-js-runtime
+node packages/godot-js-runtime/scripts/generate-types.mjs \
+  --godot /path/to/godot --out-dir /path/to/generated-types
+```
+
+The generator also accepts `--api /path/to/extension_api.json` and
+`--out-dir /path/to/output`. `--check` fails when any declaration or the
+fingerprinted manifest differs from deterministic output. The generated
+surface includes class inheritance, methods, properties, signals, enums,
+bitfields, constants, Variant value types, singletons, utilities, native
+structures, and links to the matching official Godot documentation.
+
 ## Embedded `godot-js` module
 
 Resource-backed ES modules can import `godot-js`, and CommonJS bundles can
@@ -87,6 +128,14 @@ relative extension and index resolution, circular dependencies, module caches,
 Promise job draining, bounded memory/stack/execution, Godot-routed console
 levels, and external version-3 source maps. Node.js built-ins and arbitrary
 filesystem access are intentionally unavailable.
+
+## Limited `godot-jsb` compatibility module
+
+Migration code may import or require `godot-jsb`, but its supported surface is
+deliberately limited to `callable()`, `to_array_buffer()`, `version`, and
+`impl`. New code should use `Callable.create()` and
+`PackedByteArray.to_array_buffer()` from `godot` directly. Other historical
+helper functions are not part of this runtime's compatibility contract.
 
 The extension also registers `GodotJavaScriptRuntimeInfo` for stock-Godot
 diagnostics. It reports the product/package/runtime/minimum-Godot versions,
@@ -157,6 +206,23 @@ context safely:
   the old context are disconnected before teardown.
 - Unsaved editor source stored in `Script.source_code` is used for reload;
   otherwise the resource is refreshed from disk.
+- While the editor is open, saved `.js`, `.mjs`, and `.cjs` file changes are
+  detected and trigger a state-preserving soft reload. Unsaved in-memory source
+  is never overwritten by the disk monitor.
+
+## Editor integration
+
+The registered JavaScript language recognizes `.js`, `.mjs`, and `.cjs`,
+provides default and empty script templates, and validates syntax through the
+same QuickJS-ng compiler used at runtime. Validation reports resource path,
+line, column, and message without executing the module. Godot's normal external
+editor setting remains authoritative; the runtime does not claim a built-in
+code editor or intercept external-editor launches.
+
+Runtime exceptions retain their JavaScript stack and are remapped through an
+external version-3 source map when one is present. Generated TypeScript and Vue
+bundles should emit `.map` files beside their JavaScript output so Godot's
+debugger and error output can identify the original source file and line.
 
 ## Runtime project settings
 
@@ -207,6 +273,7 @@ Generated dispatch has these deliberately small special cases:
 | Variant `Object` slot                                 | Godot's API dump omits `Object` from `builtin_classes`, so generation uses the canonical `Variant.Type` order rather than array position.                                                 |
 | `Object.free()`                                       | The API dump omits this core method. The runtime supplies it for non-`RefCounted` objects, rejects manual destruction of `RefCounted` instances, and invalidates the wrapper immediately. |
 | `Callable.create()`                                   | JavaScript functions require a repository-owned `CallableCustom` adapter, rooted only while the Callable or a signal connection retains it.                                               |
+| `Signal.as_promise()`                                 | A one-shot tracked connection resolves with the signal's first argument, or `undefined` for a zero-argument signal, matching the migration surface used by existing packages.             |
 | Signal connection teardown                            | Connections created through JavaScript are tracked, pruned after collection, and disconnected before their QuickJS context is destroyed.                                                  |
 | Editor-only singletons                                | Their exports are `null` outside editor runs instead of manufacturing invalid wrappers.                                                                                                   |
 | Packed arrays                                         | `to_array_buffer()` and `toTypedArray()` copy data so JavaScript cannot outlive Godot storage.                                                                                            |
@@ -236,6 +303,8 @@ fingerprint and pinned `godot-cpp` commit.
 npm run bootstrap:native --workspace=godot-js-runtime
 npm run generate:bindings --workspace=godot-js-runtime
 npm run check:bindings --workspace=godot-js-runtime
+npm run gen:types --workspace=godot-js-runtime
+npm run check:types --workspace=godot-js-runtime
 npm run build:native --workspace=godot-js-runtime
 npm run test:native --workspace=godot-js-runtime
 ```
@@ -256,13 +325,14 @@ At this phase, the extension, live generated binding, and JavaScript script
 language load and unload cleanly in official Godot 4.4.1 and the current stable
 editor. The stock fixture attaches a non-Vue script, exercises lifecycle and
 notification dispatch, reflected methods/properties/signals/RPC metadata,
-editor placeholders, tool scripts, source serialization, actionable loader
+editor placeholders, tool scripts, source serialization, syntax diagnostics,
+templates, file monitoring, actionable loader errors, source-mapped runtime
 errors, hard and state-preserving soft reloads, deferred reloads, and repeated
 editor play/stop cycles. It retains the earlier all-Variant, ownership,
-callback, ESM, CommonJS, source-map, limit, and stress coverage. Every cycle
-asserts balanced runtime, wrapper, and callback ownership. Type generation,
-broader editor tooling, installers, platform exports, and Vue migration remain
-later gates.
+callback, ESM, CommonJS, limit, and stress coverage. Every cycle asserts
+balanced runtime, wrapper, and callback ownership. Deterministic stock-Godot
+type generation and a strict plain-TypeScript fixture are also verified.
+Installers, platform exports, and Vue migration remain later gates.
 
 ## Security model
 

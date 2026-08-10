@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <chrono>
 #include <cstdint>
 #include <limits>
 #include <optional>
@@ -22,27 +23,21 @@
 #include "godot_js_runtime/runtime/runtime_project_settings.hpp"
 #include "godot_js_runtime/runtime/scoped_js_value.hpp"
 #include "godot_js_runtime/runtime/script_metadata_key.hpp"
+#include "godot_js_runtime/runtime/string_conversion.hpp"
 #include "godot_js_runtime/scripting/javascript_script.hpp"
 #include "godot_js_runtime/scripting/javascript_script_instance.hpp"
+#include "godot_js_runtime/scripting/javascript_language.hpp"
 
 namespace godot_js_runtime {
 
 namespace {
 
-std::string standard_string(const godot::String &value) {
-	const godot::CharString utf8 = value.utf8();
-	return std::string(utf8.get_data(), static_cast<std::size_t>(utf8.length()));
-}
-
-std::string standard_string(const godot::StringName &value) {
-	return standard_string(static_cast<godot::String>(value));
-}
-
-godot::String godot_string(const std::string &value) {
-	return godot::String::utf8(value.c_str(), static_cast<std::int64_t>(value.size()));
-}
-
 std::string evaluation_error(const EvaluationResult &result) {
+	if (result.exception.has_value()) {
+		if (JavaScriptLanguage *language = JavaScriptLanguage::get_singleton()) {
+			language->record_exception(*result.exception);
+		}
+	}
 	return result.exception.has_value()
 			? format_exception(*result.exception)
 			: std::string("Unknown JavaScript runtime failure");
@@ -283,6 +278,7 @@ bool apply_property_hint(
 struct JavaScriptProjectRuntime::Impl {
 	struct ScriptRecord {
 		JSValue constructor = JS_UNDEFINED;
+		std::string observed_source;
 	};
 
 	struct InstanceRecord {
@@ -299,6 +295,7 @@ struct JavaScriptProjectRuntime::Impl {
 	std::unordered_map<JavaScriptScriptInstance *, InstanceRecord> instances;
 	std::thread::id owner_thread = std::this_thread::get_id();
 	std::optional<bool> pending_reload_keep_state;
+	std::chrono::steady_clock::time_point next_file_poll{};
 	bool stopping = false;
 
 	bool on_owner_thread() const {
@@ -429,11 +426,14 @@ struct JavaScriptProjectRuntime::Impl {
 				}
 				argument_count = std::clamp(argument_count, 0, 64);
 				godot::MethodInfo method(godot::StringName(godot_string(name)));
+				method.return_val_metadata = GDEXTENSION_METHOD_ARGUMENT_METADATA_NONE;
 				method.return_val = godot::PropertyInfo(godot::Variant::NIL, {});
 				for (int32_t index = 0; index < argument_count; ++index) {
 					method.arguments.emplace_back(
 							godot::Variant::NIL,
 							godot::StringName("arg" + godot::String::num_int64(index)));
+					method.arguments_metadata.push_back(
+							GDEXTENSION_METHOD_ARGUMENT_METADATA_NONE);
 				}
 				metadata.methods.push_back({ std::move(method), argument_count });
 			}
@@ -573,6 +573,7 @@ struct JavaScriptProjectRuntime::Impl {
 				return false;
 			}
 			godot::MethodInfo signal(godot::StringName(godot_string(name)));
+			signal.return_val_metadata = GDEXTENSION_METHOD_ARGUMENT_METADATA_NONE;
 			for (int64_t index = 0; index < length; ++index) {
 				ScopedJSValue argument(
 						context,
@@ -611,6 +612,8 @@ struct JavaScriptProjectRuntime::Impl {
 						godot::String(),
 						godot::PROPERTY_USAGE_DEFAULT,
 						type->class_name);
+				signal.arguments_metadata.push_back(
+						GDEXTENSION_METHOD_ARGUMENT_METADATA_NONE);
 			}
 			metadata.signals.push_back(std::move(signal));
 		}
@@ -701,6 +704,7 @@ struct JavaScriptProjectRuntime::Impl {
 			report(script.source_path(), "source read", source_error);
 			return false;
 		}
+		record.observed_source = standard_string(script._get_source_code());
 		free_value(record.constructor);
 		JSValue script_class = JS_UNDEFINED;
 		const std::string extension = standard_string(script.source_path().get_extension().to_lower());
@@ -1063,6 +1067,42 @@ struct JavaScriptProjectRuntime::Impl {
 		pending_reload_keep_state.reset();
 		reload_all(keep_state);
 	}
+
+	void poll_file_changes() {
+		if (stopping || !on_owner_thread()) {
+			return;
+		}
+		const auto now = std::chrono::steady_clock::now();
+		if (now < next_file_poll) {
+			return;
+		}
+		next_file_poll = now + std::chrono::milliseconds(250);
+		std::vector<godot::String> changed_paths;
+		for (auto &entry : scripts) {
+			JavaScriptScript *script = entry.first;
+			if (script == nullptr || script->has_source_changes()) {
+				continue;
+			}
+			const std::string path = standard_string(script->source_path());
+			std::string source;
+			std::string error;
+			if (!resources.read_text(path, source, error) ||
+					source == entry.second.observed_source) {
+				continue;
+			}
+			entry.second.observed_source = std::move(source);
+			changed_paths.push_back(script->source_path());
+		}
+		if (changed_paths.empty()) {
+			return;
+		}
+		for (const godot::String &path : changed_paths) {
+			godot::UtilityFunctions::print(
+					"[godot-js-runtime] FILE_CHANGE_DETECTED ",
+					path);
+		}
+		reload_all(true);
+	}
 };
 
 JavaScriptProjectRuntime::JavaScriptProjectRuntime() : impl(std::make_unique<Impl>()) {
@@ -1225,6 +1265,36 @@ void JavaScriptProjectRuntime::invalidate_instance(
 void JavaScriptProjectRuntime::reload_all(bool keep_state) {
 	if (impl != nullptr) {
 		impl->reload_all(keep_state);
+	}
+}
+
+EvaluationResult JavaScriptProjectRuntime::validate_source(
+		const std::string &source,
+		const std::string &path,
+		bool module) {
+	if (impl == nullptr || !impl->on_owner_thread() || impl->stopping ||
+			!impl->start()) {
+		return EvaluationResult{
+			false,
+			{},
+			JavaScriptException{
+				"RuntimeError",
+				"JavaScript validation runtime is unavailable",
+				{},
+				path,
+				1,
+				1,
+				false,
+			},
+			0,
+		};
+	}
+	return impl->host->validate_syntax(source, path, module);
+}
+
+void JavaScriptProjectRuntime::poll_file_changes() {
+	if (impl != nullptr) {
+		impl->poll_file_changes();
 	}
 }
 

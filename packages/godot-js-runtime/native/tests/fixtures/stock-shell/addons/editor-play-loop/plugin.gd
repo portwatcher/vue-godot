@@ -5,6 +5,7 @@ const PLAY_CYCLES := 3
 const PLAY_TIMEOUT_MSEC := 20_000
 const PLAY_MARKER := "user://godot-js-runtime-editor-play.log"
 const TOOL_MARKER := "user://godot-js-runtime-tool-script.log"
+const FILE_RELOAD_TIMEOUT_MSEC := 10_000
 
 var loop_started := false
 
@@ -61,6 +62,88 @@ func _run_play_loop() -> void:
 		get_tree().quit(1)
 		return
 	print("[godot-js-runtime] PHASE4_EDITOR_PLACEHOLDER PASS")
+	var language = null
+	for index in range(Engine.get_script_language_count()):
+		var candidate := Engine.get_script_language(index)
+		if candidate.has_method("validate_source"):
+			language = candidate
+			break
+	if language == null:
+		push_error("Editor could not find the JavaScript language")
+		get_tree().quit(1)
+		return
+	var recognized: PackedStringArray = language.call("get_script_extensions")
+	if not recognized.has("js") or not recognized.has("mjs") or not recognized.has("cjs"):
+		push_error("Editor JavaScript file recognition is incomplete")
+		get_tree().quit(1)
+		return
+	var templates: Array = language.call("get_script_templates", &"Node2D")
+	if templates.size() < 2:
+		push_error("Editor JavaScript templates are unavailable")
+		get_tree().quit(1)
+		return
+	for template in templates:
+		for key in [&"inherit", &"name", &"description", &"content", &"id", &"origin"]:
+			if not template.has(key):
+				push_error("Editor JavaScript template is missing %s" % key)
+				get_tree().quit(1)
+				return
+	var generated: Script = language.call(
+		"make_script_template",
+		templates[0]["content"],
+		"GeneratedPlayer",
+		"Node2D",
+	)
+	if (
+		generated == null
+		or not generated.source_code.contains("class GeneratedPlayer extends Node2D")
+	):
+		push_error("Editor JavaScript template placeholders were not expanded")
+		get_tree().quit(1)
+		return
+	if language.call("overrides_external_editor"):
+		push_error("JavaScript language unexpectedly bypasses Godot's external editor")
+		get_tree().quit(1)
+		return
+	var diagnostic: Dictionary = language.call(
+		"validate_source",
+		"export const valid = 1\nexport const broken = ;\n",
+		"res://editor-plugin-diagnostic.mjs",
+		true,
+		true,
+		true,
+		true,
+	)
+	var diagnostic_errors: Array = diagnostic.get("errors", [])
+	if (
+		diagnostic.get("valid", true)
+		or diagnostic_errors.size() != 1
+		or diagnostic_errors[0].get("line") != 2
+		or diagnostic_errors[0].get("path") != "res://editor-plugin-diagnostic.mjs"
+	):
+		push_error("Editor JavaScript diagnostics have an incorrect file or line")
+		get_tree().quit(1)
+		return
+	print("[godot-js-runtime] PHASE5_EDITOR_LANGUAGE PASS")
+	tool_probe.set("state", 99)
+	var replacement := FileAccess.open("res://tool-script.mjs", FileAccess.WRITE)
+	if replacement == null:
+		push_error("Editor could not stage a JavaScript file-monitor reload")
+		get_tree().quit(1)
+		return
+	replacement.store_string(FileAccess.get_file_as_string("res://tool-script-v2.source"))
+	replacement = null
+	var reload_deadline := Time.get_ticks_msec() + FILE_RELOAD_TIMEOUT_MSEC
+	while (
+		(tool_probe.call("generation") != 2 or tool_probe.get("state") != 99)
+		and Time.get_ticks_msec() < reload_deadline
+	):
+		await get_tree().process_frame
+	if tool_probe.call("generation") != 2 or tool_probe.get("state") != 99:
+		push_error("Editor JavaScript file monitor did not preserve compatible state")
+		get_tree().quit(1)
+		return
+	print("[godot-js-runtime] PHASE5_EDITOR_FILE_MONITOR PASS")
 	var baseline_runtime_info := GodotJavaScriptRuntimeInfo.new()
 	var baseline_wrappers := baseline_runtime_info.get_live_wrapper_count()
 	var baseline_callbacks := baseline_runtime_info.get_live_callback_root_count()

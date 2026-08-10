@@ -2,12 +2,14 @@
 #define GODOT_JS_RUNTIME_JAVASCRIPT_LANGUAGE_HPP
 
 #include <memory>
+#include <vector>
 
 #include <godot_cpp/classes/script_language_extension.hpp>
 
 namespace godot_js_runtime {
 
 class JavaScriptProjectRuntime;
+struct JavaScriptException;
 
 class JavaScriptLanguage : public godot::ScriptLanguageExtension {
 	GDCLASS(JavaScriptLanguage, godot::ScriptLanguageExtension)
@@ -18,6 +20,8 @@ public:
 
 	static JavaScriptLanguage *get_singleton();
 	JavaScriptProjectRuntime *project_runtime();
+	void record_exception(const JavaScriptException &exception);
+	void clear_debug_error();
 
 	godot::String _get_name() const override;
 	void _init() override;
@@ -128,8 +132,16 @@ protected:
 	static void _bind_methods();
 
 private:
+	struct DebugFrame {
+		godot::String source;
+		godot::String function;
+		int32_t line = -1;
+	};
+
 	static JavaScriptLanguage *singleton;
 	std::unique_ptr<JavaScriptProjectRuntime> runtime;
+	godot::String debug_error;
+	std::vector<DebugFrame> debug_frames;
 	bool finished = false;
 };
 

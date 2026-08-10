@@ -39,7 +39,10 @@ test('generateSource emits method-filtered GlobalComponents without any', () => 
       outFile: path.join(tempDir, 'godot.vue-components.gen.d.ts'),
     })
 
-    assert.match(source, /type GodotMethod = \(\.\.\.args: never\[\]\) => unknown/)
+    assert.match(
+      source,
+      /type GodotMethod = \(\.\.\.args: never\[\]\) => unknown/,
+    )
     assert.match(source, /declare module "@vue\/runtime-core"/)
     assert.match(source, /declare module "vue"/)
     assert.match(
@@ -47,6 +50,34 @@ test('generateSource emits method-filtered GlobalComponents without any', () => 
       /Button: new \(\) => \{ \$props: VueGodotComponentProps<import\("godot"\)\.Button> \}/,
     )
     assert.doesNotMatch(source, /\bany\b/)
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('generateSource consumes standalone stock-Godot class declarations', () => {
+  const tempDir = createTempDir()
+  try {
+    writeFile(
+      path.join(tempDir, 'godot.d.ts'),
+      `declare module 'godot' {
+  export class Node {}
+  export class CanvasItem extends Node {}
+  export class Control extends CanvasItem {}
+  export class BaseButton extends Control {}
+  export class Button extends BaseButton {}
+}
+`,
+    )
+
+    const source = generateSource({
+      typingsDir: tempDir,
+      outFile: path.join(tempDir, 'godot.vue-components.gen.d.ts'),
+    })
+
+    assert.match(source, /Control: new \(\)/)
+    assert.match(source, /BaseButton: new \(\)/)
+    assert.match(source, /Button: new \(\)/)
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true })
   }

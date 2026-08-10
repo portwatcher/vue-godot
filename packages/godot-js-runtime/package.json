@@ -32,6 +32,7 @@
     "native/tests/**/*.cpp",
     "native/tests/fixtures",
     "scripts",
+    "typings",
     "LICENSE",
     "README.md",
     "THIRD_PARTY_NOTICES.md"
@@ -41,12 +42,16 @@
   },
   "scripts": {
     "build": "npx tsc -p .",
-    "test": "npm run build && node --test test/*.test.mjs",
+    "test": "npm run build && npm run check:types && npm run test:types && node --test test/*.test.mjs",
     "bootstrap:native": "node scripts/bootstrap-deps.mjs",
     "build:native": "node scripts/build-native.mjs",
     "test:native": "node scripts/build-native.mjs --run-tests",
     "generate:bindings": "node scripts/generate-bindings.mjs",
     "check:bindings": "node scripts/generate-bindings.mjs --check",
+    "gen:types": "node scripts/generate-types.mjs",
+    "generate:types": "npm run gen:types",
+    "check:types": "node scripts/generate-types.mjs --check",
+    "test:types": "tsc -p test/fixtures/plain-types",
     "generate:manifest": "node scripts/generate-extension-manifest.mjs",
     "smoke:native": "node scripts/smoke-stock-godot.mjs"
   },

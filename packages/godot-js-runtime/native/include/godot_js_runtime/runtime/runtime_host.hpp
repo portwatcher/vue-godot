@@ -63,6 +63,10 @@ public:
 	EvaluationResult evaluate_script(
 			const std::string &source,
 			const std::string &source_path = "res://eval.js");
+	EvaluationResult validate_syntax(
+			const std::string &source,
+			const std::string &source_path,
+			bool module);
 	EvaluationResult evaluate_module(const std::string &entry_path);
 	EvaluationResult evaluate_commonjs(const std::string &entry_path);
 	EvaluationResult evaluate_module_default(

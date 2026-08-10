@@ -137,12 +137,20 @@ test('stock fixture enforces binding, script-language, reload, and editor gates'
     path.join(fixtureRoot, 'reload-controller.gd'),
     'utf-8',
   )
+  const sourceMapFixture = fs.readFileSync(
+    path.join(fixtureRoot, 'dist/source-map-error.mjs'),
+    'utf-8',
+  )
   assert.match(project, /run\/main_run_args="--headless"/)
   assert.match(project, /\[godot_js_runtime\]/)
   assert.match(project, /runtime\/memory_limit_mb=96/)
   assert.match(project, /maximum_promise_jobs_per_frame=12000/)
   assert.match(editorPlugin, /PHASE4_EDITOR_PLACEHOLDER PASS/)
   assert.match(editorPlugin, /PHASE4_EDITOR_PLAY_LOOP PASS/)
+  assert.match(editorPlugin, /PHASE5_EDITOR_LANGUAGE PASS/)
+  assert.match(editorPlugin, /PHASE5_EDITOR_FILE_MONITOR PASS/)
+  assert.match(editorPlugin, /validate_source/)
+  assert.match(editorPlugin, /make_script_template/)
   assert.match(editorPlugin, /get_live_runtime_count\(\) != 1/)
   assert.match(editorPlugin, /get_live_wrapper_count\(\) != baseline_wrappers/)
   assert.match(
@@ -156,11 +164,16 @@ test('stock fixture enforces binding, script-language, reload, and editor gates'
   assert.match(smoke, /PHASE4_LANGUAGE_CONTRACT PASS/)
   assert.match(smoke, /PHASE4_DEFERRED_RELOAD PASS/)
   assert.match(smoke, /PHASE4_IN_MEMORY_RELOAD PASS/)
+  assert.match(smoke, /PHASE5_EDITOR_DIAGNOSTICS PASS/)
+  assert.match(smoke, /PHASE5_SOURCE_MAP_ERROR PASS/)
+  assert.match(smoke, /PHASE5_SIGNAL_PROMISE PASS/)
+  assert.match(smoke, /generate-types\.mjs/)
   assert.match(smoke, /STALE_RELOAD_PROMISE_EXECUTED/)
   assert.match(bindingFixture, /index < 2048/)
   assert.match(bindingFixture, /collectGarbage\(\)/)
   assert.match(bindingFixture, /stress signal disconnect/)
   assert.match(bindingFixture, /ProjectSettings\.settings_changed\.connect/)
+  assert.match(bindingFixture, /timeout\.as_promise\(\)/)
   assert.match(bindingFixture, /PHASE3_EXPECTED_CALLBACK_EXCEPTION/)
   assert.match(
     variantFixture,
@@ -168,6 +181,7 @@ test('stock fixture enforces binding, script-language, reload, and editor gates'
   )
   assert.match(variantFixture, /depth < 32/)
   assert.match(commonJsFixture, /require\('godot'\)/)
+  assert.match(commonJsFixture, /require\('godot-jsb'\)/)
   assert.match(attachedFixture, /export default defineScript/)
   assert.match(attachedFixture, /_enter_tree\(\)/)
   assert.match(attachedFixture, /_notification\(\)/)
@@ -178,6 +192,9 @@ test('stock fixture enforces binding, script-language, reload, and editor gates'
   assert.match(contractController, /ResourceSaver\.save/)
   assert.match(contractController, /invalid-export\.mjs/)
   assert.match(contractController, /incompatible-base\.mjs/)
+  assert.match(contractController, /source-map-error\.mjs/)
+  assert.match(contractController, /source-map-probe\.ts/)
+  assert.match(sourceMapFixture, /sourceMappingURL=source-map-error\.mjs\.map/)
   assert.match(reloadController, /script\.reload\(true\)/)
   assert.match(reloadController, /script\.reload\(false\)/)
   assert.match(reloadController, /script\.source_code = in_memory_source/)
@@ -211,6 +228,8 @@ test('script-language implementation registers public contracts and runtime sett
   assert.match(registerTypes, /add_resource_format_saver/)
   assert.match(language, /_get_recognized_extensions\(\)/)
   assert.match(language, /_reload_scripts/)
+  assert.match(language, /JavaScriptLanguage::_get_built_in_templates\(/)
+  assert.match(language, /project->validate_source/)
   assert.match(projectSettings, /MEMORY_LIMIT_MB, 128, 16, 4096/)
   assert.match(projectSettings, /MAXIMUM_STACK_SIZE_KB, 1024, 256, 16384/)
   assert.match(

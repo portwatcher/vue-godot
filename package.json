@@ -6,6 +6,8 @@
     "build:cli": "turbo run build --filter=@vue-godot/cli",
     "build:runtime": "turbo run build --filter=@vue-godot/runtime-tscn",
     "build:godot-js-runtime": "npm run build:native --workspace=godot-js-runtime",
+    "gen:types": "npm run gen:types --workspace=godot-js-runtime",
+    "check:vue-types": "vue-tsc --noEmit -p apps/html-demo/vue/tsconfig.json",
     "build:demo": "turbo run build --filter=\"./apps/*\"",
     "test": "turbo run test --filter=\"./packages/*\" && npm run test:scripts",
     "test:scripts": "node --test test/*.test.mjs",
@@ -35,7 +37,8 @@
     "@types/node": "^22.15.18",
     "prettier": "^3.5.3",
     "turbo": "^2.4.4",
-    "typescript": "5.8.2"
+    "typescript": "5.8.2",
+    "vue-tsc": "2.2.12"
   },
   "engines": {
     "node": ">=18"

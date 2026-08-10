@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
 
 #include <gdextension_interface.h>
 #include <godot_cpp/classes/global_constants.hpp>
@@ -13,6 +14,7 @@ namespace godot_js_runtime {
 
 class JavaScriptScript;
 class JavaScriptScriptInstance;
+struct EvaluationResult;
 
 class JavaScriptProjectRuntime {
 public:
@@ -48,6 +50,11 @@ public:
 			bool reversed);
 	void invalidate_instance(JavaScriptScriptInstance &instance) noexcept;
 	void reload_all(bool keep_state);
+	EvaluationResult validate_source(
+			const std::string &source,
+			const std::string &path,
+			bool module);
+	void poll_file_changes();
 	void pump_jobs();
 	void shutdown() noexcept;
 	bool is_running() const;

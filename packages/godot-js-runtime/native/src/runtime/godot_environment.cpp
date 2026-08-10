@@ -6,18 +6,11 @@
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "godot_js_runtime/runtime/string_conversion.hpp"
+
 namespace godot_js_runtime {
 
 namespace {
-
-godot::String godot_string(const std::string &value) {
-	return godot::String::utf8(value.c_str(), static_cast<int64_t>(value.size()));
-}
-
-std::string standard_string(const godot::String &value) {
-	const godot::CharString utf8 = value.utf8();
-	return std::string(utf8.get_data(), static_cast<std::size_t>(utf8.length()));
-}
 
 const char *console_level_name(ConsoleLevel level) {
 	switch (level) {

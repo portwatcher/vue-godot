@@ -2,6 +2,12 @@ import { Engine, FileAccess, Node } from 'godot'
 import { defineScript } from 'godot-js'
 
 class ToolScriptProbe extends Node {
+  state = 41
+
+  generation() {
+    return 1
+  }
+
   _ready() {
     if (Engine.is_editor_hint()) {
       const marker = FileAccess.open(
@@ -16,4 +22,7 @@ class ToolScriptProbe extends Node {
 
 export default defineScript(ToolScriptProbe, {
   tool: true,
+  properties: {
+    state: { type: 'int', default: 41 },
+  },
 })

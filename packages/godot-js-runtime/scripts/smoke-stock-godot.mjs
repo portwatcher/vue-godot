@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildNative } from './build-native.mjs'
@@ -15,6 +16,7 @@ const stagingRoot = path.join(
 const editorStagingRoot = path.join(stagingRoot, 'editor')
 const sceneStagingRoot = path.join(stagingRoot, 'scene')
 const expectedCallbackException = 'PHASE3_EXPECTED_CALLBACK_EXCEPTION'
+const typeGeneratorPath = path.join(packageRoot, 'scripts/generate-types.mjs')
 
 function parseArgs(argv) {
   const options = {
@@ -63,6 +65,83 @@ function runGodot(executable, args, description) {
     )
   }
   return output
+}
+
+function verifyStockTypeGeneration(executable) {
+  const temporaryRoot = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'godot-js-runtime-stock-types-'),
+  )
+  try {
+    const outputDirectories = ['first', 'second'].map((name) =>
+      path.join(temporaryRoot, name),
+    )
+    for (const outputDirectory of outputDirectories) {
+      const result = spawnSync(
+        process.execPath,
+        [
+          typeGeneratorPath,
+          '--godot',
+          executable,
+          '--out-dir',
+          outputDirectory,
+        ],
+        {
+          cwd: packageRoot,
+          encoding: 'utf-8',
+          timeout: 120_000,
+          maxBuffer: 16 * 1024 * 1024,
+        },
+      )
+      const output = `${result.stdout ?? ''}${result.stderr ?? ''}`
+      if (result.error || result.status !== 0) {
+        throw new Error(
+          `stock Godot type generation failed${
+            result.error
+              ? `: ${result.error.message}`
+              : ` with status ${String(result.status)}`
+          }\n${output}`,
+        )
+      }
+    }
+
+    const generatedNames = fs.readdirSync(outputDirectories[0]).sort()
+    if (
+      generatedNames.join(',') !==
+      'godot-js.d.ts,godot-jsb.d.ts,godot.d.ts,index.d.ts,manifest.json'
+    ) {
+      throw new Error(
+        `stock Godot type generation produced an unexpected file set: ${generatedNames.join(', ')}`,
+      )
+    }
+    for (const name of generatedNames) {
+      const first = fs.readFileSync(path.join(outputDirectories[0], name))
+      const second = fs.readFileSync(path.join(outputDirectories[1], name))
+      if (!first.equals(second)) {
+        throw new Error(
+          `stock Godot type generation is nondeterministic for ${name}`,
+        )
+      }
+    }
+
+    const manifest = JSON.parse(
+      fs.readFileSync(
+        path.join(outputDirectories[0], 'manifest.json'),
+        'utf-8',
+      ),
+    )
+    if (
+      manifest.schemaVersion !== 1 ||
+      !manifest.counts ||
+      manifest.counts.classes < 900 ||
+      manifest.counts.builtins < 30
+    ) {
+      throw new Error(
+        `stock Godot type generation produced an invalid manifest: ${JSON.stringify(manifest)}`,
+      )
+    }
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true })
+  }
 }
 
 function assertCount(output, marker, expected, description) {
@@ -162,7 +241,9 @@ function verifyProjectRuntimeBalance(output, description, minimumCycles = 1) {
     output.includes('PROJECT_RUNTIME_STARTED live=2') ||
     output.includes('PROJECT_RUNTIME_STOPPED live=1')
   ) {
-    throw new Error(`${description} ran overlapping project runtimes\n${output}`)
+    throw new Error(
+      `${description} ran overlapping project runtimes\n${output}`,
+    )
   }
   return starts
 }
@@ -203,8 +284,8 @@ function verifyEditorProjectRuntimes(output, description, playCycles) {
     '[godot-js-runtime] PROJECT_RUNTIME_STOPPED live=0',
   )
   if (
-    (starts !== 1 && starts !== playCycles + 1) ||
-    stops < 1 ||
+    (starts !== 2 && starts !== playCycles + 2) ||
+    stops < 2 ||
     stops > starts ||
     output.includes('PROJECT_RUNTIME_STARTED live=2')
   ) {
@@ -237,6 +318,7 @@ export async function smokeStockGodot(options) {
       `Expected an official Godot 4 executable, received: ${version}`,
     )
   }
+  verifyStockTypeGeneration(options.godot)
 
   const shellOutput = runGodot(
     options.godot,
@@ -267,6 +349,18 @@ export async function smokeStockGodot(options) {
   assertCount(
     editorPlayOutput,
     '[godot-js-runtime] PHASE4_EDITOR_PLAY_LOOP PASS',
+    1,
+    'headless editor play/stop loop',
+  )
+  assertCount(
+    editorPlayOutput,
+    '[godot-js-runtime] PHASE5_EDITOR_LANGUAGE PASS',
+    1,
+    'headless editor play/stop loop',
+  )
+  assertCount(
+    editorPlayOutput,
+    '[godot-js-runtime] PHASE5_EDITOR_FILE_MONITOR PASS',
     1,
     'headless editor play/stop loop',
   )
@@ -350,6 +444,12 @@ export async function smokeStockGodot(options) {
       1,
       description,
     )
+    assertCount(
+      output,
+      '[godot-js-runtime] PHASE5_SIGNAL_PROMISE PASS',
+      1,
+      description,
+    )
     assertCount(output, expectedCallbackException, 1, description)
     assertCount(
       output,
@@ -383,8 +483,18 @@ export async function smokeStockGodot(options) {
     ],
     contractDescription,
   )
-  assertCount(contractOutput, '[godot-js-runtime] INITIALIZED', 1, contractDescription)
-  assertCount(contractOutput, '[godot-js-runtime] TERMINATED', 1, contractDescription)
+  assertCount(
+    contractOutput,
+    '[godot-js-runtime] INITIALIZED',
+    1,
+    contractDescription,
+  )
+  assertCount(
+    contractOutput,
+    '[godot-js-runtime] TERMINATED',
+    1,
+    contractDescription,
+  )
   assertCount(
     contractOutput,
     '[godot-js-runtime] PHASE4_LANGUAGE_CONTRACT PASS',
@@ -397,11 +507,24 @@ export async function smokeStockGodot(options) {
     1,
     contractDescription,
   )
+  assertCount(
+    contractOutput,
+    '[godot-js-runtime] PHASE5_EDITOR_DIAGNOSTICS PASS',
+    1,
+    contractDescription,
+  )
+  assertCount(
+    contractOutput,
+    '[godot-js-runtime] PHASE5_SOURCE_MAP_ERROR PASS',
+    1,
+    contractDescription,
+  )
   for (const expected of [
     'res://incompatible-base.mjs requires base Node2D but was attached to Node',
     'res://invalid-export.mjs: default export must be a JavaScript class',
     'res://missing-default.mjs: default export must be a JavaScript class',
     'res://syntax-error.mjs:4:1',
+    'res://src/source-map-probe.ts:10:5',
   ]) {
     if (!contractOutput.includes(expected)) {
       throw new Error(
@@ -413,7 +536,9 @@ export async function smokeStockGodot(options) {
     contractOutput.includes('Phase 4 script contract failed') ||
     contractOutput.includes('SCRIPT ERROR')
   ) {
-    throw new Error(`${contractDescription} failed its controller\n${contractOutput}`)
+    throw new Error(
+      `${contractDescription} failed its controller\n${contractOutput}`,
+    )
   }
   verifyProjectRuntimeBalance(contractOutput, contractDescription)
 
@@ -447,13 +572,25 @@ export async function smokeStockGodot(options) {
       assertCount(output, `[godot-js-runtime] ${marker}`, 1, description)
     }
     assertCount(output, '[godot-js-runtime] RELOAD_DEFERRED', 1, description)
-    assertCount(output, '[godot-js-runtime] SOFT_RELOAD_COMPLETE', 4, description)
-    assertCount(output, '[godot-js-runtime] HARD_RELOAD_COMPLETE', 1, description)
+    assertCount(
+      output,
+      '[godot-js-runtime] SOFT_RELOAD_COMPLETE',
+      4,
+      description,
+    )
+    assertCount(
+      output,
+      '[godot-js-runtime] HARD_RELOAD_COMPLETE',
+      1,
+      description,
+    )
     if (
       output.includes('STALE_RELOAD_PROMISE_EXECUTED') ||
       output.includes('STALE_RELOAD_TIMER_EXECUTED')
     ) {
-      throw new Error(`${description} executed a callback from a destroyed context\n${output}`)
+      throw new Error(
+        `${description} executed a callback from a destroyed context\n${output}`,
+      )
     }
     verifyProjectRuntimeBalance(output, description, 6)
     return output

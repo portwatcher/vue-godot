@@ -1,0 +1,17 @@
+import { Node } from 'godot'
+import { defineScript } from 'godot-js'
+
+class ToolScriptProbe extends Node {
+  state = 7
+
+  generation() {
+    return 2
+  }
+}
+
+export default defineScript(ToolScriptProbe, {
+  tool: true,
+  properties: {
+    state: { type: 'int', default: 7 },
+  },
+})

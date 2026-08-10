@@ -9,6 +9,7 @@ namespace {
 
 constexpr char RESOURCE_PREFIX[] = "res://";
 constexpr char RUNTIME_MODULE[] = "godot-js";
+constexpr char COMPATIBILITY_MODULE[] = "godot-jsb";
 
 bool has_scheme(const std::string &path) {
 	return path.find("://") != std::string::npos;
@@ -64,8 +65,8 @@ ModuleResolution normalize_resource_path(
 	if (specifier.empty()) {
 		return { false, false, {}, "Module specifier is empty" };
 	}
-	if (specifier == RUNTIME_MODULE) {
-		return { true, true, RUNTIME_MODULE, {} };
+	if (specifier == RUNTIME_MODULE || specifier == COMPATIBILITY_MODULE) {
+		return { true, true, specifier, {} };
 	}
 	if (specifier.find('\\') != std::string::npos) {
 		return { false, false, {}, "Backslashes are not allowed in resource module paths" };

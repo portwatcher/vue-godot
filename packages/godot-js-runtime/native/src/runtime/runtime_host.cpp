@@ -259,7 +259,7 @@ struct RuntimeHost::Impl {
 		const std::string requested = module_name == nullptr
 				? std::string()
 				: std::string(module_name);
-		if (requested == "godot-js" ||
+		if (requested == "godot-js" || requested == "godot-jsb" ||
 				(host->module_provider != nullptr &&
 						host->module_provider->supports_module(requested))) {
 			char *normalized = static_cast<char *>(js_malloc(context, requested.size() + 1));
@@ -300,6 +300,9 @@ struct RuntimeHost::Impl {
 		const std::string path(module_name);
 		if (path == "godot-js") {
 			return create_runtime_module(context, path);
+		}
+		if (path == "godot-jsb") {
+			return create_compatibility_module(context, path);
 		}
 		if (host->module_provider != nullptr &&
 				host->module_provider->supports_module(path)) {
@@ -438,6 +441,158 @@ struct RuntimeHost::Impl {
 		JSValue metadata = JS_GetProperty(context, arguments[0], atom);
 		JS_FreeAtom(context, atom);
 		return metadata;
+	}
+
+	static JSValue js_compatibility_callable(
+			JSContext *context,
+			JSValueConst,
+			int argument_count,
+			JSValueConst *arguments) {
+		Impl *host = static_cast<Impl *>(JS_GetContextOpaque(context));
+		if (host == nullptr || host->module_provider == nullptr) {
+			return JS_ThrowInternalError(
+					context,
+					"godot-jsb.callable requires the Godot binding module");
+		}
+		ScopedValue godot_module(
+				context,
+				host->module_provider->load_commonjs_module(context, "godot"));
+		if (JS_IsException(godot_module.get())) {
+			return JS_EXCEPTION;
+		}
+		ScopedValue callable(
+				context,
+				JS_GetPropertyStr(context, godot_module.get(), "Callable"));
+		ScopedValue create(
+				context,
+				JS_GetPropertyStr(context, callable.get(), "create"));
+		if (!JS_IsFunction(context, create.get())) {
+			return JS_ThrowInternalError(
+					context,
+					"Godot Callable.create is unavailable");
+		}
+		return JS_Call(
+				context,
+				create.get(),
+				callable.get(),
+				argument_count,
+				arguments);
+	}
+
+	static JSValue js_compatibility_to_array_buffer(
+			JSContext *context,
+			JSValueConst,
+			int argument_count,
+			JSValueConst *arguments) {
+		if (argument_count < 1) {
+			return JS_ThrowTypeError(
+					context,
+					"godot-jsb.to_array_buffer expects a PackedByteArray");
+		}
+		ScopedValue method(
+				context,
+				JS_GetPropertyStr(context, arguments[0], "to_array_buffer"));
+		if (!JS_IsFunction(context, method.get())) {
+			return JS_ThrowTypeError(
+					context,
+					"godot-jsb.to_array_buffer expects a PackedByteArray");
+		}
+		return JS_Call(context, method.get(), arguments[0], 0, nullptr);
+	}
+
+	static int compatibility_module_init(JSContext *context, JSModuleDef *module) {
+		if (JS_SetModuleExport(
+					context,
+					module,
+					"callable",
+					JS_NewCFunction(
+							context,
+							js_compatibility_callable,
+							"callable",
+							2)) < 0 ||
+				JS_SetModuleExport(
+						context,
+						module,
+						"to_array_buffer",
+						JS_NewCFunction(
+								context,
+								js_compatibility_to_array_buffer,
+								"to_array_buffer",
+								1)) < 0 ||
+				JS_SetModuleExport(
+						context,
+						module,
+						"version",
+						JS_NewString(context, VERSION)) < 0) {
+			return -1;
+		}
+		return JS_SetModuleExport(
+				context,
+				module,
+				"impl",
+				JS_NewString(context, "QuickJS-ng"));
+	}
+
+	static JSModuleDef *create_compatibility_module(
+			JSContext *context,
+			const std::string &module_name) {
+		JSModuleDef *module = JS_NewCModule(
+				context,
+				module_name.c_str(),
+				compatibility_module_init);
+		if (module == nullptr) {
+			return nullptr;
+		}
+		for (const char *name : {
+					 "callable",
+					 "to_array_buffer",
+					 "version",
+					 "impl",
+			 }) {
+			if (JS_AddModuleExport(context, module, name) < 0) {
+				return nullptr;
+			}
+		}
+		return module;
+	}
+
+	static JSValue compatibility_module_object(JSContext *context) {
+		JSValue object = JS_NewObject(context);
+		if (JS_IsException(object)) {
+			return object;
+		}
+		if (JS_SetPropertyStr(
+					context,
+					object,
+					"callable",
+					JS_NewCFunction(
+							context,
+							js_compatibility_callable,
+							"callable",
+							2)) < 0 ||
+				JS_SetPropertyStr(
+						context,
+						object,
+						"to_array_buffer",
+						JS_NewCFunction(
+								context,
+								js_compatibility_to_array_buffer,
+								"to_array_buffer",
+								1)) < 0 ||
+				JS_SetPropertyStr(
+						context,
+						object,
+						"version",
+						JS_NewString(context, VERSION)) < 0 ||
+				JS_SetPropertyStr(
+						context,
+						object,
+						"impl",
+						JS_NewString(context, "QuickJS-ng")) < 0) {
+			JS_FreeValue(context, object);
+			return JS_EXCEPTION;
+		}
+		return object;
 	}
 
 	static int runtime_module_init(JSContext *context, JSModuleDef *module) {
@@ -873,6 +1028,9 @@ struct RuntimeHost::Impl {
 		if (specifier == "godot-js") {
 			return runtime_module_object(require_context);
 		}
+		if (specifier == "godot-jsb") {
+			return compatibility_module_object(require_context);
+		}
 		if (module_provider != nullptr && module_provider->supports_module(specifier)) {
 			return module_provider->load_commonjs_module(require_context, specifier);
 		}
@@ -1034,6 +1192,34 @@ struct RuntimeHost::Impl {
 						source_path.c_str(),
 						JS_EVAL_TYPE_GLOBAL | JS_EVAL_FLAG_BACKTRACE_BARRIER));
 		return JS_IsException(value.get()) ? exception_result(context) : success(value.get());
+	}
+
+	EvaluationResult validate_syntax(
+			const std::string &source,
+			const std::string &source_path,
+			bool module) {
+		if (context == nullptr) {
+			return host_error("JavaScript runtime has been shut down");
+		}
+		ExecutionGuard execution_guard(*this);
+		SourceGuard source_guard(*this, source_path);
+		const int flags = (module ? JS_EVAL_TYPE_MODULE : JS_EVAL_TYPE_GLOBAL) |
+				JS_EVAL_FLAG_COMPILE_ONLY | JS_EVAL_FLAG_BACKTRACE_BARRIER;
+		ScopedValue compiled(
+				context,
+				JS_Eval(
+						context,
+						source.c_str(),
+						source.size(),
+						source_path.c_str(),
+						flags));
+		if (JS_IsException(compiled.get())) {
+			return exception_result(context);
+		}
+		EvaluationResult result;
+		result.ok = true;
+		result.value = "valid";
+		return result;
 	}
 
 	EvaluationResult evaluate_module(const std::string &entry_path) {
@@ -1353,6 +1539,20 @@ EvaluationResult RuntimeHost::evaluate_script(
 				  0,
 			  }
 			: impl->evaluate_script(source, source_path);
+}
+
+EvaluationResult RuntimeHost::validate_syntax(
+		const std::string &source,
+		const std::string &source_path,
+		bool module) {
+	return impl == nullptr
+			? EvaluationResult{
+				  false,
+				  {},
+				  JavaScriptException{ "RuntimeError", "Runtime host was moved", {}, {}, 0, 0, false },
+				  0,
+			  }
+			: impl->validate_syntax(source, source_path, module);
 }
 
 EvaluationResult RuntimeHost::evaluate_module(const std::string &entry_path) {

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "generatorVersion": 1,
+  "godotVersion": "4.4.1",
+  "apiSha256": "1136ad8c676034a0d9ac15ec55f1f4c79f300fd645f45a08a129c0254ca95d51",
+  "counts": {
+    "builtins": 38,
+    "classes": 952,
+    "globalEnums": 22,
+    "nativeStructures": 14,
+    "singletons": 37,
+    "utilityFunctions": 114
+  },
+  "files": {
+    "godot.d.ts": "2c5dbedd113bf7c75f58741c8fd1441bf2a9cf5dd630bf9d261f6de54cb3f510",
+    "godot-js.d.ts": "1b39b8f0ceea84c27f19c9a5620f6dd7f9e799ce1937a621a4db54d9ae8624bf",
+    "godot-jsb.d.ts": "255ede4cf4791d1aeb208019a8e8d0d5a62b8de700af15677e4cf314ed04c46b",
+    "index.d.ts": "b0ac0057ffccf4a6911c9865c89f6fa2929d522c7bb494ad8bd7ab0b0254f005"
+  }
+}

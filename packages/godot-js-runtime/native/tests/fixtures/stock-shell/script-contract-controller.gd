@@ -18,7 +18,49 @@ func has_named_entry(entries: Array, name: StringName) -> bool:
 			return true
 	return false
 
+func javascript_language():
+	for index in range(Engine.get_script_language_count()):
+		var language := Engine.get_script_language(index)
+		if language.has_method("validate_source"):
+			return language
+	return null
+
 func _ready() -> void:
+	var language = javascript_language()
+	require_condition(language != null, "JavaScript language registration")
+	if language != null:
+		var diagnostic: Dictionary = language.call(
+			"validate_source",
+			"export const valid = 1\nexport const broken = ;\n",
+			"res://editor-diagnostic.mjs",
+			true,
+			true,
+			true,
+			true,
+		)
+		var errors: Array = diagnostic.get("errors", [])
+		require_condition(not diagnostic.get("valid", true), "invalid syntax diagnostic")
+		require_condition(errors.size() == 1, "single syntax diagnostic")
+		if errors.size() == 1:
+			require_condition(errors[0].get("line") == 2, "syntax diagnostic line")
+			require_condition(
+				errors[0].get("path") == "res://editor-diagnostic.mjs",
+				"syntax diagnostic path",
+			)
+		var valid: Dictionary = language.call(
+			"validate_source",
+			"export function ready() { return true }\n",
+			"res://editor-valid.mjs",
+			true,
+			true,
+			true,
+			true,
+		)
+		require_condition(valid.get("valid", false), "valid editor source")
+		require_condition(valid.get("functions", []).has("ready:1"), "function metadata")
+		require_condition(valid.get("safe_lines", []).has(1), "safe-line metadata")
+		print("[godot-js-runtime] PHASE5_EDITOR_DIAGNOSTICS PASS")
+
 	var plain: Script = load_fresh("res://plain.js")
 	require_condition(plain != null and plain.can_instantiate(), ".js default class export")
 	require_condition(plain.get_instance_base_type() == &"Node", ".js base class")
@@ -70,6 +112,29 @@ func _ready() -> void:
 	require_condition(load_fresh("res://missing-default.mjs") == null, "missing default export rejected")
 	require_condition(load_fresh("res://syntax-error.mjs") == null, "syntax error rejected")
 	print("[godot-js-runtime] PHASE4_EXPECTED_SCRIPT_ERRORS")
+
+	var mapped_script: Script = load_fresh("res://dist/source-map-error.mjs")
+	require_condition(mapped_script != null, "source-map fixture load")
+	var mapped_node := Node.new()
+	mapped_node.set_script(mapped_script)
+	add_child(mapped_node)
+	await get_tree().process_frame
+	if language != null:
+		var debug_error: String = language.call("get_last_error")
+		var stack: Array = language.call("get_current_stack_info")
+		require_condition(
+			debug_error.contains("res://src/source-map-probe.ts:10:5"),
+			"source-mapped debugger error",
+		)
+		require_condition(stack.size() == 1, "source-mapped debugger stack")
+		if stack.size() == 1:
+			require_condition(
+				stack[0].get("file") == "res://src/source-map-probe.ts",
+				"source-mapped stack file",
+			)
+			require_condition(stack[0].get("line") == 10, "source-mapped stack line")
+	mapped_node.free()
+	print("[godot-js-runtime] PHASE5_SOURCE_MAP_ERROR PASS")
 
 	require_condition(
 		ProjectSettings.get_setting("godot_js_runtime/runtime/memory_limit_mb") == 96,

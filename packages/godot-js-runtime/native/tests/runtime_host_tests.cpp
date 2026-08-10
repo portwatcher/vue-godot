@@ -136,6 +136,24 @@ void test_evaluation_exceptions_console_and_features() {
 	expect(failure.exception->line > 0, "exception line was not captured");
 	expect(failure.exception->column > 0, "exception column was not captured");
 
+	const EvaluationResult valid_module = runtime.validate_syntax(
+			"export const result = 17\n",
+			"res://tests/valid-module.mjs",
+			true);
+	expect_ok(valid_module, "compile-only module syntax validation");
+	const EvaluationResult invalid_module = runtime.validate_syntax(
+			"export const valid = 1\nexport const broken = ;\n",
+			"res://tests/invalid-module.mjs",
+			true);
+	expect_failure(invalid_module, "invalid module syntax validation");
+	expect(
+			invalid_module.exception->source == "res://tests/invalid-module.mjs",
+			"syntax validation did not preserve its source path");
+	expect(
+			invalid_module.exception->line == 2,
+			"syntax validation did not preserve its source line; received " +
+					std::to_string(invalid_module.exception->line));
+
 	const EvaluationResult virtual_module = runtime.evaluate_script(
 			"globalThis.evalFeatureCount = 0",
 			"res://tests/features.js");
@@ -226,6 +244,12 @@ void test_module_resolution() {
 			"res://main.mjs",
 			"godot-js");
 	expect(runtime_module.ok && runtime_module.virtual_module, "godot-js was not virtualized");
+	const ModuleResolution compatibility_module = godot_js_runtime::normalize_resource_path(
+			"res://main.mjs",
+			"godot-jsb");
+	expect(
+			compatibility_module.ok && compatibility_module.virtual_module,
+			"godot-jsb was not virtualized");
 
 	const ModuleResolution extension = godot_js_runtime::resolve_module(
 			"res://main.mjs",
