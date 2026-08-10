@@ -335,11 +335,7 @@ test('fixture app workspaces expose the regression build contract', () => {
       const packageJson = readJson(fixturePath(fixture, 'package.json'))
       assert.equal(
         packageJson.scripts?.build,
-        'npm run gen:types && tsc -p tsconfig.json',
-      )
-      assert.equal(
-        packageJson.scripts?.['gen:types'],
-        'node ../../packages/cli/scripts/generate-types.mjs --out-dir typings',
+        'tsc -p tsconfig.json',
       )
       assert.equal(
         packageJson.scripts?.dev,
