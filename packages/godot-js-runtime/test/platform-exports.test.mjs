@@ -17,6 +17,7 @@ import {
   assertExportLaunchMarker,
   assertPlatformExportGodotVersion,
   createIsolatedIosLinkRoot,
+  platformExportImportArguments,
   resolveNpmInvocation,
   stripUnavailableSimulatorMetalFx,
 } from '../scripts/smoke-platform-exports.mjs'
@@ -256,6 +257,32 @@ test('platform export builds resolve the repository build command', () => {
     command: 'npm',
     prefixArguments: [],
   })
+})
+
+test('platform export imports use the bounded one-shot Godot lifecycle', () => {
+  assert.deepEqual(platformExportImportArguments('/fixture', 'linux'), [
+    '--headless',
+    '--rendering-method',
+    'gl_compatibility',
+    '--path',
+    '/fixture',
+    '--import',
+    '--quit-after',
+    '240',
+  ])
+  assert.deepEqual(platformExportImportArguments('/fixture', 'darwin'), [
+    '--headless',
+    '--rendering-method',
+    'gl_compatibility',
+    '--path',
+    '/fixture',
+    '--import',
+    '--quit-after',
+    '240',
+    '-ApplePersistenceIgnoreState',
+    'YES',
+  ])
+  assert.ok(!platformExportImportArguments('/fixture').includes('--editor'))
 })
 
 test('platform exports retain the minimum ABI and enforce the selected stable release', () => {

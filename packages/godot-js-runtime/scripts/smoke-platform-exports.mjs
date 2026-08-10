@@ -71,6 +71,25 @@ export function resolveNpmInvocation(
   }
 }
 
+export function platformExportImportArguments(
+  projectRoot,
+  platform = process.platform,
+) {
+  return godotCommandArguments(
+    [
+      '--headless',
+      '--rendering-method',
+      'gl_compatibility',
+      '--path',
+      projectRoot,
+      '--import',
+      '--quit-after',
+      '240',
+    ],
+    platform,
+  )
+}
+
 export function assertPlatformExportGodotVersion(
   actualVersion,
   expectedRelease,
@@ -1749,13 +1768,7 @@ export function smokePlatformExports(options) {
       })
       const editorOutput = run(
         options.godot,
-        godotCommandArguments([
-          '--headless',
-          '--editor',
-          '--path',
-          projectRoot,
-          '--quit',
-        ]),
+        platformExportImportArguments(projectRoot),
         {
           description: `${application.id} export editor import`,
           timeout: 5 * 60_000,
