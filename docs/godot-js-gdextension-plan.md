@@ -19,7 +19,7 @@ passes.
 | --- | --- | --- | --- |
 | Native identity and add-on layout | Complete | `784c206` | `addons/godotjs`, `libgodotjs`, canonical entry point and settings |
 | Universal release ZIP | Complete | `784c206` | deterministic clean-copy archive tests |
-| Standalone TypeScript declarations | Complete | `a6d1ce8`, `2260019` | declarations ship inside the add-on; clean-checkout demo build has no native-submodule dependency |
+| Standalone TypeScript declarations | Complete | `a6d1ce8`, `2260019`, `0786350` | declarations ship inside the add-on; clean-checkout demo and extracted add-on compilation pass without a native-submodule dependency |
 | Vue/npm separation | Complete | `784c206` | generated projects contain no GodotJS dependency or install scripts |
 | Manual-copy generated-project gate | Complete | `dbe8c89` | fresh generated app receives the add-on fixture explicitly and passes Godot 4.7.1 import/run/rebuild smoke |
 | Docs, demos, templates, and migration cleanup | Complete | `784c206` | root guide and maintained examples aligned |
