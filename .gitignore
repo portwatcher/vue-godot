@@ -16,6 +16,7 @@ node_modules
 coverage
 
 # Release helper outputs
+.artifacts/
 release/platform-evidence-summary.json
 release/platform-evidence-checklist.md
 release/device-test-prereqs-summary.json

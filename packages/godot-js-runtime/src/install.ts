@@ -1,8 +1,10 @@
 import { createHash, randomUUID } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { extractTarGzip } from './archive.js'
 import {
   isRuntimeManifest,
   runtimePackageName,
@@ -45,6 +47,7 @@ export interface RuntimeInstallationManifest {
 
 export interface RuntimeSourceOptions {
   readonly sourceDirectory?: string
+  readonly artifactDirectory?: string
 }
 
 export interface InstallRuntimeOptions extends RuntimeSourceOptions {
@@ -97,6 +100,7 @@ interface RuntimeSourceLayout {
   readonly addonDirectory: string
   readonly manifest: RuntimeManifest
   readonly manifestSha256: string
+  readonly artifactDirectories: readonly string[]
 }
 
 interface SourceFile {
@@ -384,6 +388,7 @@ function resolveSourceLayout(sourceDirectory?: string): RuntimeSourceLayout {
     addonDirectory,
     manifest,
     manifestSha256: sha256(manifestSource),
+    artifactDirectories: [path.join(addonDirectory, 'bin')],
   }
 }
 
@@ -401,10 +406,13 @@ function artifactSourceFile(
     artifact.name,
     'Runtime artifact name',
   )
-  const sourcePath = resolveInside(
-    path.join(source.addonDirectory, 'bin'),
-    artifactName,
-  )
+  const candidates = source.artifactDirectories
+    .map((directory) => resolveInside(directory, artifactName))
+    .filter((candidate) => lstatIfPresent(candidate) !== undefined)
+  if (candidates.length === 0) {
+    throw new Error(`Runtime artifact source is missing: ${artifactName}`)
+  }
+  const sourcePath = candidates[0]
   const status = assertRegularSource(sourcePath)
   if (
     status.size !== artifact.size ||
@@ -448,12 +456,271 @@ function coreSourceFiles(source: RuntimeSourceLayout): SourceFile[] {
       'runtime-manifest.json',
     ),
   ]
-  for (const name of ['LICENSE', 'THIRD_PARTY_NOTICES.md']) {
+  for (const name of [
+    'LICENSE',
+    'THIRD_PARTY_NOTICES.md',
+    'licenses/godot-cpp-MIT.md',
+    'licenses/quickjs-ng-MIT.txt',
+  ]) {
     const sourcePath = path.join(source.packageDirectory, name)
     if (fs.existsSync(sourcePath))
       files.push(ordinarySourceFile(sourcePath, name))
   }
   return files
+}
+
+function artifactsForTargets(
+  manifest: RuntimeManifest,
+  targets: readonly string[],
+): readonly RuntimeArtifact[] {
+  const available = new Set(availableRuntimeTargets(manifest))
+  for (const target of targets) {
+    if (!available.has(target)) {
+      throw new Error(
+        `Runtime target is not packaged: ${target}. Available targets: ${[...available].sort().join(', ') || '(none)'}`,
+      )
+    }
+  }
+  return manifest.artifacts.filter((artifact) =>
+    targets.includes(artifact.target),
+  )
+}
+
+function directArtifactIsPresent(
+  source: RuntimeSourceLayout,
+  artifact: RuntimeArtifact,
+): boolean {
+  const artifactName = normalizeRelativePath(
+    artifact.name,
+    'Runtime artifact name',
+  )
+  const sourcePath = resolveInside(source.artifactDirectories[0], artifactName)
+  const status = lstatIfPresent(sourcePath)
+  if (!status) return false
+  if (status.isSymbolicLink() || !status.isFile()) {
+    throw new Error(
+      `Runtime artifact source must be a regular file: ${sourcePath}`,
+    )
+  }
+  if (
+    status.size !== artifact.size ||
+    sha256File(sourcePath) !== artifact.sha256
+  ) {
+    throw new Error(
+      `Runtime artifact does not match runtime-manifest.json: ${artifactName}`,
+    )
+  }
+  return true
+}
+
+function downloadArchive(urlValue: string, destination: string): void {
+  const url = new URL(urlValue)
+  if (url.protocol !== 'https:') {
+    throw new Error(`Runtime archive URL must use HTTPS: ${urlValue}`)
+  }
+  const downloader = `
+const fs = require('node:fs')
+const { Readable } = require('node:stream')
+const { pipeline } = require('node:stream/promises')
+;(async () => {
+  const response = await fetch(process.argv[1], { redirect: 'follow' })
+  if (!response.ok || !response.body) {
+    throw new Error('HTTP ' + response.status + ' ' + response.statusText)
+  }
+  await pipeline(
+    Readable.fromWeb(response.body),
+    fs.createWriteStream(process.argv[2], { flags: 'wx' }),
+  )
+})().catch((error) => {
+  console.error(error instanceof Error ? error.message : String(error))
+  process.exit(1)
+})
+`
+  const result = spawnSync(
+    process.execPath,
+    ['-e', downloader, url.href, destination],
+    {
+      encoding: 'utf-8',
+      stdio: 'pipe',
+    },
+  )
+  if (result.error) throw result.error
+  if (result.status !== 0) {
+    throw new Error(
+      `Could not download runtime archive ${url.href}: ${(result.stderr || result.stdout).trim()}`,
+    )
+  }
+}
+
+function verifyArchiveFile(
+  archivePath: string,
+  expected: RuntimeManifest['archives'][number],
+): void {
+  const status = assertRegularSource(archivePath)
+  if (
+    status.size !== expected.size ||
+    sha256File(archivePath) !== expected.sha256
+  ) {
+    throw new Error(
+      `Runtime archive does not match runtime-manifest.json: ${expected.name}`,
+    )
+  }
+}
+
+function assertArchiveManifest(
+  source: RuntimeSourceLayout,
+  archiveRoot: string,
+  artifacts: readonly RuntimeArtifact[],
+): string {
+  const manifestPath = path.join(
+    archiveRoot,
+    'addon/godot-js-runtime/runtime-manifest.json',
+  )
+  const value = readJson(manifestPath)
+  if (!isRuntimeManifest(value)) {
+    throw new Error(`Runtime archive manifest is invalid: ${manifestPath}`)
+  }
+  for (const field of [
+    'packageName',
+    'version',
+    'gitCommit',
+    'godotMinimum',
+  ] as const) {
+    if (value[field] !== source.manifest[field]) {
+      throw new Error(
+        `Runtime archive ${field} differs from the package manifest: ${manifestPath}`,
+      )
+    }
+  }
+  const archiveArtifacts = new Map(
+    value.artifacts.map((artifact) => [artifact.name, artifact]),
+  )
+  for (const artifact of artifacts) {
+    const archived = archiveArtifacts.get(artifact.name)
+    if (
+      !archived ||
+      archived.target !== artifact.target ||
+      archived.size !== artifact.size ||
+      archived.sha256 !== artifact.sha256
+    ) {
+      throw new Error(
+        `Runtime archive manifest does not match artifact ${artifact.name}`,
+      )
+    }
+  }
+  return path.join(archiveRoot, 'addon/godot-js-runtime/bin')
+}
+
+function materializeRuntimeArtifacts(
+  source: RuntimeSourceLayout,
+  artifacts: readonly RuntimeArtifact[],
+  artifactDirectory?: string,
+): { readonly source: RuntimeSourceLayout; cleanup(): void } {
+  const missing = artifacts.filter(
+    (artifact) => !directArtifactIsPresent(source, artifact),
+  )
+  if (missing.length === 0) {
+    return { source, cleanup() {} }
+  }
+
+  const archivesByName = new Map(
+    source.manifest.archives.map((archive) => [archive.name, archive]),
+  )
+  const selectedArchives = new Map<
+    string,
+    {
+      archive: RuntimeManifest['archives'][number]
+      artifacts: RuntimeArtifact[]
+    }
+  >()
+  for (const artifact of missing) {
+    if (!artifact.archive) {
+      throw new Error(
+        `Runtime artifact is not present and has no release archive: ${artifact.name}`,
+      )
+    }
+    const archive = archivesByName.get(artifact.archive)
+    if (!archive || artifact.url !== archive.url) {
+      throw new Error(
+        `Runtime artifact has invalid archive metadata: ${artifact.name}`,
+      )
+    }
+    if (!archive.targets.includes(artifact.target)) {
+      throw new Error(
+        `Runtime archive ${archive.name} does not declare target ${artifact.target}`,
+      )
+    }
+    const selected = selectedArchives.get(archive.name) ?? {
+      archive,
+      artifacts: [],
+    }
+    selected.artifacts.push(artifact)
+    selectedArchives.set(archive.name, selected)
+  }
+
+  let offlineDirectory: string | undefined
+  if (artifactDirectory) {
+    offlineDirectory = path.resolve(artifactDirectory)
+    const status = lstatIfPresent(offlineDirectory)
+    if (!status || status.isSymbolicLink() || !status.isDirectory()) {
+      throw new Error(
+        `Offline runtime artifact directory does not exist or is unsafe: ${offlineDirectory}`,
+      )
+    }
+  }
+
+  const temporaryDirectory = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'godot-js-runtime-artifacts-'),
+  )
+  const artifactDirectories = [...source.artifactDirectories]
+  try {
+    let index = 0
+    for (const {
+      archive,
+      artifacts: archiveArtifacts,
+    } of selectedArchives.values()) {
+      const archiveName = normalizeRelativePath(
+        archive.name,
+        'Runtime archive name',
+      )
+      if (archiveName.includes('/')) {
+        throw new Error(
+          `Runtime archive name cannot contain a directory: ${archiveName}`,
+        )
+      }
+      const archivePath = offlineDirectory
+        ? resolveInside(offlineDirectory, archiveName)
+        : path.join(temporaryDirectory, archiveName)
+      if (!offlineDirectory) downloadArchive(archive.url, archivePath)
+      verifyArchiveFile(archivePath, archive)
+
+      const extractionDirectory = path.join(
+        temporaryDirectory,
+        `extracted-${String(index)}`,
+      )
+      extractTarGzip(archivePath, extractionDirectory)
+      const archiveRootName = archiveName.slice(0, -'.tar.gz'.length)
+      if (!archiveName.endsWith('.tar.gz') || archiveRootName.length === 0) {
+        throw new Error(
+          `Runtime archive name must end in .tar.gz: ${archiveName}`,
+        )
+      }
+      const archiveRoot = resolveInside(extractionDirectory, archiveRootName)
+      artifactDirectories.push(
+        assertArchiveManifest(source, archiveRoot, archiveArtifacts),
+      )
+      index += 1
+    }
+    return {
+      source: { ...source, artifactDirectories },
+      cleanup() {
+        fs.rmSync(temporaryDirectory, { recursive: true, force: true })
+      },
+    }
+  } catch (error) {
+    fs.rmSync(temporaryDirectory, { recursive: true, force: true })
+    throw error
+  }
 }
 
 export function availableRuntimeTargets(
@@ -504,17 +771,9 @@ function selectedArtifactFiles(
   source: RuntimeSourceLayout,
   targets: readonly string[],
 ): SourceFile[] {
-  const available = new Set(availableRuntimeTargets(source.manifest))
-  for (const target of targets) {
-    if (!available.has(target)) {
-      throw new Error(
-        `Runtime target is not packaged: ${target}. Available targets: ${[...available].sort().join(', ') || '(none)'}`,
-      )
-    }
-  }
-  return source.manifest.artifacts
-    .filter((artifact) => targets.includes(artifact.target))
-    .map((artifact) => artifactSourceFile(source, artifact))
+  return artifactsForTargets(source.manifest, targets).map((artifact) =>
+    artifactSourceFile(source, artifact),
+  )
 }
 
 function installationManifestPath(projectDirectory: string): string {
@@ -788,20 +1047,30 @@ export function installRuntime(
     options.targets && options.targets.length > 0
       ? [...new Set(options.targets)].sort()
       : [resolveHostDebugTarget(source.manifest)]
-  const sourceFiles = [
-    ...coreSourceFiles(source),
-    ...selectedArtifactFiles(source, targets),
-  ]
-  const existingManifest = readInstallationManifest(projectDirectory, false)
-  return installFiles(
-    projectDirectory,
+  const artifacts = artifactsForTargets(source.manifest, targets)
+  const materialized = materializeRuntimeArtifacts(
     source,
-    sourceFiles,
-    targets,
-    existingManifest,
-    false,
-    options.force === true,
+    artifacts,
+    options.artifactDirectory,
   )
+  try {
+    const sourceFiles = [
+      ...coreSourceFiles(materialized.source),
+      ...selectedArtifactFiles(materialized.source, targets),
+    ]
+    const existingManifest = readInstallationManifest(projectDirectory, false)
+    return installFiles(
+      projectDirectory,
+      materialized.source,
+      sourceFiles,
+      targets,
+      existingManifest,
+      false,
+      options.force === true,
+    )
+  } finally {
+    materialized.cleanup()
+  }
 }
 
 export function addRuntimeTarget(
@@ -821,15 +1090,25 @@ export function addRuntimeTarget(
   }
   const targets = [...new Set(options.targets)].sort()
   if (targets.length === 0) throw new Error('add-target requires a target')
-  return installFiles(
-    projectDirectory,
+  const artifacts = artifactsForTargets(source.manifest, targets)
+  const materialized = materializeRuntimeArtifacts(
     source,
-    selectedArtifactFiles(source, targets),
-    targets,
-    existingManifest,
-    true,
-    options.force === true,
+    artifacts,
+    options.artifactDirectory,
   )
+  try {
+    return installFiles(
+      projectDirectory,
+      materialized.source,
+      selectedArtifactFiles(materialized.source, targets),
+      targets,
+      existingManifest,
+      true,
+      options.force === true,
+    )
+  } finally {
+    materialized.cleanup()
+  }
 }
 
 export function verifyRuntime(

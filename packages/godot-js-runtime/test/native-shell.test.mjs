@@ -6,6 +6,16 @@ import { fileURLToPath } from 'node:url'
 import { isRuntimeManifest } from '../dist/index.js'
 import { generateExtensionManifest } from '../scripts/generate-extension-manifest.mjs'
 import { resolveNativeBuildPlan } from '../scripts/build-native.mjs'
+import { resolveReleaseBuildPlan } from '../scripts/build-release-artifacts.mjs'
+import {
+  releaseTargetForArtifactName,
+  releaseTargets,
+  releaseTargetsForPlatforms,
+} from '../scripts/platform-matrix.mjs'
+import {
+  parseExtensionLibraries,
+  verifyExtensionLibraryMap,
+} from '../scripts/verify-release-artifacts.mjs'
 
 const packageRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -33,6 +43,8 @@ test('extension and artifact manifests preserve canonical identities', () => {
   assert.ok(isRuntimeManifest(manifest))
   assert.equal(manifest.gitCommit, 'test-commit')
   assert.equal(manifest.artifacts.length, 0)
+  assert.equal(manifest.schemaVersion, 2)
+  assert.deepEqual(manifest.archives, [])
 
   const extension = fs.readFileSync(
     path.join(
@@ -45,6 +57,56 @@ test('extension and artifact manifests preserve canonical identities', () => {
   assert.match(extension, /compatibility_minimum = "4\.4"/)
   assert.match(extension, /linux\.debug\.x86_64/)
   assert.match(extension, /macos\.debug/)
+})
+
+test('release matrix covers every required debug and release artifact exactly', () => {
+  assert.equal(releaseTargets.length, 14)
+  assert.equal(
+    releaseTargets.filter((target) => target.mode === 'template_debug').length,
+    7,
+  )
+  assert.equal(
+    releaseTargets.filter((target) => target.mode === 'template_release')
+      .length,
+    7,
+  )
+  assert.deepEqual(
+    [...new Set(releaseTargets.map((target) => target.platform))].sort(),
+    ['android', 'ios', 'linux', 'macos', 'web', 'windows'],
+  )
+  assert.equal(releaseTargetsForPlatforms(['android']).length, 4)
+  assert.equal(releaseTargetsForPlatforms(['ios']).length, 2)
+  assert.equal(releaseTargetsForPlatforms(['web']).length, 2)
+  for (const target of releaseTargets) {
+    assert.equal(
+      releaseTargetForArtifactName(target.artifactPath).id,
+      target.id,
+    )
+    assert.equal(
+      releaseTargetForArtifactName(`${target.artifactPath}/payload`).id,
+      target.id,
+    )
+  }
+  assert.throws(
+    () => releaseTargetsForPlatforms(['unsupported']),
+    /Unknown release platform/,
+  )
+})
+
+test('GDExtension feature tags select every release target without fallback', () => {
+  const extensionSource = fs.readFileSync(
+    path.join(
+      packageRoot,
+      'addon/godot-js-runtime/godot_js_runtime.gdextension',
+    ),
+    'utf-8',
+  )
+  const libraries = verifyExtensionLibraryMap(extensionSource)
+  assert.equal(libraries.size, releaseTargets.length)
+  assert.equal(
+    parseExtensionLibraries(extensionSource).get('web.release.threads.wasm32'),
+    'libgodot_js_runtime.web.template_release.wasm32.wasm',
+  )
 })
 
 test('native build plan is deterministic and targets the pinned source tree', () => {
@@ -80,6 +142,57 @@ test('native build plan is deterministic and targets the pinned source tree', ()
     sanitizers: ['address', 'undefined'],
   })
   assert.deepEqual(sanitizerPlan.sanitizers, ['address', 'undefined'])
+
+  const iosPlan = resolveNativeBuildPlan({
+    platform: 'ios',
+    arch: 'universal',
+    target: 'template_release',
+    jobs: 2,
+    iosSimulator: true,
+  })
+  assert.deepEqual(iosPlan.sconsArguments.slice(-4), [
+    'platform=ios',
+    'target=template_release',
+    'arch=universal',
+    'ios_simulator=yes',
+  ])
+
+  const androidPlan = resolveNativeBuildPlan({
+    platform: 'android',
+    arch: 'arm64',
+    target: 'template_debug',
+    jobs: 2,
+    androidApiLevel: 21,
+  })
+  assert.equal(androidPlan.sconsArguments.at(-1), 'android_api_level=21')
+
+  const webPlan = resolveNativeBuildPlan({
+    platform: 'web',
+    arch: 'wasm32',
+    target: 'template_debug',
+    jobs: 2,
+    threads: true,
+  })
+  assert.equal(webPlan.sconsArguments.at(-1), 'threads=yes')
+})
+
+test('release build plan includes composite iOS slices and exact matrix modes', () => {
+  const iosPlan = resolveReleaseBuildPlan({
+    platforms: ['ios'],
+    mode: 'all',
+  })
+  assert.equal(iosPlan.targets.length, 2)
+  assert.equal(iosPlan.builds.length, 4)
+  assert.equal(iosPlan.iosTargets.length, 2)
+
+  const releasePlan = resolveReleaseBuildPlan({
+    platforms: ['macos', 'android', 'web'],
+    mode: 'release',
+  })
+  assert.equal(releasePlan.targets.length, 4)
+  assert.ok(
+    releasePlan.targets.every((target) => target.mode === 'template_release'),
+  )
 })
 
 test('native build embeds pinned QuickJS-ng and exposes host tests', () => {
@@ -94,6 +207,9 @@ test('native build embeds pinned QuickJS-ng and exposes host tests', () => {
   assert.match(sconstruct, /tests\/runtime_host_tests\.cpp/)
   assert.match(sconstruct, /GODOT_JS_RUNTIME_SANITIZERS/)
   assert.match(sconstruct, /-fno-omit-frame-pointer/)
+  assert.match(sconstruct, /merge_ios_static_libraries/)
+  assert.match(sconstruct, /libgodot-cpp/)
+  assert.match(sconstruct, /\/usr\/bin\/libtool/)
 })
 
 test('stock fixture enforces binding, script-language, reload, and editor gates', () => {

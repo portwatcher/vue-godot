@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
+import json
 import os
+import subprocess
 
 
 EnsureSConsVersion(4, 0)
@@ -36,6 +38,8 @@ env.AppendUnique(
 )
 if env["platform"] == "windows":
     env.AppendUnique(CPPDEFINES=["WIN32_LEAN_AND_MEAN", "_WIN32_WINNT=0x0601"])
+elif env["platform"] == "android":
+    env.AppendUnique(LINKFLAGS=["-static-libstdc++"])
 elif env["platform"] == "linux":
     env.AppendUnique(LIBS=["m", "dl", "pthread"])
 elif env["platform"] in ["macos", "ios"]:
@@ -62,6 +66,64 @@ sources.extend(quickjs_sources)
 
 addon_bin_dir = env.Dir("../addon/godot-js-runtime/bin").abspath
 library_base = "libgodot_js_runtime" + env["suffix"]
+runtime_package_path = os.path.join(Dir("#").abspath, "..", "package.json")
+with open(runtime_package_path, "r", encoding="utf-8") as runtime_package_file:
+    runtime_version = json.load(runtime_package_file)["version"]
+
+
+def write_macos_framework_info_plist(target, source, env):
+    executable = env["GODOT_JS_RUNTIME_FRAMEWORK_EXECUTABLE"]
+    version = env["GODOT_JS_RUNTIME_VERSION"]
+    contents = f'''<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>English</string>
+    <key>CFBundleExecutable</key>
+    <string>{executable}</string>
+    <key>CFBundleIdentifier</key>
+    <string>org.vuegodot.godot-js-runtime</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>Godot JavaScript Runtime</string>
+    <key>CFBundlePackageType</key>
+    <string>FMWK</string>
+    <key>CFBundleShortVersionString</key>
+    <string>{version}</string>
+    <key>CFBundleVersion</key>
+    <string>{version}</string>
+    <key>CFBundleSupportedPlatforms</key>
+    <array>
+        <string>MacOSX</string>
+    </array>
+</dict>
+</plist>
+'''
+    target_path = target[0].abspath
+    os.makedirs(os.path.dirname(target_path), exist_ok=True)
+    with open(target_path, "w", encoding="utf-8", newline="\n") as plist_file:
+        plist_file.write(contents)
+    return 0
+
+
+def merge_ios_static_libraries(target, source, env):
+    target_path = target[0].abspath
+    os.makedirs(os.path.dirname(target_path), exist_ok=True)
+    if os.path.exists(target_path):
+        os.remove(target_path)
+    subprocess.run(
+        [
+            "/usr/bin/libtool",
+            "-static",
+            "-o",
+            target_path,
+            *[library.abspath for library in source],
+        ],
+        check=True,
+    )
+    return 0
 
 if env["platform"] == "macos":
     framework_dir = os.path.join(addon_bin_dir, library_base + ".framework")
@@ -77,10 +139,40 @@ if env["platform"] == "macos":
         os.path.join(framework_dir, library_base),
         source=sources,
     )
+    framework_env = env.Clone(
+        GODOT_JS_RUNTIME_FRAMEWORK_EXECUTABLE=library_base,
+        GODOT_JS_RUNTIME_VERSION=runtime_version,
+    )
+    framework_info_plist = framework_env.Command(
+        os.path.join(framework_dir, "Resources", "Info.plist"),
+        [],
+        write_macos_framework_info_plist,
+    )
 elif env["platform"] == "ios":
-    library = env.StaticLibrary(
-        os.path.join(addon_bin_dir, library_base + env["LIBSUFFIX"]),
+    ios_output_dir = env.Dir("bin/ios").abspath
+    unmerged_library = env.StaticLibrary(
+        os.path.join(
+            ios_output_dir,
+            "unmerged",
+            library_base + ".unmerged" + env["LIBSUFFIX"],
+        ),
         source=sources,
+    )
+    godot_cpp_libraries = [
+        dependency
+        for dependency in env["LIBS"]
+        if "libgodot-cpp" in str(dependency)
+    ]
+    if len(godot_cpp_libraries) != 1:
+        print(
+            "Expected exactly one godot-cpp static library for iOS, found "
+            + str(len(godot_cpp_libraries))
+        )
+        Exit(2)
+    library = env.Command(
+        os.path.join(ios_output_dir, library_base + env["LIBSUFFIX"]),
+        [unmerged_library, godot_cpp_libraries[0]],
+        merge_ios_static_libraries,
     )
 else:
     library = env.SharedLibrary(
@@ -89,6 +181,8 @@ else:
     )
 
 default_targets = [library]
+if env["platform"] == "macos":
+    default_targets.append(framework_info_plist)
 
 if os.environ.get("GODOT_JS_RUNTIME_BUILD_TESTS") == "1":
     test_env = env.Clone()

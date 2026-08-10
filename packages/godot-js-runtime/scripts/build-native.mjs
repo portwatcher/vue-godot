@@ -68,6 +68,9 @@ function parseArgs(argv) {
     tests: false,
     runTests: false,
     sanitizers: [],
+    iosSimulator: false,
+    threads: undefined,
+    androidApiLevel: undefined,
   }
   for (let index = 0; index < argv.length; index++) {
     const argument = argv[index]
@@ -80,20 +83,30 @@ function parseArgs(argv) {
       options.runTests = true
     } else if (argument === '--print') {
       options.print = true
+    } else if (argument === '--ios-simulator') {
+      options.iosSimulator = true
+    } else if (argument === '--threads') {
+      options.threads = true
+    } else if (argument === '--no-threads') {
+      options.threads = false
     } else if (
       argument === '--platform' ||
       argument === '--arch' ||
       argument === '--target' ||
       argument === '--jobs' ||
-      argument === '--sanitizers'
+      argument === '--sanitizers' ||
+      argument === '--android-api-level'
     ) {
       const value = argv[++index]
       if (!value) {
         throw new Error(`${argument} requires a value`)
       }
-      const name = argument.slice(2)
+      const name =
+        argument === '--android-api-level'
+          ? 'androidApiLevel'
+          : argument.slice(2)
       options[name] =
-        name === 'jobs'
+        name === 'jobs' || name === 'androidApiLevel'
           ? Number(value)
           : name === 'sanitizers'
             ? value.split(',').filter(Boolean)
@@ -112,6 +125,22 @@ function parseArgs(argv) {
   }
   if (!Number.isSafeInteger(options.jobs) || options.jobs < 1) {
     throw new Error('--jobs must be a positive integer')
+  }
+  if (options.iosSimulator && options.platform !== 'ios') {
+    throw new Error('--ios-simulator requires --platform ios')
+  }
+  if (options.threads !== undefined && options.platform !== 'web') {
+    throw new Error('--threads and --no-threads require --platform web')
+  }
+  if (
+    options.androidApiLevel !== undefined &&
+    (!Number.isSafeInteger(options.androidApiLevel) ||
+      options.androidApiLevel < 21)
+  ) {
+    throw new Error('--android-api-level must be an integer of at least 21')
+  }
+  if (options.androidApiLevel !== undefined && options.platform !== 'android') {
+    throw new Error('--android-api-level requires --platform android')
   }
   const unsupportedSanitizers = options.sanitizers.filter(
     (sanitizer) => !['address', 'undefined'].includes(sanitizer),
@@ -202,6 +231,9 @@ export function resolveNativeBuildPlan(options) {
   const jobs = options.jobs ?? Math.max(1, Math.min(os.cpus().length, 8))
   const buildTests = options.tests === true || options.runTests === true
   const sanitizers = [...(options.sanitizers ?? [])]
+  const iosSimulator = options.iosSimulator === true
+  const threads = options.threads
+  const androidApiLevel = options.androidApiLevel
   const testArtifact = path.join(
     nativeRoot,
     'bin',
@@ -218,6 +250,15 @@ export function resolveNativeBuildPlan(options) {
     `target=${target}`,
     `arch=${arch}`,
   ]
+  if (iosSimulator) {
+    sconsArguments.push('ios_simulator=yes')
+  }
+  if (threads !== undefined) {
+    sconsArguments.push(`threads=${threads ? 'yes' : 'no'}`)
+  }
+  if (androidApiLevel !== undefined) {
+    sconsArguments.push(`android_api_level=${androidApiLevel}`)
+  }
   return {
     platform,
     arch,
@@ -227,6 +268,9 @@ export function resolveNativeBuildPlan(options) {
     buildTests,
     runTests: options.runTests === true,
     sanitizers,
+    iosSimulator,
+    threads,
+    androidApiLevel,
     testArtifact,
     sconsArguments,
   }
@@ -273,7 +317,10 @@ export async function buildNative(options) {
     }
     run(plan.testArtifact, [], { cwd: nativeRoot })
   }
-  const manifest = generateExtensionManifest()
+  const manifest = generateExtensionManifest({
+    includeArtifacts: true,
+    write: options.writeManifest !== false,
+  })
   return { ...plan, scons, manifest }
 }
 

@@ -2,6 +2,13 @@ import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+  defaultReleaseBaseUrl,
+  findLegacyRuntimeIdentity,
+  releaseArchiveName,
+  releasePlatforms,
+  releaseTargets,
+} from '../packages/godot-js-runtime/scripts/platform-matrix.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 
@@ -21,6 +28,11 @@ export const releasePackageConfigs = [
       'typings/godot.d.ts',
       'typings/godot-js.d.ts',
       'THIRD_PARTY_NOTICES.md',
+      'licenses/godot-cpp-MIT.md',
+      'licenses/quickjs-ng-MIT.txt',
+      'scripts/package-release-artifacts.mjs',
+      'scripts/smoke-platform-exports.mjs',
+      'scripts/verify-release-artifacts.mjs',
     ],
   },
   {
@@ -234,4 +246,172 @@ export function isTrustedPublishingEnvironment() {
     process.env.ACTIONS_ID_TOKEN_REQUEST_URL &&
     process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN,
   )
+}
+
+function isRecord(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function sameStrings(actual, expected) {
+  return (
+    Array.isArray(actual) &&
+    actual.length === expected.length &&
+    actual.every((value, index) => value === expected[index])
+  )
+}
+
+export function runtimeReleaseManifestErrors(manifest, packageVersion) {
+  const errors = []
+  if (!isRecord(manifest)) {
+    return ['runtime manifest must be a JSON object']
+  }
+
+  const expectedBaseUrl = defaultReleaseBaseUrl(packageVersion)
+  if (manifest.schemaVersion !== 2) {
+    errors.push('runtime manifest schemaVersion must be 2')
+  }
+  if (manifest.packageName !== 'godot-js-runtime') {
+    errors.push('runtime manifest packageName must be godot-js-runtime')
+  }
+  if (manifest.version !== packageVersion) {
+    errors.push(
+      `runtime manifest version must be ${packageVersion}, found ${String(manifest.version)}`,
+    )
+  }
+  if (!isFullCommitSha(manifest.gitCommit)) {
+    errors.push('runtime manifest gitCommit must be a full commit SHA')
+  }
+  if (manifest.godotMinimum !== '4.4') {
+    errors.push('runtime manifest godotMinimum must be 4.4')
+  }
+
+  const dependencyNames = Array.isArray(manifest.dependencies)
+    ? manifest.dependencies.map((dependency) => dependency?.name).sort()
+    : []
+  if (!sameStrings(dependencyNames, ['QuickJS-ng', 'godot-cpp'])) {
+    errors.push('runtime manifest must include QuickJS-ng and godot-cpp')
+  }
+  for (const dependency of Array.isArray(manifest.dependencies)
+    ? manifest.dependencies
+    : []) {
+    if (
+      !isRecord(dependency) ||
+      typeof dependency.repository !== 'string' ||
+      !dependency.repository.startsWith('https://') ||
+      !isFullCommitSha(dependency.commit) ||
+      dependency.license !== 'MIT'
+    ) {
+      errors.push(
+        `runtime dependency metadata is invalid for ${String(dependency?.name)}`,
+      )
+    }
+  }
+
+  const archives = Array.isArray(manifest.archives) ? manifest.archives : []
+  if (archives.length !== releasePlatforms.length) {
+    errors.push(
+      `runtime manifest must contain ${String(releasePlatforms.length)} archives, found ${String(archives.length)}`,
+    )
+  }
+  const archivesByPlatform = new Map()
+  for (const archive of archives) {
+    if (!isRecord(archive) || typeof archive.platform !== 'string') {
+      errors.push('runtime manifest contains an invalid archive entry')
+      continue
+    }
+    if (archivesByPlatform.has(archive.platform)) {
+      errors.push(
+        `runtime manifest repeats archive platform ${archive.platform}`,
+      )
+      continue
+    }
+    archivesByPlatform.set(archive.platform, archive)
+  }
+  for (const platform of releasePlatforms) {
+    const archive = archivesByPlatform.get(platform.id)
+    const expectedName = releaseArchiveName(packageVersion, platform.id)
+    const expectedUrl = `${expectedBaseUrl}/${expectedName}`
+    const expectedTargets = releaseTargets
+      .filter((target) => target.platform === platform.id)
+      .map((target) => target.id)
+      .sort()
+    if (!archive) {
+      errors.push(`runtime manifest is missing the ${platform.id} archive`)
+      continue
+    }
+    if (archive.name !== expectedName || archive.url !== expectedUrl) {
+      errors.push(`runtime ${platform.id} archive name or URL is not pinned`)
+    }
+    if (
+      !Number.isSafeInteger(archive.size) ||
+      archive.size <= 0 ||
+      typeof archive.sha256 !== 'string' ||
+      !/^[a-f0-9]{64}$/.test(archive.sha256)
+    ) {
+      errors.push(`runtime ${platform.id} archive size or checksum is invalid`)
+    }
+    if (!sameStrings(archive.targets, expectedTargets)) {
+      errors.push(`runtime ${platform.id} archive targets are incomplete`)
+    }
+  }
+
+  const artifacts = Array.isArray(manifest.artifacts) ? manifest.artifacts : []
+  if (artifacts.length !== 20) {
+    errors.push(
+      `runtime manifest must contain 20 payload files, found ${String(artifacts.length)}`,
+    )
+  }
+  const expectedTargetIds = releaseTargets.map((target) => target.id).sort()
+  const actualTargetIds = [
+    ...new Set(artifacts.map((artifact) => artifact?.target)),
+  ].sort()
+  if (!sameStrings(actualTargetIds, expectedTargetIds)) {
+    errors.push('runtime manifest does not cover the exact 14-target matrix')
+  }
+  const artifactNames = new Set()
+  for (const artifact of artifacts) {
+    if (
+      !isRecord(artifact) ||
+      typeof artifact.name !== 'string' ||
+      typeof artifact.target !== 'string'
+    ) {
+      errors.push('runtime manifest contains an invalid artifact entry')
+      continue
+    }
+    if (artifactNames.has(artifact.name)) {
+      errors.push(`runtime manifest repeats artifact ${artifact.name}`)
+    }
+    artifactNames.add(artifact.name)
+    const target = releaseTargets.find(
+      (candidate) => candidate.id === artifact.target,
+    )
+    const archive = target ? archivesByPlatform.get(target.platform) : undefined
+    if (
+      !target ||
+      !archive ||
+      artifact.archive !== archive.name ||
+      artifact.url !== archive.url
+    ) {
+      errors.push(
+        `runtime artifact ${artifact.name} has invalid archive metadata`,
+      )
+    }
+    if (
+      !Number.isSafeInteger(artifact.size) ||
+      artifact.size <= 0 ||
+      typeof artifact.sha256 !== 'string' ||
+      !/^[a-f0-9]{64}$/.test(artifact.sha256)
+    ) {
+      errors.push(
+        `runtime artifact ${artifact.name} size or checksum is invalid`,
+      )
+    }
+    if (findLegacyRuntimeIdentity(artifact.name)) {
+      errors.push(
+        `runtime artifact ${artifact.name} uses a legacy product name`,
+      )
+    }
+  }
+
+  return errors
 }

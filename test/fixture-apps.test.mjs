@@ -427,12 +427,16 @@ test('fixture app workspaces expose the regression build contract', () => {
 
     const viteConfigPath = fixturePath(fixture, 'vue/vite.config.ts')
     const viteConfig = readText(viteConfigPath)
+    const externalModules =
+      fixture.id === 'native-app-demo'
+        ? "external: ['godot', 'godot-js']"
+        : "external: ['godot']"
     for (const marker of [
       'isNativeTag: () => false',
       "entry: 'vue/src/main.ts'",
       "formats: ['cjs']",
       "fileName: () => 'app.js'",
-      "external: ['godot']",
+      externalModules,
       "import { commonJsBundleBanner } from 'godot-js-runtime'",
       'banner: commonJsBundleBanner',
       "chunkFileNames: 'chunks/[name].js'",

@@ -708,6 +708,8 @@ function stageRuntimePackage(stageRoot, artifactMode) {
         ...artifact,
         size: fs.statSync(artifactPath).size,
         sha256: sha256File(artifactPath),
+        archive: null,
+        url: null,
       },
     ]
   } else {

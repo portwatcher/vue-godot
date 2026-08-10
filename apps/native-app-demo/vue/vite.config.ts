@@ -65,7 +65,7 @@ export default defineConfig({
       fileName: () => 'app.js',
     },
     rollupOptions: {
-      external: ['godot'],
+      external: ['godot', 'godot-js'],
       output: {
         banner: commonJsBundleBanner,
         // Stable chunk paths avoid stale Godot editor resource dependencies

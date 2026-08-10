@@ -10,7 +10,8 @@ import {
   refreshHtmlStyleContextViewport,
 } from '@vue-godot/html'
 import { createApp } from '@vue-godot/runtime-tscn'
-import { Callable, OS, VBoxContainer } from 'godot'
+import { Callable, Engine, OS, VBoxContainer } from 'godot'
+import { runtimeVersion } from 'godot-js'
 import App from './App.vue'
 import {
   recordNativeLifecycleEvent,
@@ -98,6 +99,8 @@ const nativeAppStyleContext = createHtmlStyleContext({
 
 const SMOKE_ENV = 'VUE_GODOT_SMOKE'
 const SMOKE_PASS_MARKER = '[vue-godot-smoke] native-app-demo passed'
+const EXPORT_SMOKE_FEATURE = 'godot_js_runtime_export_smoke'
+const EXPORT_SMOKE_PASS_MARKER = '[godot-js-runtime-export] VUE PASS'
 const RELEASE_CHECKS_ENV = 'VUE_GODOT_RELEASE_CHECKS'
 const RELEASE_CHECKS_DELAY_ENV = 'VUE_GODOT_RELEASE_CHECKS_DELAY_MS'
 const RELEASE_CHECKS_PASS_MARKER =
@@ -206,6 +209,15 @@ export default class Root extends VBoxContainer {
     await router.isReady()
     app.mount(this)
     this.app = app
+
+    if (OS.has_feature(EXPORT_SMOKE_FEATURE)) {
+      const godotVersion = String(Engine.get_version_info().get('string'))
+      console.log(
+        `${EXPORT_SMOKE_PASS_MARKER} runtime=${runtimeVersion()} godot=${godotVersion} platform=${OS.get_name()}`,
+      )
+      if (OS.get_name() !== 'Web') this.get_tree().quit(0)
+      return
+    }
 
     if (isEnvironmentEnabled(SMOKE_ENV)) {
       console.log(SMOKE_PASS_MARKER)

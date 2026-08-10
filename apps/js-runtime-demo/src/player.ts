@@ -1,7 +1,18 @@
-import { Callable, Input, Node2D, ResourceLoader, Vector2, print } from 'godot'
-import { defineScript } from 'godot-js'
+import {
+  Callable,
+  Engine,
+  Input,
+  Node2D,
+  OS,
+  ResourceLoader,
+  Vector2,
+  print,
+} from 'godot'
+import { defineScript, runtimeVersion } from 'godot-js'
 
 const successMarker = '[godot-js-runtime-demo] PHASE6_STANDALONE_DEMO PASS'
+const exportSmokeFeature = 'godot_js_runtime_export_smoke'
+const exportSuccessMarker = '[godot-js-runtime-export] STANDALONE PASS'
 
 class StandalonePlayer extends Node2D {
   speed = 240
@@ -28,6 +39,13 @@ class StandalonePlayer extends Node2D {
         )
       }
       print(successMarker)
+      if (OS.has_feature(exportSmokeFeature)) {
+        const godotVersion = String(Engine.get_version_info().get('string'))
+        print(
+          `${exportSuccessMarker} runtime=${runtimeVersion()} godot=${godotVersion} platform=${OS.get_name()}`,
+        )
+        if (OS.get_name() !== 'Web') this.get_tree().quit(0)
+      }
     })
   }
 

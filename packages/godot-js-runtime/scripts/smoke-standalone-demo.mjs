@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -22,6 +23,7 @@ function parseArguments(argv) {
     keepTemporaryProject: false,
     skipNativeBuild: process.env.GODOT_JS_RUNTIME_SKIP_NATIVE_BUILD === '1',
     target: undefined,
+    releaseDirectory: undefined,
   }
   for (let index = 0; index < argv.length; ++index) {
     const argument = argv[index]
@@ -29,10 +31,16 @@ function parseArguments(argv) {
       options.keepTemporaryProject = true
     } else if (argument === '--skip-native-build') {
       options.skipNativeBuild = true
-    } else if (argument === '--godot' || argument === '--target') {
+    } else if (
+      argument === '--godot' ||
+      argument === '--target' ||
+      argument === '--release-dir'
+    ) {
       const value = argv[++index]
       if (!value) throw new Error(`${argument} requires a value`)
-      options[argument.slice(2)] = value
+      const field =
+        argument === '--release-dir' ? 'releaseDirectory' : argument.slice(2)
+      options[field] = value
     } else {
       throw new Error(`Unknown option: ${argument}`)
     }
@@ -45,6 +53,9 @@ function parseArguments(argv) {
   options.godot = path.resolve(options.godot)
   if (!fs.existsSync(options.godot)) {
     throw new Error(`Godot executable does not exist: ${options.godot}`)
+  }
+  if (options.releaseDirectory) {
+    options.releaseDirectory = path.resolve(options.releaseDirectory)
   }
   return options
 }
@@ -75,7 +86,7 @@ function copyFile(source, destination) {
   fs.chmodSync(destination, fs.statSync(source).mode & 0o777)
 }
 
-function stageRuntimeSource(temporaryRoot, manifest) {
+export function stageRuntimeSource(temporaryRoot, manifest, copyArtifacts) {
   const sourceRoot = path.join(temporaryRoot, 'runtime package')
   const sourceAddon = path.join(sourceRoot, 'addon/godot-js-runtime')
   const packageAddon = path.join(packageRoot, 'addon/godot-js-runtime')
@@ -83,28 +94,54 @@ function stageRuntimeSource(temporaryRoot, manifest) {
     'godot_js_runtime.gdextension',
     'LICENSE',
     'THIRD_PARTY_NOTICES.md',
+    'licenses/godot-cpp-MIT.md',
+    'licenses/quickjs-ng-MIT.txt',
   ]) {
-    const source =
-      name === 'godot_js_runtime.gdextension'
-        ? path.join(packageAddon, name)
-        : path.join(packageRoot, name)
-    const destination =
-      name === 'godot_js_runtime.gdextension'
-        ? path.join(sourceAddon, name)
-        : path.join(sourceRoot, name)
+    const extension = name === 'godot_js_runtime.gdextension'
+    const source = extension
+      ? path.join(packageAddon, name)
+      : path.join(packageRoot, name)
+    const destination = extension
+      ? path.join(sourceAddon, name)
+      : path.join(sourceRoot, name)
     copyFile(source, destination)
   }
-  for (const artifact of manifest.artifacts) {
-    copyFile(
-      path.join(packageAddon, 'bin', ...artifact.name.split('/')),
-      path.join(sourceAddon, 'bin', ...artifact.name.split('/')),
-    )
+  if (copyArtifacts) {
+    for (const artifact of manifest.artifacts) {
+      copyFile(
+        path.join(packageAddon, 'bin', ...artifact.name.split('/')),
+        path.join(sourceAddon, 'bin', ...artifact.name.split('/')),
+      )
+    }
   }
   fs.writeFileSync(
     path.join(sourceAddon, 'runtime-manifest.json'),
     `${JSON.stringify(manifest, null, 2)}\n`,
   )
   return sourceRoot
+}
+
+function sha256File(filePath) {
+  return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex')
+}
+
+export function releaseManifest(releaseDirectory) {
+  const checksumPath = path.join(releaseDirectory, 'SHA256SUMS')
+  const checksumSource = fs.readFileSync(checksumPath, 'utf-8')
+  for (const line of checksumSource.trim().split(/\r?\n/)) {
+    const match = line.match(/^([a-f0-9]{64})  ([^/\\]+)$/)
+    if (!match) throw new Error(`Invalid release checksum entry: ${line}`)
+    const filePath = path.join(releaseDirectory, match[2])
+    if (!fs.existsSync(filePath) || sha256File(filePath) !== match[1]) {
+      throw new Error(`Release checksum differs for ${match[2]}`)
+    }
+  }
+  return JSON.parse(
+    fs.readFileSync(
+      path.join(releaseDirectory, 'runtime-manifest.json'),
+      'utf-8',
+    ),
+  )
 }
 
 function stageEmptyProject(temporaryRoot) {
@@ -142,7 +179,7 @@ export async function smokeStandaloneDemo(options) {
   run('npm', ['run', 'build', '--workspace=godot-js-runtime'], {
     description: 'standalone runtime package build',
   })
-  if (!options.skipNativeBuild) {
+  if (!options.skipNativeBuild && !options.releaseDirectory) {
     await buildNative({
       target: 'template_debug',
       print: false,
@@ -152,10 +189,12 @@ export async function smokeStandaloneDemo(options) {
     })
   }
 
-  const manifest = generateExtensionManifest({
-    includeArtifacts: true,
-    write: false,
-  })
+  const manifest = options.releaseDirectory
+    ? releaseManifest(options.releaseDirectory)
+    : generateExtensionManifest({
+        includeArtifacts: true,
+        write: false,
+      })
   const installer = await import(
     pathToFileURL(path.join(packageRoot, 'dist/index.js')).href
   )
@@ -164,9 +203,16 @@ export async function smokeStandaloneDemo(options) {
     path.join(os.tmpdir(), 'godot-js-runtime standalone smoke-'),
   )
   try {
-    const sourceRoot = stageRuntimeSource(temporaryRoot, manifest)
+    const sourceRoot = stageRuntimeSource(
+      temporaryRoot,
+      manifest,
+      !options.releaseDirectory,
+    )
     const projectRoot = stageEmptyProject(temporaryRoot)
     const cliPath = path.join(packageRoot, 'dist/cli.js')
+    const archiveArguments = options.releaseDirectory
+      ? ['--artifact-dir', options.releaseDirectory]
+      : []
 
     const installOutput = runCli(
       cliPath,
@@ -178,6 +224,7 @@ export async function smokeStandaloneDemo(options) {
         sourceRoot,
         '--target',
         target,
+        ...archiveArguments,
       ],
       'standalone runtime installation',
     )
@@ -239,6 +286,7 @@ export async function smokeStandaloneDemo(options) {
         sourceRoot,
         '--target',
         target,
+        ...archiveArguments,
       ],
       'standalone runtime reinstall',
     )

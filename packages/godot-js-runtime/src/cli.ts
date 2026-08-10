@@ -22,6 +22,7 @@ interface ParsedOptions {
   readonly positionals: readonly string[]
   readonly projectDirectory: string
   readonly sourceDirectory?: string
+  readonly artifactDirectory?: string
   readonly outputDirectory?: string
   readonly godotExecutable?: string
   readonly targets: readonly string[]
@@ -44,6 +45,8 @@ Commands:
 Common options:
   --project <dir>   Godot project directory (default: current directory)
   --source <dir>    Runtime package/addon source (development and CI)
+  --artifact-dir <dir>
+                    Offline directory containing release archives
   --json            Print machine-readable output
   -h, --help        Show command help
 
@@ -59,6 +62,8 @@ Options:
   --project <dir>   Godot project directory
   --target <name>   Exact packaged target (repeatable)
   --source <dir>    Runtime package/addon source
+  --artifact-dir <dir>
+                    Offline directory containing release archives
   --force           Replace exact unowned destination-file collisions
   --json            Print machine-readable output`,
   uninstall: `Usage: godot-js-runtime uninstall [project] [options]
@@ -85,6 +90,8 @@ Options:
   --project <dir>   Godot project directory
   --target <name>   Additional target (repeatable)
   --source <dir>    Runtime package/addon source
+  --artifact-dir <dir>
+                    Offline directory containing release archives
   --force           Replace exact unowned destination-file collisions
   --json            Print machine-readable output`,
   typegen: `Usage: godot-js-runtime typegen [project] [options]
@@ -120,6 +127,7 @@ function parseOptions(argv: readonly string[]): ParsedOptions {
   const providedOptions = new Set<string>()
   let projectDirectory = process.cwd()
   let sourceDirectory: string | undefined
+  let artifactDirectory: string | undefined
   let outputDirectory: string | undefined
   let godotExecutable: string | undefined
   let force = false
@@ -134,6 +142,10 @@ function parseOptions(argv: readonly string[]): ParsedOptions {
     } else if (argument === '--source') {
       providedOptions.add('source')
       sourceDirectory = optionValue(argv, index)
+      index += 1
+    } else if (argument === '--artifact-dir') {
+      providedOptions.add('artifact-dir')
+      artifactDirectory = optionValue(argv, index)
       index += 1
     } else if (argument === '--out') {
       providedOptions.add('out')
@@ -166,6 +178,7 @@ function parseOptions(argv: readonly string[]): ParsedOptions {
     positionals,
     projectDirectory,
     sourceDirectory,
+    artifactDirectory,
     outputDirectory,
     godotExecutable,
     targets,
@@ -193,12 +206,21 @@ function projectFromPositional(options: ParsedOptions): string {
 
 function assertCommandOptions(command: string, options: ParsedOptions): void {
   const allowed: Readonly<Record<string, ReadonlySet<string>>> = {
-    install: new Set(['project', 'source', 'target', 'force', 'json', 'help']),
+    install: new Set([
+      'project',
+      'source',
+      'artifact-dir',
+      'target',
+      'force',
+      'json',
+      'help',
+    ]),
     uninstall: new Set(['project', 'json', 'help']),
     verify: new Set(['project', 'json', 'help']),
     'add-target': new Set([
       'project',
       'source',
+      'artifact-dir',
       'target',
       'force',
       'json',
@@ -250,6 +272,7 @@ export async function runCli(
       const result = installRuntime({
         projectDirectory: projectFromPositional(options),
         sourceDirectory: options.sourceDirectory,
+        artifactDirectory: options.artifactDirectory,
         targets: options.targets,
         force: options.force,
       })
@@ -288,6 +311,7 @@ export async function runCli(
       const result = addRuntimeTarget({
         projectDirectory: options.projectDirectory,
         sourceDirectory: options.sourceDirectory,
+        artifactDirectory: options.artifactDirectory,
         targets,
         force: options.force,
       })

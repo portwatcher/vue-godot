@@ -42,20 +42,30 @@ test('defineScript attaches canonical metadata without decorators', () => {
 
 test('runtime manifest guard rejects incomplete or invalid artifacts', () => {
   const manifest = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     runtimeName,
     packageName: runtimePackageName,
     version: '0.0.1',
     gitCommit: '0123456789abcdef',
     godotMinimum: minimumGodotVersion,
     dependencies: [],
+    archives: [],
     artifacts: [],
   }
   assert.equal(isRuntimeManifest(manifest), true)
   assert.equal(
     isRuntimeManifest({
       ...manifest,
-      artifacts: [{ name: 'bad', target: 'macos', size: -1, sha256: 'bad' }],
+      artifacts: [
+        {
+          name: 'bad',
+          target: 'macos',
+          size: -1,
+          sha256: 'bad',
+          archive: null,
+          url: null,
+        },
+      ],
     }),
     false,
   )

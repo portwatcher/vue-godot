@@ -36,6 +36,7 @@ function platformKey(platform, arch) {
   if (platform === 'darwin' && (arch === 'arm64' || arch === 'x64')) {
     return 'macos-universal'
   }
+  if (platform === 'win32' && arch === 'x64') return 'windows-x86_64'
   throw new Error(
     `No pinned official Godot editor is configured for ${platform}:${arch}`,
   )
@@ -199,12 +200,12 @@ function assertScopedPath(targetPath, parentPath) {
   }
 }
 
-function scopedRemove(targetPath, parentPath) {
+export function scopedRemove(targetPath, parentPath) {
   assertScopedPath(targetPath, parentPath)
   fs.rmSync(targetPath, { recursive: true, force: true })
 }
 
-function downloadFile(url, destination, redirectCount = 0) {
+export function downloadFile(url, destination, redirectCount = 0) {
   if (redirectCount > 5) {
     return Promise.reject(
       new Error(`Too many redirects while downloading ${url}`),
@@ -245,7 +246,7 @@ function downloadFile(url, destination, redirectCount = 0) {
   })
 }
 
-function runChecked(command, args, label) {
+export function runChecked(command, args, label) {
   const result = spawnSync(command, args, { encoding: 'utf-8' })
   if (result.error) throw result.error
   if (result.status !== 0) {

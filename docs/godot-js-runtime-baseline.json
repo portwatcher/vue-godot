@@ -174,7 +174,6 @@
         "README.md",
         "apps/game-ui-demo/README.md",
         "apps/game-ui-demo/docs/production.md",
-        "apps/native-app-demo/README.md",
         "apps/native-app-demo/docs/production.md",
         "docs/compatibility.md",
         "docs/migration.md",
@@ -202,6 +201,11 @@
     }
   ],
   "resolvedInventory": [
+    {
+      "phase": 8,
+      "destination": "The representative Vue export demo now documents official Godot and the standalone release matrix.",
+      "paths": ["apps/native-app-demo/README.md"]
+    },
     {
       "phase": 7,
       "destination": "Official-Godot release setup, standalone runtime installation, and neutral generated paths replaced these custom-editor couplings.",

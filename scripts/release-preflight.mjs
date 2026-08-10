@@ -12,6 +12,7 @@ import {
   releasePackageConfigs as packageConfigs,
   repoRoot,
   run,
+  runtimeReleaseManifestErrors,
 } from './release-utils.mjs'
 
 function usage() {
@@ -182,6 +183,61 @@ function checkPackageMetadata(packagesByName) {
       expectedRange(javascriptRuntime.version),
     )
   }
+}
+
+function checkRuntimeReleaseManifest(packagesByName) {
+  logStep('checking Godot JavaScript Runtime release manifest')
+
+  const runtimePackage = packagesByName.get('godot-js-runtime')
+  if (!runtimePackage) {
+    failures.push('Missing local package metadata for godot-js-runtime')
+    return
+  }
+  const manifest = readJson(
+    'packages/godot-js-runtime/addon/godot-js-runtime/runtime-manifest.json',
+  )
+  for (const error of runtimeReleaseManifestErrors(
+    manifest,
+    runtimePackage.version,
+  )) {
+    failures.push(error)
+  }
+
+  if (typeof manifest.gitCommit === 'string') {
+    const ancestor = run('git', [
+      'merge-base',
+      '--is-ancestor',
+      manifest.gitCommit,
+      'HEAD',
+    ])
+    if (ancestor.status !== 0) {
+      failures.push(
+        `Runtime manifest commit is not an ancestor of HEAD: ${manifest.gitCommit}`,
+      )
+    }
+  }
+
+  const dependencyLock = readJson(
+    'packages/godot-js-runtime/native/deps.lock.json',
+  )
+  const lockedCommits = new Map(
+    Object.values(dependencyLock.dependencies ?? {})
+      .filter((dependency) => dependency.kind === 'source-archive')
+      .map((dependency) => [dependency.name, dependency.commit]),
+  )
+  for (const dependency of Array.isArray(manifest.dependencies)
+    ? manifest.dependencies
+    : []) {
+    if (lockedCommits.get(dependency.name) !== dependency.commit) {
+      failures.push(
+        `Runtime manifest dependency ${String(dependency.name)} does not match deps.lock.json`,
+      )
+    }
+  }
+
+  console.log(
+    `[release-preflight] runtime manifest includes ${String(manifest.artifacts?.length ?? 0)} payload files and ${String(manifest.archives?.length ?? 0)} archives`,
+  )
 }
 
 async function checkGeneratedPackageSpecs(packagesByName) {
@@ -639,6 +695,7 @@ async function main() {
   }
 
   checkPackageMetadata(packagesByName)
+  checkRuntimeReleaseManifest(packagesByName)
   await checkGeneratedPackageSpecs(packagesByName)
   checkPackDryRun()
   const publishNeeded = checkRegistry(packagesByName)

@@ -56,16 +56,19 @@ function createRuntimeSource(root, artifacts) {
       target: artifact.target,
       size: contents.length,
       sha256: sha256(contents),
+      archive: null,
+      url: null,
     }
   })
   const manifest = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     runtimeName: 'Godot JavaScript Runtime',
     packageName: 'godot-js-runtime',
     version: '1.2.3-test',
     gitCommit: '0123456789abcdef',
     godotMinimum: '4.4',
     dependencies: [],
+    archives: [],
     artifacts: manifestArtifacts,
   }
   writeFile(

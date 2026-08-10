@@ -22,23 +22,30 @@ permissions:
   id-token: write
 
 jobs:
+  runtime-release:
+    name: Verify runtime release matrix
+    uses: ./.github/workflows/godot-js-runtime-release.yml
+    permissions:
+      contents: read
+
   publish:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 45
+    needs: runtime-release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: '3.13'
 
@@ -56,12 +63,24 @@ jobs:
       - name: Install virtual display
         run: sudo apt-get update && sudo apt-get install -y xvfb
 
-      - name: Build Linux runtime
-        run: >-
-          npm run build:native --workspace=godot-js-runtime --
-          --platform linux
-          --arch x86_64
-          --target template_debug
+      - name: Download verified release manifest and archives
+        uses: actions/download-artifact@v8
+        with:
+          name: godot-js-runtime-release
+          path: .artifacts/godot-js-runtime/0.0.1
+
+      - name: Download verified Linux runtime
+        uses: actions/download-artifact@v8
+        with:
+          name: godot-js-runtime-linux
+          path: packages/godot-js-runtime/addon/godot-js-runtime/bin
+
+      - name: Verify publish inputs match the committed release manifest
+        run: |
+          cmp \
+            .artifacts/godot-js-runtime/0.0.1/runtime-manifest.json \
+            packages/godot-js-runtime/addon/godot-js-runtime/runtime-manifest.json
+          npm run verify:release --workspace=godot-js-runtime -- --platform linux
 
       - name: Publish
         env:

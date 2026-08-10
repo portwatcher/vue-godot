@@ -1,8 +1,11 @@
-import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
+import {
+  collectReleaseArtifacts,
+  defaultReleaseBaseUrl,
+} from './platform-matrix.mjs'
 
 const scriptPath = fileURLToPath(import.meta.url)
 const packageRoot = path.resolve(path.dirname(scriptPath), '..')
@@ -15,12 +18,6 @@ const templatePath = path.join(
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'))
-}
-
-function sha256File(filePath) {
-  const hash = createHash('sha256')
-  hash.update(fs.readFileSync(filePath))
-  return hash.digest('hex')
 }
 
 function resolveGitCommit() {
@@ -38,42 +35,6 @@ function resolveGitCommit() {
   }
 }
 
-function collectArtifacts(binDir) {
-  if (!fs.existsSync(binDir)) {
-    return []
-  }
-
-  const files = []
-  const visit = (directory) => {
-    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-      const absolutePath = path.join(directory, entry.name)
-      if (entry.isDirectory()) {
-        visit(absolutePath)
-      } else if (entry.isFile() && entry.name !== '.gitkeep') {
-        files.push(absolutePath)
-      }
-    }
-  }
-  visit(binDir)
-
-  return files
-    .sort((left, right) => left.localeCompare(right))
-    .map((filePath) => {
-      const name = path.relative(binDir, filePath).split(path.sep).join('/')
-      const match = name.match(
-        /^libgodot_js_runtime\.([^.]+)\.([^.]+)(?:\.([^.]+))?/,
-      )
-      return {
-        name,
-        target: match
-          ? [match[1], match[2], match[3]].filter(Boolean).join('.')
-          : 'unknown',
-        size: fs.statSync(filePath).size,
-        sha256: sha256File(filePath),
-      }
-    })
-}
-
 export function generateExtensionManifest(options = {}) {
   const packageJson = readJson(path.join(packageRoot, 'package.json'))
   const dependencyLock = readJson(
@@ -85,8 +46,36 @@ export function generateExtensionManifest(options = {}) {
     '{{GODOT_MINIMUM}}',
     godotMinimum,
   )
+  const artifacts =
+    options.artifacts ??
+    (options.includeArtifacts === true
+      ? collectReleaseArtifacts(path.join(addonRoot, 'bin'), {
+          platforms: options.platforms,
+          requireAll: options.requireAllArtifacts === true,
+        })
+      : [])
+  const archives = options.archives ?? []
+  const releaseBaseUrl =
+    options.releaseBaseUrl ?? defaultReleaseBaseUrl(packageJson.version)
+  const archiveNames = new Map(
+    archives.map((archive) => [archive.platform, archive.name]),
+  )
+  const releaseArtifacts = artifacts.map((artifact) => {
+    if (artifact.archive !== null || artifact.url !== null) {
+      return artifact
+    }
+    const platform = artifact.target.split('.')[0]
+    const archive = archiveNames.get(platform)
+    return archive
+      ? {
+          ...artifact,
+          archive,
+          url: `${releaseBaseUrl}/${archive}`,
+        }
+      : artifact
+  })
   const manifest = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     runtimeName: 'Godot JavaScript Runtime',
     packageName: packageJson.name,
     version: packageJson.version,
@@ -105,10 +94,8 @@ export function generateExtensionManifest(options = {}) {
         license: dependency.license,
       }))
       .sort((left, right) => left.name.localeCompare(right.name)),
-    artifacts:
-      options.includeArtifacts === true
-        ? collectArtifacts(path.join(addonRoot, 'bin'))
-        : [],
+    archives,
+    artifacts: releaseArtifacts,
   }
 
   if (options.write !== false) {

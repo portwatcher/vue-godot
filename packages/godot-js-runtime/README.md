@@ -4,12 +4,11 @@ Godot JavaScript Runtime is a standalone JavaScript and ahead-of-time
 TypeScript runtime for official Godot. It is not a Vue package and its native
 extension does not import, link, or bundle Vue.
 
-The repository now contains the resource-backed QuickJS-ng host, generated
-Godot 4.4 binding with complete Variant conversion, and the JavaScript
-`ScriptLanguage` implementation. Stock Godot can load, attach, serialize, run,
-and reload `.js`, `.mjs`, and `.cjs` scripts. The standalone installer and
-non-Vue TypeScript demo are implemented; the complete release-platform artifact
-matrix remains under development, so this is not yet a published release.
+The package contains the resource-backed QuickJS-ng host, generated Godot 4.4
+binding with complete Variant conversion, and the JavaScript `ScriptLanguage`
+implementation. Stock Godot can load, attach, serialize, run, reload, and
+export `.js`, `.mjs`, and `.cjs` scripts. The release manifest covers the full
+desktop, Android, iOS, and threaded-Web v1 matrix in debug and release modes.
 
 ## Package exports
 
@@ -32,10 +31,25 @@ npx godot-js-runtime verify --project .
 
 The project must already contain `project.godot`. `install` copies the core
 addon, license notices, and one exact host artifact into
-`addons/godot-js-runtime`. It also adds only the runtime's line to
+`addons/godot-js-runtime`. Native artifacts are not embedded in the npm
+tarball: the installer reads their versioned archive names, HTTPS URLs, sizes,
+and SHA-256 hashes from the packaged manifest. It downloads only the archive
+needed by the selected target and verifies the archive and every extracted
+payload before copying anything. It also adds only the runtime's line to
 `.godot/extension_list.cfg`, preserving other registered extensions. Every
 owned file, target, size, checksum, and registration is recorded in
 `addons/godot-js-runtime/installation-manifest.json`.
+
+For an offline or air-gapped install, download the exact archives named in
+`runtime-manifest.json` into one directory and pass it explicitly:
+
+```bash
+npx godot-js-runtime install --project . \
+  --artifact-dir /absolute/path/to/runtime-archives
+```
+
+Offline archives receive the same size, SHA-256, path-safety, embedded
+manifest, and per-payload checks as downloaded archives.
 
 Installation is idempotent. An existing destination that is not recorded by a
 valid installation manifest is never adopted or overwritten unless `--force`
@@ -91,9 +105,21 @@ project for this workflow.
 
 ### Export targets
 
-The artifact manifest uses exact target names such as
-`linux.template_release.x86_64`. Add every target needed by the project's
-export presets without removing the already installed host target:
+The artifact manifest exposes these exact v1 targets. Debug artifacts are for
+the editor and development exports; release artifacts are optimized for
+production exports.
+
+| Platform | Exact targets                                                                                                                        | Binary form                                                        |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| macOS    | `macos.template_debug.universal`, `macos.template_release.universal`                                                                 | universal arm64 + x86_64 frameworks                                |
+| Windows  | `windows.template_debug.x86_64`, `windows.template_release.x86_64`                                                                   | x86_64 DLLs                                                        |
+| Linux    | `linux.template_debug.x86_64`, `linux.template_release.x86_64`                                                                       | x86_64 shared libraries                                            |
+| Android  | `android.template_debug.arm64`, `android.template_debug.x86_64`, `android.template_release.arm64`, `android.template_release.x86_64` | arm64-v8a and x86_64 shared libraries                              |
+| iOS      | `ios.template_debug.universal`, `ios.template_release.universal`                                                                     | XCFrameworks with arm64 device and arm64 + x86_64 simulator slices |
+| Web      | `web.template_debug.wasm32`, `web.template_release.wasm32`                                                                           | threaded wasm32 GDExtensions                                       |
+
+Add every target needed by the project's export presets without removing the
+already installed host target:
 
 ```bash
 npx godot-js-runtime targets
@@ -103,9 +129,15 @@ npx godot-js-runtime verify --project .
 
 The command fails if the installed core and target source have different
 versions or manifests. Export presets must include the emitted JavaScript,
-relative chunks, JSON resources, and any desired `.map` files. The full desktop,
-Android, iOS, and Web artifact set is not claimed until the Phase 8 release
-matrix passes.
+relative chunks, JSON resources, and any desired `.map` files.
+
+Windows arm64, Linux arm64, Android arm32, consoles, and the Godot Web editor
+are not supported in v1. Web exports require Godot's extension and thread
+variants and must be served with cross-origin isolation: `COOP: same-origin`,
+`COEP: require-corp`, and compatible `CORP` headers. iOS exports still require
+the application's own Apple signing and device provisioning; the release gate
+performs unsigned device/simulator links and launches a compatible simulator
+where the host and official template architecture permit it.
 
 ## Attached JavaScript scripts
 
@@ -462,26 +494,48 @@ runs the complete live binding stress through stock Godot with UBSan.
 Set `PYTHON_BIN` or `SCONS_BIN` when the default tool discovery is unsuitable.
 The build tooling also supports print-only operation for CI inspection.
 
-## Current verification boundary
+## Build, package, and export verification
 
-At this phase, the extension, live generated binding, and JavaScript script
-language load and unload cleanly in official Godot 4.4.1 and the current stable
-editor. The stock fixture attaches a non-Vue script, exercises lifecycle and
-notification dispatch, reflected methods/properties/signals/RPC metadata,
-editor placeholders, tool scripts, source serialization, syntax diagnostics,
-templates, file monitoring, actionable loader errors, source-mapped runtime
-errors, hard and state-preserving soft reloads, deferred reloads, and repeated
-editor play/stop cycles. It retains the earlier all-Variant, ownership,
-callback, ESM, CommonJS, limit, and stress coverage. Every cycle asserts
-balanced runtime, wrapper, and callback ownership. Deterministic stock-Godot
-type generation and a strict plain-TypeScript fixture are also verified. The
-standalone CLI now installs, verifies, augments, and uninstalls a manifest-owned
-runtime from a path containing spaces. Starting with an empty stock project,
-the non-Vue demo generates types, compiles TypeScript, loads a resource, moves a
-`Node2D`, crosses a signal/Callable boundary, drains a Promise job, and prints
-its automated marker on official Godot 4.4.1, the current stable macOS editor,
-and official 4.4.1 Linux. Platform release artifacts and Vue migration remain
-later gates.
+The release tooling uses one canonical 14-target matrix for native builds,
+`.gdextension` feature tags, manifests, archives, installer selection, and
+artifact inspection. From the repository root:
+
+```bash
+npm run setup:godot
+npm run setup:godot-templates
+npm run build:release --workspace=godot-js-runtime -- --platform linux --mode all
+npm run verify:release --workspace=godot-js-runtime -- --platform linux
+npm run package:godot-js-runtime
+```
+
+`package:godot-js-runtime` requires all six platform families, emits one
+deterministic archive per family under
+`.artifacts/godot-js-runtime/<version>`, writes `SHA256SUMS` and
+`PROVENANCE.json`, and refreshes the package manifest. Each archive includes
+the extension descriptor, notices, dependency licenses, its platform payloads,
+an embedded manifest, provenance, and payload checksums.
+
+Run the complete standalone and representative Vue export gate from in-tree
+artifacts, then repeat it through clean offline release archives:
+
+```bash
+npm run smoke:platform-exports
+npm run smoke:platform-exports -- \
+  --release-dir .artifacts/godot-js-runtime/0.0.1
+```
+
+Both commands export debug and release applications for macOS, Windows, Linux,
+Android, iOS, and Web. The runner launches desktop applications, an arm64
+Android device/emulator, and threaded Web in Chromium; it validates both
+Android ABIs, all Apple slices, unsigned Xcode links, binary dependencies, and
+runtime/Godot/platform markers. It records the remaining signed iOS device
+launch as a manual application-release gate when local hardware or credentials
+do not permit it.
+
+The same release matrix runs in CI. Web builds use a digest-pinned Emscripten
+SDK, Android uses a pinned NDK, export templates are verified by exact size and
+SHA-512, and native payloads are rejected if they depend on a custom
+editor/runtime binary or an undeclared third-party shared library.
 
 ## Security model
 

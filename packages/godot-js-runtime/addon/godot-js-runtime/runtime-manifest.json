@@ -1,9 +1,9 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "runtimeName": "Godot JavaScript Runtime",
   "packageName": "godot-js-runtime",
   "version": "0.0.1",
-  "gitCommit": "f82f06ad1cd34132066b54915ffa778a1410148e",
+  "gitCommit": "3898db2a34f50f376b0fa3b6a71cda653cf10287",
   "godotMinimum": "4.4",
   "dependencies": [
     {
@@ -19,5 +19,236 @@
       "license": "MIT"
     }
   ],
-  "artifacts": []
+  "archives": [
+    {
+      "name": "godot-js-runtime-v0.0.1-macos-universal.tar.gz",
+      "platform": "macos",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-macos-universal.tar.gz",
+      "size": 4567311,
+      "sha256": "2c9958fd75ae806bd8b214b0d4e0de9d755c8fab3b9b72d30268a9c5815f51ec",
+      "targets": [
+        "macos.template_debug.universal",
+        "macos.template_release.universal"
+      ]
+    },
+    {
+      "name": "godot-js-runtime-v0.0.1-windows-x86_64.tar.gz",
+      "platform": "windows",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-windows-x86_64.tar.gz",
+      "size": 3577747,
+      "sha256": "a0345be2d9a2882a60a7c2f54d6d53e566d6e2e35b1588ac3dc920b4752b834d",
+      "targets": [
+        "windows.template_debug.x86_64",
+        "windows.template_release.x86_64"
+      ]
+    },
+    {
+      "name": "godot-js-runtime-v0.0.1-linux-x86_64.tar.gz",
+      "platform": "linux",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-linux-x86_64.tar.gz",
+      "size": 3600918,
+      "sha256": "207679849b396c0bcbc0251b4b01619bd278f69f923f10771bcb7e1d8ba08cbc",
+      "targets": [
+        "linux.template_debug.x86_64",
+        "linux.template_release.x86_64"
+      ]
+    },
+    {
+      "name": "godot-js-runtime-v0.0.1-android.tar.gz",
+      "platform": "android",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-android.tar.gz",
+      "size": 7817991,
+      "sha256": "5bfd868938a17d689c10012b7555871160703a291000a401169a81c5bc9fb46c",
+      "targets": [
+        "android.template_debug.arm64",
+        "android.template_debug.x86_64",
+        "android.template_release.arm64",
+        "android.template_release.x86_64"
+      ]
+    },
+    {
+      "name": "godot-js-runtime-v0.0.1-ios-xcframework.tar.gz",
+      "platform": "ios",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-ios-xcframework.tar.gz",
+      "size": 14253657,
+      "sha256": "038071f6933341c3390ead90f71fd12205cfcd07611a73e3c6e2fa07b712727b",
+      "targets": [
+        "ios.template_debug.universal",
+        "ios.template_release.universal"
+      ]
+    },
+    {
+      "name": "godot-js-runtime-v0.0.1-web-wasm32.tar.gz",
+      "platform": "web",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-web-wasm32.tar.gz",
+      "size": 2478608,
+      "sha256": "265420a2df7c98d9c33741c0d7c0be2a786f46103fc774ad7f6054e75c4144bf",
+      "targets": [
+        "web.template_debug.wasm32",
+        "web.template_release.wasm32"
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "libgodot_js_runtime.android.template_debug.arm64.so",
+      "target": "android.template_debug.arm64",
+      "size": 7403088,
+      "sha256": "219a7a13c4ea0bc84f3a30bb6db2b205add8aaeb892c62d643db3ecff1897d65",
+      "archive": "godot-js-runtime-v0.0.1-android.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-android.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.android.template_debug.x86_64.so",
+      "target": "android.template_debug.x86_64",
+      "size": 7652432,
+      "sha256": "fb6e9ca0da2278bed80b2e52d6972d4ee5c169cdd8da7db7e9d5e61eb952611c",
+      "archive": "godot-js-runtime-v0.0.1-android.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-android.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.android.template_release.arm64.so",
+      "target": "android.template_release.arm64",
+      "size": 7393808,
+      "sha256": "46d776e8b3f0edd5146c375524a40acbfb6e9ad5c86b55f45b238994e3afbaff",
+      "archive": "godot-js-runtime-v0.0.1-android.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-android.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.android.template_release.x86_64.so",
+      "target": "android.template_release.x86_64",
+      "size": 7656992,
+      "sha256": "7bf0f2145add363f051cd0d16e94266ec40c9a9a2b5c4a7f538c2643676bfc56",
+      "archive": "godot-js-runtime-v0.0.1-android.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-android.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.ios.template_debug.xcframework/Info.plist",
+      "target": "ios.template_debug.universal",
+      "size": 1312,
+      "sha256": "4f1ca6cc5efbc4ae27e2d967e291619108ed04c642527b91d1fa28730e2e98d9",
+      "archive": "godot-js-runtime-v0.0.1-ios-xcframework.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-ios-xcframework.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.ios.template_debug.xcframework/ios-arm64_x86_64-simulator/libgodot_js_runtime.ios.template_debug.universal.simulator.a",
+      "target": "ios.template_debug.universal",
+      "size": 18097920,
+      "sha256": "ed82e81ba5856c66787c931f8d3ef7f816e41a8b950f4076be8df187bba07bda",
+      "archive": "godot-js-runtime-v0.0.1-ios-xcframework.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-ios-xcframework.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.ios.template_debug.xcframework/ios-arm64/libgodot_js_runtime.ios.template_debug.arm64.a",
+      "target": "ios.template_debug.universal",
+      "size": 9237584,
+      "sha256": "74a3208a7007772011d7cb88a8dd0a0dc567e30fa4b1b1797b40214caa244703",
+      "archive": "godot-js-runtime-v0.0.1-ios-xcframework.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-ios-xcframework.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.ios.template_release.xcframework/Info.plist",
+      "target": "ios.template_release.universal",
+      "size": 1320,
+      "sha256": "f618eb9b4ecbc98e626975f4c00b9e224ec49356e02d24f1cc45fff3951d7ad5",
+      "archive": "godot-js-runtime-v0.0.1-ios-xcframework.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-ios-xcframework.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.ios.template_release.xcframework/ios-arm64_x86_64-simulator/libgodot_js_runtime.ios.template_release.universal.simulator.a",
+      "target": "ios.template_release.universal",
+      "size": 17482280,
+      "sha256": "49556603af40f2a068a656912ace78e249792128c0ae726c2ff01af09250d221",
+      "archive": "godot-js-runtime-v0.0.1-ios-xcframework.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-ios-xcframework.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.ios.template_release.xcframework/ios-arm64/libgodot_js_runtime.ios.template_release.arm64.a",
+      "target": "ios.template_release.universal",
+      "size": 8951232,
+      "sha256": "97a829483a91195c7275699ab9aef15dcf719b9f1f98455e6267f19219a61197",
+      "archive": "godot-js-runtime-v0.0.1-ios-xcframework.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-ios-xcframework.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.linux.template_debug.x86_64.so",
+      "target": "linux.template_debug.x86_64",
+      "size": 6541144,
+      "sha256": "d61c3c91c6079e67580ecb2cc2710f92615d6314722a217da7d930ac72702839",
+      "archive": "godot-js-runtime-v0.0.1-linux-x86_64.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-linux-x86_64.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.linux.template_release.x86_64.so",
+      "target": "linux.template_release.x86_64",
+      "size": 6601536,
+      "sha256": "e0eb9a72d90c17dbce4814f7300c3dd71ad6b8028c18d82810f65efb24390436",
+      "archive": "godot-js-runtime-v0.0.1-linux-x86_64.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-linux-x86_64.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.macos.template_debug.universal.framework/libgodot_js_runtime.macos.template_debug.universal",
+      "target": "macos.template_debug.universal",
+      "size": 7199392,
+      "sha256": "d2de39f6beb60b3dcc903b8958c4305d811d0589a5aa12490aa3b8330ca629bf",
+      "archive": "godot-js-runtime-v0.0.1-macos-universal.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-macos-universal.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.macos.template_debug.universal.framework/Resources/Info.plist",
+      "target": "macos.template_debug.universal",
+      "size": 880,
+      "sha256": "6549b442ade3a0b6e7f01df65b21540996a8cf630942b6ab7d44dddcea3f7bc5",
+      "archive": "godot-js-runtime-v0.0.1-macos-universal.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-macos-universal.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.macos.template_release.universal.framework/libgodot_js_runtime.macos.template_release.universal",
+      "target": "macos.template_release.universal",
+      "size": 7314280,
+      "sha256": "1432d7294bf9046f81106fd1e734c7393e58c0fb7734d09f1f3945ea7e633e6d",
+      "archive": "godot-js-runtime-v0.0.1-macos-universal.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-macos-universal.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.macos.template_release.universal.framework/Resources/Info.plist",
+      "target": "macos.template_release.universal",
+      "size": 882,
+      "sha256": "9d7342511bb4725c19a459e87dca4a1f9ee9af7a880828944546b60f1520a5c3",
+      "archive": "godot-js-runtime-v0.0.1-macos-universal.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-macos-universal.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.web.template_debug.wasm32.wasm",
+      "target": "web.template_debug.wasm32",
+      "size": 4711647,
+      "sha256": "25468c7133227de7fc9659b112ae9d44d13c4f814b38fba5d52aa41bd49c741f",
+      "archive": "godot-js-runtime-v0.0.1-web-wasm32.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-web-wasm32.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.web.template_release.wasm32.wasm",
+      "target": "web.template_release.wasm32",
+      "size": 4749302,
+      "sha256": "28f07b6604ec974ce7e9f1f6877d41a53558db9935aa3b062cf3ec81f6fa45c2",
+      "archive": "godot-js-runtime-v0.0.1-web-wasm32.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-web-wasm32.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.windows.template_debug.x86_64.dll",
+      "target": "windows.template_debug.x86_64",
+      "size": 5494272,
+      "sha256": "adfa519938307cae953d775a01803d008c911a18290e8534a9d29775a0788488",
+      "archive": "godot-js-runtime-v0.0.1-windows-x86_64.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-windows-x86_64.tar.gz"
+    },
+    {
+      "name": "libgodot_js_runtime.windows.template_release.x86_64.dll",
+      "target": "windows.template_release.x86_64",
+      "size": 5574656,
+      "sha256": "d3dfea2b35d318d8381a48aa79a16b2463ba02ce05e83f6cce7ff2427e9836d2",
+      "archive": "godot-js-runtime-v0.0.1-windows-x86_64.tar.gz",
+      "url": "https://github.com/portwatcher/vue-godot/releases/download/godot-js-runtime-v0.0.1/godot-js-runtime-v0.0.1-windows-x86_64.tar.gz"
+    }
+  ]
 }
