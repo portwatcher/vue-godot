@@ -703,6 +703,49 @@ function arm64Avd(emulator) {
   )
 }
 
+export function androidBootProbeReady(bootCompleted, systemPackage) {
+  return (
+    bootCompleted.trim() === '1' && /^package:\/\S+/m.test(systemPackage.trim())
+  )
+}
+
+function probeAndroidBoot(adb, serial) {
+  const bootCompleted = spawnSync(
+    adb,
+    ['-s', serial, 'shell', 'getprop', 'sys.boot_completed'],
+    { encoding: 'utf-8', timeout: 30_000 },
+  )
+  if (bootCompleted.error || bootCompleted.status !== 0) return false
+
+  const systemPackage = spawnSync(
+    adb,
+    ['-s', serial, 'shell', 'cmd', 'package', 'path', 'android'],
+    { encoding: 'utf-8', timeout: 30_000 },
+  )
+  if (systemPackage.error || systemPackage.status !== 0) return false
+
+  return androidBootProbeReady(
+    bootCompleted.stdout ?? '',
+    systemPackage.stdout ?? '',
+  )
+}
+
+function waitForAndroidBoot(adb, device, emulatorProcess) {
+  const deadline = Date.now() + 4 * 60_000
+  while (Date.now() < deadline) {
+    if (emulatorProcess && emulatorProcess.exitCode !== null) {
+      throw new Error(
+        `Android emulator exited before ${device.serial} completed boot: ${String(emulatorProcess.exitCode)}`,
+      )
+    }
+    if (probeAndroidBoot(adb, device.serial)) return
+    sleep(2_000)
+  }
+  throw new Error(
+    `Timed out waiting for Android package manager on ${device.serial}`,
+  )
+}
+
 function ensureAndroidDevice(evidenceRoot) {
   if (androidDeviceContext) return androidDeviceContext
   const sdkRoot = androidSdkRoot()
@@ -748,6 +791,7 @@ function ensureAndroidDevice(evidenceRoot) {
     }
     if (!device) throw new Error('Timed out waiting for arm64 Android emulator')
   }
+  waitForAndroidBoot(adb, device, emulatorProcess)
   const apiLevel = run(
     adb,
     ['-s', device.serial, 'shell', 'getprop', 'ro.build.version.sdk'],

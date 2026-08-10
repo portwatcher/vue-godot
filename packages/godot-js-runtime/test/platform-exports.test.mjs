@@ -12,6 +12,7 @@ import {
   generateExportPresets,
   writeExportPresets,
 } from '../scripts/export-presets.mjs'
+import { androidBootProbeReady } from '../scripts/smoke-platform-exports.mjs'
 import { createWebExportServer } from '../scripts/serve-web-export.mjs'
 
 test('the generated export matrix covers both apps and every required platform', () => {
@@ -159,4 +160,22 @@ test('platform smoke uses direct browser worker-console and iOS slice link gates
   assert.match(browser, /Runtime\.consoleAPICalled/)
   assert.match(browser, /globalThis\.crossOriginIsolated/)
   assert.doesNotMatch(browser, /virtual-time-budget/)
+})
+
+test('Android export launch waits for both boot and package-manager readiness', () => {
+  assert.equal(
+    androidBootProbeReady(
+      '1\n',
+      'package:/system/framework/framework-res.apk\n',
+    ),
+    true,
+  )
+  assert.equal(
+    androidBootProbeReady('', 'package:/system/framework/framework-res.apk\n'),
+    false,
+  )
+  assert.equal(
+    androidBootProbeReady('1\n', 'Error: device is booting\n'),
+    false,
+  )
 })
