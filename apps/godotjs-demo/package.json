@@ -5,7 +5,8 @@
   "description": "Standalone non-Vue TypeScript demo for the GodotJS GDExtension",
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "gen:types": "node ../../packages/cli/scripts/generate-types.mjs --out-dir typings",
+    "build": "npm run gen:types && tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch"
   },
   "dependencies": {},

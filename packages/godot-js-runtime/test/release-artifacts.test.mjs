@@ -164,6 +164,11 @@ test('the universal ZIP is a clean manual-copy Godot add-on', () => {
       'addons/godotjs/SHA256SUMS',
       'addons/godotjs/godotjs.gdextension',
       'addons/godotjs/manifest.json',
+      'addons/godotjs/typings/godot.d.ts',
+      'addons/godotjs/typings/godot-js.d.ts',
+      'addons/godotjs/typings/godot-jsb.d.ts',
+      'addons/godotjs/typings/index.d.ts',
+      'addons/godotjs/typings/manifest.json',
     ]) {
       assert.ok(names.includes(name), name)
     }

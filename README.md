@@ -118,15 +118,17 @@ your-project/
 ├── addons/
 │   └── godotjs/
 │       ├── godotjs.gdextension
-│       └── bin/                 # all supported platform libraries
+│       ├── bin/                 # all supported platform libraries
+│       └── typings/             # standalone TypeScript declarations
 └── project.godot
 ```
 
 Commit the complete `addons/godotjs` directory. Do not install GodotJS with
 npm, and do not copy only the current desktop library: the same add-on bundle
 contains debug and release binaries for macOS, Windows, Linux, Android, iOS,
-and Web. TypeScript projects import the runtime modules `godot` and `godot-js`;
-Vue projects run `npm run gen:types` for declarations.
+and Web. Standalone TypeScript projects include
+`addons/godotjs/typings/index.d.ts`; Vue projects run `npm run gen:types` for
+project declarations.
 
 Godot 4.4.1 is the minimum compatibility floor. Release integration tracks
 the latest official stable Godot (currently 4.7.1): a daily workflow discovers

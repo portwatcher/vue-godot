@@ -15,6 +15,18 @@ The ZIP includes debug and release libraries for macOS, Windows, Linux,
 Android, iOS, and Web. Keep the complete `addons/godotjs` directory in source
 control and in exported project resources.
 
+For a standalone TypeScript project, include the bundled declarations in
+`tsconfig.json`:
+
+```json
+{
+  "files": [
+    "addons/godotjs/typings/index.d.ts",
+    "src/main.ts"
+  ]
+}
+```
+
 GodotJS is not installed from npm. Vue Godot is a separate npm package and
 works with this manually installed GDExtension.
 

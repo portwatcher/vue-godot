@@ -78,7 +78,7 @@ function fileEntry(archiveRoot, sourcePath, relativePath) {
   }
 }
 
-function requiredNoticeEntries(archiveRoot) {
+function requiredAddonEntries(archiveRoot) {
   const sourceFiles = [
     ['LICENSE', 'addons/godotjs/LICENSE'],
     ['THIRD_PARTY_NOTICES.md', 'addons/godotjs/THIRD_PARTY_NOTICES.md'],
@@ -90,9 +90,37 @@ function requiredNoticeEntries(archiveRoot) {
       'addons/godotjs/godotjs.gdextension',
     ],
   ]
-  return sourceFiles.map(([source, destination]) =>
+  const entries = sourceFiles.map(([source, destination]) =>
     fileEntry(archiveRoot, path.join(packageRoot, source), destination),
   )
+  const typingsRoot = path.join(repoRoot, 'packages/cli/templates/typings')
+  const typingsManifest = JSON.parse(
+    fs.readFileSync(path.join(typingsRoot, 'manifest.json'), 'utf-8'),
+  )
+  if (
+    !typingsManifest ||
+    typeof typingsManifest !== 'object' ||
+    Array.isArray(typingsManifest) ||
+    !typingsManifest.files ||
+    typeof typingsManifest.files !== 'object' ||
+    Array.isArray(typingsManifest.files)
+  ) {
+    throw new Error('GodotJS typings manifest is invalid')
+  }
+  const typingFiles = [
+    ...Object.keys(typingsManifest.files).sort(),
+    'manifest.json',
+  ]
+  for (const name of typingFiles) {
+    entries.push(
+      fileEntry(
+        archiveRoot,
+        path.join(typingsRoot, name),
+        `addons/godotjs/typings/${name}`,
+      ),
+    )
+  }
+  return entries
 }
 
 function platformProvenance(manifest, platform, targets, epoch) {
@@ -119,7 +147,7 @@ function archiveEntries({
   manifest,
   epoch,
 }) {
-  const entries = requiredNoticeEntries(archiveRoot)
+  const entries = requiredAddonEntries(archiveRoot)
   for (const artifact of artifacts) {
     entries.push(
       fileEntry(
