@@ -16,7 +16,15 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./installer": {
+      "types": "./dist/install.d.ts",
+      "import": "./dist/install.js",
+      "default": "./dist/install.js"
     }
+  },
+  "bin": {
+    "godot-js-runtime": "dist/cli.js"
   },
   "files": [
     "addon/godot-js-runtime/godot_js_runtime.gdextension",

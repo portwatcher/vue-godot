@@ -1,0 +1,5 @@
+.godot/
+addons/godot-js-runtime/
+dist/
+node_modules/
+typings/

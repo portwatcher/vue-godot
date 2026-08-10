@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://dist/player.js" id="1_player"]
+
+[node name="StandalonePlayer" type="Node2D"]
+position = Vector2(480, 270)
+script = ExtResource("1_player")
+speed = 240.0

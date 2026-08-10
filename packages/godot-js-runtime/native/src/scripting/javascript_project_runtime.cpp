@@ -825,7 +825,10 @@ struct JavaScriptProjectRuntime::Impl {
 			const godot::StringName &name,
 			const godot::Variant &value) {
 		const auto record = instances.find(&instance);
-		if (record == instances.end() || JS_IsUndefined(record->second.value) ||
+		const JavaScriptPropertyDefinition *definition =
+				instance.script()->find_property(name);
+		if (record == instances.end() || definition == nullptr ||
+				JS_IsUndefined(record->second.value) ||
 				!instance.is_active() || host == nullptr) {
 			return false;
 		}

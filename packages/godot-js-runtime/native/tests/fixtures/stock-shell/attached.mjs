@@ -46,6 +46,12 @@ class RuntimeShellProbe extends Node {
     assertScript(this.enterTreeCount === 1, 'enter-tree callback count')
     assertScript(this.speed === 321, 'serialized exported property value')
     assertScript(this.ping('method') === 'pong:method', 'reflected method')
+    const originalProcessMode = this.process_mode
+    this.process_mode = originalProcessMode
+    assertScript(
+      this.process_mode === originalProcessMode,
+      'inherited native property write falls through script metadata',
+    )
 
     const moved = Callable.create((distance) => {
       this.signalDistance = distance

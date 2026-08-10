@@ -102,6 +102,7 @@ Both styles can be used in the same template.
 
 | Package                                                        | Purpose                                                     |
 | -------------------------------------------------------------- | ----------------------------------------------------------- |
+| [`godot-js-runtime`](./packages/godot-js-runtime/README.md)    | Run JavaScript or compiled TypeScript in official Godot     |
 | [`@vue-godot/runtime-tscn`](./packages/runtime-tscn/README.md) | Render Vue components into the Godot scene tree             |
 | [`@vue-godot/html`](./packages/html/README.md)                 | Use HTML-like components backed by Godot nodes              |
 | [`@vue-godot/browser`](./packages/browser/README.md)           | Use browser-like APIs such as `fetch`, `URL`, and `history` |
@@ -111,6 +112,8 @@ Both styles can be used in the same template.
 
 ## Examples
 
+- [`apps/js-runtime-demo`](./apps/js-runtime-demo) — standalone TypeScript on
+  official Godot, with no Vue dependency
 - [`apps/native-app-demo`](./apps/native-app-demo) — routing, storage, network,
   permissions, and device APIs
 - [`apps/game-ui-demo`](./apps/game-ui-demo) — HUD, input, media, settings, and

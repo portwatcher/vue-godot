@@ -1,0 +1,25 @@
+{
+  "name": "godot-js-runtime-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Standalone non-Vue TypeScript demo for Godot JavaScript Runtime",
+  "type": "module",
+  "scripts": {
+    "build": "npm run typegen && tsc -p tsconfig.json",
+    "dev": "npm run typegen && tsc -p tsconfig.json --watch",
+    "typegen": "godot-js-runtime typegen --project .",
+    "install:runtime": "godot-js-runtime install --project .",
+    "verify:runtime": "godot-js-runtime verify --project .",
+    "uninstall:runtime": "godot-js-runtime uninstall --project ."
+  },
+  "dependencies": {
+    "godot-js-runtime": "*"
+  },
+  "devDependencies": {
+    "typescript": "5.8.2"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

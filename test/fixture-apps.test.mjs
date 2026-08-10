@@ -141,6 +141,24 @@ const fixtureApps = [
     },
   },
   {
+    id: 'js-runtime-demo',
+    standalone: true,
+    requiredDependencies: ['godot-js-runtime'],
+    sources: {
+      'src/player.ts': [
+        'class StandalonePlayer extends Node2D',
+        'Input.get_vector',
+        'this.position = new Vector2',
+        'ResourceLoader.load',
+        'Callable.create',
+        'this.emit_signal',
+        'Promise.resolve().then',
+        'PHASE6_STANDALONE_DEMO PASS',
+      ],
+      'main.tscn': ['res://dist/player.js', 'speed = 240.0'],
+    },
+  },
+  {
     id: 'lifecycles',
     entryComponent: 'App.vue',
     requiredDependencies: ['@vue-godot/runtime-tscn'],
@@ -276,6 +294,44 @@ test('fixture app workspaces expose the regression build contract', () => {
   for (const fixture of fixtureApps) {
     const fixtureRoot = fixturePath(fixture)
     assertFileExists(fixtureRoot)
+
+    if (fixture.standalone) {
+      for (const fileName of [
+        'package.json',
+        'project.godot',
+        'main.tscn',
+        'tsconfig.json',
+        'src/player.ts',
+      ]) {
+        assertFileExists(fixturePath(fixture, fileName))
+      }
+      const packageJson = readJson(fixturePath(fixture, 'package.json'))
+      assert.equal(
+        packageJson.scripts?.build,
+        'npm run typegen && tsc -p tsconfig.json',
+      )
+      assert.equal(
+        packageJson.scripts?.dev,
+        'npm run typegen && tsc -p tsconfig.json --watch',
+      )
+      assert.equal(
+        packageJson.scripts?.['install:runtime'],
+        'godot-js-runtime install --project .',
+      )
+      for (const dependencyName of fixture.requiredDependencies) {
+        assert.ok(
+          hasDependency(packageJson, dependencyName),
+          `${fixture.id} must depend on ${dependencyName}`,
+        )
+      }
+      assert.deepEqual(
+        Object.keys(packageJson.dependencies ?? {}).filter(
+          (name) => name === 'vue' || name.startsWith('@vue'),
+        ),
+        [],
+      )
+      continue
+    }
 
     for (const fileName of [
       'package.json',

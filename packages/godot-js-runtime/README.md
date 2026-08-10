@@ -7,8 +7,98 @@ extension does not import, link, or bundle Vue.
 The repository now contains the resource-backed QuickJS-ng host, generated
 Godot 4.4 binding with complete Variant conversion, and the JavaScript
 `ScriptLanguage` implementation. Stock Godot can load, attach, serialize, run,
-and reload `.js`, `.mjs`, and `.cjs` scripts. Installation tooling and release
-artifacts remain under development, so this is not yet a published release.
+and reload `.js`, `.mjs`, and `.cjs` scripts. The standalone installer and
+non-Vue TypeScript demo are implemented; the complete release-platform artifact
+matrix remains under development, so this is not yet a published release.
+
+## Install into an official Godot project
+
+Install the package in a new or existing project, inspect the available native
+targets, then install the host debug target:
+
+```bash
+npm install --save-dev godot-js-runtime
+npx godot-js-runtime targets
+npx godot-js-runtime install --project .
+npx godot-js-runtime verify --project .
+```
+
+The project must already contain `project.godot`. `install` copies the core
+addon, license notices, and one exact host artifact into
+`addons/godot-js-runtime`. It also adds only the runtime's line to
+`.godot/extension_list.cfg`, preserving other registered extensions. Every
+owned file, target, size, checksum, and registration is recorded in
+`addons/godot-js-runtime/installation-manifest.json`.
+
+Installation is idempotent. An existing destination that is not recorded by a
+valid installation manifest is never adopted or overwritten unless `--force`
+is passed; even then, only the exact colliding runtime destination is replaced.
+To remove the runtime:
+
+```bash
+npx godot-js-runtime uninstall --project .
+```
+
+Uninstall removes only manifest-owned files and the runtime's extension-list
+entry. Other files inside the addon directory and other registered extensions
+are preserved.
+
+### TypeScript build and watch
+
+Copy the packaged Godot 4.4.1 declarations, or generate declarations matching
+a specific official Godot executable:
+
+```bash
+npx godot-js-runtime typegen --project .
+GODOT_BIN=/absolute/path/to/godot \
+  npx godot-js-runtime typegen --project .
+```
+
+Point `tsconfig.json` at `typings/index.d.ts`, compile into a resource path such
+as `dist/`, and keep source maps beside the emitted JavaScript:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "rootDir": "src",
+    "outDir": "dist",
+    "sourceMap": true,
+    "strict": true,
+    "skipLibCheck": false
+  },
+  "files": ["typings/index.d.ts", "src/player.ts"]
+}
+```
+
+```bash
+npx tsc -p tsconfig.json
+npx tsc -p tsconfig.json --watch
+```
+
+Godot executes the emitted `.js`, `.mjs`, or `.cjs`; it never executes the
+TypeScript source. `apps/js-runtime-demo` is the tested non-Vue reference
+project for this workflow.
+
+### Export targets
+
+The artifact manifest uses exact target names such as
+`linux.template_release.x86_64`. Add every target needed by the project's
+export presets without removing the already installed host target:
+
+```bash
+npx godot-js-runtime targets
+npx godot-js-runtime add-target linux.template_release.x86_64 --project .
+npx godot-js-runtime verify --project .
+```
+
+The command fails if the installed core and target source have different
+versions or manifests. Export presets must include the emitted JavaScript,
+relative chunks, JSON resources, and any desired `.map` files. The full desktop,
+Android, iOS, and Web artifact set is not claimed until the Phase 8 release
+matrix passes.
 
 ## Attached JavaScript scripts
 
@@ -51,6 +141,8 @@ npm install godot-js-runtime
 | `runtimePackageName`                  | Canonical npm and workspace name: `godot-js-runtime`.                                                        |
 | `minimumGodotVersion`                 | Minimum supported Godot ABI, currently `4.4`.                                                                |
 | Manifest types and guards             | Typed representation and runtime validation for native artifact manifests.                                   |
+| Installer functions                   | Programmatic install, add-target, verify, uninstall, target discovery, and manifest guards.                  |
+| `generateProjectTypes(options)`       | Copies pinned declarations or generates version-matched declarations from official Godot.                    |
 
 ```ts
 import { defineScript } from 'godot-js-runtime'
@@ -331,21 +423,48 @@ errors, hard and state-preserving soft reloads, deferred reloads, and repeated
 editor play/stop cycles. It retains the earlier all-Variant, ownership,
 callback, ESM, CommonJS, limit, and stress coverage. Every cycle asserts
 balanced runtime, wrapper, and callback ownership. Deterministic stock-Godot
-type generation and a strict plain-TypeScript fixture are also verified.
-Installers, platform exports, and Vue migration remain later gates.
+type generation and a strict plain-TypeScript fixture are also verified. The
+standalone CLI now installs, verifies, augments, and uninstalls a manifest-owned
+runtime from a path containing spaces. Starting with an empty stock project,
+the non-Vue demo generates types, compiles TypeScript, loads a resource, moves a
+`Node2D`, crosses a signal/Callable boundary, drains a Promise job, and prints
+its automated marker on official Godot 4.4.1, the current stable macOS editor,
+and official 4.4.1 Linux. Platform release artifacts and Vue migration remain
+later gates.
 
 ## Security model
 
 Project JavaScript is trusted application code, not a sandbox. The host bounds
 QuickJS memory, stack, execution time, and Promise job pumping, but those limits
-do not make untrusted scripts safe. Node.js built-ins are outside the
-version-one scope.
+do not make untrusted scripts safe. The runtime does not expose Node.js
+built-ins, `node_modules` traversal, `process`, arbitrary host filesystem
+access, child processes, sockets, browser DOM globals, `window`, or
+`localStorage`. Bundle ordinary npm dependencies ahead of time; use generated
+Godot APIs (and optional separately installed polyfills) for file, network,
+device, and platform services.
+
+## Troubleshooting
+
+- `No loader found for resource`: run `verify`, confirm the selected artifact
+  matches the host, and restart Godot after installation. The installer records
+  the extension for immediate headless startup, but an editor already running
+  with an older extension still needs a restart.
+- `Runtime target is not packaged`: use `targets` and pass the exact reported
+  name. A source checkout must build that target before it can be installed.
+- TypeScript cannot resolve `godot`: run `typegen` and include
+  `typings/index.d.ts` in the TypeScript project.
+- A module import fails in Godot: bundle npm dependencies and keep resource
+  imports under `res://`; Node core modules and general package traversal are
+  unsupported.
+- `verify` reports a checksum mismatch: reinstall from the same trusted package
+  source. The CLI refuses to treat modified or unrelated files as owned.
 
 ## Requirements
 
 - Official Godot 4.4.1 or newer compatible Godot 4 release
 - Node.js 20 or newer for package and build tooling
-- Python 3 and a platform C++ toolchain for source builds
+- Python 3 and a platform C++ toolchain only when building native artifacts
+  from source
 
 ## License
 
