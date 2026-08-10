@@ -7,11 +7,10 @@
   "scripts": {
     "build": "npm run typegen && tsc -p tsconfig.json",
     "dev": "npm run typegen && tsc -p tsconfig.json --watch",
-    "runtime": "node ../../packages/godot-js-runtime/dist/cli.js",
-    "typegen": "npm run runtime -- typegen --project .",
-    "install:runtime": "npm run runtime -- install --project .",
-    "verify:runtime": "npm run runtime -- verify --project .",
-    "uninstall:runtime": "npm run runtime -- uninstall --project ."
+    "typegen": "godot-js-runtime typegen --project .",
+    "install:runtime": "godot-js-runtime install --project .",
+    "verify:runtime": "godot-js-runtime verify --project .",
+    "uninstall:runtime": "godot-js-runtime uninstall --project ."
   },
   "dependencies": {
     "godot-js-runtime": "*"

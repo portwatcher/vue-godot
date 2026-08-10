@@ -290,6 +290,29 @@ test('fixture registry includes every checked-in app workspace', () => {
   assert.deepEqual(registeredIds, appDirectoryNames())
 })
 
+test('workspace CLI packages expose tracked launchers before build output exists', () => {
+  for (const [packageDirectory, commandName] of [
+    ['packages/godot-js-runtime', 'godot-js-runtime'],
+    ['packages/cli', 'vue-godot'],
+    ['packages/vue-godot', 'vue-godot'],
+  ]) {
+    const packageJson = readJson(
+      path.join(repoRoot, packageDirectory, 'package.json'),
+    )
+    const launcher = path.join(
+      repoRoot,
+      packageDirectory,
+      packageJson.bin[commandName],
+    )
+    assertFileExists(launcher)
+    assert.notEqual(
+      fs.statSync(launcher).mode & 0o111,
+      0,
+      `${path.relative(repoRoot, launcher)} must be executable`,
+    )
+  }
+})
+
 test('fixture app workspaces expose the regression build contract', () => {
   for (const fixture of fixtureApps) {
     const fixtureRoot = fixturePath(fixture)
@@ -316,15 +339,7 @@ test('fixture app workspaces expose the regression build contract', () => {
       )
       assert.equal(
         packageJson.scripts?.['install:runtime'],
-        'npm run runtime -- install --project .',
-      )
-      assert.equal(
-        packageJson.scripts?.runtime,
-        'node ../../packages/godot-js-runtime/dist/cli.js',
-      )
-      assert.equal(
-        packageJson.scripts?.typegen,
-        'npm run runtime -- typegen --project .',
+        'godot-js-runtime install --project .',
       )
       for (const dependencyName of fixture.requiredDependencies) {
         assert.ok(

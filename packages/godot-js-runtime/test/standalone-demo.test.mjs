@@ -39,7 +39,7 @@ test('standalone package and demo dependency surfaces contain no Vue package', (
   assert.deepEqual(vueDependencies(runtimePackage), [])
   assert.deepEqual(vueDependencies(demoPackage), [])
   assert.deepEqual(runtimePackage.bin, {
-    'godot-js-runtime': 'dist/cli.js',
+    'godot-js-runtime': 'bin/godot-js-runtime.mjs',
   })
   assert.equal(
     runtimePackage.exports['./installer'].import,
@@ -88,15 +88,11 @@ test('standalone demo covers the complete non-Vue scripting contract', () => {
   assert.equal(tsconfig.compilerOptions.skipLibCheck, false)
   assert.equal(tsconfig.compilerOptions.sourceMap, true)
   assert.equal(runtimePackage.scripts.pretest, 'npm run bootstrap:native')
-  assert.equal(
-    demoPackage.scripts.runtime,
-    'node ../../packages/godot-js-runtime/dist/cli.js',
-  )
   assert.match(
     demoPackage.scripts['install:runtime'],
-    /^npm run runtime -- install/,
+    /godot-js-runtime install/,
   )
-  assert.match(demoPackage.scripts.typegen, /^npm run runtime -- typegen/)
+  assert.match(demoPackage.scripts.typegen, /godot-js-runtime typegen/)
   assert.match(smoke, /installation-manifest\.json/)
   assert.match(smoke, /--quit-after/)
   assert.match(smoke, /user-preserved\.txt/)

@@ -23,9 +23,10 @@
     }
   },
   "bin": {
-    "vue-godot": "dist/cli.js"
+    "vue-godot": "bin/vue-godot.mjs"
   },
   "files": [
+    "bin",
     "dist",
     "templates"
   ],

@@ -24,9 +24,10 @@
     }
   },
   "bin": {
-    "godot-js-runtime": "dist/cli.js"
+    "godot-js-runtime": "bin/godot-js-runtime.mjs"
   },
   "files": [
+    "bin",
     "addon/godot-js-runtime/godot_js_runtime.gdextension",
     "addon/godot-js-runtime/runtime-manifest.json",
     "dist",

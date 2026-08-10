@@ -20,6 +20,7 @@ export const releasePackageConfigs = [
     name: 'godot-js-runtime',
     dir: 'packages/godot-js-runtime',
     expectedFiles: [
+      'bin/godot-js-runtime.mjs',
       'dist/index.js',
       'dist/index.d.ts',
       'dist/cli.js',
@@ -44,6 +45,7 @@ export const releasePackageConfigs = [
     name: '@vue-godot/cli',
     dir: 'packages/cli',
     expectedFiles: [
+      'bin/vue-godot.mjs',
       'dist/index.js',
       'dist/index.d.ts',
       'dist/cli.js',
@@ -58,7 +60,12 @@ export const releasePackageConfigs = [
   {
     name: 'vue-godot',
     dir: 'packages/vue-godot',
-    expectedFiles: ['dist/index.js', 'dist/index.d.ts', 'dist/cli.js'],
+    expectedFiles: [
+      'bin/vue-godot.mjs',
+      'dist/index.js',
+      'dist/index.d.ts',
+      'dist/cli.js',
+    ],
   },
   {
     name: '@vue-godot/browser',
