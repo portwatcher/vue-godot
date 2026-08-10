@@ -1,4 +1,4 @@
-name: Godot JavaScript Runtime Release Matrix
+name: GodotJS Release Matrix
 
 on:
   workflow_call:
@@ -24,17 +24,17 @@ on:
         type: string
         default: ''
     outputs:
-      runtime_version:
-        description: Version of the verified runtime release bundle.
-        value: ${{ jobs.package-release.outputs.runtime_version }}
+      godotjs_version:
+        description: Version of the verified GodotJS release bundle.
+        value: ${{ jobs.package-release.outputs.godotjs_version }}
   pull_request:
     paths:
       - '.github/actions/setup-godot/**'
       - '.github/actions/setup-godot-export-templates/**'
       - '.github/workflows/godot-latest-stable.yml'
-      - '.github/workflows/godot-js-runtime-release.yml'
+      - '.github/workflows/godotjs-release.yml'
       - '.github/workflows/publish.yml'
-      - 'apps/js-runtime-demo/**'
+      - 'apps/godotjs-demo/**'
       - 'apps/native-app-demo/**'
       - 'package*.json'
       - 'packages/godot-js-runtime/**'
@@ -51,9 +51,9 @@ on:
       - '.github/actions/setup-godot/**'
       - '.github/actions/setup-godot-export-templates/**'
       - '.github/workflows/godot-latest-stable.yml'
-      - '.github/workflows/godot-js-runtime-release.yml'
+      - '.github/workflows/godotjs-release.yml'
       - '.github/workflows/publish.yml'
-      - 'apps/js-runtime-demo/**'
+      - 'apps/godotjs-demo/**'
       - 'apps/native-app-demo/**'
       - 'package*.json'
       - 'packages/godot-js-runtime/**'
@@ -68,7 +68,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: godot-js-runtime-release-${{ github.workflow }}-${{ github.ref }}
+  group: godotjs-release-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -154,29 +154,29 @@ jobs:
       - name: Build release artifacts
         if: matrix.platform != 'web'
         run: >-
-          npm run build:release --workspace=godot-js-runtime --
+          npm run build:release --workspace=packages/godot-js-runtime --
           --platform "${{ matrix.platform }}" --mode all --clean
 
       - name: Verify release artifacts
         run: >-
-          npm run verify:release --workspace=godot-js-runtime --
+          npm run verify:release --workspace=packages/godot-js-runtime --
           --platform "${{ matrix.platform }}"
 
       - name: Upload platform artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: godot-js-runtime-${{ matrix.platform }}
-          path: packages/godot-js-runtime/addon/godot-js-runtime/bin
+          name: godotjs-${{ matrix.platform }}
+          path: packages/godot-js-runtime/addon/godotjs/bin
           compression-level: 0
           if-no-files-found: error
 
   package-release:
-    name: Package verified release archives
+    name: Package universal GodotJS ZIP
     needs: build-release-artifacts
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     outputs:
-      runtime_version: ${{ steps.runtime_version.outputs.value }}
+      godotjs_version: ${{ steps.godotjs_version.outputs.value }}
 
     steps:
       - name: Checkout
@@ -191,8 +191,8 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Resolve runtime version
-        id: runtime_version
+      - name: Resolve GodotJS version
+        id: godotjs_version
         run: >-
           node -e 'const fs = require("node:fs");
           const packageJson = require("./packages/godot-js-runtime/package.json");
@@ -201,28 +201,28 @@ jobs:
       - name: Download all platform artifacts
         uses: actions/download-artifact@v8
         with:
-          pattern: godot-js-runtime-*
-          path: packages/godot-js-runtime/addon/godot-js-runtime/bin
+          pattern: godotjs-*
+          path: packages/godot-js-runtime/addon/godotjs/bin
           merge-multiple: true
 
-      - name: Package deterministic release archives
+      - name: Package deterministic universal ZIP
         if: inputs.release_base_url == ''
-        run: npm run package:godot-js-runtime
+        run: npm run package:godotjs
 
-      - name: Package deterministic compatibility archives
+      - name: Package deterministic compatibility ZIP
         if: inputs.release_base_url != ''
         run: >-
-          npm run package:release --workspace=godot-js-runtime --
+          npm run package:release --workspace=packages/godot-js-runtime --
           --base-url "${{ inputs.release_base_url }}"
 
-      - name: Test clean offline installation
-        run: npm run test --workspace=godot-js-runtime
+      - name: Test clean manual-copy installation
+        run: npm run test --workspace=packages/godot-js-runtime
 
       - name: Upload release bundle
         uses: actions/upload-artifact@v7
         with:
-          name: godot-js-runtime-release
-          path: .artifacts/godot-js-runtime/${{ steps.runtime_version.outputs.value }}
+          name: godotjs-release
+          path: .artifacts/godotjs/${{ steps.godotjs_version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
 
@@ -302,8 +302,8 @@ jobs:
       - name: Download release bundle
         uses: actions/download-artifact@v8
         with:
-          name: godot-js-runtime-release
-          path: .artifacts/godot-js-runtime/${{ needs.package-release.outputs.runtime_version }}
+          name: godotjs-release
+          path: .artifacts/godotjs/${{ needs.package-release.outputs.godotjs_version }}
 
       - name: Export both applications in debug and release modes
         shell: bash
@@ -311,7 +311,7 @@ jobs:
           node packages/godot-js-runtime/scripts/smoke-platform-exports.mjs
           --godot-version "${{ inputs.godot_version || '4.7.1-stable' }}"
           --platform "${{ matrix.platforms }}"
-          --release-dir ".artifacts/godot-js-runtime/${{ needs.package-release.outputs.runtime_version }}"
+          --release-dir ".artifacts/godotjs/${{ needs.package-release.outputs.godotjs_version }}"
           ${{ matrix.launch_argument }}
 
       - name: Upload export evidence

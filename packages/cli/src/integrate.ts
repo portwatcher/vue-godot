@@ -49,17 +49,11 @@ const PACKAGE_SPECS = {
   '@vue-godot/html': '^0.0.1',
   '@vue-godot/runtime-tscn': '^0.0.2',
   '@vue/runtime-core': '^3.5.14',
-  'godot-js-runtime': '^0.0.1',
   'vue-router': '~4.5.1',
 } as const
 
-const RUNTIME_PROJECT_SCRIPTS = {
-  'install:runtime': 'godot-js-runtime install --project .',
-  'verify:runtime': 'godot-js-runtime verify --project .',
-  'add-target:runtime': 'godot-js-runtime add-target --project .',
-  'uninstall:runtime': 'godot-js-runtime uninstall --project .',
+const PROJECT_SCRIPTS = {
   'gen:types': 'vue-godot gen-types',
-  'setup:runtime': 'npm run install:runtime && npm run gen:types',
 } as const
 
 const EPHEMERAL_TEMPLATE_DIRECTORIES = new Set([
@@ -300,10 +294,10 @@ export function copyGodotScanIgnoreScaffold(
   }
 }
 
-function applyRuntimeScripts(
+function applyProjectScripts(
   scripts: Record<string, unknown>,
 ): Record<string, unknown> {
-  for (const [name, command] of Object.entries(RUNTIME_PROJECT_SCRIPTS)) {
+  for (const [name, command] of Object.entries(PROJECT_SCRIPTS)) {
     scripts[name] ??= command
   }
   return scripts
@@ -348,7 +342,6 @@ export function newPackageJson(
       packageOverrides,
     ),
     '@vue/runtime-core': packageSpec('@vue/runtime-core', packageOverrides),
-    'godot-js-runtime': packageSpec('godot-js-runtime', packageOverrides),
   }
   if (html) {
     deps['@vue-godot/browser'] = packageSpec(
@@ -370,11 +363,11 @@ export function newPackageJson(
     name,
     version: '1.0.0',
     type: 'commonjs',
-    scripts: applyRuntimeScripts({
+    scripts: applyProjectScripts({
       dev: 'vite build --watch -c vue/vite.config.ts',
       build: 'vite build -c vue/vite.config.ts',
       'check:exports': 'node scripts/check-export-settings.mjs',
-      postinstall: 'npm run setup:runtime && npm run build',
+      postinstall: 'npm run gen:types && npm run build',
     }),
     devDependencies: {
       '@vue-godot/cli': packageSpec('@vue-godot/cli', packageOverrides),
@@ -394,7 +387,7 @@ export function generateHtmlViteConfig(): string {
   const htmlTags = JSON.stringify(HTML_COMPONENT_TAGS, null, 2)
   return `import vue from '@vitejs/plugin-vue'
 import { vueGodotHtmlCss } from '@vue-godot/html/vite'
-import { commonJsBundleBanner } from 'godot-js-runtime'
+import { commonJsBundleBanner } from '@vue-godot/runtime-tscn/bundle-format'
 import { defineConfig } from 'vite'
 
 // Tags provided by @vue-godot/html — kept in sync with htmlTags from the package.
@@ -1173,12 +1166,12 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
 
   if (fs.existsSync(pkgJsonPath)) {
     const existing = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf-8'))
-    existing.scripts = applyRuntimeScripts(existing.scripts || {})
+    existing.scripts = applyProjectScripts(existing.scripts || {})
     existing.scripts.dev ??= 'vite build --watch -c vue/vite.config.ts'
     existing.scripts.build ??= 'vite build -c vue/vite.config.ts'
     existing.scripts['check:exports'] ??=
       'node scripts/check-export-settings.mjs'
-    existing.scripts.postinstall ??= 'npm run setup:runtime && npm run build'
+    existing.scripts.postinstall ??= 'npm run gen:types && npm run build'
 
     existing.devDependencies = existing.devDependencies || {}
     const packageOverrides = readPackageSpecOverrides()
@@ -1197,10 +1190,6 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
     )
     existing.dependencies['@vue/runtime-core'] ??= packageSpec(
       '@vue/runtime-core',
-      packageOverrides,
-    )
-    existing.dependencies['godot-js-runtime'] ??= packageSpec(
-      'godot-js-runtime',
       packageOverrides,
     )
     if (html) {
@@ -1255,7 +1244,7 @@ export async function integrate(options: IntegrateOptions): Promise<void> {
   console.log(
     `  1. npm install        (runs initial build and creates dist/app.js)`,
   )
-  console.log(`  2. npm run setup:runtime`)
+  console.log(`  2. Extract the GodotJS release ZIP at the project root`)
   console.log(
     `  3. npm run dev          (rebuilds on change; Godot hot-reloads dist/app.js)`,
   )

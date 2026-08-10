@@ -11,7 +11,7 @@ const packageRoot = path.resolve(path.dirname(scriptPath), '..')
 const nativeRoot = path.join(packageRoot, 'native')
 const runtimeManifestPath = path.join(
   packageRoot,
-  'addon/godot-js-runtime/runtime-manifest.json',
+  'addon/godotjs/manifest.json',
 )
 
 function run(command, args, options = {}) {

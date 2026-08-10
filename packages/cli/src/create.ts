@@ -255,8 +255,6 @@ export async function create(options: CreateOptions): Promise<void> {
   console.log(`\nRunning project setup...`)
   console.log(`  npm install`)
   await runCommand(npmCmd, ['install'], absTarget)
-  console.log(`  npm run verify:runtime`)
-  await runCommand(npmCmd, ['run', 'verify:runtime'], absTarget)
 
   console.log(
     `\n✔ Project "${packageName}" created at ${path.relative(process.cwd(), absTarget)}`,
@@ -264,8 +262,8 @@ export async function create(options: CreateOptions): Promise<void> {
   console.log(`\nCompleted setup:`)
   console.log(`  cd ${projectName}`)
   console.log(`  npm install        (executed)`)
-  console.log(`  npm run setup:runtime  (executed by postinstall)`)
-  console.log(`  npm run verify:runtime (executed)`)
+  console.log(`  Install GodotJS: extract the release ZIP at the project root`)
+  console.log(`  npm run gen:types  (executed by postinstall)`)
   console.log(
     `  npm run dev          # rebuilds on change; Godot hot-reloads dist/app.js`,
   )

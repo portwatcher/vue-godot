@@ -8,5 +8,5 @@
     "strict": true,
     "target": "ES2022"
   },
-  "files": ["../../../typings/index.d.ts", "player.ts"]
+  "files": ["../../../../cli/templates/typings/index.d.ts", "player.ts"]
 }

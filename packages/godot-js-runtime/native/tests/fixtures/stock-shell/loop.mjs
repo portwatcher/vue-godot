@@ -6,7 +6,7 @@ if (!hasFeature('promise-jobs')) {
 }
 
 Promise.resolve().then(() => {
-  console.log('[godot-js-runtime] PHASE2_LOOP_PROMISE PASS')
+  console.log('[godotjs] PHASE2_LOOP_PROMISE PASS')
 })
 
 export default class ReloadLoopProbe extends Node {}

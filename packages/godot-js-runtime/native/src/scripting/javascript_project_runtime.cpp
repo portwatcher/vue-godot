@@ -341,7 +341,7 @@ struct JavaScriptProjectRuntime::Impl {
 			return false;
 		}
 		godot::UtilityFunctions::print(
-				"[godot-js-runtime] PROJECT_RUNTIME_STARTED live=",
+				"[godotjs] PROJECT_RUNTIME_STARTED live=",
 				static_cast<int64_t>(RuntimeHost::live_runtime_count()));
 		return true;
 	}
@@ -371,7 +371,7 @@ struct JavaScriptProjectRuntime::Impl {
 		}
 		binding.reset();
 		godot::UtilityFunctions::print(
-				"[godot-js-runtime] PROJECT_RUNTIME_STOPPED live=",
+				"[godotjs] PROJECT_RUNTIME_STOPPED live=",
 				static_cast<int64_t>(RuntimeHost::live_runtime_count()));
 	}
 
@@ -768,7 +768,7 @@ struct JavaScriptProjectRuntime::Impl {
 		record.constructor = script_class;
 		script.replace_metadata(std::move(metadata));
 		godot::UtilityFunctions::print(
-				"[godot-js-runtime] SCRIPT_LOADED ",
+				"[godotjs] SCRIPT_LOADED ",
 				script.source_path(),
 				" base=",
 				script.metadata().base_class);
@@ -1007,7 +1007,7 @@ struct JavaScriptProjectRuntime::Impl {
 					? *pending_reload_keep_state && keep_state
 					: keep_state;
 			godot::UtilityFunctions::print(
-					"[godot-js-runtime] RELOAD_DEFERRED keep_state=",
+					"[godotjs] RELOAD_DEFERRED keep_state=",
 					*pending_reload_keep_state);
 			return;
 		}
@@ -1078,8 +1078,8 @@ struct JavaScriptProjectRuntime::Impl {
 		}
 		godot::UtilityFunctions::print(
 				keep_state
-						? "[godot-js-runtime] SOFT_RELOAD_COMPLETE"
-						: "[godot-js-runtime] HARD_RELOAD_COMPLETE");
+						? "[godotjs] SOFT_RELOAD_COMPLETE"
+						: "[godotjs] HARD_RELOAD_COMPLETE");
 	}
 
 	void apply_pending_reload() {
@@ -1135,7 +1135,7 @@ struct JavaScriptProjectRuntime::Impl {
 		std::sort(changed_paths.begin(), changed_paths.end());
 		for (const std::string &path : changed_paths) {
 			godot::UtilityFunctions::print(
-					"[godot-js-runtime] FILE_CHANGE_DETECTED ",
+					"[godotjs] FILE_CHANGE_DETECTED ",
 					godot_string(path));
 		}
 		reload_all(true);

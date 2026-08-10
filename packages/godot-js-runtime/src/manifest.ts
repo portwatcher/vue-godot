@@ -1,5 +1,5 @@
-export const runtimeName = 'Godot JavaScript Runtime' as const
-export const runtimePackageName = 'godot-js-runtime' as const
+export const runtimeName = 'GodotJS' as const
+export const runtimePackageName = 'godotjs' as const
 export const minimumGodotVersion = '4.4' as const
 
 export interface RuntimeDependencyRevision {

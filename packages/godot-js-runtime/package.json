@@ -1,54 +1,13 @@
 {
-  "name": "godot-js-runtime",
+  "name": "@vue-godot/internal-godotjs",
+  "private": true,
   "version": "0.0.1",
-  "description": "Standalone JavaScript and TypeScript runtime for official Godot",
+  "description": "Private build infrastructure for the GodotJS GDExtension",
   "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/portwatcher/vue-godot.git",
     "directory": "packages/godot-js-runtime"
-  },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
-    },
-    "./installer": {
-      "types": "./dist/install.d.ts",
-      "import": "./dist/install.js",
-      "default": "./dist/install.js"
-    }
-  },
-  "bin": {
-    "godot-js-runtime": "bin/godot-js-runtime.mjs"
-  },
-  "files": [
-    "bin",
-    "addon/godot-js-runtime/godot_js_runtime.gdextension",
-    "addon/godot-js-runtime/runtime-manifest.json",
-    "dist",
-    "native/SConstruct",
-    "native/deps.lock.json",
-    "native/godot-cpp-profile.json",
-    "native/godot_js_runtime.gdextension.in",
-    "native/generated",
-    "native/include",
-    "native/src/**/*.cpp",
-    "native/tests/**/*.cpp",
-    "native/tests/fixtures",
-    "scripts",
-    "typings",
-    "licenses",
-    "LICENSE",
-    "README.md",
-    "THIRD_PARTY_NOTICES.md"
-  ],
-  "publishConfig": {
-    "access": "public"
   },
   "scripts": {
     "build": "npx tsc -p .",
@@ -63,9 +22,9 @@
     "test:native": "node scripts/build-native.mjs --run-tests",
     "generate:bindings": "node scripts/generate-bindings.mjs",
     "check:bindings": "node scripts/generate-bindings.mjs --check",
-    "gen:types": "node scripts/generate-types.mjs",
+    "gen:types": "node ../cli/scripts/generate-types.mjs",
     "generate:types": "npm run gen:types",
-    "check:types": "node scripts/generate-types.mjs --check",
+    "check:types": "node ../cli/scripts/generate-types.mjs --check",
     "test:types": "tsc -p test/fixtures/plain-types",
     "generate:manifest": "node scripts/generate-extension-manifest.mjs",
     "smoke:native": "node scripts/smoke-stock-godot.mjs",

@@ -10,10 +10,10 @@ import {
 const scriptPath = fileURLToPath(import.meta.url)
 const packageRoot = path.resolve(path.dirname(scriptPath), '..')
 const repoRoot = path.resolve(packageRoot, '../..')
-const addonRoot = path.join(packageRoot, 'addon/godot-js-runtime')
+const addonRoot = path.join(packageRoot, 'addon/godotjs')
 const templatePath = path.join(
   packageRoot,
-  'native/godot_js_runtime.gdextension.in',
+  'native/godotjs.gdextension.in',
 )
 
 function readJson(filePath) {
@@ -21,8 +21,8 @@ function readJson(filePath) {
 }
 
 function resolveGitCommit() {
-  if (process.env.GODOT_JS_RUNTIME_GIT_COMMIT) {
-    return process.env.GODOT_JS_RUNTIME_GIT_COMMIT
+  if (process.env.GODOTJS_GIT_COMMIT) {
+    return process.env.GODOTJS_GIT_COMMIT
   }
   try {
     return execFileSync('git', ['rev-parse', 'HEAD'], {
@@ -65,7 +65,7 @@ export function generateExtensionManifest(options = {}) {
       return artifact
     }
     const platform = artifact.target.split('.')[0]
-    const archive = archiveNames.get(platform)
+    const archive = archiveNames.get(platform) ?? archiveNames.get('universal')
     return archive
       ? {
           ...artifact,
@@ -76,8 +76,8 @@ export function generateExtensionManifest(options = {}) {
   })
   const manifest = {
     schemaVersion: 2,
-    runtimeName: 'Godot JavaScript Runtime',
-    packageName: packageJson.name,
+    runtimeName: 'GodotJS',
+    packageName: 'godotjs',
     version: packageJson.version,
     gitCommit:
       options.gitCommit ??
@@ -101,11 +101,11 @@ export function generateExtensionManifest(options = {}) {
   if (options.write !== false) {
     fs.mkdirSync(addonRoot, { recursive: true })
     fs.writeFileSync(
-      path.join(addonRoot, 'godot_js_runtime.gdextension'),
+      path.join(addonRoot, 'godotjs.gdextension'),
       extension,
     )
     fs.writeFileSync(
-      path.join(addonRoot, 'runtime-manifest.json'),
+      path.join(addonRoot, 'manifest.json'),
       `${JSON.stringify(manifest, null, 2)}\n`,
     )
   }

@@ -59,7 +59,7 @@ func _ready() -> void:
 		require_condition(valid.get("valid", false), "valid editor source")
 		require_condition(valid.get("functions", []).has("ready:1"), "function metadata")
 		require_condition(valid.get("safe_lines", []).has(1), "safe-line metadata")
-		print("[godot-js-runtime] PHASE5_EDITOR_DIAGNOSTICS PASS")
+		print("[godotjs] PHASE5_EDITOR_DIAGNOSTICS PASS")
 
 	var plain: Script = load_fresh("res://plain.js")
 	require_condition(plain != null and plain.can_instantiate(), ".js default class export")
@@ -99,19 +99,19 @@ func _ready() -> void:
 		FileAccess.get_file_as_string(saved_path) == original_source,
 		"ResourceSaver source round trip",
 	)
-	print("[godot-js-runtime] PHASE4_LANGUAGE_CONTRACT PASS js mjs cjs metadata tool saver")
+	print("[godotjs] PHASE4_LANGUAGE_CONTRACT PASS js mjs cjs metadata tool saver")
 
 	var incompatible: Script = load_fresh("res://incompatible-base.mjs")
 	require_condition(incompatible != null and incompatible.can_instantiate(), "incompatible script load")
 	var incompatible_node := Node.new()
 	incompatible_node.set_script(incompatible)
 	incompatible_node.free()
-	print("[godot-js-runtime] PHASE4_EXPECTED_INCOMPATIBLE_BASE")
+	print("[godotjs] PHASE4_EXPECTED_INCOMPATIBLE_BASE")
 
 	require_condition(load_fresh("res://invalid-export.mjs") == null, "invalid default export rejected")
 	require_condition(load_fresh("res://missing-default.mjs") == null, "missing default export rejected")
 	require_condition(load_fresh("res://syntax-error.mjs") == null, "syntax error rejected")
-	print("[godot-js-runtime] PHASE4_EXPECTED_SCRIPT_ERRORS")
+	print("[godotjs] PHASE4_EXPECTED_SCRIPT_ERRORS")
 
 	var mapped_script: Script = load_fresh("res://dist/source-map-error.mjs")
 	require_condition(mapped_script != null, "source-map fixture load")
@@ -134,27 +134,27 @@ func _ready() -> void:
 			)
 			require_condition(stack[0].get("line") == 10, "source-mapped stack line")
 	mapped_node.free()
-	print("[godot-js-runtime] PHASE5_SOURCE_MAP_ERROR PASS")
+	print("[godotjs] PHASE5_SOURCE_MAP_ERROR PASS")
 
 	require_condition(
-		ProjectSettings.get_setting("godot_js_runtime/runtime/memory_limit_mb") == 96,
+		ProjectSettings.get_setting("godotjs/runtime/memory_limit_mb") == 96,
 		"memory-limit project setting",
 	)
 	require_condition(
-		ProjectSettings.get_setting("godot_js_runtime/runtime/maximum_stack_size_kb") == 768,
+		ProjectSettings.get_setting("godotjs/runtime/maximum_stack_size_kb") == 768,
 		"stack-limit project setting",
 	)
 	require_condition(
-		ProjectSettings.get_setting("godot_js_runtime/runtime/interrupt_interval_milliseconds") == 2,
+		ProjectSettings.get_setting("godotjs/runtime/interrupt_interval_milliseconds") == 2,
 		"interrupt-interval project setting",
 	)
 	require_condition(
-		ProjectSettings.get_setting("godot_js_runtime/runtime/execution_timeout_milliseconds") == 4000,
+		ProjectSettings.get_setting("godotjs/runtime/execution_timeout_milliseconds") == 4000,
 		"execution-timeout project setting",
 	)
 	require_condition(
-		ProjectSettings.get_setting("godot_js_runtime/runtime/maximum_promise_jobs_per_frame") == 12000,
+		ProjectSettings.get_setting("godotjs/runtime/maximum_promise_jobs_per_frame") == 12000,
 		"Promise-job project setting",
 	)
-	print("[godot-js-runtime] PHASE4_PROJECT_SETTINGS PASS")
+	print("[godotjs] PHASE4_PROJECT_SETTINGS PASS")
 	get_tree().quit(0 if not failed else 1)

@@ -518,7 +518,7 @@ Godot returns zero vectors for unsupported platforms or missing sensors. The ori
 
 ## Requirements
 
-- `godot-js-runtime` with QuickJS-ng and access to the `godot` module
+- GodotJS with QuickJS-ng and access to the `godot` module
 - `@vue-godot/device` for plugin-backed capability adapters such as geolocation
 - Godot engine classes: `HTTPClient`, `DisplayServer`, `Engine`, `FileAccess`, `Input`, `OS`, `SceneTree`, `Time`, `TLSOptions`, `WebSocketPeer`, `PackedByteArray`, `PackedStringArray`
 

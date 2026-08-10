@@ -5,9 +5,8 @@ import { fileURLToPath } from 'node:url'
 import {
   defaultReleaseBaseUrl,
   findLegacyRuntimeIdentity,
-  releaseArchiveName,
-  releasePlatforms,
   releaseTargets,
+  universalReleaseArchiveName,
 } from '../packages/godot-js-runtime/scripts/platform-matrix.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -17,29 +16,14 @@ export const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 
 export const releasePackageConfigs = [
   {
-    name: 'godot-js-runtime',
-    dir: 'packages/godot-js-runtime',
-    expectedFiles: [
-      'bin/godot-js-runtime.mjs',
-      'dist/index.js',
-      'dist/index.d.ts',
-      'dist/cli.js',
-      'addon/godot-js-runtime/godot_js_runtime.gdextension',
-      'addon/godot-js-runtime/runtime-manifest.json',
-      'typings/godot.d.ts',
-      'typings/godot-js.d.ts',
-      'THIRD_PARTY_NOTICES.md',
-      'licenses/godot-cpp-MIT.md',
-      'licenses/quickjs-ng-MIT.txt',
-      'scripts/package-release-artifacts.mjs',
-      'scripts/smoke-platform-exports.mjs',
-      'scripts/verify-release-artifacts.mjs',
-    ],
-  },
-  {
     name: '@vue-godot/runtime-tscn',
     dir: 'packages/runtime-tscn',
-    expectedFiles: ['dist/index.js', 'dist/index.d.ts'],
+    expectedFiles: [
+      'dist/index.js',
+      'dist/index.d.ts',
+      'dist/bundle-format.js',
+      'dist/bundle-format.d.ts',
+    ],
   },
   {
     name: '@vue-godot/cli',
@@ -92,7 +76,6 @@ export const releasePackageConfigs = [
 ]
 
 const publishOrder = [
-  'godot-js-runtime',
   '@vue-godot/runtime-tscn',
   '@vue-godot/device',
   '@vue-godot/browser',
@@ -277,8 +260,8 @@ export function runtimeReleaseManifestErrors(manifest, packageVersion) {
   if (manifest.schemaVersion !== 2) {
     errors.push('runtime manifest schemaVersion must be 2')
   }
-  if (manifest.packageName !== 'godot-js-runtime') {
-    errors.push('runtime manifest packageName must be godot-js-runtime')
+  if (manifest.packageName !== 'godotjs') {
+    errors.push('runtime manifest packageName must be godotjs')
   }
   if (manifest.version !== packageVersion) {
     errors.push(
@@ -315,39 +298,20 @@ export function runtimeReleaseManifestErrors(manifest, packageVersion) {
   }
 
   const archives = Array.isArray(manifest.archives) ? manifest.archives : []
-  if (archives.length !== releasePlatforms.length) {
-    errors.push(
-      `runtime manifest must contain ${String(releasePlatforms.length)} archives, found ${String(archives.length)}`,
-    )
+  if (archives.length !== 1) {
+    errors.push(`runtime manifest must contain one universal ZIP, found ${String(archives.length)}`)
   }
-  const archivesByPlatform = new Map()
-  for (const archive of archives) {
-    if (!isRecord(archive) || typeof archive.platform !== 'string') {
-      errors.push('runtime manifest contains an invalid archive entry')
-      continue
-    }
-    if (archivesByPlatform.has(archive.platform)) {
-      errors.push(
-        `runtime manifest repeats archive platform ${archive.platform}`,
-      )
-      continue
-    }
-    archivesByPlatform.set(archive.platform, archive)
-  }
-  for (const platform of releasePlatforms) {
-    const archive = archivesByPlatform.get(platform.id)
-    const expectedName = releaseArchiveName(packageVersion, platform.id)
+  const archive = archives[0]
+  if (isRecord(archive)) {
+    const expectedName = universalReleaseArchiveName(packageVersion)
     const expectedUrl = `${expectedBaseUrl}/${expectedName}`
-    const expectedTargets = releaseTargets
-      .filter((target) => target.platform === platform.id)
-      .map((target) => target.id)
-      .sort()
-    if (!archive) {
-      errors.push(`runtime manifest is missing the ${platform.id} archive`)
-      continue
-    }
-    if (archive.name !== expectedName || archive.url !== expectedUrl) {
-      errors.push(`runtime ${platform.id} archive name or URL is not pinned`)
+    const expectedTargets = releaseTargets.map((target) => target.id).sort()
+    if (
+      archive.platform !== 'universal' ||
+      archive.name !== expectedName ||
+      archive.url !== expectedUrl
+    ) {
+      errors.push('runtime universal ZIP name or URL is not pinned')
     }
     if (
       !Number.isSafeInteger(archive.size) ||
@@ -355,11 +319,13 @@ export function runtimeReleaseManifestErrors(manifest, packageVersion) {
       typeof archive.sha256 !== 'string' ||
       !/^[a-f0-9]{64}$/.test(archive.sha256)
     ) {
-      errors.push(`runtime ${platform.id} archive size or checksum is invalid`)
+      errors.push('runtime universal ZIP size or checksum is invalid')
     }
     if (!sameStrings(archive.targets, expectedTargets)) {
-      errors.push(`runtime ${platform.id} archive targets are incomplete`)
+      errors.push('runtime universal ZIP targets are incomplete')
     }
+  } else if (archives.length > 0) {
+    errors.push('runtime manifest contains an invalid archive entry')
   }
 
   const artifacts = Array.isArray(manifest.artifacts) ? manifest.artifacts : []
@@ -392,10 +358,9 @@ export function runtimeReleaseManifestErrors(manifest, packageVersion) {
     const target = releaseTargets.find(
       (candidate) => candidate.id === artifact.target,
     )
-    const archive = target ? archivesByPlatform.get(target.platform) : undefined
     if (
       !target ||
-      !archive ||
+      !isRecord(archive) ||
       artifact.archive !== archive.name ||
       artifact.url !== archive.url
     ) {

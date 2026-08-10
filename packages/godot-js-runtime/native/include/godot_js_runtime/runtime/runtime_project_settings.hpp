@@ -8,15 +8,15 @@ namespace godot_js_runtime {
 namespace runtime_project_setting {
 
 inline constexpr char MEMORY_LIMIT_MB[] =
-		"godot_js_runtime/runtime/memory_limit_mb";
+		"godotjs/runtime/memory_limit_mb";
 inline constexpr char MAXIMUM_STACK_SIZE_KB[] =
-		"godot_js_runtime/runtime/maximum_stack_size_kb";
+		"godotjs/runtime/maximum_stack_size_kb";
 inline constexpr char INTERRUPT_INTERVAL_MILLISECONDS[] =
-		"godot_js_runtime/runtime/interrupt_interval_milliseconds";
+		"godotjs/runtime/interrupt_interval_milliseconds";
 inline constexpr char EXECUTION_TIMEOUT_MILLISECONDS[] =
-		"godot_js_runtime/runtime/execution_timeout_milliseconds";
+		"godotjs/runtime/execution_timeout_milliseconds";
 inline constexpr char MAXIMUM_PROMISE_JOBS_PER_FRAME[] =
-		"godot_js_runtime/runtime/maximum_promise_jobs_per_frame";
+		"godotjs/runtime/maximum_promise_jobs_per_frame";
 
 } // namespace runtime_project_setting
 

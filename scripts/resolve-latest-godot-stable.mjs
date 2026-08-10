@@ -240,7 +240,7 @@ export function stableCompatibilityReleaseTag(runtimeVersion, godotVersion) {
     throw new Error(`Invalid runtime version: ${String(runtimeVersion)}`)
   }
   parseStableGodotTag(godotVersion)
-  return `godot-js-runtime-v${runtimeVersion}-godot-${godotVersion.replace(/-stable$/, '')}`
+  return `godotjs-v${runtimeVersion}-godot-${godotVersion.replace(/-stable$/, '')}`
 }
 
 async function fetchJson(url, token, fetchImplementation = fetch) {
@@ -388,7 +388,7 @@ async function runCli() {
     appendGitHubOutput(options.githubOutput, {
       version: metadata.version,
       installed_version: metadata.installedVersion,
-      runtime_version: runtimeVersion,
+      godotjs_version: runtimeVersion,
       release_tag: releaseTag,
     })
   }

@@ -23,8 +23,8 @@ This app exists to keep SDK-level native application flows exercised:
 | Godot smoke           | Covered by `npm run smoke:godot`.                                                                    |
 | npm run build         | Builds the SDK dependencies and Vite bundle.                                                         |
 
-Run `npm run setup:runtime`, build the bundle, then open `project.godot` in an
-official Godot 4.4.1-or-newer editor and press F5.
+Extract the GodotJS release ZIP at this project root, build the bundle, then
+open `project.godot` in an official Godot 4.4.1-or-newer editor and press F5.
 
 ## Commands
 
@@ -41,8 +41,8 @@ SIMCTL_CHILD_VUE_GODOT_RELEASE_CHECKS=1 SIMCTL_CHILD_VUE_GODOT_RELEASE_CHECKS_DE
 
 The checked-in export presets exercise this app as the representative Vue
 consumer for the complete runtime release matrix. A successful exported launch
-prints `[godot-js-runtime-export] VUE PASS` with the runtime, official Godot,
+prints `[godotjs-export] VUE PASS` with the runtime, official Godot,
 and platform versions. From the repository root, `npm run
 smoke:platform-exports` tests in-tree native payloads; pass `--release-dir
-.artifacts/godot-js-runtime/0.0.1` to repeat the same exports and launches from
-clean, checksummed release archives.
+.artifacts/godotjs/0.0.1` to repeat the same exports and launches from a clean,
+checksummed universal release ZIP.

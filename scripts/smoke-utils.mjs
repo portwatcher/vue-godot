@@ -1,15 +1,8 @@
 import { spawn, spawnSync } from 'node:child_process'
-import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import {
-  installRuntime,
-  resolveHostDebugTarget,
-  verifyRuntime,
-} from '../packages/godot-js-runtime/dist/install.js'
-import { generateExtensionManifest } from '../packages/godot-js-runtime/scripts/generate-extension-manifest.mjs'
 import {
   assertOfficialGodotExecutable,
   godotCommandArguments,
@@ -632,174 +625,34 @@ export function packPackage(packageName, packDir) {
   return path.join(packDir, tarballName)
 }
 
-function sha256File(filePath) {
-  return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex')
-}
-
-function fixtureRuntimeArtifact() {
-  if (process.platform === 'darwin') {
-    return {
-      name: 'libgodot_js_runtime.macos.template_debug.universal.framework/libgodot_js_runtime.macos.template_debug.universal',
-      target: 'macos.template_debug.universal',
-    }
-  }
-  if (process.platform === 'linux' && process.arch === 'x64') {
-    return {
-      name: 'libgodot_js_runtime.linux.template_debug.x86_64.so',
-      target: 'linux.template_debug.x86_64',
-    }
-  }
-  if (process.platform === 'win32' && process.arch === 'x64') {
-    return {
-      name: 'libgodot_js_runtime.windows.template_debug.x86_64.dll',
-      target: 'windows.template_debug.x86_64',
-    }
-  }
-  throw new Error(
-    `No CLI fixture runtime artifact is defined for ${process.platform}/${process.arch}`,
-  )
-}
-
-function copyRuntimePackageSource(stageDir) {
-  fs.cpSync(runtimePackageDir, stageDir, {
-    recursive: true,
-    filter(sourcePath) {
-      const relative = path.relative(runtimePackageDir, sourcePath)
-      if (relative === '') return true
-      const normalized = relative.split(path.sep).join('/')
-      return !(
-        normalized === '.gitignore' ||
-        normalized.startsWith('addon/godot-js-runtime/bin/') ||
-        normalized.startsWith('native/third_party/') ||
-        normalized.startsWith('native/bin/') ||
-        normalized.startsWith('node_modules/') ||
-        normalized.startsWith('.turbo/')
-      )
-    },
-  })
-}
-
-function stageRuntimePackage(stageRoot, artifactMode) {
-  if (artifactMode !== 'fixture' && artifactMode !== 'required') {
-    throw new Error(
-      `runtimeArtifacts must be fixture or required, received ${String(artifactMode)}`,
-    )
-  }
-  const stageDir = path.join(stageRoot, `godot-js-runtime-${artifactMode}`)
-  fs.rmSync(stageDir, { recursive: true, force: true })
-  copyRuntimePackageSource(stageDir)
-
-  const baseManifest = generateExtensionManifest({
-    includeArtifacts: artifactMode === 'required',
-    write: false,
-  })
-  let artifacts
-  if (artifactMode === 'fixture') {
-    const artifact = fixtureRuntimeArtifact()
-    const artifactPath = path.join(
-      stageDir,
-      'addon/godot-js-runtime/bin',
-      ...artifact.name.split('/'),
-    )
-    fs.mkdirSync(path.dirname(artifactPath), { recursive: true })
-    fs.writeFileSync(artifactPath, 'CLI installer fixture; not executable.\n')
-    artifacts = [
-      {
-        ...artifact,
-        size: fs.statSync(artifactPath).size,
-        sha256: sha256File(artifactPath),
-        archive: null,
-        url: null,
-      },
-    ]
-  } else {
-    const target = resolveHostDebugTarget(baseManifest)
-    artifacts = baseManifest.artifacts.filter(
-      (artifact) => artifact.target === target,
-    )
-    for (const artifact of artifacts) {
-      const sourcePath = path.join(
-        runtimePackageDir,
-        'addon/godot-js-runtime/bin',
-        ...artifact.name.split('/'),
-      )
-      if (!fs.existsSync(sourcePath)) {
-        throw new Error(`Required runtime artifact is missing: ${sourcePath}`)
-      }
-      const destinationPath = path.join(
-        stageDir,
-        'addon/godot-js-runtime/bin',
-        ...artifact.name.split('/'),
-      )
-      fs.mkdirSync(path.dirname(destinationPath), { recursive: true })
-      fs.copyFileSync(sourcePath, destinationPath)
-    }
-  }
-
-  fs.writeFileSync(
-    path.join(stageDir, 'addon/godot-js-runtime/runtime-manifest.json'),
-    `${JSON.stringify({ ...baseManifest, artifacts }, null, 2)}\n`,
-  )
-  const packageJsonPath = path.join(stageDir, 'package.json')
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
-  packageJson.files.push('addon/godot-js-runtime/bin')
-  fs.writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
-
-  return stageDir
-}
-
-function packRuntimePackage(packDir, artifactMode) {
-  const stageDir = stageRuntimePackage(packDir, artifactMode)
-
-  const stdout = run(npmCommand, ['pack', '--pack-destination', packDir], {
-    cwd: stageDir,
-  })
-  const tarballName = stdout.trim().split('\n').at(-1)
-  if (!tarballName) {
-    throw new Error('npm pack did not report a godot-js-runtime tarball')
-  }
-  return path.join(packDir, tarballName)
-}
-
 export function installBuiltRuntime(projectDir) {
-  const stageRoot = fs.mkdtempSync(
-    path.join(os.tmpdir(), 'vue-godot-runtime-stage-'),
-  )
-  try {
-    const sourceDirectory = stageRuntimePackage(stageRoot, 'required')
-    const result = installRuntime({
-      projectDirectory: projectDir,
-      sourceDirectory,
-    })
-    const verification = verifyRuntime(projectDir)
-    if (!verification.ok) {
-      throw new Error(
-        [
-          `Installed runtime verification failed for ${projectDir}`,
-          ...verification.errors.map((error) => `- ${error}`),
-        ].join('\n'),
-      )
-    }
-    console.log(
-      `[smoke-utils] runtime ready in ${path.relative(repoRoot, projectDir)} (${result.manifest.targets.join(', ')})`,
+  const source = path.join(runtimePackageDir, 'addon/godotjs')
+  const destination = path.join(projectDir, 'addons/godotjs')
+  const legacyDestination = path.join(projectDir, 'addons/godot-js-runtime')
+  fs.rmSync(legacyDestination, { recursive: true, force: true })
+  fs.cpSync(source, destination, { recursive: true })
+  const descriptor = path.join(destination, 'godotjs.gdextension')
+  if (!fs.existsSync(descriptor)) {
+    throw new Error(
+      `GodotJS manual copy did not create ${descriptor}`,
     )
-    return result
-  } finally {
-    fs.rmSync(stageRoot, { recursive: true, force: true })
   }
+  const godotCache = path.join(projectDir, '.godot')
+  fs.mkdirSync(godotCache, { recursive: true })
+  fs.writeFileSync(
+    path.join(godotCache, 'extension_list.cfg'),
+    'res://addons/godotjs/godotjs.gdextension\n',
+  )
+  console.log(
+    `[smoke-utils] GodotJS copied to ${path.relative(repoRoot, destination)}`,
+  )
+  return { addonDirectory: destination }
 }
 
-export function createPackedPackageOverrides(
-  packDir,
-  options = { runtimeArtifacts: 'fixture' },
-) {
+export function createPackedPackageOverrides(packDir) {
   const entries = Object.keys(packageDirs).map((packageName) => [
     packageName,
     `file:${packPackage(packageName, packDir)}`,
-  ])
-  entries.push([
-    'godot-js-runtime',
-    `file:${packRuntimePackage(packDir, options.runtimeArtifacts)}`,
   ])
   return Object.fromEntries(entries)
 }

@@ -1,5 +1,5 @@
 import vue from '@vitejs/plugin-vue'
-import { commonJsBundleBanner } from 'godot-js-runtime'
+import { commonJsBundleBanner } from '@vue-godot/runtime-tscn/bundle-format'
 import { defineConfig } from 'vite'
 
 // Tags provided by @vue-godot/html — kept in sync with htmlTags from the package.

@@ -5,5 +5,5 @@ native/bin/
 native/**/*.o
 native/**/*.obj
 native/**/*.os
-addon/godot-js-runtime/bin/*
-!addon/godot-js-runtime/bin/.gitkeep
+addon/godotjs/bin/*
+!addon/godotjs/bin/.gitkeep

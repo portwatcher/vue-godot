@@ -28,7 +28,7 @@ test('html package exposes typed PascalCase and lowercase GlobalComponents', () 
           skipLibCheck: true,
           lib: ['ES2020', 'DOM'],
           paths: {
-            godot: ['../../packages/godot-js-runtime/typings/godot.d.ts'],
+            godot: ['../../packages/cli/templates/typings/godot.d.ts'],
           },
         },
         include: ['index.ts'],

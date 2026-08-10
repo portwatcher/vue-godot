@@ -28,6 +28,7 @@
   "files": [
     "bin",
     "dist",
+    "scripts",
     "templates"
   ],
   "publishConfig": {
@@ -36,9 +37,6 @@
   "scripts": {
     "build": "npx tsc -p .",
     "test": "npm run build && node --test test/*.test.mjs"
-  },
-  "dependencies": {
-    "godot-js-runtime": "^0.0.1"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",

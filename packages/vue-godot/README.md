@@ -21,9 +21,9 @@ The implementation lives in `@vue-godot/cli`. This package depends on that
 scoped package and exposes the same `vue-godot` binary so users can run the
 shorter `npx vue-godot ...` command.
 
-Created projects install and verify `godot-js-runtime`, generate declarations
-from stock Godot, and run in an official Godot editor. This alias does not ship
-an editor or a second JavaScript runtime.
+Created projects generate declarations from stock Godot and run in an official
+Godot editor. Install the native GodotJS add-on separately from its GitHub
+release; this npm alias never installs or ships the GDExtension.
 
 ## License
 

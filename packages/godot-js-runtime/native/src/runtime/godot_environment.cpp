@@ -78,7 +78,7 @@ bool GodotResourceProvider::read_text(
 
 void GodotConsoleSink::write(const ConsoleMessage &message) noexcept {
 	const godot::String formatted = godot_string(
-			"[godot-js-runtime][console." +
+			"[godotjs][console." +
 			std::string(console_level_name(message.level)) + "][" + message.source +
 			"] " + message.text);
 	switch (message.level) {

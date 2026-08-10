@@ -17,7 +17,7 @@ sanitizers = [
 unsupported_sanitizers = sorted(set(sanitizers) - {"address", "undefined"})
 if unsupported_sanitizers:
     print(
-        "Unsupported Godot JavaScript Runtime sanitizer(s): "
+        "Unsupported GodotJS sanitizer(s): "
         + ", ".join(unsupported_sanitizers)
     )
     Exit(2)
@@ -64,8 +64,8 @@ quickjs_sources = [
 ]
 sources.extend(quickjs_sources)
 
-addon_bin_dir = env.Dir("../addon/godot-js-runtime/bin").abspath
-library_base = "libgodot_js_runtime" + env["suffix"]
+addon_bin_dir = env.Dir("../addon/godotjs/bin").abspath
+library_base = "libgodotjs" + env["suffix"]
 runtime_package_path = os.path.join(Dir("#").abspath, "..", "package.json")
 with open(runtime_package_path, "r", encoding="utf-8") as runtime_package_file:
     runtime_version = json.load(runtime_package_file)["version"]
@@ -83,11 +83,11 @@ def write_macos_framework_info_plist(target, source, env):
     <key>CFBundleExecutable</key>
     <string>{executable}</string>
     <key>CFBundleIdentifier</key>
-    <string>org.vuegodot.godot-js-runtime</string>
+    <string>org.vuegodot.godotjs</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>Godot JavaScript Runtime</string>
+    <string>GodotJS</string>
     <key>CFBundlePackageType</key>
     <string>FMWK</string>
     <key>CFBundleShortVersionString</key>

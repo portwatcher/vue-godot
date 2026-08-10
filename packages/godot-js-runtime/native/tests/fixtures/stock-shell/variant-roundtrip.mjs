@@ -207,5 +207,5 @@ signalOwner.free()
 objectValue.free()
 
 console.log(
-  `[godot-js-runtime] PHASE3_VARIANT_MATRIX PASS ${String(observedTypes.size)} types`,
+  `[godotjs] PHASE3_VARIANT_MATRIX PASS ${String(observedTypes.size)} types`,
 )

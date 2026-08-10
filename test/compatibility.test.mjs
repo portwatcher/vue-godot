@@ -227,7 +227,7 @@ test('html README documents every registered component', () => {
 
 test('html accessibility docs match the stock-Godot bindings', () => {
   const generatedTypings = fs.readFileSync(
-    path.join(repoRoot, 'packages/godot-js-runtime/typings/godot.d.ts'),
+    path.join(repoRoot, 'packages/cli/templates/typings/godot.d.ts'),
     'utf-8',
   )
 

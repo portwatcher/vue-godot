@@ -1,16 +1,16 @@
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
+import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 import {
+  createDeterministicZip,
   createDeterministicTarGzip,
-  extractTarGzip,
   readTarGzip,
 } from '../dist/archive.js'
-import { installRuntime, verifyRuntime } from '../dist/index.js'
 import { packageReleaseArtifacts } from '../scripts/package-release-artifacts.mjs'
 import { releaseTargetsForPlatforms } from '../scripts/platform-matrix.mjs'
 
@@ -45,31 +45,11 @@ function writeFixtureArtifacts(binDirectory, platforms) {
   }
 }
 
-function writeRuntimeSource(sourceDirectory, manifest) {
-  const files = [
-    'LICENSE',
-    'THIRD_PARTY_NOTICES.md',
-    'licenses/godot-cpp-MIT.md',
-    'licenses/quickjs-ng-MIT.txt',
-    'addon/godot-js-runtime/godot_js_runtime.gdextension',
-  ]
-  for (const relativePath of files) {
-    const destination = path.join(sourceDirectory, relativePath)
-    fs.mkdirSync(path.dirname(destination), { recursive: true })
-    fs.copyFileSync(path.join(packageRoot, relativePath), destination)
-  }
-  fs.writeFileSync(
-    path.join(sourceDirectory, 'addon/godot-js-runtime/runtime-manifest.json'),
-    `${JSON.stringify(manifest, null, 2)}\n`,
-  )
-}
-
-function writeProject(projectDirectory) {
-  fs.mkdirSync(projectDirectory, { recursive: true })
-  fs.writeFileSync(
-    path.join(projectDirectory, 'project.godot'),
-    'config_version=5\n',
-  )
+function unzip(archivePath, destination) {
+  const result = spawnSync('unzip', ['-q', archivePath, '-d', destination], {
+    encoding: 'utf-8',
+  })
+  assert.equal(result.status, 0, result.stderr || result.stdout)
 }
 
 test('deterministic tar archives round-trip modes and reject unsafe paths', () => {
@@ -104,15 +84,34 @@ test('deterministic tar archives round-trip modes and reject unsafe paths', () =
   )
 })
 
-test('platform release archives contain payload checksums, provenance, and notices', () => {
+test('deterministic ZIP output rejects unsafe paths', () => {
+  const entries = [
+    { path: 'addons/godotjs/b', contents: Buffer.from('b') },
+    { path: 'addons/godotjs/a', contents: Buffer.from('a') },
+  ]
+  assert.deepEqual(
+    createDeterministicZip(entries),
+    createDeterministicZip([...entries].reverse()),
+  )
+  assert.throws(
+    () =>
+      createDeterministicZip([
+        { path: '../escape', contents: Buffer.from('bad') },
+      ]),
+    /unsafe segment/,
+  )
+})
+
+test('the universal ZIP is a clean manual-copy Godot add-on', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'godot-js-release-'))
   try {
     const binDirectory = path.join(root, 'bin')
-    writeFixtureArtifacts(binDirectory, ['linux'])
+    const platforms = ['macos', 'windows', 'linux', 'android', 'ios', 'web']
+    writeFixtureArtifacts(binDirectory, platforms)
     const firstOutput = path.join(root, 'first')
     const secondOutput = path.join(root, 'second')
     const options = {
-      platforms: ['linux'],
+      platforms,
       binDirectory,
       releaseBaseUrl: 'https://example.invalid/releases/v0.0.1',
       sourceDateEpoch: 123,
@@ -129,7 +128,9 @@ test('platform release archives contain payload checksums, provenance, and notic
     assert.equal(first.archives.length, 1)
     assert.equal(first.manifest.schemaVersion, 2)
     assert.equal(first.manifest.archives.length, 1)
-    assert.equal(first.manifest.artifacts.length, 2)
+    assert.equal(first.manifest.runtimeName, 'GodotJS')
+    assert.equal(first.manifest.packageName, 'godotjs')
+    assert.equal(first.manifest.artifacts.length, 14)
     assert.ok(
       first.manifest.artifacts.every((artifact) => artifact.archive !== null),
     )
@@ -139,85 +140,58 @@ test('platform release archives contain payload checksums, provenance, and notic
       ),
     )
     const archiveName = first.archives[0].name
+    assert.equal(archiveName, 'godotjs-v0.0.1.zip')
     assert.equal(
       sha256(fs.readFileSync(path.join(firstOutput, archiveName))),
       sha256(fs.readFileSync(path.join(secondOutput, archiveName))),
     )
 
-    const entries = readTarGzip(
-      fs.readFileSync(path.join(firstOutput, archiveName)),
+    const listing = spawnSync(
+      'unzip',
+      ['-Z1', path.join(firstOutput, archiveName)],
+      { encoding: 'utf-8' },
     )
-    const names = entries.map((entry) => entry.path)
-    assert.ok(
-      entries
-        .filter((entry) => entry.path.endsWith('.so'))
-        .every((entry) => entry.mode === 0o755),
-    )
-    assert.ok(
-      entries
-        .filter((entry) => entry.path.endsWith('/LICENSE'))
-        .every((entry) => entry.mode === 0o644),
-    )
-    for (const suffix of [
-      '/LICENSE',
-      '/THIRD_PARTY_NOTICES.md',
-      '/licenses/godot-cpp-MIT.md',
-      '/licenses/quickjs-ng-MIT.txt',
-      '/PROVENANCE.json',
-      '/SHA256SUMS',
-      '/addon/godot-js-runtime/godot_js_runtime.gdextension',
-      '/addon/godot-js-runtime/runtime-manifest.json',
+    assert.equal(listing.status, 0, listing.stderr || listing.stdout)
+    const names = listing.stdout.trim().split(/\r?\n/)
+    assert.ok(names.every((name) => name.startsWith('addons/godotjs/')))
+    for (const name of [
+      'addons/godotjs/LICENSE',
+      'addons/godotjs/README.md',
+      'addons/godotjs/THIRD_PARTY_NOTICES.md',
+      'addons/godotjs/licenses/godot-cpp-MIT.md',
+      'addons/godotjs/licenses/quickjs-ng-MIT.txt',
+      'addons/godotjs/PROVENANCE.json',
+      'addons/godotjs/SHA256SUMS',
+      'addons/godotjs/godotjs.gdextension',
+      'addons/godotjs/manifest.json',
     ]) {
-      assert.ok(
-        names.some((name) => name.endsWith(suffix)),
-        suffix,
-      )
+      assert.ok(names.includes(name), name)
     }
 
-    const extracted = path.join(root, 'extracted')
-    const extractedFiles = extractTarGzip(
-      path.join(firstOutput, archiveName),
-      extracted,
-    )
-    assert.ok(extractedFiles.length >= 10)
-
-    const sourceDirectory = path.join(root, 'runtime-source')
-    writeRuntimeSource(sourceDirectory, first.manifest)
     const projectDirectory = path.join(root, 'clean project')
-    writeProject(projectDirectory)
-    const debugTarget = 'linux.template_debug.x86_64'
-    const installed = installRuntime({
-      projectDirectory,
-      sourceDirectory,
-      artifactDirectory: firstOutput,
-      targets: [debugTarget],
-    })
-    assert.deepEqual(installed.manifest.targets, [debugTarget])
-    assert.equal(verifyRuntime(projectDirectory).ok, true)
-    assert.equal(
+    fs.mkdirSync(projectDirectory)
+    unzip(path.join(firstOutput, archiveName), projectDirectory)
+    assert.deepEqual(fs.readdirSync(projectDirectory), ['addons'])
+    assert.ok(
       fs.existsSync(
-        path.join(
-          projectDirectory,
-          'addons/godot-js-runtime/licenses/quickjs-ng-MIT.txt',
-        ),
+        path.join(projectDirectory, 'addons/godotjs/godotjs.gdextension'),
       ),
-      true,
     )
-
-    fs.appendFileSync(path.join(firstOutput, archiveName), 'tampered')
-    const damagedProject = path.join(root, 'damaged project')
-    writeProject(damagedProject)
-    assert.throws(
-      () =>
-        installRuntime({
-          projectDirectory: damagedProject,
-          sourceDirectory,
-          artifactDirectory: firstOutput,
-          targets: [debugTarget],
-        }),
-      /archive does not match runtime-manifest/,
+    assert.equal(
+      fs.existsSync(path.join(projectDirectory, 'addons/godot-js-runtime')),
+      false,
     )
   } finally {
     fs.rmSync(root, { recursive: true, force: true })
   }
+})
+
+test('the native build workspace cannot be published to npm', () => {
+  const packageJson = JSON.parse(
+    fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf-8'),
+  )
+  assert.equal(packageJson.private, true)
+  assert.equal(packageJson.name, '@vue-godot/internal-godotjs')
+  assert.equal(packageJson.bin, undefined)
+  assert.equal(packageJson.publishConfig, undefined)
 })

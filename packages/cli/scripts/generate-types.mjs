@@ -4,7 +4,12 @@ import os from 'node:os'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { godotCommandArguments } from './godot-command.mjs'
+
+function godotCommandArguments(args, platform = process.platform) {
+  return platform === 'darwin'
+    ? [...args, '-ApplePersistenceIgnoreState', 'YES']
+    : [...args]
+}
 
 const packageRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -12,9 +17,9 @@ const packageRoot = path.resolve(
 )
 const pinnedApiPath = path.join(
   packageRoot,
-  'native/third_party/godot-cpp/gdextension/extension_api.json',
+  '../godot-js-runtime/native/third_party/godot-cpp/gdextension/extension_api.json',
 )
-const defaultOutputDirectory = path.join(packageRoot, 'typings')
+const defaultOutputDirectory = path.join(packageRoot, 'templates/typings')
 const generatorVersion = 1
 
 const primitiveBuiltinTypes = new Map([

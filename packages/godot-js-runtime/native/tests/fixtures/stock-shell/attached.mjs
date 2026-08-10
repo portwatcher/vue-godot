@@ -69,7 +69,7 @@ class RuntimeShellProbe extends Node {
 
     const ephemeralTimer = this.get_tree().create_timer(0.001)
     ephemeralTimer.timeout.as_promise().then(() => {
-      console.log('[godot-js-runtime] PHASE7_EPHEMERAL_SIGNAL PASS')
+      console.log('[godotjs] PHASE7_EPHEMERAL_SIGNAL PASS')
     })
 
     const moved = Callable.create((distance) => {
@@ -116,7 +116,7 @@ class RuntimeShellProbe extends Node {
     }
 
     console.log(
-      '[godot-js-runtime] PHASE4_SCRIPT_READY PASS lifecycle method property signal modules',
+      '[godotjs] PHASE4_SCRIPT_READY PASS lifecycle method property signal modules',
     )
   }
 
@@ -158,12 +158,12 @@ class RuntimeShellProbe extends Node {
     assertScript(markerFile !== null, 'editor play completion marker')
     markerFile.seek_end()
     markerFile.store_line('ready')
-    console.log('[godot-js-runtime] PHASE4_LIFECYCLE PASS')
+    console.log('[godotjs] PHASE4_LIFECYCLE PASS')
     this.get_tree().quit(0)
   }
 
   _exit_tree() {
-    console.log('[godot-js-runtime] PHASE4_EXIT_TREE PASS')
+    console.log('[godotjs] PHASE4_EXIT_TREE PASS')
   }
 }
 

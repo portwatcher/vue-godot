@@ -20,7 +20,10 @@ const stagingRoot = path.join(
 const editorStagingRoot = path.join(stagingRoot, 'editor')
 const sceneStagingRoot = path.join(stagingRoot, 'scene')
 const expectedCallbackException = 'PHASE3_EXPECTED_CALLBACK_EXCEPTION'
-const typeGeneratorPath = path.join(packageRoot, 'scripts/generate-types.mjs')
+const typeGeneratorPath = path.join(
+  packageRoot,
+  '../cli/scripts/generate-types.mjs',
+)
 
 function parseArgs(argv) {
   const options = {
@@ -165,7 +168,7 @@ function assertNoneOrForwardedChildCount(output, marker, description) {
   const count = countOccurrences(output, marker)
   const playCycles = countOccurrences(
     output,
-    '[godot-js-runtime] EDITOR_PLAY_START',
+    '[godotjs] EDITOR_PLAY_START',
   )
   if (count !== 0 && count !== playCycles) {
     throw new Error(
@@ -205,15 +208,15 @@ function prepareFixture() {
   )
   for (const projectRoot of [editorStagingRoot, sceneStagingRoot]) {
     fs.cpSync(
-      path.join(packageRoot, 'addon/godot-js-runtime'),
-      path.join(projectRoot, 'addons/godot-js-runtime'),
+      path.join(packageRoot, 'addon/godotjs'),
+      path.join(projectRoot, 'addons/godotjs'),
       { recursive: true },
     )
     const godotCache = path.join(projectRoot, '.godot')
     fs.mkdirSync(godotCache, { recursive: true })
     fs.writeFileSync(
       path.join(godotCache, 'extension_list.cfg'),
-      'res://addons/godot-js-runtime/godot_js_runtime.gdextension\n',
+      'res://addons/godotjs/godotjs.gdextension\n',
     )
   }
 }
@@ -233,19 +236,19 @@ function verifyCleanOutput(output, description) {
 }
 
 function verifyLifecycle(output, description) {
-  assertCount(output, '[godot-js-runtime] INITIALIZED', 1, description)
-  assertCount(output, '[godot-js-runtime] TERMINATED', 1, description)
+  assertCount(output, '[godotjs] INITIALIZED', 1, description)
+  assertCount(output, '[godotjs] TERMINATED', 1, description)
   verifyCleanOutput(output, description)
 }
 
 function verifyProjectRuntimeBalance(output, description, minimumCycles = 1) {
   const starts = countOccurrences(
     output,
-    '[godot-js-runtime] PROJECT_RUNTIME_STARTED live=1',
+    '[godotjs] PROJECT_RUNTIME_STARTED live=1',
   )
   const stops = countOccurrences(
     output,
-    '[godot-js-runtime] PROJECT_RUNTIME_STOPPED live=0',
+    '[godotjs] PROJECT_RUNTIME_STOPPED live=0',
   )
   if (starts < minimumCycles || starts !== stops) {
     throw new Error(
@@ -279,8 +282,8 @@ function verifySerializedScene() {
 }
 
 function verifyEditorLifecycle(output, description) {
-  const initialized = countOccurrences(output, '[godot-js-runtime] INITIALIZED')
-  const terminated = countOccurrences(output, '[godot-js-runtime] TERMINATED')
+  const initialized = countOccurrences(output, '[godotjs] INITIALIZED')
+  const terminated = countOccurrences(output, '[godotjs] TERMINATED')
   if (initialized < 1 || terminated < 1 || terminated > initialized) {
     throw new Error(
       `${description} expected at least one parent extension lifecycle, received ${String(initialized)} initialization(s) and ${String(terminated)} forwarded termination(s)\n${output}`,
@@ -292,11 +295,11 @@ function verifyEditorLifecycle(output, description) {
 function verifyEditorProjectRuntimes(output, description, playCycles) {
   const starts = countOccurrences(
     output,
-    '[godot-js-runtime] PROJECT_RUNTIME_STARTED live=1',
+    '[godotjs] PROJECT_RUNTIME_STARTED live=1',
   )
   const stops = countOccurrences(
     output,
-    '[godot-js-runtime] PROJECT_RUNTIME_STOPPED live=0',
+    '[godotjs] PROJECT_RUNTIME_STOPPED live=0',
   )
   if (
     (starts !== 2 && starts !== playCycles + 2) ||
@@ -352,37 +355,37 @@ export async function smokeStockGodot(options) {
   verifyEditorLifecycle(editorPlayOutput, 'headless editor play/stop loop')
   assertCount(
     editorPlayOutput,
-    '[godot-js-runtime] PHASE4_EDITOR_PLACEHOLDER PASS',
+    '[godotjs] PHASE4_EDITOR_PLACEHOLDER PASS',
     1,
     'headless editor play/stop loop',
   )
   assertCount(
     editorPlayOutput,
-    '[godot-js-runtime] PHASE4_TOOL_SCRIPT PASS',
+    '[godotjs] PHASE4_TOOL_SCRIPT PASS',
     1,
     'headless editor play/stop loop',
   )
   assertCount(
     editorPlayOutput,
-    '[godot-js-runtime] PHASE4_EDITOR_PLAY_LOOP PASS',
+    '[godotjs] PHASE4_EDITOR_PLAY_LOOP PASS',
     1,
     'headless editor play/stop loop',
   )
   assertCount(
     editorPlayOutput,
-    '[godot-js-runtime] PHASE5_EDITOR_LANGUAGE PASS',
+    '[godotjs] PHASE5_EDITOR_LANGUAGE PASS',
     1,
     'headless editor play/stop loop',
   )
   assertCount(
     editorPlayOutput,
-    '[godot-js-runtime] PHASE5_EDITOR_FILE_MONITOR PASS',
+    '[godotjs] PHASE5_EDITOR_FILE_MONITOR PASS',
     1,
     'headless editor play/stop loop',
   )
   assertNoneOrForwardedChildCount(
     editorPlayOutput,
-    '[godot-js-runtime] PHASE4_SCRIPT_READY PASS',
+    '[godotjs] PHASE4_SCRIPT_READY PASS',
     'headless editor play/stop loop',
   )
   assertNoneOrForwardedChildCount(
@@ -392,11 +395,11 @@ export async function smokeStockGodot(options) {
   )
   const editorPlayStarts = countOccurrences(
     editorPlayOutput,
-    '[godot-js-runtime] EDITOR_PLAY_START',
+    '[godotjs] EDITOR_PLAY_START',
   )
   const editorPlayStops = countOccurrences(
     editorPlayOutput,
-    '[godot-js-runtime] EDITOR_PLAY_STOP',
+    '[godotjs] EDITOR_PLAY_STOP',
   )
   if (editorPlayStarts < 3 || editorPlayStarts !== editorPlayStops) {
     throw new Error(
@@ -405,7 +408,7 @@ export async function smokeStockGodot(options) {
   }
   assertCount(
     editorPlayOutput,
-    '[godot-js-runtime] EDITOR_SCENE_READY',
+    '[godotjs] EDITOR_SCENE_READY',
     editorPlayStarts,
     'headless editor play/stop loop',
   )
@@ -426,62 +429,62 @@ export async function smokeStockGodot(options) {
     verifyLifecycle(output, description)
     assertCount(
       output,
-      '[godot-js-runtime] PHASE4_SCRIPT_READY PASS',
+      '[godotjs] PHASE4_SCRIPT_READY PASS',
       1,
       description,
     )
     assertCount(
       output,
-      '[godot-js-runtime] PHASE4_LIFECYCLE PASS',
+      '[godotjs] PHASE4_LIFECYCLE PASS',
       1,
       description,
     )
     assertCount(
       output,
-      '[godot-js-runtime] PHASE4_EXIT_TREE PASS',
+      '[godotjs] PHASE4_EXIT_TREE PASS',
       1,
       description,
     )
     assertCount(
       output,
-      '[godot-js-runtime] PHASE3_BINDING PASS',
+      '[godotjs] PHASE3_BINDING PASS',
       1,
       description,
     )
     assertCount(
       output,
-      '[godot-js-runtime] PHASE3_VARIANT_MATRIX PASS 39 types',
+      '[godotjs] PHASE3_VARIANT_MATRIX PASS 39 types',
       1,
       description,
     )
     assertCount(
       output,
-      '[godot-js-runtime] PHASE3_COMMONJS_BINDING PASS',
+      '[godotjs] PHASE3_COMMONJS_BINDING PASS',
       1,
       description,
     )
     assertCount(
       output,
-      '[godot-js-runtime] PHASE5_SIGNAL_PROMISE PASS',
+      '[godotjs] PHASE5_SIGNAL_PROMISE PASS',
       1,
       description,
     )
     assertCount(
       output,
-      '[godot-js-runtime] PHASE7_EPHEMERAL_SIGNAL PASS',
+      '[godotjs] PHASE7_EPHEMERAL_SIGNAL PASS',
       1,
       description,
     )
     assertCount(output, expectedCallbackException, 1, description)
     assertCount(
       output,
-      '[godot-js-runtime] PHASE2_MODULE_PROMISE PASS relative-esm resource-json',
+      '[godotjs] PHASE2_MODULE_PROMISE PASS relative-esm resource-json',
       1,
       description,
     )
     assertCount(
       output,
-      '[godot-js-runtime] PHASE2_LOOP_PROMISE PASS',
+      '[godotjs] PHASE2_LOOP_PROMISE PASS',
       8,
       description,
     )
@@ -507,37 +510,37 @@ export async function smokeStockGodot(options) {
   )
   assertCount(
     contractOutput,
-    '[godot-js-runtime] INITIALIZED',
+    '[godotjs] INITIALIZED',
     1,
     contractDescription,
   )
   assertCount(
     contractOutput,
-    '[godot-js-runtime] TERMINATED',
+    '[godotjs] TERMINATED',
     1,
     contractDescription,
   )
   assertCount(
     contractOutput,
-    '[godot-js-runtime] PHASE4_LANGUAGE_CONTRACT PASS',
+    '[godotjs] PHASE4_LANGUAGE_CONTRACT PASS',
     1,
     contractDescription,
   )
   assertCount(
     contractOutput,
-    '[godot-js-runtime] PHASE4_PROJECT_SETTINGS PASS',
+    '[godotjs] PHASE4_PROJECT_SETTINGS PASS',
     1,
     contractDescription,
   )
   assertCount(
     contractOutput,
-    '[godot-js-runtime] PHASE5_EDITOR_DIAGNOSTICS PASS',
+    '[godotjs] PHASE5_EDITOR_DIAGNOSTICS PASS',
     1,
     contractDescription,
   )
   assertCount(
     contractOutput,
-    '[godot-js-runtime] PHASE5_SOURCE_MAP_ERROR PASS',
+    '[godotjs] PHASE5_SOURCE_MAP_ERROR PASS',
     1,
     contractDescription,
   )
@@ -591,18 +594,18 @@ export async function smokeStockGodot(options) {
       'PHASE4_IN_MEMORY_RELOAD PASS',
       'PHASE4_PREDELETE PASS',
     ]) {
-      assertCount(output, `[godot-js-runtime] ${marker}`, 1, description)
+      assertCount(output, `[godotjs] ${marker}`, 1, description)
     }
-    assertCount(output, '[godot-js-runtime] RELOAD_DEFERRED', 1, description)
+    assertCount(output, '[godotjs] RELOAD_DEFERRED', 1, description)
     assertCount(
       output,
-      '[godot-js-runtime] SOFT_RELOAD_COMPLETE',
+      '[godotjs] SOFT_RELOAD_COMPLETE',
       4,
       description,
     )
     assertCount(
       output,
-      '[godot-js-runtime] HARD_RELOAD_COMPLETE',
+      '[godotjs] HARD_RELOAD_COMPLETE',
       1,
       description,
     )
@@ -633,14 +636,14 @@ export async function smokeStockGodot(options) {
   const allOutput = `${shellOutput}${editorPlayOutput}${firstRun}${secondRun}${contractOutput}${firstReload}${secondReload}`
   const extensionCycles = countOccurrences(
     allOutput,
-    '[godot-js-runtime] TERMINATED',
+    '[godotjs] TERMINATED',
   )
   console.log(
     `[stock-smoke] extension unloads observed: ${String(extensionCycles)} clean cycles`,
   )
   const runtimeCycles = countOccurrences(
     allOutput,
-    '[godot-js-runtime] PROJECT_RUNTIME_STOPPED live=0',
+    '[godotjs] PROJECT_RUNTIME_STOPPED live=0',
   )
   console.log(
     `[stock-smoke] attached scripts, reloads, and Promise jobs: ${String(runtimeCycles)} balanced project runtime cycles`,

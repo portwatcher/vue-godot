@@ -7,7 +7,7 @@
 namespace godot_js_runtime {
 
 inline constexpr std::string_view COMMONJS_BUNDLE_BANNER =
-		"/*! godot-js-runtime:format=commonjs */";
+		"/*! godotjs:format=commonjs */";
 
 enum class JavaScriptModuleFormat {
 	ES_MODULE,

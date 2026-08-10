@@ -5,7 +5,7 @@
 
 namespace godot_js_runtime {
 
-inline constexpr char SCRIPT_METADATA_KEY[] = "godot-js-runtime.script-metadata";
+inline constexpr char SCRIPT_METADATA_KEY[] = "godotjs.script-metadata";
 
 inline JSAtom script_metadata_atom(JSContext *context) {
 	ScopedJSValue global(context, JS_GetGlobalObject(context));

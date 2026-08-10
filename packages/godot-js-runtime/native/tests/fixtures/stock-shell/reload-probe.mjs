@@ -10,11 +10,11 @@ class ReloadProbe extends Node {
 
   request_soft_reload() {
     Promise.resolve().then(() => {
-      console.error('[godot-js-runtime] STALE_RELOAD_PROMISE_EXECUTED')
+      console.error('[godotjs] STALE_RELOAD_PROMISE_EXECUTED')
     })
     const timer = this.get_tree().create_timer(60)
     timer.timeout.connect(Callable.create(() => {
-      console.error('[godot-js-runtime] STALE_RELOAD_TIMER_EXECUTED')
+      console.error('[godotjs] STALE_RELOAD_TIMER_EXECUTED')
     }))
     return this.get_script().reload(true)
   }

@@ -28,10 +28,6 @@ import {
   releaseTargets,
   releaseTargetById,
 } from './platform-matrix.mjs'
-import {
-  releaseManifest,
-  stageRuntimeSource,
-} from './smoke-standalone-demo.mjs'
 
 const scriptPath = fileURLToPath(import.meta.url)
 const packageRoot = path.resolve(path.dirname(scriptPath), '..')
@@ -40,7 +36,6 @@ const defaultOutputRoot = path.join(
   repositoryRoot,
   '.artifacts/platform-exports',
 )
-const runtimeCli = path.join(packageRoot, 'dist/cli.js')
 const linuxSmokeImage =
   'node@sha256:0557ac14e0d45d02ed563067b82856ca5e7aa3437fa28d98d4350ea9c3d9494a'
 const wineSmokeImage = 'codex/godot-js-runtime-wine:bookworm'
@@ -54,8 +49,8 @@ const webExportBrowser = path.join(
   'scripts/run-web-export-browser.mjs',
 )
 const expectedMarkers = Object.freeze({
-  standalone: '[godot-js-runtime-export] STANDALONE PASS',
-  vue: '[godot-js-runtime-export] VUE PASS',
+  standalone: '[godotjs-export] STANDALONE PASS',
+  vue: '[godotjs-export] VUE PASS',
 })
 let androidDeviceContext
 
@@ -282,9 +277,18 @@ function sha256File(filePath) {
 function inTreeRuntimeManifest() {
   const manifestPath = path.join(
     packageRoot,
-    'addon/godot-js-runtime/runtime-manifest.json',
+    'addon/godotjs/manifest.json',
   )
   return JSON.parse(fs.readFileSync(manifestPath, 'utf-8'))
+}
+
+function releaseManifest(releaseDirectory) {
+  return JSON.parse(
+    fs.readFileSync(
+      path.join(releaseDirectory, 'godotjs-manifest.json'),
+      'utf-8',
+    ),
+  )
 }
 
 function recursiveFiles(root) {
@@ -370,39 +374,39 @@ function targetsFor(platforms, modes) {
 }
 
 function installRuntime(projectRoot, sourceRoot, targetIds, releaseDirectory) {
-  const arguments_ = [
-    runtimeCli,
-    'install',
-    '--project',
-    projectRoot,
-    '--source',
-    sourceRoot,
-  ]
-  for (const target of targetIds) arguments_.push('--target', target)
   if (releaseDirectory) {
-    arguments_.push('--artifact-dir', releaseDirectory)
+    const archives = fs
+      .readdirSync(releaseDirectory)
+      .filter((name) => /^godotjs-v[^/]+\.zip$/.test(name))
+    if (archives.length !== 1) {
+      throw new Error(`Expected one GodotJS ZIP, found ${archives.length}`)
+    }
+    run('unzip', ['-q', path.join(releaseDirectory, archives[0]), '-d', projectRoot], {
+      description: 'GodotJS manual-copy extraction for export project',
+    })
+  } else {
+    const addonSource = path.join(sourceRoot, 'addon/godotjs')
+    const addonDestination = path.join(projectRoot, 'addons/godotjs')
+    fs.cpSync(addonSource, addonDestination, { recursive: true })
+    const selected = new Set(targetIds)
+    for (const target of releaseTargets) {
+      if (selected.has(target.id)) continue
+      fs.rmSync(path.join(addonDestination, 'bin', target.artifactPath), {
+        recursive: true,
+        force: true,
+      })
+    }
   }
-  arguments_.push('--json')
-  const installed = JSON.parse(
-    run(process.execPath, arguments_, {
-      description: 'runtime installation for export project',
-    }),
+  const descriptor = path.join(
+    projectRoot,
+    'addons/godotjs/godotjs.gdextension',
   )
-  const verification = JSON.parse(
-    run(
-      process.execPath,
-      [runtimeCli, 'verify', '--project', projectRoot, '--json'],
-      { description: 'runtime verification for export project' },
-    ),
-  )
-  if (!verification.ok) {
-    throw new Error(
-      `Export project runtime verification failed: ${verification.errors.join('; ')}`,
-    )
+  if (!fs.existsSync(descriptor)) {
+    throw new Error('GodotJS manual copy did not install the descriptor')
   }
   return {
-    targets: installed.manifest.targets,
-    checkedFiles: verification.checkedFiles,
+    targets: targetIds,
+    checkedFiles: recursiveFiles(path.join(projectRoot, 'addons/godotjs')).length,
   }
 }
 
@@ -481,14 +485,14 @@ function inspectExport({
     assertIncludes(
       entries,
       new RegExp(
-        `Frameworks/libgodot_js_runtime\\.macos\\.${nativeMode(mode)}\\.universal\\.framework/Resources/Info\\.plist$`,
+        `Frameworks/libgodotjs\\.macos\\.${nativeMode(mode)}\\.universal\\.framework/Resources/Info\\.plist$`,
       ),
       'macOS export',
     )
     assertIncludes(
       entries,
       new RegExp(
-        `Frameworks/libgodot_js_runtime\\.macos\\.${nativeMode(mode)}\\.universal\\.framework/libgodot_js_runtime\\.macos\\.${nativeMode(mode)}\\.universal$`,
+        `Frameworks/libgodotjs\\.macos\\.${nativeMode(mode)}\\.universal\\.framework/libgodotjs\\.macos\\.${nativeMode(mode)}\\.universal$`,
       ),
       'macOS export',
     )
@@ -499,7 +503,7 @@ function inspectExport({
       assertIncludes(
         entries,
         new RegExp(
-          `^lib/${architecture}/libgodot_js_runtime\\.android\\.${nativeMode(mode)}\\.(?:arm64|x86_64)\\.so$`,
+          `^lib/${architecture}/libgodotjs\\.android\\.${nativeMode(mode)}\\.(?:arm64|x86_64)\\.so$`,
         ),
         `Android ${architecture} export`,
       )
@@ -511,7 +515,7 @@ function inspectExport({
     assertIncludes(
       names,
       new RegExp(
-        `libgodot_js_runtime\\.ios\\.${nativeMode(mode)}\\.xcframework/Info\\.plist$`,
+        `libgodotjs\\.ios\\.${nativeMode(mode)}\\.xcframework/Info\\.plist$`,
       ),
       'iOS export',
     )
@@ -521,7 +525,7 @@ function inspectExport({
     assertIncludes(
       names,
       new RegExp(
-        `libgodot_js_runtime\\.web\\.${nativeMode(mode)}\\.wasm32\\.wasm$`,
+        `libgodotjs\\.web\\.${nativeMode(mode)}\\.wasm32\\.wasm$`,
       ),
       'Web export',
     )
@@ -935,7 +939,7 @@ function androidTestKeystore(evidenceRoot) {
         '-keypass',
         'android',
         '-dname',
-        'CN=Godot JavaScript Runtime Export Smoke,O=Vue Godot,C=US',
+        'CN=GodotJS Export Smoke,O=Vue Godot,C=US',
         '-keyalg',
         'RSA',
         '-validity',
@@ -1149,7 +1153,7 @@ function linkIosSimulatorRuntimeSlices(runtimeArchive, launchRoot) {
   for (const architecture of ['arm64', 'x86_64']) {
     const outputPath = path.join(
       launchRoot,
-      `libgodot_js_runtime.${architecture}.dylib`,
+      `libgodotjs.${architecture}.dylib`,
     )
     run(
       'xcrun',
@@ -1324,7 +1328,7 @@ function launchIos(application, mode, outputDirectory) {
     const runtimeSimulatorArchive = findRecursiveFile(
       outputDirectory,
       (filePath) =>
-        filePath.includes('libgodot_js_runtime.ios.') &&
+        filePath.includes('libgodotjs.ios.') &&
         filePath.includes('ios-arm64_x86_64-simulator') &&
         filePath.endsWith('.a'),
       'iOS runtime simulator archive',
@@ -1679,7 +1683,7 @@ export function smokePlatformExports(options) {
         ...npmInvocation.prefixArguments,
         'run',
         'build',
-        '--workspace=godot-js-runtime',
+        '--workspace=packages/godot-js-runtime',
       ],
       {
         description: 'runtime TypeScript build',
@@ -1689,7 +1693,7 @@ export function smokePlatformExports(options) {
     for (const application of plan.applications) {
       const workspace =
         application.id === 'standalone'
-          ? 'godot-js-runtime-demo'
+          ? 'godotjs-demo'
           : 'native-app-demo'
       run(
         npmInvocation.command,
@@ -1730,9 +1734,7 @@ export function smokePlatformExports(options) {
     exports: [],
   }
   try {
-    const runtimeSource = options.releaseDirectory
-      ? stageRuntimeSource(workRoot, runtimeManifest, false)
-      : packageRoot
+    const runtimeSource = packageRoot
     for (const application of plan.applications) {
       const projectRoot = stageApplication(application, workRoot)
       const installation = installRuntime(

@@ -218,7 +218,7 @@ test('stock Godot setup is exposed through npm and a checksum-only CI action', (
     'utf-8',
   )
   const releaseWorkflow = fs.readFileSync(
-    '.github/workflows/godot-js-runtime-release.yml',
+    '.github/workflows/godotjs-release.yml',
     'utf-8',
   )
   const publishWorkflow = fs.readFileSync(
@@ -256,6 +256,11 @@ test('stock Godot setup is exposed through npm and a checksum-only CI action', (
   }
   assert.deepEqual(fs.readdirSync('packages/cli/templates/typings').sort(), [
     '.gdignore',
+    'godot-js.d.ts',
+    'godot-jsb.d.ts',
+    'godot.d.ts',
+    'index.d.ts',
+    'manifest.json',
   ])
   const rendererTypingsDir = 'packages/runtime-tscn/typings'
   assert.deepEqual(
@@ -317,12 +322,10 @@ test('stock Godot setup is exposed through npm and a checksum-only CI action', (
   assert.match(releaseWorkflow, /--godot-version/)
   assert.match(releaseWorkflow, /release_base_url:/)
   assert.match(releaseWorkflow, /--base-url/)
-  assert.match(releaseWorkflow, /outputs:\s+runtime_version:/)
-  assert.match(publishWorkflow, /godot-js-runtime-release\.yml/)
+  assert.match(releaseWorkflow, /outputs:\s+godotjs_version:/)
+  assert.match(publishWorkflow, /godotjs-release\.yml/)
   assert.match(publishWorkflow, /version: 4\.7\.1-stable/)
-  assert.match(publishWorkflow, /name: godot-js-runtime-release/)
-  assert.match(publishWorkflow, /name: godot-js-runtime-linux/)
-  assert.match(publishWorkflow, /cmp \\/)
+  assert.doesNotMatch(publishWorkflow, /godot-js-runtime|godotjs-linux|cmp \\/)
   assert.doesNotMatch(publishWorkflow, /Build Linux runtime/)
   assert.doesNotMatch(releaseWorkflow, /godot-js-runtime\/0\.0\.1/)
   assert.doesNotMatch(publishWorkflow, /godot-js-runtime\/0\.0\.1/)
@@ -332,7 +335,8 @@ test('stock Godot setup is exposed through npm and a checksum-only CI action', (
   assert.match(latestStableWorkflow, /schedule:/)
   assert.match(latestStableWorkflow, /resolve-latest-godot-stable\.mjs/)
   assert.match(latestStableWorkflow, /godot-smoke\.yml/)
-  assert.match(latestStableWorkflow, /godot-js-runtime-release\.yml/)
+  assert.match(latestStableWorkflow, /godotjs-release\.yml/)
+  assert.match(latestStableWorkflow, /Expected exactly one universal GodotJS ZIP/)
   assert.match(latestStableWorkflow, /gh release create/)
   assert.match(latestStableWorkflow, /--latest=false/)
   assert.match(latestStableWorkflow, /issues: write/)
