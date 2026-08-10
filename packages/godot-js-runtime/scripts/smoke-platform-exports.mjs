@@ -1131,16 +1131,17 @@ function binaryArchitectures(binaryPath) {
     .sort()
 }
 
-function stripUnavailableSimulatorMetalFx(projectContents) {
+export function stripUnavailableSimulatorMetalFx(projectContents) {
   const lines = projectContents.split('\n')
   const retained = lines.filter((line) => !line.includes('MetalFX.framework'))
   const removedLines = lines.length - retained.length
-  if (removedLines < 3) {
-    throw new Error(
-      `Expected at least three MetalFX project entries, removed ${String(removedLines)}`,
-    )
-  }
   return { contents: retained.join('\n'), removedLines }
+}
+
+export function createIsolatedIosLinkRoot(tempDirectory = os.tmpdir()) {
+  return fs.mkdtempSync(
+    path.join(path.resolve(tempDirectory), 'godot-js-runtime-ios-link-'),
+  )
 }
 
 function linkIosSimulatorRuntimeSlices(runtimeArchive, launchRoot) {
@@ -1287,9 +1288,11 @@ function launchIos(application, mode, outputDirectory) {
     'iOS Xcode project',
   )
   const projectPath = path.dirname(projectFile)
-  const launchRoot = path.join(outputDirectory, 'launch')
-  if (fs.existsSync(launchRoot)) scopedRemove(launchRoot, outputDirectory)
-  fs.mkdirSync(launchRoot, { recursive: true })
+  // Godot's project recursively searches PROJECT_DIR for frameworks. Keeping
+  // DerivedData inside the export lets device-only Swift dylibs contaminate
+  // the following simulator link, so all transient link products stay outside
+  // the exported project tree.
+  const launchRoot = createIsolatedIosLinkRoot()
   const configuration = mode === 'debug' ? 'Debug' : 'Release'
   const deviceDerivedData = path.join(launchRoot, 'DerivedData-device')
   const simulatorDerivedData = path.join(launchRoot, 'DerivedData-simulator')
@@ -1365,11 +1368,13 @@ function launchIos(application, mode, outputDirectory) {
       )
     ) {
       const adapted = stripUnavailableSimulatorMetalFx(originalProject)
-      fs.writeFileSync(projectFile, adapted.contents)
-      simulatorAdaptation = {
-        reason:
-          'The selected Xcode simulator SDK omits MetalFX while the official Godot project weak-links it.',
-        removedProjectLines: adapted.removedLines,
+      if (adapted.removedLines > 0) {
+        fs.writeFileSync(projectFile, adapted.contents)
+        simulatorAdaptation = {
+          reason:
+            'The selected Xcode simulator SDK omits MetalFX while the official Godot project weak-links it.',
+          removedProjectLines: adapted.removedLines,
+        }
       }
     }
     xcodeBuild({
@@ -1426,7 +1431,7 @@ function launchIos(application, mode, outputDirectory) {
     }
   } finally {
     fs.writeFileSync(projectFile, originalProject)
-    if (fs.existsSync(launchRoot)) scopedRemove(launchRoot, outputDirectory)
+    if (fs.existsSync(launchRoot)) scopedRemove(launchRoot, os.tmpdir())
   }
 }
 

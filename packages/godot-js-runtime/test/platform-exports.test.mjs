@@ -16,7 +16,9 @@ import {
   androidBootProbeReady,
   assertExportLaunchMarker,
   assertPlatformExportGodotVersion,
+  createIsolatedIosLinkRoot,
   resolveNpmInvocation,
+  stripUnavailableSimulatorMetalFx,
 } from '../scripts/smoke-platform-exports.mjs'
 import { createWebExportServer } from '../scripts/serve-web-export.mjs'
 
@@ -175,6 +177,43 @@ test('platform smoke uses direct browser worker-console and iOS slice link gates
   assert.match(browser, /Runtime\.consoleAPICalled/)
   assert.match(browser, /globalThis\.crossOriginIsolated/)
   assert.doesNotMatch(browser, /virtual-time-budget/)
+})
+
+test('iOS simulator adaptation accepts projects without MetalFX entries', () => {
+  const projectWithoutMetalFx = 'HEADER\nFRAMEWORKS\nFOOTER'
+  assert.deepEqual(stripUnavailableSimulatorMetalFx(projectWithoutMetalFx), {
+    contents: projectWithoutMetalFx,
+    removedLines: 0,
+  })
+
+  assert.deepEqual(
+    stripUnavailableSimulatorMetalFx(
+      [
+        'HEADER',
+        'MetalFX.framework in Frameworks',
+        'MetalFX.framework file reference',
+        'MetalFX.framework build file',
+        'FOOTER',
+      ].join('\n'),
+    ),
+    {
+      contents: 'HEADER\nFOOTER',
+      removedLines: 3,
+    },
+  )
+})
+
+test('iOS link products stay outside the recursively searched export tree', () => {
+  const tempParent = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'godot-js-ios-link-test-'),
+  )
+  try {
+    const linkRoot = createIsolatedIosLinkRoot(tempParent)
+    assert.equal(path.dirname(linkRoot), tempParent)
+    assert.match(path.basename(linkRoot), /^godot-js-runtime-ios-link-/)
+  } finally {
+    fs.rmSync(tempParent, { recursive: true, force: true })
+  }
 })
 
 test('Android export launch waits for both boot and package-manager readiness', () => {
