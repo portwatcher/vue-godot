@@ -246,8 +246,11 @@ export function downloadFile(url, destination, redirectCount = 0) {
   })
 }
 
-export function runChecked(command, args, label) {
-  const result = spawnSync(command, args, { encoding: 'utf-8' })
+export function runChecked(command, args, label, options = {}) {
+  const result = spawnSync(command, args, {
+    encoding: 'utf-8',
+    ...options,
+  })
   if (result.error) throw result.error
   if (result.status !== 0) {
     throw new Error(
@@ -257,31 +260,46 @@ export function runChecked(command, args, label) {
   return result
 }
 
+export function resolveZipExtractionCommand(plan, platform = process.platform) {
+  if (platform === 'win32') {
+    return {
+      command: 'powershell.exe',
+      arguments: [
+        '-NoProfile',
+        '-NonInteractive',
+        '-Command',
+        'Add-Type -AssemblyName System.IO.Compression.FileSystem; [IO.Compression.ZipFile]::ExtractToDirectory($env:GODOT_SETUP_ARCHIVE_PATH, $env:GODOT_SETUP_DESTINATION_PATH)',
+      ],
+      environment: {
+        GODOT_SETUP_ARCHIVE_PATH: plan.archivePath,
+        GODOT_SETUP_DESTINATION_PATH: plan.destinationPath,
+      },
+    }
+  }
+  return {
+    command: 'unzip',
+    arguments: ['-q', plan.archivePath, '-d', plan.destinationPath],
+    environment: {},
+  }
+}
+
 function extractArchive(plan) {
   if (fs.existsSync(plan.installDir)) {
     scopedRemove(plan.installDir, plan.versionDir)
   }
   fs.mkdirSync(plan.installDir, { recursive: true })
-  if (process.platform === 'win32') {
-    runChecked(
-      'powershell.exe',
-      [
-        '-NoProfile',
-        '-NonInteractive',
-        '-Command',
-        'Expand-Archive -LiteralPath $args[0] -DestinationPath $args[1] -Force',
-        plan.archivePath,
-        plan.installDir,
-      ],
-      'Official Godot archive extraction',
-    )
-  } else {
-    runChecked(
-      'unzip',
-      ['-q', plan.archivePath, '-d', plan.installDir],
-      'Official Godot archive extraction',
-    )
-  }
+  const extraction = resolveZipExtractionCommand({
+    archivePath: plan.archivePath,
+    destinationPath: plan.installDir,
+  })
+  runChecked(
+    extraction.command,
+    extraction.arguments,
+    'Official Godot archive extraction',
+    {
+      env: { ...process.env, ...extraction.environment },
+    },
+  )
 }
 
 function probeOfficialGodot(executablePath, expectedVersion) {

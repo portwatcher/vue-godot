@@ -21,9 +21,14 @@ runs:
       shell: bash
       run: |
         sudo apt-get update
+        if apt-cache show libasound2t64 >/dev/null 2>&1; then
+          godot_audio_package=libasound2t64
+        else
+          godot_audio_package=libasound2
+        fi
         sudo apt-get install -y \
           ca-certificates \
-          libasound2 \
+          "$godot_audio_package" \
           libdbus-1-3 \
           libfontconfig1 \
           libgl1 \

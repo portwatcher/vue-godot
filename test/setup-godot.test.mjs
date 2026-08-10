@@ -9,6 +9,7 @@ import {
   officialGodotArtifactForPlatform,
   pinnedOfficialGodotVersion,
   resolveOfficialGodotSetupPlan,
+  resolveZipExtractionCommand,
   setupOfficialGodot,
 } from '../scripts/setup-godot.mjs'
 import {
@@ -73,6 +74,28 @@ test('official Godot setup plan is pinned, checksummed, and cache scoped', () =>
     ),
   )
   assert.match(plan.sha256, /^[0-9a-f]{64}$/)
+})
+
+test('official Godot extraction passes Windows paths through scoped environment variables', () => {
+  const plan = {
+    archivePath: 'D:\\cache with spaces\\Godot[v4.4.1].zip',
+    destinationPath: 'D:\\cache with spaces\\Godot 4.4.1',
+  }
+  const command = resolveZipExtractionCommand(plan, 'win32')
+
+  assert.equal(command.command, 'powershell.exe')
+  assert.deepEqual(command.arguments.slice(0, 3), [
+    '-NoProfile',
+    '-NonInteractive',
+    '-Command',
+  ])
+  assert.match(command.arguments[3], /\$env:GODOT_SETUP_ARCHIVE_PATH/)
+  assert.match(command.arguments[3], /\$env:GODOT_SETUP_DESTINATION_PATH/)
+  assert.doesNotMatch(command.arguments[3], /\$args/)
+  assert.deepEqual(command.environment, {
+    GODOT_SETUP_ARCHIVE_PATH: plan.archivePath,
+    GODOT_SETUP_DESTINATION_PATH: plan.destinationPath,
+  })
 })
 
 test('official Godot setup accepts and exports an explicit official executable', async () => {
@@ -228,6 +251,10 @@ test('stock Godot setup is exposed through npm and a checksum-only CI action', (
   assert.match(action, /default: 4\.4\.1-stable/)
   assert.match(action, /actions\/cache@v5/)
   assert.match(action, /node scripts\/setup-godot\.mjs/)
+  assert.match(action, /apt-cache show libasound2t64/)
+  assert.match(action, /godot_audio_package=libasound2t64/)
+  assert.match(action, /godot_audio_package=libasound2/)
+  assert.match(action, /"\$godot_audio_package"/)
   assert.doesNotMatch(action, /GodotJS|ialex32x/)
   assert.match(templateAction, /actions\/cache@v5/)
   assert.match(

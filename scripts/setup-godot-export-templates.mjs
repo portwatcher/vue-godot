@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 import {
   downloadFile,
   pinnedOfficialGodotVersion,
+  resolveZipExtractionCommand,
   runChecked,
   scopedRemove,
 } from './setup-godot.mjs'
@@ -259,26 +260,18 @@ export async function setupOfficialGodotExportTemplates(options = {}) {
   fs.mkdirSync(extractionDir, { recursive: true })
   fs.mkdirSync(plan.installRoot, { recursive: true })
   try {
-    if (process.platform === 'win32') {
-      runChecked(
-        'powershell.exe',
-        [
-          '-NoProfile',
-          '-NonInteractive',
-          '-Command',
-          'Add-Type -AssemblyName System.IO.Compression.FileSystem; [IO.Compression.ZipFile]::ExtractToDirectory($args[0], $args[1])',
-          plan.archivePath,
-          extractionDir,
-        ],
-        'Official Godot export template extraction',
-      )
-    } else {
-      runChecked(
-        'unzip',
-        ['-q', plan.archivePath, '-d', extractionDir],
-        'Official Godot export template extraction',
-      )
-    }
+    const extraction = resolveZipExtractionCommand({
+      archivePath: plan.archivePath,
+      destinationPath: extractionDir,
+    })
+    runChecked(
+      extraction.command,
+      extraction.arguments,
+      'Official Godot export template extraction',
+      {
+        env: { ...process.env, ...extraction.environment },
+      },
+    )
     const extractedTemplates = path.join(extractionDir, 'templates')
     if (!fs.existsSync(path.join(extractedTemplates, 'version.txt'))) {
       throw new Error(
