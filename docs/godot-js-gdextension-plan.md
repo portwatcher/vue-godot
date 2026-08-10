@@ -19,10 +19,11 @@ passes.
 | --- | --- | --- | --- |
 | Native identity and add-on layout | Complete | `784c206` | `addons/godotjs`, `libgodotjs`, canonical entry point and settings |
 | Universal release ZIP | Complete | `784c206` | deterministic clean-copy archive tests |
+| Standalone TypeScript declarations | Complete | `a6d1ce8` | declarations ship inside the add-on; clean-checkout demo build passes |
 | Vue/npm separation | Complete | `784c206` | generated projects contain no GodotJS dependency or install scripts |
 | Docs, demos, templates, and migration cleanup | Complete | `784c206` | root guide and maintained examples aligned |
 | Latest-stable discovery and release automation | Implemented; hosted verification pending | `784c206` | live discovery resolved Godot `4.7.1-stable` |
 | Local quality and stock-engine gates | Complete | `784c206` | unit/build tests, native tests, standalone and Vue smoke on Godot 4.7.1 |
-| Six-platform debug/release builds and exports | Pending | — | GitHub Actions matrix required |
+| Six-platform debug/release builds and exports | In progress | `784c206` | run `31433732006`: all six native build jobs and universal ZIP passed; export jobs exposed the fixed clean-checkout typings gap |
 | Compatibility release publication | Pending | — | Runs only after the platform matrix passes |
 | Synchronize and push `develop` | Pending | — | Final gate |
