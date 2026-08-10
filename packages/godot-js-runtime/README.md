@@ -476,6 +476,10 @@ singletons, 114 utility functions, and their methods, properties, signals,
 enums, constants, and module exports. Generated files record the source API
 fingerprint and pinned `godot-cpp` commit.
 
+Once `runtime-manifest.json` contains packaged platform archives, a host-only
+native build preserves that canonical release manifest. Release packaging is
+the only normal path that replaces the complete platform matrix.
+
 ```bash
 npm run bootstrap:native --workspace=godot-js-runtime
 npm run generate:bindings --workspace=godot-js-runtime

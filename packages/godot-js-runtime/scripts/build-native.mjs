@@ -10,6 +10,10 @@ const scriptPath = fileURLToPath(import.meta.url)
 const packageRoot = path.resolve(path.dirname(scriptPath), '..')
 const repoRoot = path.resolve(packageRoot, '../..')
 const nativeRoot = path.join(packageRoot, 'native')
+const runtimeManifestPath = path.join(
+  packageRoot,
+  'addon/godot-js-runtime/runtime-manifest.json',
+)
 const toolingRoot = path.resolve(
   process.env.GODOT_JS_RUNTIME_TOOLING_DIR ??
     path.join(repoRoot, '.cache/godot-js-runtime/tooling'),
@@ -55,6 +59,26 @@ function defaultArchitecture(platform) {
     throw new Error(`Unsupported host architecture: ${process.arch}`)
   }
   return architecture
+}
+
+export function shouldWriteNativeManifest(
+  existingManifest,
+  requestedWrite = undefined,
+) {
+  if (requestedWrite !== undefined) {
+    return requestedWrite === true
+  }
+  return !(
+    existingManifest &&
+    Array.isArray(existingManifest.archives) &&
+    existingManifest.archives.length > 0
+  )
+}
+
+function readExistingRuntimeManifest() {
+  return fs.existsSync(runtimeManifestPath)
+    ? JSON.parse(fs.readFileSync(runtimeManifestPath, 'utf-8'))
+    : undefined
 }
 
 function parseArgs(argv) {
@@ -317,11 +341,19 @@ export async function buildNative(options) {
     }
     run(plan.testArtifact, [], { cwd: nativeRoot })
   }
+  const existingManifest =
+    options.writeManifest === undefined
+      ? readExistingRuntimeManifest()
+      : undefined
+  const writeManifest = shouldWriteNativeManifest(
+    existingManifest,
+    options.writeManifest,
+  )
   const manifest = generateExtensionManifest({
     includeArtifacts: true,
-    write: options.writeManifest !== false,
+    write: writeManifest,
   })
-  return { ...plan, scons, manifest }
+  return { ...plan, scons, manifest, manifestWritten: writeManifest }
 }
 
 async function runCli() {
@@ -331,7 +363,7 @@ async function runCli() {
     console.log(JSON.stringify(result, null, 2))
   } else {
     console.log(
-      `[build-native] ${result.platform}/${result.arch}/${result.target}: ${result.manifest.artifacts.length} artifact file(s) recorded`,
+      `[build-native] ${result.platform}/${result.arch}/${result.target}: ${result.manifest.artifacts.length} artifact file(s) inspected; package manifest ${result.manifestWritten ? 'written' : 'preserved'}`,
     )
   }
 }

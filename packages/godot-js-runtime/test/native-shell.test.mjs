@@ -5,7 +5,10 @@ import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { isRuntimeManifest } from '../dist/index.js'
 import { generateExtensionManifest } from '../scripts/generate-extension-manifest.mjs'
-import { resolveNativeBuildPlan } from '../scripts/build-native.mjs'
+import {
+  resolveNativeBuildPlan,
+  shouldWriteNativeManifest,
+} from '../scripts/build-native.mjs'
 import { resolveReleaseBuildPlan } from '../scripts/build-release-artifacts.mjs'
 import {
   releaseTargetForArtifactName,
@@ -57,6 +60,20 @@ test('extension and artifact manifests preserve canonical identities', () => {
   assert.match(extension, /compatibility_minimum = "4\.4"/)
   assert.match(extension, /linux\.debug\.x86_64/)
   assert.match(extension, /macos\.debug/)
+})
+
+test('host builds preserve a packaged release manifest by default', () => {
+  assert.equal(shouldWriteNativeManifest(undefined), true)
+  assert.equal(shouldWriteNativeManifest({ archives: [] }), true)
+  assert.equal(
+    shouldWriteNativeManifest({ archives: [{ platform: 'macos' }] }),
+    false,
+  )
+  assert.equal(
+    shouldWriteNativeManifest({ archives: [{ platform: 'macos' }] }, true),
+    true,
+  )
+  assert.equal(shouldWriteNativeManifest({ archives: [] }, false), false)
 })
 
 test('release matrix covers every required debug and release artifact exactly', () => {
