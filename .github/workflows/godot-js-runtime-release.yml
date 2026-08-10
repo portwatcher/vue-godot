@@ -58,7 +58,7 @@ jobs:
           - platform: windows
             runner: ubuntu-24.04
           - platform: linux
-            runner: ubuntu-24.04
+            runner: ubuntu-22.04
           - platform: android
             runner: ubuntu-24.04
           - platform: web

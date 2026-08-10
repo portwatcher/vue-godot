@@ -7,6 +7,18 @@ const packageRoot = path.resolve(path.dirname(scriptPath), '..')
 const repositoryRoot = path.resolve(packageRoot, '../..')
 
 export const exportSmokeFeature = 'godot_js_runtime_export_smoke'
+const exportApplicationResources = [
+  'dist/*.js',
+  'dist/**/*.js',
+  'dist/*.mjs',
+  'dist/**/*.mjs',
+  'dist/*.cjs',
+  'dist/**/*.cjs',
+  'dist/*.json',
+  'dist/**/*.json',
+  'dist/*.js.map',
+  'dist/**/*.js.map',
+].join(',')
 
 export const exportApplications = Object.freeze([
   Object.freeze({
@@ -84,7 +96,7 @@ runnable=${String(runnable)}
 dedicated_server=false
 custom_features=${quoted(exportSmokeFeature)}
 export_filter=${quoted('all_resources')}
-include_filter=${quoted('dist/*.js.map,dist/**/*.js.map')}
+include_filter=${quoted(exportApplicationResources)}
 exclude_filter=${quoted('android/**,build/**')}
 export_path=${quoted(exportPath)}
 encryption_include_filters=${quoted('')}

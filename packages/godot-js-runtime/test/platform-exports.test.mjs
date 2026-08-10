@@ -12,7 +12,10 @@ import {
   generateExportPresets,
   writeExportPresets,
 } from '../scripts/export-presets.mjs'
-import { androidBootProbeReady } from '../scripts/smoke-platform-exports.mjs'
+import {
+  androidBootProbeReady,
+  resolveNpmExecutable,
+} from '../scripts/smoke-platform-exports.mjs'
 import { createWebExportServer } from '../scripts/serve-web-export.mjs'
 
 test('the generated export matrix covers both apps and every required platform', () => {
@@ -34,10 +37,20 @@ test('the generated export matrix covers both apps and every required platform',
     const source = generateExportPresets(application)
     assert.equal((source.match(/^\[preset\.\d+\]$/gm) ?? []).length, 7)
     assert.match(source, new RegExp(`custom_features="${exportSmokeFeature}"`))
-    assert.match(
-      source,
-      /include_filter="dist\/\*\.js\.map,dist\/\*\*\/\*\.js\.map"/,
-    )
+    for (const pattern of [
+      'dist/*.js',
+      'dist/**/*.js',
+      'dist/*.mjs',
+      'dist/**/*.mjs',
+      'dist/*.cjs',
+      'dist/**/*.cjs',
+      'dist/*.json',
+      'dist/**/*.json',
+      'dist/*.js.map',
+      'dist/**/*.js.map',
+    ]) {
+      assert.ok(source.includes(pattern), pattern)
+    }
     assert.match(source, /platform="macOS"/)
     assert.match(source, /platform="Windows Desktop"/)
     assert.match(source, /platform="Linux\/X11"/)
@@ -178,4 +191,10 @@ test('Android export launch waits for both boot and package-manager readiness', 
     androidBootProbeReady('1\n', 'Error: device is booting\n'),
     false,
   )
+})
+
+test('platform export builds resolve the native npm launcher', () => {
+  assert.equal(resolveNpmExecutable('win32'), 'npm.cmd')
+  assert.equal(resolveNpmExecutable('linux'), 'npm')
+  assert.equal(resolveNpmExecutable('darwin'), 'npm')
 })

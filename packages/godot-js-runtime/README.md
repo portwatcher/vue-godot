@@ -539,12 +539,17 @@ Android device/emulator, and threaded Web in Chromium; it validates both
 Android ABIs, all Apple slices, unsigned Xcode links, binary dependencies, and
 runtime/Godot/platform markers. It records the remaining signed iOS device
 launch as a manual application-release gate when local hardware or credentials
-do not permit it.
+do not permit it. The generated export presets explicitly include `.js`,
+`.mjs`, `.cjs`, `.json`, and JavaScript source-map files under `dist/`, so Web
+and other packaged exports do not depend on editor resource-discovery state.
 
 The same release matrix runs in CI. Web builds use a digest-pinned Emscripten
 SDK, Android uses a pinned NDK, export templates are verified by exact size and
 SHA-512, and native payloads are rejected if they depend on a custom
-editor/runtime binary or an undeclared third-party shared library.
+editor/runtime binary or an undeclared third-party shared library. Linux
+payloads are built on the pinned Ubuntu 22.04 runner and launched from the
+packaged archive in a digest-pinned Debian Bookworm container, preventing a
+newer hosted-runner glibc from becoming an accidental release requirement.
 
 ## Security model
 

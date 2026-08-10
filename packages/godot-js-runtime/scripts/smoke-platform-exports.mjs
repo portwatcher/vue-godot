@@ -53,6 +53,10 @@ const expectedMarkers = Object.freeze({
 })
 let androidDeviceContext
 
+export function resolveNpmExecutable(platform = process.platform) {
+  return platform === 'win32' ? 'npm.cmd' : 'npm'
+}
+
 function usage() {
   console.log(`Usage: node scripts/smoke-platform-exports.mjs [options]
 
@@ -1599,7 +1603,8 @@ export function smokePlatformExports(options) {
   writeExportPresets({ check: true })
   const plan = resolvePlatformExportPlan(options)
   if (!options.skipBuild) {
-    run('npm', ['run', 'build', '--workspace=godot-js-runtime'], {
+    const npmExecutable = resolveNpmExecutable()
+    run(npmExecutable, ['run', 'build', '--workspace=godot-js-runtime'], {
       description: 'runtime TypeScript build',
       inherit: true,
     })
@@ -1608,7 +1613,7 @@ export function smokePlatformExports(options) {
         application.id === 'standalone'
           ? 'godot-js-runtime-demo'
           : 'native-app-demo'
-      run('npm', ['run', 'build', `--workspace=${workspace}`], {
+      run(npmExecutable, ['run', 'build', `--workspace=${workspace}`], {
         description: `${application.id} application build`,
         inherit: true,
       })
