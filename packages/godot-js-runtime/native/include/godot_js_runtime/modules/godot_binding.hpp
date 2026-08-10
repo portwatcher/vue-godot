@@ -2,6 +2,7 @@
 #define GODOT_JS_RUNTIME_GODOT_BINDING_HPP
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>

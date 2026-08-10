@@ -133,6 +133,7 @@ const packedInputElements = new Map([
   ['PackedVector3Array', 'Vector3'],
   ['PackedVector4Array', 'Vector4'],
 ])
+const opaquePointerTypes = new Set(['GDExtensionInitializationFunction'])
 
 function fail(message) {
   throw new Error(`[generate-types] ${message}`)
@@ -268,6 +269,16 @@ function typedArrayElement(value) {
   return decoded || 'GodotVariant'
 }
 
+function typedDictionaryEntries(value) {
+  const encoded = value.slice('typeddictionary::'.length)
+  const separator = encoded.indexOf(';')
+  if (separator < 0) return ['GodotVariant', 'GodotVariant']
+  return [
+    encoded.slice(0, separator) || 'GodotVariant',
+    encoded.slice(separator + 1) || 'GodotVariant',
+  ]
+}
+
 function unionType(value, context) {
   const members = value
     .split(',')
@@ -288,7 +299,9 @@ function pointerType(value) {
   if (pointerDepth === 1 && primitivePointers.has(base)) {
     return `${primitivePointers.get(base)} | NativePointer<${godotType(base)}>`
   }
-  if (base === 'void' || pointerDepth > 1) return 'NativePointer'
+  if (base === 'void' || pointerDepth > 1 || opaquePointerTypes.has(base)) {
+    return 'NativePointer'
+  }
   return `NativePointer<${godotType(base)}>`
 }
 
@@ -301,6 +314,10 @@ function godotType(value, metadata, context = {}) {
   if (value.startsWith('typedarray::')) {
     const element = typedArrayElement(value)
     return `Array<${godotType(element)}>`
+  }
+  if (value.startsWith('typeddictionary::')) {
+    const [key, entry] = typedDictionaryEntries(value)
+    return `Dictionary<${godotType(key)}, ${godotType(entry)}>`
   }
   if (value.includes('*')) return pointerType(value)
   if (value === 'Variant') {

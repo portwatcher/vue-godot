@@ -275,7 +275,8 @@ The generator also accepts `--api /path/to/extension_api.json` and
 fingerprinted manifest differs from deterministic output. The generated
 surface includes class inheritance, methods, properties, signals, enums,
 bitfields, constants, Variant value types, singletons, utilities, native
-structures, and links to the matching official Godot documentation.
+structures, typed dictionaries, opaque native callback pointers, and links to
+the matching official Godot documentation.
 
 ## Embedded `godot-js` module
 
@@ -497,8 +498,10 @@ with `RTLD_DEEPBIND`, which is incompatible with AddressSanitizer; CI therefore
 runs the standalone native suite with ASan, UBSan, and leak detection, then
 runs the complete live binding stress through stock Godot with UBSan.
 
-Set `PYTHON_BIN` or `SCONS_BIN` when the default tool discovery is unsuitable.
-The build tooling also supports print-only operation for CI inspection.
+The checksummed SCons wheel runs directly through Python's module loader, so
+source builds do not require `pip` or `venv`. Set `PYTHON_BIN` or `SCONS_BIN`
+when the default tool discovery is unsuitable. The build tooling also supports
+print-only operation for CI inspection.
 
 ## Build, package, and export verification
 

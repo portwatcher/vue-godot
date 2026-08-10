@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { isRuntimeManifest } from '../dist/index.js'
 import { generateExtensionManifest } from '../scripts/generate-extension-manifest.mjs'
 import {
+  resolveSConsInvocation,
   resolveNativeBuildPlan,
   shouldWriteNativeManifest,
 } from '../scripts/build-native.mjs'
@@ -191,6 +192,35 @@ test('native build plan is deterministic and targets the pinned source tree', ()
     threads: true,
   })
   assert.equal(webPlan.sconsArguments.at(-1), 'threads=yes')
+})
+
+test('pinned SCons runs directly from its verified wheel without pip or venv', () => {
+  assert.deepEqual(
+    resolveSConsInvocation('/cache/SCons-4.8.1.whl', {
+      environment: {
+        PYTHON_BIN: '/usr/bin/python3',
+        PYTHONPATH: '/existing/python/path',
+      },
+      platform: 'linux',
+    }),
+    {
+      arguments: ['-m', 'SCons'],
+      command: '/usr/bin/python3',
+      environment: {
+        PYTHONPATH: `/cache/SCons-4.8.1.whl${path.delimiter}/existing/python/path`,
+      },
+    },
+  )
+  assert.deepEqual(
+    resolveSConsInvocation('/cache/SCons-4.8.1.whl', {
+      environment: { SCONS_BIN: '/tools/scons' },
+    }),
+    {
+      arguments: [],
+      command: '/tools/scons',
+      environment: {},
+    },
+  )
 })
 
 test('release build plan includes composite iOS slices and exact matrix modes', () => {

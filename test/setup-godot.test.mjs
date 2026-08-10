@@ -257,6 +257,15 @@ test('stock Godot setup is exposed through npm and a checksum-only CI action', (
     /ANDROID_NDK_ROOT=\$\{ANDROID_SDK_ROOT\}\/ndk\/23\.2\.8568313/,
   )
   assert.doesNotMatch(releaseWorkflow, /^\s*sdkmanager\s/m)
+  assert.match(
+    releaseWorkflow,
+    /update-alternatives --set x86_64-w64-mingw32-gcc \/usr\/bin\/x86_64-w64-mingw32-gcc-posix/,
+  )
+  assert.match(
+    releaseWorkflow,
+    /update-alternatives --set x86_64-w64-mingw32-g\+\+ \/usr\/bin\/x86_64-w64-mingw32-g\+\+-posix/,
+  )
+  assert.match(releaseWorkflow, /Thread model: \/\/p'\)" = posix/)
   assert.match(releaseWorkflow, /workflow_call:/)
   assert.match(publishWorkflow, /godot-js-runtime-release\.yml/)
   assert.match(publishWorkflow, /name: godot-js-runtime-release/)

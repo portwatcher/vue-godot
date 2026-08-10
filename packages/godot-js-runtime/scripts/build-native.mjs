@@ -3,20 +3,15 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { bootstrapDependencies, sha256File } from './bootstrap-deps.mjs'
+import { bootstrapDependencies } from './bootstrap-deps.mjs'
 import { generateExtensionManifest } from './generate-extension-manifest.mjs'
 
 const scriptPath = fileURLToPath(import.meta.url)
 const packageRoot = path.resolve(path.dirname(scriptPath), '..')
-const repoRoot = path.resolve(packageRoot, '../..')
 const nativeRoot = path.join(packageRoot, 'native')
 const runtimeManifestPath = path.join(
   packageRoot,
   'addon/godot-js-runtime/runtime-manifest.json',
-)
-const toolingRoot = path.resolve(
-  process.env.GODOT_JS_RUNTIME_TOOLING_DIR ??
-    path.join(repoRoot, '.cache/godot-js-runtime/tooling'),
 )
 
 function run(command, args, options = {}) {
@@ -177,75 +172,26 @@ function parseArgs(argv) {
   return options
 }
 
-function scopedRemove(targetPath, parentPath) {
-  const relative = path.relative(
-    path.resolve(parentPath),
-    path.resolve(targetPath),
-  )
-  if (
-    relative === '' ||
-    relative === '..' ||
-    relative.startsWith(`..${path.sep}`)
-  ) {
-    throw new Error(
-      `Refusing to remove path outside ${parentPath}: ${targetPath}`,
-    )
-  }
-  fs.rmSync(targetPath, { recursive: true, force: true })
-}
-
-function venvExecutable(venvDir, name) {
-  return process.platform === 'win32'
-    ? path.join(venvDir, 'Scripts', `${name}.exe`)
-    : path.join(venvDir, 'bin', name)
-}
-
-function ensureSCons(wheelPath, dependency) {
-  if (process.env.SCONS_BIN) {
-    return process.env.SCONS_BIN
-  }
-  const python =
-    process.env.PYTHON_BIN ??
-    (process.platform === 'win32' ? 'python' : 'python3')
-  const venvDir = path.join(toolingRoot, `scons-${dependency.version}`)
-  const markerPath = path.join(venvDir, '.godot-js-runtime-tool.json')
-  const scons = venvExecutable(venvDir, 'scons')
-  const expectedMarker = {
-    version: dependency.version,
-    wheelSha256: sha256File(wheelPath),
-  }
-
-  let valid = false
-  if (fs.existsSync(markerPath) && fs.existsSync(scons)) {
-    try {
-      valid =
-        JSON.stringify(JSON.parse(fs.readFileSync(markerPath, 'utf-8'))) ===
-        JSON.stringify(expectedMarker)
-    } catch {
-      valid = false
+export function resolveSConsInvocation(wheelPath, options = {}) {
+  const environment = options.environment ?? process.env
+  const platform = options.platform ?? process.platform
+  if (environment.SCONS_BIN) {
+    return {
+      arguments: [],
+      command: environment.SCONS_BIN,
+      environment: {},
     }
   }
-  if (valid) {
-    return scons
+  const python =
+    environment.PYTHON_BIN ?? (platform === 'win32' ? 'python' : 'python3')
+  const pythonPath = [wheelPath, environment.PYTHONPATH]
+    .filter(Boolean)
+    .join(path.delimiter)
+  return {
+    arguments: ['-m', 'SCons'],
+    command: python,
+    environment: { PYTHONPATH: pythonPath },
   }
-
-  if (fs.existsSync(venvDir)) {
-    scopedRemove(venvDir, toolingRoot)
-  }
-  fs.mkdirSync(toolingRoot, { recursive: true })
-  run(python, ['-m', 'venv', venvDir])
-  const venvPython = venvExecutable(venvDir, 'python')
-  run(venvPython, [
-    '-m',
-    'pip',
-    'install',
-    '--disable-pip-version-check',
-    '--no-index',
-    '--no-deps',
-    wheelPath,
-  ])
-  fs.writeFileSync(markerPath, `${JSON.stringify(expectedMarker, null, 2)}\n`)
-  return scons
 }
 
 export function resolveNativeBuildPlan(options) {
@@ -307,20 +253,15 @@ export async function buildNative(options) {
   }
 
   const bootstrap = await bootstrapDependencies()
-  const dependencyLock = JSON.parse(
-    fs.readFileSync(path.join(nativeRoot, 'deps.lock.json'), 'utf-8'),
-  )
-  const scons = ensureSCons(
-    bootstrap.results.SCons,
-    dependencyLock.dependencies.scons,
-  )
+  const scons = resolveSConsInvocation(bootstrap.results.SCons)
   const args = [...plan.sconsArguments]
   if (options.clean) {
     args.push('--clean')
   }
-  run(scons, args, {
+  run(scons.command, [...scons.arguments, ...args], {
     env: {
       ...process.env,
+      ...scons.environment,
       ...(plan.buildTests ? { GODOT_JS_RUNTIME_BUILD_TESTS: '1' } : {}),
       ...(plan.sanitizers.length > 0
         ? { GODOT_JS_RUNTIME_SANITIZERS: plan.sanitizers.join(',') }
@@ -353,7 +294,12 @@ export async function buildNative(options) {
     includeArtifacts: true,
     write: writeManifest,
   })
-  return { ...plan, scons, manifest, manifestWritten: writeManifest }
+  return {
+    ...plan,
+    scons: scons.command,
+    manifest,
+    manifestWritten: writeManifest,
+  }
 }
 
 async function runCli() {

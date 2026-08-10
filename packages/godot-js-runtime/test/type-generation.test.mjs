@@ -75,6 +75,92 @@ test('generation from an explicit stock API dump is deterministic', () => {
   }
 })
 
+test('newer stock APIs generate typed dictionaries and opaque callbacks safely', () => {
+  const temporaryDirectory = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'godot-js-runtime-current-types-test-'),
+  )
+  try {
+    const api = JSON.parse(fs.readFileSync(apiPath, 'utf-8'))
+    api.classes.push({
+      name: 'CurrentApiTypeFixture',
+      is_instantiable: true,
+      inherits: 'RefCounted',
+      properties: [
+        {
+          name: 'color_map',
+          type: 'typeddictionary::Color;Color',
+          getter: 'get_color_map',
+          setter: 'set_color_map',
+        },
+        {
+          name: 'type_names',
+          type: 'typeddictionary::int;String',
+          getter: 'get_type_names',
+          setter: 'set_type_names',
+        },
+      ],
+      methods: [
+        {
+          name: 'load_from_function',
+          arguments: [
+            {
+              name: 'init_func',
+              type: 'const GDExtensionInitializationFunction*',
+            },
+          ],
+          return_value: { type: 'void' },
+        },
+      ],
+    })
+    const fixtureApiPath = path.join(temporaryDirectory, 'extension_api.json')
+    const outputDirectory = path.join(temporaryDirectory, 'typings')
+    fs.writeFileSync(fixtureApiPath, JSON.stringify(api))
+
+    const result = runGenerator([
+      '--api',
+      fixtureApiPath,
+      '--out-dir',
+      outputDirectory,
+    ])
+    assert.equal(result.status, 0, result.stderr || result.stdout)
+    const declarationPath = path.join(outputDirectory, 'godot.d.ts')
+    const declaration = fs.readFileSync(declarationPath, 'utf-8')
+    assert.match(declaration, /color_map: Dictionary<Color, Color>/)
+    assert.match(declaration, /type_names: Dictionary<Integer, string>/)
+    assert.match(declaration, /init_func: NativePointer/)
+    assert.doesNotMatch(declaration, /typeddictionary/)
+    assert.doesNotMatch(declaration, /GDExtensionInitializationFunction/)
+
+    const typeScriptPath = path.resolve(
+      packageRoot,
+      '../../node_modules/typescript/bin/tsc',
+    )
+    const typeCheck = spawnSync(
+      process.execPath,
+      [
+        typeScriptPath,
+        '--noEmit',
+        '--strict',
+        '--skipLibCheck',
+        'false',
+        '--target',
+        'ES2022',
+        '--module',
+        'ESNext',
+        '--moduleResolution',
+        'Bundler',
+        '--lib',
+        'ES2022,DOM',
+        declarationPath,
+      ],
+      { cwd: packageRoot, encoding: 'utf-8' },
+    )
+    assert.equal(typeCheck.status, 0, typeCheck.stderr || typeCheck.stdout)
+  } finally {
+    fs.rmSync(temporaryDirectory, { recursive: true, force: true })
+  }
+})
+
 test('godot, godot-js, and compatibility declarations expose the migration contract', () => {
   const godot = fs.readFileSync(
     path.join(typingsDirectory, 'godot.d.ts'),
