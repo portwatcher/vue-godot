@@ -313,6 +313,11 @@ test('workspace CLI packages expose tracked launchers before build output exists
   }
 })
 
+test('workspace tests finish dependency tests before importing their build output', () => {
+  const turboConfig = readJson(path.join(repoRoot, 'turbo.json'))
+  assert.deepEqual(turboConfig.tasks?.test?.dependsOn, ['build', '^test'])
+})
+
 test('fixture app workspaces expose the regression build contract', () => {
   for (const fixture of fixtureApps) {
     const fixtureRoot = fixturePath(fixture)
