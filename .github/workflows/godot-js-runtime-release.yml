@@ -96,10 +96,17 @@ jobs:
           sudo apt-get install -y wabt
           wasm-validate --version
 
-      - name: Pin Android NDK
+      - name: Setup pinned Android SDK tools and NDK
+        if: matrix.platform == 'android'
+        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
+        with:
+          cmdline-tools-version: '14742923'
+          packages: 'ndk;23.2.8568313'
+
+      - name: Export pinned Android NDK
         if: matrix.platform == 'android'
         run: |
-          sdkmanager 'ndk;23.2.8568313'
+          test -x "${ANDROID_SDK_ROOT}/ndk/23.2.8568313/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++"
           echo "ANDROID_NDK_ROOT=${ANDROID_SDK_ROOT}/ndk/23.2.8568313" >> "$GITHUB_ENV"
 
       - name: Build pinned Web artifacts

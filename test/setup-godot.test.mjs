@@ -246,6 +246,17 @@ test('stock Godot setup is exposed through npm and a checksum-only CI action', (
   }
   assert.match(releaseWorkflow, /--release-dir/)
   assert.match(releaseWorkflow, /emscripten\/emsdk@sha256:/)
+  assert.match(
+    releaseWorkflow,
+    /android-actions\/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699/,
+  )
+  assert.match(releaseWorkflow, /cmdline-tools-version: '14742923'/)
+  assert.match(releaseWorkflow, /packages: 'ndk;23\.2\.8568313'/)
+  assert.match(
+    releaseWorkflow,
+    /ANDROID_NDK_ROOT=\$\{ANDROID_SDK_ROOT\}\/ndk\/23\.2\.8568313/,
+  )
+  assert.doesNotMatch(releaseWorkflow, /^\s*sdkmanager\s/m)
   assert.match(releaseWorkflow, /workflow_call:/)
   assert.match(publishWorkflow, /godot-js-runtime-release\.yml/)
   assert.match(publishWorkflow, /name: godot-js-runtime-release/)
