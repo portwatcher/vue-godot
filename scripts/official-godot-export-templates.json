@@ -4,5 +4,11 @@
     "installedVersion": "4.4.1.stable",
     "sha512": "8f461c7d6e91a0fbabfc95b1e4ca70ff1732c6f2920956a16b086ec2a85b5f7e238baf4dbce60dcc5630fae3bcb9a1fa2ae2027b92cb495c02d082705715e441",
     "size": 1206040900
+  },
+  "4.7.1-stable": {
+    "filename": "Godot_v4.7.1-stable_export_templates.tpz",
+    "installedVersion": "4.7.1.stable",
+    "sha256": "86409db6200b6f8fd3230989c2d2002851f3dd18acf11d7bdbafddf5a0dd0f72",
+    "size": 1280486955
   }
 }

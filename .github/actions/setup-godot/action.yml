@@ -5,7 +5,7 @@ inputs:
   version:
     description: Official Godot release tag.
     required: false
-    default: 4.4.1-stable
+    default: 4.7.1-stable
 
 runs:
   using: composite

@@ -55,7 +55,6 @@ test('official Godot setup plan is pinned, checksummed, and cache scoped', () =>
     cacheDir: '.tmp-official-godot',
     platform: 'darwin',
     arch: 'x64',
-    version: currentStableOfficialGodotVersion,
   })
 
   assert.equal(plan.version, currentStableOfficialGodotVersion)
@@ -126,12 +125,22 @@ test('official Godot setup accepts and exports an explicit official executable',
   }
 })
 
-test('official Godot export templates are pinned by size and SHA-512', () => {
-  const artifact = officialGodotTemplateArtifact(pinnedOfficialGodotVersion)
-  assert.equal(artifact.filename, 'Godot_v4.4.1-stable_export_templates.tpz')
-  assert.equal(artifact.installedVersion, '4.4.1.stable')
-  assert.equal(artifact.size, 1206040900)
-  assert.match(artifact.sha512, /^[0-9a-f]{128}$/)
+test('official Godot export templates use verified catalog checksums', () => {
+  const minimum = officialGodotTemplateArtifact(pinnedOfficialGodotVersion)
+  assert.equal(minimum.filename, 'Godot_v4.4.1-stable_export_templates.tpz')
+  assert.equal(minimum.installedVersion, '4.4.1.stable')
+  assert.equal(minimum.size, 1206040900)
+  assert.equal(minimum.checksumAlgorithm, 'sha512')
+  assert.match(minimum.checksum, /^[0-9a-f]{128}$/)
+
+  const current = officialGodotTemplateArtifact(
+    currentStableOfficialGodotVersion,
+  )
+  assert.equal(current.filename, 'Godot_v4.7.1-stable_export_templates.tpz')
+  assert.equal(current.installedVersion, '4.7.1.stable')
+  assert.equal(current.size, 1280486955)
+  assert.equal(current.checksumAlgorithm, 'sha256')
+  assert.match(current.checksum, /^[0-9a-f]{64}$/)
 })
 
 test('official Godot export template plans use each platform data directory', () => {
@@ -165,14 +174,14 @@ test('official Godot export template plans use each platform data directory', ()
     cacheDir: '.tmp-official-godot-templates',
     installRoot: '.tmp-export-templates',
   })
-  assert.equal(plan.version, pinnedOfficialGodotVersion)
+  assert.equal(plan.version, currentStableOfficialGodotVersion)
   assert.equal(
     plan.url,
-    'https://github.com/godotengine/godot-builds/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz',
+    'https://github.com/godotengine/godot-builds/releases/download/4.7.1-stable/Godot_v4.7.1-stable_export_templates.tpz',
   )
   assert.equal(
     plan.installDir,
-    path.join(process.cwd(), '.tmp-export-templates', '4.4.1.stable'),
+    path.join(process.cwd(), '.tmp-export-templates', '4.7.1.stable'),
   )
 })
 
@@ -189,6 +198,7 @@ test('official template setup refuses to replace an unowned install', async () =
       setupOfficialGodotExportTemplates({
         cacheDir: path.join(tempDir, 'cache'),
         installRoot,
+        version: pinnedOfficialGodotVersion,
       }),
       /not owned by this setup script/,
     )
@@ -217,6 +227,10 @@ test('stock Godot setup is exposed through npm and a checksum-only CI action', (
   )
   const smokeWorkflow = fs.readFileSync(
     '.github/workflows/godot-smoke.yml',
+    'utf-8',
+  )
+  const latestStableWorkflow = fs.readFileSync(
+    '.github/workflows/godot-latest-stable.yml',
     'utf-8',
   )
 
@@ -248,7 +262,7 @@ test('stock Godot setup is exposed through npm and a checksum-only CI action', (
     fs.existsSync(rendererTypingsDir) ? fs.readdirSync(rendererTypingsDir) : [],
     [],
   )
-  assert.match(action, /default: 4\.4\.1-stable/)
+  assert.match(action, /default: 4\.7\.1-stable/)
   assert.match(action, /actions\/cache@v5/)
   assert.match(action, /node scripts\/setup-godot\.mjs/)
   assert.match(action, /apt-cache show libasound2t64/)
@@ -295,10 +309,27 @@ test('stock Godot setup is exposed through npm and a checksum-only CI action', (
   )
   assert.match(releaseWorkflow, /Thread model: \/\/p'\)" = posix/)
   assert.match(releaseWorkflow, /workflow_call:/)
+  assert.match(releaseWorkflow, /default: 4\.7\.1-stable/)
+  assert.match(releaseWorkflow, /--godot-version/)
+  assert.match(releaseWorkflow, /release_base_url:/)
+  assert.match(releaseWorkflow, /--base-url/)
+  assert.match(releaseWorkflow, /outputs:\s+runtime_version:/)
   assert.match(publishWorkflow, /godot-js-runtime-release\.yml/)
+  assert.match(publishWorkflow, /version: 4\.7\.1-stable/)
   assert.match(publishWorkflow, /name: godot-js-runtime-release/)
   assert.match(publishWorkflow, /name: godot-js-runtime-linux/)
   assert.match(publishWorkflow, /cmp \\/)
   assert.doesNotMatch(publishWorkflow, /Build Linux runtime/)
+  assert.doesNotMatch(releaseWorkflow, /godot-js-runtime\/0\.0\.1/)
+  assert.doesNotMatch(publishWorkflow, /godot-js-runtime\/0\.0\.1/)
   assert.doesNotMatch(smokeWorkflow, /setup-godotjs|legacy-parity-control/)
+  assert.match(smokeWorkflow, /4\.4\.1-stable/)
+  assert.match(smokeWorkflow, /4\.7\.1-stable/)
+  assert.match(latestStableWorkflow, /schedule:/)
+  assert.match(latestStableWorkflow, /resolve-latest-godot-stable\.mjs/)
+  assert.match(latestStableWorkflow, /godot-smoke\.yml/)
+  assert.match(latestStableWorkflow, /godot-js-runtime-release\.yml/)
+  assert.match(latestStableWorkflow, /gh release create/)
+  assert.match(latestStableWorkflow, /--latest=false/)
+  assert.match(latestStableWorkflow, /issues: write/)
 })

@@ -1,9 +1,22 @@
 name: Godot Smoke
 
 on:
+  workflow_call:
+    inputs:
+      godot_versions:
+        description: JSON array of official stable Godot release tags to test.
+        required: false
+        type: string
+        default: '["4.4.1-stable","4.7.1-stable"]'
+      godot_metadata_artifact:
+        description: Optional artifact containing dynamically resolved stable-release metadata.
+        required: false
+        type: string
+        default: ''
   pull_request:
     paths:
       - '.github/actions/setup-godot/**'
+      - '.github/workflows/godot-latest-stable.yml'
       - '.github/workflows/godot-smoke.yml'
       - 'apps/**'
       - 'package*.json'
@@ -16,6 +29,7 @@ on:
       - main
     paths:
       - '.github/actions/setup-godot/**'
+      - '.github/workflows/godot-latest-stable.yml'
       - '.github/workflows/godot-smoke.yml'
       - 'apps/**'
       - 'package*.json'
@@ -35,9 +49,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        godot-version:
-          - 4.4.1-stable
-          - 4.7.1-stable
+        godot-version: ${{ fromJSON(inputs.godot_versions || '["4.4.1-stable","4.7.1-stable"]') }}
 
     steps:
       - name: Checkout
@@ -56,6 +68,20 @@ jobs:
 
       - name: Update npm
         run: npm install -g npm@^11.15.0
+
+      - name: Download dynamic stable-release metadata
+        if: inputs.godot_metadata_artifact != ''
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ inputs.godot_metadata_artifact }}
+          path: .artifacts/latest-godot
+
+      - name: Register dynamic stable release
+        if: inputs.godot_metadata_artifact != ''
+        run: >-
+          node scripts/resolve-latest-godot-stable.mjs
+          --metadata .artifacts/latest-godot/stable-release.json
+          --write-catalogs
 
       - name: Setup official Godot
         uses: ./.github/actions/setup-godot

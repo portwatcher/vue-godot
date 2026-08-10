@@ -2,10 +2,36 @@ name: Godot JavaScript Runtime Release Matrix
 
 on:
   workflow_call:
+    inputs:
+      godot_version:
+        description: Official stable Godot release used for export integration.
+        required: false
+        type: string
+        default: 4.7.1-stable
+      godot_installed_version:
+        description: Godot export-template directory name.
+        required: false
+        type: string
+        default: 4.7.1.stable
+      godot_metadata_artifact:
+        description: Optional artifact containing dynamically resolved stable-release metadata.
+        required: false
+        type: string
+        default: ''
+      release_base_url:
+        description: Optional archive URL root for a compatibility release.
+        required: false
+        type: string
+        default: ''
+    outputs:
+      runtime_version:
+        description: Version of the verified runtime release bundle.
+        value: ${{ jobs.package-release.outputs.runtime_version }}
   pull_request:
     paths:
       - '.github/actions/setup-godot/**'
       - '.github/actions/setup-godot-export-templates/**'
+      - '.github/workflows/godot-latest-stable.yml'
       - '.github/workflows/godot-js-runtime-release.yml'
       - '.github/workflows/publish.yml'
       - 'apps/js-runtime-demo/**'
@@ -15,6 +41,7 @@ on:
       - 'scripts/official-godot-export-templates.json'
       - 'scripts/official-godot-releases.json'
       - 'scripts/release-*.mjs'
+      - 'scripts/resolve-latest-godot-stable.mjs'
       - 'scripts/setup-godot*.mjs'
   push:
     branches:
@@ -23,6 +50,7 @@ on:
     paths:
       - '.github/actions/setup-godot/**'
       - '.github/actions/setup-godot-export-templates/**'
+      - '.github/workflows/godot-latest-stable.yml'
       - '.github/workflows/godot-js-runtime-release.yml'
       - '.github/workflows/publish.yml'
       - 'apps/js-runtime-demo/**'
@@ -32,6 +60,7 @@ on:
       - 'scripts/official-godot-export-templates.json'
       - 'scripts/official-godot-releases.json'
       - 'scripts/release-*.mjs'
+      - 'scripts/resolve-latest-godot-stable.mjs'
       - 'scripts/setup-godot*.mjs'
   workflow_dispatch:
 
@@ -39,7 +68,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: godot-js-runtime-release-${{ github.ref }}
+  group: godot-js-runtime-release-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -146,6 +175,8 @@ jobs:
     needs: build-release-artifacts
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    outputs:
+      runtime_version: ${{ steps.runtime_version.outputs.value }}
 
     steps:
       - name: Checkout
@@ -160,6 +191,13 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Resolve runtime version
+        id: runtime_version
+        run: >-
+          node -e 'const fs = require("node:fs");
+          const packageJson = require("./packages/godot-js-runtime/package.json");
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, "value=" + packageJson.version + "\n")'
+
       - name: Download all platform artifacts
         uses: actions/download-artifact@v8
         with:
@@ -168,7 +206,14 @@ jobs:
           merge-multiple: true
 
       - name: Package deterministic release archives
+        if: inputs.release_base_url == ''
         run: npm run package:godot-js-runtime
+
+      - name: Package deterministic compatibility archives
+        if: inputs.release_base_url != ''
+        run: >-
+          npm run package:release --workspace=godot-js-runtime --
+          --base-url "${{ inputs.release_base_url }}"
 
       - name: Test clean offline installation
         run: npm run test --workspace=godot-js-runtime
@@ -177,7 +222,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: godot-js-runtime-release
-          path: .artifacts/godot-js-runtime/0.0.1
+          path: .artifacts/godot-js-runtime/${{ steps.runtime_version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
 
@@ -229,28 +274,44 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Download dynamic stable-release metadata
+        if: inputs.godot_metadata_artifact != ''
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ inputs.godot_metadata_artifact }}
+          path: .artifacts/latest-godot
+
+      - name: Register dynamic stable release
+        if: inputs.godot_metadata_artifact != ''
+        run: >-
+          node scripts/resolve-latest-godot-stable.mjs
+          --metadata .artifacts/latest-godot/stable-release.json
+          --write-catalogs
+
       - name: Setup official Godot
         uses: ./.github/actions/setup-godot
         with:
-          version: 4.4.1-stable
+          version: ${{ inputs.godot_version || '4.7.1-stable' }}
 
       - name: Setup official export templates
         uses: ./.github/actions/setup-godot-export-templates
         with:
-          version: 4.4.1-stable
+          version: ${{ inputs.godot_version || '4.7.1-stable' }}
+          installed-version: ${{ inputs.godot_installed_version || '4.7.1.stable' }}
 
       - name: Download release bundle
         uses: actions/download-artifact@v8
         with:
           name: godot-js-runtime-release
-          path: .artifacts/godot-js-runtime/0.0.1
+          path: .artifacts/godot-js-runtime/${{ needs.package-release.outputs.runtime_version }}
 
       - name: Export both applications in debug and release modes
         shell: bash
         run: >-
           node packages/godot-js-runtime/scripts/smoke-platform-exports.mjs
+          --godot-version "${{ inputs.godot_version || '4.7.1-stable' }}"
           --platform "${{ matrix.platforms }}"
-          --release-dir .artifacts/godot-js-runtime/0.0.1
+          --release-dir ".artifacts/godot-js-runtime/${{ needs.package-release.outputs.runtime_version }}"
           ${{ matrix.launch_argument }}
 
       - name: Upload export evidence

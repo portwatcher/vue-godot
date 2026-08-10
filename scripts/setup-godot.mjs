@@ -5,6 +5,8 @@ import https from 'node:https'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { compareStableGodotTags } from '../packages/godot-js-runtime/scripts/godot-version.mjs'
+
 const scriptPath = fileURLToPath(import.meta.url)
 const repoRoot = path.resolve(path.dirname(scriptPath), '..')
 const releasesPath = path.join(
@@ -13,7 +15,6 @@ const releasesPath = path.join(
 )
 
 export const pinnedOfficialGodotVersion = '4.4.1-stable'
-export const currentStableOfficialGodotVersion = '4.7.1-stable'
 export const defaultOfficialGodotCacheDir = path.join(
   repoRoot,
   '.cache/godot-official',
@@ -30,6 +31,12 @@ function readReleaseCatalog() {
   }
   return parsed
 }
+
+export const currentStableOfficialGodotVersion = Object.keys(
+  readReleaseCatalog(),
+)
+  .sort(compareStableGodotTags)
+  .at(-1)
 
 function platformKey(platform, arch) {
   if (platform === 'linux' && arch === 'x64') return 'linux-x86_64'
@@ -79,7 +86,7 @@ export function officialGodotArtifactForPlatform(
 }
 
 export function resolveOfficialGodotSetupPlan(options = {}) {
-  const version = options.version ?? pinnedOfficialGodotVersion
+  const version = options.version ?? currentStableOfficialGodotVersion
   const platform = options.platform ?? process.platform
   const arch = options.arch ?? process.arch
   const cacheDir = path.resolve(
@@ -110,7 +117,7 @@ function usage() {
 Install or resolve a checksummed official Godot editor.
 
 Options:
-  --version <tag>       Official release tag (default: ${pinnedOfficialGodotVersion}).
+  --version <tag>       Official release tag (default: ${currentStableOfficialGodotVersion}).
   --cache-dir <path>    Cache root (default: .cache/godot-official).
   --platform <name>     Override host platform for planning/tests.
   --arch <name>         Override host architecture for planning/tests.

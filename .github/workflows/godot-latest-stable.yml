@@ -1,0 +1,233 @@
+name: Godot Latest Stable Compatibility Release
+
+on:
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+    inputs:
+      verify_existing:
+        description: Re-run the gates even when this compatibility release already exists.
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: godot-latest-stable
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    name: Discover latest official stable release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      installed_version: ${{ steps.resolve.outputs.installed_version }}
+      runtime_version: ${{ steps.resolve.outputs.runtime_version }}
+      release_tag: ${{ steps.resolve.outputs.release_tag }}
+      should_publish: ${{ steps.release.outputs.should_publish }}
+      should_validate: ${{ steps.release.outputs.should_validate }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Resolve checksummed release metadata
+        id: resolve
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          node scripts/resolve-latest-godot-stable.mjs
+          --output .artifacts/latest-godot/stable-release.json
+          --github-output "$GITHUB_OUTPUT"
+
+      - name: Decide whether validation and publication are needed
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.resolve.outputs.release_tag }}
+          VERIFY_EXISTING: ${{ inputs.verify_existing || false }}
+        shell: bash
+        run: |
+          should_publish=true
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            should_publish=false
+          fi
+          should_validate="$should_publish"
+          if [ "$VERIFY_EXISTING" = true ]; then
+            should_validate=true
+          fi
+          echo "should_publish=$should_publish" >> "$GITHUB_OUTPUT"
+          echo "should_validate=$should_validate" >> "$GITHUB_OUTPUT"
+
+      - name: Upload stable-release metadata
+        uses: actions/upload-artifact@v7
+        with:
+          name: latest-godot-stable-metadata
+          path: .artifacts/latest-godot/stable-release.json
+          compression-level: 0
+          if-no-files-found: error
+
+  stable-smoke:
+    name: Smoke latest stable Godot
+    needs: discover
+    if: needs.discover.outputs.should_validate == 'true'
+    uses: ./.github/workflows/godot-smoke.yml
+    permissions:
+      contents: read
+    with:
+      godot_versions: ${{ format('["{0}"]', needs.discover.outputs.version) }}
+      godot_metadata_artifact: latest-godot-stable-metadata
+
+  stable-release:
+    name: Verify and export release artifacts
+    needs:
+      - discover
+      - stable-smoke
+    if: >-
+      needs.discover.outputs.should_validate == 'true' &&
+      needs.stable-smoke.result == 'success'
+    uses: ./.github/workflows/godot-js-runtime-release.yml
+    permissions:
+      contents: read
+    with:
+      godot_version: ${{ needs.discover.outputs.version }}
+      godot_installed_version: ${{ needs.discover.outputs.installed_version }}
+      godot_metadata_artifact: latest-godot-stable-metadata
+      release_base_url: ${{ format('https://github.com/{0}/releases/download/{1}', github.repository, needs.discover.outputs.release_tag) }}
+
+  publish:
+    name: Publish verified GDExtension compatibility release
+    needs:
+      - discover
+      - stable-smoke
+      - stable-release
+    if: >-
+      needs.discover.outputs.should_publish == 'true' &&
+      needs.stable-smoke.result == 'success' &&
+      needs.stable-release.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download verified release bundle
+        uses: actions/download-artifact@v8
+        with:
+          name: godot-js-runtime-release
+          path: .artifacts/compatibility-release
+
+      - name: Verify and publish compatibility release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GODOT_VERSION: ${{ needs.discover.outputs.version }}
+          RELEASE_TAG: ${{ needs.discover.outputs.release_tag }}
+          RUNTIME_VERSION: ${{ needs.discover.outputs.runtime_version }}
+        shell: bash
+        run: |
+          cd .artifacts/compatibility-release
+          sha256sum --check --strict SHA256SUMS
+          release_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$RELEASE_TAG/"
+          jq --exit-status --arg version "$RUNTIME_VERSION" --arg release_url "$release_url" \
+            '.version == $version and ([.archives[].url | startswith($release_url)] | all)' \
+            runtime-manifest.json >/dev/null
+          mapfile -t release_archives < <(find . -maxdepth 1 -type f -name 'godot-js-runtime-*.tar.gz' -printf '%f\n' | sort)
+          if [ "${#release_archives[@]}" -ne 6 ]; then
+            echo "Expected exactly six GDExtension archives" >&2
+            exit 1
+          fi
+          for metadata_file in PROVENANCE.json SHA256SUMS runtime-manifest.json; do
+            test -f "$metadata_file"
+          done
+          release_files=("${release_archives[@]}" PROVENANCE.json SHA256SUMS runtime-manifest.json)
+          notes_file="$RUNNER_TEMP/godot-compatibility-release.md"
+          {
+            echo "Godot JavaScript Runtime $RUNTIME_VERSION verified on official Godot $GODOT_VERSION."
+            echo
+            echo "All stock-editor smoke tests and the macOS, Windows, Linux, Android, iOS, and Web debug/release export gates passed before publication. The runtime retains Godot 4.4.1 as its minimum compatibility floor."
+            echo
+            echo "The iOS gate covers unsigned device and simulator links; consuming applications still provide signing and physical-device provisioning."
+            echo
+            echo "Source commit: $GITHUB_SHA"
+            echo "Workflow: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          } > "$notes_file"
+          gh release create "$RELEASE_TAG" "${release_files[@]}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --latest=false \
+            --title "Godot JavaScript Runtime $RUNTIME_VERSION for Godot $GODOT_VERSION" \
+            --notes-file "$notes_file"
+
+  report-status:
+    name: Reconcile compatibility issue
+    needs:
+      - discover
+      - stable-smoke
+      - stable-release
+      - publish
+    if: >-
+      always() &&
+      needs.discover.result == 'success' &&
+      needs.discover.outputs.should_validate == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      issues: write
+
+    steps:
+      - name: Open, update, or close the compatibility issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GODOT_VERSION: ${{ needs.discover.outputs.version }}
+          RELEASE_TAG: ${{ needs.discover.outputs.release_tag }}
+          SHOULD_PUBLISH: ${{ needs.discover.outputs.should_publish }}
+          SMOKE_RESULT: ${{ needs.stable-smoke.result }}
+          RELEASE_RESULT: ${{ needs.stable-release.result }}
+          PUBLISH_RESULT: ${{ needs.publish.result }}
+        shell: bash
+        run: |
+          issue_title="Godot $GODOT_VERSION compatibility gate"
+          issue_record="$(gh issue list --repo "$GITHUB_REPOSITORY" --state all --limit 100 --json number,state,title --jq ".[] | select(.title == \"$issue_title\") | [.number, .state] | @tsv" | head -n 1)"
+          issue_number="${issue_record%%$'\t'*}"
+          issue_state="${issue_record#*$'\t'}"
+          if [ "$issue_number" = "$issue_state" ]; then
+            issue_number=''
+            issue_state=''
+          fi
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+          successful=false
+          if [ "$SMOKE_RESULT" = success ] && [ "$RELEASE_RESULT" = success ]; then
+            if [ "$SHOULD_PUBLISH" = false ] || [ "$PUBLISH_RESULT" = success ]; then
+              successful=true
+            fi
+          fi
+
+          if [ "$successful" = true ]; then
+            if [ "$issue_state" = OPEN ]; then
+              gh issue close "$issue_number" --repo "$GITHUB_REPOSITORY" \
+                --comment "Compatibility gates passed for $GODOT_VERSION. Release: $RELEASE_TAG. Run: $run_url"
+            fi
+            exit 0
+          fi
+
+          body="$(printf 'The automatic compatibility gate for official Godot %s did not complete successfully.\n\n- Stock smoke: %s\n- Release/export matrix: %s\n- Publication: %s\n- Source commit: %s\n- Run: %s' "$GODOT_VERSION" "$SMOKE_RESULT" "$RELEASE_RESULT" "$PUBLISH_RESULT" "$GITHUB_SHA" "$run_url")"
+          if [ -n "$issue_number" ]; then
+            if [ "$issue_state" = CLOSED ]; then
+              gh issue reopen "$issue_number" --repo "$GITHUB_REPOSITORY"
+            fi
+            gh issue comment "$issue_number" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$issue_title" --body "$body"
+          fi
+          exit 1

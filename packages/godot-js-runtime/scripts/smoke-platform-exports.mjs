@@ -6,6 +6,12 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import {
+  compareGodotVersionParts,
+  parseGodotNumericVersion,
+  parseStableGodotTag,
+} from './godot-version.mjs'
+
+import {
   exportApplications,
   exportOutputPath,
   exportPlatformPresets,
@@ -70,13 +76,49 @@ export function resolveNpmInvocation(
   }
 }
 
+export function assertPlatformExportGodotVersion(
+  actualVersion,
+  expectedRelease,
+) {
+  if (
+    compareGodotVersionParts(
+      parseGodotNumericVersion(actualVersion),
+      [4, 4, 1],
+    ) < 0
+  ) {
+    throw new Error(
+      `Platform exports require official Godot 4.4.1 or newer, received ${actualVersion}`,
+    )
+  }
+  if (expectedRelease) {
+    try {
+      parseStableGodotTag(expectedRelease)
+    } catch {
+      throw new Error(
+        `Invalid expected Godot stable release: ${expectedRelease}`,
+      )
+    }
+    const expectedPrefix = expectedRelease.replace(/-stable$/, '.stable')
+    if (
+      actualVersion !== expectedPrefix &&
+      !actualVersion.startsWith(`${expectedPrefix}.`)
+    ) {
+      throw new Error(
+        `Platform exports expected official Godot ${expectedRelease}, received ${actualVersion}`,
+      )
+    }
+  }
+  return actualVersion
+}
+
 function usage() {
   console.log(`Usage: node scripts/smoke-platform-exports.mjs [options]
 
 Export and verify the standalone runtime demo and representative Vue app.
 
 Options:
-  --godot <path>       Official Godot 4.4 executable (or GODOT_BIN).
+  --godot <path>       Compatible official Godot executable (or GODOT_BIN).
+  --godot-version <tag> Require an exact stable release tag.
   --platform <name>    macos, windows, linux, android, ios, or web; repeatable.
   --mode <name>        debug or release; repeatable. Default: both.
   --app <name>         standalone or vue; repeatable. Default: both.
@@ -98,6 +140,7 @@ function repeatedValue(options, argument, value) {
 function parseArgs(argv) {
   const options = {
     godot: process.env.GODOT_BIN,
+    expectedGodotVersion: process.env.GODOT_INTEGRATION_VERSION,
     platforms: [],
     modes: [],
     applications: [],
@@ -132,6 +175,7 @@ function parseArgs(argv) {
     }
     if (
       argument === '--godot' ||
+      argument === '--godot-version' ||
       argument === '--platform' ||
       argument === '--mode' ||
       argument === '--app' ||
@@ -148,6 +192,9 @@ function parseArgs(argv) {
       } else if (argument === '--godot') {
         if (!value) throw new Error(`${argument} requires a value`)
         options.godot = value
+      } else if (argument === '--godot-version') {
+        if (!value) throw new Error(`${argument} requires a value`)
+        options.expectedGodotVersion = value
       } else if (argument === '--release-dir') {
         if (!value) throw new Error(`${argument} requires a value`)
         options.releaseDirectory = path.resolve(value)
@@ -161,7 +208,9 @@ function parseArgs(argv) {
   }
 
   if (!options.godot) {
-    throw new Error('Set GODOT_BIN or pass --godot with official Godot 4.4')
+    throw new Error(
+      'Set GODOT_BIN or pass --godot with compatible official Godot',
+    )
   }
   options.godot = path.resolve(options.godot)
   const knownPlatforms = new Set(
@@ -1138,7 +1187,7 @@ function compatibleIosSimulatorLaunch({
     return {
       status: 'manual-device-gate',
       reason:
-        `Official Godot 4.4.1 provides ${simulatorArchitectures.join('+')} ` +
+        `The selected official Godot release provides ${simulatorArchitectures.join('+')} ` +
         `simulator engine code, which CoreSimulator cannot install on this ${hostArchitecture} host; ` +
         'unsigned device and simulator links passed.',
       hostArchitecture,
@@ -1313,7 +1362,7 @@ function launchIos(application, mode, outputDirectory) {
       fs.writeFileSync(projectFile, adapted.contents)
       simulatorAdaptation = {
         reason:
-          'The selected Xcode simulator SDK omits MetalFX while the official Godot 4.4.1 project weak-links it.',
+          'The selected Xcode simulator SDK omits MetalFX while the official Godot project weak-links it.',
         removedProjectLines: adapted.removedLines,
       }
     }
@@ -1608,11 +1657,7 @@ export function resolvePlatformExportPlan(options) {
 
 export function smokePlatformExports(options) {
   const godotVersion = assertOfficialGodotExecutable(options.godot)
-  if (!godotVersion.startsWith('4.4.1')) {
-    throw new Error(
-      `Platform exports are pinned to official Godot 4.4.1, received ${godotVersion}`,
-    )
-  }
+  assertPlatformExportGodotVersion(godotVersion, options.expectedGodotVersion)
   writeExportPresets({ check: true })
   const plan = resolvePlatformExportPlan(options)
   if (!options.skipBuild) {

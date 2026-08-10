@@ -14,6 +14,7 @@ import {
 } from '../scripts/export-presets.mjs'
 import {
   androidBootProbeReady,
+  assertPlatformExportGodotVersion,
   resolveNpmInvocation,
 } from '../scripts/smoke-platform-exports.mjs'
 import { createWebExportServer } from '../scripts/serve-web-export.mjs'
@@ -215,4 +216,38 @@ test('platform export builds resolve a native npm invocation', () => {
     command: 'npm',
     prefixArguments: [],
   })
+})
+
+test('platform exports retain the minimum ABI and enforce the selected stable release', () => {
+  assert.equal(
+    assertPlatformExportGodotVersion(
+      '4.7.1.stable.official.fixture',
+      '4.7.1-stable',
+    ),
+    '4.7.1.stable.official.fixture',
+  )
+  assert.equal(
+    assertPlatformExportGodotVersion('4.4.1.stable.official.fixture'),
+    '4.4.1.stable.official.fixture',
+  )
+  assert.throws(
+    () => assertPlatformExportGodotVersion('4.3.stable.official.fixture'),
+    /4\.4\.1 or newer/,
+  )
+  assert.throws(
+    () =>
+      assertPlatformExportGodotVersion(
+        '4.7.1.stable.official.fixture',
+        '4.8-stable',
+      ),
+    /expected official Godot 4\.8-stable/,
+  )
+  assert.throws(
+    () =>
+      assertPlatformExportGodotVersion(
+        '4.7.1.stable.official.fixture',
+        '4.8-rc1',
+      ),
+    /Invalid expected Godot stable release/,
+  )
 })

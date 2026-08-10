@@ -58,7 +58,7 @@ jobs:
       - name: Setup official Godot
         uses: ./.github/actions/setup-godot
         with:
-          version: 4.4.1-stable
+          version: 4.7.1-stable
 
       - name: Install virtual display
         run: sudo apt-get update && sudo apt-get install -y xvfb
@@ -67,7 +67,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: godot-js-runtime-release
-          path: .artifacts/godot-js-runtime/0.0.1
+          path: .artifacts/godot-js-runtime/${{ needs.runtime-release.outputs.runtime_version }}
 
       - name: Download verified Linux runtime
         uses: actions/download-artifact@v8
@@ -78,7 +78,7 @@ jobs:
       - name: Verify publish inputs match the committed release manifest
         run: |
           cmp \
-            .artifacts/godot-js-runtime/0.0.1/runtime-manifest.json \
+            .artifacts/godot-js-runtime/${{ needs.runtime-release.outputs.runtime_version }}/runtime-manifest.json \
             packages/godot-js-runtime/addon/godot-js-runtime/runtime-manifest.json
           npm run verify:release --workspace=godot-js-runtime -- --platform linux
 

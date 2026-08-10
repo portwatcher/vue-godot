@@ -5,8 +5,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import {
+  currentStableOfficialGodotVersion,
   downloadFile,
-  pinnedOfficialGodotVersion,
   resolveZipExtractionCommand,
   runChecked,
   scopedRemove,
@@ -45,7 +45,7 @@ export function officialGodotTemplateArtifact(version) {
     )
   }
 
-  for (const field of ['filename', 'installedVersion', 'sha512']) {
+  for (const field of ['filename', 'installedVersion']) {
     if (typeof artifact[field] !== 'string' || artifact[field].length === 0) {
       throw new Error(
         `Official Godot export template catalog entry ${version} lacks ${field}`,
@@ -58,10 +58,25 @@ export function officialGodotTemplateArtifact(version) {
     )
   }
 
+  const checksumAlgorithm =
+    typeof artifact.sha256 === 'string' &&
+    /^[0-9a-f]{64}$/i.test(artifact.sha256)
+      ? 'sha256'
+      : typeof artifact.sha512 === 'string' &&
+          /^[0-9a-f]{128}$/i.test(artifact.sha512)
+        ? 'sha512'
+        : undefined
+  if (!checksumAlgorithm) {
+    throw new Error(
+      `Official Godot export template catalog entry ${version} lacks a valid SHA-256 or SHA-512`,
+    )
+  }
+
   return {
     filename: artifact.filename,
     installedVersion: artifact.installedVersion,
-    sha512: artifact.sha512,
+    checksumAlgorithm,
+    checksum: artifact[checksumAlgorithm].toLowerCase(),
     size: artifact.size,
   }
 }
@@ -92,7 +107,7 @@ export function defaultOfficialGodotTemplateRoot(options = {}) {
 }
 
 export function resolveOfficialGodotTemplateSetupPlan(options = {}) {
-  const version = options.version ?? pinnedOfficialGodotVersion
+  const version = options.version ?? currentStableOfficialGodotVersion
   const artifact = officialGodotTemplateArtifact(version)
   const cacheDir = path.resolve(
     options.cacheDir ?? defaultOfficialGodotTemplateCacheDir,
@@ -116,14 +131,17 @@ export function resolveOfficialGodotTemplateSetupPlan(options = {}) {
   }
 }
 
-function sha512File(filePath) {
-  return createHash('sha512').update(fs.readFileSync(filePath)).digest('hex')
+function checksumFile(filePath, algorithm) {
+  return createHash(algorithm).update(fs.readFileSync(filePath)).digest('hex')
 }
 
 function archiveIsValid(plan) {
   if (!fs.existsSync(plan.archivePath)) return false
   const stat = fs.statSync(plan.archivePath)
-  return stat.size === plan.size && sha512File(plan.archivePath) === plan.sha512
+  return (
+    stat.size === plan.size &&
+    checksumFile(plan.archivePath, plan.checksumAlgorithm) === plan.checksum
+  )
 }
 
 function readOwnedInstallMarker(plan) {
@@ -134,7 +152,10 @@ function readOwnedInstallMarker(plan) {
       isRecord(marker) &&
       marker.version === plan.version &&
       marker.installedVersion === plan.installedVersion &&
-      marker.sha512 === plan.sha512 &&
+      (marker.checksum === plan.checksum ||
+        marker[plan.checksumAlgorithm] === plan.checksum) &&
+      (marker.checksumAlgorithm === undefined ||
+        marker.checksumAlgorithm === plan.checksumAlgorithm) &&
       marker.size === plan.size &&
       marker.url === plan.url
     ) {
@@ -159,7 +180,7 @@ function usage() {
 Install checksummed official Godot export templates.
 
 Options:
-  --version <tag>       Official release tag (default: ${pinnedOfficialGodotVersion}).
+  --version <tag>       Official release tag (default: ${currentStableOfficialGodotVersion}).
   --cache-dir <path>    Download cache (default: .cache/godot-export-templates).
   --install-root <path> Override Godot's platform export_templates directory.
   --force               Replace an existing version directory, even if unowned.
@@ -235,10 +256,13 @@ export async function setupOfficialGodotExportTemplates(options = {}) {
     try {
       await downloadFile(plan.url, temporaryArchive)
       const stat = fs.statSync(temporaryArchive)
-      const actualSha512 = sha512File(temporaryArchive)
-      if (stat.size !== plan.size || actualSha512 !== plan.sha512) {
+      const actualChecksum = checksumFile(
+        temporaryArchive,
+        plan.checksumAlgorithm,
+      )
+      if (stat.size !== plan.size || actualChecksum !== plan.checksum) {
         throw new Error(
-          `Official Godot export template verification failed: expected ${String(plan.size)} bytes and ${plan.sha512}, received ${String(stat.size)} bytes and ${actualSha512}`,
+          `Official Godot export template verification failed: expected ${String(plan.size)} bytes and ${plan.checksumAlgorithm}:${plan.checksum}, received ${String(stat.size)} bytes and ${plan.checksumAlgorithm}:${actualChecksum}`,
         )
       }
       fs.renameSync(temporaryArchive, plan.archivePath)
@@ -290,12 +314,13 @@ export async function setupOfficialGodotExportTemplates(options = {}) {
       path.join(temporaryInstallDir, installMarkerName),
       `${JSON.stringify(
         {
-          schemaVersion: 1,
+          schemaVersion: 2,
           version: plan.version,
           installedVersion: plan.installedVersion,
           filename: plan.filename,
           size: plan.size,
-          sha512: plan.sha512,
+          checksumAlgorithm: plan.checksumAlgorithm,
+          checksum: plan.checksum,
           url: plan.url,
         },
         null,
