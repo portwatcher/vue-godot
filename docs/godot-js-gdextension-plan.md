@@ -23,8 +23,8 @@ passes.
 | Vue/npm separation | Complete | `784c206` | generated projects contain no GodotJS dependency or install scripts |
 | Manual-copy generated-project gate | Complete | `dbe8c89` | fresh generated app receives the add-on fixture explicitly and passes Godot 4.7.1 import/run/rebuild smoke |
 | Docs, demos, templates, and migration cleanup | Complete | `784c206` | root guide and maintained examples aligned |
-| Latest-stable discovery and release automation | Implemented; publication verification pending | `784c206`, `f26660b` | live discovery resolved Godot `4.7.1-stable`; pinned downloads retry transient network failures |
+| Latest-stable discovery and release automation | Complete | `784c206`, `f26660b`, `e28982d` | live discovery resolved Godot `4.7.1-stable`; [workflow `31438235466`](https://github.com/portwatcher/vue-godot/actions/runs/31438235466) passed and published the verified compatibility release |
 | Local quality and stock-engine gates | Complete | `784c206`, `e492904`, `bf9b3fd` | complete release preflight passed on official Godot 4.7.1; hosted [Godot Smoke `31436036097`](https://github.com/portwatcher/vue-godot/actions/runs/31436036097) passed on 4.4.1 and 4.7.1 |
 | Six-platform debug/release builds and exports | Complete | `784c206`, `bf9b3fd` | hosted [release matrix `31436036020`](https://github.com/portwatcher/vue-godot/actions/runs/31436036020) passed all six native builds, universal packaging, and standalone/Vue debug/release exports; [native gate `31436036237`](https://github.com/portwatcher/vue-godot/actions/runs/31436036237) passed sanitizer and stock-4.4 coverage |
-| Compatibility release publication | Pending | — | Runs only after the platform matrix passes |
-| Synchronize and push `develop` | Pending | — | Final gate |
+| Compatibility release publication | Complete | `e28982d` | [`godotjs-v0.0.1-godot-4.7.1`](https://github.com/portwatcher/vue-godot/releases/tag/godotjs-v0.0.1-godot-4.7.1) contains only the universal ZIP plus manifest, provenance, and checksums; the public download independently validates all 14 targets and 20 payloads |
+| Synchronize and push `develop` | Complete | `e28982d` | PR [#31](https://github.com/portwatcher/vue-godot/pull/31) merged after all hosted gates passed; release targets the resulting `develop` commit |
