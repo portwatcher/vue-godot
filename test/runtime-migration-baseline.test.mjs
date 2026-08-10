@@ -89,10 +89,7 @@ test('the Phase 0 legacy inventory is unique and has planned destinations', () =
 })
 
 test('the Phase 9 cutover scan permits only classified references', () => {
-  const allowedClassifications = new Set([
-    'historical-migration-contract',
-    'negative-regression-guard',
-  ])
+  const allowedClassifications = new Set(['negative-regression-guard'])
   const allowlistedPaths = baseline.cutoverAllowlist
     .map((entry) => {
       assert.ok(allowedClassifications.has(entry.classification))

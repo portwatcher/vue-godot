@@ -24,7 +24,7 @@ This app exists to keep SDK-level native application flows exercised:
 | npm run build         | Builds the SDK dependencies and Vite bundle.                                                         |
 
 Run `npm run setup:runtime`, build the bundle, then open `project.godot` in an
-official Godot 4.4-or-newer editor and press F5.
+official Godot 4.4.1-or-newer editor and press F5.
 
 ## Commands
 

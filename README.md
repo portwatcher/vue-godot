@@ -102,6 +102,28 @@ With `--html`, familiar HTML-like components render to Godot nodes too:
 
 Both styles can be used in the same template.
 
+## Run JavaScript or TypeScript in official Godot
+
+`godot-js-runtime` is the standalone GDExtension behind Vue Godot's generated
+projects. It runs emitted JavaScript in an unmodified official Godot editor;
+Vue is optional. Generated projects install it with `npm run setup:runtime`.
+For an existing non-Vue Godot project, use the runtime directly:
+
+```bash
+npm install --save-dev godot-js-runtime
+npx godot-js-runtime install --project .
+npx godot-js-runtime typegen --project .
+npx godot-js-runtime verify --project .
+```
+
+Godot 4.4.1 is the minimum compatibility floor. Release integration tracks
+the latest official stable Godot (currently 4.7.1): a daily workflow discovers
+official checksummed editor and export-template assets, runs stock-engine smoke
+tests plus the complete six-platform debug/release export matrix, and publishes
+a versioned GDExtension compatibility release only when every gate passes. See
+the [runtime guide](./packages/godot-js-runtime/README.md) for TypeScript setup,
+target installation, exports, and platform constraints.
+
 ## Packages
 
 | Package                                                        | Purpose                                                     |
@@ -131,7 +153,7 @@ and node ordering under [`apps`](./apps). See the
 ## Requirements
 
 - Node.js 20 or newer
-- Official Godot 4.4 or newer
+- Official Godot 4.4.1 or newer
 - `godot-js-runtime`, installed by the generated `npm run setup:runtime` command
 
 ## Documentation
@@ -145,7 +167,6 @@ and node ordering under [`apps`](./apps). See the
   [Android](./docs/platforms/android.md), and [iOS](./docs/platforms/ios.md)
 - [Troubleshooting](./docs/troubleshooting.md)
 - [Roadmap](./docs/roadmap.md)
-- [Standalone Godot JavaScript GDExtension implementation plan](./docs/godot-js-gdextension-plan.md)
 
 ## Development
 

@@ -17,9 +17,12 @@ the full browser, DOM, or native platform spec is complete.
 ## Runtime And Platform Baseline
 
 Vue Godot uses `godot-js-runtime` 0.0.1 or a compatible newer artifact release.
-The runtime ABI minimum is stock Godot 4.4; editor/runtime smoke covers official
-Godot 4.4.1 and 4.7.1. Artifact support is tracked separately from the editor
-version:
+The runtime ABI minimum is stock Godot 4.4.1. Regular editor/runtime smoke keeps
+that floor and the current stable catalog entry (4.7.1 for this release). A
+daily workflow also discovers the newest official stable release and publishes
+a versioned compatibility release only after the stock-engine smoke suite and
+the full export matrix pass. Artifact support is tracked separately from the
+editor version:
 
 | Export platform | Runtime artifacts                                                        | Automated release gate                                                                                   |
 | --------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |

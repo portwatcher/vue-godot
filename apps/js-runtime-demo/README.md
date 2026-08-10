@@ -13,7 +13,7 @@ An exported build launched by the platform matrix prints its runtime, official
 Godot, and platform identity:
 
 ```text
-[godot-js-runtime-export] STANDALONE PASS runtime=0.0.1 godot=4.4.1-stable (official) platform=<platform>
+[godot-js-runtime-export] STANDALONE PASS runtime=0.0.1 godot=<stable-version> (official) platform=<platform>
 ```
 
 From this directory, install dependencies and the runtime, generate types,

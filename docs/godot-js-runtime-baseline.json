@@ -97,11 +97,6 @@
   ],
   "cutoverAllowlist": [
     {
-      "path": "docs/godot-js-gdextension-plan.md",
-      "classification": "historical-migration-contract",
-      "reason": "Preserves the execution contract, original inventory, decisions, and commit ledger."
-    },
-    {
       "path": "test/setup-godot.test.mjs",
       "classification": "negative-regression-guard",
       "reason": "Asserts that official setup cannot name the removed custom editor or its former publisher."
@@ -204,12 +199,6 @@
       "phase": 10,
       "destination": "Keep negative regression guards that reject custom-editor setup and legacy declaration bundles.",
       "paths": ["scripts/smoke-cli.mjs", "test/setup-godot.test.mjs"]
-    },
-    {
-      "disposition": "preserve",
-      "phase": 10,
-      "destination": "Retain as historical migration contract and final evidence ledger.",
-      "paths": ["docs/godot-js-gdextension-plan.md"]
     }
   ],
   "resolvedInventory": [

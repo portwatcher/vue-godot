@@ -4,11 +4,12 @@ Godot JavaScript Runtime is a standalone JavaScript and ahead-of-time
 TypeScript runtime for official Godot. It is not a Vue package and its native
 extension does not import, link, or bundle Vue.
 
-The package contains the resource-backed QuickJS-ng host, generated Godot 4.4
-binding with complete Variant conversion, and the JavaScript `ScriptLanguage`
-implementation. Stock Godot can load, attach, serialize, run, reload, and
-export `.js`, `.mjs`, and `.cjs` scripts. The release manifest covers the full
-desktop, Android, iOS, and threaded-Web v1 matrix in debug and release modes.
+The package contains the resource-backed QuickJS-ng host, a generated binding
+for the Godot 4.4.1 compatibility floor with complete Variant conversion, and
+the JavaScript `ScriptLanguage` implementation. Stock Godot can load, attach,
+serialize, run, reload, and export `.js`, `.mjs`, and `.cjs` scripts. The
+release manifest covers the full desktop, Android, iOS, and threaded-Web v1
+matrix in debug and release modes.
 
 ## Package exports
 
@@ -545,11 +546,22 @@ and other packaged exports do not depend on editor resource-discovery state.
 
 The same release matrix runs in CI. Web builds use a digest-pinned Emscripten
 SDK, Android uses a pinned NDK, export templates are verified by exact size and
-SHA-512, and native payloads are rejected if they depend on a custom
-editor/runtime binary or an undeclared third-party shared library. Linux
-payloads are built on the pinned Ubuntu 22.04 runner and launched from the
-packaged archive in a digest-pinned Debian Bookworm container, preventing a
-newer hosted-runner glibc from becoming an accidental release requirement.
+an official SHA-256 (or the retained SHA-512 for older catalog entries), and
+native payloads are rejected if they depend on a custom editor/runtime binary
+or an undeclared third-party shared library. Linux payloads are built on the
+pinned Ubuntu 22.04 runner and launched from the packaged archive in a
+digest-pinned Debian Bookworm container, preventing a newer hosted-runner glibc
+from becoming an accidental release requirement.
+
+The native ABI and generated fallback declarations remain pinned to Godot
+4.4.1 so one artifact set supports later compatible Godot 4 releases. The
+ordinary integration and publishing gates use the current stable catalog entry
+(4.7.1 for this release). In addition, the daily latest-stable workflow queries
+the official Godot source and build releases, admits only stable checksummed
+assets, and repeats the stock-engine smoke suite and complete macOS, Windows,
+Linux, Android, iOS, and Web export matrix. A GitHub compatibility release is
+created only after every gate passes; its tag includes both the runtime and
+Godot versions and cannot trigger the separate npm `v*` publisher.
 
 ## Security model
 
