@@ -35,7 +35,17 @@ function assertInside(parent, candidate, description) {
   }
 }
 
-async function downloadArchive(dependency, cacheDir) {
+function wait(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds))
+}
+
+function retryableStatus(status) {
+  return status === 408 || status === 429 || status >= 500
+}
+
+class PermanentDownloadError extends Error {}
+
+export async function downloadArchive(dependency, cacheDir, options = {}) {
   const archivePath = path.join(cacheDir, dependency.archiveName)
   fs.mkdirSync(cacheDir, { recursive: true })
 
@@ -49,13 +59,46 @@ async function downloadArchive(dependency, cacheDir) {
     return archivePath
   }
 
-  const response = await fetch(dependency.url, { redirect: 'follow' })
-  if (!response.ok) {
-    throw new Error(
-      `Unable to download ${dependency.name}: HTTP ${response.status} ${response.statusText}`,
-    )
+  const fetchImplementation = options.fetchImplementation ?? fetch
+  const attempts = options.attempts ?? 4
+  const retryDelayMs = options.retryDelayMs ?? 1_000
+  let bytes
+  let lastError
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const response = await fetchImplementation(dependency.url, {
+        redirect: 'follow',
+      })
+      if (!response.ok) {
+        const ErrorType = retryableStatus(response.status)
+          ? Error
+          : PermanentDownloadError
+        const error = new ErrorType(
+          `Unable to download ${dependency.name}: HTTP ${response.status} ${response.statusText}`,
+        )
+        if (error instanceof PermanentDownloadError) throw error
+        lastError = error
+      } else {
+        bytes = Buffer.from(await response.arrayBuffer())
+        break
+      }
+    } catch (error) {
+      if (error instanceof PermanentDownloadError) throw error
+      lastError = error
+    }
+    if (attempt < attempts) {
+      const delay = retryDelayMs * 2 ** (attempt - 1)
+      console.warn(
+        `[bootstrap] ${dependency.name} download attempt ${attempt}/${attempts} failed; retrying in ${delay}ms`,
+      )
+      await wait(delay)
+    }
   }
-  const bytes = Buffer.from(await response.arrayBuffer())
+  if (!bytes) {
+    throw lastError instanceof Error
+      ? lastError
+      : new Error(`Unable to download ${dependency.name}`)
+  }
   const actualHash = createHash('sha256').update(bytes).digest('hex')
   if (actualHash !== dependency.sha256) {
     throw new Error(
