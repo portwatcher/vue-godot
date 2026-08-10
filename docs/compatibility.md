@@ -35,6 +35,15 @@ are outside the v1 artifact matrix. TypeScript is always compiled ahead of
 time; the runtime executes emitted JavaScript through QuickJS-ng and does not
 provide Node.js or browser DOM APIs.
 
+The final 0.0.1 hardening gate ran this complete matrix twice from committed
+state: once from the in-tree installation and once from clean offline release
+archives. Each pass produced 24 exports with 20 automated launch markers and
+four explicit unsigned iOS device/simulator link gates. The evidence SHA-256
+values are `f8c1bde71a602252c8e262f4e5ad2204dab6bd49c76f28737c54f72ff2780103`
+and `d7334ac55f48e2119fe649ca12f73884917d97e2bc1e4fc4139d76dd5369d5dc`.
+All 14 targets and 20 payload files also passed architecture, entry-symbol,
+dependency, checksum, provenance, notice, and legacy-identity verification.
+
 ## Tracking Schema
 
 Each entry should be evaluated with these fields:
