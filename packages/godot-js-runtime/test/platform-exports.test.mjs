@@ -14,6 +14,7 @@ import {
 } from '../scripts/export-presets.mjs'
 import {
   androidBootProbeReady,
+  assertExportLaunchMarker,
   assertPlatformExportGodotVersion,
   resolveNpmInvocation,
 } from '../scripts/smoke-platform-exports.mjs'
@@ -249,5 +250,25 @@ test('platform exports retain the minimum ABI and enforce the selected stable re
         '4.8-rc1',
       ),
     /Invalid expected Godot stable release/,
+  )
+})
+
+test('export markers accept compatible stable Godot evidence', () => {
+  const marker =
+    '[godot-js-runtime-export] STANDALONE PASS runtime=0.0.1 godot=4.7.1-stable (official) platform=Linux'
+  assert.equal(assertExportLaunchMarker(marker, { id: 'standalone' }), marker)
+  assert.throws(
+    () =>
+      assertExportLaunchMarker(marker.replace('4.7.1-stable', '4.3-stable'), {
+        id: 'standalone',
+      }),
+    /4\.4\.1 or newer/,
+  )
+  assert.throws(
+    () =>
+      assertExportLaunchMarker(marker.replace(' (official)', ''), {
+        id: 'standalone',
+      }),
+    /lacks version\/platform evidence/,
   )
 })

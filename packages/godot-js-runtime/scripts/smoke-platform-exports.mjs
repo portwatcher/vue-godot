@@ -541,7 +541,7 @@ function inspectExport({
   return { files, inspection }
 }
 
-function assertLaunchMarker(output, application) {
+export function assertExportLaunchMarker(output, application) {
   for (const failure of [
     'Failed to load extension',
     'SCRIPT ERROR',
@@ -559,16 +559,22 @@ function assertLaunchMarker(output, application) {
     )
   }
   const markerLine = output.split(/\r?\n/).find((line) => line.includes(marker))
+  const godotMatch = markerLine
+    ? /\bgodot=(\d+\.\d+(?:\.\d+)?-stable) \(official\)/.exec(markerLine)
+    : undefined
   if (
     !markerLine ||
     !/runtime=\d+\.\d+\.\d+/.test(markerLine) ||
-    !/godot=4\.4\.1/.test(markerLine) ||
+    !godotMatch ||
     !/platform=/.test(markerLine)
   ) {
     throw new Error(
       `Export marker lacks version/platform evidence: ${markerLine}`,
     )
   }
+  assertPlatformExportGodotVersion(
+    godotMatch[1].replace(/-stable$/, '.stable.official.marker'),
+  )
   return markerLine
 }
 
@@ -597,7 +603,7 @@ function launchLinux(application, mode, outputDirectory, outputPath) {
   )
   return {
     status: 'passed',
-    marker: assertLaunchMarker(output, application),
+    marker: assertExportLaunchMarker(output, application),
     architecture: 'x86_64',
     containerImage: linuxSmokeImage,
   }
@@ -673,7 +679,7 @@ function launchWindows(
   }
   return {
     status: 'passed',
-    marker: assertLaunchMarker(output, application),
+    marker: assertExportLaunchMarker(output, application),
     architecture: 'x86_64',
     environment,
     executable: path.basename(launchExecutable),
@@ -1026,7 +1032,7 @@ function launchAndroid(
     }
     return {
       status: 'passed',
-      marker: assertLaunchMarker(output, application),
+      marker: assertExportLaunchMarker(output, application),
       architecture: device.abi,
       apiLevel: device.apiLevel,
       serial: device.serial,
@@ -1071,7 +1077,7 @@ function launchMacos(application, mode, outputDirectory, outputPath) {
   })
   return {
     status: 'passed',
-    marker: assertLaunchMarker(output, application),
+    marker: assertExportLaunchMarker(output, application),
     architectures: architectureOutput.split(/\s+/).sort(),
   }
 }
@@ -1246,7 +1252,7 @@ function compatibleIosSimulatorLaunch({
     )
     return {
       status: 'passed',
-      marker: assertLaunchMarker(output, application),
+      marker: assertExportLaunchMarker(output, application),
       hostArchitecture,
       simulator: { name: device.name, udid: device.udid },
     }
@@ -1520,7 +1526,7 @@ function launchWeb(application, mode, outputDirectory, outputPath) {
     const output = browserResult.console.join('\n')
     return {
       status: 'passed',
-      marker: assertLaunchMarker(output, application),
+      marker: assertExportLaunchMarker(output, application),
       browser: browserVersion,
       crossOriginIsolated: browserResult.crossOriginIsolated,
       gdextensionMode: 'dynamic-linking',
