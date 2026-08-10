@@ -247,7 +247,7 @@ jobs:
             launch_argument: ''
           - label: macOS and iOS
             artifact: apple
-            runner: macos-14
+            runner: macos-26
             platforms: macos,ios
             launch_argument: ''
           - label: Android structural

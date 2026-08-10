@@ -286,6 +286,10 @@ test('stock Godot setup is exposed through npm and a checksum-only CI action', (
     assert.match(releaseWorkflow, new RegExp(`platform: ${platform}`))
   }
   assert.match(releaseWorkflow, /- platform: linux\s+runner: ubuntu-22\.04/)
+  assert.match(
+    releaseWorkflow,
+    /- label: macOS and iOS\s+artifact: apple\s+runner: macos-26/,
+  )
   assert.match(releaseWorkflow, /--release-dir/)
   assert.match(releaseWorkflow, /emscripten\/emsdk@sha256:/)
   assert.match(
