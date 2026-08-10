@@ -14,7 +14,7 @@ import {
 } from '../scripts/export-presets.mjs'
 import {
   androidBootProbeReady,
-  resolveNpmExecutable,
+  resolveNpmInvocation,
 } from '../scripts/smoke-platform-exports.mjs'
 import { createWebExportServer } from '../scripts/serve-web-export.mjs'
 
@@ -193,8 +193,26 @@ test('Android export launch waits for both boot and package-manager readiness', 
   )
 })
 
-test('platform export builds resolve the native npm launcher', () => {
-  assert.equal(resolveNpmExecutable('win32'), 'npm.cmd')
-  assert.equal(resolveNpmExecutable('linux'), 'npm')
-  assert.equal(resolveNpmExecutable('darwin'), 'npm')
+test('platform export builds resolve a native npm invocation', () => {
+  assert.deepEqual(
+    resolveNpmInvocation('win32', {
+      ComSpec: 'C:\\Windows\\System32\\cmd.exe',
+    }),
+    {
+      command: 'C:\\Windows\\System32\\cmd.exe',
+      prefixArguments: ['/d', '/s', '/c', 'npm.cmd'],
+    },
+  )
+  assert.deepEqual(resolveNpmInvocation('win32', {}), {
+    command: 'cmd.exe',
+    prefixArguments: ['/d', '/s', '/c', 'npm.cmd'],
+  })
+  assert.deepEqual(resolveNpmInvocation('linux'), {
+    command: 'npm',
+    prefixArguments: [],
+  })
+  assert.deepEqual(resolveNpmInvocation('darwin'), {
+    command: 'npm',
+    prefixArguments: [],
+  })
 })

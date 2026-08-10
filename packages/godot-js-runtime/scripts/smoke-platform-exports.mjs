@@ -53,8 +53,21 @@ const expectedMarkers = Object.freeze({
 })
 let androidDeviceContext
 
-export function resolveNpmExecutable(platform = process.platform) {
-  return platform === 'win32' ? 'npm.cmd' : 'npm'
+export function resolveNpmInvocation(
+  platform = process.platform,
+  environment = process.env,
+) {
+  if (platform === 'win32') {
+    return {
+      command: environment.ComSpec || environment.COMSPEC || 'cmd.exe',
+      prefixArguments: ['/d', '/s', '/c', 'npm.cmd'],
+    }
+  }
+
+  return {
+    command: 'npm',
+    prefixArguments: [],
+  }
 }
 
 function usage() {
@@ -1603,20 +1616,38 @@ export function smokePlatformExports(options) {
   writeExportPresets({ check: true })
   const plan = resolvePlatformExportPlan(options)
   if (!options.skipBuild) {
-    const npmExecutable = resolveNpmExecutable()
-    run(npmExecutable, ['run', 'build', '--workspace=godot-js-runtime'], {
-      description: 'runtime TypeScript build',
-      inherit: true,
-    })
+    const npmInvocation = resolveNpmInvocation()
+    run(
+      npmInvocation.command,
+      [
+        ...npmInvocation.prefixArguments,
+        'run',
+        'build',
+        '--workspace=godot-js-runtime',
+      ],
+      {
+        description: 'runtime TypeScript build',
+        inherit: true,
+      },
+    )
     for (const application of plan.applications) {
       const workspace =
         application.id === 'standalone'
           ? 'godot-js-runtime-demo'
           : 'native-app-demo'
-      run(npmExecutable, ['run', 'build', `--workspace=${workspace}`], {
-        description: `${application.id} application build`,
-        inherit: true,
-      })
+      run(
+        npmInvocation.command,
+        [
+          ...npmInvocation.prefixArguments,
+          'run',
+          'build',
+          `--workspace=${workspace}`,
+        ],
+        {
+          description: `${application.id} application build`,
+          inherit: true,
+        },
+      )
     }
   }
 
