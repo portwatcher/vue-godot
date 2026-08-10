@@ -317,6 +317,16 @@ test('workspace tests finish dependency tests before importing their build outpu
   assert.deepEqual(turboConfig.tasks?.test?.dependsOn, ['build', '^test'])
 })
 
+test('generated-project Godot smokes model manual GodotJS installation', () => {
+  for (const script of [
+    'scripts/smoke-generated-godot.mjs',
+    'scripts/smoke-editor-reload.mjs',
+  ]) {
+    const source = fs.readFileSync(path.join(repoRoot, script), 'utf-8')
+    assert.match(source, /installBuiltRuntime\(projectDir\)/)
+  }
+})
+
 test('fixture app workspaces expose the regression build contract', () => {
   for (const fixture of fixtureApps) {
     const fixtureRoot = fixturePath(fixture)
