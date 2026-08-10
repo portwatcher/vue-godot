@@ -108,10 +108,13 @@ Both styles can be used in the same template.
 
 ## Install GodotJS in any Godot project
 
-GodotJS is the standalone GDExtension behind Vue Godot. It runs JavaScript in
-an unmodified official Godot editor, and Vue is optional.
+GodotJS is the standalone JavaScript GDExtension for unmodified official Godot.
+It is a Godot product in its own right; Vue Godot is a separate, optional npm
+framework that runs on it.
 
-Download the universal release ZIP and extract it at the project root:
+Download the universal `godotjs-v*.zip` from
+[GitHub Releases](https://github.com/portwatcher/vue-godot/releases) and extract
+it at the project root:
 
 ```text
 your-project/
