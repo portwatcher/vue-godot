@@ -1,11 +1,30 @@
 # Vue Godot
 
-**Write native apps and Godot game UI using Vue.js.**
+Write native apps and Godot game UI using Vue.js.
+
+```vue
+<template>
+  <HBoxContainer>
+    <Button text="Add one" @pressed="increment"></Button>
+    <Label :text="`Count: ${count}`"></Label>
+  </HBoxContainer>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const count = ref(0)
+
+const increment = () => {
+  count.value += 1
+}
+</script>
+```
+
+![Vue Godot demo](./intro-medias/demo.gif)
 
 Vue Godot renders Vue Single File Components into Godot's native scene tree.
 Use Godot nodes directly or use HTML-like components backed by Godot controls.
-
-![Vue Godot demo](./intro-medias/demo.gif)
 
 ## Start a project
 
