@@ -1,0 +1,51 @@
+name: Setup official Godot
+description: Install a checksummed official Godot editor and expose it as GODOT_BIN.
+
+inputs:
+  version:
+    description: Official Godot release tag.
+    required: false
+    default: 4.7.1-stable
+
+runs:
+  using: composite
+  steps:
+    - name: Cache official Godot
+      uses: actions/cache@v5
+      with:
+        path: .cache/godot-official/${{ inputs.version }}
+        key: official-godot-${{ runner.os }}-${{ runner.arch }}-${{ inputs.version }}
+
+    - name: Install Godot runtime dependencies
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo apt-get update
+        if apt-cache show libasound2t64 >/dev/null 2>&1; then
+          godot_audio_package=libasound2t64
+        else
+          godot_audio_package=libasound2
+        fi
+        sudo apt-get install -y \
+          ca-certificates \
+          "$godot_audio_package" \
+          libdbus-1-3 \
+          libfontconfig1 \
+          libgl1 \
+          libglu1-mesa \
+          libpulse0 \
+          libudev1 \
+          libx11-6 \
+          libxcursor1 \
+          libxi6 \
+          libxinerama1 \
+          libxkbcommon0 \
+          libxrandr2 \
+          unzip
+
+    - name: Setup official Godot
+      shell: bash
+      run: >-
+        node scripts/setup-godot.mjs
+        --version "${{ inputs.version }}"
+        --github-env "$GITHUB_ENV"

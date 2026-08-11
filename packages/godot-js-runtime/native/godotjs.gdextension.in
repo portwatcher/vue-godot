@@ -1,0 +1,22 @@
+[configuration]
+
+entry_symbol = "godotjs_library_init"
+compatibility_minimum = "{{GODOT_MINIMUM}}"
+reloadable = true
+
+[libraries]
+
+macos.debug = "res://addons/godotjs/bin/libgodotjs.macos.template_debug.universal.framework"
+macos.release = "res://addons/godotjs/bin/libgodotjs.macos.template_release.universal.framework"
+windows.debug.x86_64 = "res://addons/godotjs/bin/libgodotjs.windows.template_debug.x86_64.dll"
+windows.release.x86_64 = "res://addons/godotjs/bin/libgodotjs.windows.template_release.x86_64.dll"
+linux.debug.x86_64 = "res://addons/godotjs/bin/libgodotjs.linux.template_debug.x86_64.so"
+linux.release.x86_64 = "res://addons/godotjs/bin/libgodotjs.linux.template_release.x86_64.so"
+android.debug.arm64 = "res://addons/godotjs/bin/libgodotjs.android.template_debug.arm64.so"
+android.release.arm64 = "res://addons/godotjs/bin/libgodotjs.android.template_release.arm64.so"
+android.debug.x86_64 = "res://addons/godotjs/bin/libgodotjs.android.template_debug.x86_64.so"
+android.release.x86_64 = "res://addons/godotjs/bin/libgodotjs.android.template_release.x86_64.so"
+ios.debug = "res://addons/godotjs/bin/libgodotjs.ios.template_debug.xcframework"
+ios.release = "res://addons/godotjs/bin/libgodotjs.ios.template_release.xcframework"
+web.debug.threads.wasm32 = "res://addons/godotjs/bin/libgodotjs.web.template_debug.wasm32.wasm"
+web.release.threads.wasm32 = "res://addons/godotjs/bin/libgodotjs.web.template_release.wasm32.wasm"

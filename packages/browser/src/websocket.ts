@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// WebSocket polyfill for GodotJS
+// WebSocket polyfill for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 // Browser-shaped WebSocket wrapper backed by Godot's WebSocketPeer.
 // ---------------------------------------------------------------------------
@@ -48,7 +48,10 @@ const POLL_INTERVAL_MS = 16
 export class GodotMessageEvent extends GodotEvent {
   readonly data: string | ArrayBuffer | GodotBlob
 
-  constructor(type: 'message', init: { data: string | ArrayBuffer | GodotBlob }) {
+  constructor(
+    type: 'message',
+    init: { data: string | ArrayBuffer | GodotBlob },
+  ) {
     super(type)
     this.data = init.data
   }
@@ -88,7 +91,9 @@ function validateUrl(url: string): string {
   return parsed.href
 }
 
-function packetToArrayBuffer(packet: { to_array_buffer(): ArrayBuffer }): ArrayBuffer {
+function packetToArrayBuffer(packet: {
+  to_array_buffer(): ArrayBuffer
+}): ArrayBuffer {
   return packet.to_array_buffer()
 }
 
@@ -126,8 +131,9 @@ export class GodotWebSocket extends GodotEventTarget {
       this._peer.supported_protocols = normalizedProtocols
     }
 
-    const tlsOptions =
-      this.url.startsWith('wss:') ? TLSOptions.client() : undefined
+    const tlsOptions = this.url.startsWith('wss:')
+      ? TLSOptions.client()
+      : undefined
     const error = this._peer.connect_to_url(this.url, tlsOptions)
     if (error !== 0) {
       setGodotTimeout(() => {

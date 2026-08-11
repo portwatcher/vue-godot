@@ -24,10 +24,7 @@ function finiteInteger(value: number | undefined): number | null {
     : null
 }
 
-function readNumberMethod(
-  target: unknown,
-  methodName: string,
-): number | null {
+function readNumberMethod(target: unknown, methodName: string): number | null {
   if (typeof target !== 'object' || target === null) {
     return null
   }
@@ -123,7 +120,7 @@ export function resolveCameraFeedId(
 
 export function createCameraTexture(
   options: CameraTextureOptions = {},
-): Texture2D | null {
+): CameraTexture | null {
   const feedId = resolveCameraFeedId(options)
   if (feedId == null) {
     return null
@@ -134,6 +131,18 @@ export function createCameraTexture(
   texture.which_feed = finiteInteger(options.whichFeed) ?? 0
   texture.camera_is_active = options.active !== false
   return texture
+}
+
+export function deactivateCameraTexture(
+  texture: CameraTexture | null | undefined,
+): void {
+  if (!texture) return
+
+  try {
+    texture.camera_is_active = false
+  } catch {
+    // The engine may already have released the feed during scene teardown.
+  }
 }
 
 export function captureCameraTextureImage(
@@ -153,5 +162,10 @@ export function captureCameraTextureImage(
 export function captureCameraImage(
   options: CameraTextureOptions = {},
 ): GodotImage | null {
-  return captureCameraTextureImage(createCameraTexture(options))
+  const texture = createCameraTexture(options)
+  try {
+    return captureCameraTextureImage(texture)
+  } finally {
+    deactivateCameraTexture(texture)
+  }
 }

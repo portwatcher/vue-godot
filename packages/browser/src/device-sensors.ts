@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Device motion and orientation polyfills for GodotJS
+// Device motion and orientation polyfills for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 // Uses @vue-godot/device/sensors, which wraps Godot's Input sensor methods.
 // On platforms without physical sensors, Godot returns Vector3.ZERO.

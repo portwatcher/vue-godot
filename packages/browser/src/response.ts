@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Minimal Response implementation for GodotJS
+// Minimal Response implementation for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 
 import { GodotBlob } from './blob.js'

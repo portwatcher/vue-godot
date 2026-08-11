@@ -108,6 +108,21 @@ function polyfill(name: string, impl: unknown): void {
   }
 }
 
+function hasPerformanceTimeline(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null) return false
+  const candidate = value as Record<string, unknown>
+  return [
+    'now',
+    'mark',
+    'measure',
+    'getEntries',
+    'getEntriesByName',
+    'getEntriesByType',
+    'clearMarks',
+    'clearMeasures',
+  ].every((name) => typeof candidate[name] === 'function')
+}
+
 /**
  * Install all browser API polyfills onto `globalThis`.
  *
@@ -165,7 +180,9 @@ export function installBrowserAPIs(): void {
   polyfill('queueMicrotask', queueMicrotask)
   polyfill('requestAnimationFrame', requestAnimationFrame)
   polyfill('cancelAnimationFrame', cancelAnimationFrame)
-  polyfill('performance', performance)
+  if (!hasPerformanceTimeline(g['performance'])) {
+    g['performance'] = performance
+  }
 
   // History API — history, location, PopStateEvent, and global event methods
   polyfill('PopStateEvent', PopStateEvent)

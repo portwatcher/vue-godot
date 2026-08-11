@@ -1,7 +1,13 @@
 import { spawn, spawnSync } from 'node:child_process'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+  assertOfficialGodotExecutable,
+  godotCommandArguments,
+  readGodotVersion,
+} from '../packages/godot-js-runtime/scripts/godot-command.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 
@@ -9,6 +15,11 @@ export const repoRoot = path.resolve(path.dirname(__filename), '..')
 export const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 export const nodeCommand = process.execPath
 export const canKillProcessGroup = process.platform !== 'win32'
+export {
+  assertOfficialGodotExecutable,
+  godotCommandArguments,
+  readGodotVersion,
+}
 
 export const packageDirs = {
   '@vue-godot/browser': 'packages/browser',
@@ -17,6 +28,8 @@ export const packageDirs = {
   '@vue-godot/html': 'packages/html',
   '@vue-godot/runtime-tscn': 'packages/runtime-tscn',
 }
+
+const runtimePackageDir = path.join(repoRoot, 'packages/godot-js-runtime')
 
 const GODOT_SCRIPT_LOAD_ERROR_PATTERNS = [
   /\[jsb\]\[Error\]/,
@@ -28,6 +41,7 @@ const GODOT_SCRIPT_LOAD_ERROR_PATTERNS = [
   /Resource file not found:/,
   /Error loading resource:/,
   /Attempt to (?:connect|disconnect) nonexistent signal/,
+  /CameraServer is not actively monitoring feeds/,
 ]
 
 const GODOT_IMPORT_TIMEOUT_MS = 60_000
@@ -72,6 +86,82 @@ export function run(command, args, options = {}) {
   }
 
   return result.stdout
+}
+
+export function runAsync(command, args, options = {}) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd: options.cwd ?? repoRoot,
+      env: options.env ?? process.env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+
+    let stdout = ''
+    let stderr = ''
+    let didSettle = false
+
+    const timeout =
+      typeof options.timeout === 'number'
+        ? setTimeout(() => {
+            child.kill('SIGTERM')
+          }, options.timeout)
+        : null
+
+    child.stdout.setEncoding('utf-8')
+    child.stderr.setEncoding('utf-8')
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk
+      options.onStdoutChunk?.(chunk)
+      if (options.streamOutput) {
+        process.stdout.write(chunk)
+      }
+    })
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk
+      options.onStderrChunk?.(chunk)
+      if (options.streamOutput) {
+        process.stderr.write(chunk)
+      }
+    })
+
+    child.on('error', (error) => {
+      if (timeout) {
+        clearTimeout(timeout)
+      }
+      if (!didSettle) {
+        didSettle = true
+        reject(error)
+      }
+    })
+
+    child.on('close', (status, signal) => {
+      if (timeout) {
+        clearTimeout(timeout)
+      }
+      if (didSettle) {
+        return
+      }
+      didSettle = true
+
+      if (status !== 0 && !options.allowFailure) {
+        const rendered = [command, ...args].join(' ')
+        reject(
+          new Error(
+            [
+              `Command failed (${status ?? signal ?? 'unknown'}): ${rendered}`,
+              stdout,
+              stderr,
+            ]
+              .filter(Boolean)
+              .join('\n'),
+          ),
+        )
+        return
+      }
+
+      resolve({ stdout, stderr, status, signal })
+    })
+  })
 }
 
 export async function stopProcess(child) {
@@ -239,7 +329,7 @@ export function assertNoGodotScriptLoadErrors(output, context) {
   const diagnostics = relevantGodotDiagnosticLines(output)
   throw new Error(
     [
-      `${context} printed GodotJS script-load, asset-load, or signal wiring diagnostics`,
+      `${context} printed runtime script-load, asset-load, or signal wiring diagnostics`,
       diagnostics || output,
     ]
       .filter(Boolean)
@@ -250,7 +340,13 @@ export function assertNoGodotScriptLoadErrors(output, context) {
 export function runGodotImport(godot, projectDir) {
   const result = spawnSync(
     godot,
-    ['--headless', '--path', projectDir, '--import', '--quit'],
+    godotCommandArguments([
+      '--headless',
+      '--path',
+      projectDir,
+      '--import',
+      '--quit',
+    ]),
     {
       cwd: projectDir,
       env: process.env,
@@ -284,8 +380,85 @@ export function runGodotImport(godot, projectDir) {
   assertNoGodotScriptLoadErrors(output, 'Godot import')
 }
 
+export async function runGodotProjectUntilMarker(
+  godot,
+  projectDir,
+  marker,
+  context,
+  timeoutMs = 30_000,
+) {
+  let output = ''
+
+  const child = await new Promise((resolve, reject) => {
+    const child = spawn(
+      godot,
+      godotCommandArguments(['--headless', '--path', projectDir]),
+      {
+        cwd: projectDir,
+        env: process.env,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      },
+    )
+
+    let didSettle = false
+    const timeout = setTimeout(() => {
+      child.kill('SIGTERM')
+      if (!didSettle) {
+        didSettle = true
+        reject(
+          new Error(
+            `Timed out waiting for ${context} marker ${JSON.stringify(marker)}\n${output}`,
+          ),
+        )
+      }
+    }, timeoutMs)
+
+    function handleOutput(chunk) {
+      output += chunk
+      if (!didSettle && output.includes(marker)) {
+        didSettle = true
+        clearTimeout(timeout)
+        resolve(child)
+      }
+    }
+
+    child.stdout.setEncoding('utf-8')
+    child.stderr.setEncoding('utf-8')
+    child.stdout.on('data', handleOutput)
+    child.stderr.on('data', handleOutput)
+    child.on('error', (error) => {
+      if (!didSettle) {
+        didSettle = true
+        clearTimeout(timeout)
+        reject(error)
+      }
+    })
+    child.on('close', (code, signal) => {
+      if (!didSettle) {
+        didSettle = true
+        clearTimeout(timeout)
+        reject(
+          new Error(
+            [
+              `Godot exited before ${context} marker ${JSON.stringify(marker)}`,
+              `status=${code ?? signal ?? 'unknown'}`,
+              output,
+            ]
+              .filter(Boolean)
+              .join('\n'),
+          ),
+        )
+      }
+    })
+  })
+
+  await stopProcess(child)
+  assertNoGodotScriptLoadErrors(output, context)
+  return output
+}
+
 export function commandExists(command) {
-  const probe = spawnSync(command, ['--version'], {
+  const probe = spawnSync(command, godotCommandArguments(['--version']), {
     encoding: 'utf-8',
     stdio: 'pipe',
   })
@@ -308,7 +481,7 @@ export function assertVueSourceIgnoredByGodot(projectDir) {
 export function assertGeneratedOutputIgnoredByGodot(projectDir) {
   assertFileExists(
     path.join(projectDir, 'gen/.gdignore'),
-    'generated GodotJS resource type output .gdignore',
+    'generated runtime resource type output .gdignore',
   )
 }
 
@@ -452,11 +625,34 @@ export function packPackage(packageName, packDir) {
   return path.join(packDir, tarballName)
 }
 
-export function createPackedPackageOverrides(packDir) {
-  return Object.fromEntries(
-    Object.keys(packageDirs).map((packageName) => [
-      packageName,
-      `file:${packPackage(packageName, packDir)}`,
-    ]),
+export function installBuiltRuntime(projectDir) {
+  const source = path.join(runtimePackageDir, 'addon/godotjs')
+  const destination = path.join(projectDir, 'addons/godotjs')
+  const legacyDestination = path.join(projectDir, 'addons/godot-js-runtime')
+  fs.rmSync(legacyDestination, { recursive: true, force: true })
+  fs.cpSync(source, destination, { recursive: true })
+  const descriptor = path.join(destination, 'godotjs.gdextension')
+  if (!fs.existsSync(descriptor)) {
+    throw new Error(
+      `GodotJS manual copy did not create ${descriptor}`,
+    )
+  }
+  const godotCache = path.join(projectDir, '.godot')
+  fs.mkdirSync(godotCache, { recursive: true })
+  fs.writeFileSync(
+    path.join(godotCache, 'extension_list.cfg'),
+    'res://addons/godotjs/godotjs.gdextension\n',
   )
+  console.log(
+    `[smoke-utils] GodotJS copied to ${path.relative(repoRoot, destination)}`,
+  )
+  return { addonDirectory: destination }
+}
+
+export function createPackedPackageOverrides(packDir) {
+  const entries = Object.keys(packageDirs).map((packageName) => [
+    packageName,
+    `file:${packPackage(packageName, packDir)}`,
+  ])
+  return Object.fromEntries(entries)
 }

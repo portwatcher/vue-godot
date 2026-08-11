@@ -141,6 +141,24 @@ const fixtureApps = [
     },
   },
   {
+    id: 'godotjs-demo',
+    standalone: true,
+    requiredDependencies: [],
+    sources: {
+      'src/player.ts': [
+        'class StandalonePlayer extends Node2D',
+        'Input.get_vector',
+        'this.position = new Vector2',
+        'ResourceLoader.load',
+        'Callable.create',
+        'this.emit_signal',
+        'Promise.resolve().then',
+        'PHASE6_STANDALONE_DEMO PASS',
+      ],
+      'main.tscn': ['res://dist/player.js', 'speed = 240.0'],
+    },
+  },
+  {
     id: 'lifecycles',
     entryComponent: 'App.vue',
     requiredDependencies: ['@vue-godot/runtime-tscn'],
@@ -272,16 +290,92 @@ test('fixture registry includes every checked-in app workspace', () => {
   assert.deepEqual(registeredIds, appDirectoryNames())
 })
 
+test('workspace CLI packages expose tracked launchers before build output exists', () => {
+  for (const [packageDirectory, commandName] of [
+    ['packages/cli', 'vue-godot'],
+    ['packages/vue-godot', 'vue-godot'],
+  ]) {
+    const packageJson = readJson(
+      path.join(repoRoot, packageDirectory, 'package.json'),
+    )
+    const launcher = path.join(
+      repoRoot,
+      packageDirectory,
+      packageJson.bin[commandName],
+    )
+    assertFileExists(launcher)
+    assert.notEqual(
+      fs.statSync(launcher).mode & 0o111,
+      0,
+      `${path.relative(repoRoot, launcher)} must be executable`,
+    )
+  }
+})
+
+test('workspace tests finish dependency tests before importing their build output', () => {
+  const turboConfig = readJson(path.join(repoRoot, 'turbo.json'))
+  assert.deepEqual(turboConfig.tasks?.test?.dependsOn, ['build', '^test'])
+})
+
+test('generated-project Godot smokes model manual GodotJS installation', () => {
+  for (const script of [
+    'scripts/smoke-generated-godot.mjs',
+    'scripts/smoke-editor-reload.mjs',
+  ]) {
+    const source = fs.readFileSync(path.join(repoRoot, script), 'utf-8')
+    assert.match(source, /installBuiltRuntime\(projectDir\)/)
+  }
+})
+
 test('fixture app workspaces expose the regression build contract', () => {
   for (const fixture of fixtureApps) {
     const fixtureRoot = fixturePath(fixture)
     assertFileExists(fixtureRoot)
 
+    if (fixture.standalone) {
+      for (const fileName of [
+        'package.json',
+        'project.godot',
+        'main.tscn',
+        'tsconfig.json',
+        'src/player.ts',
+      ]) {
+        assertFileExists(fixturePath(fixture, fileName))
+      }
+      const packageJson = readJson(fixturePath(fixture, 'package.json'))
+      assert.equal(
+        packageJson.scripts?.build,
+        'tsc -p tsconfig.json',
+      )
+      assert.equal(
+        packageJson.scripts?.dev,
+        'tsc -p tsconfig.json --watch',
+      )
+      assert.equal(packageJson.scripts?.['install:runtime'], undefined)
+      for (const dependencyName of fixture.requiredDependencies) {
+        assert.ok(
+          hasDependency(packageJson, dependencyName),
+          `${fixture.id} must depend on ${dependencyName}`,
+        )
+      }
+      assert.deepEqual(
+        Object.keys(packageJson.dependencies ?? {}).filter(
+          (name) => name === 'vue' || name.startsWith('@vue'),
+        ),
+        [],
+      )
+      continue
+    }
+
     for (const fileName of [
       'package.json',
       'project.godot',
       'app.tscn',
+      '.gitignore',
+      'node_modules/.gdignore',
+      'typings/.gdignore',
       'vue/vite.config.ts',
+      'vue/tsconfig.json',
       'vue/src/main.ts',
       'vue/src/env.d.ts',
       `vue/src/${fixture.entryComponent}`,
@@ -306,6 +400,15 @@ test('fixture app workspaces expose the regression build contract', () => {
       `${fixture.id} must build runtime-tscn before Vite`,
     )
     assert.equal(packageJson.scripts?.['gen:types'], 'vue-godot gen-types')
+    for (const legacyScript of [
+      'install:runtime',
+      'verify:runtime',
+      'add-target:runtime',
+      'uninstall:runtime',
+      'setup:runtime',
+    ]) {
+      assert.equal(packageJson.scripts?.[legacyScript], undefined)
+    }
 
     for (const dependencyName of [
       '@vue-godot/cli',
@@ -320,6 +423,23 @@ test('fixture app workspaces expose the regression build contract', () => {
       )
     }
 
+    const tsconfigPath = fixturePath(fixture, 'vue/tsconfig.json')
+    const tsconfig = readJson(tsconfigPath)
+    assert.equal(tsconfig.compilerOptions?.skipLibCheck, false)
+    assert.deepEqual(tsconfig.compilerOptions?.paths?.godot, [
+      '../typings/godot.d.ts',
+    ])
+
+    const gitignorePath = fixturePath(fixture, '.gitignore')
+    const gitignore = readText(gitignorePath)
+    for (const marker of [
+      'typings/*.d.ts',
+      'typings/manifest.json',
+      '!typings/.gdignore',
+    ]) {
+      assertIncludes(gitignore, marker, gitignorePath)
+    }
+
     const envPath = fixturePath(fixture, 'vue/src/env.d.ts')
     const envDts = readText(envPath)
     assertIncludes(envDts, 'Record<string, unknown>', envPath)
@@ -331,12 +451,18 @@ test('fixture app workspaces expose the regression build contract', () => {
 
     const viteConfigPath = fixturePath(fixture, 'vue/vite.config.ts')
     const viteConfig = readText(viteConfigPath)
+    const externalModules =
+      fixture.id === 'native-app-demo'
+        ? "external: ['godot', 'godot-js']"
+        : "external: ['godot']"
     for (const marker of [
       'isNativeTag: () => false',
       "entry: 'vue/src/main.ts'",
       "formats: ['cjs']",
       "fileName: () => 'app.js'",
-      "external: ['godot']",
+      externalModules,
+      "import { commonJsBundleBanner } from '@vue-godot/runtime-tscn/bundle-format'",
+      'banner: commonJsBundleBanner',
       "chunkFileNames: 'chunks/[name].js'",
       "alias: { vue: '@vue/runtime-core' }",
     ]) {

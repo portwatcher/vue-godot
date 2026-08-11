@@ -1,0 +1,16 @@
+import { Node, Vector2 } from 'godot'
+import { defineScript } from 'godot-js'
+
+class ReloadProbe extends Node {
+  state = new Vector2(3, 4)
+
+  generation() {
+    return 3
+  }
+}
+
+export default defineScript(ReloadProbe, {
+  properties: {
+    state: { type: 'vector2', default: new Vector2(3, 4) },
+  },
+})

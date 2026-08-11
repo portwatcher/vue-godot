@@ -1,13 +1,37 @@
 import { installBrowserAPIs } from '@vue-godot/browser'
-import { createHtmlStyleSheet, htmlPlugin } from '@vue-godot/html'
+import {
+  Button as HtmlButton,
+  createHtmlStyleSheet,
+  Div as HtmlDiv,
+  htmlPlugin,
+  Label as HtmlLabel,
+} from '@vue-godot/html'
 import { createApp } from '@vue-godot/runtime-tscn'
-import { Node, OS, VBoxContainer } from 'godot'
+import { defineComponent, h, type Component } from '@vue/runtime-core'
+import {
+  ClassDB,
+  Node,
+  Object as GodotObject,
+  OS,
+  Time,
+  VBoxContainer,
+} from 'godot'
 import App from './App.vue'
 import {
   assertBrowserSmokeResults,
   formatBrowserSmokeResults,
   runBrowserSmokeTests,
 } from './browserSmoke'
+import {
+  isPerformanceEnabled,
+  isSmokeEnabled,
+  PERFORMANCE_CYCLES_ENV,
+  readOptionalEnv,
+  readPositiveIntegerEnv,
+  SMOKE_FETCH_TEXT_ENV,
+  SMOKE_FETCH_URL_ENV,
+  SMOKE_RELOADS_ENV,
+} from './smokeEnvironment'
 import './vite-global.css'
 
 installBrowserAPIs()
@@ -93,27 +117,86 @@ const htmlDemoStyleSheet = createHtmlStyleSheet(
   { source: 'html-demo.css' },
 )
 
-const SMOKE_ENV = 'VUE_GODOT_SMOKE'
-const SMOKE_RELOADS_ENV = 'VUE_GODOT_SMOKE_RELOADS'
-const SMOKE_FETCH_URL_ENV = 'VUE_GODOT_SMOKE_FETCH_URL'
-const SMOKE_FETCH_TEXT_ENV = 'VUE_GODOT_SMOKE_FETCH_TEXT'
 const DEFAULT_SMOKE_RELOADS = 3
+const DEFAULT_PERFORMANCE_CYCLES = 10
 
-function readOptionalEnv(name: string): string | undefined {
-  return OS.has_environment(name) ? OS.get_environment(name) : undefined
+const PerformanceApp = defineComponent({
+  name: 'PerformanceApp',
+  setup() {
+    return () =>
+      h(
+        HtmlDiv,
+        { style: { flexDirection: 'column', gap: 8, padding: 8 } },
+        {
+          default: () => [
+            h(HtmlLabel, { text: 'Vue Godot performance fixture' }),
+            h(HtmlButton, null, { default: () => 'Measure' }),
+          ],
+        },
+      )
+  },
+})
+
+interface RuntimePerformanceMetrics {
+  callbackRootCount: number
+  cycles: number
+  finalChildCount: number
+  firstModuleEvaluationMs: number
+  firstVueMountMs: number
+  idleCallbackRootCount: number
+  idleQuickJsMemoryBytes: number
+  idleStaticMemoryBytes: number
+  idleWrapperCount: number
+  mounts: number
+  postDemoQuickJsMemoryBytes: number
+  postDemoStaticMemoryBytes: number
+  postUnmountQuickJsMemoryBytes: number
+  postUnmountStaticMemoryBytes: number
+  repeatedMountUnmountMs: number
+  runtimeInitializationMs: number
+  staticMemoryPeakBytes: number
+  unmounts: number
+  wrapperCount: number
 }
 
-function readPositiveIntegerEnv(name: string, fallback: number): number {
-  if (!OS.has_environment(name)) {
-    return fallback
+interface PendingPerformanceResult {
+  cycles: number
+  postDemoQuickJsMemoryBytes: number
+  postDemoStaticMemoryBytes: number
+  repeatedMountUnmountMs: number
+}
+
+function numericValue(value: unknown, label: string): number {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value
   }
-
-  const value = Number.parseInt(OS.get_environment(name), 10)
-  return Number.isInteger(value) && value > 0 ? value : fallback
+  if (typeof value === 'bigint') {
+    const converted = Number(value)
+    if (Number.isSafeInteger(converted)) {
+      return converted
+    }
+  }
+  throw new Error(`${label} did not return a safe finite number`)
 }
 
-function isSmokeEnabled(): boolean {
-  return OS.has_environment(SMOKE_ENV) && OS.get_environment(SMOKE_ENV) !== '0'
+function millisecondsBetween(startedAtUsec: number): number {
+  return (
+    (numericValue(Time.get_ticks_usec(), 'Time.get_ticks_usec') -
+      startedAtUsec) /
+    1_000
+  )
+}
+
+function runtimeInfo(): GodotObject {
+  const instance = ClassDB.instantiate('GodotJavaScriptRuntimeInfo')
+  if (!GodotObject.is_instance(instance)) {
+    throw new Error('GodotJavaScriptRuntimeInfo is not registered')
+  }
+  return instance
+}
+
+function runtimeMetric(info: GodotObject, method: string): number {
+  return numericValue(info.call(method), `GodotJavaScriptRuntimeInfo.${method}`)
 }
 
 function findNodesByClass(root: Node, className: string): Node[] {
@@ -151,15 +234,77 @@ function findNodeByStringProperty(
 
 export default class Root extends VBoxContainer {
   private app: ReturnType<typeof createApp> | null = null
+  private smokeExitCode: number | null = null
   private smokeMounts = 0
   private smokeUnmounts = 0
+  private firstVueMountMs = 0
+  private idleCallbackRootCount = 0
+  private idleQuickJsMemoryBytes = 0
+  private idleStaticMemoryBytes = 0
+  private idleWrapperCount = 0
+  private pendingPerformanceResult: PendingPerformanceResult | null = null
+  private performanceCollectionFrames = 0
+  private performanceInfo: GodotObject | null = null
 
   _ready() {
+    if (isPerformanceEnabled()) {
+      const info = runtimeInfo()
+      this.performanceInfo = info
+      this.idleCallbackRootCount = runtimeMetric(
+        info,
+        'get_live_callback_root_count',
+      )
+      this.idleQuickJsMemoryBytes = runtimeMetric(
+        info,
+        'get_memory_usage_bytes',
+      )
+      this.idleStaticMemoryBytes = numericValue(
+        OS.get_static_memory_usage(),
+        'OS.get_static_memory_usage',
+      )
+      this.idleWrapperCount = runtimeMetric(info, 'get_live_wrapper_count')
+      const mountStartedAt = numericValue(
+        Time.get_ticks_usec(),
+        'Time.get_ticks_usec',
+      )
+      this.mountComponent(PerformanceApp)
+      this.firstVueMountMs = millisecondsBetween(mountStartedAt)
+      this.set_process(true)
+      void this.runPerformanceCheck(info)
+      return
+    }
+
     this.mountApp()
 
     if (isSmokeEnabled()) {
+      this.set_process(true)
       void this.runSmokeLifecycleCheck()
     }
+  }
+
+  _process(_delta: number) {
+    if (!isSmokeEnabled() && !isPerformanceEnabled()) return
+
+    if (
+      isPerformanceEnabled() &&
+      this.pendingPerformanceResult &&
+      this.performanceInfo
+    ) {
+      this.performanceInfo.call('collect_garbage')
+      this.performanceCollectionFrames--
+      if (this.performanceCollectionFrames <= 0) {
+        this.finishPerformanceCheck(
+          this.performanceInfo,
+          this.pendingPerformanceResult,
+        )
+      }
+    }
+
+    if (this.smokeExitCode === null) return
+
+    const exitCode = this.smokeExitCode
+    this.smokeExitCode = null
+    this.get_tree().quit(exitCode)
   }
 
   _exit_tree() {
@@ -167,8 +312,12 @@ export default class Root extends VBoxContainer {
   }
 
   private mountApp() {
+    this.mountComponent(App)
+  }
+
+  private mountComponent(component: Component) {
     this.unmountApp()
-    const app = createApp(App)
+    const app = createApp(component)
     app.use(htmlPlugin, {
       defaultStyles: 'browser',
       stylesheets: [htmlDemoStyleSheet],
@@ -190,6 +339,10 @@ export default class Root extends VBoxContainer {
 
   private async nextFrame() {
     await this.get_tree().create_timer(0).timeout.as_promise()
+  }
+
+  private requestSmokeExit(exitCode: number) {
+    this.smokeExitCode = exitCode
   }
 
   private async assertAfterUnmount(cycle: number) {
@@ -219,7 +372,9 @@ export default class Root extends VBoxContainer {
 
     let connectedButton: Node | null = null
     for (const button of buttons) {
-      const connectionCount = button.get_signal_connection_list('pressed').size()
+      const connectionCount = button
+        .get_signal_connection_list('pressed')
+        .size()
       if (connectionCount > 1) {
         throw new Error(
           `cycle ${cycle}: expected at most one pressed connection per Button, found ${connectionCount}`,
@@ -416,11 +571,111 @@ export default class Root extends VBoxContainer {
       console.log(
         `[vue-godot-smoke] passed reloads=${reloads} mounts=${this.smokeMounts} unmounts=${this.smokeUnmounts}`,
       )
-      this.get_tree().quit(0)
+      this.requestSmokeExit(0)
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       console.error(`[vue-godot-smoke] failed: ${message}`)
-      this.get_tree().quit(1)
+      this.requestSmokeExit(1)
+    }
+  }
+
+  private async runPerformanceCheck(info: GodotObject): Promise<void> {
+    const cycles = readPositiveIntegerEnv(
+      PERFORMANCE_CYCLES_ENV,
+      DEFAULT_PERFORMANCE_CYCLES,
+    )
+
+    try {
+      await this.nextFrame()
+      const expectedChildCount = this.get_child_count()
+      const postDemoQuickJsMemoryBytes = runtimeMetric(
+        info,
+        'get_memory_usage_bytes',
+      )
+      const postDemoStaticMemoryBytes = numericValue(
+        OS.get_static_memory_usage(),
+        'OS.get_static_memory_usage',
+      )
+      console.log('[vue-godot-performance-ready]')
+      const cyclesStartedAt = numericValue(
+        Time.get_ticks_usec(),
+        'Time.get_ticks_usec',
+      )
+
+      for (let cycle = 1; cycle <= cycles; cycle++) {
+        await this.assertAfterUnmount(cycle)
+        this.mountComponent(PerformanceApp)
+        await this.nextFrame()
+        const childCount = this.get_child_count()
+        if (childCount !== expectedChildCount) {
+          throw new Error(
+            `performance cycle ${cycle}: expected ${expectedChildCount} children, found ${childCount}`,
+          )
+        }
+      }
+
+      await this.assertAfterUnmount(cycles + 1)
+      const repeatedMountUnmountMs = millisecondsBetween(cyclesStartedAt)
+      this.pendingPerformanceResult = {
+        cycles,
+        postDemoQuickJsMemoryBytes,
+        postDemoStaticMemoryBytes,
+        repeatedMountUnmountMs,
+      }
+      this.performanceCollectionFrames = 3
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      console.error(`[vue-godot-performance] failed: ${message}`)
+      this.requestSmokeExit(1)
+    }
+  }
+
+  private finishPerformanceCheck(
+    info: GodotObject,
+    pending: PendingPerformanceResult,
+  ): void {
+    try {
+      const metrics: RuntimePerformanceMetrics = {
+        callbackRootCount: runtimeMetric(info, 'get_live_callback_root_count'),
+        cycles: pending.cycles,
+        finalChildCount: this.get_child_count(),
+        firstModuleEvaluationMs:
+          runtimeMetric(info, 'get_first_module_evaluation_time_usec') / 1_000,
+        firstVueMountMs: this.firstVueMountMs,
+        idleCallbackRootCount: this.idleCallbackRootCount,
+        idleQuickJsMemoryBytes: this.idleQuickJsMemoryBytes,
+        idleStaticMemoryBytes: this.idleStaticMemoryBytes,
+        idleWrapperCount: this.idleWrapperCount,
+        mounts: this.smokeMounts,
+        postDemoQuickJsMemoryBytes: pending.postDemoQuickJsMemoryBytes,
+        postDemoStaticMemoryBytes: pending.postDemoStaticMemoryBytes,
+        postUnmountQuickJsMemoryBytes: runtimeMetric(
+          info,
+          'get_memory_usage_bytes',
+        ),
+        postUnmountStaticMemoryBytes: numericValue(
+          OS.get_static_memory_usage(),
+          'OS.get_static_memory_usage',
+        ),
+        repeatedMountUnmountMs: pending.repeatedMountUnmountMs,
+        runtimeInitializationMs:
+          runtimeMetric(info, 'get_initialization_time_usec') / 1_000,
+        staticMemoryPeakBytes: numericValue(
+          OS.get_static_memory_peak_usage(),
+          'OS.get_static_memory_peak_usage',
+        ),
+        unmounts: this.smokeUnmounts,
+        wrapperCount: runtimeMetric(info, 'get_live_wrapper_count'),
+      }
+
+      this.pendingPerformanceResult = null
+      console.log(`[vue-godot-performance] ${JSON.stringify(metrics)}`)
+      this.requestSmokeExit(0)
+    } catch (error) {
+      this.pendingPerformanceResult = null
+      const message = error instanceof Error ? error.message : String(error)
+      console.error(`[vue-godot-performance] failed: ${message}`)
+      this.requestSmokeExit(1)
     }
   }
 }

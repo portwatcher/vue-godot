@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Vibration polyfill for GodotJS
+// Vibration polyfill for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 // Implements `navigator.vibrate()` on top of Godot's handheld vibration API.
 // ---------------------------------------------------------------------------
@@ -34,9 +34,7 @@ function normalizePattern(pattern: GodotVibrationPattern): number[] | null {
       return null
     }
 
-    normalized.push(
-      Math.min(Math.trunc(duration), MAX_VIBRATION_DURATION_MS),
-    )
+    normalized.push(Math.min(Math.trunc(duration), MAX_VIBRATION_DURATION_MS))
   }
 
   return normalized

@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// fetch() polyfill for GodotJS
+// fetch() polyfill for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 // Built on Godot's HTTPClient (RefCounted — no scene-tree required).
 //
@@ -13,6 +13,7 @@
 // ---------------------------------------------------------------------------
 
 import { HTTPClient, TLSOptions } from 'godot'
+import { packedStringArrayToStrings } from '@vue-godot/device'
 import { GodotHeaders } from './headers.js'
 import {
   GodotRequest,
@@ -200,11 +201,9 @@ async function fetchInternal(
 
   // Read response headers
   const responseCode = client.get_response_code()
-  const rawHeaders = client.get_response_headers()
-  const headerStrings: string[] = []
-  for (let i = 0; i < rawHeaders.size(); i++) {
-    headerStrings.push(rawHeaders.get_indexed(i))
-  }
+  const headerStrings = packedStringArrayToStrings(
+    client.get_response_headers(),
+  )
   const responseHeaders = GodotHeaders.fromGodotArray(headerStrings)
 
   // Handle redirects
@@ -289,7 +288,7 @@ async function fetchInternal(
 // ---------------------------------------------------------------------------
 
 /**
- * `fetch()` implementation for GodotJS.
+ * `fetch()` implementation for the Godot JavaScript Runtime.
  *
  * Built on Godot's `HTTPClient` — works without adding nodes to the
  * scene tree. Supports GET, POST, PUT, DELETE, etc., redirects, headers,

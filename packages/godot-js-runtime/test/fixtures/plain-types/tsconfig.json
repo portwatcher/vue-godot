@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "skipLibCheck": false,
+    "strict": true,
+    "target": "ES2022"
+  },
+  "files": ["../../../../cli/templates/typings/index.d.ts", "player.ts"]
+}

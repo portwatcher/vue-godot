@@ -85,6 +85,50 @@ function assertProductionSupportConfigured(target) {
   }
 }
 
+function assertGodotJsBoundary(target) {
+  const packageJsonPath = path.join(target, 'package.json')
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
+  if (
+    packageJson.dependencies?.['godot-js-runtime'] ||
+    packageJson.devDependencies?.['godot-js-runtime']
+  ) {
+    throw new Error(`${packageJsonPath} must not depend on godot-js-runtime`)
+  }
+  for (const scriptName of [
+    'install:runtime',
+    'verify:runtime',
+    'add-target:runtime',
+    'uninstall:runtime',
+    'setup:runtime',
+  ]) {
+    if (packageJson.scripts?.[scriptName]) {
+      throw new Error(`${packageJsonPath} must not include ${scriptName}`)
+    }
+  }
+  if (!packageJson.scripts?.['gen:types']) {
+    throw new Error(`${packageJsonPath} must include gen:types`)
+  }
+  for (const relativePath of [
+    'typings/godot.d.ts',
+    'typings/godot-js.d.ts',
+    'typings/godot-jsb.d.ts',
+    'typings/index.d.ts',
+    'typings/manifest.json',
+    'typings/godot.vue-components.gen.d.ts',
+  ]) {
+    if (!fs.existsSync(path.join(target, relativePath))) {
+      throw new Error(`${path.join(target, relativePath)} must be generated`)
+    }
+  }
+  if (
+    fs
+      .readdirSync(path.join(target, 'typings'))
+      .some((name) => /^godot\d*\.gen\.d\.ts$/.test(name))
+  ) {
+    throw new Error(`${target} copied legacy custom-editor declaration bundles`)
+  }
+}
+
 function assertStarterFeatureFilesConfigured(target) {
   const packageJsonPath = path.join(target, 'package.json')
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
@@ -218,6 +262,16 @@ function smokeProject(cliPath, workspaceDir, name, createArgs, env) {
     env,
     stdio: 'inherit',
   })
+  const installedCliPath = path.join(
+    target,
+    'node_modules/@vue-godot/cli/dist/cli.js',
+  )
+  run(nodeCommand, [installedCliPath, 'doctor', target], {
+    cwd: target,
+    env,
+    stdio: 'inherit',
+  })
+  assertGodotJsBoundary(target)
   assertStableViteChunkNames(target)
   return target
 }

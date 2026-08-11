@@ -40,7 +40,9 @@ test('exports-only diagnostics warn for detected camera export settings', () => 
       ),
     )
     assert.ok(
-      report.checks.some((check) => check.label === 'export_presets.cfg not found'),
+      report.checks.some(
+        (check) => check.label === 'export_presets.cfg not found',
+      ),
     )
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true })
@@ -76,7 +78,11 @@ test('project diagnostics accept a minimal generated project shape', () => {
     writeFile(path.join(tempDir, 'vue/.gdignore'), '')
     writeFile(path.join(tempDir, 'gen/.gdignore'), '')
     writeFile(path.join(tempDir, 'typings/.gdignore'), '')
-    writeFile(path.join(tempDir, 'typings/godot0.gen.d.ts'), '')
+    writeFile(path.join(tempDir, 'typings/godot.d.ts'), '')
+    writeFile(path.join(tempDir, 'typings/godot-js.d.ts'), '')
+    writeFile(path.join(tempDir, 'typings/godot-jsb.d.ts'), '')
+    writeFile(path.join(tempDir, 'typings/index.d.ts'), '')
+    writeFile(path.join(tempDir, 'typings/manifest.json'), '{}\n')
     writeFile(path.join(tempDir, 'typings/godot.vue-components.gen.d.ts'), '')
     writeFile(path.join(tempDir, 'dist/app.js'), '')
 
@@ -87,7 +93,9 @@ test('project diagnostics accept a minimal generated project shape', () => {
 
     assert.equal(report.errorCount, 0)
     assert.ok(
-      report.checks.some((check) => check.label === 'Node.js version is supported'),
+      report.checks.some(
+        (check) => check.label === 'Node.js version is supported',
+      ),
     )
     assert.ok(
       report.checks.some((check) => check.label === 'node_modules not found'),
@@ -104,6 +112,9 @@ test('migration diagnostics distinguish small, medium, and rewrite areas', () =>
       scripts: {
         build: 'vite build -c vue/vite.config.ts',
         'gen:types': 'vue-godot gen-types',
+        'install:runtime': 'godot-js-runtime install --project .',
+        'verify:runtime': 'godot-js-runtime verify --project .',
+        'setup:runtime': 'npm run install:runtime && npm run gen:types',
       },
       dependencies: {
         '@vue-godot/browser': '^0.0.2',
@@ -111,6 +122,7 @@ test('migration diagnostics distinguish small, medium, and rewrite areas', () =>
         '@vue-godot/html': '^0.0.2',
         '@vue-godot/runtime-tscn': '^0.0.2',
         '@vue/runtime-core': '^3.5.14',
+        'godot-js-runtime': '^0.0.1',
       },
       devDependencies: {
         '@vue-godot/cli': '^0.0.3',

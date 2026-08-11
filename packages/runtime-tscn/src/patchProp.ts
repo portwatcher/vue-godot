@@ -1,7 +1,7 @@
 import { RendererOptions } from '@vue/runtime-core'
 import { Callable, Node } from 'godot'
 import { patchGodotProperty } from './propertyPatch.js'
-import { patchSignalHandlers } from './signalEvents.js'
+import { clearSignalHandlers, patchSignalHandlers } from './signalEvents.js'
 
 type TSCNRendererOptions = RendererOptions<Node, Node>
 
@@ -19,6 +19,45 @@ function safeNodeName(node: Node): string {
   return node.get_name().toString()
 }
 
+function createGodotSignalCallable(
+  target: Node,
+  handler: (...args: unknown[]) => unknown,
+) {
+  return Callable.create(target, handler)
+}
+
+type GodotSignalCallable = ReturnType<typeof createGodotSignalCallable>
+
+function signalPatchOperations(el: Node, eventKey: string) {
+  return {
+    createCallable: createGodotSignalCallable,
+    connect: (
+      target: Node,
+      signalName: string,
+      callable: GodotSignalCallable,
+    ) => target.connect(signalName, new Callable(callable)),
+    disconnect: (
+      target: Node,
+      signalName: string,
+      callable: GodotSignalCallable,
+    ) => target.disconnect(signalName, new Callable(callable)),
+    onError: (
+      phase: 'connect' | 'disconnect',
+      signalName: string,
+      error: unknown,
+    ) => {
+      console.warn(
+        `[vue-godot] Unable to ${phase} signal "${signalName}" on ${safeNodeName(el)} from Vue event prop "${eventKey}". Check that this Godot class defines the signal and that the event name maps to the expected Godot signal:`,
+        error,
+      )
+    },
+  }
+}
+
+export function clearGodotSignalHandlers(el: Node): void {
+  clearSignalHandlers(el, signalPatchOperations(el, '<unmount>'))
+}
+
 export const patchProp: TSCNRendererOptions['patchProp'] = function (
   el: Node,
   key: string,
@@ -26,20 +65,7 @@ export const patchProp: TSCNRendererOptions['patchProp'] = function (
   next: unknown,
 ) {
   if (key.startsWith('on')) {
-    patchSignalHandlers(el, key, next, {
-      createCallable: (target, handler) =>
-        Callable.create(target, handler as (...args: unknown[]) => unknown),
-      connect: (target, signalName, callable) =>
-        target.connect(signalName, new Callable(callable)),
-      disconnect: (target, signalName, callable) =>
-        target.disconnect(signalName, new Callable(callable)),
-      onError: (phase, signalName, error) => {
-        console.warn(
-          `[vue-godot] Unable to ${phase} signal "${signalName}" on ${safeNodeName(el)} from Vue event prop "${key}". Check that this Godot class defines the signal and that the event name maps to the expected Godot signal:`,
-          error,
-        )
-      },
-    })
+    patchSignalHandlers(el, key, next, signalPatchOperations(el, key))
   } else {
     patchGodotProperty(el, key, next, (message) => {
       const targetName = safeNodeName(el)

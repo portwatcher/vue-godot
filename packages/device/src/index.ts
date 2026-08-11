@@ -85,3 +85,4 @@ export type {
   SecureStorageAdapter,
   ShareAdapter,
 } from './adapters.js'
+export { packedStringArrayToStrings } from './utils/packedStringArray.js'

@@ -176,6 +176,60 @@ function checkPackageMetadata(packagesByName) {
   }
 }
 
+function checkRuntimeReleaseManifest(packagesByName) {
+  logStep('checking GodotJS release manifest')
+
+  const runtimePackage = readJson('packages/godot-js-runtime/package.json')
+  assertEqual('GodotJS build workspace private', runtimePackage.private, true)
+  const manifest = readJson(
+    'packages/godot-js-runtime/addon/godotjs/manifest.json',
+  )
+  assertEqual('GodotJS source manifest name', manifest.runtimeName, 'GodotJS')
+  assertEqual('GodotJS source manifest id', manifest.packageName, 'godotjs')
+  assertEqual(
+    'GodotJS source manifest version',
+    manifest.version,
+    runtimePackage.version,
+  )
+  assertEqual('GodotJS minimum ABI', manifest.godotMinimum, '4.4')
+
+  if (typeof manifest.gitCommit === 'string') {
+    const ancestor = run('git', [
+      'merge-base',
+      '--is-ancestor',
+      manifest.gitCommit,
+      'HEAD',
+    ])
+    if (ancestor.status !== 0) {
+      failures.push(
+        `Runtime manifest commit is not an ancestor of HEAD: ${manifest.gitCommit}`,
+      )
+    }
+  }
+
+  const dependencyLock = readJson(
+    'packages/godot-js-runtime/native/deps.lock.json',
+  )
+  const lockedCommits = new Map(
+    Object.values(dependencyLock.dependencies ?? {})
+      .filter((dependency) => dependency.kind === 'source-archive')
+      .map((dependency) => [dependency.name, dependency.commit]),
+  )
+  for (const dependency of Array.isArray(manifest.dependencies)
+    ? manifest.dependencies
+    : []) {
+    if (lockedCommits.get(dependency.name) !== dependency.commit) {
+      failures.push(
+        `Runtime manifest dependency ${String(dependency.name)} does not match deps.lock.json`,
+      )
+    }
+  }
+
+  console.log(
+    `[release-preflight] GodotJS manifest includes ${String(manifest.artifacts?.length ?? 0)} payload files and ${String(manifest.archives?.length ?? 0)} archives`,
+  )
+}
+
 async function checkGeneratedPackageSpecs(packagesByName) {
   logStep('checking CLI-generated package specs')
 
@@ -206,6 +260,9 @@ async function checkGeneratedPackageSpecs(packagesByName) {
         expectedRange(pkg.version),
       )
     }
+  }
+  if (deps['godot-js-runtime'] || devDeps['godot-js-runtime']) {
+    failures.push('generated projects must not depend on godot-js-runtime')
   }
 
   const cli = packagesByName.get('@vue-godot/cli')
@@ -397,6 +454,40 @@ function checkGodotSmoke() {
 
   logStep('checking Godot smoke')
 
+  const runtimeResult = run(npmCommand, [
+    'run',
+    'smoke:godotjs',
+    '--',
+    '--skip-build',
+  ])
+  const runtimeOutput = `${runtimeResult.stdout ?? ''}\n${runtimeResult.stderr ?? ''}`
+  process.stdout.write(runtimeResult.stdout ?? '')
+  process.stderr.write(runtimeResult.stderr ?? '')
+  if (runtimeResult.status !== 0) {
+    failures.push(`npm run smoke:godotjs failed\n${runtimeOutput}`)
+    return
+  }
+  if (!runtimeOutput.includes('[stock-smoke] PASS')) {
+    failures.push('Standalone runtime smoke completed without the pass marker')
+  }
+
+  const standaloneResult = run(npmCommand, ['run', 'smoke:godotjs-demo'], {
+    env: {
+      ...process.env,
+      GODOTJS_SKIP_NATIVE_BUILD: '1',
+    },
+  })
+  const standaloneOutput = `${standaloneResult.stdout ?? ''}\n${standaloneResult.stderr ?? ''}`
+  process.stdout.write(standaloneResult.stdout ?? '')
+  process.stderr.write(standaloneResult.stderr ?? '')
+  if (standaloneResult.status !== 0) {
+    failures.push(`npm run smoke:godotjs-demo failed\n${standaloneOutput}`)
+    return
+  }
+  if (!standaloneOutput.includes('[standalone-smoke] PASS')) {
+    failures.push('Standalone demo smoke completed without the pass marker')
+  }
+
   const result = run(npmCommand, ['run', 'smoke:godot'])
   const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`
   process.stdout.write(result.stdout ?? '')
@@ -550,9 +641,7 @@ function writePreflightSummary() {
     resolved,
     `${JSON.stringify(buildPreflightSummary(), null, 2)}\n`,
   )
-  console.log(
-    `[release-preflight] wrote ${path.relative(repoRoot, resolved)}`,
-  )
+  console.log(`[release-preflight] wrote ${path.relative(repoRoot, resolved)}`)
 }
 
 function printSummary() {
@@ -598,6 +687,7 @@ async function main() {
   }
 
   checkPackageMetadata(packagesByName)
+  checkRuntimeReleaseManifest(packagesByName)
   await checkGeneratedPackageSpecs(packagesByName)
   checkPackDryRun()
   const publishNeeded = checkRegistry(packagesByName)

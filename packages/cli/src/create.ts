@@ -4,6 +4,7 @@ import { spawn } from 'node:child_process'
 import {
   addHtmlVolarPlugin,
   copyProductionSupportFiles,
+  copyGodotScanIgnoreScaffold,
   copyTemplateDir,
   generateHtmlAppVue,
   generateHtmlCss,
@@ -153,7 +154,7 @@ export async function create(options: CreateOptions): Promise<void> {
     process.cwd(),
   )
 
-  /* --- copy GodotJS generated resource type ignore marker --- */
+  /* --- copy generated resource type ignore marker --- */
   const genTplDir = path.join(templatesDir, 'gen')
   const genDir = path.join(absTarget, 'gen')
 
@@ -229,17 +230,7 @@ export async function create(options: CreateOptions): Promise<void> {
   }
 
   /* --- package.json --- */
-  const typingsTplDir = path.join(templatesDir, 'typings')
-  const typingsDir = path.join(absTarget, 'typings')
-
-  if (!fs.existsSync(typingsTplDir)) {
-    console.error(
-      `Template directory not found: ${typingsTplDir}\nThe CLI package may not be installed correctly.`,
-    )
-    process.exit(1)
-  }
-
-  copyTemplateDir(typingsTplDir, typingsDir, {}, process.cwd())
+  copyGodotScanIgnoreScaffold(absTarget, process.cwd())
 
   const pkgJsonPath = path.join(absTarget, 'package.json')
   fs.writeFileSync(
@@ -264,8 +255,6 @@ export async function create(options: CreateOptions): Promise<void> {
   console.log(`\nRunning project setup...`)
   console.log(`  npm install`)
   await runCommand(npmCmd, ['install'], absTarget)
-  console.log(`  npm run gen:types`)
-  await runCommand(npmCmd, ['run', 'gen:types'], absTarget)
 
   console.log(
     `\n✔ Project "${packageName}" created at ${path.relative(process.cwd(), absTarget)}`,
@@ -273,9 +262,10 @@ export async function create(options: CreateOptions): Promise<void> {
   console.log(`\nCompleted setup:`)
   console.log(`  cd ${projectName}`)
   console.log(`  npm install        (executed)`)
-  console.log(`  npm run gen:types  (executed)`)
+  console.log(`  Install GodotJS: extract the release ZIP at the project root`)
+  console.log(`  npm run gen:types  (executed by postinstall)`)
   console.log(
     `  npm run dev          # rebuilds on change; Godot hot-reloads dist/app.js`,
   )
-  console.log(`  # Open the project in Godot and hit Play`)
+  console.log(`  # Open the project in an official Godot editor and hit Play`)
 }

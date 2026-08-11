@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Storage polyfills for GodotJS
+// Storage polyfills for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 
 import { FileAccess } from 'godot'

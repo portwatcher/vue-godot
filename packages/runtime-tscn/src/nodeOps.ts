@@ -1,6 +1,7 @@
 import type { RendererOptions } from '@vue/runtime-core'
 import { ClassDB, Label, Node } from 'godot'
 import { insertChildBeforeAnchor } from './insertChild.js'
+import { clearGodotSignalHandlers } from './patchProp.js'
 import {
   insertStaticContentNode,
   supportsPlainTextStaticContent,
@@ -12,14 +13,21 @@ function hasTextProperty(node: Node): node is Node & { text: string } {
   return 'text' in (node as object)
 }
 
-function setHostNodeText(node: Node, text: string, opName: 'setText' | 'setElementText') {
+function setHostNodeText(
+  node: Node,
+  text: string,
+  opName: 'setText' | 'setElementText',
+) {
   if (hasTextProperty(node)) {
     node.text = text
     return
   }
 
-  const nodeType = (node as { constructor?: { name?: string } }).constructor?.name ?? 'Node'
-  console.warn(`vue-godot doesn't support ${opName} on ${nodeType} (no text property)`)
+  const nodeType =
+    (node as { constructor?: { name?: string } }).constructor?.name ?? 'Node'
+  console.warn(
+    `vue-godot doesn't support ${opName} on ${nodeType} (no text property)`,
+  )
 }
 
 function createFallbackNodeForUnsupportedTag(tag: string): Node {
@@ -27,6 +35,17 @@ function createFallbackNodeForUnsupportedTag(tag: string): Node {
     `[vue-godot] Unsupported Godot node class "${tag}". Falling back to a generic Node; check the tag name, generated Godot typings, or ClassDB availability.`,
   )
   return new Node()
+}
+
+function clearNodeTreeSignalHandlers(node: Node): void {
+  const childCount = node.get_child_count()
+  for (let index = 0; index < childCount; index++) {
+    const child = node.get_child(index)
+    if (child) {
+      clearNodeTreeSignalHandlers(child)
+    }
+  }
+  clearGodotSignalHandlers(node)
 }
 
 export const nodeOps: Omit<RendererOptions<Node, Node>, 'patchProp'> = {
@@ -40,6 +59,7 @@ export const nodeOps: Omit<RendererOptions<Node, Node>, 'patchProp'> = {
   },
 
   remove: (child) => {
+    clearNodeTreeSignalHandlers(child)
     const parent = child.get_parent()
     if (parent) {
       parent.remove_child(child)
@@ -48,9 +68,14 @@ export const nodeOps: Omit<RendererOptions<Node, Node>, 'patchProp'> = {
   },
 
   createElement: (tag, isSVG, isCustomElement, vnodeProps): Node => {
-    return ClassDB.can_instantiate(tag)
-      ? ClassDB.instantiate(tag)
-      : createFallbackNodeForUnsupportedTag(tag)
+    if (ClassDB.can_instantiate(tag)) {
+      const instance = ClassDB.instantiate(tag)
+      if (instance instanceof Node) {
+        return instance
+      }
+    }
+
+    return createFallbackNodeForUnsupportedTag(tag)
   },
 
   createText: (text): Node => {
@@ -93,10 +118,13 @@ export const nodeOps: Omit<RendererOptions<Node, Node>, 'patchProp'> = {
   },
 
   insertStaticContent(content, parent, anchor, isSVG) {
-    if (!supportsPlainTextStaticContent(content) && !didWarnUnsupportedStaticMarkup) {
+    if (
+      !supportsPlainTextStaticContent(content) &&
+      !didWarnUnsupportedStaticMarkup
+    ) {
       didWarnUnsupportedStaticMarkup = true
       console.warn(
-        "[vue-godot] insertStaticContent only supports plain text static content; HTML-like static markup is inserted as a placeholder node.",
+        '[vue-godot] insertStaticContent only supports plain text static content; HTML-like static markup is inserted as a placeholder node.',
       )
     }
 

@@ -1,0 +1,23 @@
+{
+  "enabled_classes": [
+    "CanvasItem",
+    "DisplayServer",
+    "Engine",
+    "GDScript",
+    "MainLoop",
+    "Material",
+    "Mesh",
+    "Node",
+    "OS",
+    "ProjectSettings",
+    "ResourceFormatLoader",
+    "ResourceFormatSaver",
+    "ResourceLoader",
+    "ResourceSaver",
+    "ScriptExtension",
+    "ScriptLanguageExtension",
+    "StyleBox",
+    "Texture2D",
+    "Window"
+  ]
+}

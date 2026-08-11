@@ -8,7 +8,7 @@
       "outputs": ["dist/**"]
     },
     "test": {
-      "dependsOn": ["build"],
+      "dependsOn": ["build", "^test"],
       "inputs": ["$TURBO_DEFAULT$", "test/**"],
       "outputs": []
     },

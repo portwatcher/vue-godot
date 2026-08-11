@@ -263,10 +263,7 @@ const EXPORT_FEATURE_RULES: FeatureRule[] = [
   {
     id: 'notifications',
     label: 'native notifications',
-    patterns: [
-      /\bNotification\b/,
-      /capability\s*:\s*['"]notifications['"]/,
-    ],
+    patterns: [/\bNotification\b/, /capability\s*:\s*['"]notifications['"]/],
     android: [
       {
         label: 'android.permission.POST_NOTIFICATIONS',
@@ -307,9 +304,9 @@ function addCheck(
   checks.push({ status, label, details })
 }
 
-function readJsonFile(filePath: string):
-  | { ok: true; value: unknown }
-  | { ok: false; error: string } {
+function readJsonFile(
+  filePath: string,
+): { ok: true; value: unknown } | { ok: false; error: string } {
   try {
     return {
       ok: true,
@@ -470,7 +467,9 @@ function migrationTierWeight(tier: MigrationTier): number {
   }
 }
 
-function strongestMigrationTier(findings: readonly MigrationFinding[]): MigrationTier {
+function strongestMigrationTier(
+  findings: readonly MigrationFinding[],
+): MigrationTier {
   let tier: MigrationTier = 'small-change'
   for (const finding of findings) {
     if (migrationTierWeight(finding.tier) > migrationTierWeight(tier)) {
@@ -623,7 +622,9 @@ function scanCssForMigration(
           continue
         }
 
-        for (const selector of selectorText.split(',').map((part) => part.trim())) {
+        for (const selector of selectorText
+          .split(',')
+          .map((part) => part.trim())) {
           if (selector && !isSupportedMigrationSelector(selector)) {
             addMigrationFinding(
               findings,
@@ -793,10 +794,7 @@ function diagnoseNode(checks: DoctorCheck[], nodeVersion: string): void {
   ])
 }
 
-function diagnoseProjectShape(
-  checks: DoctorCheck[],
-  targetDir: string,
-): void {
+function diagnoseProjectShape(checks: DoctorCheck[], targetDir: string): void {
   const projectFile = path.join(targetDir, 'project.godot')
   if (fs.existsSync(projectFile)) {
     addCheck(checks, 'ok', 'Godot project file found', [
@@ -817,7 +815,7 @@ function diagnoseProjectShape(
     ])
   }
 
-  for (const ignoredDir of ['vue', 'gen', 'typings']) {
+  for (const ignoredDir of ['node_modules', 'vue', 'gen', 'typings']) {
     const dirPath = path.join(targetDir, ignoredDir)
     if (!fs.existsSync(dirPath)) {
       continue
@@ -842,28 +840,69 @@ function diagnoseProjectShape(
   }
 }
 
-function diagnoseGodotJs(
+function diagnoseRuntimeInstallation(
   checks: DoctorCheck[],
   targetDir: string,
 ): void {
+  const descriptor = path.join(
+    targetDir,
+    'addons/godotjs/godotjs.gdextension',
+  )
+  if (!fs.existsSync(descriptor)) {
+    addCheck(checks, 'warning', 'GodotJS is not installed', [
+      'Download the GodotJS ZIP from the GitHub release and extract it at the project root.',
+      'Expected: addons/godotjs/godotjs.gdextension',
+    ])
+  } else {
+    const source = fs.readFileSync(descriptor, 'utf-8')
+    const libraryPaths = [...source.matchAll(/"res:\/\/([^"\n]+)"/g)].map(
+      (match) => match[1],
+    )
+    const invalidPaths = libraryPaths.filter(
+      (relativePath) =>
+        !relativePath.startsWith('addons/godotjs/bin/') ||
+        !fs.existsSync(path.join(targetDir, ...relativePath.split('/'))),
+    )
+    if (libraryPaths.length === 0 || invalidPaths.length > 0) {
+      addCheck(checks, 'error', 'GodotJS installation is incomplete', [
+        ...(libraryPaths.length === 0
+          ? ['The GDExtension descriptor has no native libraries.']
+          : invalidPaths.map((entry) => `Missing or invalid: ${entry}`)),
+        'Extract the complete release ZIP again; do not copy a platform subset.',
+      ])
+    } else {
+      addCheck(checks, 'ok', 'GodotJS installation verified', [
+        `${libraryPaths.length} platform library mapping(s) found.`,
+      ])
+    }
+  }
+
   const typingsDir = path.join(targetDir, 'typings')
   if (!fs.existsSync(typingsDir)) {
-    addCheck(checks, 'warning', 'GodotJS typings directory not found', [
-      'Open the project in the GodotJS editor and run npm run gen:types.',
+    addCheck(checks, 'warning', 'Stock-Godot typings directory not found', [
+      'Run npm run gen:types; no custom editor is required.',
     ])
     return
   }
 
-  const typingFiles = fs
-    .readdirSync(typingsDir)
-    .filter((file) => /^godot\d*\.gen\.d\.ts$/.test(file))
-  if (typingFiles.length === 0) {
-    addCheck(checks, 'warning', 'GodotJS generated typings not found', [
-      'Expected typings/godot*.gen.d.ts from the GodotJS editor.',
+  const requiredTypingFiles = [
+    'godot.d.ts',
+    'godot-js.d.ts',
+    'godot-jsb.d.ts',
+    'index.d.ts',
+    'manifest.json',
+  ]
+  const missingTypingFiles = requiredTypingFiles.filter(
+    (file) => !fs.existsSync(path.join(typingsDir, file)),
+  )
+  if (missingTypingFiles.length > 0) {
+    addCheck(checks, 'warning', 'Stock-Godot declarations are incomplete', [
+      'Run npm run gen:types to regenerate declarations.',
+      ...missingTypingFiles,
     ])
   } else {
-    addCheck(checks, 'ok', 'GodotJS generated typings found', [
-      `${typingFiles.length} godot*.gen.d.ts file(s).`,
+    addCheck(checks, 'ok', 'Stock-Godot declarations found', [
+      'godot, godot-js, and limited godot-jsb modules',
     ])
   }
 
@@ -877,7 +916,7 @@ function diagnoseGodotJs(
     ])
   } else {
     addCheck(checks, 'warning', 'Vue Godot component typings not found', [
-      'Run npm run gen:types after GodotJS typings are generated.',
+      'Run npm run gen:types to regenerate declarations.',
     ])
   }
 }
@@ -970,6 +1009,42 @@ function diagnosePackageSetup(
     ])
   }
 
+  const legacyRuntimeSpec =
+    dependencyField(parsed.value, 'dependencies')['godot-js-runtime'] ??
+    dependencyField(parsed.value, 'devDependencies')['godot-js-runtime']
+  if (legacyRuntimeSpec) {
+    addCheck(checks, 'error', 'Legacy runtime npm package must be removed', [
+      `godot-js-runtime@${legacyRuntimeSpec}`,
+      'GodotJS is a native GDExtension installed under addons/godotjs, not an npm dependency.',
+    ])
+  }
+
+  const scripts = isStringRecord(parsed.value['scripts'])
+    ? parsed.value['scripts']
+    : {}
+  const legacyRuntimeScripts = [
+    'install:runtime',
+    'verify:runtime',
+    'add-target:runtime',
+    'uninstall:runtime',
+    'setup:runtime',
+  ].filter((name) => scripts[name])
+  if (!scripts['gen:types']) {
+    addCheck(checks, 'error', 'Vue Godot type-generation script is missing', [
+      'Run vue-godot integrate to add gen:types.',
+    ])
+  } else {
+    addCheck(checks, 'ok', 'Vue Godot project script is configured', [
+      'gen:types',
+    ])
+  }
+  if (legacyRuntimeScripts.length > 0) {
+    addCheck(checks, 'error', 'Legacy runtime installer scripts must be removed', [
+      ...legacyRuntimeScripts,
+      'Install GodotJS by extracting the release ZIP instead.',
+    ])
+  }
+
   if (!findNodeModules(targetDir)) {
     addCheck(checks, 'warning', 'node_modules not found', [
       'Run npm install before building or running generated scripts.',
@@ -986,7 +1061,7 @@ function diagnosePackageSetup(
       }
     }
     if (installed.length === required.length) {
-      addCheck(checks, 'ok', 'Installed vue-godot package versions found', [
+      addCheck(checks, 'ok', 'Installed project package versions found', [
         ...installed,
       ])
     } else {
@@ -1203,7 +1278,7 @@ export function diagnoseProject(options: DoctorOptions): DoctorReport {
   if (!options.exportsOnly) {
     diagnoseNode(checks, options.nodeVersion ?? process.versions.node)
     diagnoseProjectShape(checks, targetDir)
-    diagnoseGodotJs(checks, targetDir)
+    diagnoseRuntimeInstallation(checks, targetDir)
     const packageJson = diagnosePackageSetup(checks, targetDir, source)
     if (packageJson) {
       const htmlMode = detectHtmlMode(packageJson, source)

@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "rootDir": "src",
+    "moduleResolution": "Bundler",
+    "typeRoots": ["../../node_modules/@types"],
+    "types": ["node"],
+    "declaration": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "noEmitOnError": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"]
+}

@@ -1,38 +1,40 @@
 name: Godot Smoke
 
 on:
+  workflow_call:
+    inputs:
+      godot_versions:
+        description: JSON array of official stable Godot release tags to test.
+        required: false
+        type: string
+        default: '["4.4.1-stable","4.7.1-stable"]'
+      godot_metadata_artifact:
+        description: Optional artifact containing dynamically resolved stable-release metadata.
+        required: false
+        type: string
+        default: ''
   pull_request:
     paths:
-      - '.github/actions/setup-godotjs/**'
+      - '.github/actions/setup-godot/**'
+      - '.github/workflows/godot-latest-stable.yml'
       - '.github/workflows/godot-smoke.yml'
-      - 'apps/game-ui-demo/**'
-      - 'apps/html-demo/**'
-      - 'apps/native-app-demo/**'
+      - 'apps/**'
       - 'package*.json'
       - 'packages/**'
-      - 'scripts/smoke-editor-reload.mjs'
-      - 'scripts/smoke-generated-godot.mjs'
-      - 'scripts/smoke-godot.mjs'
-      - 'scripts/smoke-utils.mjs'
-      - 'scripts/setup-godotjs.mjs'
+      - 'scripts/**'
       - 'turbo.json'
   push:
     branches:
       - develop
       - main
     paths:
-      - '.github/actions/setup-godotjs/**'
+      - '.github/actions/setup-godot/**'
+      - '.github/workflows/godot-latest-stable.yml'
       - '.github/workflows/godot-smoke.yml'
-      - 'apps/game-ui-demo/**'
-      - 'apps/html-demo/**'
-      - 'apps/native-app-demo/**'
+      - 'apps/**'
       - 'package*.json'
       - 'packages/**'
-      - 'scripts/smoke-editor-reload.mjs'
-      - 'scripts/smoke-generated-godot.mjs'
-      - 'scripts/smoke-godot.mjs'
-      - 'scripts/smoke-utils.mjs'
-      - 'scripts/setup-godotjs.mjs'
+      - 'scripts/**'
       - 'turbo.json'
   workflow_dispatch:
 
@@ -40,25 +42,51 @@ permissions:
   contents: read
 
 jobs:
-  godot-smoke:
+  official-godot-smoke:
+    name: Official Godot ${{ matrix.godot-version }}
     runs-on: ubuntu-22.04
-    timeout-minutes: 30
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        godot-version: ${{ fromJSON(inputs.godot_versions || '["4.4.1-stable","4.7.1-stable"]') }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
 
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
       - name: Update npm
         run: npm install -g npm@^11.15.0
 
-      - name: Setup GodotJS
-        uses: ./.github/actions/setup-godotjs
+      - name: Download dynamic stable-release metadata
+        if: inputs.godot_metadata_artifact != ''
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ inputs.godot_metadata_artifact }}
+          path: .artifacts/latest-godot
+
+      - name: Register dynamic stable release
+        if: inputs.godot_metadata_artifact != ''
+        run: >-
+          node scripts/resolve-latest-godot-stable.mjs
+          --metadata .artifacts/latest-godot/stable-release.json
+          --write-catalogs
+
+      - name: Setup official Godot
+        uses: ./.github/actions/setup-godot
+        with:
+          version: ${{ matrix.godot-version }}
 
       - name: Install virtual display
         run: sudo apt-get update && sudo apt-get install -y xvfb
@@ -66,14 +94,29 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Build
+      - name: Build Linux GodotJS GDExtension
+        run: >-
+          npm run build:native --workspace=packages/godot-js-runtime --
+          --platform linux
+          --arch x86_64
+          --target template_debug
+
+      - name: Build repository
         run: npm run build
 
-      - name: Godot smoke
+      - name: Standalone GodotJS smoke
+        run: npm run smoke:godotjs-demo
+
+      - name: Vue Godot smoke
         run: npm run smoke:godot
 
-      - name: Generated Godot smoke
+      - name: Generated project smoke
         run: npm run smoke:generated-godot
 
       - name: Editor reload smoke
-        run: xvfb-run -a --server-args="-screen 0 1280x720x24" npm run smoke:editor-reload
+        run: >-
+          xvfb-run -a --server-args="-screen 0 1280x720x24"
+          npm run smoke:editor-reload
+
+      - name: Performance budgets
+        run: npm run bench:performance

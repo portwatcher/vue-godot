@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
-// atob / btoa polyfills for GodotJS
+// atob / btoa polyfills for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
-// GodotJS (V8/QuickJS) does not expose the browser atob/btoa globals.
+// The runtime does not expose the browser atob/btoa globals.
 // These implementations work on the standard base64 alphabet.
 // ---------------------------------------------------------------------------
 

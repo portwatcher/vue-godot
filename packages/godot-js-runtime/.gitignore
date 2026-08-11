@@ -1,0 +1,9 @@
+native/third_party/
+native/.sconsign.dblite
+native/compile_commands.json
+native/bin/
+native/**/*.o
+native/**/*.obj
+native/**/*.os
+addon/godotjs/bin/*
+!addon/godotjs/bin/.gitkeep

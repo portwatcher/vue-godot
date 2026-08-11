@@ -1,29 +1,28 @@
-import { spawn } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import {
-  assertNoGodotScriptLoadErrors,
+  assertOfficialGodotExecutable,
   assertGeneratedOutputIgnoredByGodot,
   assertStableViteChunkNames,
   assertVueSourceIgnoredByGodot,
   createPackedPackageOverrides,
   directoryContainsText,
+  installBuiltRuntime,
   nodeCommand,
   npmCommand,
   requireBuiltCli,
   resolveGodotCommand,
   run,
   runGodotImport,
+  runGodotProjectUntilMarker,
   startNpmDevWatch,
-  stopProcess,
   waitFor,
 } from './smoke-utils.mjs'
 
 const SMOKE_MARKER_PREFIX = '[vue-godot-generated-smoke]'
 const INITIAL_MARKER = `generated initial ${Date.now()}`
 const UPDATED_MARKER = `generated rebuilt ${Date.now()}`
-const WATCH_TIMEOUT_MS = 30_000
 
 function writeSmokeApp(projectDir, marker) {
   const appVuePath = path.join(projectDir, 'vue/src/App.vue')
@@ -50,77 +49,6 @@ onMounted(() => {
   )
 }
 
-async function runGodotUntilMarker(godot, projectDir, marker) {
-  const expected = `${SMOKE_MARKER_PREFIX} ${marker}`
-  let output = ''
-
-  const child = await new Promise((resolve, reject) => {
-    const child = spawn(godot, ['--headless', '--path', projectDir], {
-      cwd: projectDir,
-      env: process.env,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    })
-
-    let didSettle = false
-
-    const timeout = setTimeout(() => {
-      child.kill('SIGTERM')
-      if (!didSettle) {
-        didSettle = true
-        reject(
-          new Error(
-            `Timed out waiting for generated Godot marker "${expected}"\n${output}`,
-          ),
-        )
-      }
-    }, WATCH_TIMEOUT_MS)
-
-    function handleOutput(chunk) {
-      output += chunk
-      if (!didSettle && output.includes(expected)) {
-        didSettle = true
-        clearTimeout(timeout)
-        resolve(child)
-      }
-    }
-
-    child.stdout.setEncoding('utf-8')
-    child.stderr.setEncoding('utf-8')
-    child.stdout.on('data', handleOutput)
-    child.stderr.on('data', handleOutput)
-    child.on('error', (error) => {
-      if (!didSettle) {
-        didSettle = true
-        clearTimeout(timeout)
-        reject(error)
-      }
-    })
-    child.on('close', (code, signal) => {
-      if (!didSettle) {
-        didSettle = true
-        clearTimeout(timeout)
-        reject(
-          new Error(
-            [
-              `Godot exited before generated marker "${expected}"`,
-              `status=${code ?? signal ?? 'unknown'}`,
-              output,
-            ]
-              .filter(Boolean)
-              .join('\n'),
-          ),
-        )
-      }
-    })
-  })
-
-  await stopProcess(child)
-  assertNoGodotScriptLoadErrors(
-    output,
-    `Generated Godot run for marker "${marker}"`,
-  )
-}
-
 const godot = resolveGodotCommand()
 if (!godot) {
   console.log(
@@ -128,6 +56,7 @@ if (!godot) {
   )
   process.exit(0)
 }
+assertOfficialGodotExecutable(godot)
 
 const cliPath = requireBuiltCli()
 const workspaceDir = fs.mkdtempSync(
@@ -137,7 +66,9 @@ const packDir = path.join(workspaceDir, 'packs')
 const projectDir = path.join(workspaceDir, 'html-app')
 fs.mkdirSync(packDir)
 
-const packageOverrides = createPackedPackageOverrides(packDir)
+const packageOverrides = createPackedPackageOverrides(packDir, {
+  runtimeArtifacts: 'required',
+})
 const env = {
   ...process.env,
   VUE_GODOT_PACKAGE_OVERRIDES: JSON.stringify(packageOverrides),
@@ -148,6 +79,7 @@ run(nodeCommand, [cliPath, 'create', projectDir, '-f', '--html'], {
   env,
   stdio: 'inherit',
 })
+installBuiltRuntime(projectDir)
 assertVueSourceIgnoredByGodot(projectDir)
 assertGeneratedOutputIgnoredByGodot(projectDir)
 
@@ -159,7 +91,12 @@ run(npmCommand, ['run', 'build'], {
 })
 assertStableViteChunkNames(projectDir)
 runGodotImport(godot, projectDir)
-await runGodotUntilMarker(godot, projectDir, INITIAL_MARKER)
+await runGodotProjectUntilMarker(
+  godot,
+  projectDir,
+  `${SMOKE_MARKER_PREFIX} ${INITIAL_MARKER}`,
+  'generated initial Godot run',
+)
 
 const watcher = startNpmDevWatch(projectDir)
 try {
@@ -191,5 +128,10 @@ try {
   await watcher.stop()
 }
 
-await runGodotUntilMarker(godot, projectDir, UPDATED_MARKER)
+await runGodotProjectUntilMarker(
+  godot,
+  projectDir,
+  `${SMOKE_MARKER_PREFIX} ${UPDATED_MARKER}`,
+  'generated rebuilt Godot run',
+)
 console.log('[smoke-generated-godot] generated HTML app Godot smoke passed')

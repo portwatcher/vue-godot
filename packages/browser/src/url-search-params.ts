@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// URLSearchParams polyfill for GodotJS
+// URLSearchParams polyfill for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 
 export type GodotURLSearchParamsInit =

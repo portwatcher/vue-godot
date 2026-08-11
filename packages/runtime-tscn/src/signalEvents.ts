@@ -35,7 +35,9 @@ function normalizeHandlers(value: unknown): EventHandler[] {
   return []
 }
 
-function getListenerMap(target: object): Map<string, ListenerRecord<unknown>[]> {
+function getListenerMap(
+  target: object,
+): Map<string, ListenerRecord<unknown>[]> {
   let listenerMap = signalListeners.get(target)
   if (!listenerMap) {
     listenerMap = new Map()
@@ -96,4 +98,29 @@ export function patchSignalHandlers<TTarget extends object, TCallable>(
   } else {
     listenerMap.delete(eventKey)
   }
+}
+
+export function clearSignalHandlers<TTarget extends object, TCallable>(
+  target: TTarget,
+  ops: SignalPatchOps<TTarget, TCallable>,
+): void {
+  const listenerMap = signalListeners.get(target)
+  if (!listenerMap) {
+    return
+  }
+
+  for (const [eventKey, untypedRecords] of listenerMap) {
+    const signalName = vueEventKeyToGodotSignalName(eventKey)
+    const records = untypedRecords as ListenerRecord<TCallable>[]
+    for (const record of records) {
+      try {
+        ops.disconnect(target, signalName, record.callable)
+      } catch (error) {
+        ops.onError?.('disconnect', signalName, error)
+      }
+    }
+  }
+
+  listenerMap.clear()
+  signalListeners.delete(target)
 }

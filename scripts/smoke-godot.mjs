@@ -1,12 +1,15 @@
-import { spawn } from 'node:child_process'
 import http from 'node:http'
 import path from 'node:path'
 import {
   assertNoGodotScriptLoadErrors,
+  assertOfficialGodotExecutable,
+  godotCommandArguments,
+  installBuiltRuntime,
   npmCommand,
   repoRoot,
   resolveGodotCommand,
   run,
+  runAsync,
 } from './smoke-utils.mjs'
 
 const htmlDemoDir = path.join(repoRoot, 'apps/html-demo')
@@ -27,74 +30,6 @@ const exampleSmokeApps = [
     marker: '[vue-godot-smoke] game-ui-demo passed',
   },
 ]
-
-function runAsync(command, args, options = {}) {
-  return new Promise((resolve, reject) => {
-    const child = spawn(command, args, {
-      cwd: options.cwd ?? repoRoot,
-      env: options.env ?? process.env,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    })
-
-    let stdout = ''
-    let stderr = ''
-    let didSettle = false
-
-    const timeout =
-      typeof options.timeout === 'number'
-        ? setTimeout(() => {
-            child.kill('SIGTERM')
-          }, options.timeout)
-        : null
-
-    child.stdout.setEncoding('utf-8')
-    child.stderr.setEncoding('utf-8')
-    child.stdout.on('data', (chunk) => {
-      stdout += chunk
-    })
-    child.stderr.on('data', (chunk) => {
-      stderr += chunk
-    })
-
-    child.on('error', (error) => {
-      if (timeout) {
-        clearTimeout(timeout)
-      }
-      if (!didSettle) {
-        didSettle = true
-        reject(error)
-      }
-    })
-
-    child.on('close', (status, signal) => {
-      if (timeout) {
-        clearTimeout(timeout)
-      }
-      if (didSettle) {
-        return
-      }
-      didSettle = true
-
-      if (status !== 0) {
-        const rendered = [command, ...args].join(' ')
-        reject(
-          new Error(
-            [
-              `Command failed (${status ?? signal ?? 'unknown'}): ${rendered}`,
-              stdout,
-              stderr,
-            ]
-              .filter(Boolean)
-              .join('\n'),
-          ),
-        )
-        return
-      }
-
-      resolve({ stdout, stderr })
-    })
-  })
-}
 
 function startFetchSmokeServer() {
   const server = http.createServer((request, response) => {
@@ -137,24 +72,45 @@ function startFetchSmokeServer() {
 }
 
 function runProjectOpenSmoke(godot, appDir, label) {
-  run(godot, ['--headless', '--path', appDir, '--quit'], {
+  installBuiltRuntime(appDir)
+  run(
+    godot,
+    godotCommandArguments(['--headless', '--path', appDir, '--quit']),
+    {
+      stdio: 'inherit',
+    },
+  )
+  console.log(`[smoke-godot] ${label} opened successfully`)
+}
+
+function prepareProject(appDir, workspace, label) {
+  console.log(`[smoke-godot] installing runtime for ${label}`)
+  installBuiltRuntime(appDir)
+
+  console.log(`[smoke-godot] generating ${label} declarations`)
+  run(npmCommand, ['run', 'gen:types', `--workspace=${workspace}`], {
     stdio: 'inherit',
   })
-  console.log(`[smoke-godot] ${label} opened successfully`)
+
+  console.log(`[smoke-godot] building ${label}`)
+  run(npmCommand, ['run', 'build', `--workspace=${workspace}`], {
+    stdio: 'inherit',
+  })
 }
 
 function importProjectAssets(godot, appDir, label) {
   console.log(`[smoke-godot] importing ${label} assets`)
-  run(godot, ['--headless', '--path', appDir, '--import'], {
-    stdio: 'inherit',
-  })
+  run(
+    godot,
+    godotCommandArguments(['--headless', '--path', appDir, '--import']),
+    {
+      stdio: 'inherit',
+    },
+  )
 }
 
 async function runLifecycleSmoke(godot) {
-  console.log('[smoke-godot] building html-demo')
-  run(npmCommand, ['run', 'build', '--workspace=html-demo'], {
-    stdio: 'inherit',
-  })
+  prepareProject(htmlDemoDir, 'html-demo', 'html-demo')
 
   importProjectAssets(godot, htmlDemoDir, 'html-demo')
 
@@ -164,7 +120,7 @@ async function runLifecycleSmoke(godot) {
   try {
     const result = await runAsync(
       godot,
-      ['--headless', '--path', htmlDemoDir],
+      godotCommandArguments(['--headless', '--path', htmlDemoDir]),
       {
         env: {
           ...process.env,
@@ -173,16 +129,10 @@ async function runLifecycleSmoke(godot) {
           VUE_GODOT_SMOKE_FETCH_TEXT: FETCH_SMOKE_TEXT,
           VUE_GODOT_SMOKE_FETCH_URL: fetchSmokeServer.url,
         },
-        timeout: 30_000,
+        streamOutput: true,
+        timeout: 60_000,
       },
     )
-
-    if (result.stdout) {
-      process.stdout.write(result.stdout)
-    }
-    if (result.stderr) {
-      process.stderr.write(result.stderr)
-    }
 
     const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`
     assertNoGodotScriptLoadErrors(output, 'html-demo Godot lifecycle smoke')
@@ -199,28 +149,23 @@ async function runLifecycleSmoke(godot) {
 }
 
 async function runExampleSmoke(godot, app) {
-  console.log(`[smoke-godot] building ${app.id}`)
-  run(npmCommand, ['run', 'build', `--workspace=${app.workspace}`], {
-    stdio: 'inherit',
-  })
+  prepareProject(app.dir, app.workspace, app.id)
 
   importProjectAssets(godot, app.dir, app.id)
 
   console.log(`[smoke-godot] running ${app.id} smoke`)
-  const result = await runAsync(godot, ['--headless', '--path', app.dir], {
-    env: {
-      ...process.env,
-      VUE_GODOT_SMOKE: '1',
+  const result = await runAsync(
+    godot,
+    godotCommandArguments(['--headless', '--path', app.dir]),
+    {
+      env: {
+        ...process.env,
+        VUE_GODOT_SMOKE: '1',
+      },
+      streamOutput: true,
+      timeout: 60_000,
     },
-    timeout: 30_000,
-  })
-
-  if (result.stdout) {
-    process.stdout.write(result.stdout)
-  }
-  if (result.stderr) {
-    process.stderr.write(result.stderr)
-  }
+  )
 
   const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`
   assertNoGodotScriptLoadErrors(output, `${app.id} Godot smoke`)
@@ -240,6 +185,7 @@ if (!godot) {
   )
   process.exit(0)
 }
+assertOfficialGodotExecutable(godot)
 
 try {
   if (process.env.VUE_GODOT_SMOKE_OPEN_ONLY === '1') {

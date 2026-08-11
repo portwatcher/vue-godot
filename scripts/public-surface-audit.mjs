@@ -98,27 +98,25 @@ function checkHtmlSurface(errors) {
       errors.push(`docs/compatibility.md must document <${componentName}>`)
     }
     if (!tagPattern.test(htmlDemo)) {
-      errors.push(`apps/html-demo/vue/src/App.vue must render <${componentName}>`)
+      errors.push(
+        `apps/html-demo/vue/src/App.vue must render <${componentName}>`,
+      )
     }
   }
 
   checkHtmlTagMirrors(errors, components)
 }
 
-export function collectHtmlTagMirrorErrors(
-  relativePath,
-  source,
-  expectedTags,
-) {
+export function collectHtmlTagMirrorErrors(relativePath, source, expectedTags) {
   const errors = []
-  const match = source.match(/const htmlTags = \[([\s\S]*?)\n\]/)
+  const match = source.match(
+    /(?:export\s+)?const\s+(?:htmlTags|HTML_COMPONENT_TAGS)\s*=\s*\[([\s\S]*?)\n\](?:\s+as const)?/,
+  )
   if (!match) {
     return [`${relativePath} must declare const htmlTags array`]
   }
 
-  const actualTags = [...match[1].matchAll(/'([^']+)'/g)].map(
-    (item) => item[1],
-  )
+  const actualTags = [...match[1].matchAll(/'([^']+)'/g)].map((item) => item[1])
   const duplicates = duplicateStrings(actualTags)
   if (duplicates.length > 0) {
     errors.push(
@@ -151,7 +149,7 @@ function checkHtmlTagMirrors(errors, components) {
     'apps/html-demo/vue/vite.config.ts',
     'apps/native-app-demo/vue/vite.config.ts',
     'apps/game-ui-demo/vue/vite.config.ts',
-    'packages/cli/src/integrate.ts',
+    'packages/cli/src/html-tags.ts',
     'packages/html/volar-plugin.cjs',
   ]) {
     errors.push(

@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Clipboard polyfill for GodotJS
+// Clipboard polyfill for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 // Implements the text subset of the async Clipboard API on top of Godot's
 // @vue-godot/device clipboard helpers.
@@ -17,7 +17,8 @@ export class GodotClipboardError extends Error {
     readonly code: 'not-supported' | 'not-allowed',
   ) {
     super(message)
-    this.name = code === 'not-supported' ? 'NotSupportedError' : 'NotAllowedError'
+    this.name =
+      code === 'not-supported' ? 'NotSupportedError' : 'NotAllowedError'
   }
 }
 

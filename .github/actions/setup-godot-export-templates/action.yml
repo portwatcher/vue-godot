@@ -1,0 +1,48 @@
+name: Setup official Godot export templates
+description: Install checksummed official export templates in Godot's platform data directory.
+
+inputs:
+  version:
+    description: Official Godot release tag.
+    required: false
+    default: 4.7.1-stable
+  installed-version:
+    description: Godot export-template directory name.
+    required: false
+    default: 4.7.1.stable
+
+runs:
+  using: composite
+  steps:
+    - name: Cache official export templates on Linux
+      if: runner.os == 'Linux'
+      uses: actions/cache@v5
+      with:
+        path: |
+          .cache/godot-export-templates/${{ inputs.version }}
+          ~/.local/share/godot/export_templates/${{ inputs.installed-version }}
+        key: official-godot-export-templates-${{ runner.os }}-${{ runner.arch }}-${{ inputs.version }}
+
+    - name: Cache official export templates on macOS
+      if: runner.os == 'macOS'
+      uses: actions/cache@v5
+      with:
+        path: |
+          .cache/godot-export-templates/${{ inputs.version }}
+          ~/Library/Application Support/Godot/export_templates/${{ inputs.installed-version }}
+        key: official-godot-export-templates-${{ runner.os }}-${{ runner.arch }}-${{ inputs.version }}
+
+    - name: Cache official export templates on Windows
+      if: runner.os == 'Windows'
+      uses: actions/cache@v5
+      with:
+        path: |
+          .cache/godot-export-templates/${{ inputs.version }}
+          ${{ env.APPDATA }}/Godot/export_templates/${{ inputs.installed-version }}
+        key: official-godot-export-templates-${{ runner.os }}-${{ runner.arch }}-${{ inputs.version }}
+
+    - name: Install export templates
+      shell: bash
+      run: >-
+        node scripts/setup-godot-export-templates.mjs
+        --version "${{ inputs.version }}"

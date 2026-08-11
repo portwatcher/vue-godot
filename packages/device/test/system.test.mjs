@@ -10,6 +10,7 @@ const {
   isDeepLinkAdapter,
   isNotificationAdapter,
   isShareAdapter,
+  packedStringArrayToStrings,
   registerDeviceCapability,
 } = await import('../dist/index.js')
 
@@ -63,6 +64,16 @@ function resetOS(state = {}) {
   }
 }
 
+test('packed string normalization supports stock indexed wrappers', () => {
+  const stockValue = {
+    0: 'alpha',
+    1: 'beta',
+    size: () => 2,
+  }
+
+  assert.deepEqual(packedStringArrayToStrings(stockValue), ['alpha', 'beta'])
+})
+
 test('system helpers read platform and feature information from Godot OS', () => {
   resetDisplayServer()
   resetOS()
@@ -111,7 +122,8 @@ test('window lifecycle callbacks normalize Godot window events', () => {
   })
 
   assert.notEqual(subscription, null)
-  const callback = globalThis.__vueGodotDeviceMockDisplayServer.windowCallbacks.get(0)
+  const callback =
+    globalThis.__vueGodotDeviceMockDisplayServer.windowCallbacks.get(0)
   callback.handler(2)
   callback.handler(3)
   callback.handler(4)
@@ -135,7 +147,10 @@ test('window lifecycle callbacks report unavailable DisplayServer hooks', () => 
     throwOnWindowCallbacks: true,
   })
 
-  assert.equal(onAppLifecycleEvent(() => undefined), null)
+  assert.equal(
+    onAppLifecycleEvent(() => undefined),
+    null,
+  )
 })
 
 test('share helper delegates to registered share adapters', async () => {

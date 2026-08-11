@@ -1,5 +1,5 @@
 import { Callable, Engine, OS } from 'godot'
-import type { Callable2, Signal2 } from 'godot'
+import type { Signal } from 'godot'
 import { packedStringArrayToStrings } from './utils/packedStringArray.js'
 
 export const AndroidPermissions = {
@@ -23,7 +23,7 @@ export type GodotPermissionResultHandler = (
 ) => void
 
 export interface GodotPermissionResultSource {
-  readonly on_request_permissions_result: Signal2<string, boolean>
+  readonly on_request_permissions_result: Signal<readonly [string, boolean]>
 }
 
 export interface GodotPermissionResultSubscription {
@@ -70,7 +70,7 @@ export function onPermissionResult(
   handler: GodotPermissionResultHandler,
   source: GodotPermissionResultSource = Engine.get_main_loop(),
 ): GodotPermissionResultSubscription {
-  const callable: Callable2<string, boolean> = Callable.create(
+  const callable: Callable<readonly [string, boolean], void> = Callable.create(
     (name: string, granted: boolean) => {
       handler({ name: String(name), granted: Boolean(granted) })
     },

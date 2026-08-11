@@ -1,0 +1,323 @@
+name: GodotJS Release Matrix
+
+on:
+  workflow_call:
+    inputs:
+      godot_version:
+        description: Official stable Godot release used for export integration.
+        required: false
+        type: string
+        default: 4.7.1-stable
+      godot_installed_version:
+        description: Godot export-template directory name.
+        required: false
+        type: string
+        default: 4.7.1.stable
+      godot_metadata_artifact:
+        description: Optional artifact containing dynamically resolved stable-release metadata.
+        required: false
+        type: string
+        default: ''
+      release_base_url:
+        description: Optional archive URL root for a compatibility release.
+        required: false
+        type: string
+        default: ''
+    outputs:
+      godotjs_version:
+        description: Version of the verified GodotJS release bundle.
+        value: ${{ jobs.package-release.outputs.godotjs_version }}
+  pull_request:
+    paths:
+      - '.github/actions/setup-godot/**'
+      - '.github/actions/setup-godot-export-templates/**'
+      - '.github/workflows/godot-latest-stable.yml'
+      - '.github/workflows/godotjs-release.yml'
+      - '.github/workflows/publish.yml'
+      - 'apps/godotjs-demo/**'
+      - 'apps/native-app-demo/**'
+      - 'package*.json'
+      - 'packages/godot-js-runtime/**'
+      - 'scripts/official-godot-export-templates.json'
+      - 'scripts/official-godot-releases.json'
+      - 'scripts/release-*.mjs'
+      - 'scripts/resolve-latest-godot-stable.mjs'
+      - 'scripts/setup-godot*.mjs'
+  push:
+    branches:
+      - develop
+      - main
+    paths:
+      - '.github/actions/setup-godot/**'
+      - '.github/actions/setup-godot-export-templates/**'
+      - '.github/workflows/godot-latest-stable.yml'
+      - '.github/workflows/godotjs-release.yml'
+      - '.github/workflows/publish.yml'
+      - 'apps/godotjs-demo/**'
+      - 'apps/native-app-demo/**'
+      - 'package*.json'
+      - 'packages/godot-js-runtime/**'
+      - 'scripts/official-godot-export-templates.json'
+      - 'scripts/official-godot-releases.json'
+      - 'scripts/release-*.mjs'
+      - 'scripts/resolve-latest-godot-stable.mjs'
+      - 'scripts/setup-godot*.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: godotjs-release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-release-artifacts:
+    name: Build ${{ matrix.platform }} artifacts
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos
+            runner: macos-14
+          - platform: ios
+            runner: macos-14
+          - platform: windows
+            runner: ubuntu-24.04
+          - platform: linux
+            runner: ubuntu-22.04
+          - platform: android
+            runner: ubuntu-24.04
+          - platform: web
+            runner: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Install
+        run: npm ci
+
+      - name: Install Windows cross compiler
+        if: matrix.platform == 'windows'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y binutils-mingw-w64-x86-64 g++-mingw-w64-x86-64
+          sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
+          sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
+          x86_64-w64-mingw32-g++ --version
+          test "$(x86_64-w64-mingw32-g++ -v 2>&1 | sed -n 's/^Thread model: //p')" = posix
+
+      - name: Install WebAssembly inspection tools
+        if: matrix.platform == 'web'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wabt
+          wasm-validate --version
+
+      - name: Setup pinned Android SDK tools and NDK
+        if: matrix.platform == 'android'
+        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
+        with:
+          cmdline-tools-version: '14742923'
+          packages: 'ndk;23.2.8568313'
+
+      - name: Export pinned Android NDK
+        if: matrix.platform == 'android'
+        run: |
+          test -x "${ANDROID_SDK_ROOT}/ndk/23.2.8568313/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++"
+          echo "ANDROID_NDK_ROOT=${ANDROID_SDK_ROOT}/ndk/23.2.8568313" >> "$GITHUB_ENV"
+
+      - name: Build pinned Web artifacts
+        if: matrix.platform == 'web'
+        run: >-
+          docker run --rm --platform linux/amd64
+          --volume "$GITHUB_WORKSPACE:/workspace"
+          --workdir /workspace
+          emscripten/emsdk@sha256:2d3fb46aa26bf2824b14c1c12a4002c1a04751b0e935f907a101c2554610214d
+          node packages/godot-js-runtime/scripts/build-release-artifacts.mjs
+          --platform web --mode all --clean
+
+      - name: Build release artifacts
+        if: matrix.platform != 'web'
+        run: >-
+          npm run build:release --workspace=packages/godot-js-runtime --
+          --platform "${{ matrix.platform }}" --mode all --clean
+
+      - name: Verify release artifacts
+        run: >-
+          npm run verify:release --workspace=packages/godot-js-runtime --
+          --platform "${{ matrix.platform }}"
+
+      - name: Upload platform artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: godotjs-${{ matrix.platform }}
+          path: packages/godot-js-runtime/addon/godotjs/bin
+          compression-level: 0
+          if-no-files-found: error
+
+  package-release:
+    name: Package universal GodotJS ZIP
+    needs: build-release-artifacts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      godotjs_version: ${{ steps.godotjs_version.outputs.value }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Resolve GodotJS version
+        id: godotjs_version
+        run: >-
+          node -e 'const fs = require("node:fs");
+          const packageJson = require("./packages/godot-js-runtime/package.json");
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, "value=" + packageJson.version + "\n")'
+
+      - name: Download all platform artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: godotjs-*
+          path: packages/godot-js-runtime/addon/godotjs/bin
+          merge-multiple: true
+
+      - name: Package deterministic universal ZIP
+        if: inputs.release_base_url == ''
+        run: npm run package:godotjs
+
+      - name: Package deterministic compatibility ZIP
+        if: inputs.release_base_url != ''
+        run: >-
+          npm run package:release --workspace=packages/godot-js-runtime --
+          --base-url "${{ inputs.release_base_url }}"
+
+      - name: Test clean manual-copy installation
+        run: npm run test --workspace=packages/godot-js-runtime
+
+      - name: Upload release bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: godotjs-release
+          path: .artifacts/godotjs/${{ steps.godotjs_version.outputs.value }}
+          compression-level: 0
+          if-no-files-found: error
+
+  export-smoke:
+    name: Export ${{ matrix.label }}
+    needs: package-release
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Linux
+            artifact: linux
+            runner: ubuntu-24.04
+            platforms: linux
+            launch_argument: ''
+          - label: Windows
+            artifact: windows
+            runner: windows-2025
+            platforms: windows
+            launch_argument: ''
+          - label: macOS and iOS
+            artifact: apple
+            runner: macos-26
+            platforms: macos,ios
+            launch_argument: ''
+          - label: Android structural
+            artifact: android
+            runner: ubuntu-24.04
+            platforms: android
+            launch_argument: --skip-launch
+          - label: Web
+            artifact: web
+            runner: ubuntu-24.04
+            platforms: web
+            launch_argument: ''
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Download dynamic stable-release metadata
+        if: inputs.godot_metadata_artifact != ''
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ inputs.godot_metadata_artifact }}
+          path: .artifacts/latest-godot
+
+      - name: Register dynamic stable release
+        if: inputs.godot_metadata_artifact != ''
+        run: >-
+          node scripts/resolve-latest-godot-stable.mjs
+          --metadata .artifacts/latest-godot/stable-release.json
+          --write-catalogs
+
+      - name: Setup official Godot
+        uses: ./.github/actions/setup-godot
+        with:
+          version: ${{ inputs.godot_version || '4.7.1-stable' }}
+
+      - name: Setup official export templates
+        uses: ./.github/actions/setup-godot-export-templates
+        with:
+          version: ${{ inputs.godot_version || '4.7.1-stable' }}
+          installed-version: ${{ inputs.godot_installed_version || '4.7.1.stable' }}
+
+      - name: Download release bundle
+        uses: actions/download-artifact@v8
+        with:
+          name: godotjs-release
+          path: .artifacts/godotjs/${{ needs.package-release.outputs.godotjs_version }}
+
+      - name: Export both applications in debug and release modes
+        shell: bash
+        run: >-
+          node packages/godot-js-runtime/scripts/smoke-platform-exports.mjs
+          --godot-version "${{ inputs.godot_version || '4.7.1-stable' }}"
+          --platform "${{ matrix.platforms }}"
+          --release-dir ".artifacts/godotjs/${{ needs.package-release.outputs.godotjs_version }}"
+          ${{ matrix.launch_argument }}
+
+      - name: Upload export evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: export-evidence-${{ matrix.artifact }}
+          path: .artifacts/platform-exports/*-evidence.json
+          if-no-files-found: warn

@@ -26,14 +26,15 @@ script from the repository root:
 GODOT_BIN=/path/to/godot npm run smoke:godot
 GODOT_BIN=/path/to/godot npm run smoke:generated-godot
 GODOT_BIN=/path/to/godot npm run smoke:editor-reload
-GODOT_BIN="$(npm run -s setup:godotjs -- --print-bin)" npm run smoke:godot
+GODOT_BIN="$(npm run -s setup:godot -- --print-bin)" npm run smoke:godot
 ```
 
 `GODOT_BIN` can point to the executable or to a directory containing a
 `godot*` executable, including macOS `.app/Contents/MacOS` layouts. The
-`setup:godotjs` helper downloads the pinned GodotJS editor into `.cache/godotjs`
-and prints the executable path so the same runtime can be reused across smoke
-commands.
+`setup:godot` helper downloads a checksum-pinned official editor and prints the
+executable path so the same editor can be reused across smoke commands. Project
+JavaScript is provided by the separately installed GodotJS add-on under
+`addons/godotjs`.
 
 ## Godot Console Logs
 
@@ -79,26 +80,26 @@ not control the shipped bundle. Enable Vite build source maps when you need
 bundle-to-source mapping.
 
 Keep source maps out of production exports if exposing source code or path
-layout is not acceptable for your app. If GodotJS still reports bundle line
+layout is not acceptable for your app. If the runtime still reports bundle line
 numbers, inspect `dist/app.js` and `dist/app.js.map` together.
 
 ## Runtime Warnings
 
 Common warning families:
 
-| Prefix or source | Meaning | Action |
-| --- | --- | --- |
-| `[vue-godot]` unsupported node class | Vue tried to instantiate a Godot class that `ClassDB` could not create. | Check the tag name, Godot version, generated typings, and whether the class exists in the target runtime. |
-| `[vue-godot]` prop warning | Godot rejected a prop read/write or a removed prop could not be reset. | Verify the Godot property name, value type, and whether the target node supports the property. |
-| `[vue-godot]` signal warning | A Vue event prop could not connect to a Godot signal. | Check the signal name and whether the target node exposes that signal in the current Godot version. |
-| `[vue-godot/html]` unsupported style prop | The HTML package ignored a CSS property outside the documented Godot-backed subset. | Replace it with a supported style prop or a Godot-native layout/component pattern. |
-| Export setting warning | The generated export checker detected API usage without matching platform setup. | Update `export_presets.cfg`, plist keys, entitlements, or adapter/plugin configuration before release. |
-| Device capability error | An adapter-backed API is unsupported, denied, missing a plugin, or misconfigured. | Check `getStatus()`, permissions, plugin loading, and platform export settings. |
+| Prefix or source                          | Meaning                                                                             | Action                                                                                                    |
+| ----------------------------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `[vue-godot]` unsupported node class      | Vue tried to instantiate a Godot class that `ClassDB` could not create.             | Check the tag name, Godot version, generated typings, and whether the class exists in the target runtime. |
+| `[vue-godot]` prop warning                | Godot rejected a prop read/write or a removed prop could not be reset.              | Verify the Godot property name, value type, and whether the target node supports the property.            |
+| `[vue-godot]` signal warning              | A Vue event prop could not connect to a Godot signal.                               | Check the signal name and whether the target node exposes that signal in the current Godot version.       |
+| `[vue-godot/html]` unsupported style prop | The HTML package ignored a CSS property outside the documented Godot-backed subset. | Replace it with a supported style prop or a Godot-native layout/component pattern.                        |
+| Export setting warning                    | The generated export checker detected API usage without matching platform setup.    | Update `export_presets.cfg`, plist keys, entitlements, or adapter/plugin configuration before release.    |
+| Device capability error                   | An adapter-backed API is unsupported, denied, missing a plugin, or misconfigured.   | Check `getStatus()`, permissions, plugin loading, and platform export settings.                           |
 
 Warnings are not noise during migration. They usually identify the exact place
 where a browser assumption or Godot binding mismatch needs a decision.
 
-## Common GodotJS Failure Modes
+## Common JavaScript Runtime Failure Modes
 
 ### Godot Tries To Import Vue Source
 
@@ -130,9 +131,9 @@ rebuilding.
 
 ### `Cannot find module "godot"` Outside Godot
 
-The `godot` module is provided by GodotJS at runtime and is externalized by the
+The `godot` module is provided by GodotJS and is externalized by the
 Vite config. Do not execute `dist/app.js` directly with Node. Use unit tests for
-package code and run the app through the GodotJS editor/runtime.
+package code and run the app through official Godot with the addon installed.
 
 ### HTML Tags Do Not Resolve As Components
 
@@ -150,14 +151,14 @@ components render incorrectly, compare your config with
 
 ### Volar Or TypeScript Does Not Know Godot Tags
 
-Open the project in the GodotJS editor so GodotJS can generate typings, then
-run:
+Install GodotJS by extracting its release ZIP at the project root, then
+generate declarations from the selected stock-Godot API:
 
 ```bash
 npm run gen:types
 ```
 
-Regenerate after Godot or GodotJS upgrades. For HTML-mode apps, ensure
+Regenerate after Godot or runtime upgrades. For HTML-mode apps, ensure
 `vueCompilerOptions.plugins` includes `@vue-godot/html/volar-plugin`.
 
 ### Browser APIs Are Missing
@@ -217,7 +218,7 @@ When filing or debugging a failure, capture:
 
 - `git rev-parse --short HEAD`
 - Node and npm versions
-- GodotJS editor/runtime version
+- official Godot version and GodotJS manifest version/commit
 - target platform and export preset
 - the exact command that failed
 - full Godot console or headless smoke output

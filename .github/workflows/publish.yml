@@ -22,20 +22,32 @@ permissions:
   id-token: write
 
 jobs:
+  godotjs-release:
+    name: Verify GodotJS release matrix
+    uses: ./.github/workflows/godotjs-release.yml
+    permissions:
+      contents: read
+
   publish:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 45
+    needs: godotjs-release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
 
       - name: Update npm
         run: npm install -g npm@^11.15.0
@@ -43,8 +55,10 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Setup GodotJS
-        uses: ./.github/actions/setup-godotjs
+      - name: Setup official Godot
+        uses: ./.github/actions/setup-godot
+        with:
+          version: 4.7.1-stable
 
       - name: Install virtual display
         run: sudo apt-get update && sudo apt-get install -y xvfb

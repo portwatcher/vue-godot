@@ -1,10 +1,11 @@
 // ---------------------------------------------------------------------------
-// Navigator and network reachability polyfills for GodotJS
+// Navigator and network reachability polyfills for the Godot JavaScript Runtime
 // ---------------------------------------------------------------------------
 
 import { OS } from 'godot'
 import {
   deviceCapabilities,
+  packedStringArrayToStrings,
   type DevicePermissionState,
   type PermissionAdapter,
 } from '@vue-godot/device'
@@ -31,10 +32,7 @@ import {
   clearTimeout as clearGodotTimeout,
   setTimeout as setGodotTimeout,
 } from './timing.js'
-import {
-  vibrate,
-  type GodotVibrationPattern,
-} from './vibration.js'
+import { vibrate, type GodotVibrationPattern } from './vibration.js'
 
 export interface GodotNetworkReachabilityOptions {
   url?: string
@@ -60,9 +58,7 @@ export interface GodotPermissionDescriptor {
   name: string
 }
 
-export type GodotPermissionChangeHandler = (
-  event: GodotEvent,
-) => void
+export type GodotPermissionChangeHandler = (event: GodotEvent) => void
 
 const DEFAULT_REACHABILITY_OPTIONS: Required<GodotNetworkReachabilityOptions> =
   {
@@ -98,11 +94,6 @@ const SensorPermissionNames = new Set<string>([
 
 type RuntimePermissionName = keyof typeof RuntimePermissionMap
 
-interface GodotStringArrayLike {
-  size(): number
-  get_indexed(index: number): unknown
-}
-
 function normalizeOptions(
   options: GodotNetworkReachabilityOptions = {},
 ): Required<GodotNetworkReachabilityOptions> {
@@ -124,9 +115,7 @@ function isExpectedStatus(
     : status === expected
 }
 
-function isRuntimePermissionName(
-  name: string,
-): name is RuntimePermissionName {
+function isRuntimePermissionName(name: string): name is RuntimePermissionName {
   return Object.prototype.hasOwnProperty.call(RuntimePermissionMap, name)
 }
 
@@ -147,37 +136,9 @@ export function getRegisteredPermissionAdapter(): PermissionAdapter | null {
   return isPermissionAdapter(adapter) ? adapter : null
 }
 
-function isGodotStringArrayLike(
-  value: unknown,
-): value is GodotStringArrayLike {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof (value as { size?: unknown }).size === 'function' &&
-    typeof (value as { get_indexed?: unknown }).get_indexed === 'function'
-  )
-}
-
-function stringArrayLikeToStrings(value: unknown): string[] {
-  if (Array.isArray(value)) {
-    return value.map(String)
-  }
-
-  if (!isGodotStringArrayLike(value)) {
-    return []
-  }
-
-  const count = Math.max(0, Math.trunc(Number(value.size())))
-  const result: string[] = []
-  for (let index = 0; index < count; index++) {
-    result.push(String(value.get_indexed(index)))
-  }
-  return result
-}
-
 function readGrantedPermissionSet(): Set<string> {
   try {
-    return new Set(stringArrayLikeToStrings(OS.get_granted_permissions()))
+    return new Set(packedStringArrayToStrings(OS.get_granted_permissions()))
   } catch {
     return new Set()
   }
@@ -209,7 +170,9 @@ function queryPermissionState(name: string): GodotPermissionState | null {
   }
 
   const granted = readGrantedPermissionSet()
-  return RuntimePermissionMap[name].some((permission) => granted.has(permission))
+  return RuntimePermissionMap[name].some((permission) =>
+    granted.has(permission),
+  )
     ? 'granted'
     : 'prompt'
 }
@@ -236,9 +199,7 @@ async function queryAdapterPermissionState(
   }
 
   try {
-    return mapDevicePermissionState(
-      await adapter.queryPermission({ name }),
-    )
+    return mapDevicePermissionState(await adapter.queryPermission({ name }))
   } catch {
     return null
   }

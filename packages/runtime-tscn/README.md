@@ -6,10 +6,20 @@ It provides a Vue runtime renderer for Godot TSCN files. This allows you to use 
 
 See the repository [compatibility checklist](../../docs/compatibility.md) for current renderer support status, platform caveats, and known limits. See [runtime renderer support](../../docs/runtime.md) for supported Vue features and unsupported browser/DOM assumptions.
 
+The renderer runs inside official Godot through the GodotJS GDExtension.
+Install GodotJS by extracting its GitHub release ZIP into the Godot project so
+that `addons/godotjs/godotjs.gdextension` exists. GodotJS is not an npm
+dependency.
+
 ## Features
 
 - Render Vue components into Godot scene nodes.
 - Manipulate Godot node properties using Vue's reactivity system.
+- Disconnect Vue-owned signal callables across an entire rendered subtree
+  before its Godot nodes are queued for deletion.
+- Export `commonJsBundleBanner` from
+  `@vue-godot/runtime-tscn/bundle-format` for Vite/Rollup CommonJS bundles
+  loaded by GodotJS without loading the Godot-backed renderer in Node.
 
 ## Runtime Diagnostics
 
@@ -18,6 +28,11 @@ The renderer emits `[vue-godot]` warnings for unsupported or rejected host opera
 - Unsupported Vue tags / Godot node classes include the tag name and explain the fallback to a generic `Node`.
 - Prop update failures include the prop name and whether Godot rejected reading or writing the value.
 - Signal connection failures include the Godot signal name, target node, and original Vue event prop.
+
+Unmount and keyed-removal cleanup walks the removed Godot subtree, disconnects
+every callable created for Vue event props, and then queues the nodes for
+deletion. This keeps callback roots and object wrappers at their pre-mount
+baseline across repeated editor reloads and app remounts.
 
 ## Prop Removal / Unset Semantics
 
@@ -38,3 +53,5 @@ Limitations:
 ```
 npm install @vue-godot/runtime-tscn
 ```
+
+Install GodotJS in the Godot project before mounting the renderer.

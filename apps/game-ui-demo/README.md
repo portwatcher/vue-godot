@@ -24,7 +24,8 @@ This app exists to keep SDK-level HUD and game menu flows exercised:
 | Godot smoke       | Covered by `npm run smoke:godot`.                                |
 | npm run build     | Builds the SDK dependencies and Vite bundle.                     |
 
-You can also open `project.godot` in GodotJS and press F5 after building.
+You can also open `project.godot` in official Godot and press F5 after building
+and installing the standalone runtime.
 
 ## Commands
 

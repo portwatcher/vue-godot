@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
+  clearSignalHandlers,
   patchSignalHandlers,
   vueEventKeyToGodotSignalName,
 } from '../dist/signalEvents.js'
@@ -90,3 +91,27 @@ test('supports arrays of handlers and avoids duplicate live connections across u
   )
 })
 
+test('clears every stored callable when a rendered node subtree is removed', () => {
+  const { target, ops, calls, active } = createHarness()
+
+  patchSignalHandlers(target, 'onPressed', () => {}, ops)
+  patchSignalHandlers(target, 'onMouseEntered', () => {}, ops)
+  patchSignalHandlers(target, 'onMouseExited', () => {}, ops)
+  clearSignalHandlers(target, ops)
+  clearSignalHandlers(target, ops)
+
+  assert.equal(active.get('pressed')?.size ?? 0, 0)
+  assert.equal(active.get('mouse_entered')?.size ?? 0, 0)
+  assert.equal(active.get('mouse_exited')?.size ?? 0, 0)
+  assert.deepEqual(
+    calls.map((call) => `${call.type}:${call.signalName}`),
+    [
+      'connect:pressed',
+      'connect:mouse_entered',
+      'connect:mouse_exited',
+      'disconnect:pressed',
+      'disconnect:mouse_entered',
+      'disconnect:mouse_exited',
+    ],
+  )
+})

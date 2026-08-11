@@ -1,0 +1,16 @@
+import { Node } from 'godot'
+import { defineScript } from 'godot-js'
+
+class ReloadProbe extends Node {
+  state = 22
+
+  generation() {
+    return 2
+  }
+}
+
+export default defineScript(ReloadProbe, {
+  properties: {
+    state: { type: 'int', default: 22 },
+  },
+})

@@ -1,14 +1,22 @@
-import { defineComponent, h, shallowRef, watch } from '@vue/runtime-core'
-import type { Texture2D } from 'godot'
+import {
+  defineComponent,
+  getCurrentInstance,
+  h,
+  onBeforeUnmount,
+  shallowRef,
+  watch,
+} from '@vue/runtime-core'
+import type { CameraTexture } from 'godot'
 import {
   applyControlSizeProps,
   applyTransformStyleProps,
   applyMotionStyleProps,
 } from '../utils/controlStyle.js'
-import { createCameraTexture } from '../utils/camera.js'
 import {
-  warnUnsupportedStyleProps,
-} from '../utils/styleMapping.js'
+  createCameraTexture,
+  deactivateCameraTexture,
+} from '../utils/camera.js'
+import { warnUnsupportedStyleProps } from '../utils/styleMapping.js'
 import { htmlStyleProp } from '../utils/styleProps.js'
 import { useHtmlComponentStyleResolver } from '../utils/styleResolver.js'
 import { applyTextureRectObjectFitProps } from '../utils/textureRectFit.js'
@@ -42,11 +50,12 @@ export const CameraView = defineComponent({
       'CameraView',
       context?.attrs,
     )
-    const texture = shallowRef<Texture2D | null>(null)
+    const texture = shallowRef<CameraTexture | null>(null)
 
     watch(
       () => [props.feedId, props.feedIndex, props.whichFeed, props.active],
       () => {
+        deactivateCameraTexture(texture.value)
         texture.value = createCameraTexture({
           feedId: props.feedId,
           feedIndex: props.feedIndex,
@@ -56,6 +65,13 @@ export const CameraView = defineComponent({
       },
       { immediate: true },
     )
+
+    if (getCurrentInstance()) {
+      onBeforeUnmount(() => {
+        deactivateCameraTexture(texture.value)
+        texture.value = null
+      })
+    }
 
     return () => {
       const style = resolveStyle(props.style).style

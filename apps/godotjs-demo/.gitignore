@@ -1,0 +1,4 @@
+.godot/
+dist/
+node_modules/
+typings/

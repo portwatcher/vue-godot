@@ -1,0 +1,49 @@
+{
+  "name": "@vue-godot/internal-godotjs",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Private build infrastructure for the GodotJS GDExtension",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/portwatcher/vue-godot.git",
+    "directory": "packages/godot-js-runtime"
+  },
+  "scripts": {
+    "build": "npx tsc -p .",
+    "pretest": "npm run bootstrap:native",
+    "test": "npm run build && npm run check:types && npm run test:types && node --test test/*.test.mjs",
+    "bootstrap:native": "node scripts/bootstrap-deps.mjs",
+    "build:native": "node scripts/build-native.mjs",
+    "build:release": "node scripts/build-release-artifacts.mjs",
+    "package:release": "npm run build && node scripts/package-release-artifacts.mjs --write-package-manifest",
+    "verify:release": "npm run build && node scripts/verify-release-artifacts.mjs",
+    "generate:export-presets": "node scripts/export-presets.mjs",
+    "test:native": "node scripts/build-native.mjs --run-tests",
+    "generate:bindings": "node scripts/generate-bindings.mjs",
+    "check:bindings": "node scripts/generate-bindings.mjs --check",
+    "gen:types": "node ../cli/scripts/generate-types.mjs",
+    "generate:types": "npm run gen:types",
+    "check:types": "node ../cli/scripts/generate-types.mjs --check",
+    "test:types": "tsc -p test/fixtures/plain-types",
+    "generate:manifest": "node scripts/generate-extension-manifest.mjs",
+    "smoke:native": "node scripts/smoke-stock-godot.mjs",
+    "smoke:exports": "node scripts/smoke-platform-exports.mjs"
+  },
+  "keywords": [
+    "godot",
+    "javascript",
+    "typescript",
+    "gdextension",
+    "quickjs"
+  ],
+  "author": "Portwatcher",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  }
+}
