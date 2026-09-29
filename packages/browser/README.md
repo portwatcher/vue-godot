@@ -73,7 +73,7 @@ globals and can conflict with TypeScript's `lib.dom.d.ts`.
 | `FileReader`                                     | `GodotFileReader`      | Async `readAsText()`, `readAsArrayBuffer()`, `readAsDataURL()`, `readAsBinaryString()` for Blob/File values                                                                                                                   |
 | `WebSocket`                                      | `GodotWebSocket`       | Browser WebSocket subset backed by `WebSocketPeer`; supports open/message/error/close, text/binary send, `binaryType`, protocols, and close codes                                                                             |
 | `Storage`                                        | `GodotStorage`         | Web Storage API shape; `.length`, `.key()`, `.getItem()`, `.setItem()`, `.removeItem()`, `.clear()`                                                                                                                           |
-| `localStorage`                                   | `GodotStorage`         | Persistent JSON-backed storage at `user://vue-godot-browser-local-storage.json` with memory fallback                                                                                                                          |
+| `localStorage`                                   | `GodotStorage`         | Persistent JSON-backed storage at `user://vue-godot-browser-local-storage.json`; keeps values in the current instance if file access fails                                                                                     |
 | `sessionStorage`                                 | `GodotStorage`         | Process-memory storage; cleared when the JavaScript runtime exits or reloads                                                                                                                                                  |
 | `navigator`                                      | `GodotNavigator`       | Provides `navigator.onLine`, `navigator.permissions`, adapter-backed `navigator.geolocation`, adapter-backed `navigator.mediaDevices`, `navigator.clipboard`, and `navigator.vibrate()`; reachability changes dispatch events |
 | `navigator.permissions.query()`                  | `GodotPermissions`     | Query-only Permissions API subset that asks a registered `PermissionAdapter` first, then falls back to mapped Godot/Android permissions and local capabilities                                                                |
@@ -273,7 +273,7 @@ reader.readAsText(new Blob(['hello']))
 
 ## Web Storage
 
-`localStorage` persists string key/value pairs to `user://vue-godot-browser-local-storage.json` using Godot `FileAccess`. If the file cannot be read or written, it falls back to process memory so the API remains predictable during early startup or restricted exports.
+`localStorage` persists string key/value pairs to `user://vue-godot-browser-local-storage.json` using Godot `FileAccess`. If the file cannot be read or written, the current storage instance keeps its values in memory during early startup or restricted exports. A new instance loads only values that reached the file.
 
 ```ts
 localStorage.setItem('auth-token', token)

@@ -20,46 +20,18 @@ function isStringRecord(value: unknown): value is Record<string, string> {
   return Object.keys(record).every((key) => typeof record[key] === 'string')
 }
 
-function mapFromRecord(record: Record<string, string>): Map<string, string> {
-  return new Map(Object.entries(record))
-}
-
-function recordFromMap(
-  entries: ReadonlyMap<string, string>,
-): Record<string, string> {
-  const record: Record<string, string> = {}
-  for (const [key, value] of entries) {
-    record[key] = value
-  }
-  return record
-}
-
-class MemoryStorageBackend implements StorageBackend {
-  private _entries = new Map<string, string>()
-
-  load(): Map<string, string> {
-    return new Map(this._entries)
-  }
-
-  save(entries: ReadonlyMap<string, string>): void {
-    this._entries = new Map(entries)
-  }
-}
-
 class GodotFileStorageBackend implements StorageBackend {
-  private readonly _fallback = new MemoryStorageBackend()
-
   constructor(private readonly _path: string) {}
 
   load(): Map<string, string> {
     try {
       if (!FileAccess.file_exists(this._path)) {
-        return this._fallback.load()
+        return new Map()
       }
 
       const file = FileAccess.open(this._path, FileAccess.ModeFlags.READ)
       if (!file) {
-        return this._fallback.load()
+        return new Map()
       }
 
       const text = file.get_as_text()
@@ -73,27 +45,23 @@ class GodotFileStorageBackend implements StorageBackend {
         return new Map()
       }
 
-      const entries = mapFromRecord(parsed)
-      this._fallback.save(entries)
-      return entries
+      return new Map(Object.entries(parsed))
     } catch {
-      return this._fallback.load()
+      return new Map()
     }
   }
 
   save(entries: ReadonlyMap<string, string>): void {
-    this._fallback.save(entries)
-
     try {
       const file = FileAccess.open(this._path, FileAccess.ModeFlags.WRITE)
       if (!file) {
         return
       }
 
-      file.store_string(JSON.stringify(recordFromMap(entries)))
+      file.store_string(JSON.stringify(Object.fromEntries(entries)))
       file.close()
     } catch {
-      // Keep the in-memory fallback updated when user:// cannot be written.
+      // GodotStorage already holds the updated entries in memory.
     }
   }
 }
@@ -104,10 +72,8 @@ class GodotFileStorageBackend implements StorageBackend {
 export class GodotStorage {
   private _entries: Map<string, string>
 
-  constructor(
-    private readonly _backend: StorageBackend = new MemoryStorageBackend(),
-  ) {
-    this._entries = this._backend.load()
+  constructor(private readonly _backend?: StorageBackend) {
+    this._entries = _backend?.load() ?? new Map()
   }
 
   get length(): number {
@@ -142,13 +108,8 @@ export class GodotStorage {
     this._persist()
   }
 
-  /** @internal */
-  _snapshot(): Record<string, string> {
-    return recordFromMap(this._entries)
-  }
-
   private _persist(): void {
-    this._backend.save(this._entries)
+    this._backend?.save(this._entries)
   }
 }
 
@@ -157,7 +118,7 @@ export function createLocalStorage(path = LOCAL_STORAGE_PATH): GodotStorage {
 }
 
 export function createSessionStorage(): GodotStorage {
-  return new GodotStorage(new MemoryStorageBackend())
+  return new GodotStorage()
 }
 
 export const localStorage = createLocalStorage()
